@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>{{'Submission Help' | translate}}</h2>
+<mat-dialog-content>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>{{'Website' | translate}}</th>
+        <th>{{'Accepted Type' | translate}}</th>
+        <th>{{'Accepted Ratings' | translate}}</th>
+        <th>{{'Accepted Files' | translate}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let website of websiteRules">
+        <td>{{website.name}}</td>
+        <td>
+          <span *ngFor="let type of website.supportedTypes">
+            {{type | translate}}
+          </span>
+        </td>
+        <td>
+          <span *ngFor="let rating of website.supportedRatings">
+            {{rating | translate}}
+          </span>
+        </td>
+        <td>{{website.supportedFiles}}</td>
+      </tr>
+    </tbody>
+  </table>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

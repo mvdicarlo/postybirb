@@ -1,0 +1,8 @@
+<div class="file-viewer-container" *ngIf="show">
+  <span class="file-viewer" [ngSwitch]="mimeType" [matTooltip]="name">
+    <img [src]="src | safe" [alt]="name" [height]="height" [width]="width" *ngSwitchCase="'image'">
+    <video [src]="src | safe" [type]="type" [height]="height" [width]="width" *ngSwitchCase="'video'"></video>
+    <img src="" [alt]="name" [height]="height" [width]="width" *ngSwitchCase="'text'">
+    <img [src]="src | safe" [alt]="name" [height]="height" [width]="width" *ngSwitchDefault>
+  </span>
+</div>

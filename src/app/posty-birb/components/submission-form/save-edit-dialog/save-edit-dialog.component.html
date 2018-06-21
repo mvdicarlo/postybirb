@@ -1,0 +1,12 @@
+<h2 mat-dialog-title>{{'Apply Edits' | translate}}</h2>
+<mat-dialog-content>
+  <mat-form-field color="accent" *ngIf="data && data.length > 1">
+    <mat-select [placeholder]="'Edit Selected' | translate" multiple [formControl]="control">
+      <mat-option *ngFor="let submission of data" [value]="submission">{{submission.getTitle()}}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Cancel' | translate}}</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="control.invalid">{{'Yes' | translate}}</button>
+</mat-dialog-actions>

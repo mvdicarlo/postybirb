@@ -1,0 +1,19 @@
+<section *ngIf="unscheduledSubmissions && unscheduledSubmissions.length > 0">
+  <h5>{{'Submission Gallery' | translate}}</h5>
+  <div class="submission-container unscheduled row no-gutters">
+    <gallery-display-item *ngFor="let item of unscheduledSubmissions" class="col-md-3 col-lg-3 col-xl-2" [item]="item" dragScope="unscheduled" (reorder)="reorderItems($event)"></gallery-display-item>
+  </div>
+  <div>
+    <button mat-button color="warn" (click)="clearAll()" [disabled]="unscheduledSubmissions.length === 0">{{'Clear All' | translate}}</button>
+    <button mat-button color="accent" (click)="postAll()" [disabled]="unscheduledSubmissions.length === 0">{{'Post All' | translate}}</button>
+  </div>
+</section>
+<section *ngIf="scheduledSubmissions && scheduledSubmissions.length > 0">
+  <h5>{{'Scheduled Submissions' | translate}}</h5>
+  <div class="submission-container scheduled row no-gutters">
+    <gallery-display-item *ngFor="let item of scheduledSubmissions" class="col-md-3 col-lg-3 col-xl-3" [item]="item" dragScope="scheduled"></gallery-display-item>
+  </div>
+  <div>
+    <mat-slide-toggle [checked]="isScheduledEnabled()" (change)="toggleScheduleEnabled($event)">{{ 'Enabled' | translate }}</mat-slide-toggle>
+  </div>
+</section>

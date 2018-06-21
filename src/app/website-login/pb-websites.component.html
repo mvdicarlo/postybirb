@@ -1,0 +1,5 @@
+<div class="login-box" *ngFor="let webLogin of websites">
+  <login-panel website="{{webLogin.website}}" [dialogComponent]="webLogin.dialogComponent"></login-panel>
+</div>
+
+<button mat-button color="accent" class="w-100" (click)="refreshStatuses()">{{'Refresh' | translate}}</button>

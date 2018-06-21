@@ -1,0 +1,278 @@
+<h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
+<mat-dialog-content>
+  <div>
+    <div>0.8.5 (06/18/2018)</div>
+    <h5>New Features</h5>
+    <ul>
+      <li>Advertising option has been moved to scheduler section (is now a global toggle).</li>
+      <li>
+        Can now disable scheduled submissions (if you need that for some reason).
+        <ul>
+          <li>This is the beginning of a potential overhaul of scheduled posts.</li>
+        </ul>
+      </li>
+      <li>Clear button added to tag field (to clear all tags).</li>
+      <li>No longer need to provide a title if you don't want to (defaults to New Submission if empty).</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Pixiv will now fail correctly when a captcha is on (10 minute intervals).</li>
+      <li>SoFurry will now fail correctly.</li>
+    </ul>
+    <div>0.8.4 (06/01/2018)</div>
+    <h5>New Features</h5>
+    <ul>
+      <li>In App Notifications! (more to be added in the future)</li>
+      <li>Ability to add additional files to submissions (Only works with Inkbunny, Tumblr, Twitter). This is a trail and no real checks are done.</li>
+      <li>Posts will automatically fail if no login is detected for a website.</li>
+      <li>Tumblr will now use the title again.</li>
+      <li>PT-BR language supported (thanks to Juniorr452).</li>
+      <li>Save screen will try to notify you of why it was marked as invalid.</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>No longer able submit mp4s to Tumblr (not a supported file format).</li>
+    </ul>
+    <h5>Miscellaneous</h5>
+    <ul>
+      <li>Updated electron.</li>
+      <li>Updated Angular.</li>
+      <li>Cleaned up some npm stuff.</li>
+      <li>Moved auth stuff to separate server. (May need to reauthenticate Twitter, Tumblr, DeviantArt)</li>
+    </ul>
+    <div>0.8.2 (05/21/2018)</div>
+    <h5>New Features</h5>
+    <ul>
+      <li>Spellcheck for rich text editor.</li>
+      <li>Basic editor can now be used with default description field.</li>
+      <li>Help button added to save dialog for invalid submissions.</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Tackled weird edge case for username shortcuts like :dausernameicon:</li>
+      <li>Furry Network login now correctly says Email rather than Username (this caused a lot of confusion for people)</li>
+    </ul>
+    <div>0.8.1 (05/09/2018)</div>
+    <h5>New Features</h5>
+    <ul>
+      <li>Derpibooru now supported (HF or Aryion should be next)</li>
+      <li>PostyBirb now has desktop notifications for failed and successful posts.</li>
+      <li>Finnish language added. (Thanks to Gustav)</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Fixed issue where some websites would inacurately tag Mature posts (only for e621 and pixiv).</li>
+      <li>Fixed issue where submission edits were applied/saved despite never hitting Save button.</li>
+      <li>Added in missing translations.</li>
+      <li>Tags with many words will now correctly parse.</li>
+    </ul>
+    <h5>Miscellaneous</h5>
+    <ul>
+      <li>Updated electron to 2.0</li>
+      <li>Minor code refactor.</li>
+      <li>Made the app more safe according to Electron security guidelines.</li>
+      <li>Furry Network tags limited to 30 to comply with new website rules.</li>
+    </ul>
+    <div>0.7.7</div>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Fixed issue of thumbnails not working.</li>
+      <li>Fixed issue where thumnbail wouldn't show name in submission card.</li>
+    </ul>
+    <div>0.7.6</div>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Another attempt to fix sofurry username detection issue.</li>
+      <li>PostyBirb should no longer break on region lock.</li>
+    </ul>
+    <h5>Miscellaneous</h5>
+    <ul>
+      <li>PostyBirb no longer pulls any assets from the internet anymore (was pulling Material Icons prior).</li>
+    </ul>
+    <div>0.7.5</div>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Weasyl won't report a failure when the title has an apostrophe.</li>
+      <li>Twitter should now work again due to changes they made.</li>
+    </ul>
+    <h4>0.7.4</h4>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Fixed issue where loading a template would not load correctly.</li>
+      <li>Fixed issue where not selecting a category for a DeviantArt story would fail to post.</li>
+    </ul>
+    <h4>0.7.3 (04/13/2018)</h4>
+    <h5>New Features</h5>
+    <ul>
+      <li>Submissions in gallery will now highlight it's pair if editing.</li>
+      <li>More UI Changes (thanks for the feedback so far!)</li>
+      <li>Submissions will now directly save to the gallery when pressing "save".</li>
+      <li>Using :iconUsername: will now use correct format for DeviantArt.</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>App will no longer use default description if custom has a length of 0.</li>
+      <li>e621 should no longer report failure on successful posts.</li>
+    </ul>
+    <h5>Miscellaneous</h5>
+    <ul>
+      <li>Profile has been renamed to Template (suggested by Blitzdrachin) to hopefully make more sense.</li>
+      <li>Editing bar for PostyBirb form will now always be showing.</li>
+      <li>No longer have to scroll through the PostyBirb Form.</li>
+      <li>Templates can now be named with 4 letters now.</li>
+    </ul>
+    <h4>0.7.2 (04/10/2018)</h4>
+    <h5>New Features</h5>
+    <ul>
+      <li>PostyBirb will now save in-progress changes in the editing gallery.</li>
+      <li>Added ability to specify which submissions to apply edits to when saving edits.</li>
+      <li>Edit form no longer in a popup. (suggested by user feedback)</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Fixed issue where new profiles wouldn't show up in existing submission menu's.</li>
+      <li>Fixed issue where pasting in tags would trick the tag input into thinking it was just one tag.</li>
+      <li>Fixed issue where scheduling time would not work sometimes.</li>
+    </ul>
+    <h5>Miscellaneous</h5>
+    <ul>
+      <li>Time to post now has a tooltip that shows the selected time since it gets cut off a lot due to size.</li>
+      <li>Minor under the hood optimizations.</li>
+    </ul>
+    <h4>0.7.1 (04/04/2018)</h4>
+    <h5>New Features</h5>
+    <ul>
+      <li>Inkbunny is now supported in JournalBirb.</li>
+      <li>
+        UI Overhaul that should hopefully be easier to use.
+        <ul>
+          <li>Old profiles will no longer work.</li>
+          <li>Old saved submissions will no longer work.</li>
+        </ul>
+      </li>
+      <li>App will try a little harder to check website status. Still can't do much for Cloudflare.</li>
+      <li>Summary window added for submissions.</li>
+      <li>Description option that disables extra parsing of text.</li>
+      <li>Option to completely overwrite default tags.</li>
+      <li>
+        Added an emergency stop button during posting
+        <ul>
+          <li>This will stop the posting immediately.</li>
+          <li>It is on you to clean up whatever was posted already.</li>
+        </ul>
+      </li>
+      <li>'Stop' button in posting screen will now stop a submission if all websites are marked as initializing.</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>FurryNetwork authentication should be a little more stable.</li>
+      <li>JournalBirb bug where description count was updating incorrectly.</li>
+      <li>PostyBirb bug where description count was updating incorrectly.</li>
+      <li>Pixiv taglock correctly settting.</li>
+      <li>Tumblr descriptions should parse a little better now. (linebreaks)</li>
+      <li>Fixed bug where No Free Download option for DeviantArt was inverted.</li>
+    </ul>
+    <h5>Miscellaneous</h5>
+    <ul>
+      <li>More refactoring.</li>
+      <li>Logs section currently disabled since it's never really used.</li>
+      <li>Electron updated.</li>
+      <li>Translations touched up a bit.</li>
+      <li>UI should be a little more responsive.</li>
+      <li>Ko-Fi link now opens in client browser.</li>
+      <li>Changed license to BSD-3 (found in license section)</li>
+    </ul>
+    <h4>0.6.1 (03/09/2018)</h4>
+    <ul>
+      <li>App will now regularly attempt to clear cache which should hopefully keep it from eating too much memory.</li>
+      <li>Fixed bug where scheduled submissions could double post.</li>
+      <li>Fixed issue where scheduled submissions might never submit.</li>
+    </ul>
+    <h4>0.6.0</h4>
+    <h5>New Features</h5>
+    <ul>
+      <li>SoFurry will now use BBCode for PostyBirb and JournalBirb.</li>
+      <li>Added character/letter counter to JournalBirb + Updated the ones used in PostyBirb.</li>
+      <li>Date picker for scheduling posts now allows you to actually clear text from it.</li>
+      <li>e621 will now correctly tag images based on rating (rating:s, rating:q, rating:e).</li>
+    </ul>
+    <h5>Bug Fixes</h5>
+    <ul>
+      <li>Increased wait time between each Fur Affinity post in hopes to avoid silent failures when posting many at once.</li>
+      <li>Attempt to fix links for FurryNetwork markdown.</li>
+      <li>Attempt to fix issue with descriptions being removed when closing custom description boxes.</li>
+      <li>Another code refactor (again I hope it broke nothing major).</li>
+      <li>Fixed issue where selecting a DeviantArt folder would break saving a submission.</li>
+      <li>e621 will now correctly set ratings for Extreme content.</li>
+      <li>Things should no longer break when changing screens when using multi-file screen.</li>
+    </ul>
+    <h4>0.5.9 (02/15/2018)</h4>
+    <ul>
+      <li>Fixed issue where blog name was not being correctly set for tumblr</li>
+    </ul>
+    <h4>0.5.8 (02/14/2018)</h4>
+    <ul>
+      <li>Bug fixes</li>
+      <li>Code refactor (hopefully nothing broke that I missed)</li>
+      <li>Patreon supports paid content option</li>
+      <li>Patreon can now be used in JournalBirb too</li>
+    </ul>
+    <h4>0.5.7 (02/09/2018)</h4>
+    <ul>
+      <li>Patreon is now supported (very simple options supported)</li>
+      <li>JournalBirb is now fleshed out (no patreon yet)</li>
+      <li>Added new homescreen/dashboard</li>
+      <li>Form information will now save for PostyBirb (not when closed, only when going to another section (e.g. JournalBirb))</li>
+      <li>Miscellaneous bug fixes</li>
+    </ul>
+    <h4>0.5.4 (2/05/2018)</h4>
+    <ul>
+      <li>Fixed issue where text wouldn't translate correctly for people with spanish as default language.</li>
+      <li>Added right click context menu for copy/cut/paste/etc. It is kind of minimal.</li>
+      <li>Hopefully made the multi-upload a little more clear for its requirements.</li>
+      <li>Made posting a smidge faster (milliseconds).</li>
+      <li>Replaced old Twitter service so hopefully it should be more stable now.</li>
+      <li>Changed installation types (exe, dmg, appimage).</li>
+    </ul>
+    <h4>0.5.3</h4>
+    <ul>
+      <li>Miscellaneous bug fixes.</li>
+      <li>Changed how logging is saved (optional).</li>
+    </ul>
+    <h4>0.5.2 (01/29/2018)</h4>
+    <ul>
+      <li>Under the hood changes (shouldn't break anything I hope).</li>
+      <li>Bug fix for things not posting correctly if loaded in from storage.</li>
+      <li>Other miscellaneous bug fixes.</li>
+      <li>JournalBirb sorta started.</li>
+      <li>Description parsing for Weasyl made a little better.</li>
+      <li>Removed most pink and replaced with a nicer blue.</li>
+      <li>Should load a fraction faster now on startup (might not be noticable).</li>
+    </ul>
+    <h4>0.5.0 (01/01/2017)</h4>
+    <ul>
+      <li>Complete rewrite of PostyBirb.</li>
+      <li>
+        Scheduling added. (Found in Scheduled Submissions tab)
+        <ul>
+          <li>If a submission fails to post it will be sent to the submission gallery.</li>
+        </ul>
+      </li>
+      <li>More customization for tags and description for all websites.</li>
+      <li>Application will now save unposted and/or scheduled submissions.</li>
+      <li>Fixed issue with SoFurry not getting folders sometimes.</li>
+      <li>Furry Network should not support account profiles (in extra options).</li>
+      <li>Authentication of websites should be a little less annoying now.</li>
+      <li>Inkbunny will now allow some audio files to be posted.</li>
+      <li>Application will disallow posting to certain websites based on the file chosen.</li>
+      <li>Can upload pictures from clipboard (copy/paste) although these will not save if app is shutdown.</li>
+      <li>Ability to create a profile for posting.</li>
+      <li>Multi-upload ability to select multiple files at once.</li>
+      <li>Many many new advanced options per website.</li>
+      <li>FurryNetwork and SoFurry will now allow .txt files to be used for story submissions.</li>
+    </ul>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button="mat-raised-button" color="warn" mat-dialog-close="mat-dialog-close">{{'Close' | translate}}</button>
+</mat-dialog-actions>

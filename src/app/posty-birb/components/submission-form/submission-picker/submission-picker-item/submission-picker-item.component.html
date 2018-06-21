@@ -1,0 +1,11 @@
+<div class="picker-item" [class.selected]="isSelected" (click)="this.toggle()" [title]="title" *ngIf="src">
+  <img [src]="src | safe" [alt]="title" *ngIf="type.includes('image') || !type.includes('video')">
+  <video [src]="src | safe" [alt]="title" [type]="type" *ngIf="type.includes('video')"></video>
+  <div class="invalid-icons">
+    <mat-icon color="warn" *ngIf="invalidFlags.hasInvalid" [matTooltip]="getInvalidWebsites()" matTooltipPosition="above">warning</mat-icon>
+    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByRating.length > 0" [matTooltip]="'Unsupported rating' | translate" matTooltipPosition="above">explicit</mat-icon>
+    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByType.length > 0" [matTooltip]="'Unsupported submission type' | translate" matTooltipPosition="above">format_clear</mat-icon>
+    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByExtension.length > 0" [matTooltip]="'Unsupported file type' | translate" matTooltipPosition="above">attach_file</mat-icon>
+    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByFileSize.length > 0" [matTooltip]="'Unsupported file size' | translate" matTooltipPosition="above">photo_size_select_large</mat-icon>
+  </div>
+</div>

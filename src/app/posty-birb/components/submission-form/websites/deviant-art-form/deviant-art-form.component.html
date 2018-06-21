@@ -1,0 +1,64 @@
+<div class="website-form">
+  <form [formGroup]="form">
+    <div name="description" *ngIf="tab.isActive">
+      <h5>{{'Description' | translate}}</h5>
+      <description-field class="clearfix" formControlName="description" [defaultDescription]="defaultDescription"></description-field>
+    </div>
+    <div name="tags">
+      <h5>{{'Tags' | translate}}</h5>
+      <tag-field class="clearfix w-100" formControlName="tags" [defaultTags]="defaultTags"></tag-field>
+    </div>
+  </form>
+  <div name="options" *ngIf="tab.isActive">
+    <h5>{{'Additional Options' | translate}}</h5>
+    <form [formGroup]="optionsForm" class="options-form">
+      <div class="row no-gutters">
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="feature">{{'Feature' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="disableComments">{{'Disable Comments' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="stashOnly">{{'Sta.sh Only' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="critique">{{'Critique' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="freeDownload">{{'No Free Download' | translate}}</mat-checkbox>
+        </div>
+      </div>
+      <div class="row no-gutters">
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <deviant-art-folders formControlName="folders"></deviant-art-folders>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="matureClassification" [placeholder]="'Mature Category' | translate" multiple>
+              <mat-option value="nudity">{{'Nudity' | translate}}</mat-option>
+              <mat-option value="sexual">{{'Sexual Themes' | translate}}</mat-option>
+              <mat-option value="gore">{{'Gore/Violence' | translate}}</mat-option>
+              <mat-option value="language">{{'Strong Language' | translate}}</mat-option>
+              <mat-option value="ideology">{{'Ideology' | translate}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="matureLevel" [placeholder]="'Mature Content' | translate">
+              <mat-option value="">None</mat-option>
+              <mat-option value="moderate">{{'Moderate' | translate}}</mat-option>
+              <mat-option value="strict">{{'Strict' | translate}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="row no-gutters">
+        <div class="col-md-12 col-lg-12 col-xl-12">
+          <deviant-art-category-select formControlName="category"></deviant-art-category-select>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+*node_modules/*
+*package-lock.json*
+postybirb/package-lock.json
+dist/
+PBA/
+electron-dist/

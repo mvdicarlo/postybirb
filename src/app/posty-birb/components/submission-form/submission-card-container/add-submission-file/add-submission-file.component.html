@@ -1,0 +1,9 @@
+<div class="add-btn-container" [matTooltip]="'Add Files Button Tooltip' | translate" (drop)="fileDrop($event)">
+  <input #fileInput type="file" class="hidden" (change)="filesSelected($event)" multiple>
+  <button mat-button color="primary" class="no-outline file-btn" (click)="fileInput.click()">
+    <mat-icon class="add-btn-icon">add</mat-icon>
+  </button>
+  <button mat-button color="primary" class="no-outline clipboard-btn" (click)="copyFromClipboard()" [disabled]="!enableClipboardCopy()">
+    {{'Add From Clipboard' | translate}}
+  </button>
+</div>

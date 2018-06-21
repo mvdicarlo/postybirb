@@ -1,0 +1,33 @@
+<div class="website-form">
+  <form [formGroup]="form">
+    <div name="description" *ngIf="tab.isActive">
+      <h5>{{'Description' | translate}}</h5>
+      <description-field class="clearfix" formControlName="description" [defaultDescription]="defaultDescription"></description-field>
+    </div>
+    <div name="tags">
+      <h5>{{'Tags' | translate}}</h5>
+      <tag-field class="clearfix w-100" formControlName="tags" [defaultTags]="defaultTags" [minimumTags]="2"></tag-field>
+    </div>
+  </form>
+  <div name="options" *ngIf="tab.isActive">
+    <h5>{{'Additional Options' | translate}}</h5>
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="notify">{{'Notify' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="critique">{{'Critique' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="friendsOnly">{{'Friends Only' | translate}}</mat-checkbox>
+        </div>
+      </div>
+      <div class="row no-gutters">
+        <div class="col-md-3 col-lg-3 col-xl-3">
+          <weasyl-folders formControlName="folder"></weasyl-folders>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

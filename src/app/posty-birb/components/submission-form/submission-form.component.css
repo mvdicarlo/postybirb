@@ -1,0 +1,9 @@
+.selected-box {
+  margin: 0 10px;
+}
+
+.selected-container {
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}

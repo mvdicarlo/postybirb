@@ -1,0 +1,6 @@
+<span>
+  <button mat-button [color]="color" (click)="toggle()">{{toggled ? offLabel : onLabel}}</button>
+  <div *ngIf="toggled">
+    <ng-content></ng-content>
+  </div>
+</span>

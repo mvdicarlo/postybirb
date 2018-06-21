@@ -1,0 +1,9 @@
+<h2 mat-dialog-title>{{data.title | translate}}</h2>
+<mat-dialog-content class="window">
+  {{'Confirm Action' | translate}}
+  <div *ngIf="data.option">{{data.option | translate}}</div>
+</mat-dialog-content>
+<mat-dialog-actions align="right">
+  <button mat-raised-button color="primary" mat-dialog-close>{{'No' | translate}}</button>
+  <button mat-raised-button color="primary" (click)="dialogRef.close(true)">{{'Yes' | translate}}</button>
+</mat-dialog-actions>

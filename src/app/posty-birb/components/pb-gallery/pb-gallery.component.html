@@ -1,0 +1,9 @@
+<mat-card>
+  <mat-card-content>
+    <submission-gallery></submission-gallery>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-button (click)="openSettings()" class="d-none">{{'Settings' | translate}}</button>
+    <mat-slide-toggle [checked]="isAdvertiseEnabled()" (change)="toggleGlobalAdvertise($event)">{{ 'Advertise' | translate }}</mat-slide-toggle>
+  </mat-card-actions>
+</mat-card>

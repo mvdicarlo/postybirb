@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <base href="./">
+    <title>Postybirb</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./vendors/jquery/jquery.min.js"></script>
+    <script src="./vendors/ckeditor/ckeditor.js"></script>
+  </head>
+
+  <body style="background-image: url('./assets/other-images/load_icon.jpg') !important;">
+    <app-root></app-root>
+    <script>
+      window.addEventListener('dragover', (e) => {
+        e.preventDefault();
+      });
+      window.addEventListener('drop', (e) => {
+        e.preventDefault();
+      });
+    </script>
+  </body>
+
+</html>

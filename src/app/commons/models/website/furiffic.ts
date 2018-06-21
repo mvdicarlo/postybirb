@@ -1,0 +1,189 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Website } from '../../interfaces/website.interface';
+import { BaseWebsite } from './base-website';
+import { SupportedWebsites } from '../../enums/supported-websites';
+import { WebsiteStatus } from '../../enums/website-status.enum';
+import { HTMLParser } from '../../helpers/html-parser';
+import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
+import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/operator/retry';
+
+@Injectable()
+export class Furiffic extends BaseWebsite implements Website {
+  private userInfo: any = {};
+
+  constructor(private http: HttpClient) {
+    super(SupportedWebsites.Furiffic, 'https://www.furiffic.com');
+    this.mapping = {
+      rating: {
+        General: 'tame',
+        Mature: 'mature',
+        Explicit: 'adult',
+        Extreme: 'adult',
+      },
+      content: {
+        Artwork: 'submission',
+        Story: 'story',
+        Poetry: 'poetry',
+        Music: 'music',
+        Animation: 'flash',
+      }
+    };
+  }
+
+  getStatus(): Promise<WebsiteStatus> {
+    return new Promise(resolve => {
+      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+        .subscribe(page => {
+          if (page.includes('logout')) this.loginStatus = WebsiteStatus.Logged_In;
+          else this.loginStatus = WebsiteStatus.Logged_Out;
+          resolve(this.loginStatus);
+        }, err => {
+          this.loginStatus = WebsiteStatus.Offline;
+          resolve(this.loginStatus);
+        });
+    });
+  }
+
+  getUser(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+        .subscribe(page => {
+          try {
+            const username = page.match(/src=".*com\/accounts\/.*s/gm)[0].split('"')[1].split('/')[4].trim() || null;
+            this.userInfo.username = username;
+            resolve(username);
+          } catch (e) { reject(Error('Unable to get username')) }
+        }, err => reject(Error(`Unable to access ${this.websiteName}`)));
+    });
+  }
+
+  post(submission: PostyBirbSubmissionData): Observable<any> {
+    return new Observable(observer => {
+      const file = submission.submissionData.submissionFile.getRealFile();
+
+      const preForm = new FormData();
+      preForm.set('items[0][name]', file.name);
+      preForm.set('items[0][mimeType]', file.type);
+      preForm.set('items[0][size]', file.size);
+      preForm.set('items[0][clientId]', '0');
+
+      this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/preupload`, preForm)
+        .subscribe(preUploadResponse => {
+          const id = preUploadResponse[0].id;
+
+          const uploadFile = new FormData();
+          uploadFile.set('file', submission.submissionData.submissionFile.getRealFile());
+          uploadFile.set('id', id);
+
+          this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/upload`, uploadFile)
+            .subscribe(() => {
+              const retrieveUploadDataForm = new FormData();
+              retrieveUploadDataForm.set('mediaIds[]', id);
+
+              this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/uploaddata`, retrieveUploadDataForm)
+                .subscribe(uploadData => {
+                  const editForm = new FormData();
+                  editForm.set('rating', this.getMapping('rating', submission.submissionData.submissionRating));
+                  editForm.set('name', submission.submissionData.title.substring(0, 30));
+                  editForm.set('category', uploadData[0].category);
+                  editForm.set('visibility', 'public');
+                  editForm.set('folderVisibility', 'any');
+                  editForm.set('description', `${submission.description || ''}`);
+
+                  if (submission.submissionData.thumbnailFile && submission.submissionData.thumbnailFile.getRealFile()) {
+                    editForm.set('thumbnailFile', submission.submissionData.thumbnailFile.getRealFile());
+                    editForm.set('thumbnail[size][height]', '375');
+                    editForm.set('thumbnail[size][width]', '300');
+                    editForm.set('thumbnail[center][x]', '150');
+                    editForm.set('thumbnail[center][y]', '187.5');
+                    editForm.set('thumbnail[scale]', '0');
+                  }
+
+                  const tags = this.formatTags(submission.defaultTags, submission.customTags);
+                  tags.forEach((tag) => {
+                    editForm.append('tags[]', tag);
+                  });
+
+                  this.http.post(`${this.baseURL}/${this.userInfo.username}/edit/${id}`, editForm, { responseType: 'text' })
+                    .subscribe(() => {
+                      const publish = new FormData();
+                      publish.set('ids[]', id);
+                      this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/publish`, publish)
+                        .subscribe(() => {
+                          observer.next(true);
+                          observer.complete();
+                        }, err => {
+                          observer.error(this.createError(err, submission));
+                          observer.complete();
+                        });
+                    }, err => {
+                      observer.error(this.createError(err, submission));
+                      observer.complete();
+                    });
+                }, err => {
+                  observer.error(this.createError(err, submission));
+                  observer.complete();
+                });
+            }, err => {
+              observer.error(this.createError(err, submission));
+              observer.complete();
+            });
+        }, err => {
+          observer.error(this.createError(err, submission));
+          observer.complete();
+        });
+    });
+  }
+
+  postJournal(title: string, description: string, options: any): Observable<any> {
+    return new Observable(observer => {
+      this.http.get(`${this.baseURL}/${this.userInfo.username}/journals/create`, { responseType: 'text' }).retry(1)
+        .subscribe(page => {
+          const journalData = new FormData();
+          journalData.set('type', 'textual');
+          journalData.set('name', title);
+          journalData.set('link', '');
+          journalData.set('body', `[p]${description}[/p]`);
+          journalData.set('shortDescription', description.split('.')[0]);
+          journalData.set('thumbnailReset', '');
+          journalData.set('thumbnailFile', '');
+          journalData.set('visibility', 'public');
+          journalData.set('rating', this.getMapping('rating', options.rating));
+
+          const tags = this.formatTags(options.tags);
+          tags.forEach((tag) => {
+            journalData.append('tags[]', tag);
+          });
+
+          let csrf = page.match(/csrfSeed = .*;/g) || [];
+          let csrfValue = '';
+          if (csrf.length > 0) {
+            csrf[0].split('=')[1].replace(';', '').trim();
+          }
+
+          journalData.set('__csrf', csrfValue);
+
+          this.http.post(`${this.baseURL}/${this.userInfo.username}/journals/create`, journalData, { responseType: 'text' })
+            .subscribe(() => {
+              observer.next(true);
+              observer.complete();
+            }, err => {
+              observer.error(this.createError(err, { title, description, options }));
+              observer.complete();
+            });
+        }, err => {
+          observer.error(this.createError(err, { title, description, options }));
+          observer.complete();
+        });
+    });
+  }
+
+  formatTags(defaultTags: string[] = [], other: string[] = []): any {
+    const tags = [...defaultTags, ...other];
+    return tags.map((tag) => {
+      return tag.trim().replace(/-/gm, ' ').replace(/(\/|\\)/gm, ' ');
+    }).slice(0, 30);
+  }
+}

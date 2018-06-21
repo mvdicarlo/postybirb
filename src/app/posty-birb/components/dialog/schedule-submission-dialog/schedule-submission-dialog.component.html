@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>{{'Schedule' | translate}}</h2>
+<mat-dialog-content>
+  <div class="col-md-12">
+    <form [formGroup]="form">
+      <label>{{'Schedule Submission' | translate}}</label>
+      <br>
+      <input style="color: black;" formControlName="scheduledDate" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [min]="minDate" [placeholder]="'Time to post' | translate">
+      <owl-date-time #dt1></owl-date-time>
+    </form>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions align="right">
+  <button mat-raised-button color="primary" mat-dialog-close>{{'No' | translate}}</button>
+  <button mat-raised-button color="primary" (click)="acceptSubmission()">{{'Yes' | translate}}</button>
+</mat-dialog-actions>

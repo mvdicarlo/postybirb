@@ -1,0 +1,97 @@
+@import "app/website-login/themes/login-theme.css";
+@import "app/posty-birb/themes/posty-birb.css";
+/* You can add global styles to this file, and also import other style files */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: #222 !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+}
+
+@media ( min-width: 1400px) {
+  .container {
+    max-width: 1340px !important;
+  }
+}
+
+.no-side-pad {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.hidden {
+  display: none;
+}
+
+.clearfix {
+  clear: both;
+  display: table;
+  content: "";
+}
+
+.website-form {
+  overflow-y: hidden;
+}
+
+.linked-highlight {
+  border: 2px dashed #fcf98d !important;
+}
+
+/*Scrollbar Styling*/
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: #777;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: #333;
+  border: 1px solid #aaa;
+  background-color: #555;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #fff;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(to left, #22ADD4, #1E98BA);
+}
+
+/* Changes to Material */
+
+.mat-drawer-container {
+  background-color: inherit !important;
+}
+
+nav .mat-expansion-panel-body {
+  padding: 0 !important;
+}
+
+.mat-tab-labels {
+  flex-wrap: wrap;
+}
+
+.mat-tab-label-active {
+  background-color: rgba(187, 222, 251, 0.1) !important;
+}
+
+/*Bad fix for sizing issues in the browser w/ height*/
+
+mat-nav-list, mat-sidenav-content {
+  max-height: 94vh;
+}

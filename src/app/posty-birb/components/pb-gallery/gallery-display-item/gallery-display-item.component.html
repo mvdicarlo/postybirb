@@ -1,0 +1,38 @@
+<div [highlightLinked]="item.getId()" droppable class="draggable-item item" [dropScope]="dragScope" (onDrop)="onItemDrop($event)" [dragHintClass]="'drag-hint'" [dragOverClass]="'drag-highlight'" matTooltip="{{'Drag Tooltip' | translate}}" matTooltipPosition="above">
+  <div class="image" draggable [dragData]="item" [dragScope]="dragScope">
+    <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image') || !file.type.includes('video')">
+    <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
+    <div class="info">
+      <div>
+        <h5>{{title}}</h5>
+        <strong>{{status | translate}}
+          <span *ngIf="schedule">
+            <br>
+            {{schedule | date:'medium'}}
+          </span>
+        </strong>
+      </div>
+      <hr style="border-top:0">
+      <div class="button-row">
+        <button mat-icon-button *ngIf="!isPosted()">
+          <mat-icon (click)="postItem()" matTooltip="{{'Post' | translate}}" matTooltipPosition="above">send</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon (click)="editItem()" matTooltip="{{'Edit' | translate}}" matTooltipPosition="above">mode_edit</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon (click)="scheduleItem()" matTooltip="{{'Schedule' | translate}}" matTooltipPosition="above">alarm</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon (click)="openSummary()" matTooltip="{{'Summary' | translate}}" matTooltipPosition="above">search</mat-icon>
+        </button>
+        <button mat-icon-button>
+          <mat-icon (click)="copyItem()" matTooltip="{{'Copy' | translate}}" matTooltipPosition="above">content_copy</mat-icon>
+        </button>
+        <button mat-icon-button color="warn">
+          <mat-icon (click)="deleteItem()" matTooltip="{{'Delete' | translate}}" matTooltipPosition="above">delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

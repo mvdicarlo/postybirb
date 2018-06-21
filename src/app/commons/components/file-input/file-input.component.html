@@ -1,0 +1,8 @@
+<mat-form-field floatLabel="never" style="width: 100%;" color="accent" (click)="realInput.click()">
+  <input type="text" matInput readonly="true" #fileInput [placeholder]="name" [required]="required" accept="{{accept}}" single>
+
+  <mat-hint *ngIf="maxFileSize > 0" align="end" [class.mat-error]="fileSizeOverLimit">{{currentFileSize}}MB /
+    {{maxFileSize / 1000000}}MB</mat-hint>
+  <mat-hint class="mat-error" *ngIf="!passingRequired && required" align="start">{{'Please provide a file' | translate}}</mat-hint>
+  <input type="file" #realInput single style="display: none;" (change)="changeFromInput($event)">
+</mat-form-field>

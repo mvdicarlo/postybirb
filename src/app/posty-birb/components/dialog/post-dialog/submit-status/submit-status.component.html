@@ -1,0 +1,8 @@
+<div>
+  <img src="{{logo}}" alt="{{website}}" height="30px" width="50px">
+  <span [class.error]="status === 'Failure'" [class.success]="status === 'Success'">
+    <strong>
+      <i>{{status | translate}}</i>
+    </strong>
+  </span>
+</div>

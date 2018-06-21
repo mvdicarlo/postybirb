@@ -1,0 +1,40 @@
+<h2 mat-dialog-title>{{'Contact' | translate}}</h2>
+<mat-dialog-content class="window">
+  <div class="row" style="text-align: center;">
+    <div class="col-md-12">
+      <h3>{{'Bugs' | translate}}</h3>
+      <span>{{'Contact Message' | translate}}</span>
+    </div>
+    <div class="col-md-12">
+      <span>
+        <h4>
+            <button mat-raised-button color="accent" (click)="openContactPage()">Contact Page</button>
+        </h4>
+      </span>
+    </div>
+    <div class="col-md-12">
+      <span>
+        <h4>
+          <button mat-raised-button color="accent" (click)="openFuraffinity()">Fur Affinity</button>
+        </h4>
+      </span>
+    </div>
+    <div class="col-md-12">
+      <span>
+        <h4>
+          <button mat-raised-button color="accent" (click)="openDiscord()">Discord</button>
+        </h4>
+      </span>
+    </div>
+    <div class="col-md-12">
+      <span>
+        <h4>
+          <button mat-raised-button color="accent" (click)="openTwitter()">@Minnownade</button>
+        </h4>
+      </span>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

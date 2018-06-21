@@ -1,0 +1,70 @@
+<nav class="sidebar-container mat-sidenav mat-drawer-side">
+  <ul>
+    <nav>
+      <ul>
+        <li>
+          <a href="#" routerLink="" skipLocationChange>
+            <mat-icon class="align-middle">dashboard</mat-icon>{{'Dashboard' | translate}}
+          </a>
+        </li>
+        <li (click)="openLogin()">
+          <a>
+            <mat-icon class="align-middle">account_box</mat-icon>{{'Login' | translate}}
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <nav>
+      <h3>Apps</h3>
+      <ul>
+        <li *ngFor="let navItem of navItems">
+          <a href="#" routerLink="{{navItem.route}}" skipLocationChange>
+            <mat-icon class="align-middle">{{navItem.icon}}</mat-icon>{{navItem.label | translate}}
+          </a>
+        </li>
+      </ul>
+    </nav>
+    <nav>
+      <mat-expansion-panel [expanded]="false" class="expansion-panel">
+        <mat-expansion-panel-header>{{'Other' | translate}}</mat-expansion-panel-header>
+        <ul>
+          <li (click)="openChangelog()">
+            <a>
+              <mat-icon class="align-middle">assignment</mat-icon>{{'Changelog' | translate}}
+            </a>
+          </li>
+          <li (click)="openPlannedUpdates()">
+            <a>
+              <mat-icon class="align-middle">event_note</mat-icon>{{'Blog' | translate}}
+            </a>
+          </li>
+          <li (click)="openTranslationHelp()">
+            <a>
+              <mat-icon class="align-middle">translate</mat-icon>{{'Help Translate' | translate}}
+            </a>
+          </li>
+          <li (click)="openContact()">
+            <a>
+              <mat-icon class="align-middle">person</mat-icon>{{'Contact' | translate}}
+            </a>
+          </li>
+          <li (click)="openDonate()">
+            <a>
+              <mat-icon class="align-middle">monetization_on</mat-icon>{{'Donate' | translate}}
+            </a>
+          </li>
+          <li (click)="openLicense()">
+            <a>
+              <mat-icon class="align-middle">description</mat-icon>{{'License' | translate}}
+            </a>
+          </li>
+          <li>
+            <a href="#" routerLink="/settings" skipLocationChange>
+              <mat-icon class="align-middle">settings</mat-icon>{{'Settings' | translate}}
+            </a>
+          </li>
+        </ul>
+      </mat-expansion-panel>
+    </nav>
+  </ul>
+</nav>

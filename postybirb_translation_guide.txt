@@ -1,0 +1,371 @@
+PostyBirb Translation Guide
+
+Each text translation that occurs in PostyBirb is in this file.
+Please put the relevant translation beneath the text being translated.
+Please specify the language it is being translated to.
+
+LANGUAGE: <Language being translated to>
+TRANSLATOR: <Person to be credited>
+
+-----------------------------------------------------------------------
+
+"Accepted Files"
+
+"Accepted Ratings"
+
+"Accepted Type"
+
+"Add Files"
+
+"Add From Clipboard"
+
+"Additional Options"
+
+"Adult"
+
+"All"
+
+"All Ages"
+
+"Allow Community Tags"
+
+"Animation"
+
+"Apply Edits"
+
+"Apply Template"
+
+"Artwork"
+
+"Authentication Failed"
+
+"Available Websites"
+
+"Block Guests"
+
+"By using PostyBirb you agree to the Terms of Service and Rules of the sites that you are posting to. You are responsible for everything you post."
+
+"Category"
+
+"Change file"
+
+"Changelog"
+
+"Charge Patrons"
+
+"Clear"
+
+"Clear All"
+
+"Clear Scheduled"
+
+"Clear Templates"
+
+"Clear Unscheduled"
+
+"Close"
+
+"Confirm Action"
+
+"Contact"
+
+"Contact me on one of these sites:"
+
+"Copy"
+
+"Copy Submission"
+
+"Create Template"
+
+"Critique"
+
+"Dashboard"
+
+"Default Description"
+
+"Default Tags"
+
+"Delete"
+
+"Delete Template"
+
+"Description"
+
+"Description Help"
+
+"Disable"
+
+"Disable Comments"
+
+"Donate"
+
+"Donations incentivize me to continue to keep PostyBirb updated."
+
+"Draft"
+
+"Drag to reorder"
+
+"Drag with your mouse or hold Shift or Ctrl (Command) to select multiple files."
+
+"Duplicate tag ({{tag}}) ignored"
+
+"Edit"
+
+"Edit Selected"
+
+"Edit Submissions"
+
+"Emergency Stop"
+
+"Enabled"
+
+"Extreme"
+
+"Failed"
+
+"Failure"
+
+"Feature"
+
+"Friends Only"
+
+"Gender"
+
+"General"
+
+"Gore/Violence"
+
+"Group Only"
+
+"Help"
+
+"Help Advertise PostyBirb"
+
+"Help Translate"
+
+"Hidden"
+
+"Ideology"
+
+"Incorrect username or password."
+
+"Initializing"
+
+"Invalid for selected websites"
+
+"License"
+
+"Load Template"
+
+"Login"
+
+"Logout"
+
+"Logs"
+
+"Mature"
+
+"Mature Category"
+
+"Mature Content"
+
+"Minimum Pledge"
+
+"Minors"
+
+"Moderate"
+
+"Music"
+
+"New"
+
+"No"
+
+"No Free Download"
+
+"None"
+
+"Not Logged In"
+
+"Notify"
+
+"Nudity"
+
+"Offline"
+
+"Open"
+
+"Original Work"
+
+"Other"
+
+"Overwrite Default"
+
+"Password"
+
+"Please provide a file"
+
+"Please provide at least "
+
+"Please provide at least {{min}} tags"
+
+"Please separate each tag with a comma (one, two, three)"
+
+"Post"
+
+"Post All"
+
+"Post a journal or status to one or more websites from one simple form"
+
+"Posted"
+
+"Posting"
+
+"Posting will stop after current submission finishes."
+
+"PostyBirb Post Logs"
+
+"PostyBirb Settings"
+
+"PostyBirb has been provided free because I cannot guarantee optimal functionality at all times."
+
+"Public"
+
+"Rating"
+
+"Refresh"
+
+"Remove"
+
+"Reset All"
+
+"Save"
+
+"Save Template"
+
+"Save current form to allow it to be reused in future submissions"
+
+"Save submissions to the gallery for posting"
+
+"Schedule"
+
+"Schedule Submission"
+
+"Schedule or post multimedia submissions to multiple websites all at once from one simple form"
+
+"Scheduled Submissions"
+
+"Select Blog"
+
+"Select Folder"
+
+"Select Profile"
+
+"Selected"
+
+"Selected Websites"
+
+"Settings"
+
+"Sexual Content"
+
+"Sexual Themes"
+
+"Show Password"
+
+"Something not working right?"
+
+"Source URL"
+
+"Species"
+
+"Sta.sh Only"
+
+"Status"
+
+"Stop"
+
+"Stop On Failure"
+
+"Stop the next submissions from being posted"
+
+"Story"
+
+"Strict"
+
+"Strong Language"
+
+"Submission Failed"
+
+"Submission Gallery"
+
+"Submission Help"
+
+"Submission Posted"
+
+"Submission Type"
+
+"Submission did not post successfully. Would you like to stop?"
+
+"Success"
+
+"Summary"
+
+"Tags"
+
+"Tags that will be sent to all websites unless overwritten"
+
+"Template Name"
+
+"Text will not be reformatted when posting"
+
+"Theme"
+
+"This description will be used for all websites checked to use default"
+
+"Thumbnail"
+
+"Time to post"
+
+"Title"
+
+"Unauthorize"
+
+"Unlisted"
+
+"Unposted"
+
+"Unselected"
+
+"Unsupported file size"
+
+"Unsupported file type"
+
+"Unsupported rating"
+
+"Unsupported submission type"
+
+"Update Available"
+
+"Use BBCode to format"
+
+"Use Default"
+
+"Use basic editor"
+
+"Username"
+
+"Using Default"
+
+"Website"
+
+"Website Offline"
+
+"Yes"
+
+"Your password is not stored."
+
+"{{value}} failed to post"
+
+"{{value}} posted successfully"
+

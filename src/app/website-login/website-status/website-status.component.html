@@ -1,0 +1,9 @@
+<div class="col-md-12">
+  <strong>
+    <span *ngIf="info.status === -1" style="color: red;">{{'Website Offline' | translate}}</span>
+    <span *ngIf="info.status === 0">{{'Not Logged In' | translate}}</span>
+    <span *ngIf="info.status === 1" style="color: green;">
+      {{info.username | uppercase}}
+    </span>
+  </strong>
+</div>

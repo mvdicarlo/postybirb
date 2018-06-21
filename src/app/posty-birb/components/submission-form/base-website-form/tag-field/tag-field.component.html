@@ -1,0 +1,30 @@
+<form [formGroup]="form">
+  <div *ngIf="allowOverwrite">
+    <mat-checkbox formControlName="overwrite">{{'Overwrite Default' | translate}}</mat-checkbox>
+  </div>
+  <div style="display: flex">
+    <mat-form-field color="accent" class="w-100" (click)="tagInput.focus()">
+      <mat-chip-list #chipList>
+        <mat-chip *ngFor="let tag of form.value.tags" [selectable]="true" [removable]="true" (remove)="removeTag(tag)">
+          {{tag}}
+          <mat-icon matChipRemove>cancel</mat-icon>
+        </mat-chip>
+      </mat-chip-list>
+      <input #tagInput style="width: 100%;" [placeholder]="'Comma Separate Tags' | translate" [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="true" (matChipInputTokenEnd)="addTag($event)" [required]="!form.value.overwrite && minimumTags > 0">
+      <mat-hint class="mat-error" *ngIf="!validateTagCount()">{{'Please Provide Min' | translate}}{{minimumTags}}</mat-hint>
+      <mat-hint align="end">
+        <span *ngIf="maxLength === 0">
+          {{calculateTotalTags()}}
+          /
+          {{maximumTags}}
+        </span>
+        <span *ngIf="maxLength > 0" [class.mat-error]="form.value.tags.join(' ').length > maxLength">
+          {{calculateTotalTagCharacterLength()}}
+          /
+          {{maxLength}}
+        </span>
+      </mat-hint>
+    </mat-form-field>
+    <button mat-button color="warn" (click)="clearTags()">{{'Clear' | translate}}</button>
+  </div>
+</form>

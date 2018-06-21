@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>{{'Donate' | translate}}</h2>
+<mat-dialog-content class="window">
+  <span>{{'Donate Reason' | translate}}</span>
+  <br>
+  <span>{{'Donate Incentive' | translate}}</span>
+  <br>
+  <h4>
+    <button mat-raised-button color="accent" (click)="openPayPal()">PayPal</button>
+  </h4>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

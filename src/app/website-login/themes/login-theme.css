@@ -1,0 +1,15 @@
+/* Login Windows */
+
+.login-window {
+  height: 100%;
+  width: 100%;
+  overflow: hidden !important;
+  margin: 0 0 24px 0 !important;
+  padding: 0 !important;
+}
+
+.login-webview-window {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}

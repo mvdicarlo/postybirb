@@ -1,0 +1,37 @@
+<div class="row no-gutters">
+  <div name="help_button" class="col-md-3 col-lg-3 col-xl-2">
+    <button type="button" matInput mat-raised-button color="accent" (click)="toggleHelp()">{{'Description Help' | translate}}</button>
+  </div>
+  <div *ngIf="!toggle">
+    <div class="col-md-2"></div>
+    <div class="col-md-10">
+      <div>
+        <strong>Linking Usernames</strong>
+        <br>
+        <code>
+          <em>: + website code + username + :</em>
+        </code>
+        <br>
+        <code>
+          <em>Example: :falemonynade:</em>
+        </code>
+        <div>
+          <strong>Website Codes</strong>
+          <ul style="column-count: 3; list-style: none;">
+            <li>DeviantArt -&gt; da</li>
+            <li>Furaffinity -&gt; fa</li>
+            <li>FurryNetwork -&gt; fn</li>
+            <li>Furiffic -&gt; fr</li>
+            <li>InkBunny -&gt; ib</li>
+            <li>Patreon -&gt; pa</li>
+            <li>Picarto -&gt; pic</li>
+            <li>SoFurry -&gt; sf</li>
+            <li>Tumblr -&gt; tu</li>
+            <li>Twitter -&gt; tw</li>
+            <li>Weasyl -&gt; ws</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

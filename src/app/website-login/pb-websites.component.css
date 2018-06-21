@@ -1,0 +1,7 @@
+.login-box {
+  height: 100%;
+}
+
+.login-box+.login-box {
+  margin-top: 4px;
+}

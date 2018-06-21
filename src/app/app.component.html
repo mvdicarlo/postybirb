@@ -1,0 +1,64 @@
+<ng-snotify></ng-snotify>
+<div class="container-fluid full-window">
+  <div class="row no-gutters">
+    <div class="col-lg-12 no-side-pad toolbar">
+      <mat-toolbar color="primary" class="mat-elevation-z6">
+        <div class="toolbar-content">
+          <div class="toolbar-buttons">
+            <button mat-icon-button="mat-icon-button" (click)="toggleSidebar()" class="no-outline">
+              <mat-icon>menu</mat-icon>
+            </button>
+            <button mat-button="mat-button" (click)="loginPanel.toggle()">{{'Login' | translate}}</button>
+          </div>
+          <div class="toolbar-app-icon">
+            <img src="./assets/icon/minnowicon.png" alt="PostyBirb Icon">
+            <h3>PostyBirb</h3>
+            <span class="version-number">{{version}}</span>
+          </div>
+        </div>
+        <div class="kofi">
+          <button title="Support me on ko-fi.com" mat-button="mat-button" (click)="openURL('http://ko-fi.com/A81124JD')">
+            <span>
+              <img src="https://ko-fi.com/img/cuplogo.svg" style="height: 20px;">
+            </span>
+            <span>
+              Buy Me a Coffee
+            </span>
+          </button>
+        </div>
+      </mat-toolbar>
+    </div>
+  </div>
+  <div class="row no-gutters full-height">
+    <div class="col-lg-2 col-xl-2 col-md-2 full-height width-toggle sidebar-section" [class.closed-sidebar]="!showSidebar">
+      <div class="row no-gutters sidebar">
+        <div class="col-md-12 col-lg-12 col-xl-12">
+          <sidebar (login)="loginPanel.toggle()"></sidebar>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg col-xl col-md full-height no-side-pad main-section">
+      <div class="row no-gutters main-content">
+        <div class="col-xl-12 col-lg-12 col-md-12">
+          <mat-sidenav-container color="primary">
+            <mat-sidenav #loginPanel>
+              <mat-nav-list style="overflow-x: hidden;">
+                <pb-websites></pb-websites>
+              </mat-nav-list>
+            </mat-sidenav>
+            <router-outlet></router-outlet>
+          </mat-sidenav-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <select class='language-select' name="language_select" id="language_select" title='Language Select' (change)="switchLanguage($event.target.value)">
+    <option value="en" selected="selected">EN</option>
+    <option value="es">ES</option>
+    <option value="fi">FI</option>
+    <option value="pt">PT</option>
+  </select>
+</div>

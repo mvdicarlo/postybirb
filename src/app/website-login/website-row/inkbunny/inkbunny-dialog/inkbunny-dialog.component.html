@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>Inkbunny</h2>
+<mat-dialog-content class="login-window">
+  <form [formGroup]="loginForm">
+    <div *ngIf="!isLoggedIn">
+      <h4>{{'Your password is not stored.' | translate}}</h4>
+      <h5>{{'You must enable this option in your Inkbunny account settings' | translate}}</h5>
+      <img src="./assets/help-pictures/ib_api.png" alt="Enable Inkbunny API">
+      <div *ngIf="invalidLoginCredentials" class="mat-error">
+        <h3>{{'Invalid Login' | translate}}</h3>
+      </div>
+      <mat-form-field class="w-100" color="accent">
+        <input type="text" matInput placeholder="{{'Username' | translate}}" formControlName="username" required>
+      </mat-form-field>
+      <mat-form-field class="w-100" color="accent">
+        <input #passwordInput type="password" matInput placeholder="{{'Password' | translate}}" formControlName="password" required>
+      </mat-form-field>
+      <mat-checkbox (change)="showPassword($event)">{{'Show Password' | translate}}</mat-checkbox>
+      <br>
+      <button mat-raised-button color="primary" (click)="submitLogin()">{{'Login' | translate}}</button>
+    </div>
+    <div *ngIf="isLoggedIn">
+      <button mat-raised-button color="warn" (click)="submitLogout()">{{'Logout' | translate}}</button>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

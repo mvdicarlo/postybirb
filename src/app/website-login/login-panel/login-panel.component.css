@@ -1,0 +1,36 @@
+.login-panel {
+  border-radius: 6px;
+  margin: 0 2%;
+  background-color: #222;
+  height: 10vh;
+}
+
+@media screen and ( max-height: 800px) {
+  .login-panel {
+    height: 12vh;
+  }
+}
+
+.login-panel-header {
+  height: 40%;
+  background-color: #333;
+  border-radius: 4px 4px 0px 0px;
+}
+
+.login-panel-header img {
+  float: left;
+  height: 100%;
+  width: auto;
+  margin: 0 4px;
+}
+
+.login-panel-header button {
+  float: right;
+  font-weight: bold;
+  height: 100%;
+}
+
+.login-panel-content {
+  max-height: 60%;
+  margin: 0 auto;
+}

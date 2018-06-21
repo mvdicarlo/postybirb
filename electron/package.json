@@ -1,0 +1,108 @@
+{
+  "name": "PostyBirb",
+  "version": "0.8.5",
+  "description": "Multimedia crossposter for multimedia websites",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "DEVELOP=true electron main.js",
+    "clean": "rm -rf PBA/; rm -rf electron-dist/",
+    "build-linux": "electron-packager . --overwrite  --asar --platform=linux --prune=true --arch=x64 --icon 'dist/assets/icon/minnowicon.png' --out=PBA",
+    "build-mac": "electron-packager . --overwrite  --asar --platform=darwin --prune=true --arch=x64 --icon 'dist/assets/icon/minnowicon.icns' --out=PBA",
+    "build-windows": "electron-packager . --overwrite --asar --platform=win32 --prune=true --arch=ia32 --icon 'dist/assets/icon/minnowicon.png' --out=PBA",
+    "package-unix": "cd PBA; mv PostyBirb-darwin-x64/ PostyBirb-mac; mv PostyBirb-linux-x64/ PostyBirb-linux; tar -zcvf PostyBirb-linux.tar.gz PostyBirb-linux/;  tar -zcvf PostyBirb-mac.tar.gz PostyBirb-mac/",
+    "build-unix": "npm run clean; npm run build-mac; npm run build-linux; npm run package-unix",
+    "eb-unix": "electron-builder -m",
+    "eb-linux": "electron-builder -l",
+    "eb-windows": "electron-builder -w",
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
+  },
+  "keywords": [
+    "postybirb",
+    "crossposter",
+    "angular",
+    "electron"
+  ],
+  "author": "Michael DiCarlo (michael.v.dicarlo@gmail.com)",
+  "license": "BSD-3",
+  "homepage": "",
+  "build": {
+    "appId": "com.lemonynade.postybirb",
+    "productName": "PostyBirb",
+    "publish": {
+      "provider": "github",
+      "owner": "mvdicarlo",
+      "repo": "postybirb"
+    },
+    "directories": {
+      "buildResources": "build",
+      "output": "electron-dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "icons/icon.icns",
+      "target": [
+        "zip",
+        "dmg"
+      ]
+    },
+    "linux": {
+      "artifactName": "${productName}-${version}.${ext}",
+      "icon": "icons/icon_256x256x32.png",
+      "category": "Network",
+      "target": [
+        "AppImage"
+      ]
+    },
+    "win": {
+      "icon": "icons/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-context-menu": "^0.9.1",
+    "electron-log": "^2.2.14",
+    "electron-updater": "^2.21.10",
+    "express": "^4.16.3",
+    "node-twitter-api": "^1.8.0",
+    "oauth": "^0.9.15",
+    "store": "^2.0.12",
+    "tumblr.js": "^1.1.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^7.2.3",
+    "electron": "2.0.2",
+    "electron-builder": "~20.14.7",
+    "electron-packager": "^12.0.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb": "^15.0.2",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^5.1.1",
+    "eslint-plugin-react": "^7.1.0"
+  }
+}

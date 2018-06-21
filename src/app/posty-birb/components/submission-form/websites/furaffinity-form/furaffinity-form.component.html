@@ -1,0 +1,153 @@
+<div class="website-form">
+  <form [formGroup]="form">
+    <div name="description" *ngIf="tab.isActive">
+      <h5>{{'Description' | translate}}</h5>
+      <description-field class="clearfix" formControlName="description" [defaultDescription]="defaultDescription"></description-field>
+    </div>
+    <div name="tags">
+      <h5>{{'Tags' | translate}}</h5>
+      <tag-field class="clearfix w-100" formControlName="tags" [defaultTags]="defaultTags" [maxLength]="250"></tag-field>
+    </div>
+  </form>
+  <div name="options" *ngIf="tab.isActive">
+    <h5>{{'Additional Options' | translate}}</h5>
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="scraps">{{'Scraps' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="disableComments">{{'Disable Comments' | translate}}</mat-checkbox>
+        </div>
+      </div>
+      <div class="row no-gutters">
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="category" [placeholder]="'Category' | translate">
+              <mat-optgroup label="Visual Art">
+                <mat-option value="1">All</mat-option>
+                <mat-option value="2">Artwork (Digital)</mat-option>
+                <mat-option value="3">Artwork (Traditional)</mat-option>
+                <mat-option value="4">Cellshading</mat-option>
+                <mat-option value="5">Crafting</mat-option>
+                <mat-option value="6">Designs</mat-option>
+                <mat-option value="7">Flash</mat-option>
+                <mat-option value="8">Fursuiting</mat-option>
+                <mat-option value="9">Icons</mat-option>
+                <mat-option value="10">Mosaics</mat-option>
+                <mat-option value="11">Photography</mat-option>
+                <mat-option value="12">Sculpting</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label="Readable Art">
+                <mat-option value="13">Story</mat-option>
+                <mat-option value="14">Poetry</mat-option>
+                <mat-option value="15">Prose</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label="Audio Art">
+                <mat-option value="16">Music</mat-option>
+                <mat-option value="17">Podcasts</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label="Downloadable">
+                <mat-option value="18">Skins</mat-option>
+                <mat-option value="19">Handhelds</mat-option>
+                <mat-option value="20">Resources</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label="Other Stuff">
+                <mat-option value="21">Adoptables</mat-option>
+                <mat-option value="22">Auctions</mat-option>
+                <mat-option value="23">Contests</mat-option>
+                <mat-option value="24">Current Events</mat-option>
+                <mat-option value="26">Stockart</mat-option>
+                <mat-option value="27">Screenshots</mat-option>
+                <mat-option value="28">Scraps</mat-option>
+                <mat-option value="29">Wallpaper</mat-option>
+                <mat-option value="30">YCH / Sale</mat-option>
+                <mat-option value="31">Other</mat-option>
+              </mat-optgroup>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="theme" [placeholder]="'Theme' | translate">
+              <mat-optgroup label="General Things">
+                <mat-option value="1" selected="true">All</mat-option>
+                <mat-option value="2">Abstract</mat-option>
+                <mat-option value="3">Animal related (non-anthro)</mat-option>
+                <mat-option value="4">Anime</mat-option>
+                <mat-option value="5">Comics</mat-option>
+                <mat-option value="6">Doodle</mat-option>
+                <mat-option value="7">Fanart</mat-option>
+                <mat-option value="8">Fantasy</mat-option>
+                <mat-option value="9">Human</mat-option>
+                <mat-option value="10">Portraits</mat-option>
+                <mat-option value="11">Scenery</mat-option>
+                <mat-option value="12">Still Life</mat-option>
+                <mat-option value="13">Tutorials</mat-option>
+                <mat-option value="14">Miscellaneous</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label="Fetish / Furry specialty">
+                <mat-option value="101">Baby fur</mat-option>
+                <mat-option value="102">Bondage</mat-option>
+                <mat-option value="103">Digimon</mat-option>
+                <mat-option value="104">Fat Furs</mat-option>
+                <mat-option value="105">Fetish Other</mat-option>
+                <mat-option value="106">Fursuit</mat-option>
+                <mat-option value="119">Gore / Macabre Art</mat-option>
+                <mat-option value="107">Hyper</mat-option>
+                <mat-option value="108">Inflation</mat-option>
+                <mat-option value="109">Macro / Micro</mat-option>
+                <mat-option value="110">Muscle</mat-option>
+                <mat-option value="111">My Little Pony / Brony</mat-option>
+                <mat-option value="112">Paw</mat-option>
+                <mat-option value="113">Pokemon</mat-option>
+                <mat-option value="114">Pregnancy</mat-option>
+                <mat-option value="115">Sonic</mat-option>
+                <mat-option value="116">Transformation</mat-option>
+                <mat-option value="117">Vore</mat-option>
+                <mat-option value="118">Water Sports</mat-option>
+                <mat-option value="100">General Furry Art</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label="Music">
+                <mat-option value="201">Techno</mat-option>
+                <mat-option value="202">Trance</mat-option>
+                <mat-option value="203">House</mat-option>
+                <mat-option value="204">90s</mat-option>
+                <mat-option value="205">80s</mat-option>
+                <mat-option value="206">70s</mat-option>
+                <mat-option value="207">60s</mat-option>
+                <mat-option value="208">Pre-60s</mat-option>
+                <mat-option value="209">Classical</mat-option>
+                <mat-option value="210">Game Music</mat-option>
+                <mat-option value="211">Rock</mat-option>
+                <mat-option value="212">Pop</mat-option>
+                <mat-option value="213">Rap</mat-option>
+                <mat-option value="214">Industrial</mat-option>
+                <mat-option value="200">Other Music</mat-option>
+              </mat-optgroup>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <fa-species-select formControlName="species"></fa-species-select>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="gender" [placeholder]="'Gender' | translate">
+              <mat-option value="0">Any</mat-option>
+              <mat-option value="2">Male</mat-option>
+              <mat-option value="3">Female</mat-option>
+              <mat-option value="4">Herm</mat-option>
+              <mat-option value="5">Transgender</mat-option>
+              <mat-option value="6">Multiple characters</mat-option>
+              <mat-option value="7">Other / Not Specified</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <furaffinity-folders formControlName="folders"></furaffinity-folders>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

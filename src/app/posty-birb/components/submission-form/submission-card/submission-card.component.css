@@ -1,0 +1,74 @@
+form {
+  border-radius: 4px;
+  background-color: #111;
+  height: 210px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image img, .image video {
+  opacity: 0.35;
+  width: 100%;
+  height: 100%;
+}
+
+.info {
+  width: 100%;
+  position: absolute;
+  top: 20px;
+  padding: 0px 5px;
+}
+
+.menu {
+  right: 0;
+  top: 0;
+  position: absolute;
+  z-index: 20;
+}
+
+.selected {
+  border: 2px solid #039be5;
+}
+
+.select-checkbox {
+  height: 20px;
+  text-align: center;
+}
+
+mat-form-field {
+  width: 100%;
+  font-size: 90%;
+  margin-top: -10px;
+}
+
+.title-field {
+  margin-top: -2px;
+}
+
+.type-field {
+  width: 50%;
+  padding-right: 4px;
+  float: left;
+}
+
+.ratings-field {
+  width: 50%;
+}
+
+.schedule-field {
+  width: 50%;
+  float: left;
+  padding-right: 4px;
+}
+
+.thumbnail-field {
+  width: 50%;
+  display: inline-block;
+  margin-top: -13px;
+}

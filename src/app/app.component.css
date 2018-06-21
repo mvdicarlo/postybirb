@@ -1,0 +1,120 @@
+mat-toolbar {
+  width: 100%;
+  height: 100%;
+}
+
+mat-sidenav-container {
+  height: 100%;
+}
+
+.no-outline:focus {
+  outline: none;
+}
+
+.toolbar {
+  height: 6vh;
+}
+
+.toolbar-content {
+  flex: 10;
+  height: 100%;
+}
+
+.toolbar-content div {
+  display: inline-block;
+}
+
+.toolbar-app-icon {
+  height: 100%;
+}
+
+.toolbar-app-icon img {
+  /*width: 50px;*/
+  max-height: 100%;
+  margin: auto;
+}
+
+.toolbar-app-icon h3 {
+  display: inline;
+}
+
+.toolbar-app-icon .version-number {
+  font-size: 0.55em;
+}
+
+.toolbar-buttons {
+  margin-left: -15px;
+  margin-right: 5px;
+}
+
+.kofi {
+  flex: 1;
+  height: 100%;
+}
+
+.kofi button {
+  background-color: #46b798;
+  height: 100%;
+  margin-right: -16px;
+  float: right;
+  border-radius: 0;
+}
+
+.container-fluid {
+  padding: 0 !important;
+}
+
+.language-select {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  background: #464545;
+  color: #ffffff;
+  z-index: 9999;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.full-window {
+  height: 100vh;
+}
+
+.main-section {
+  z-index: 0;
+}
+
+.main-content {
+  background: #222;
+  height: 100%;
+}
+
+.width-toggle {
+  transition: width 0.2s, flex-basis 0.2s;
+}
+
+.sidebar-section {
+  z-index: 10;
+}
+
+.sidebar {
+  background: #424242;
+  height: 100%;
+  box-shadow: 3px 0 6px rgba(0, 0, 0, .24);
+  overflow-y: auto;
+}
+
+.sidebar div {
+  padding: 0;
+}
+
+.closed-sidebar {
+  padding: 0;
+  width: 0;
+  flex-basis: 0%;
+}
+
+.closed-sidebar div {
+  margin: 0;
+}

@@ -1,0 +1,14 @@
+<div class="login-panel">
+  <div class="login-panel-header">
+    <img src="{{logo}}" alt="{{website}}" matTooltip="{{website}}" matTooltipPosition="left">
+    <button mat-button color="warn" (click)="openDialog()">{{'Login' | translate}}</button>
+  </div>
+  <div class="login-panel-content clearfix">
+    <div *ngIf="!loading; else spinner">
+      <website-status [info]="status"></website-status>
+    </div>
+    <ng-template #spinner>
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </ng-template>
+  </div>
+</div>

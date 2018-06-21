@@ -1,0 +1,29 @@
+<mat-card>
+  <mat-card-title>{{'Apps' | translate}}</mat-card-title>
+  <mat-card-content>
+    <div class="row">
+      <div class="col-md-6">
+        <mat-card class="app-item" (click)="activate('postybirb')">
+          <mat-card-title>
+            PostyBirb
+          </mat-card-title>
+          <mat-card-content>
+            <mat-icon>email</mat-icon>
+            <p>{{ 'PostyBirb dashboard' | translate}}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <div class="col-md-6">
+        <mat-card class="app-item" (click)="activate('journalbirb')">
+          <mat-card-title>
+            JournalBirb
+          </mat-card-title>
+          <mat-card-content>
+            <mat-icon>notifications</mat-icon>
+            <p>{{ 'JournalBirb dashboard' | translate}}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>
