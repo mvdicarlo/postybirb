@@ -1,5 +1,5 @@
 import { Directive, Input, OnInit, OnDestroy, OnChanges, SimpleChanges, HostListener, ElementRef } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { HighlightLinkedService } from './highlight-linked.service';
 
 @Directive({

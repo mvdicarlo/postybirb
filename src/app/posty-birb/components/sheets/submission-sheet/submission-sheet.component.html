@@ -1,0 +1,46 @@
+<div class="sheet-container">
+  <div class="clearfix w-100">
+    <mat-slide-toggle style="margin-left: 12px" class="pt-2" [checked]="isAdvertiseEnabled()" (change)="toggleGlobalAdvertise($event)">{{ 'Advertise' | translate }}</mat-slide-toggle>
+    <button mat-button color="warn" class="float-right" (click)="emergencyStop()">{{'Emergency Stop' | translate}}</button>
+    <button mat-button color="accent" class="float-right" (click)="openSettings()">{{'Settings' | translate}}</button>
+  </div>
+  <mat-tab-group [selectedIndex]="selectedIndex">
+    <mat-tab [disabled]="unscheduledSubmissions.length === 0">
+      <ng-template mat-tab-label>
+        <span>{{ 'Unscheduled' | translate }}</span><span class="badge badge-danger">{{ unscheduledSubmissions.length }}</span>
+      </ng-template>
+      <submission-table [rows]="unscheduledSubmissions" [allowPostAll]="true" [allowReorder]="true" (clearAll)="clearAll(unscheduledSubmissions)" (postAll)="postAll(unscheduledSubmissions)"></submission-table>
+    </mat-tab>
+    <mat-tab [disabled]="scheduledSubmissions.length === 0">
+      <ng-template mat-tab-label>
+        <span>{{ 'Scheduled' | translate }}</span><span class="badge badge-danger">{{ scheduledSubmissions.length }}</span>
+      </ng-template>
+      <submission-table [rows]="scheduledSubmissions" (clearAll)="clearAll(scheduledSubmissions)"></submission-table>
+    </mat-tab>
+    <mat-tab [disabled]="queuedSubmissions.length === 0">
+      <ng-template mat-tab-label>
+        <span>{{ 'Queued' | translate }}</span><span class="badge badge-danger">{{ queuedSubmissions.length }}</span>
+      </ng-template>
+      <submission-table [rows]="queuedSubmissions" clearAllLabel="Cancel All" (clearAll)="dequeueAll(queuedSubmissions)"></submission-table>
+    </mat-tab>
+    <mat-tab [disabled]="logs.length === 0">
+      <ng-template mat-tab-label>
+        <span>{{ 'Logs' | translate }}</span>
+      </ng-template>
+      <table class="table table-dark table-hover mb-0">
+        <tbody>
+          <tr *ngFor="let log of logs">
+            <td>{{ log.archive.meta.title }}</td>
+            <td>{{ log.timestamp | date:'medium' }}</td>
+            <td>{{ log.status | translate }}</td>
+            <td>
+              <button mat-icon-button (click)="saveLog(log)">
+                    <mat-icon>save</mat-icon>
+                  </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-tab>
+  </mat-tab-group>
+</div>

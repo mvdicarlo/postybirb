@@ -6,8 +6,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class E621 extends BaseWebsite implements Website {
@@ -38,7 +38,7 @@ export class E621 extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(`${this.baseURL}/user/home`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/user/home`, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('Logout')) this.loginStatus = WebsiteStatus.Logged_In;
           else this.loginStatus = WebsiteStatus.Logged_Out;
@@ -52,7 +52,7 @@ export class E621 extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/user/home`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/user/home`, { responseType: 'text' })
         .subscribe(page => {
           const matcher = /Logged in as.*"/g;
           const aTags = HTMLParser.getTagsOf(page, 'a');
@@ -74,7 +74,7 @@ export class E621 extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/post/upload`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/post/upload`, { responseType: 'text' })
         .subscribe(uploadFormPage => {
           const uploadForm = new FormData();
           const options = submission.options;
@@ -97,7 +97,7 @@ export class E621 extends BaseWebsite implements Website {
 
           this.http.post(`${this.baseURL}/post/create`, uploadForm)
             .subscribe((res: any) => {
-              if (res.success) observer.next(true);
+              if (res.success) observer.next(res);
               else observer.error(this.createError(res, submission));
               observer.complete();
             }, err => {

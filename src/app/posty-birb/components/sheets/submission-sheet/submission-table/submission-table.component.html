@@ -1,0 +1,13 @@
+<table class="table table-dark table-hover mb-0">
+  <tbody>
+    <ng-template ngFor let-row [ngForOf]="rows">
+      <submission-row [archive]="row" [reorder]="allowReorder"></submission-row>
+    </ng-template>
+  </tbody>
+</table>
+<div class="submission-table-footer" *ngIf="rows && rows.length > 0">
+  <div class="row no-gutters">
+    <button *ngIf="allowPostAll" class="col-md col-lg col-xl col-sm" mat-raised-button color="accent" (click)="doPostAll()">{{ 'Post All' | translate }}</button>
+    <button class="col-md col-lg col-xl col-sm" mat-raised-button color="warn" (click)="doClearAll()">{{ clearAllLabel | translate }}</button>
+  </div>
+</div>

@@ -1,15 +1,16 @@
-import { Component, OnChanges, SimpleChanges, Input, Injector } from '@angular/core';
+import { Component, AfterViewInit, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormBuilder, ControlValueAccessor, Validators } from '@angular/forms';
 import { SupportedWebsites } from '../../../../commons/enums/supported-websites';
 import { Information, DescriptionModel, TagModel } from './information.interface';
 import { FieldValidator } from '../validators/field.validator';
-import { MatTab } from '@angular/material';
+import { MatTab, MatTabGroup } from '@angular/material';
+import { Subscription, Observable } from 'rxjs';
 
 @Component({
   selector: 'base-website-form',
   template: `<div></div>`,
 })
-export class BaseWebsiteFormComponent implements OnChanges {
+export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDestroy {
   @Input()
   get defaultTags(): TagModel { return this._defaultTags }
   set defaultTags(model: TagModel) {
@@ -21,8 +22,7 @@ export class BaseWebsiteFormComponent implements OnChanges {
   }
   private _defaultTags: TagModel = { tags: [], overwrite: false }
 
-  @Input() defaultDescription: DescriptionModel;
-  @Input() tab: MatTab;
+  @Input() defaultDescription: Observable<DescriptionModel>;
 
   public supportedWebsites = SupportedWebsites;
 
@@ -34,15 +34,38 @@ export class BaseWebsiteFormComponent implements OnChanges {
   public maximumTags: number = 200;
   public website: string;
 
+  private subscription: Subscription = Subscription.EMPTY;
+
   private fb: FormBuilder;
+  protected _changeDetector: ChangeDetectorRef;
+  public matTab: MatTab;
 
   constructor(injector: Injector) {
     this.fb = injector.get(FormBuilder);
+    this._changeDetector = injector.get(ChangeDetectorRef);
+    this.matTab = injector.get(MatTab);
+
+    const tabGroup: MatTabGroup = injector.get(MatTabGroup);
+    this.subscription = tabGroup.selectedTabChange.subscribe((event) => {
+      this._changeDetector.markForCheck();
+      this._changeDetector.detectChanges();
+    });
 
     this.form = this.fb.group({
       tags: [],
       description: []
     });
+  }
+
+  ngAfterViewInit() {
+    setTimeout(function() {
+      this._changeDetector.markForCheck();
+      this._changeDetector.detectChanges();
+    }.bind(this), 150);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -53,10 +76,6 @@ export class BaseWebsiteFormComponent implements OnChanges {
 
       if (changes.defaultTags) {
         this.defaultTags = changes.defaultTags.currentValue;
-      }
-
-      if (changes.tab) {
-        this.tab = changes.tab.currentValue;
       }
     }
   }

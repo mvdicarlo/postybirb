@@ -2,7 +2,7 @@ import { Website } from '../../interfaces/website.interface';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 /**
  * @abstract @class BaseWebsite
@@ -52,6 +52,22 @@ export class BaseWebsite implements Website {
       this.helper.unauthorize();
       this.loginStatus = WebsiteStatus.Logged_Out;
     }
+  }
+
+  public checkAuthorized(): Promise<boolean> {
+    return new Promise(function(resolve, reject) {
+      if (this.helper) {
+        if (this.helper.checkAuthorized) {
+          this.helper.checkAuthorized().then(authorized => {
+            authorized ? resolve(true) : reject(false);
+          });
+        } else {
+          this.helper.isAuthorized() ? resolve(true) : reject(false);
+        }
+      } else {
+        resolve(true);
+      }
+    }.bind(this));
   }
 
   public authorize(authInfo: any): Promise<any> {

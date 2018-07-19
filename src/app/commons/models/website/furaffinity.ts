@@ -6,8 +6,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class Furaffinity extends BaseWebsite implements Website {
@@ -69,10 +69,10 @@ export class Furaffinity extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('logout-link')) {
-            this.http.get(`${this.baseURL}/controls/submissions`, { responseType: 'text' }).retry(1)
+            this.http.get(`${this.baseURL}/controls/submissions`, { responseType: 'text' })
               .subscribe(controlPage => {
                 try {
                   this.parseFolders(controlPage);
@@ -96,7 +96,7 @@ export class Furaffinity extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           const aTags = HTMLParser.getTagsOf(page, 'a');
           const matcher = /href="\/user\/.*"/g;
@@ -167,7 +167,7 @@ export class Furaffinity extends BaseWebsite implements Website {
 
               this.http.post(`${this.baseURL}/submit/`, submitForm, { responseType: 'text' })
                 .subscribe(res => {
-                  if (!res.includes('Finalize')) observer.next(true);
+                  if (!res.includes('Finalize')) observer.next(res);
                   else observer.error(this.createError(res, submission));
                   observer.complete();
                 }, err => {
@@ -188,7 +188,7 @@ export class Furaffinity extends BaseWebsite implements Website {
 
   postJournal(title: string, description: string): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/controls/journal`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/controls/journal`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('key', HTMLParser.getInputValue(page, 'key'));

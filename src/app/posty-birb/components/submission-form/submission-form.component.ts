@@ -1,19 +1,19 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
+import { Store } from '@ngxs/store';
 
 import { MatDialog, MatDialogRef } from '@angular/material';
 import { EditFormDialogComponent } from './edit-form-dialog/edit-form-dialog.component';
 import { SaveDialogComponent } from './save-dialog/save-dialog.component';
 
-import { GalleryService } from '../../services/gallery-service/gallery.service';
-import { GalleryStatus } from '../../models/gallery-status.model';
-import { PostyBirbSubmission } from '../../../commons/models/posty-birb/posty-birb-submission';
+import { PostyBirbSubmission, SubmissionArchive } from '../../../commons/models/posty-birb/posty-birb-submission';
 import { SubmissionCardContainerComponent } from './submission-card-container/submission-card-container.component';
 import { SupportedWebsiteRestrictions } from '../../models/supported-websites-restrictions';
+import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 
 interface SubmitObject {
   data: PostyBirbSubmission;
-  status: GalleryStatus;
+  status: any;
 }
 
 @Component({
@@ -28,7 +28,7 @@ export class SubmissionFormComponent implements OnInit, OnDestroy {
   private subscription: Subscription = Subscription.EMPTY;
   public submissions: PostyBirbSubmission[] = [];
 
-  constructor(private dialog: MatDialog, private galleryService: GalleryService) { }
+  constructor(private dialog: MatDialog, private _store: Store) { }
 
   ngOnInit() { }
 
@@ -46,17 +46,9 @@ export class SubmissionFormComponent implements OnInit, OnDestroy {
 
   public saveSubmissions(): void {
 
-    const validSubmissions: SubmitObject[] = this.submissions.map(submission => {
+    const validSubmissions: PostyBirbSubmission[] = this.submissions.map(submission => {
       this.trimSelectedWebsites(submission);
-
-      let currentStatus: GalleryStatus = submission.getGalleryStatus();
-      if (currentStatus === GalleryStatus.EDITING) {
-        currentStatus = GalleryStatus.UPDATE;
-      } else if (currentStatus === GalleryStatus.COPY) {
-        currentStatus = GalleryStatus.NEW;
-      }
-
-      return { data: submission, status: currentStatus };
+      return submission;
     });
 
     let dialogRef: MatDialogRef<SaveDialogComponent> = this.dialog.open(SaveDialogComponent, {
@@ -66,16 +58,25 @@ export class SubmissionFormComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.submit(validSubmissions)
+        this.submit(validSubmissions, result === 'POST');
+        this.editForm.clear();
+        this.submissions = [];
+        this.submissionContainer.clearSelected();
       }
     });
   }
 
-  private submit(submissions: SubmitObject[]): void {
+  private submit(submissions: PostyBirbSubmission[], postImmediately: boolean): void {
     for (let i = 0; i < submissions.length; i++) {
       const submission = submissions[i];
-      if (submission.data.getUnpostedWebsites().length > 0) {
-        this.galleryService.submit(submission.data, submission.status);
+      if (submission.getUnpostedWebsites().length > 0) {
+        const archive: SubmissionArchive = submission.asSubmissionArchive();
+        const actions: any[] = [new PostyBirbStateAction.AddSubmission(archive, true)];
+        if (postImmediately) {
+          actions.push(new PostyBirbStateAction.QueueSubmission(archive));
+        }
+
+        this._store.dispatch(actions);
       }
     }
   }
@@ -93,7 +94,6 @@ export class SubmissionFormComponent implements OnInit, OnDestroy {
   }
 
   public onSaveSubmissionFromEdit(): void {
-    this.submissionContainer.saveInProgress();
     this.saveSubmissions();
   }
 

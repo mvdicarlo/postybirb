@@ -1,4 +1,4 @@
-import { Component, Injector, forwardRef } from '@angular/core';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
 import { Information } from '../../base-website-form/information.interface';
@@ -7,7 +7,8 @@ import { Information } from '../../base-website-form/information.interface';
   selector: 'inkbunny-form',
   templateUrl: './inkbunny-form.component.html',
   styleUrls: ['./inkbunny-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => InkbunnyFormComponent) }]
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => InkbunnyFormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class InkbunnyFormComponent extends BaseWebsiteFormComponent {
 

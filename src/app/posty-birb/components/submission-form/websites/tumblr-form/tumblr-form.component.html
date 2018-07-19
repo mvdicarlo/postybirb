@@ -1,6 +1,6 @@
 <div class="website-form">
   <form [formGroup]="form">
-    <div name="description" *ngIf="tab.isActive">
+    <div name="description" *ngIf="matTab.isActive">
       <h5>{{'Description' | translate}}</h5>
       <description-field class="clearfix" formControlName="description" [defaultDescription]="defaultDescription"></description-field>
     </div>
@@ -15,6 +15,9 @@
       <div class="row no-gutters">
         <div class="col-md-3 col-lg-3 col-xl-3">
           <tumblr-blog-select formControlName="blog"></tumblr-blog-select>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-2">
+          <mat-checkbox formControlName="useTitle">{{'Use Title' | translate}}</mat-checkbox>
         </div>
       </div>
     </form>

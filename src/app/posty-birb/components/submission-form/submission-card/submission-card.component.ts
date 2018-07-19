@@ -1,17 +1,15 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs/Subscription';
-import { timer } from 'rxjs/observable/timer';
+import { Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material';
 
 import { FileInformation } from '../../../../commons/models/file-information';
-import { PostyBirbSubmission } from '../../../../commons/models/posty-birb/posty-birb-submission';
+import { PostyBirbSubmission, SubmissionArchive } from '../../../../commons/models/posty-birb/posty-birb-submission';
 import { FileHandler } from '../../../models/file-handler';
-import { GalleryStatus } from '../../../models/gallery-status.model';
-import { Template, TEMPLATE_VERSION } from '../../../interfaces/template.interface';
 import { SubmissionViewComponent } from '../../dialog/submission-view/submission-view.component';
+import { TemplatesService, Template } from '../../../services/templates/templates.service';
 
 @Component({
   selector: 'submission-card',
@@ -19,7 +17,7 @@ import { SubmissionViewComponent } from '../../dialog/submission-view/submission
   styleUrls: ['./submission-card.component.css']
 })
 export class SubmissionCardComponent implements OnInit, OnDestroy {
-  @Input() data: PostyBirbSubmission;
+  @Input() submission: SubmissionArchive;
   @Input() selected: boolean = false;
 
   @Output() onSelect: EventEmitter<PostyBirbSubmission> = new EventEmitter();
@@ -28,19 +26,26 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
   @ViewChild('changeFileInput') changeFileInput: ElementRef;
   @ViewChild('altImageInput') altImageInput: ElementRef;
 
-  private subscription: Subscription;
+  private subscription: Subscription = Subscription.EMPTY;
+  private templateSubscription: Subscription = Subscription.EMPTY;
 
   public submissionForm: FormGroup;
   public file: any;
   public src: string;
   public interval: any;
   public altImageCount: number = 0;
+  public data: PostyBirbSubmission;
 
   public templates: Template[] = [];
 
-  constructor(private fb: FormBuilder, private dialog: MatDialog) { }
+  constructor(private fb: FormBuilder, private dialog: MatDialog, private templateService: TemplatesService) {
+    this.templateSubscription = this.templateService.asObserver().subscribe(templates => {
+      this.templates = templates;
+    });
+  }
 
   ngOnInit() {
+    this.data = PostyBirbSubmission.fromArchive(this.submission);
     this.file = this.data.getSubmissionFileObject();
 
     this.submissionForm = this.fb.group({
@@ -69,6 +74,7 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.subscription) this.subscription.unsubscribe();
+    this.templateSubscription.unsubscribe();
     clearInterval(this.interval);
   }
 
@@ -85,8 +91,9 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
   }
 
   public applyTemplate(template: Template) {
-    this.data.setDefaultFields(template.config.default);
-    this.data.setWebsiteFields(template.config.website);
+    const t = PostyBirbSubmission.fromArchive(template.template);
+    this.data.setDefaultFields(t.getDefaultFields());
+    this.data.setWebsiteFields(t.getWebsiteFields());
   }
 
   public indeterminateChange(indeterminate: boolean): void {
@@ -140,10 +147,6 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
       data: this.data,
       width: '80%'
     });
-  }
-
-  public menuOpened(): void {
-    this.templates = (store.get('postybirb-profiles') || []).filter(p => p.version === TEMPLATE_VERSION);
   }
 
   private emitSelected(): void {

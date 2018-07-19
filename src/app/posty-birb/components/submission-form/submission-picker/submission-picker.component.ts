@@ -10,6 +10,7 @@ export class SubmissionPickerComponent implements OnChanges {
   @Input() submissions: PostyBirbSubmission[] = [];
   @Input() readOnly: boolean = false;
   @Input() height: string = '200px';
+  @Input() website: string = null;
   @Output() selected: EventEmitter<PostyBirbSubmission[]> = new EventEmitter();
 
   public selectedSubmissions: PostyBirbSubmission[] = [];

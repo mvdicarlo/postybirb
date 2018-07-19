@@ -1,3 +1,7 @@
 .inactive-description {
-    display: none;
+  display: none;
+}
+
+mat-checkbox+mat-slide-toggle {
+  padding-left: 5px;
 }

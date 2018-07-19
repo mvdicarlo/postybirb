@@ -6,8 +6,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class Inkbunny extends BaseWebsite implements Website {
@@ -40,7 +40,7 @@ export class Inkbunny extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (!page.includes('LOGIN')) {
             if (this.userInformation.name) this.loginStatus = WebsiteStatus.Logged_In;
@@ -65,7 +65,7 @@ export class Inkbunny extends BaseWebsite implements Website {
 
   private loginToActual(username: string, password: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/login.php`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/login.php`, { responseType: 'text' })
         .subscribe(page => {
           const loginForm: FormData = new FormData();
           loginForm.set('token', HTMLParser.getInputValue(page, 'token'));
@@ -134,6 +134,12 @@ export class Inkbunny extends BaseWebsite implements Website {
     this.logoutActual();
   }
 
+  public checkAuthorized(): Promise<boolean> {
+    return new Promise(function(resolve, reject) {
+      this.userInformation && this.userInformation.sid ? resolve(true) : reject(false);
+    }.bind(this));
+  }
+
   post(submission: PostyBirbSubmissionData): Observable<any> {
     const urlPost = `${this.baseURL}/api_upload.php`;
     const urlEdit = `${this.baseURL}/api_editsubmission.php`;
@@ -144,7 +150,7 @@ export class Inkbunny extends BaseWebsite implements Website {
       uploadForm.set('uploadedfile[0]', submission.submissionData.submissionFile.getRealFile());
       if (submission.submissionData.additionalFiles && submission.submissionData.additionalFiles.length > 0) {
         for (let i = 0; i < submission.submissionData.additionalFiles.length; i++) {
-          uploadForm.set(`uploadedfile[${i}]`, submission.submissionData.additionalFiles[i].getRealFile());
+          uploadForm.set(`uploadedfile[${i + 1}]`, submission.submissionData.additionalFiles[i].getRealFile());
         }
       }
       if (submission.submissionData.thumbnailFile.getRealFile()) uploadForm.set('uploadedthumbnail[]', submission.submissionData.thumbnailFile.getRealFile());

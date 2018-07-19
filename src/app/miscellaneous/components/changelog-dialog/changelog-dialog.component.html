@@ -1,5 +1,75 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>0.9.1 (07/17/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Post button added to save dialog that will immediately queue the submission to post.</li>
+    <li>Warning notification added for when a description is too long for Twitter (when twitter is the selected option tab).</li>
+    <li>All posts successful or otherwise will now store a log of the post in the logs tab on the submission popup thing.</li>
+    <li>HR in descriptions now supported.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed a scenario where custom description options would sometimes not appear.</li>
+    <li>Fixed a good amount of strange behaviors with descriptions created using the text editor (notify me with any strange behavior in the future).</li>
+    <li>Derpibooru should detect username more accurately now.</li>
+    <li>Fixed weird issue with duplicate tags being incorrectly removed.</li>
+    <li>Attempted to fix corrupted templates issue (your templates will be lost in this update sorry :( ).</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Derpibooru and e621 no longer get the PostyBirb ad (requested by e621 admins).</li>
+    <li>OAuth officially correctly done (I think).</li>
+  </ul>
+  <div>0.9.0 (07/09/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>New Tumblr Additional option to disable/enable adding in the title.</li>
+    <li>Pixiv now supports Additional File uploads.</li>
+    <li>Summary dialog now also shows additional files (no thumbnail yet).</li>
+    <li>
+      Completely changed how posting, queueing, and editing galleries work.
+      <ul>
+        <li>Submissions now queue in the background and post silently.</li>
+        <li>You can access Queue, Scheduled, and Unschedule submissions from the bottom status bar.</li>
+      </ul>
+    </li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Websites that are unauthorized should notify that they are unauthorized when posting.</li>
+    <li>Fixed issue with tags not being deletable (tackled 1/2 in 0.8.9).</li>
+    <li>Fixed a stupid dialog typo.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated translations for new stuff.</li>
+    <li>Updated translation files on PostyBirb website.</li>
+    <li>A new line was added to the basic advertise message for PostyBirb.</li>
+    <li>Updated Electron and Electron packager.</li>
+  </ul>
+  <div>0.8.8 (06/27/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Hentai Foundry added to supported websites. (pictures only)</li>
+    <li>French language support added. (Thanks to Firebreath on FA)</li>
+    <li>Save dialog should be more easy to read for invalid submissions.</li>
+    <li>New settings menu for Submissions. Options to not generate error logs and to automatically stop on failure.</li>
+    <li>Scheduled submissions that fail no longer get unscheduled.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>All website folders now work correctly.</li>
+    <li>Fixed issue where an incomplete submission could be saved.</li>
+    <li>Gifs should now post correctly on Furry Network.</li>
+    <li>Weasyl thumbnails should now post successfully.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Upgraded to Angular 6.</li>
+    <li>Attempted to increase performance of primary PostyBirb submission form since it used to lag sometimes.</li>
+    <li>Sidebar navigation items are now white-ish by default and have a hover color effect.</li>
+  </ul>
   <div>
     <div>0.8.5 (06/18/2018)</div>
     <h5>New Features</h5>

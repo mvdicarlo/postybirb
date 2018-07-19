@@ -1,6 +1,6 @@
 import { WebsiteStatus } from '../enums/website-status.enum';
 import { PostyBirbSubmissionData } from './posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 /**
  * @interface
@@ -64,6 +64,12 @@ export interface Website {
    * @async
    */
   authorize(authInfo: any): Promise<any>;
+
+  /**
+   * @function checkAuthorized
+   * @async
+   */
+  checkAuthorized(): Promise<boolean>;
 
   /**
    * @function refresh

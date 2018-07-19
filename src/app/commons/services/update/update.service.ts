@@ -3,6 +3,7 @@ import { MatSnackBar } from '@angular/material';
 import { HTMLParser } from '../../helpers/html-parser';
 import { TranslateService } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
+import { timer } from 'rxjs/observable/timer';
 
 /**
  * @description
@@ -23,7 +24,7 @@ export class UpdateService {
 
   constructor(private snackBar: MatSnackBar, private translate: TranslateService) {
     this.version = window['appVersion'];
-    Observable.timer(0, 30 * 60000).subscribe(this.checkForUpdate.bind(this));
+    timer(0, 30 * 60000).subscribe(this.checkForUpdate.bind(this));
   }
 
   private openDownload() {

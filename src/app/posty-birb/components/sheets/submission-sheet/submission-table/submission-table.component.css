@@ -1,0 +1,8 @@
+submission-row {
+  display: block;
+}
+
+.submission-table-footer {
+  position: sticky;
+  bottom: 0;
+}

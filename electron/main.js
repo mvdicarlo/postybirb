@@ -35,7 +35,7 @@ app.on('ready', () => {
         icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
         title: 'Posty Birb',
         webPreferences: {
-            devTools: false,
+            devTools: Boolean(process.env.DEVELOP),
             allowRunningInsecureContent: false,
             nodeIntegration: false,
             preload: `${__dirname}/dist/electron-src/index.js`,

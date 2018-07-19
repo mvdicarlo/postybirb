@@ -16,6 +16,7 @@ window.twitter = require('./js/twitter-auth.js');
 window.deviantart = require('./js/deviantart-auth.js');
 window.appVersion = require('electron').remote.app.getVersion();
 window.documentsPath = require('electron').remote.app.getPath('documents');
+window.sfw = require('electron').remote.process.env.SFW;
 
 // Set up generic Documents folder
 fs.access(`${window.documentsPath}/PostyBirb`, fs.constants.F_OK, (err) => {

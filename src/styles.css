@@ -92,6 +92,10 @@ nav .mat-expansion-panel-body {
 
 /*Bad fix for sizing issues in the browser w/ height*/
 
-mat-nav-list, mat-sidenav-content {
+mat-sidenav-content {
+  max-height: 91vh;
+}
+
+mat-nav-list {
   max-height: 94vh;
 }

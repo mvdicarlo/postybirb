@@ -15,6 +15,7 @@ export class SubmissionViewComponent implements OnInit {
   public submissionType: string;
   public submissionRating: string;
   public file: any;
+  public additionalFiles: any[] = [];
   public websites: string[];
 
   public websiteOptions: any = {};
@@ -32,6 +33,7 @@ export class SubmissionViewComponent implements OnInit {
 
   public getFields(submission: PostyBirbSubmission): void {
     submission.getPreloadedSubmissionFile().then(file => this.file = file);
+    submission.getPreloadedAdditionalFiles().then(files => this.additionalFiles = files);
     this.submissionType = submission.getSubmissionType();
     this.submissionRating = submission.getSubmissionRating();
     this.title = submission.getTitle();

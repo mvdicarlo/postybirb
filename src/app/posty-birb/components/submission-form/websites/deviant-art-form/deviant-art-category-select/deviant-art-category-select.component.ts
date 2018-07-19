@@ -1,8 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, forwardRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
-import { timer } from 'rxjs/observable/timer';
+import { timer, Observable } from 'rxjs';
 import { debounce, map, startWith } from 'rxjs/operators';
-import { Observable } from 'rxjs/Observable';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { Categories } from './deviant-art-categories-list';
 
@@ -10,6 +9,7 @@ import { Categories } from './deviant-art-categories-list';
   selector: 'deviant-art-category-select',
   templateUrl: './deviant-art-category-select.component.html',
   styleUrls: ['./deviant-art-category-select.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -27,7 +27,7 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
   @ViewChild('auto') auto: any;
   @ViewChild('search') search: ElementRef;
 
-  constructor() {
+  constructor(private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -59,7 +59,12 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
     if (category) {
       this.value = category;
       this.control.patchValue(category, { emitEvent: false });
+    } else {
+      this.value = null;
+      this.control.patchValue(null, { emitEvent: false });
     }
+
+    this._changeDetector.detectChanges();
   }
 
   public onChange(value) {

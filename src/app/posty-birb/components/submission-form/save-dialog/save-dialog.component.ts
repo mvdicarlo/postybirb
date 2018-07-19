@@ -11,23 +11,21 @@ import { SubmissionRuleHelpDialogComponent } from '../../dialog/submission-rule-
   styleUrls: ['./save-dialog.component.css']
 })
 export class SaveDialogComponent {
-  public websiteMap: any;
-  public websiteKeys: string[];
-  public invalid: any[];
+  public websiteMap: any = {};
+  public websiteKeys: string[] = [];
+  public invalid: any[] = [];
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: PostyBirbSubmission[], public dialogRef: MatDialogRef<SaveDialogComponent>, private dialog: MatDialog) {
-    this.websiteMap = {};
-    this.invalid = [];
 
     for (let i = 0; i < data.length; i++) {
       const submission: PostyBirbSubmission = data[i];
 
+
       if (submission.getUnpostedWebsites().length === 0) {
         this.invalid.push(submission);
-        continue;
       }
 
-      submission.getUnpostedWebsites().forEach(website => {
+      (submission.getDefaultFieldFor('selectedWebsites') || []).forEach(website => {
         if (this.websiteMap[website]) {
           this.websiteMap[website].push(submission);
         } else {

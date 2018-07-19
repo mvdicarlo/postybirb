@@ -25,7 +25,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
   @Input() minimumTags: number = 0;
   @Input() maximumTags: number = 200;
   @Input() maxLength: number = 0;
-  @Input() minimumCharacterLength: number = 3;
+  @Input() minimumCharacterLength: number = 2;
   @Input() defaultTags: TagModel;
   @Input() allowOverwrite: boolean = true;
 
@@ -33,12 +33,15 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
   public form: FormGroup;
   public separatorKeysCodes = [ENTER, COMMA];
+  public params: any = { min: 0 };
 
   constructor(private fb: FormBuilder, private notify: NotifyService) {
     super();
   }
 
   ngOnInit() {
+    this.params.min = this.minimumTags;
+
     this.form = this.fb.group({
       overwrite: [false],
       tags: [[], [FieldValidator.minimumTags(this.minimumTags)]]
@@ -138,7 +141,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
       } else if (existingTags.includes(value)) {
         this.notify.translateNotification('Duplicate tag ignored', { tag: value }).subscribe(msg => {
           this.notify.getNotify().warning(msg);
-        })
+        });
       }
     });
 
@@ -166,16 +169,17 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
   private removeDuplicates(): void {
     const nonDefaultTags = this.form.value.tags || [];
     const defaultTags = this.getDefaultTags();
+    const newTags: string[] = [];
 
     nonDefaultTags.forEach(tag => {
       const index = defaultTags.indexOf(tag);
 
-      if (index !== -1) {
-        nonDefaultTags.splice(index, 1);
+      if (index === -1) {
+        newTags.push(tag);
       }
     });
 
-    this.form.controls.tags.patchValue(nonDefaultTags);
+    this.form.controls.tags.patchValue(newTags);
   }
 
   private getDefaultTags(): string[] {

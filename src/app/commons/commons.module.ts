@@ -22,6 +22,7 @@ import { E621 } from './models/website/e621';
 import { Furaffinity } from './models/website/furaffinity';
 import { Furiffic } from './models/website/furiffic';
 import { FurryNetwork } from './models/website/furrynetwork';
+import { HentaiFoundry } from './models/website/hentaifoundry';
 import { Inkbunny } from './models/website/inkbunny';
 import { Pixiv } from './models/website/pixiv';
 import { Patreon } from './models/website/patreon';
@@ -88,6 +89,7 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
     Furaffinity,
     Furiffic,
     FurryNetwork,
+    HentaiFoundry,
     Inkbunny,
     Pixiv,
     Patreon,

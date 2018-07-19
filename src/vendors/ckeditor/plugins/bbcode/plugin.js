@@ -29,10 +29,10 @@
 
 	var bbcodeMap = { b: 'strong', u: 'u', i: 'em', color: 'span', size: 'span', quote: 'blockquote',
 					code: 'code', url: 'a', email: 'span', img: 'span', '*': 'li', list: 'ol', center: 'div',
-					left: 'div', right: 'div', hr: '*', p: '*' },
-		convertMap = { strong: 'b', b: 'b', u: 'u', em: 'i', i: 'i', code: 'code', li: '*', p: 'div', hr: 'br', pre: 'div',
-						h1: 'div', h2: 'div', h3: 'div', h4: 'div', h5: 'div', h6: 'div' },
-		tagnameMap = { strong: 'b', em: 'i', u: 'u', li: '*', ul: 'list', ol: 'list', code: 'code', a: 'link', img: 'img', blockquote: 'quote', p: 'div', hr: 'br' },
+					left: 'div', right: 'div', hr: '*', p: '*', s: 's', hr: 'hr' },
+		convertMap = { strong: 'b', b: 'b', u: 'u', em: 'i', i: 'i', code: 'code', li: '*', p: 'div', hr: 'hr', pre: 'div',
+						h1: 'div', h2: 'div', h3: 'div', h4: 'div', h5: 'div', h6: 'div', s: 's' },
+		tagnameMap = { strong: 'b', em: 'i', u: 'u', li: '*', ul: 'list', ol: 'list', code: 'code', a: 'link', img: 'img', blockquote: 'quote', p: 'div', hr: 'hr', s: 's' },
 		// 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre', 'li', 'blockquote', 'ul', 'ol',
 	    //   'table', 'thead', 'tbody', 'tfoot', 'td', 'th', 'hr'
 		stylesMap = { color: 'color', size: 'font-size' },

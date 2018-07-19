@@ -6,8 +6,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class Furiffic extends BaseWebsite implements Website {
@@ -34,7 +34,7 @@ export class Furiffic extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('logout')) this.loginStatus = WebsiteStatus.Logged_In;
           else this.loginStatus = WebsiteStatus.Logged_Out;
@@ -48,7 +48,7 @@ export class Furiffic extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           try {
             const username = page.match(/src=".*com\/accounts\/.*s/gm)[0].split('"')[1].split('/')[4].trim() || null;
@@ -139,7 +139,7 @@ export class Furiffic extends BaseWebsite implements Website {
 
   postJournal(title: string, description: string, options: any): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/${this.userInfo.username}/journals/create`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/${this.userInfo.username}/journals/create`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('type', 'textual');

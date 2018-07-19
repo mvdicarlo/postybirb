@@ -1,5 +1,8 @@
 export enum SubmissionStatus {
   UNPOSTED = 'Unposted',
   POSTED = 'Posted',
-  FAILED = 'Failed'
+  POSTING = 'Posting',
+  QUEUED = 'Queued',
+  FAILED = 'Failed',
+  INTERRUPTED = 'Interrupted'
 }

@@ -6,9 +6,9 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/fromPromise';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
+
 
 @Injectable()
 export class Twitter extends BaseWebsite implements Website {
@@ -56,11 +56,28 @@ export class Twitter extends BaseWebsite implements Website {
       return additionalFile.getFileBuffer();
     });
 
-    return Observable
-      .fromPromise(this.helper.post(submission.description.substring(0, 280).trim(), [submission.submissionData.submissionFile.getFileBuffer(), ...additionalFiles]));
+    return new Observable(observer => {
+      this.helper.post(submission.description.substring(0, 280).trim(), [submission.submissionData.submissionFile.getFileBuffer(), ...additionalFiles])
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        }).catch((err) => {
+          observer.error(err);
+          observer.complete();
+        });
+    });
   }
 
   postJournal(title: string, description: string): Observable<any> {
-    return Observable.fromPromise(this.helper.post(description.substring(0, 280)));
+    return new Observable(observer => {
+      this.helper.post(description.substring(0, 280))
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        }).catch((err) => {
+          observer.error(err);
+          observer.complete();
+        });
+    });
   }
 }

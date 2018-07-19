@@ -1,5 +1,5 @@
 <mat-form-field color="accent" class="w-100">
-  <mat-select [placeholder]="'Species' | translate" [value]="value" (change)="onChange($event)">
+  <mat-select [placeholder]="'Species' | translate" [value]="value" (selectionChange)="onChange($event)">
     <mat-option value="1" selected="selected">Unspecified / Any</mat-option>
     <mat-optgroup label="Amphibian">
       <mat-option value="1001">Frog</mat-option>

@@ -1,4 +1,4 @@
-import { Component, Injector, forwardRef } from '@angular/core';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
 import { Information } from '../../base-website-form/information.interface';
@@ -7,7 +7,8 @@ import { Information } from '../../base-website-form/information.interface';
   selector: 'patreon-form',
   templateUrl: './patreon-form.component.html',
   styleUrls: ['./patreon-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => PatreonFormComponent) }]
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => PatreonFormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PatreonFormComponent extends BaseWebsiteFormComponent {
 

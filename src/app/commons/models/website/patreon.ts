@@ -6,8 +6,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class Patreon extends BaseWebsite implements Website {
@@ -36,7 +36,7 @@ export class Patreon extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('Log In')) this.loginStatus = WebsiteStatus.Logged_Out;
           else this.loginStatus = WebsiteStatus.Logged_In;
@@ -50,7 +50,7 @@ export class Patreon extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/user`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/user`, { responseType: 'text' })
         .subscribe(page => {
           const title = page.match(/<title(.|\s)*?(?=\/title)/)[0] || '';
           const user = title.length > 0 ? title.split(' ')[0].replace('<title>', '') : undefined;
@@ -61,7 +61,7 @@ export class Patreon extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/post`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/post`, { responseType: 'text' })
         .subscribe(page => {
           const csrf = page.match(/csrfSignature = ".*"/g)[0].split('"')[1];
           const postUrl = `${this.baseURL}/api/posts?` + 'include=user_defined_tags.null%2Ccampaign.creator.null%2Ccampaign.rewards.campaign.null%2Ccampaign.rewards.creator.null&fields[post]=post_type%2Cmin_cents_pledged_to_view&fields[campaign]=is_monthly&fields[reward]=am' +
@@ -95,7 +95,7 @@ export class Patreon extends BaseWebsite implements Website {
 
                   this.http.patch(url, JSON.stringify(data), { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
                     .subscribe(r => {
-                      observer.next(true);
+                      observer.next(r);
                       observer.complete();
                     }, err => {
                       observer.error(this.createError(err, submission));
@@ -157,7 +157,7 @@ export class Patreon extends BaseWebsite implements Website {
 
   postJournal(title: string, description: string, options: any): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/post`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/post`, { responseType: 'text' })
         .subscribe(page => {
           const csrf = page.match(/csrfSignature = ".*"/g)[0].split('"')[1];
           const postUrl = `${this.baseURL}/api/posts?` + 'include=user_defined_tags.null%2Ccampaign.creator.null%2Ccampaign.rewards.campaign.null%2Ccampaign.rewards.creator.null&fields[post]=post_type%2Cmin_cents_pledged_to_view&fields[campaign]=is_monthly&fields[reward]=am' +

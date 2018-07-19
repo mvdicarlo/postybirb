@@ -1,20 +1,15 @@
 {
   "name": "PostyBirb",
-  "version": "0.8.5",
+  "version": "0.9.1",
   "description": "Multimedia crossposter for multimedia websites",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "DEVELOP=true electron main.js",
+    "start": "DEVELOP=true SFW=true electron main.js",
     "clean": "rm -rf PBA/; rm -rf electron-dist/",
-    "build-linux": "electron-packager . --overwrite  --asar --platform=linux --prune=true --arch=x64 --icon 'dist/assets/icon/minnowicon.png' --out=PBA",
-    "build-mac": "electron-packager . --overwrite  --asar --platform=darwin --prune=true --arch=x64 --icon 'dist/assets/icon/minnowicon.icns' --out=PBA",
-    "build-windows": "electron-packager . --overwrite --asar --platform=win32 --prune=true --arch=ia32 --icon 'dist/assets/icon/minnowicon.png' --out=PBA",
-    "package-unix": "cd PBA; mv PostyBirb-darwin-x64/ PostyBirb-mac; mv PostyBirb-linux-x64/ PostyBirb-linux; tar -zcvf PostyBirb-linux.tar.gz PostyBirb-linux/;  tar -zcvf PostyBirb-mac.tar.gz PostyBirb-mac/",
-    "build-unix": "npm run clean; npm run build-mac; npm run build-linux; npm run package-unix",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
-    "eb-windows": "electron-builder -w",
+    "eb-windows": "electron-builder -w"
   },
   "repository": {
     "type": "git",
@@ -89,16 +84,12 @@
     "electron-log": "^2.2.14",
     "electron-updater": "^2.21.10",
     "express": "^4.16.3",
-    "node-twitter-api": "^1.8.0",
-    "oauth": "^0.9.15",
-    "store": "^2.0.12",
-    "tumblr.js": "^1.1.1"
+    "store": "^2.0.12"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
-    "electron": "2.0.2",
-    "electron-builder": "~20.14.7",
-    "electron-packager": "^12.0.0",
+    "electron": "2.0.4",
+    "electron-builder": "~20.19.2",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^15.0.2",
     "eslint-plugin-import": "^2.11.0",

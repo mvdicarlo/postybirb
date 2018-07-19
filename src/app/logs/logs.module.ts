@@ -6,13 +6,11 @@ import { TranslateModule } from '@ngx-translate/core';
 import {
   MatButtonModule,
   MatCardModule,
-  MatTableModule,
   MatSnackBarModule
 } from '@angular/material';
 
 import { LoggerService } from './services/logger/logger.service';
 import { AppLogsComponent } from './main/app-logs/app-logs.component';
-import { PostybirbPostLogsComponent } from './components/postybirb-post-logs/postybirb-post-logs.component';
 
 const routes: Routes = [
   { path: 'logs', component: AppLogsComponent }
@@ -23,13 +21,11 @@ const routes: Routes = [
     CommonModule,
     MatButtonModule,
     MatCardModule,
-    MatTableModule,
     MatSnackBarModule,
     RouterModule.forChild(routes),
     TranslateModule
   ],
   declarations: [
-    PostybirbPostLogsComponent,
     AppLogsComponent
   ]
 })

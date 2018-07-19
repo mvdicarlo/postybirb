@@ -7,7 +7,6 @@ import { FileWrapper } from './file-wrapper';
 import { Collection } from './collection';
 import { FileObject } from '../../interfaces/file-obect.interface';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { GalleryStatus } from '../../../posty-birb/models/gallery-status.model';
 import { SubmissionStatus } from '../../../posty-birb/enums/submission-status.enum';
 import { SubmissionData } from '../../../posty-birb/interfaces/submission-data.interface';
 
@@ -20,6 +19,7 @@ export interface SubmissionArchive {
   websiteFields: any;
   defaultFields: any;
   submissionFile: FileObject;
+  submissionBuffer?: string;
   thumbnailFile?: FileObject;
   additionalFiles?: FileObject[];
 }
@@ -35,7 +35,6 @@ export interface SubmissionMetaData {
   submissionRating: string;
   submissionType: string;
   submissionStatus: SubmissionStatus;
-  galleryStatus: GalleryStatus;
   order: number;
   schedule: any;
 }
@@ -62,7 +61,6 @@ export class PostyBirbSubmission {
 
   private order: number = 0;
   private submissionStatus: SubmissionStatus = SubmissionStatus.UNPOSTED;
-  private galleryStatus: GalleryStatus;
 
   private subject: Subject<PostyBirbSubmission>;
 
@@ -70,7 +68,6 @@ export class PostyBirbSubmission {
     this.setId(id);
     this.setSubmissionFile(submissionFile);
     this.setThumbnailFile(new FileInformation(null, false));
-    this.setGalleryStatus(GalleryStatus.NEW);
 
     this.websiteFields = new Collection();
     this.defaultFields = new Collection();
@@ -88,27 +85,15 @@ export class PostyBirbSubmission {
   }
 
   /**
-   * @function copy
-   * @return {PostyBirbSubmission} a copy of the current object
-   */
-  public copy(): PostyBirbSubmission {
-    const copy: PostyBirbSubmission = PostyBirbSubmission.fromArchive(this.asSubmissionArchive());
-    copy.setDefaultFields(JSON.parse(JSON.stringify(this.getDefaultFields())));
-    copy.setWebsiteFields(JSON.parse(JSON.stringify(this.getWebsiteFields)));
-    return copy;
-  }
-
-  /**
    * @function fromArchive
    * @static
    * @description builds a PostyBirbSubmission object from a SubmissionArchive
    */
   public static fromArchive(archive: SubmissionArchive): PostyBirbSubmission {
-    const model: PostyBirbSubmission = new PostyBirbSubmission(archive.meta.id, archive.submissionFile);
+    const model: PostyBirbSubmission = new PostyBirbSubmission(archive.meta.id, archive.submissionBuffer ? new FileInformation(window['Buffer'].from(archive.submissionBuffer, 'base64'), false) : archive.submissionFile);
 
     const meta: SubmissionMetaData = archive.meta;
     model.setSubmissionStatus(meta.submissionStatus);
-    model.setGalleryStatus(meta.galleryStatus);
     model.setOrder(meta.order);
     model.setSchedule(meta.schedule);
     model.setSubmissionType(meta.submissionType);
@@ -132,8 +117,18 @@ export class PostyBirbSubmission {
     return {
       meta: this.getSubmissionMetaData(),
       submissionFile: this.submissionFile.getFileObject(),
+      submissionBuffer: this.submissionFile.getFileObject().path ? null : this.submissionFile.getFileInformation().getFileBuffer().toString('base64'),
       thumbnailFile: this.thumbnailFile ? this.thumbnailFile.getFileObject() : null,
       additionalFiles: this.getAdditionalFilesFileObjects(),
+      websiteFields: this.getWebsiteFields(),
+      defaultFields: this.getDefaultFields()
+    };
+  }
+
+  public asSubmissionTemplate(): SubmissionArchive {
+    return {
+      meta: this.getSubmissionMetaData(),
+      submissionFile: null,
       websiteFields: this.getWebsiteFields(),
       defaultFields: this.getDefaultFields()
     };
@@ -144,7 +139,6 @@ export class PostyBirbSubmission {
       title: this.getTitle(),
       order: this.getOrder(),
       submissionStatus: this.getSubmissionStatus(),
-      galleryStatus: this.getGalleryStatus(),
       submissionRating: this.getSubmissionRating(),
       submissionType: this.getSubmissionType(),
       id: this.getId(),
@@ -357,15 +351,6 @@ export class PostyBirbSubmission {
 
   public getSubmissionStatus(): SubmissionStatus {
     return this.submissionStatus;
-  }
-
-  public setGalleryStatus(status: GalleryStatus): void {
-    this.galleryStatus = status;
-    this.emit();
-  }
-
-  public getGalleryStatus(): GalleryStatus {
-    return this.galleryStatus;
   }
 
   public setUnpostedWebsites(websites: string[]): void {

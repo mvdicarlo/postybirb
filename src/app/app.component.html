@@ -21,9 +21,7 @@
             <span>
               <img src="https://ko-fi.com/img/cuplogo.svg" style="height: 20px;">
             </span>
-            <span>
-              Buy Me a Coffee
-            </span>
+            <span>Buy Me a Coffee</span>
           </button>
         </div>
       </mat-toolbar>
@@ -47,6 +45,13 @@
               </mat-nav-list>
             </mat-sidenav>
             <router-outlet></router-outlet>
+            <div class="status-toolbar col-lg-12 no-side-pad">
+              <mat-toolbar color="accent">
+                <div class="status-bar">
+                  <posty-birb-status-bar></posty-birb-status-bar>
+                </div>
+              </mat-toolbar>
+            </div>
           </mat-sidenav-container>
         </div>
       </div>
@@ -59,6 +64,7 @@
     <option value="en" selected="selected">EN</option>
     <option value="es">ES</option>
     <option value="fi">FI</option>
+    <option value="fr">FR</option>
     <option value="pt">PT</option>
   </select>
 </div>

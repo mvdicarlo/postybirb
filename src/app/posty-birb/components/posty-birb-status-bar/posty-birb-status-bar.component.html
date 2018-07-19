@@ -1,0 +1,2 @@
+<button class="btn btn-sm btn-secondary" (click)="openSubmissions()"><span>{{ 'Submissions' | translate }} </span><span *ngIf="submissionCount !== 0" class="badge badge-danger">{{submissionCount}}</span></button>
+<button *ngIf="queueCount !== 0" class="btn btn-sm btn-secondary" (click)="openQueue()"><span>{{ 'Posting' | translate }} </span><span *ngIf="queueCount !== 0" class="badge badge-danger">{{queueCount}}</span></button>

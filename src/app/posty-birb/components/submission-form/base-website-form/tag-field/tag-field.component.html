@@ -5,13 +5,13 @@
   <div style="display: flex">
     <mat-form-field color="accent" class="w-100" (click)="tagInput.focus()">
       <mat-chip-list #chipList>
-        <mat-chip *ngFor="let tag of form.value.tags" [selectable]="true" [removable]="true" (remove)="removeTag(tag)">
+        <mat-chip *ngFor="let tag of form.value.tags" [selectable]="true" [removable]="true" (removed)="removeTag(tag)">
           {{tag}}
           <mat-icon matChipRemove>cancel</mat-icon>
         </mat-chip>
       </mat-chip-list>
       <input #tagInput style="width: 100%;" [placeholder]="'Comma Separate Tags' | translate" [matChipInputFor]="chipList" [matChipInputSeparatorKeyCodes]="separatorKeysCodes" [matChipInputAddOnBlur]="true" (matChipInputTokenEnd)="addTag($event)" [required]="!form.value.overwrite && minimumTags > 0">
-      <mat-hint class="mat-error" *ngIf="!validateTagCount()">{{'Please Provide Min' | translate}}{{minimumTags}}</mat-hint>
+      <mat-hint class="mat-error" *ngIf="!validateTagCount()">{{'Min Tags Required' | translate:params}}</mat-hint>
       <mat-hint align="end">
         <span *ngIf="maxLength === 0">
           {{calculateTotalTags()}}

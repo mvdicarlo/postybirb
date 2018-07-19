@@ -1,16 +1,13 @@
 <h2 mat-dialog-title>{{'Save' | translate}}</h2>
 <mat-dialog-content>
-  <div *ngIf="invalid.length !== 0" class="invalid-section">
-    <h5 style="text-align: center; color: #e53935;">{{'Invalid for selected websites' | translate}}</h5>
-    <submission-picker height="100px" [submissions]="invalid" [readOnly]="true"></submission-picker>
-    <button type="button" matInput mat-raised-button color="accent" (click)="showHelp()">{{'Help' | translate}}</button>
-  </div>
   <div *ngFor="let website of websiteKeys" class="website-field">
     <div><img [src]="getLogo(website)" alt="{{website}}" height="30px" width="50px"></div>
-    <submission-picker height="100px" [submissions]="websiteMap[website]" [readOnly]="true"></submission-picker>
+    <submission-picker height="100px" [website]="website" [submissions]="websiteMap[website]" [readOnly]="true"></submission-picker>
   </div>
 </mat-dialog-content>
-<mat-dialog-actions>
-  <button mat-raised-button color="primary" mat-dialog-close>{{'No' | translate}}</button>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'No' | translate}}</button>
   <button mat-raised-button color="primary" (click)="dialogRef.close(true)" [disabled]="invalid.length === data.length">{{'Yes' | translate}}</button>
+  <button mat-raised-button color="primary" (click)="dialogRef.close('POST')" [disabled]="invalid.length === data.length">{{'Post' | translate}}</button>
+  <button type="button" matInput mat-raised-button color="accent" (click)="showHelp()">{{'Help' | translate}}</button>
 </mat-dialog-actions>

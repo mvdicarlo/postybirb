@@ -30,62 +30,68 @@
   </form>
   <form>
     <mat-tab-group *ngIf="websitesSelected()" [disableRipple]="true">
-      <mat-tab #derpibooru *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Derpibooru)">
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Derpibooru)">
         <ng-template mat-tab-label>
           <span [class.mat-error]="!derpibooruForm.isValid()">{{supportedWebsites.Derpibooru}}</span>
         </ng-template>
-        <derpibooru-form #derpibooruForm [tab]="derpibooru" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></derpibooru-form>
+        <derpibooru-form #derpibooruForm [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></derpibooru-form>
       </mat-tab>
       <mat-tab #deviantArt [label]="supportedWebsites.DeviantArt" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.DeviantArt)">
-        <deviant-art-form [tab]="deviantArt" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></deviant-art-form>
+        <deviant-art-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></deviant-art-form>
       </mat-tab>
-      <mat-tab #e621 *ngIf="form.value.selectedWebsites.includes(supportedWebsites.e621)">
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.e621)">
         <ng-template mat-tab-label>
           <span [class.mat-error]="!e621Form.isValid()">{{supportedWebsites.e621}}</span>
         </ng-template>
-        <e621-form #e621Form [tab]="e621" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></e621-form>
+        <e621-form #e621Form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></e621-form>
       </mat-tab>
-      <mat-tab #furaffinity [label]="supportedWebsites.Furaffinity" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furaffinity)">
-        <furaffinity-form [tab]="furaffinity" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furaffinity-form>
+      <mat-tab [label]="supportedWebsites.Furaffinity" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furaffinity)">
+        <furaffinity-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furaffinity-form>
       </mat-tab>
-      <mat-tab #furryNetwork [label]="supportedWebsites.FurryNetwork" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.FurryNetwork)">
-        <furry-network-form [tab]="furryNetwork" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furry-network-form>
+      <mat-tab [label]="supportedWebsites.Furiffic" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furiffic)">
+        <furiffic-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furiffic-form>
       </mat-tab>
-      <mat-tab #furiffic [label]="supportedWebsites.Furiffic" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furiffic)">
-        <furiffic-form [tab]="furiffic" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furiffic-form>
+      <mat-tab [label]="supportedWebsites.FurryNetwork" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.FurryNetwork)">
+        <furry-network-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furry-network-form>
       </mat-tab>
-      <mat-tab #inkbunny [label]="supportedWebsites.Inkbunny" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Inkbunny)">
-        <inkbunny-form [tab]="inkbunny" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></inkbunny-form>
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.HentaiFoundry)">
+        <ng-template mat-tab-label>
+          <span [class.mat-error]="!hfForm.isValid()">{{supportedWebsites.HentaiFoundry}}</span>
+        </ng-template>
+        <hentai-foundry-form #hfForm [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></hentai-foundry-form>
       </mat-tab>
-      <mat-tab #patreon [label]="supportedWebsites.Patreon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Patreon)">
-        <patreon-form [tab]="patreon" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></patreon-form>
+      <mat-tab [label]="supportedWebsites.Inkbunny" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Inkbunny)">
+        <inkbunny-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></inkbunny-form>
       </mat-tab>
-      <mat-tab #pixiv *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Pixiv)">
+      <mat-tab [label]="supportedWebsites.Patreon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Patreon)">
+        <patreon-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></patreon-form>
+      </mat-tab>
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Pixiv)">
         <ng-template mat-tab-label>
           <span [class.mat-error]="!pixivForm.isValid()">{{supportedWebsites.Pixiv}}</span>
         </ng-template>
-        <pixiv-form #pixivForm [tab]="pixiv" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></pixiv-form>
+        <pixiv-form #pixivForm [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></pixiv-form>
       </mat-tab>
-      <mat-tab #route50 [label]="supportedWebsites.Route50" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Route50)">
-        <route50-form [tab]="route50" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></route50-form>
+      <mat-tab [label]="supportedWebsites.Route50" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Route50)">
+        <route50-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></route50-form>
       </mat-tab>
-      <mat-tab #tumblr [label]="supportedWebsites.Tumblr" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Tumblr)">
-        <tumblr-form [tab]="tumblr" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></tumblr-form>
+      <mat-tab [label]="supportedWebsites.Tumblr" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Tumblr)">
+        <tumblr-form [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></tumblr-form>
       </mat-tab>
-      <mat-tab #twitter [label]="supportedWebsites.Twitter" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Twitter)">
-        <twitter-form [tab]="twitter" [defaultDescription]="defaultDescription"></twitter-form>
+      <mat-tab [label]="supportedWebsites.Twitter" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Twitter)">
+        <twitter-form [defaultDescription]="defaultDescription"></twitter-form>
       </mat-tab>
-      <mat-tab #sofurry *ngIf="form.value.selectedWebsites.includes(supportedWebsites.SoFurry)">
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.SoFurry)">
         <ng-template mat-tab-label>
           <span [class.mat-error]="!soFurryForm.isValid()">{{supportedWebsites.SoFurry}}</span>
         </ng-template>
-        <sofurry-form #soFurryForm [tab]="sofurry" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></sofurry-form>
+        <sofurry-form #soFurryForm [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></sofurry-form>
       </mat-tab>
-      <mat-tab #weasyl *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Weasyl)">
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Weasyl)">
         <ng-template mat-tab-label>
           <span [class.mat-error]="!weasylForm.isValid()">{{supportedWebsites.Weasyl}}</span>
         </ng-template>
-        <weasyl-form #weasylForm [tab]="weasyl" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></weasyl-form>
+        <weasyl-form #weasylForm [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></weasyl-form>
       </mat-tab>
     </mat-tab-group>
   </form>

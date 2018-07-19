@@ -30,4 +30,5 @@ Run `ng generate component component-name` to generate a new component. You can 
 6. Start electron *npm run eb-{windows|linux|mac}*
 
 ## TODO
-* On Discord
+* Document code for release to public repository
+* Strip git keys and API keys for public repository

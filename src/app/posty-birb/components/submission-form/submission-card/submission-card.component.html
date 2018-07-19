@@ -3,7 +3,7 @@
     <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image') || !file.type.includes('video')">
     <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
     <div class="menu">
-      <button mat-icon-button [matMenuTriggerFor]="menu" (menuOpened)="menuOpened()">
+      <button mat-icon-button [matMenuTriggerFor]="menu">
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
@@ -70,7 +70,7 @@
       </div>
       <div class="alt-image-field" *ngIf="submissionForm.value.submissionType === 'Artwork'">
         <input #altImageInput type="file" multiple class="d-none" (change)="addAltImages($event)">
-        <mat-form-field color="accent" [matTooltip]="'Only applies to Inkbunny, Tumblr, and Twitter' | translate">
+        <mat-form-field color="accent" [matTooltip]="'Only applies to Inkbunny, Pixiv, Tumblr, and Twitter' | translate">
           <input type="text" accept="image/*" class="w-100" matInput readonly (click)="altImageInput.click()" [value]="getAltImageCount()" [placeholder]="'Additional Images' | translate">
         </mat-form-field>
       </div>

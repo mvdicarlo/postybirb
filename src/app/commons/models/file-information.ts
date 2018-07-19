@@ -12,7 +12,7 @@ export class FileInformation {
   private isLoading: boolean;
   private initialized: boolean;
 
-  constructor(file: File | FileObject, initialize: boolean) {
+  constructor(file: File | FileObject | any, initialize: boolean) {
     if (file instanceof File) { // an actual File
       this.setRealFile(file);
       this.setFileInfo(this.convertFileToFileObject(file));

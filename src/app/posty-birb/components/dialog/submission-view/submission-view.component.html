@@ -3,6 +3,9 @@
   <div class="row no-gutters">
     <div class="col-md-2 col-lg-2 col-xl-2">
       <file-viewer [file]="file" height="100" width="100"></file-viewer>
+      <div *ngIf="additionalFiles.length > 0">
+        <file-viewer *ngFor="let f of additionalFiles" [file]="f" height="100" width="100"></file-viewer>
+      </div>
     </div>
     <div class="col-md-10 col-lg-10 col-xl-10">
       <div class="row no-gutters">

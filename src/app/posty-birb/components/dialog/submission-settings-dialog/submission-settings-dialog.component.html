@@ -1,7 +1,14 @@
 <h2 mat-dialog-title>{{'Settings' | translate}}</h2>
 <mat-dialog-content>
-
+  <div class="row no-gutters">
+    <div class="col-md-12 col-xl-12 col-lg-12">
+      <mat-slide-toggle [checked]="isStopAllSubmissionsEnabled()" (change)="toggleStopOnFailure($event)">{{ 'Stop posting on submission failure' | translate }}</mat-slide-toggle>
+    </div>
+    <div class="col-md-12 col-xl-12 col-lg-12">
+      <mat-slide-toggle [checked]="isGenerateErrorLogEnabled()" (change)="toggleGenerateErrorLog($event)">{{ 'Allow error logs' | translate }}</mat-slide-toggle>
+    </div>
+  </div>
 </mat-dialog-content>
-<mat-dialog-actions>
+<mat-dialog-actions class="float-right">
   <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
 </mat-dialog-actions>

@@ -29,7 +29,6 @@ mat-sidenav-container {
 }
 
 .toolbar-app-icon img {
-  /*width: 50px;*/
   max-height: 100%;
   margin: auto;
 }
@@ -43,12 +42,26 @@ mat-sidenav-container {
 }
 
 .toolbar-buttons {
-  margin-left: -15px;
+  margin-left: -16px;
   margin-right: 5px;
 }
 
+.status-toolbar {
+  height: 3vh;
+  position: fixed;
+  bottom: 0;
+}
+
+.status-bar {
+  margin-left: -16px;
+  height: 100%;
+}
+
+.status-bar * {
+  /* height: 100%; */
+}
+
 .kofi {
-  flex: 1;
   height: 100%;
 }
 

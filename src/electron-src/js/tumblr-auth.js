@@ -1,17 +1,11 @@
-const tumblr = require('./tumblr.js');
-const oauth = require('oauth').OAuth;
 const express = require('express');
-const fs = require('fs');
 const auth = require('./auth-server');
-
-let client = null;
 
 /**
  * tumblr functions
  */
 const action = {
     failed() {
-        client = null;
         tumblrExpress.stop();
     },
 };
@@ -42,17 +36,14 @@ let tumblrExpress = {
 
             this.app.get('/tumblr', (req, res) => {
                 // Authorize
-
+                user = { name: '', blogs: [] };
                 $.post(auth.generateAuthUrl('/tumblr/authorize'), { oauth_token: req.query.oauth_token, secret: tempInfo.secret, oauth_verifier: req.query.oauth_verifier })
                 .done((r) => {
                     user.secret = r.accessSecret;
                     user.token = r.accessToken;
-                    createTumblrClient({
-                        consumer_key: r.k,
-                        consumer_secret: r.s,
-                        token: r.accessToken,
-                        token_secret: r.accessSecret,
-                    });
+                    user.blogs = r.data.user.blogs;
+                    user.name = r.data.user.name;
+                    store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
                     res.send('Tumblr successfully authenticated. You are free to close this window now.');
                 }).fail(() => {
                     res.send('Tubmlr failed to authenticate. Auth server may be down.');
@@ -69,29 +60,6 @@ let tumblrExpress = {
     },
 };
 
-/**
- * createTumblrClient - Try to create client from authentication process
- *
- * @param  {object} keys information necessary for client creation
- */
-function createTumblrClient(keys) {
-    return new Promise((resolve, reject) => {
-        client = tumblr.createClient(keys);
-        client.userInfo((err, res) => {
-            if (err) {
-                action.failed();
-                reject(false);
-            } else {
-                // Get user information
-                user.name = res.user.name;
-                user.blogs = res.user.blogs;
-                store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
-                resolve(true);
-            }
-        });
-    });
-}
-
 function getUserBlogs() {
     return user.blogs;
 }
@@ -106,7 +74,7 @@ function getUser() {
  * @return {boolean}  is authenticated
  */
 function isAuthenticated() {
-    return !!client;
+    return !!user.token;
 }
 
 /**
@@ -122,68 +90,32 @@ function postToTumblr(blog, submissionTags, title, description, type, base64) {
                 return;
             }
 
-            const postObj = {
-                caption: `${description}`,
-                tags: submissionTags,
-            };
+            const formData = new FormData();
+            formData.append('body', description);
+            formData.append('tags', submissionTags);
+            formData.append('blog', blog);
+            formData.append('type', type);
+            formData.append('title', title);
+            formData.append('token', user.token);
+            formData.append('secret', user.secret);
 
-            if (base64.length > 1) {
-                postObj.data = base64.map((file) => {
-                    if (file instanceof Buffer) {
-                        // stupid hack to get the read stream working correctly because I can't figure out a better way
-                        const tmpName = `${window.documentsPath}/PostyBirb/temp/${Date.now()}.temp`;
-                        fs.writeFileSync(tmpName, file);
-                        const rs = fs.createReadStream(tmpName);
-                        fs.unlink(tmpName);
-                        return rs;
-                    }
-                    return fs.createReadStream(file);
-                });
-            } else if (base64 instanceof Array) {
-                postObj.data64 = base64[0].toString('base64');
+            if (base64 && base64.length > 0) {
+                base64.forEach(f => formData.append('data', f));
             }
 
-            if (type === 'photo') {
-                client.createPhotoPost(blog, postObj,
-                (err, res) => {
-                    if (err) {
-                        action.failed();
-                        reject({ err, msg: Error('Failed to post to Tumblr.'), status });
-                    } else {
-                        resolve(true);
-                    }
-                });
-            } else if (type === 'audio') {
-                client.createAudioPost(blog, postObj,
-                (err, res) => {
-                    if (err) {
-                        action.failed();
-                        reject({ err, msg: Error('Failed to post to Tumblr.'), status });
-                    } else {
-                        resolve(true);
-                    }
-                });
-            } else if (type === 'video') {
-                client.createVideoPost(blog, postObj,
-                (err, res) => {
-                    if (err) {
-                        action.failed();
-                        reject({ err, msg: Error('Failed to post to Tumblr.'), status });
-                    } else {
-                        resolve(true);
-                    }
-                });
-            } else if (type === 'text') {
-                client.createTextPost(blog, { title, body: description, tags: submissionTags },
-                  (err, res) => {
-                      if (err) {
-                          action.failed();
-                          reject({ err, msg: Error('Failed to post to Tumblr.'), status });
-                      } else {
-                          resolve(true);
-                      }
-                  });
-            }
+            $.ajax({
+                url: auth.generateAuthUrl('/tumblr/post'),
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                error(err) {
+                    reject({ err, msg: Error('Failed to post to Tumblr.'), status });
+                },
+                success() {
+                    resolve(true);
+                },
+            });
         } catch (err) {
             reject({ err, msg: Error('Failed to post to Tumblr.'), status });
         }
@@ -195,8 +127,6 @@ function postToTumblr(blog, submissionTags, title, description, type, base64) {
  *
  */
 exports.authorize = function authenticateTumblr() {
-    client = null;
-
     return new Promise((resolve) => {
         $.get(auth.generateAuthUrl('/tumblr/authorize'))
         .done((res) => {
@@ -221,14 +151,14 @@ exports.refresh = function loadToken() {
 
     user = storedToken;
     return new Promise((resolve, reject) => {
-        auth.getKeys('tumblr').then((res) => {
-            resolve(createTumblrClient({
-                consumer_key: res.k,
-                consumer_secret: res.s,
-                token: user.token,
-                token_secret: user.secret,
-            }));
-        }).catch(() => {
+        $.post(auth.generateAuthUrl('/tumblr/refresh'), { token: user.token, secret: user.secret })
+        .done((res) => {
+            user.name = res.user.name;
+            user.blogs = res.user.blogs;
+            store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
+            resolve(true);
+        }).fail(() => {
+            action.failed();
             reject(false);
         });
     });

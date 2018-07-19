@@ -1,0 +1,9 @@
+button {
+  height: 100%;
+  line-height: 0;
+  color: inherit;
+  background-color: inherit;
+  vertical-align: top;
+  border-radius: 0;
+  border: #fff;
+}

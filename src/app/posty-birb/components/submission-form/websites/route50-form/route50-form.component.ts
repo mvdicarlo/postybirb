@@ -1,4 +1,4 @@
-import { Component, Injector, forwardRef } from '@angular/core';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
 import { Information } from '../../base-website-form/information.interface';
@@ -7,7 +7,8 @@ import { Information } from '../../base-website-form/information.interface';
   selector: 'route50-form',
   templateUrl: './route50-form.component.html',
   styleUrls: ['./route50-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => Route50FormComponent) }]
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => Route50FormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Route50FormComponent extends BaseWebsiteFormComponent {
 

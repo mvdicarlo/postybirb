@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 

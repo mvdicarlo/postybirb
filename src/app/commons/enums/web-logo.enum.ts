@@ -11,6 +11,7 @@ const WebLogo = {
   [SupportedWebsites.Furaffinity]: './assets/web-icons/fa_logo.png',
   [SupportedWebsites.Furiffic]: './assets/web-icons/furiffic_logo.svg',
   [SupportedWebsites.FurryNetwork]: './assets/web-icons/furrynetwork_logo.png',
+  [SupportedWebsites.HentaiFoundry]: './assets/web-icons/hentaifoundry_logo.png',
   [SupportedWebsites.Inkbunny]: './assets/web-icons/inkbunny_logo.png',
   [SupportedWebsites.Patreon]: './assets/web-icons/patreon_logo.svg',
   [SupportedWebsites.Pixiv]: './assets/web-icons/pixiv_logo.svg',

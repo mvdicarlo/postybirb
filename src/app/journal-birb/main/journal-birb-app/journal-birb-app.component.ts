@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
-import { timer } from 'rxjs/observable/timer';
+import { Subscription ,  timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 
 import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';

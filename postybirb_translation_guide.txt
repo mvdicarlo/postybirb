@@ -19,6 +19,8 @@ TRANSLATOR: <Person to be credited>
 
 "Add From Clipboard"
 
+"Additional Images"
+
 "Additional Options"
 
 "Adult"
@@ -28,6 +30,8 @@ TRANSLATOR: <Person to be credited>
 "All Ages"
 
 "Allow Community Tags"
+
+"Allow error logs"
 
 "Animation"
 
@@ -44,6 +48,10 @@ TRANSLATOR: <Person to be credited>
 "Block Guests"
 
 "By using PostyBirb you agree to the Terms of Service and Rules of the sites that you are posting to. You are responsible for everything you post."
+
+"Cancel"
+
+"Cancel All"
 
 "Category"
 
@@ -87,11 +95,15 @@ TRANSLATOR: <Person to be credited>
 
 "Delete"
 
+"Delete All"
+
 "Delete Template"
 
 "Description"
 
 "Description Help"
+
+"Description is more than {{length}} characters"
 
 "Disable"
 
@@ -151,6 +163,8 @@ TRANSLATOR: <Person to be credited>
 
 "Initializing"
 
+"Interrupted"
+
 "Invalid for selected websites"
 
 "License"
@@ -203,9 +217,9 @@ TRANSLATOR: <Person to be credited>
 
 "Password"
 
-"Please provide a file"
+"Paused until"
 
-"Please provide at least "
+"Please provide a file"
 
 "Please provide at least {{min}} tags"
 
@@ -221,8 +235,6 @@ TRANSLATOR: <Person to be credited>
 
 "Posting"
 
-"Posting will stop after current submission finishes."
-
 "PostyBirb Post Logs"
 
 "PostyBirb Settings"
@@ -230,6 +242,8 @@ TRANSLATOR: <Person to be credited>
 "PostyBirb has been provided free because I cannot guarantee optimal functionality at all times."
 
 "Public"
+
+"Queued"
 
 "Rating"
 
@@ -252,6 +266,8 @@ TRANSLATOR: <Person to be credited>
 "Schedule Submission"
 
 "Schedule or post multimedia submissions to multiple websites all at once from one simple form"
+
+"Scheduled"
 
 "Scheduled Submissions"
 
@@ -287,7 +303,7 @@ TRANSLATOR: <Person to be credited>
 
 "Stop On Failure"
 
-"Stop the next submissions from being posted"
+"Stop posting on submission failure"
 
 "Story"
 
@@ -306,6 +322,8 @@ TRANSLATOR: <Person to be credited>
 "Submission Type"
 
 "Submission did not post successfully. Would you like to stop?"
+
+"Submissions"
 
 "Success"
 
@@ -335,6 +353,8 @@ TRANSLATOR: <Person to be credited>
 
 "Unposted"
 
+"Unscheduled"
+
 "Unselected"
 
 "Unsupported file size"
@@ -347,9 +367,9 @@ TRANSLATOR: <Person to be credited>
 
 "Update Available"
 
-"Use BBCode to format"
-
 "Use Default"
+
+"Use Title"
 
 "Use basic editor"
 

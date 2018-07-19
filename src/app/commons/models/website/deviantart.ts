@@ -5,8 +5,8 @@ import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class DeviantArt extends BaseWebsite implements Website {
@@ -32,7 +32,7 @@ export class DeviantArt extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (this.helper.isAuthorized()) {
             if (this.folders.length === 0) {
@@ -65,6 +65,10 @@ export class DeviantArt extends BaseWebsite implements Website {
   unauthorize(): any {
     super.unauthorize();
     this.http.post(`${this.baseURL}/users/logout`, null).subscribe(() => { });
+  }
+
+  public checkAuthorized(): Promise<boolean> {
+    return this.helper.refresh();
   }
 
   post(submission: PostyBirbSubmissionData): Observable<any> {

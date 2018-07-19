@@ -1,6 +1,6 @@
 import { Component, forwardRef, OnInit, AfterViewInit, AfterViewChecked, OnChanges, SimpleChanges, Input, Output, EventEmitter, Inject, OnDestroy, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription, BehaviorSubject } from 'rxjs';
 
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { SaveEditDialogComponent } from '../save-edit-dialog/save-edit-dialog.component';
@@ -13,6 +13,7 @@ import { SupportedWebsites } from '../../../../commons/enums/supported-websites'
 import { WebsiteStatus } from '../../../../commons/enums/website-status.enum';
 
 import { BaseWebsiteFormComponent } from '../base-website-form/base-website-form.component';
+import { TemplatesService, Template } from '../../../services/templates/templates.service';
 
 //Not a dialog anymore
 @Component({
@@ -32,14 +33,15 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   private subscription: Subscription = Subscription.EMPTY;
 
   public form: FormGroup;
-  public defaultDescription: any;
+  public defaultDescription: BehaviorSubject<any>;
   public defaultTags: any;
   public supportedWebsites: any = SupportedWebsites;
   public onlineWebsites: string[] = [];
   public offlineWebsites: string[] = [];
-  public unloadedTemplate: any;
+  public unloadedTemplate: PostyBirbSubmission;
 
-  constructor(private managerService: WebsiteManagerService, private fb: FormBuilder, private dialog: MatDialog) {
+  constructor(private managerService: WebsiteManagerService, private fb: FormBuilder, private dialog: MatDialog, private templates: TemplatesService) {
+    this.defaultDescription = new BehaviorSubject(undefined);
     this.form = this.fb.group({
       defaultDescription: [],
       defaultTags: [],
@@ -48,7 +50,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnInit() {
-    this.form.controls.defaultDescription.valueChanges.subscribe(value => this.defaultDescription = value);
+    this.form.controls.defaultDescription.valueChanges.subscribe(value => this.defaultDescription.next(value));
     this.form.controls.defaultTags.valueChanges.subscribe(value => this.defaultTags = value);
     this.form.controls.selectedWebsites.valueChanges.subscribe(() => this.formsAreValid());
 
@@ -56,7 +58,6 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     this.subscription = this.managerService.getObserver().subscribe(statuses => this.updateOnlineWebsites(statuses));
 
     this.fillFromSingleSubmission();
-
   }
 
   ngAfterViewInit() {
@@ -65,8 +66,23 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewChecked() {
     if (this.unloadedTemplate) { // Load a selected template in for website forms that hadn't been loaded in yet
-      this.websiteForms.forEach(form => form.writeValue(this.unloadedTemplate[form.website]));
-      this.unloadedTemplate = null;
+      if (this.websiteForms) {
+        const websitesToApply = [...this.unloadedTemplate.getDefaultFieldFor('selectedWebsites')];
+        const forms = this.websiteForms.toArray();
+
+        for (let i = 0; i < forms.length; i++) {
+          const form = forms[i];
+          const index = websitesToApply.indexOf(form.website);
+          if (index !== -1) {
+            form.writeValue(this.unloadedTemplate.getWebsiteFieldFor(form.website));
+            websitesToApply.splice(index, 1);
+          }
+        }
+
+        if (websitesToApply.length === 0) {
+          this.unloadedTemplate = null;
+        }
+      }
     }
   }
 
@@ -83,13 +99,15 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+
+    this.defaultDescription.complete();
   }
 
   private fillFromSingleSubmission(): void {
     if (this.selectedSubmissions.length === 1) { // only one to edit
       const submission: PostyBirbSubmission = this.selectedSubmissions[0];
       this.form.patchValue(submission.getDefaultFields());
-      if (this.websiteForms) this.websiteForms.forEach(form => form.writeValue(submission.getWebsiteFieldFor(form.website)))
+      if (this.websiteForms) this.websiteForms.forEach(form => form.writeValue(submission.getWebsiteFieldFor(form.website)));
     }
   }
 
@@ -147,14 +165,20 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.templateSelect.addTemplate(result, { default: this.form.value, website: this.generateWebsiteValuesObject() });
+        const submission: PostyBirbSubmission = new PostyBirbSubmission(null, null);
+        submission.setWebsiteFields(this.generateWebsiteValuesObject());
+        submission.setDefaultFields(this.form.value);
+        submission.setUnpostedWebsites(this.form.value.selectedWebsites);
+        this.templates.addTemplate(result, submission.asSubmissionTemplate());
       }
     });
   }
 
-  public templateSelected(profile: any): void {
-    this.form.setValue(profile.config.default);
-    this.unloadedTemplate = profile.config.website;
+  public templateSelected(template: Template): void {
+    const tmp: PostyBirbSubmission = PostyBirbSubmission.fromArchive(template.template)
+    this.form.patchValue(tmp.getDefaultFields());
+    if (this.websiteForms) this.websiteForms.forEach(form => form.writeValue(tmp.getWebsiteFieldFor(form.website)));
+    this.unloadedTemplate = tmp;
   }
 
   public loadFromSubmission(event: any): void {
@@ -222,17 +246,17 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.websiteForms) return;
 
     const keys = this.form.value.selectedWebsites || [];
+    const websiteForms = this.websiteForms.toArray();
+
     for (let i = 0; i < keys.length; i++) {
       const website = keys[i];
-      let valid: boolean = true;
 
-      this.websiteForms.forEach(form => {
+      for (let j = 0; j < websiteForms.length; j++) {
+        const form = websiteForms[j];
         if (form.website === website && !form.isValid()) {
-          valid = false
+          return false
         }
-      });
-
-      return valid;
+      }
     }
 
     return keys.length > 0 ? true : false;

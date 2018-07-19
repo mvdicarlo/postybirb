@@ -14,6 +14,7 @@ import { E621 } from '../../models/website/e621';
 import { Furaffinity } from '../../models/website/furaffinity';
 import { Furiffic } from '../../models/website/furiffic';
 import { FurryNetwork } from '../../models/website/furrynetwork';
+import { HentaiFoundry } from '../../models/website/hentaifoundry';
 import { Inkbunny } from '../../models/website/inkbunny';
 import { Pixiv } from '../../models/website/pixiv';
 import { Patreon } from '../../models/website/patreon';
@@ -36,7 +37,7 @@ export class WebsiteManagerService {
   private bbcodeParser: BbCodeParse;
 
   constructor(private derpibooru: Derpibooru, private deviantArt: DeviantArt, private e621: E621, private furaffinity: Furaffinity, private furiffic: Furiffic,
-    private furryNetwork: FurryNetwork, private inkbunny: Inkbunny, private pixiv: Pixiv, private patreon: Patreon, private route50: Route50,
+    private furryNetwork: FurryNetwork, private hentaiFoundry: HentaiFoundry, private inkbunny: Inkbunny, private pixiv: Pixiv, private patreon: Patreon, private route50: Route50,
     private soFurry: SoFurry, private tumblr: Tumblr, private twitter: Twitter, private weasyl: Weasyl, private notify: NotifyService) {
     this.statusSubject = new Subject<any>();
     this.refreshMap = new Map<string, Website>();
@@ -48,6 +49,7 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.e621, e621);
     this.websites.set(SupportedWebsites.Furaffinity, furaffinity);
     this.websites.set(SupportedWebsites.Furiffic, furiffic);
+    if (window['sfw'] !== 'true') this.websites.set(SupportedWebsites.HentaiFoundry, hentaiFoundry);
     this.websites.set(SupportedWebsites.Patreon, patreon);
     this.websites.set(SupportedWebsites.Pixiv, pixiv);
     this.websites.set(SupportedWebsites.Route50, route50);
@@ -60,14 +62,19 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.DeviantArt, deviantArt);
     this.refreshMap.set(SupportedWebsites.DeviantArt, deviantArt);
 
-    this.websites.set(SupportedWebsites.Inkbunny, inkbunny);
-    this.refreshMap.set(SupportedWebsites.Inkbunny, inkbunny);
+    if (window['sfw'] !== 'true') {
+      this.websites.set(SupportedWebsites.Inkbunny, inkbunny);
+      this.refreshMap.set(SupportedWebsites.Inkbunny, inkbunny);
+    }
 
     this.websites.set(SupportedWebsites.Tumblr, tumblr);
     this.refreshMap.set(SupportedWebsites.Tumblr, tumblr);
 
     this.websites.set(SupportedWebsites.Twitter, twitter);
     this.refreshMap.set(SupportedWebsites.Twitter, twitter);
+
+    this.refreshAuthorizedWebsites();
+    this.refreshAllStatuses();
 
     setInterval(this.refreshAuthorizedWebsites.bind(this), 4 * 60000);
     setInterval(this.refreshAllStatuses.bind(this), 10 * 60000)
@@ -92,6 +99,7 @@ export class WebsiteManagerService {
   }
 
   public checkLogin(website: string): void {
+    if (!this.websites.get(website)) return;
     this.websites.get(website).getStatus().then(result => {
       this.statusSubject.next({ [website]: result });
     }).catch(result => {
@@ -142,19 +150,28 @@ export class WebsiteManagerService {
     const site = this.websites.get(website);
     return new Observable(observer => {
       site.getUser().then(() => {
-        site.post(data).subscribe((success) => {
-          observer.next(success);
+        site.checkAuthorized().then(() => {
+          site.post(data).subscribe((success) => {
+            observer.next(success);
+            observer.complete();
+          }, (err) => {
+            observer.error(err);
+            observer.complete();
+          });
+        }).catch(() => {
+          observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
           observer.complete();
-        }, (err) => {
-          observer.error(err);
-          observer.complete();
+
+          this.notify.translateNotification('Not logged in').subscribe((msg) => {
+            this.notify.getNotify().error(`${msg} - ${website}`);
+          });
         });
       }).catch(() => {
         observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
         observer.complete();
 
         this.notify.translateNotification('Not logged in').subscribe((msg) => {
-          this.notify.getNotify().error(`${msg}: ${website}`);
+          this.notify.getNotify().error(`${msg} - ${website}`);
         });
       });
     });
@@ -169,19 +186,28 @@ export class WebsiteManagerService {
     const site = this.websites.get(website);
     return new Observable(observer => {
       site.getUser().then(() => {
-        site.postJournal(title, parsedDescription, websiteOptions).subscribe((success) => {
-          observer.next(success);
+        site.checkAuthorized().then(() => {
+          site.postJournal(title, parsedDescription, websiteOptions).subscribe((success) => {
+            observer.next(success);
+            observer.complete();
+          }, (err) => {
+            observer.error(err);
+            observer.complete();
+          });
+        }).catch(() => {
+          observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
           observer.complete();
-        }, (err) => {
-          observer.error(err);
-          observer.complete();
+
+          this.notify.translateNotification('Not logged in').subscribe((msg) => {
+            this.notify.getNotify().error(`${msg} - ${website}`);
+          });
         });
       }).catch(() => {
         observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
         observer.complete();
 
         this.notify.translateNotification('Not logged in').subscribe((msg) => {
-          this.notify.getNotify().error(`${msg}: ${website}`);
+          this.notify.getNotify().error(`${msg} - ${website}`);
         });
       });
     });

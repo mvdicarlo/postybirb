@@ -6,8 +6,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class FurryNetwork extends BaseWebsite implements Website {
@@ -40,7 +40,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (this.userInformation.name) {
             this.http.get(`${this.baseURL}/api/user`,
@@ -126,6 +126,10 @@ export class FurryNetwork extends BaseWebsite implements Website {
     });
   }
 
+  public checkAuthorized(): Promise<boolean> {
+    return this.refresh();
+  }
+
   private generateUploadUrl(userProfile: string, file: File, type: any): string {
     let uploadURL = '';
 
@@ -175,16 +179,17 @@ export class FurryNetwork extends BaseWebsite implements Website {
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
       const userProfile = submission.options.profile || this.userInformation.name;
-      const type = this.getMapping('content', submission.submissionData.submissionType);
+      let type = this.getMapping('content', submission.submissionData.submissionType);
       const file = submission.submissionData.submissionFile.getRealFile();
       const headers: HttpHeaders = new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`);
 
+      if (file.type === 'image/gif') type = 'multimedia';
       let uploadURL = this.generateUploadUrl(userProfile, file, type);
 
       if (type === 'story') {
         this.http.post(uploadURL, JSON.stringify(this.generatePostData(submission, type)), { headers: headers })
           .subscribe(res => {
-            observer.next(true);
+            observer.next(res);
             observer.complete();
           }, err => {
             observer.error(this.createError(err, submission));
@@ -195,7 +200,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
           .subscribe((fileInfo: any) => {
             this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
               .subscribe(res => {
-                observer.next(true);
+                observer.next(res);
                 observer.complete();
 
                 if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {

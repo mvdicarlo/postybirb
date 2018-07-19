@@ -21,8 +21,8 @@
         <ckeditor formControlName="description" [config]="ckConfig" (blur)="onBlur($event)"></ckeditor>
       </div>
       <div>
-        <description-help style="width: 80%; display: inline-block;" *ngIf="showHelp"></description-help>
-        <span class="float-right" style="padding-right: 3px;">({{estimatedDescriptionCount}})</span>
+        <description-help style="width: 100%; display: inline-block;" *ngIf="showHelp"></description-help>
+        <span class="float-right" style="padding-right: 3px;">({{updateEstimatedCharacterCount() | async }})</span>
       </div>
     </div>
   </div>

@@ -6,14 +6,14 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+
 
 @Injectable()
 export class Derpibooru extends BaseWebsite implements Website {
 
   constructor(private http: HttpClient) {
-    super(SupportedWebsites.Derpibooru, 'https://derpibooru.org');
+    super(SupportedWebsites.Derpibooru, 'https://www.derpibooru.org');
     this.mapping = {
       rating: {
         General: 'safe',
@@ -32,7 +32,7 @@ export class Derpibooru extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(`${this.baseURL}`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}`, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('Logout')) this.loginStatus = WebsiteStatus.Logged_In;
           else this.loginStatus = WebsiteStatus.Logged_Out;
@@ -46,9 +46,9 @@ export class Derpibooru extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/users/edit`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/users/edit`, { responseType: 'text' })
         .subscribe(page => {
-          const username: string = HTMLParser.getInputValue(page, 'user[name]');
+          const username: string = page.match(/\/profiles\/.*?(?=")/g)[0].split('/')[2];
           username ? resolve(username) : reject(null);
         }, err => reject(Error(`Not logged in to ${this.websiteName}`)));
     });
@@ -56,7 +56,7 @@ export class Derpibooru extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/images/new`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/images/new`, { responseType: 'text' })
         .subscribe(uploadFormPage => {
           const uploadForm = new FormData();
           const options = submission.options;
@@ -76,14 +76,14 @@ export class Derpibooru extends BaseWebsite implements Website {
           //Ignored properties
           uploadForm.set('utf8', '✓');
           uploadForm.set('scraper_url', '');
-          uploadForm.set('scraper_cache', '');
           uploadForm.set('commit', 'Create Image');
           uploadForm.set('image[anonymous]', '0');
           uploadForm.set('image[image_cache]', '');
+          uploadForm.set('commit', 'Create Image');
 
           this.http.post(`${this.baseURL}/images`, uploadForm, { responseType: 'text' })
             .subscribe((res: any) => {
-              if (!res.includes('Create Image')) observer.next(true);
+              if (res.includes('Uploaded')) observer.next(res);
               else observer.error(this.createError(res, submission));
               observer.complete();
             }, err => {

@@ -1,39 +1,42 @@
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
-import { timer } from 'rxjs/observable/timer';
+import { Subscription, timer, Observable } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 
-import { SupportedWebsiteRestrictions, Restrictions } from '../../../../models/supported-websites-restrictions';
+import { SupportedWebsiteRestrictions, WebsiteRestrictions } from '../../../../models/supported-websites-restrictions';
 import { PostyBirbSubmission } from '../../../../../commons/models/posty-birb/posty-birb-submission';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'submission-picker-item',
   templateUrl: './submission-picker-item.component.html',
   styleUrls: ['./submission-picker-item.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionPickerItemComponent implements OnInit, OnDestroy {
   @Input() submission: PostyBirbSubmission;
   @Input() readOnly: boolean = false;
+  @Input() website: string;
   @Output() select: EventEmitter<PostyBirbSubmission> = new EventEmitter();
 
   public isSelected: boolean = false;
   public title: string;
   public type: string;
   public src: string;
-  public invalidFlags: Restrictions;
+  public verify: WebsiteRestrictions;
+  public restrictions: any;
+  public isValid: boolean = true;
 
   private subscription: Subscription = Subscription.EMPTY;
 
-  constructor(private _changeDetector: ChangeDetectorRef) { }
+  constructor(private translate: TranslateService, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.getInfo(this.submission);
     this.subscription = this.submission.observe().pipe(debounce(() => timer(100)))
       .subscribe((submission) => this.getInfo(submission));
 
-    this.invalidFlags = SupportedWebsiteRestrictions.getSupportedWebsites(this.submission.getSubmissionRating(), this.submission.getSubmissionType(), this.submission.getSubmissionFileObject());
-    this.trimInvalidWebsites();
+    this.verify = SupportedWebsiteRestrictions.verifyWebsiteRestrictions(this.submission);
+    this.restrictions = this.verify.verifiedWebsites[this.website];
+    this.isValid = Object.keys(this.restrictions).length === 0;
   }
 
   ngOnDestroy() {
@@ -63,37 +66,14 @@ export class SubmissionPickerItemComponent implements OnInit, OnDestroy {
     this.select.emit(this.submission);
   }
 
-  private trimInvalidWebsites(): void {
-    const allSelectedWebsites = this.submission.getDefaultFieldFor('selectedWebsites') || [];
+  public translateText(keyword: string, additional: string): Observable<string> {
+    const strings: string[] = [keyword, additional.toString()];
 
-    this.invalidFlags.unsupportedByExtension = this.invalidFlags.unsupportedByExtension.filter(website => allSelectedWebsites.includes(website));
-    this.invalidFlags.unsupportedByFileSize = this.invalidFlags.unsupportedByFileSize.filter(website => allSelectedWebsites.includes(website));
-    this.invalidFlags.unsupportedByRating = this.invalidFlags.unsupportedByRating.filter(website => allSelectedWebsites.includes(website));
-    this.invalidFlags.unsupportedByType = this.invalidFlags.unsupportedByType.filter(website => allSelectedWebsites.includes(website));
-
-    this.invalidFlags.hasInvalid =
-      this.invalidFlags.unsupportedByExtension.length > 0 ||
-      this.invalidFlags.unsupportedByFileSize.length > 0 ||
-      this.invalidFlags.unsupportedByRating.length > 0 ||
-      this.invalidFlags.unsupportedByType.length > 0;
-  }
-
-  public getInvalidWebsites(): string {
-    const websites: string[] = [];
-
-    const all = [
-      ...this.invalidFlags.unsupportedByExtension,
-      ...this.invalidFlags.unsupportedByFileSize,
-      ...this.invalidFlags.unsupportedByRating,
-      ...this.invalidFlags.unsupportedByType
-    ];
-
-    all.forEach(website => {
-      if (!websites.includes(website)) {
-        websites.push(website);
-      }
+    return new Observable<string>(observer => {
+      this.translate.get(strings).subscribe((value: any) => {
+        observer.next(`${value[keyword]}: ${value[additional.toString()]}`);
+        observer.complete();
+      });
     });
-
-    return websites.join(', ');
   }
 }

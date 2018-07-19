@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { UpdateService } from './commons/services/update/update.service';
-import { PostObserverService } from './posty-birb/services/post-observer/post-observer.service';
-
+import { PostManagerService } from './posty-birb/services/post-manager/post-manager.service';
+import { SchedulerService } from './posty-birb/services/scheduler/scheduler.service';
 
 @Component({
   selector: 'app-root',
@@ -12,10 +12,9 @@ import { PostObserverService } from './posty-birb/services/post-observer/post-ob
 export class AppComponent {
   public version: string;
   public showSidebar: boolean = false;
-  private knownLanguages: any = ['en', 'es', 'fi', 'pt'];
+  private knownLanguages: any = ['en', 'es', 'fi', 'fr', 'pt'];
 
-  constructor(private translate: TranslateService, private update: UpdateService, private postObserver: PostObserverService) {
-
+  constructor(private translate: TranslateService, private update: UpdateService, private postManager: PostManagerService, private scheduler: SchedulerService) {
     this.version = window['appVersion'];
 
     let userLanguage = window.navigator.language.split('-')[0];
@@ -44,4 +43,6 @@ export class AppComponent {
   public openURL(url: string): void {
     window['openUrlInBrowser'](url);
   }
+
+
 }

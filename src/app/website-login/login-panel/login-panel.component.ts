@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { WebsiteManagerService } from '../../commons/services/website-manager/website-manager.service';
 import { WebsiteStatus } from '../../commons/enums/website-status.enum';
 import { WebLogo } from '../../commons/enums/web-logo.enum';
