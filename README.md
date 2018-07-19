@@ -28,7 +28,3 @@ Run `ng generate component component-name` to generate a new component. You can 
 4. Navigate to electron
 5. Install NPM *npm i*
 6. Start electron *npm run eb-{windows|linux|mac}*
-
-## TODO
-* Document code for release to public repository
-* Strip git keys and API keys for public repository
