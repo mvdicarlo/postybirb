@@ -6,9 +6,6 @@
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-### Note
-**You will need to get your own API keys for testing if you want to have all website functionality since I stripped them out for the public repository**
-
 ## Build
 **You will need NPM and Node installed**
 
