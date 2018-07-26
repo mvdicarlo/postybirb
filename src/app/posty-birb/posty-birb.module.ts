@@ -86,6 +86,7 @@ import { PostyBirbStatusBarComponent } from './components/posty-birb-status-bar/
 import { SubmissionSheetComponent } from './components/sheets/submission-sheet/submission-sheet.component';
 import { SubmissionRowComponent } from './components/sheets/submission-sheet/submission-row/submission-row.component';
 import { SubmissionTableComponent } from './components/sheets/submission-sheet/submission-table/submission-table.component';
+import { HentaiFoundryCategorySelectComponent } from './components/submission-form/websites/hentai-foundry-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
 
 const routes: Routes = [
   { path: 'postybirb', component: PostyBirbAppComponent }
@@ -173,7 +174,8 @@ const routes: Routes = [
     PostyBirbStatusBarComponent,
     SubmissionSheetComponent,
     SubmissionRowComponent,
-    SubmissionTableComponent
+    SubmissionTableComponent,
+    HentaiFoundryCategorySelectComponent
   ],
   entryComponents: [
     ScheduleSubmissionDialogComponent,

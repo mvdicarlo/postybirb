@@ -1,2 +1,3 @@
-<button class="btn btn-sm btn-secondary" (click)="openSubmissions()"><span>{{ 'Submissions' | translate }} </span><span *ngIf="submissionCount !== 0" class="badge badge-danger">{{submissionCount}}</span></button>
+<button class="btn btn-sm btn-secondary" (click)="openSubmissions()" #tooltip="matTooltip" [matTooltip]="'View Submissions' | translate" matTooltipPosition="above"><mat-icon>visibility</mat-icon><span> {{ 'View Submissions' | translate }} </span><span *ngIf="submissionCount !== 0" class="badge badge-danger">{{submissionCount}}</span></button>
 <button *ngIf="queueCount !== 0" class="btn btn-sm btn-secondary" (click)="openQueue()"><span>{{ 'Posting' | translate }} </span><span *ngIf="queueCount !== 0" class="badge badge-danger">{{queueCount}}</span></button>
+<button class="btn btn-sm btn-secondary" (click)="openSettings()"><mat-icon>settings</mat-icon><span> {{ 'Settings' | translate }} </span></button>

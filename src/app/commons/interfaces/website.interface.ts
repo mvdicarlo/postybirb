@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
  * Interface used for every website model
  */
 export interface Website {
+  websiteName?: string;
 
   /**
    * @function getStatus

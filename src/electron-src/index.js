@@ -18,32 +18,32 @@ window.appVersion = require('electron').remote.app.getVersion();
 window.documentsPath = require('electron').remote.app.getPath('documents');
 window.sfw = require('electron').remote.process.env.SFW;
 
-// Set up generic Documents folder
-fs.access(`${window.documentsPath}/PostyBirb`, fs.constants.F_OK, (err) => {
-    if (err) {
-        fs.mkdir(`${window.documentsPath}/PostyBirb`, (err) => {
-            if (err) {
-                console.error('Unable to create Documents subfolder');
-            } else {
-                fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
-                    if (err) {
-                        console.error('Unable to create Documents subfolder: temp');
-                    }
-                });
-            }
-        });
-    } else {
-        fs.access(`${window.documentsPath}/PostyBirb/temp`, fs.constants.F_OK, (err) => {
-            if (err) {
-                fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
-                    if (err) {
-                        console.error('Unable to create Documents subfolder: temp');
-                    }
-                });
-            }
-        });
-    }
-});
+// Set up generic Documents folder - DEPRECATED
+// fs.access(`${window.documentsPath}/PostyBirb`, fs.constants.F_OK, (err) => {
+//     if (err) {
+//         fs.mkdir(`${window.documentsPath}/PostyBirb`, (err) => {
+//             if (err) {
+//                 console.error('Unable to create Documents subfolder');
+//             } else {
+//                 fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
+//                     if (err) {
+//                         console.error('Unable to create Documents subfolder: temp');
+//                     }
+//                 });
+//             }
+//         });
+//     } else {
+//         fs.access(`${window.documentsPath}/PostyBirb/temp`, fs.constants.F_OK, (err) => {
+//             if (err) {
+//                 fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
+//                     if (err) {
+//                         console.error('Unable to create Documents subfolder: temp');
+//                     }
+//                 });
+//             }
+//         });
+//     }
+// });
 
 /**
  * These functions are used to limit what can be called from the app itself

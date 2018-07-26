@@ -1,9 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { MatDialog, MatDialogRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material';
 import { MatBottomSheet, MatBottomSheetRef } from '@angular/material';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngxs/store';
 
 import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-sheet.component';
+import { SubmissionSettingsDialogComponent } from '../dialog/submission-settings-dialog/submission-settings-dialog.component';
 
 @Component({
   selector: 'posty-birb-status-bar',
@@ -18,10 +20,21 @@ export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
   public queueCount: number = 0;
   public submissionCount: number = 0;
 
-  constructor(private _store: Store, private bottomSheet: MatBottomSheet) { }
+  @ViewChild('tooltip') tooltip: any;
+  private tooltipTimeout: any;
+
+  constructor(private _store: Store, private bottomSheet: MatBottomSheet, private dialog: MatDialog) { }
 
   ngOnInit() {
-    this.submissionSubscription = this._store.select(state => state.postybirb.submissions).subscribe(submissions => this.submissionCount = submissions.length);
+    this.submissionSubscription = this._store.select(state => state.postybirb.submissions).subscribe(submissions => {
+      this.submissionCount = submissions.length;
+
+      if (this.tooltip) {
+        this.tooltip.show();
+        clearTimeout(this.tooltipTimeout);
+        this.tooltipTimeout = setTimeout(function() { this.tooltip.hide() }.bind(this), 3000);
+      }
+    });
     this.queueSubscription = this._store.select(state => state.postybirb.queued).subscribe(submissions => this.queueCount = submissions.length);
   }
 
@@ -40,6 +53,10 @@ export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
     this.bottomSheet.open(SubmissionSheetComponent, {
       data: { index: 0 }
     });
+  }
+
+  public openSettings(): void {
+    this.dialog.open(SubmissionSettingsDialogComponent, {});
   }
 
 }

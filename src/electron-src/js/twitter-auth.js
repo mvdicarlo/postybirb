@@ -84,37 +84,30 @@ function isAuthenticated() {
  */
 function postToTwitter(status, medias) {
     return new Promise((resolve, reject) => {
-        try {
-            if (!isAuthenticated()) {
-                reject(Error('Not Authorized'));
-                return;
-            }
+        if (!isAuthenticated()) {
+            reject(Error('Not Authorized'));
+            return;
+        }
 
-            const post = status || '';
-            const postObj = {
-                status: post,
-                token: oauth.token,
-                secret: oauth.secret,
-                medias: medias ? medias.map(m => m.toString('base64')) : [],
-            };
+        const post = (status || '').substring(0, 280);
+        const postObj = {
+            status: post,
+            token: oauth.token,
+            secret: oauth.secret,
+            medias: medias ? medias.map(m => m.toString('base64')) : [],
+        };
 
 
-            $.post(auth.generateAuthUrl('/twitter/post'), { data: Buffer.from(JSON.stringify(postObj)).toString('base64') })
+        $.post(auth.generateAuthUrl('/twitter/post'), { data: Buffer.from(JSON.stringify(postObj)).toString('base64') })
             .done(() => {
                 resolve(true);
             }).fail((err) => {
                 reject({
                     err,
                     msg: Error('Failed to post to Twitter.'),
+                    status,
                 });
             });
-        } catch (err) {
-            reject({
-                err,
-                msg: Error('Failed to post to Twitter.'),
-                status,
-            });
-        }
     });
 }
 

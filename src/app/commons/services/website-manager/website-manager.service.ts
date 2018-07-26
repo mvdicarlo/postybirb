@@ -76,8 +76,9 @@ export class WebsiteManagerService {
     this.refreshAuthorizedWebsites();
     this.refreshAllStatuses();
 
-    setInterval(this.refreshAuthorizedWebsites.bind(this), 4 * 60000);
-    setInterval(this.refreshAllStatuses.bind(this), 10 * 60000)
+    setInterval(this.refreshAllStatuses.bind(this), 10 * 60000);
+    setInterval(this.refreshAuthorizedWebsite.bind(this), 4 * 60000, [deviantArt]);
+    setInterval(this.refreshAuthorizedWebsite.bind(this), 120 * 60000, [tumblr, twitter]);
   }
 
   private refreshAuthorizedWebsites(): void {
@@ -87,6 +88,16 @@ export class WebsiteManagerService {
         this.checkLogin(key);
       }, (err) => {
         this.checkLogin(key);
+      });
+    });
+  }
+
+  private refreshAuthorizedWebsite(websites: Website[] = []): void {
+    websites.forEach(website => {
+      website.refresh().then((success) => {
+        this.checkLogin(website.websiteName);
+      }, (err) => {
+        this.checkLogin(website.websiteName);
       });
     });
   }

@@ -1,4 +1,4 @@
-<tr *ngIf="isIdle()">
+<ng-container *ngIf="isIdle()">
   <td name="file">
     <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image') || !file.type.includes('video')">
     <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
@@ -37,9 +37,9 @@
     <button *ngIf="archive.meta.order > 0" mat-icon-button color="primary" (click)="moveUp()"><mat-icon>keyboard_arrow_up</mat-icon></button>
     <button mat-icon-button color="primary" (click)="moveDown()"><mat-icon>keyboard_arrow_down</mat-icon></button>
   </td>
-</tr>
+</ng-container>
 
-<tr *ngIf="!isIdle()">
+<ng-container *ngIf="!isIdle()">
   <td name="file">
     <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image') || !file.type.includes('video')">
     <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
@@ -60,4 +60,4 @@
             </button>
     </div>
   </td>
-</tr>
+</ng-container>

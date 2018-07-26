@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { Observable } from 'rxjs';
-
+import { HTMLParser } from '../../helpers/html-parser';
 
 @Injectable()
 export class DeviantArt extends BaseWebsite implements Website {
@@ -64,7 +64,12 @@ export class DeviantArt extends BaseWebsite implements Website {
 
   unauthorize(): any {
     super.unauthorize();
-    this.http.post(`${this.baseURL}/users/logout`, null).subscribe(() => { });
+    this.http.get(`${this.baseURL}`, { responseType: 'text' }).subscribe((page) => {
+      const body = new URLSearchParams();
+      body.set('validate_token', HTMLParser.getInputValue(page, 'validate_token'));
+      body.set('validate_key', HTMLParser.getInputValue(page, 'validate_key'))
+      this.http.post(`${this.baseURL}/users/logout`, body.toString(), { headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded') }).subscribe(() => { });
+    });
   }
 
   public checkAuthorized(): Promise<boolean> {
@@ -147,7 +152,7 @@ export class DeviantArt extends BaseWebsite implements Website {
                   observer.next(true);
                   observer.complete();
                 }, err => {
-                  observer.error(this.createError(err, submission));
+                  observer.error(this.createError(err, submission, (err.error || {}).error_description));
                   observer.complete();
                 });
             }

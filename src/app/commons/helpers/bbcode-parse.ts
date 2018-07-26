@@ -344,13 +344,7 @@ export class BbCodeParse {
     urlMatches.forEach((urlTag) => {
       const url = urlTag.match(/=.*?(?=\])/g)[0].replace('=', '');
       const msg = urlTag.match(/\].*?(?=\[)/g)[0].replace(']', '');
-      newText = newText.replace(urlTag, `${url} (${msg})`);
-    });
-
-    const quoteMatches = newText.match(/\[quote.*?\quote\]/g) || [];
-    quoteMatches.forEach((quoteTag) => {
-      const msg = quoteTag.match(/\].*?(?=\[)/g)[0].replace(']', '');
-      newText = newText.replace(quoteTag, `"${msg}"`);
+      newText = newText.replace(urlTag, url == msg ? url : `${url} (${msg})`);
     });
 
     const otherTags = newText.match(/\[.*?\]/g) || [];

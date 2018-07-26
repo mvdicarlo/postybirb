@@ -27,9 +27,11 @@ export class DeviantArtDialogComponent implements OnInit, OnDestroy {
 
   unauthorize() {
     this.service.unauthorizeWebsite(SupportedWebsites.DeviantArt);
-    this.service.authorizeWebsite(SupportedWebsites.DeviantArt, undefined).then((url) => {
-      this.webview.nativeElement.src = url;
-    });
+    setTimeout(function() {
+      this.service.authorizeWebsite(SupportedWebsites.DeviantArt, undefined).then((url) => {
+        this.webview.nativeElement.src = url;
+      });
+    }.bind(this), 1000)
   }
 
 }

@@ -123,7 +123,7 @@ function getToken() {
  */
 exports.getUserFolders = function getUserFolders() {
     return new Promise((resolve, reject) => {
-        $.get(`https://www.deviantart.com/api/v1/oauth2/gallery/folders?calculate_size=false&access_token=${token.accessToken.access_token}`)
+        $.get(`https://www.deviantart.com/api/v1/oauth2/gallery/folders?calculate_size=false&limit=50&access_token=${token.accessToken.access_token}`)
         .done((res) => {
             resolve(res.results);
         }).fail(() => {

@@ -256,6 +256,8 @@ export class FurryNetwork extends BaseWebsite implements Website {
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
-    return super.formatTags(defaultTags, other, '-').map(tag => { return tag.replace(/(\(|\))/g, '') }).slice(0, 30);
+    return super.formatTags(defaultTags, other, '-').filter(tag => tag.length <= 30 && tag.length >= 3)
+      .map(tag => { return tag.replace(/(\(|\)|:|;|\]|\[)/g, '') })
+      .slice(0, 30);
   }
 }

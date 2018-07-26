@@ -7,6 +7,9 @@ Gustav~ (FA)
 FR
 Firebreath (FA)
 
+DE/German
+kusuguttai (Discord)
+
 EN
 Lemonynade (me)
 

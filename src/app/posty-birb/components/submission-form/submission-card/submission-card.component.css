@@ -57,18 +57,26 @@ mat-form-field {
   float: left;
 }
 
+.thumbnail-field {
+  width: 50%;
+  padding-left: 4px;
+  font-size: 90%;
+  margin-top: -10px;
+  float: right;
+}
+
 .ratings-field {
   width: 50%;
 }
 
 .schedule-field {
-  width: 50%;
+  width: 100%;
   float: left;
   padding-right: 4px;
 }
 
-.thumbnail-field {
+/* .thumbnail-field {
   width: 50%;
   display: inline-block;
   margin-top: -13px;
-}
+} */

@@ -2,15 +2,6 @@ const express = require('express');
 const auth = require('./auth-server');
 
 /**
- * tumblr functions
- */
-const action = {
-    failed() {
-        tumblrExpress.stop();
-    },
-};
-
-/**
  * Temp holder for authorization
  */
 const tempInfo = {};
@@ -26,7 +17,7 @@ let user = {
 /**
  * Tumblr express server
  */
-let tumblrExpress = {
+const tumblrExpress = {
     app: null,
     server: null,
     start() {
@@ -45,11 +36,11 @@ let tumblrExpress = {
                     user.name = r.data.user.name;
                     store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
                     res.send('Tumblr successfully authenticated. You are free to close this window now.');
+                    this.stop();
                 }).fail(() => {
                     res.send('Tubmlr failed to authenticate. Auth server may be down.');
+                    this.stop();
                 });
-
-                this.stop();
             });
         }
     },
@@ -110,14 +101,14 @@ function postToTumblr(blog, submissionTags, title, description, type, base64) {
                 contentType: false,
                 processData: false,
                 error(err) {
-                    reject({ err, msg: Error('Failed to post to Tumblr.'), status });
+                    reject({ err, msg: err, data: { blog, submissionTags, title, description, type }, notify: true });
                 },
                 success() {
                     resolve(true);
                 },
             });
         } catch (err) {
-            reject({ err, msg: Error('Failed to post to Tumblr.'), status });
+            reject({ err, data: { blog, submissionTags, title, description, type } });
         }
     });
 }
@@ -132,8 +123,8 @@ exports.authorize = function authenticateTumblr() {
         .done((res) => {
             tempInfo.token = res.token;
             tempInfo.secret = res.secret;
-            resolve(res.url);
             tumblrExpress.start();
+            resolve(res.url);
         })
         .fail(() => {
             resolve(null);
@@ -151,6 +142,13 @@ exports.refresh = function loadToken() {
 
     user = storedToken;
     return new Promise((resolve, reject) => {
+        if (!user.token || !user.secret) {
+            user = {};
+            store.remove('tumblr');
+            reject(false);
+            return;
+        }
+
         $.post(auth.generateAuthUrl('/tumblr/refresh'), { token: user.token, secret: user.secret })
         .done((res) => {
             user.name = res.user.name;
@@ -158,7 +156,8 @@ exports.refresh = function loadToken() {
             store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
             resolve(true);
         }).fail(() => {
-            action.failed();
+            store.remove('tumblr');
+            user = {};
             reject(false);
         });
     });
@@ -178,6 +177,7 @@ exports.post = function post(blog, tags, title, description, type, buffers) {
 };
 
 exports.stop = tumblrExpress.stop;
+exports.start = tumblrExpress.start;
 exports.isAuthorized = isAuthenticated;
 exports.getBlogs = getUserBlogs;
 exports.getUsername = getUser;

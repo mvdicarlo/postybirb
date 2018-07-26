@@ -3,6 +3,8 @@ import { Subscription, Observable, BehaviorSubject, Subscriber } from 'rxjs';
 import { timer } from 'rxjs/observable/timer';
 import { Store } from '@ngxs/store';
 
+import { SnotifyService } from 'ng-snotify';
+
 import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
 import { SubmissionArchive, PostyBirbSubmission } from '../../../commons/models/posty-birb/posty-birb-submission';
 import { PostyBirbSubmissionData } from '../../../commons/interfaces/posty-birb-submission-data.interface';
@@ -25,7 +27,7 @@ export class PostManagerService {
   private queuedSubmissions: SubmissionArchive[] = [];
   private postingSubmission: PostHandler = null;
 
-  constructor(private _store: Store, private websiteManager: WebsiteManagerService, private logger: LoggerService) {
+  constructor(private _store: Store, private websiteManager: WebsiteManagerService, private logger: LoggerService, private snotify: SnotifyService) {
     this.queueSubscription = _store.select(state => state.postybirb.queued).subscribe((queued: SubmissionArchive[]) => {
       this.queuedSubmissions = [...queued];
       if (!this.postingSubmission) {
@@ -56,39 +58,53 @@ export class PostManagerService {
     return enabled === undefined ? true : enabled;
   }
 
-  private beginNextPost(): void {
+  private beginNextPost(skipInterval: boolean = true): void {
     if (this.queuedSubmissions.length > 0) {
       const submission = this.queuedSubmissions.shift();
       submission.meta.submissionStatus = SubmissionStatus.POSTING;
       this._store.dispatch(new PostyBirbStateAction.AddSubmission(submission, true));
-      this.postingSubmission = new PostHandler(this.websiteManager, submission, this.logger);
-      this.postingSubscription = this.postingSubmission.start().subscribe((success) => {
-        // Nothing to do here I think
-      }, (err) => {
-        // Don't want to use this due to stop on error
-      }, () => {
-        const submission: PostyBirbSubmission = this.postingSubmission.getSubmission();
+      this.postingSubmission = new PostHandler(this.websiteManager, submission, this.logger, this.snotify);
 
-        this._store.dispatch(new PostyBirbStateAction.LogSubmissionPost(submission, this.postingSubmission.getResponses()));
-
-        if (this.postingSubmission.isStopped()) {
-          this._store.dispatch(new PostyBirbStateAction.DequeueSubmission(submission.asSubmissionArchive(), true));
-        } else {
-          this._store.dispatch(new PostyBirbStateAction.CompleteSubmission(submission));
-        }
-
-        if (submission.getSubmissionStatus() === SubmissionStatus.FAILED && this.stopOnError()) {
-          this._store.dispatch(new PostyBirbStateAction.DequeueAllSubmissions());
-        }
-
-        this.postingSubscription.unsubscribe();
-        this.postingSubmission = null;
-        this.postingSubject.next(undefined);
-        this.beginNextPost();
-      });
+      const interval = Number(store.get('postInterval') || 0);
+      if (interval && !skipInterval) {
+        this.postingSubmission.setWaitingFor(interval * 60000);
+        setTimeout(function() {
+          this.startPost();
+        }.bind(this), interval * 60000);
+      } else {
+        this.startPost()
+      }
 
       this.postingSubject.next(this.postingSubmission);
     }
+  }
+
+  private startPost(): void {
+    this.postingSubscription = this.postingSubmission.start().subscribe((success) => {
+      // Nothing to do here I think
+    }, (err) => {
+      // Don't want to use this due to stop on error
+    }, () => {
+      const submission: PostyBirbSubmission = this.postingSubmission.getSubmission();
+
+      this._store.dispatch(new PostyBirbStateAction.LogSubmissionPost(submission, this.postingSubmission.getResponses()));
+
+      if (this.postingSubmission.isStopped()) {
+        this._store.dispatch(new PostyBirbStateAction.DequeueSubmission(submission.asSubmissionArchive(), true));
+      } else {
+        this._store.dispatch(new PostyBirbStateAction.CompleteSubmission(submission));
+      }
+
+      if (submission.getSubmissionStatus() === SubmissionStatus.FAILED && this.stopOnError()) {
+        this._store.dispatch(new PostyBirbStateAction.DequeueAllSubmissions());
+      }
+
+      this.postingSubscription.unsubscribe();
+      this.postingSubmission = null;
+      this.postingSubject.next(undefined);
+
+      this.beginNextPost(false);
+    });
   }
 }
 
@@ -104,7 +120,7 @@ export class PostHandler {
   private failed: string[] = [];
   private responses: any[] = [];
 
-  public waitingFor: Date = null; // Only used when there is a long wait period (e.g. Pixiv)
+  public waitingFor: Date = null;
 
   private waitMap: any = {
     [SupportedWebsites.Furaffinity]: 20500,
@@ -112,7 +128,7 @@ export class PostHandler {
     [SupportedWebsites.Pixiv]: 60 * 1000 * 10
   };
 
-  constructor(private manager: WebsiteManagerService, private archive: SubmissionArchive, private logger: LoggerService) {
+  constructor(private manager: WebsiteManagerService, private archive: SubmissionArchive, private logger: LoggerService, private snotify: SnotifyService) {
     this.submission = PostyBirbSubmission.fromArchive(archive);
     this.unpostedWebsites = this.submission.getUnpostedWebsites().sort();
     this.originalPostCount = this.unpostedWebsites.length;
@@ -143,6 +159,11 @@ export class PostHandler {
     this._stop = true;
     clearTimeout(this.timer);
     if (this.observer) this.observer.complete();
+  }
+
+  public setWaitingFor(interval: number): void {
+    this.waitingFor = new Date(Date.now() + interval);
+    this.currentlyPostingTo.next('');
   }
 
   private attemptPost(website: string): void {
@@ -200,6 +221,10 @@ export class PostHandler {
 
   private websiteFailed(err: any): void {
     this.failed.push(err.website);
+    if (err.notify) {
+      this.snotify.error((err.msg || '').toString(), err.website);
+    }
+
     this.log(err);
 
     if (this.stopOnError() || this.isStopped()) {
@@ -234,7 +259,7 @@ export class PostHandler {
 
   private generateLogs(): boolean {
     const enabled = store.get('generateLogOnFailure');
-    return enabled === undefined ? true : enabled;
+    return enabled === undefined ? false : enabled;
   }
 
   public getResponses(): any[] {

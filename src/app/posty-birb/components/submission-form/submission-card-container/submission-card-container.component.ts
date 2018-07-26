@@ -1,7 +1,8 @@
-import { Component, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnDestroy, Output, EventEmitter, ViewChildren, QueryList } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
 
 import { PostyBirbSubmission, SubmissionArchive } from '../../../../commons/models/posty-birb/posty-birb-submission';
+import { SubmissionCardComponent } from '../submission-card/submission-card.component';
 
 import { Select, Store } from '@ngxs/store';
 import { PostyBirbState, PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
@@ -20,6 +21,9 @@ export class SubmissionCardContainerComponent implements OnDestroy {
   public submissions: SubmissionArchive[] = [];
   private stateSubscription: Subscription = Subscription.EMPTY;
 
+  @ViewChildren(SubmissionCardComponent)
+  private cards: QueryList<SubmissionCardComponent>;
+
   constructor(private _store: Store) {
     this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => this.submissions = editing || []);
   }
@@ -36,12 +40,13 @@ export class SubmissionCardContainerComponent implements OnDestroy {
     return -1;
   }
 
-  public submissionSelected(submission: PostyBirbSubmission): void {
+  public submissionSelected(event: any): void {
+    const submission = event.data;
     const index = this.findSubmission(submission, this.selectedSubmissions);
 
-    if (index === -1) {
-      this.selectedSubmissions.push(submission);
-    } else {
+    if (event.selected) {
+      if (index === -1) this.selectedSubmissions.push(submission);
+    } else if (index !== -1) {
       this.selectedSubmissions.splice(index, 1);
     }
 
@@ -87,6 +92,18 @@ export class SubmissionCardContainerComponent implements OnDestroy {
 
   public clearSelected(): void {
     this.selectedSubmissions = [];
+  }
+
+  public selectAll(): void {
+    if (this.cards.length > 0) {
+      this.cards.forEach(c => c.select());
+    }
+  }
+
+  public unselectAll(): void {
+    if (this.cards.length > 0) {
+      this.cards.forEach(c => c.select(false));
+    }
   }
 
   public dropForEdit(event: any): void {

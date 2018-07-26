@@ -44,14 +44,14 @@
           {{title.value.trim().length}} / {{title.maxLength}}
         </mat-hint>
       </mat-form-field>
-      <mat-form-field color="accent" floatLabel="never" class="type-field clearfix">
+      <!-- <mat-form-field color="accent" floatLabel="never" class="type-field clearfix">
         <mat-select [placeholder]="'Submission Type' | translate" formControlName="submissionType" required>
           <mat-option value="Artwork">{{'Artwork' | translate}}</mat-option>
           <mat-option value="Animation">{{'Animation' | translate}}</mat-option>
           <mat-option value="Music">{{'Music' | translate}}</mat-option>
           <mat-option value="Story">{{'Story' | translate}}</mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
       <mat-form-field color="accent" floatLabel="never" class="ratings-field">
         <mat-select [placeholder]="'Rating' | translate" formControlName="submissionRating" required>
           <mat-option value="General">{{'General' | translate}}</mat-option>
@@ -60,14 +60,14 @@
           <mat-option value="Extreme">{{'Extreme' | translate}}</mat-option>
         </mat-select>
       </mat-form-field>
+      <div class="thumbnail-field" (contextmenu)="removeThumbnail()">
+        <file-input [matTooltip]="'Right click to remove' | translate" formControlName="thumbnailFile" [allowClipboard]="false" [name]="'Thumbnail' | translate" [maxFileSize]="2000000" accept="image/*"></file-input>
+      </div>
       <div class="clearfix"></div>
       <mat-form-field color="accent" class="schedule-field" [matTooltip]="submissionForm.value.schedule | date:'medium'">
         <input class="w-100" matInput formControlName="schedule" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Time to post' | translate">
         <owl-date-time #dt1></owl-date-time>
       </mat-form-field>
-      <div class="thumbnail-field">
-        <file-input formControlName="thumbnailFile" [allowClipboard]="false" [name]="'Thumbnail' | translate" [maxFileSize]="2000000" accept="image/*"></file-input>
-      </div>
       <div class="alt-image-field" *ngIf="submissionForm.value.submissionType === 'Artwork'">
         <input #altImageInput type="file" multiple class="d-none" (change)="addAltImages($event)">
         <mat-form-field color="accent" [matTooltip]="'Only applies to Inkbunny, Pixiv, Tumblr, and Twitter' | translate">

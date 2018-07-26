@@ -30,6 +30,7 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
   public form: FormGroup;
   public ckConfig: any;
   public readOnly: boolean = true;
+  public exceededNotification: boolean = false;
   private defaultSubscription: Subscription = Subscription.EMPTY;
   private changesSubscription: Subscription = Subscription.EMPTY;
 
@@ -55,6 +56,8 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
   }
 
   ngOnInit() {
+    this.maxLength = Number(this.maxLength);
+
     this.form = this.fb.group({
       description: [],
       useDefault: [this.allowOverwrite],
@@ -133,10 +136,13 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
 
         const totalEstimate = estimate.replace(/\[.*?(\])/g, '').length;
         if (this.maxLength > 0) {
-          if (totalEstimate > this.maxLength) {
+          if (totalEstimate > this.maxLength && !this.exceededNotification) {
+            this.exceededNotification = true;
             this.notify.translateNotification('Description length exceeded', { length: this.maxLength }).subscribe(msg => {
               this.notify.getNotify().warning(msg);
             });
+          } else if (totalEstimate <= this.maxLength) {
+            this.exceededNotification = false;
           }
         }
 

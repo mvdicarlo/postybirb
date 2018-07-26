@@ -6,4 +6,10 @@ button {
   vertical-align: top;
   border-radius: 0;
   border: #fff;
+  font-weight: bold;
+}
+
+.mat-icon {
+  vertical-align: middle;
+  font-size: inherit;
 }

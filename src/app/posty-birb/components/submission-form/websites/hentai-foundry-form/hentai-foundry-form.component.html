@@ -14,11 +14,12 @@
     <form [formGroup]="optionsForm">
       <div class="row no-gutters">
         <div class="col-md-4 col-lg-4 col-xl-4">
-          <mat-form-field color="accent" class="w-100">
+          <hentai-foundry-category-select formControlName="category"></hentai-foundry-category-select>
+          <!-- <mat-form-field color="accent" class="w-100">
             <mat-select formControlName="category" [placeholder]="'Category' | translate" required>
               <mat-option *ngFor="let key of getCategoriesKeys()" [value]="key">{{ categories[key] }}</mat-option>
             </mat-select>
-          </mat-form-field>
+          </mat-form-field> -->
         </div>
         <div class="col-md-4 col-lg-4 col-xl-4">
           <mat-form-field color="accent" class="w-100">

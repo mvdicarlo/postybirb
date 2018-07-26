@@ -158,6 +158,7 @@ export class PostyBirbState implements NgxsOnInit {
     let newSubmissions = [...submissions];
 
     const editedArchive = JSON.parse(JSON.stringify(action.archive));
+    editedArchive.defaultFields.selectedWebsites = [...editedArchive.meta.unpostedWebsites];
 
     if (action.copy) {
       editedArchive.meta.id = PostyBirbSubmission.generateId();
@@ -335,9 +336,9 @@ export class PostyBirbState implements NgxsOnInit {
       status: action.submission.getSubmissionStatus()
     }
 
-    let newLogs = [...logs, log];
-    if (newLogs.length > 10) {
-      newLogs = newLogs.slice(1);
+    let newLogs = [log, ...logs];
+    if (newLogs.length > 5) {
+      newLogs = newLogs.slice(0, 5);
     }
 
     ctx.patchState({
@@ -358,7 +359,7 @@ export class PostyBirbState implements NgxsOnInit {
             icon: src
           });
 
-          failed ? this.snotify.error(msg, { timeout: 60000 }) : this.snotify.success(msg, { timeout: 10000 });
+          failed ? this.snotify.error(`${msg} (${submission.getUnpostedWebsites().join(', ')})`, { timeout: 30000 }) : this.snotify.success(msg, { timeout: 10000 });
         });
       });
     });

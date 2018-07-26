@@ -6,6 +6,9 @@ import { MatDialog, MatDialogRef } from '@angular/material';
 import { EditFormDialogComponent } from './edit-form-dialog/edit-form-dialog.component';
 import { SaveDialogComponent } from './save-dialog/save-dialog.component';
 
+import { MatBottomSheet, MatBottomSheetRef } from '@angular/material';
+import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-sheet.component';
+
 import { PostyBirbSubmission, SubmissionArchive } from '../../../commons/models/posty-birb/posty-birb-submission';
 import { SubmissionCardContainerComponent } from './submission-card-container/submission-card-container.component';
 import { SupportedWebsiteRestrictions } from '../../models/supported-websites-restrictions';
@@ -28,7 +31,7 @@ export class SubmissionFormComponent implements OnInit, OnDestroy {
   private subscription: Subscription = Subscription.EMPTY;
   public submissions: PostyBirbSubmission[] = [];
 
-  constructor(private dialog: MatDialog, private _store: Store) { }
+  constructor(private dialog: MatDialog, private _store: Store, private bottomSheet: MatBottomSheet) { }
 
   ngOnInit() { }
 
@@ -79,6 +82,10 @@ export class SubmissionFormComponent implements OnInit, OnDestroy {
         this._store.dispatch(actions);
       }
     }
+
+    this.bottomSheet.open(SubmissionSheetComponent, {
+      data: { index: 0 }
+    });
   }
 
   private trimSelectedWebsites(submission: PostyBirbSubmission) {

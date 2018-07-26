@@ -120,13 +120,14 @@ export class SupportedWebsiteRestrictions {
     },
     [SupportedWebsites.Tumblr]: {
       supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
-      supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'mp3'],
+      supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'],
       supportedTypes: ['Artwork', 'Animation', 'Music'],
       supportedFileSize: {
         default: 10,
         Artwork: {
           gif: 1
-        }
+        },
+        Animation: 100
       }
     },
     [SupportedWebsites.Twitter]: {

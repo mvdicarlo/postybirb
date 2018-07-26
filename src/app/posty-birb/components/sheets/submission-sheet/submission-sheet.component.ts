@@ -62,7 +62,11 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   public openSettings(): void {
-    this.dialog.open(SubmissionSettingsDialogComponent, {});
+    let dialogRef = this.dialog.open(SubmissionSettingsDialogComponent, {});
+
+    dialogRef.afterClosed().subscribe(() => {
+      this._changeDetector.markForCheck();
+    });
   }
 
   public clearAll(submissions: SubmissionArchive[] = []): void {

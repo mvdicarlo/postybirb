@@ -1,7 +1,6 @@
 import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
-import { Categories } from './hentai-foundry.categories';
 
 @Component({
   selector: 'hentai-foundry-form',
@@ -11,8 +10,6 @@ import { Categories } from './hentai-foundry.categories';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HentaiFoundryFormComponent extends BaseWebsiteFormComponent {
-
-  public categories = Categories;
 
   constructor(injector: Injector) {
     super(injector);
@@ -46,10 +43,6 @@ export class HentaiFoundryFormComponent extends BaseWebsiteFormComponent {
       license: ['0'],
       reference: [null]
     });
-  }
-
-  public getCategoriesKeys(): any {
-    return Object.keys(this.categories);
   }
 
 }

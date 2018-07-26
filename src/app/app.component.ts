@@ -12,7 +12,7 @@ import { SchedulerService } from './posty-birb/services/scheduler/scheduler.serv
 export class AppComponent {
   public version: string;
   public showSidebar: boolean = false;
-  private knownLanguages: any = ['en', 'es', 'fi', 'fr', 'pt'];
+  private knownLanguages: any = ['de', 'en', 'es', 'fi', 'fr', 'pt'];
 
   constructor(private translate: TranslateService, private update: UpdateService, private postManager: PostManagerService, private scheduler: SchedulerService) {
     this.version = window['appVersion'];

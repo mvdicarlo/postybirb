@@ -7,6 +7,19 @@
 <div class="submission-file-select">
   <form>
     <ng-content></ng-content>
+    <button class="remove-btn" color="primary" mat-button [matMenuTriggerFor]="select" [class.hidden]="submissions.length === 0">
+      {{'Select' | translate}}
+      <mat-icon>expand_more</mat-icon>
+    </button>
+    <mat-menu #select="matMenu">
+      <button mat-menu-item (click)="selectAll()">
+        <span>{{'Select All' | translate}}</span>
+      </button>
+      <button mat-menu-item (click)="unselectAll()">
+        <span>{{'Unselect All' | translate}}</span>
+      </button>
+    </mat-menu>
+
     <button class="remove-btn" color="warn" mat-button [matMenuTriggerFor]="remove" [class.hidden]="submissions.length === 0">
       {{'Remove' | translate}}
       <mat-icon>expand_more</mat-icon>

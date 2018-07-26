@@ -55,7 +55,7 @@ TRANSLATOR: <Person to be credited>
 
 "Category"
 
-"Change file"
+"Change File"
 
 "Changelog"
 
@@ -159,6 +159,8 @@ TRANSLATOR: <Person to be credited>
 
 "Ideology"
 
+"In minutes"
+
 "Incorrect username or password."
 
 "Initializing"
@@ -229,13 +231,13 @@ TRANSLATOR: <Person to be credited>
 
 "Post All"
 
+"Post Interval"
+
 "Post a journal or status to one or more websites from one simple form"
 
 "Posted"
 
 "Posting"
-
-"PostyBirb Post Logs"
 
 "PostyBirb Settings"
 
@@ -271,6 +273,10 @@ TRANSLATOR: <Person to be credited>
 
 "Scheduled Submissions"
 
+"Select"
+
+"Select All"
+
 "Select Blog"
 
 "Select Folder"
@@ -301,8 +307,6 @@ TRANSLATOR: <Person to be credited>
 
 "Stop"
 
-"Stop On Failure"
-
 "Stop posting on submission failure"
 
 "Story"
@@ -322,8 +326,6 @@ TRANSLATOR: <Person to be credited>
 "Submission Type"
 
 "Submission did not post successfully. Would you like to stop?"
-
-"Submissions"
 
 "Success"
 
@@ -355,6 +357,8 @@ TRANSLATOR: <Person to be credited>
 
 "Unscheduled"
 
+"Unselect All"
+
 "Unselected"
 
 "Unsupported file size"
@@ -376,6 +380,8 @@ TRANSLATOR: <Person to be credited>
 "Username"
 
 "Using Default"
+
+"View Submissions"
 
 "Website"
 

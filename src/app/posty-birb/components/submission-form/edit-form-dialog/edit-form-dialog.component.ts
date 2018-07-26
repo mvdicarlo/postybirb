@@ -52,7 +52,13 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnInit() {
     this.form.controls.defaultDescription.valueChanges.subscribe(value => this.defaultDescription.next(value));
     this.form.controls.defaultTags.valueChanges.subscribe(value => this.defaultTags = value);
-    this.form.controls.selectedWebsites.valueChanges.subscribe(() => this.formsAreValid());
+    this.form.controls.selectedWebsites.valueChanges.subscribe((value) => {
+      this.formsAreValid();
+
+      if (value && value instanceof Array) {
+        this.form.controls.selectedWebsites.patchValue(value.filter(website => this.onlineWebsites.includes(website)), { emitEvent: false });
+      }
+    });
 
     this.updateOnlineWebsites(this.managerService.getWebsiteStatuses());
     this.subscription = this.managerService.getObserver().subscribe(statuses => this.updateOnlineWebsites(statuses));
@@ -229,7 +235,10 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     if (onlineInserted) this.onlineWebsites.sort();
-    if (offlineInserted) this.offlineWebsites.sort();
+    if (offlineInserted) {
+      this.offlineWebsites.sort();
+      this.form.controls.selectedWebsites.patchValue(this.form.value.selectedWebsites.filter(website => !this.offlineWebsites.includes(website)));
+    }
   }
 
   private buildWebsiteFormObject(): any {

@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
  * @abstract @class BaseWebsite
  */
 export class BaseWebsite implements Website {
-  protected websiteName: string;
+  public websiteName: string;
   protected baseURL: string;
   protected loginStatus: WebsiteStatus;
   protected helper: any; //helpers such as twitter, deviantart, and tumblr bound to window
@@ -106,8 +106,8 @@ export class BaseWebsite implements Website {
     return null;
   }
 
-  protected createError(err: any, submission: any, reason?: any): object {
-    return { website: this.websiteName, err, submission, reason };
+  protected createError(err: any, submission: any, notify?: string): object {
+    return { website: this.websiteName, err, msg: notify, submission, notify: notify ? true : false };
   }
 
   protected getMapping(type: string, value: string): any {

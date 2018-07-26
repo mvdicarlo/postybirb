@@ -20,7 +20,7 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
   @Input() submission: SubmissionArchive;
   @Input() selected: boolean = false;
 
-  @Output() onSelect: EventEmitter<PostyBirbSubmission> = new EventEmitter();
+  @Output() onSelect: EventEmitter<any> = new EventEmitter();
   @Output() onDelete: EventEmitter<PostyBirbSubmission> = new EventEmitter();
 
   @ViewChild('changeFileInput') changeFileInput: ElementRef;
@@ -118,6 +118,9 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
       this.data.getSubmissionFileSource().then(src => {
         this.src = src
       });
+
+      this.file = this.data.getSubmissionFileObject();
+      this.submissionForm.controls.submissionType.patchValue(FileHandler.getTypeByExtension(this.file));
     }
 
     this.changeFileInput.nativeElement.value = '';
@@ -149,8 +152,19 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
     });
   }
 
+  public select(selected: boolean = true): void {
+    if (this.selected !== selected) {
+      this.selected = selected;
+      this.emitSelected();
+    }
+  }
+
+  public removeThumbnail(): void {
+    this.submissionForm.controls.thumbnailFile.patchValue(new FileInformation(null, false));
+  }
+
   private emitSelected(): void {
-    this.onSelect.emit(this.data);
+    this.onSelect.emit({ data: this.data, selected: this.selected });
   }
 
   private emitDeleted(): void {
