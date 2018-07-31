@@ -1,10 +1,14 @@
-import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { SubmissionArchive } from '../../../../../commons/models/posty-birb/posty-birb-submission';
 
 @Component({
   selector: 'submission-table',
   templateUrl: './submission-table.component.html',
-  styleUrls: ['./submission-table.component.css']
+  styleUrls: ['./submission-table.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'clearfix'
+  }
 })
 export class SubmissionTableComponent implements OnInit, OnChanges {
   @Output() readonly clearAll: EventEmitter<any> = new EventEmitter();
@@ -15,7 +19,7 @@ export class SubmissionTableComponent implements OnInit, OnChanges {
   @Input() allowReorder: boolean = false;
   @Input() clearAllLabel: string = 'Clear All';
 
-  constructor() { }
+  constructor(private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() { }
 
@@ -23,6 +27,7 @@ export class SubmissionTableComponent implements OnInit, OnChanges {
     if (changes) {
       if (changes.rows) {
         this.rows = changes.rows.currentValue;
+        this._changeDetector.markForCheck();
       }
     }
   }

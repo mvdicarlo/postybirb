@@ -21,7 +21,7 @@ export class FurrynetworkDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    const info = store.get(SupportedWebsites.FurryNetwork.toLowerCase());
+    const info = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value();
     if (info && info.name !== null && info.name !== undefined) {
       this.isLoggedIn = true;
     } else {

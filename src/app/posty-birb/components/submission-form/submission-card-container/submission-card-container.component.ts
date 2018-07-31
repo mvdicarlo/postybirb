@@ -1,16 +1,17 @@
-import { Component, OnDestroy, Output, EventEmitter, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnDestroy, Output, EventEmitter, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription, Observable } from 'rxjs';
 
 import { PostyBirbSubmission, SubmissionArchive } from '../../../../commons/models/posty-birb/posty-birb-submission';
 import { SubmissionCardComponent } from '../submission-card/submission-card.component';
 
 import { Select, Store } from '@ngxs/store';
-import { PostyBirbState, PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
+import { PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
 
 @Component({
   selector: 'submission-card-container',
   templateUrl: './submission-card-container.component.html',
-  styleUrls: ['./submission-card-container.component.css']
+  styleUrls: ['./submission-card-container.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionCardContainerComponent implements OnDestroy {
   @Output() update: EventEmitter<PostyBirbSubmission[]> = new EventEmitter();
@@ -24,8 +25,11 @@ export class SubmissionCardContainerComponent implements OnDestroy {
   @ViewChildren(SubmissionCardComponent)
   private cards: QueryList<SubmissionCardComponent>;
 
-  constructor(private _store: Store) {
-    this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => this.submissions = editing || []);
+  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef) {
+    this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
+      this.submissions = editing || [];
+      this._changeDetector.markForCheck();
+    });
   }
 
   ngOnDestroy() {
@@ -82,16 +86,28 @@ export class SubmissionCardContainerComponent implements OnDestroy {
   }
 
   public removeUnselected(): void {
-    this._store.dispatch(this.submissions.map(s => new PostyBirbStateAction.DeleteSubmission(s)));
+    this._store.dispatch(this.submissions.filter(s => !this.isSelected(s.meta.id)).map(s => new PostyBirbStateAction.DeleteSubmission(s)));
     this.onUpdate();
+  }
+
+  private isSelected(id: string): boolean {
+    for (let i = 0; i < this.selectedSubmissions.length; i++) {
+      if (this.selectedSubmissions[i].getId() == id) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private onUpdate(): void {
     this.update.emit(this.selectedSubmissions || []);
+    this._changeDetector.markForCheck();
   }
 
   public clearSelected(): void {
     this.selectedSubmissions = [];
+    this._changeDetector.markForCheck();
   }
 
   public selectAll(): void {
@@ -106,10 +122,8 @@ export class SubmissionCardContainerComponent implements OnDestroy {
     }
   }
 
-  public dropForEdit(event: any): void {
-    if (event.dragData) {
-      this._store.dispatch(new PostyBirbStateAction.EditSubmission(event.dragData, false))
-    }
+  public trackBy(index, item: SubmissionArchive) {
+    return item.meta.id;
   }
 
 }

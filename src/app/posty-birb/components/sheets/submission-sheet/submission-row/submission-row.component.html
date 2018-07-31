@@ -1,6 +1,7 @@
 <ng-container *ngIf="isIdle()">
   <td name="file">
-    <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image') || !file.type.includes('video')">
+    <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image')">
+    <img [src]="fileIcon | safe" [alt]="file.name" *ngIf="file.type.includes('audio') || file.type.includes('text')">
     <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
   </td>
   <td name="title" class="title-td text-truncate text-center" [title]="archive.meta.title">

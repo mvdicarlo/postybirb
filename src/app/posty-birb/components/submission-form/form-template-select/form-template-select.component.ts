@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { Template, TemplatesService } from '../../../services/templates/templates.service';
@@ -6,7 +6,8 @@ import { Template, TemplatesService } from '../../../services/templates/template
 @Component({
   selector: 'form-template-select',
   templateUrl: './form-template-select.component.html',
-  styleUrls: ['./form-template-select.component.css']
+  styleUrls: ['./form-template-select.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormTemplateSelectComponent implements OnInit, OnDestroy {
   @Output() onSelect: EventEmitter<Template> = new EventEmitter();
@@ -16,11 +17,12 @@ export class FormTemplateSelectComponent implements OnInit, OnDestroy {
   public templates: Template[];
   public control: FormControl = new FormControl();
 
-  constructor(private template: TemplatesService) { }
+  constructor(private template: TemplatesService, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.subscriber = this.template.asObserver().subscribe((templates) => {
       this.templates = templates;
+      this._changeDetector.markForCheck()
     });
 
     this.control.valueChanges.subscribe(value => this.onChange(value));
@@ -34,6 +36,8 @@ export class FormTemplateSelectComponent implements OnInit, OnDestroy {
     if (value) {
       this.emit(value);
     }
+
+    this._changeDetector.markForCheck()
   }
 
   private emit(template: Template): void {

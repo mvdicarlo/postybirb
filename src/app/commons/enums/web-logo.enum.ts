@@ -17,8 +17,8 @@ const WebLogo = {
   [SupportedWebsites.Pixiv]: './assets/web-icons/pixiv_logo.svg',
   [SupportedWebsites.Route50]: './assets/web-icons/route50_logo.png',
   [SupportedWebsites.SoFurry]: './assets/web-icons/sofurry_logo.png',
-  [SupportedWebsites.Tumblr]: './assets/web-icons/tumblr_logo.png',
-  [SupportedWebsites.Twitter]: './assets/web-icons/twitter_logo.png',
+  [SupportedWebsites.Tumblr]: './assets/web-icons/tumblr_logo.svg',
+  [SupportedWebsites.Twitter]: './assets/web-icons/twitter_logo.svg',
   [SupportedWebsites.Weasyl]: './assets/web-icons/weasyl_logo.png'
 };
 

@@ -1,21 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'description-help',
   templateUrl: './description-help.component.html',
-  styleUrls: ['./description-help.component.css']
+  styleUrls: ['./description-help.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DescriptionHelpComponent implements OnInit {
-  public toggle: boolean;
+export class DescriptionHelpComponent {
+  public toggle: boolean = true;
 
-  constructor() { }
+  constructor(private _changeDetector: ChangeDetectorRef) { }
 
-  ngOnInit() {
-    this.toggle = true;
-  }
-
-  toggleHelp() {
+  public toggleHelp() {
     this.toggle = !this.toggle;
+    this._changeDetector.markForCheck();
   }
 
 }

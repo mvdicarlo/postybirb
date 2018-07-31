@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { MatDialog } from '@angular/material';
 import { LicenseDialogComponent } from '../miscellaneous/components/license-dialog/license-dialog.component';
 import { DonateDialogComponent } from '../miscellaneous/components/donate-dialog/donate-dialog.component';
 import { ContactDialogComponent } from '../miscellaneous/components/contact-dialog/contact-dialog.component';
@@ -8,7 +8,8 @@ import { ChangelogDialogComponent } from '../miscellaneous/components/changelog-
 @Component({
   selector: 'sidebar',
   templateUrl: './sidebar.component.html',
-  styleUrls: ['./sidebar.component.css']
+  styleUrls: ['./sidebar.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SidebarComponent {
   @Output() login: EventEmitter<any> = new EventEmitter<any>();

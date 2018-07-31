@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { SubmissionArchive, PostyBirbSubmission } from '../../../commons/models/posty-birb/posty-birb-submission';
+import { SubmissionArchive } from '../../../commons/models/posty-birb/posty-birb-submission';
 
 export interface Template {
   template: SubmissionArchive;
@@ -16,8 +16,7 @@ export class TemplatesService {
   private templates: Template[] = [];
 
   constructor() {
-    store.remove('postybirb-profiles'); // remove legacy
-    this.templates = store.get(this.STORE) || [];
+    this.templates = db.get(this.STORE).value() || [];
     this.sort();
     this.templateSubject = new BehaviorSubject<Template[]>(this.templates);
   }
@@ -68,7 +67,7 @@ export class TemplatesService {
   }
 
   private saveTemplates(): void {
-    store.set(this.STORE, this.templates);
+    db.set(this.STORE, this.templates).write();
   }
 
   private findTemplateIndex(name: string): number {

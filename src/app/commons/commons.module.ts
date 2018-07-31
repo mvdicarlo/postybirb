@@ -5,7 +5,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import {
   MatButtonModule,
-  MatButtonToggleModule,
   MatDialogModule,
   MatIconModule,
   MatInputModule,
@@ -37,7 +36,6 @@ import { UpdateService } from './services/update/update.service';
 import { HighlightLinkedService } from './directives/highlight-linked/highlight-linked.service';
 
 import { FileInputComponent } from './components/file-input/file-input.component';
-import { ToggleButtonComponent } from './components/toggle-button/toggle-button.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 import { BaseControlValueAccessorComponent } from './components/base-control-value-accessor/base-control-value-accessor.component';
@@ -51,7 +49,6 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
     HttpClientModule,
     TranslateModule,
     MatButtonModule,
-    MatButtonToggleModule,
     MatDialogModule,
     MatIconModule,
     MatInputModule,
@@ -62,7 +59,6 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
   declarations: [
     FileViewerComponent,
     ConfirmDialogComponent,
-    ToggleButtonComponent,
     FileInputComponent,
     BaseControlValueAccessorComponent,
     SafePipe,
@@ -72,7 +68,6 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
   exports: [
     FileViewerComponent,
     ConfirmDialogComponent,
-    ToggleButtonComponent,
     FileInputComponent,
     BaseControlValueAccessorComponent,
     SafePipe,

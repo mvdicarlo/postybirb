@@ -9,38 +9,38 @@ export class SubmissionSettingsDialogComponent {
   public interval: number = 0;
 
   constructor() {
-    this.interval = Number(store.get('postInterval') || 0);
+    this.interval = Number(db.get('postInterval').value() || 0);
   }
 
   public isStopAllSubmissionsEnabled(): boolean {
-    const enabled = store.get('stopOnFailure');
+    const enabled = db.get('stopOnFailure').value();
     return enabled === undefined ? true : enabled;
   }
 
   public toggleStopOnFailure(event: any): void {
-    store.set('stopOnFailure', event.checked);
+    db.set('stopOnFailure', event.checked).write();
   }
 
   public isGenerateErrorLogEnabled(): boolean {
-    const enabled = store.get('generateLogOnFailure');
+    const enabled = db.get('generateLogOnFailure').value();
     return enabled === undefined ? false : enabled;
   }
 
   public toggleGenerateErrorLog(event: any): void {
-    store.set('generateLogOnFailure', event.checked);
+    db.set('generateLogOnFailure', event.checked).write();
   }
 
   public changePostInterval(interval: any): void {
-    store.set('postInterval', interval || 0);
+    db.set('postInterval', interval || 0).write();
   }
 
   public isAdvertiseEnabled(): boolean {
-    const enabled = store.get('globalAdvertise');
+    const enabled = db.get('globalAdvertise').value();
     return enabled === undefined ? true : enabled;
   }
 
   public toggleGlobalAdvertise(event: any): void {
-    store.set('globalAdvertise', event.checked);
+    db.set('globalAdvertise', event.checked).write();
   }
 
 }

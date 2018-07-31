@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -9,12 +9,14 @@ import { FileInformation } from '../../../../commons/models/file-information';
 import { PostyBirbSubmission, SubmissionArchive } from '../../../../commons/models/posty-birb/posty-birb-submission';
 import { FileHandler } from '../../../models/file-handler';
 import { SubmissionViewComponent } from '../../dialog/submission-view/submission-view.component';
+import { AdditionalImageOrderingDialogComponent } from './additional-image-ordering-dialog/additional-image-ordering-dialog.component';
 import { TemplatesService, Template } from '../../../services/templates/templates.service';
 
 @Component({
   selector: 'submission-card',
   templateUrl: './submission-card.component.html',
-  styleUrls: ['./submission-card.component.css']
+  styleUrls: ['./submission-card.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionCardComponent implements OnInit, OnDestroy {
   @Input() submission: SubmissionArchive;
@@ -34,19 +36,26 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
   public src: string;
   public interval: any;
   public altImageCount: number = 0;
+  public fileIcon: string;
   public data: PostyBirbSubmission;
 
   public templates: Template[] = [];
 
-  constructor(private fb: FormBuilder, private dialog: MatDialog, private templateService: TemplatesService) {
+  constructor(private fb: FormBuilder, private dialog: MatDialog, private templateService: TemplatesService, private _changeDetector: ChangeDetectorRef) {
     this.templateSubscription = this.templateService.asObserver().subscribe(templates => {
       this.templates = templates;
+      this._changeDetector.markForCheck();
     });
   }
 
   ngOnInit() {
     this.data = PostyBirbSubmission.fromArchive(this.submission);
     this.file = this.data.getSubmissionFileObject();
+
+    getFileIcon(this.file.path, (err, icon) => {
+      this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
+      this._changeDetector.markForCheck();
+    });
 
     this.submissionForm = this.fb.group({
       title: [null, [Validators.maxLength(50)]],
@@ -65,10 +74,9 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
           this.data.setSubmissionRating(values.submissionRating);
           this.data.setSchedule(values.schedule);
         }
-      });
 
-      this.data.observe().pipe(debounce(() => timer(100)))
-        .subscribe((submission: PostyBirbSubmission) => this.submissionForm.controls.schedule.patchValue(this.data.getSchedule(), { emitEvent: false }));
+        this._changeDetector.markForCheck();
+      });
     });
   }
 
@@ -86,6 +94,7 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
     this.submissionForm.controls.submissionType.patchValue(this.data.getSubmissionType() || FileHandler.getTypeByExtension(this.file));
     this.submissionForm.controls.submissionRating.patchValue(this.data.getSubmissionRating());
     this.submissionForm.controls.schedule.patchValue(this.data.getSchedule());
+    this._changeDetector.markForCheck();
 
     return;
   }
@@ -121,6 +130,10 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
 
       this.file = this.data.getSubmissionFileObject();
       this.submissionForm.controls.submissionType.patchValue(FileHandler.getTypeByExtension(this.file));
+
+      getFileIcon(this.file.path, (err, icon) => {
+        this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
+      });
     }
 
     this.changeFileInput.nativeElement.value = '';
@@ -152,6 +165,12 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
     });
   }
 
+  public orderImages(): void {
+    this.dialog.open(AdditionalImageOrderingDialogComponent, {
+      data: this.data
+    });
+  }
+
   public select(selected: boolean = true): void {
     if (this.selected !== selected) {
       this.selected = selected;
@@ -164,6 +183,7 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
   }
 
   private emitSelected(): void {
+    this._changeDetector.markForCheck();
     this.onSelect.emit({ data: this.data, selected: this.selected });
   }
 

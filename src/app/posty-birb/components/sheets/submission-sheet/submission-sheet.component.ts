@@ -1,11 +1,10 @@
 import { Component, Inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { MatDialog, MatDialogRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material';
+import { MatDialog, MAT_BOTTOM_SHEET_DATA } from '@angular/material';
 import { Store } from '@ngxs/store';
 
 import { SubmissionArchive } from '../../../../commons/models/posty-birb/posty-birb-submission';
 import { SubmissionSettingsDialogComponent } from '../../dialog/submission-settings-dialog/submission-settings-dialog.component';
-import { SubmissionStatus } from '../../../enums/submission-status.enum';
 import { PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
 import { ConfirmDialogComponent } from '../../../../commons/components/confirm-dialog/confirm-dialog.component';
 import { LoggerService } from '../../../../logs/services/logger/logger.service';
@@ -53,12 +52,12 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   public isAdvertiseEnabled(): boolean {
-    const enabled = store.get('globalAdvertise');
+    const enabled = db.get('globalAdvertise').value();
     return enabled === undefined ? true : enabled;
   }
 
   public toggleGlobalAdvertise(event: any): void {
-    store.set('globalAdvertise', event.checked);
+    db.set('globalAdvertise', event.checked).write();
   }
 
   public openSettings(): void {

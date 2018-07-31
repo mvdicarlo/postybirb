@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { WebsiteManagerService } from '../commons/services/website-manager/website-manager.service';
 import { SupportedWebsites } from '../commons/enums/supported-websites';
 
@@ -26,7 +26,8 @@ interface LoginObject {
 @Component({
   selector: 'pb-websites',
   templateUrl: './pb-websites.component.html',
-  styleUrls: ['./pb-websites.component.css']
+  styleUrls: ['./pb-websites.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class PBWebsitesComponent implements OnInit {

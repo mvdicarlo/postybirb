@@ -82,7 +82,6 @@ export class WebsiteManagerService {
   }
 
   private refreshAuthorizedWebsites(): void {
-    store.removeExpiredKeys();
     this.refreshMap.forEach((website, key) => {
       website.refresh().then((success) => {
         this.checkLogin(key);
@@ -103,7 +102,6 @@ export class WebsiteManagerService {
   }
 
   public refreshAllStatuses(): void {
-    store.removeExpiredKeys();
     this.websites.forEach((value, key, map) => {
       this.checkLogin(key);
     });

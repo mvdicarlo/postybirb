@@ -1,5 +1,7 @@
-<div class="login-box" *ngFor="let webLogin of websites">
-  <login-panel website="{{webLogin.website}}" [dialogComponent]="webLogin.dialogComponent"></login-panel>
-</div>
+<table class="table table-dark table-hover mb-0" style="margin-top: -8px">
+  <tbody>
+    <login-panel *ngFor="let webLogin of websites" website="{{webLogin.website}}" [dialogComponent]="webLogin.dialogComponent"></login-panel>
+  </tbody>
+</table>
 
-<button mat-button color="accent" class="w-100" (click)="refreshStatuses()">{{'Refresh' | translate}}</button>
+<button mat-raised-button color="accent" class="w-100" style="position: sticky; bottom: 0;" (click)="refreshStatuses()">{{'Refresh' | translate}}</button>

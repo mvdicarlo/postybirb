@@ -115,7 +115,7 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
       }, { emitEvent: false });
     }
 
-    this._changeDetector.detectChanges();
+    this._changeDetector.markForCheck();
   }
 
   public updateEstimatedCharacterCount(): Observable<number> {

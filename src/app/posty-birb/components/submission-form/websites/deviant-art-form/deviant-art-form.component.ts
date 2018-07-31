@@ -1,8 +1,5 @@
 import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
-import { Information } from '../../base-website-form/information.interface';
-import { MatTab } from '@angular/material';
 
 @Component({
   selector: 'deviant-art-form',

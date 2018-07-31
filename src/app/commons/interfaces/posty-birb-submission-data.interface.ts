@@ -1,5 +1,4 @@
 import { SubmissionData } from '../../posty-birb/interfaces/submission-data.interface';
-import { FileObject } from './file-obect.interface';
 
 /**
  * @interface

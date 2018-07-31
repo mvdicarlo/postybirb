@@ -1,5 +1,4 @@
 import { FormControl } from '@angular/forms';
-import { TagModel } from '../base-website-form/information.interface';
 
 export class FieldValidator {
 

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
+import { Component, OnInit, OnDestroy, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
 import { timer, Observable } from 'rxjs';
-import { debounce, map, startWith } from 'rxjs/operators';
+import { debounce, map } from 'rxjs/operators';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { Categories } from './hentai-foundry.categories';
 
@@ -18,7 +18,7 @@ import { Categories } from './hentai-foundry.categories';
     }
   ]
 })
-export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccessorComponent implements OnInit {
+export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccessorComponent implements OnInit, OnDestroy {
   public control: FormControl = new FormControl();
   public filteredOptions: Observable<string[]>;
   private categories: any = Categories;

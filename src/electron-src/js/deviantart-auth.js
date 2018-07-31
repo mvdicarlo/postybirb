@@ -62,7 +62,7 @@ function getAccessToken(code) {
 }
 
 function setToken() {
-    store.set('deviantart', token, new Date().setMonth(new Date().getMonth() + 2));
+    db.set('deviantart', token).write();
 }
 
 function getUser() {
@@ -95,7 +95,7 @@ function checkTokens(resolve, reject, storedToken) {
                   setToken();
                   resolve(true);
               }).fail(() => {
-                  store.remove('deviantart');
+                  db.unset('deviantart').write();
                   reject(false);
               });
           }
@@ -107,7 +107,7 @@ function checkTokens(resolve, reject, storedToken) {
               setToken();
               resolve(true);
           }).fail(() => {
-              store.remove('deviantart');
+              db.unset('deviantart').write();
               reject(false);
           });
       });
@@ -162,7 +162,7 @@ exports.getUserInfo = function getUserInfo() {
  *
  */
 exports.refresh = function loadToken() {
-    const storedToken = store.get('deviantart');
+    const storedToken = db.get('deviantart').value();
     if (!storedToken) {
         return new Promise((resolve, reject) => {
             reject(Error('No token'));
@@ -177,7 +177,7 @@ exports.refresh = function loadToken() {
  *
  */
 exports.unauthorize = function unauthorize() {
-    store.remove('deviantart');
+    db.unset('deviantart').write();
     token = {};
 };
 

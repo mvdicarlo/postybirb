@@ -1,5 +1,23 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>0.9.3 (07/26/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>FurryNetwork folders finally supported. (sorry it took so damn long)</li>
+    <li>When selecting text or audio the image shown will at least not be empty.</li>
+    <li>You can now re-order additional images however you like.</li>
+    <li>Local Storage moved from chrome local storage to flat file storage. Some configs may be lost in transition.</li>
+    <li>The app will finally remember what window size you set it to.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue where clicking 'Remove Unselected' would remove all.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Now using lowdb instead of store.js for storing local data.</li>
+    <li>Better implemented file loading functionality supported by native electronjs.</li>
+  </ul>
   <div>0.9.2 (07/24/2018)</div>
   <h5>New Features</h5>
   <ul>

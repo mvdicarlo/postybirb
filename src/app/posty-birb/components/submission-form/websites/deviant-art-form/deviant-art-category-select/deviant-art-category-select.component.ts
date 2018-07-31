@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
 import { timer, Observable } from 'rxjs';
-import { debounce, map, startWith } from 'rxjs/operators';
+import { debounce, map } from 'rxjs/operators';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { Categories } from './deviant-art-categories-list';
 

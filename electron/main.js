@@ -5,6 +5,7 @@ const {
     Menu,
     dialog,
 } = require('electron');
+const windowStateKeeper = require('electron-window-state');
 
 // const { appUpdater } = require('./updater');
 const template = require('./electron-menu');
@@ -21,16 +22,22 @@ require('electron-context-menu')({
 });
 
 let win;
+app.disableHardwareAcceleration();
 
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
 
+    const mainWindowState = windowStateKeeper({
+        defaultWidth: 992,
+        defaultHeight: 800,
+    });
+
     win = new BrowserWindow({
-        width: 992,
-        minWidth: 992,
-        height: 800,
-        minHeight: 800,
+        width: mainWindowState.width,
+        minWidth: 500,
+        height: mainWindowState.height,
+        minHeight: 500,
         autoHideMenuBar: true,
         icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
         title: 'Posty Birb',
@@ -39,9 +46,11 @@ app.on('ready', () => {
             allowRunningInsecureContent: false,
             nodeIntegration: false,
             preload: `${__dirname}/dist/electron-src/index.js`,
-            webviewTag: true
+            webviewTag: true,
         },
     });
+
+    mainWindowState.manage(win);
 
     win.loadURL(`file://${__dirname}/dist/index.html`);
 
@@ -66,7 +75,7 @@ app.on('ready', () => {
         setInterval(() => {
             win.webContents.session.getCacheSize((size) => {
                 if (size > 0) {
-                    log.info(`Clearing Cache (${size})`);
+                    if (Boolean(process.env.DEVELOP)) log.info(`Clearing Cache (${size})`);
                     win.webContents.session.clearCache(() => {});
                 }
             });

@@ -1,7 +1,6 @@
-import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Injector, AfterViewInit, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
-import { Information } from '../../base-website-form/information.interface';
+import { FurryNetwork } from '../../../../../commons/models/website/furrynetwork';
 
 @Component({
   selector: 'furry-network-form',
@@ -10,9 +9,10 @@ import { Information } from '../../base-website-form/information.interface';
   providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => FurryNetworkFormComponent) }],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FurryNetworkFormComponent extends BaseWebsiteFormComponent {
+export class FurryNetworkFormComponent extends BaseWebsiteFormComponent implements AfterViewInit {
+  private collectionList: any = {};
 
-  constructor(injector: Injector) {
+  constructor(injector: Injector, private fn: FurryNetwork) {
     super(injector);
     this.website = this.supportedWebsites.FurryNetwork;
 
@@ -20,8 +20,34 @@ export class FurryNetworkFormComponent extends BaseWebsiteFormComponent {
       notify: [true],
       communityTags: [false],
       status: ['public'],
-      profile: [null]
+      profile: [null],
+      folders: [null]
     });
+
+    this.optionsForm.controls.profile.valueChanges.subscribe((profile) => {
+      this.collectionList = {};
+      this.optionsForm.controls.folders.reset();
+      this.collectionList = this.fn.getCollectionsForUser(profile);
+      this._changeDetector.markForCheck();
+    });
+  }
+
+  public writeValue(model: any) {
+    if (model) {
+      if (!this.areEqual(model.description, this.form.value.description)) this.form.controls.description.patchValue(model.description, { emitEvent: false });
+      if (!this.areEqual(model.tags, this.form.value.tags)) this.form.controls.tags.patchValue(model.tags, { emitEvent: false });
+      if (!this.areEqual(model.options, this.optionsForm.value)) {
+        this.optionsForm.patchValue(model.options, { emitEvent: false });
+        this.collectionList = this.fn.getCollectionsForUser(model.options.profile);
+        this._changeDetector.markForCheck();
+      }
+    } else {
+      this.clear();
+    }
+  }
+
+  public getCollectionKeys(): string[] {
+    return Object.keys(this.collectionList).sort();
   }
 
 }

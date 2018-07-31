@@ -8,15 +8,21 @@ import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { Observable } from 'rxjs';
 
-
 @Injectable()
 export class FurryNetwork extends BaseWebsite implements Website {
   private userInformation: any;
+  private collections: any = {
+    artwork: [],
+    story: [],
+    multimedia: []
+  };
+
+  private userCollections: any = {};
 
   constructor(private http: HttpClient) {
     super(SupportedWebsites.FurryNetwork, 'https://beta.furrynetwork.com');
 
-    this.userInformation = store.get(SupportedWebsites.FurryNetwork.toLowerCase()) || {
+    this.userInformation = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value() || {
       name: null,
       token: null,
     };
@@ -45,9 +51,12 @@ export class FurryNetwork extends BaseWebsite implements Website {
           if (this.userInformation.name) {
             this.http.get(`${this.baseURL}/api/user`,
               { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
-              .subscribe(info => {
+              .subscribe((info: any) => {
                 this.otherInformation = info;
                 this.loginStatus = WebsiteStatus.Logged_In;
+                for (let i = 0; i < info.characters.length; i++) {
+                  this.loadCollections(info.characters[i].name);
+                }
                 resolve(this.loginStatus);
               }, err => {
                 this.loginStatus = WebsiteStatus.Logged_Out;
@@ -62,6 +71,22 @@ export class FurryNetwork extends BaseWebsite implements Website {
           resolve(WebsiteStatus.Offline);
         });
     });
+  }
+
+  public loadCollections(username: string): void {
+    const collections = {};
+    Object.keys(this.collections).forEach(key => {
+      this.http.get(`${this.baseURL}/api/character/${username}/${key}/collections`,
+        { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
+        .subscribe((collection: any[]) => {
+          collections[key] = collection;
+          this.userCollections[username] = collections;
+        });
+    });
+  }
+
+  getCollectionsForUser(username): any {
+    return this.userCollections[username];
   }
 
   getLoginStatus(): WebsiteStatus {
@@ -90,8 +115,8 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
           this.http.get(`${this.baseURL}/api/user`, { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
             .subscribe((info: any) => {
-              this.userInformation.name = info.characters[0].name
-              store.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation, new Date().setMonth(new Date().getMonth() + 2));
+              this.userInformation.name = info.characters[0].name;
+              db.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation).write();
               resolve(true);
             }, err => reject(false));
         }, err => {
@@ -107,17 +132,17 @@ export class FurryNetwork extends BaseWebsite implements Website {
     };
 
     this.loginStatus = WebsiteStatus.Logged_Out;
-    store.remove(SupportedWebsites.FurryNetwork.toLowerCase());
+    db.unset(SupportedWebsites.FurryNetwork.toLowerCase()).write();
   }
 
   refresh(): Promise<any> {
     return new Promise((resolve, reject) => {
-      const storedToken = store.get(SupportedWebsites.FurryNetwork.toLowerCase());
+      const storedToken = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value();
       if (!storedToken.token) reject('No token');
       this.http.post(`${this.baseURL}/api/oauth/token`, `client_id=123&grant_type=refresh_token&refresh_token=${storedToken.token.refresh_token}`, { headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded') }).subscribe((res: any) => {
         this.userInformation = storedToken;
         this.userInformation.token.access_token = res.access_token;
-        store.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation, new Date().setMonth(new Date().getMonth() + 2));
+        db.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation).write();
         resolve(`Refreshed ${this.websiteName}`);
       }, err => {
         this.unauthorize();
@@ -153,7 +178,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
   private generatePostData(submission: PostyBirbSubmissionData, type: any): object {
     if (type === 'story') {
       return {
-        collections: [],
+        collections: submission.options.folders || [],
         description: submission.description || submission.submissionData.title,
         status: submission.options.status,
         title: submission.submissionData.title,
@@ -164,7 +189,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
       };
     } else {
       return {
-        collections: [],
+        collections: submission.options.folders || [],
         description: submission.description,
         status: submission.options.status,
         title: submission.submissionData.title,
@@ -198,6 +223,12 @@ export class FurryNetwork extends BaseWebsite implements Website {
       } else {
         this.http.post(uploadURL, file, { headers: headers })
           .subscribe((fileInfo: any) => {
+            if (!fileInfo) {
+                observer.error(this.createError('fileInfo is null for post', submission));
+                observer.complete();
+                return;
+            }
+
             this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
               .subscribe(res => {
                 observer.next(res);

@@ -4,8 +4,6 @@ import { CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 
 import {
-  MatButtonModule,
-  MatCardModule,
   MatSnackBarModule
 } from '@angular/material';
 
@@ -19,8 +17,6 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule,
-    MatButtonModule,
-    MatCardModule,
     MatSnackBarModule,
     RouterModule.forChild(routes),
     TranslateModule

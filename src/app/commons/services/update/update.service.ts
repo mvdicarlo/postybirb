@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
 import { HTMLParser } from '../../helpers/html-parser';
 import { TranslateService } from '@ngx-translate/core';
-import { Observable } from 'rxjs';
 import { timer } from 'rxjs/observable/timer';
 
 /**
@@ -37,7 +36,7 @@ export class UpdateService {
    */
   private isNewVersion(newVersion: string): boolean {
     const current = this.version.split('.');
-    const newer = newVersion.split('.');
+    const newer = (newVersion || '').split('.');
     let isUpdate: boolean = false;
 
     if (newer.length > 0) {

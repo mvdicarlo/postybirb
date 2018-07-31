@@ -3,6 +3,9 @@ submission-row {
 }
 
 .submission-table-footer {
-  position: sticky;
+  /* position: sticky;
+  bottom: 0; */
+  position: absolute;
+  width: 100%;
   bottom: 0;
 }

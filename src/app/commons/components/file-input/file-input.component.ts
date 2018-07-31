@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, Input, forwardRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Input, forwardRef, ViewChild, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FileInformation } from '../../models/file-information';
 import { FileObject } from '../../interfaces/file-obect.interface';
@@ -8,6 +8,7 @@ import { BaseControlValueAccessorComponent } from '../base-control-value-accesso
   selector: 'file-input',
   templateUrl: './file-input.component.html',
   styleUrls: ['./file-input.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -33,7 +34,7 @@ export class FileInputComponent extends BaseControlValueAccessorComponent implem
   public passingRequired: boolean;
   public file: any;
 
-  constructor() {
+  constructor(private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -87,11 +88,13 @@ export class FileInputComponent extends BaseControlValueAccessorComponent implem
 
   public writeValue(file: FileInformation | FileObject) {
     this.changeStateFromFile(file);
+    this._changeDetector.markForCheck()
   }
 
   public onChange(file: FileInformation) {
     this.changeStateFromFile(file);
     this.onChangedCallback(file);
+    this._changeDetector.markForCheck()
   }
 
 }

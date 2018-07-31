@@ -24,7 +24,7 @@ export class InkbunnyDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    const info = store.get(SupportedWebsites.Inkbunny.toLowerCase());
+    const info = db.get(SupportedWebsites.Inkbunny.toLowerCase()).value();
     if (info && info.name !== null && info.name !== undefined) {
       this.isLoggedIn = true;
     } else {

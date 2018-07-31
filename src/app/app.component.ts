@@ -25,11 +25,7 @@ export class AppComponent {
     translate.setDefaultLang('en');
     translate.use(userLanguage);
 
-    const firstTime = store.get('init');
-    if (!firstTime) {
-      store.clearAll();
-      store.set('init', true);
-    }
+    this.loadOlderStore();
   }
 
   public switchLanguage(language: string): void {
@@ -44,5 +40,24 @@ export class AppComponent {
     window['openUrlInBrowser'](url);
   }
 
+  // Load old configs into new config file and clear
+  private loadOlderStore(): void {
+    const globalAdvertise = store.get('globalAdvertise');
+    if (globalAdvertise !== undefined) db.set('globalAdvertise', globalAdvertise).write();
+
+    const postInterval = store.get('postInterval');
+    if (postInterval !== undefined) db.set('postInterval', postInterval).write();
+
+    const stopOnFailure = store.get('stopOnFailure');
+    if (stopOnFailure !== undefined) db.set('stopOnFailure', stopOnFailure).write();
+
+    const generateLogOnFailure = store.get('generateLogOnFailure');
+    if (generateLogOnFailure !== undefined) db.set('generateLogOnFailure', generateLogOnFailure).write();
+
+    const templates = store.get('posty-birb-templates');
+    if (templates !== undefined) db.set('posty-birb-templates', templates).write();
+
+    store.clearAll(); // No longer using local storage
+  }
 
 }

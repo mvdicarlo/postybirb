@@ -211,6 +211,8 @@ TRANSLATOR: <Person to be credited>
 
 "Open"
 
+"Order Images"
+
 "Original Work"
 
 "Other"

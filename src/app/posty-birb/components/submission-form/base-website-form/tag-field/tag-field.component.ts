@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, AfterViewInit, SimpleChanges, forwardRef, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnChanges, AfterViewInit, SimpleChanges, forwardRef, Input, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup, FormBuilder, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseControlValueAccessorComponent } from '../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { TagModel } from '../information.interface';
@@ -13,6 +13,7 @@ import { NotifyService } from '../../../../../commons/services/notify/notify.ser
   selector: 'tag-field',
   templateUrl: './tag-field.component.html',
   styleUrls: ['./tag-field.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -35,7 +36,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
   public separatorKeysCodes = [ENTER, COMMA];
   public params: any = { min: 0 };
 
-  constructor(private fb: FormBuilder, private notify: NotifyService) {
+  constructor(private fb: FormBuilder, private notify: NotifyService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -53,7 +54,10 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
       }
     });
 
-    this.form.valueChanges.subscribe(() => this.onChange());
+    this.form.valueChanges.subscribe(() => {
+      this.onChange();
+      this._changeDetector.markForCheck();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -69,6 +73,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
   ngAfterViewInit() {
     this.onChange();
+    this._changeDetector.markForCheck();
   }
 
   public onChange() {
@@ -88,6 +93,8 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
     } else {
       this.form.reset({ overwrite: false, tags: [] }, { emitEvent: false });
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public validateTagCount(): boolean {

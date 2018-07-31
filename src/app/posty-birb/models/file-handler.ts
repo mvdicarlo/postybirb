@@ -24,5 +24,7 @@ export class FileHandler {
     if (file.type.includes('audio')) return 'Music';
     if (file.type.includes('video')) return 'Animation';
     if (file.type.includes('text')) return 'Story';
+
+    alert('Unknown/unsupported file type');
   }
 }

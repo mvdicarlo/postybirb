@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { interval } from 'rxjs/observable/interval';
 import { Store } from '@ngxs/store';
 
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
 import { SubmissionArchive } from '../../../commons/models/posty-birb/posty-birb-submission';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 import { SubmissionStatus } from '../../enums/submission-status.enum';

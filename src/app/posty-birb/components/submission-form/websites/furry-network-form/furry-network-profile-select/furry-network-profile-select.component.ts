@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterContentInit, OnDestroy, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, AfterContentInit, OnDestroy, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
 import { Subscription } from 'rxjs';
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'furry-network-profile-select',
   templateUrl: './furry-network-profile-select.component.html',
   styleUrls: ['./furry-network-profile-select.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export class FurryNetworkProfileSelectComponent extends BaseControlValueAccessor
   private statusSubscription: Subscription;
   public profiles: any[];
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -59,12 +60,16 @@ export class FurryNetworkProfileSelectComponent extends BaseControlValueAccessor
     } else {
       this.profiles = [];
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public writeValue(obj: any) {
     if (obj) {
       this.value = obj;
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public onChange(event: any) {

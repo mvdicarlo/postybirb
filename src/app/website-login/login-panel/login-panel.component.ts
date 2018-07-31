@@ -1,14 +1,15 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { WebsiteManagerService } from '../../commons/services/website-manager/website-manager.service';
 import { WebsiteStatus } from '../../commons/enums/website-status.enum';
 import { WebLogo } from '../../commons/enums/web-logo.enum';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog } from '@angular/material';
 
 @Component({
   selector: 'login-panel',
   templateUrl: './login-panel.component.html',
-  styleUrls: ['./login-panel.component.css']
+  styleUrls: ['./login-panel.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginPanelComponent implements OnInit, OnDestroy {
   @Input() dialogComponent: any;
@@ -19,9 +20,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
   public loading: boolean;
   public logo: string;
 
-  constructor(private webManager: WebsiteManagerService, private dialog: MatDialog) {
-
-  }
+  constructor(private webManager: WebsiteManagerService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.status = { status: WebsiteStatus.Logged_Out, username: 'Unknown' };
@@ -44,8 +43,10 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
         this.status.status = WebsiteStatus.Logged_In;
         this.webManager.getUsername(this.website).then(username => {
           this.status.username = username;
+          this._changeDetector.markForCheck();
         }).catch(err => {
           this.status.username = 'Unknown';
+          this._changeDetector.markForCheck();
         });
         break;
       case WebsiteStatus.Logged_Out:
@@ -63,6 +64,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
     }
 
     this.loading = false;
+    this._changeDetector.markForCheck();
   }
 
   openDialog(): void {

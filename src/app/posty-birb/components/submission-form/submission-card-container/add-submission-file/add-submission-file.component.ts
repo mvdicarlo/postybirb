@@ -1,11 +1,12 @@
-import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { PostyBirbSubmission } from '../../../../../commons/models/posty-birb/posty-birb-submission';
 import { FileInformation } from '../../../../../commons/models/file-information';
 
 @Component({
   selector: 'add-submission-file',
   templateUrl: './add-submission-file.component.html',
-  styleUrls: ['./add-submission-file.component.css']
+  styleUrls: ['./add-submission-file.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddSubmissionFileComponent implements OnInit {
   @Output() added: EventEmitter<PostyBirbSubmission[]> = new EventEmitter();
@@ -44,7 +45,8 @@ export class AddSubmissionFileComponent implements OnInit {
     const { availableFormats, content } = window['getClipboardContents']();
 
     if (availableFormats.includes('image/png')) {
-      const buffer = content.toPNG();
+      const buffer = content.toJPEG(100);
+
       const fileInfo: FileInformation = new FileInformation(buffer, true);
       const pbs: PostyBirbSubmission = new PostyBirbSubmission(null, fileInfo);
       pbs.getPreloadedSubmissionFile().then(() => this.emit([pbs]));

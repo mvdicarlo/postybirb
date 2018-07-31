@@ -1,5 +1,4 @@
 import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
-import { SupportedWebsites } from '../../../../../commons/enums/supported-websites';
 import { WebLogo } from '../../../../../commons/enums/web-logo.enum';
 import { WebsiteManagerService } from '../../../../../commons/services/website-manager/website-manager.service';
 

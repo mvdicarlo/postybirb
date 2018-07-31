@@ -1,10 +1,11 @@
-import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, ChangeDetectionStrategy } from '@angular/core';
 import { PostyBirbSubmission } from '../../../../commons/models/posty-birb/posty-birb-submission';
 
 @Component({
   selector: 'submission-picker',
   templateUrl: './submission-picker.component.html',
-  styleUrls: ['./submission-picker.component.css']
+  styleUrls: ['./submission-picker.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionPickerComponent implements OnChanges {
   @Input() submissions: PostyBirbSubmission[] = [];

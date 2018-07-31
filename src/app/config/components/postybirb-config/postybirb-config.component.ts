@@ -1,6 +1,5 @@
 import { Component, ViewChild, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../../posty-birb/stores/states/posty-birb.state';
 import { TemplatesService } from '../../../posty-birb/services/templates/templates.service';

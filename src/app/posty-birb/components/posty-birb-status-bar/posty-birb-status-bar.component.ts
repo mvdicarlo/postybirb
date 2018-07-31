@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef, MAT_BOTTOM_SHEET_DATA } from '@angular/material';
-import { MatBottomSheet, MatBottomSheetRef } from '@angular/material';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { MatDialog } from '@angular/material';
+import { MatBottomSheet } from '@angular/material';
 import { Subscription } from 'rxjs';
 import { Store } from '@ngxs/store';
 
@@ -10,7 +10,8 @@ import { SubmissionSettingsDialogComponent } from '../dialog/submission-settings
 @Component({
   selector: 'posty-birb-status-bar',
   templateUrl: './posty-birb-status-bar.component.html',
-  styleUrls: ['./posty-birb-status-bar.component.css']
+  styleUrls: ['./posty-birb-status-bar.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
 
@@ -20,22 +21,18 @@ export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
   public queueCount: number = 0;
   public submissionCount: number = 0;
 
-  @ViewChild('tooltip') tooltip: any;
-  private tooltipTimeout: any;
-
-  constructor(private _store: Store, private bottomSheet: MatBottomSheet, private dialog: MatDialog) { }
+  constructor(private _store: Store, private bottomSheet: MatBottomSheet, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.submissionSubscription = this._store.select(state => state.postybirb.submissions).subscribe(submissions => {
       this.submissionCount = submissions.length;
-
-      if (this.tooltip) {
-        this.tooltip.show();
-        clearTimeout(this.tooltipTimeout);
-        this.tooltipTimeout = setTimeout(function() { this.tooltip.hide() }.bind(this), 3000);
-      }
+      this._changeDetector.markForCheck();
     });
-    this.queueSubscription = this._store.select(state => state.postybirb.queued).subscribe(submissions => this.queueCount = submissions.length);
+
+    this.queueSubscription = this._store.select(state => state.postybirb.queued).subscribe(submissions => {
+      this.queueCount = submissions.length
+      this._changeDetector.markForCheck();
+    });
   }
 
   ngOnDestroy() {

@@ -10,6 +10,7 @@ import { TranslateService } from '@ngx-translate/core';
   selector: 'submission-picker-item',
   templateUrl: './submission-picker-item.component.html',
   styleUrls: ['./submission-picker-item.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionPickerItemComponent implements OnInit, OnDestroy {
   @Input() submission: PostyBirbSubmission;
@@ -24,6 +25,7 @@ export class SubmissionPickerItemComponent implements OnInit, OnDestroy {
   public verify: WebsiteRestrictions;
   public restrictions: any;
   public isValid: boolean = true;
+  public fileIcon: string;
 
   private subscription: Subscription = Subscription.EMPTY;
 
@@ -46,11 +48,17 @@ export class SubmissionPickerItemComponent implements OnInit, OnDestroy {
   private getInfo(submission: PostyBirbSubmission): void {
     const fileInfo: any = this.submission.getSubmissionFileObject();
     this.type = fileInfo.type;
+    this.title = this.submission.getTitle();
+
     this.submission.getSubmissionFileSource().then(src => {
       this.src = src;
       this._changeDetector.markForCheck();
     });
-    this.title = this.submission.getTitle();
+
+    getFileIcon(fileInfo.path, (err, icon) => {
+      this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
+      this._changeDetector.markForCheck();
+    });
 
     this._changeDetector.markForCheck();
   }

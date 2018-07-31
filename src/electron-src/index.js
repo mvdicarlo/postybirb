@@ -1,6 +1,13 @@
 const fs = require('fs');
+const path = require('path');
 const shell = require('electron').shell;
 const clipboard = require('electron').clipboard;
+
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+
+const adapter = new FileSync(path.join(require('electron').remote.app.getPath('userData'), 'postybirb.json'));
+const db = low(adapter); // DB used for storing compressed or buffer-only images
 
 const _setImmediate = setImmediate;
 const _clearImmediate = clearImmediate;
@@ -11,43 +18,14 @@ process.once('loaded', () => {
     global.Buffer = _Buffer;
 });
 
+window.db = db;
 window.tumblr = require('./js/tumblr-auth.js');
 window.twitter = require('./js/twitter-auth.js');
 window.deviantart = require('./js/deviantart-auth.js');
 window.appVersion = require('electron').remote.app.getVersion();
-window.documentsPath = require('electron').remote.app.getPath('documents');
 window.sfw = require('electron').remote.process.env.SFW;
-
-// Set up generic Documents folder - DEPRECATED
-// fs.access(`${window.documentsPath}/PostyBirb`, fs.constants.F_OK, (err) => {
-//     if (err) {
-//         fs.mkdir(`${window.documentsPath}/PostyBirb`, (err) => {
-//             if (err) {
-//                 console.error('Unable to create Documents subfolder');
-//             } else {
-//                 fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
-//                     if (err) {
-//                         console.error('Unable to create Documents subfolder: temp');
-//                     }
-//                 });
-//             }
-//         });
-//     } else {
-//         fs.access(`${window.documentsPath}/PostyBirb/temp`, fs.constants.F_OK, (err) => {
-//             if (err) {
-//                 fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
-//                     if (err) {
-//                         console.error('Unable to create Documents subfolder: temp');
-//                     }
-//                 });
-//             }
-//         });
-//     }
-// });
-
-/**
- * These functions are used to limit what can be called from the app itself
- */
+window.nativeImage = require('electron').nativeImage;
+window.getFileIcon = require('electron').remote.app.getFileIcon;
 
 window.readFile = function readFile(filePath, successCallback, errorCallback, completeCallback) {
     fs.readFile(filePath, (readErr, buffer) => {

@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { Subscription, Observable, BehaviorSubject, Subscriber } from 'rxjs';
-import { timer } from 'rxjs/observable/timer';
 import { Store } from '@ngxs/store';
 
 import { SnotifyService } from 'ng-snotify';
@@ -54,7 +53,7 @@ export class PostManagerService {
   }
 
   private stopOnError(): boolean {
-    const enabled = store.get('stopOnFailure');
+    const enabled = db.get('stopOnFailure').value();
     return enabled === undefined ? true : enabled;
   }
 
@@ -65,7 +64,7 @@ export class PostManagerService {
       this._store.dispatch(new PostyBirbStateAction.AddSubmission(submission, true));
       this.postingSubmission = new PostHandler(this.websiteManager, submission, this.logger, this.snotify);
 
-      const interval = Number(store.get('postInterval') || 0);
+      const interval = Number(db.get('postInterval').value() || 0);
       if (interval && !skipInterval) {
         this.postingSubmission.setWaitingFor(interval * 60000);
         setTimeout(function() {
@@ -99,6 +98,8 @@ export class PostManagerService {
         this._store.dispatch(new PostyBirbStateAction.DequeueAllSubmissions());
       }
 
+      this.postingSubmission.destroy();
+
       this.postingSubscription.unsubscribe();
       this.postingSubmission = null;
       this.postingSubject.next(undefined);
@@ -130,7 +131,7 @@ export class PostHandler {
 
   constructor(private manager: WebsiteManagerService, private archive: SubmissionArchive, private logger: LoggerService, private snotify: SnotifyService) {
     this.submission = PostyBirbSubmission.fromArchive(archive);
-    this.unpostedWebsites = this.submission.getUnpostedWebsites().sort();
+    this.unpostedWebsites = [...this.submission.getUnpostedWebsites()].sort();
     this.originalPostCount = this.unpostedWebsites.length;
   }
 
@@ -142,7 +143,7 @@ export class PostHandler {
     return new Observable<any>(observer => {
       this.observer = observer;
       try {
-        this.submission.getPreloadedSubmissionFile().then(src => {
+        this.submission.getPreloadedSubmissionFile().then(() => {
           this.submission.getPreloadedThumbnailFile().then(() => {
             this.submission.getPreloadedAdditionalFiles().then(() => {
               this.scheduleNextAttempt();
@@ -181,6 +182,7 @@ export class PostHandler {
         this.scheduleNextAttempt();
       }
     }, (err) => {
+      err = err || {};
       this.responses.push({ website, err });
       err.website = website;
       this.websiteFailed(err);
@@ -209,19 +211,19 @@ export class PostHandler {
 
   private generateTimeout(website: string): number {
     const now = Date.now();
-    const lastPosted: number = store.get(`lastPosted${website}`) || 0;
+    const lastPosted: number = db.get(`lastPosted${website}`).value() || 0;
     const wait: number = this.waitMap[website] || 500;
 
     return lastPosted + wait <= now ? 100 : Math.abs(now - lastPosted - wait);
   }
 
   private setLastPosted(website): void {
-    store.set(`lastPosted${website}`, Date.now());
+    db.set(`lastPosted${website}`, Date.now()).write();
   }
 
   private websiteFailed(err: any): void {
     this.failed.push(err.website);
-    if (err.notify) {
+    if (err.notify && err.msg) {
       this.snotify.error((err.msg || '').toString(), err.website);
     }
 
@@ -253,12 +255,12 @@ export class PostHandler {
   }
 
   private stopOnError(): boolean {
-    const enabled = store.get('stopOnFailure');
+    const enabled = db.get('stopOnFailure').value();
     return enabled === undefined ? true : enabled;
   }
 
   private generateLogs(): boolean {
-    const enabled = store.get('generateLogOnFailure');
+    const enabled = db.get('generateLogOnFailure').value();
     return enabled === undefined ? false : enabled;
   }
 
@@ -267,7 +269,7 @@ export class PostHandler {
   }
 
   public getSubmission(): PostyBirbSubmission {
-    this.submission.setUnpostedWebsites([...this.failed, ...this.unpostedWebsites]);
+    this.submission.setUnpostedWebsites([...this.failed, ...this.unpostedWebsites].sort());
     this.submission.setSubmissionStatus(this.failed.length > 0 ? SubmissionStatus.FAILED : SubmissionStatus.POSTED);
     return this.submission;
   }
@@ -282,6 +284,10 @@ export class PostHandler {
 
   public subscribeToWebsiteUpdates(): Observable<string> {
     return this.currentlyPostingTo.asObservable();
+  }
+
+  public destroy(): void {
+    this.currentlyPostingTo.complete();
   }
 
 }

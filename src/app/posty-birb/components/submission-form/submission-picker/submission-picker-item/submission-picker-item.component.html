@@ -1,5 +1,6 @@
 <div [class.invalid-border]="!isValid" [class.valid-border]="isValid" class="picker-item" [class.selected]="isSelected" (click)="this.toggle()" [title]="title" *ngIf="src">
-  <img [src]="src | safe" [alt]="title" *ngIf="type.includes('image') || !type.includes('video')">
+  <img [src]="src | safe" [alt]="title" *ngIf="type.includes('image')">
+  <img [src]="fileIcon | safe" [alt]="title" *ngIf="type.includes('audio') || type.includes('text')">
   <video [src]="src | safe" [alt]="title" [type]="type" *ngIf="type.includes('video')"></video>
   <div class="invalid-icons">
     <mat-icon color="warn" *ngIf="restrictions.unsupportedByRating" [matTooltip]="translateText('Unsupported rating', restrictions.unsupportedByRating) | async" matTooltipPosition="above">explicit</mat-icon>

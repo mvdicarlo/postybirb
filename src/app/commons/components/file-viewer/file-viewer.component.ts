@@ -1,10 +1,11 @@
-import { Component, OnInit, OnChanges, SimpleChanges, Input } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FileInformation } from '../../models/file-information';
 
 @Component({
   selector: 'file-viewer',
   templateUrl: './file-viewer.component.html',
-  styleUrls: ['./file-viewer.component.css']
+  styleUrls: ['./file-viewer.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 /**
  * Component used to display an image from a FileInformation or File
@@ -20,6 +21,9 @@ export class FileViewerComponent implements OnInit, OnChanges {
   public type: string;
   public show: boolean;
   public mimeType: string;
+  public fileIcon: string;
+
+  constructor(private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.handleFile(this.file);
@@ -67,6 +71,9 @@ export class FileViewerComponent implements OnInit, OnChanges {
     const fileObject: any = file instanceof FileInformation ? file.getFileInfo() : file;
     if (fileObject && fileObject.path) {
       this.handleFileInformation(fileObject);
+      getFileIcon(fileObject.path, (err, icon) => {
+        this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
+      });
     } else if (file instanceof FileInformation) {
       const buffer = file.getFileBuffer();
       if (buffer && buffer.length > 0) {
@@ -79,6 +86,8 @@ export class FileViewerComponent implements OnInit, OnChanges {
         this.handleFileInformation(undefined);
       }
     }
+
+    this._changeDetector.markForCheck();
   }
 
 }

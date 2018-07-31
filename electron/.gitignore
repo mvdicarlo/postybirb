@@ -4,3 +4,4 @@ postybirb/package-lock.json
 dist/
 PBA/
 electron-dist/
+db.json

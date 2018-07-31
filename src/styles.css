@@ -96,6 +96,10 @@ mat-sidenav-content {
   max-height: 91vh;
 }
 
+mat-sidenav {
+  width: auto !important;
+}
+
 mat-nav-list {
   max-height: 94vh;
 }

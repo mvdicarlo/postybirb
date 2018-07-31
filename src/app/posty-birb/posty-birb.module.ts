@@ -4,7 +4,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { NgDragDropModule } from 'ng-drag-drop';
 import { CKEditorModule } from 'ng2-ckeditor';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
@@ -87,6 +86,7 @@ import { SubmissionSheetComponent } from './components/sheets/submission-sheet/s
 import { SubmissionRowComponent } from './components/sheets/submission-sheet/submission-row/submission-row.component';
 import { SubmissionTableComponent } from './components/sheets/submission-sheet/submission-table/submission-table.component';
 import { HentaiFoundryCategorySelectComponent } from './components/submission-form/websites/hentai-foundry-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
+import { AdditionalImageOrderingDialogComponent } from './components/submission-form/submission-card/additional-image-ordering-dialog/additional-image-ordering-dialog.component';
 
 const routes: Routes = [
   { path: 'postybirb', component: PostyBirbAppComponent }
@@ -102,7 +102,6 @@ const routes: Routes = [
     ]),
     CommonsModule.forRoot(),
     LogsModule.forRoot(),
-    NgDragDropModule.forRoot(),
     CKEditorModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
@@ -175,7 +174,8 @@ const routes: Routes = [
     SubmissionSheetComponent,
     SubmissionRowComponent,
     SubmissionTableComponent,
-    HentaiFoundryCategorySelectComponent
+    HentaiFoundryCategorySelectComponent,
+    AdditionalImageOrderingDialogComponent
   ],
   entryComponents: [
     ScheduleSubmissionDialogComponent,
@@ -186,7 +186,8 @@ const routes: Routes = [
     SubmissionViewComponent,
     SaveEditDialogComponent,
     SubmissionSettingsDialogComponent,
-    SubmissionSheetComponent
+    SubmissionSheetComponent,
+    AdditionalImageOrderingDialogComponent
   ],
   exports: [
     FormTemplateSelectComponent,

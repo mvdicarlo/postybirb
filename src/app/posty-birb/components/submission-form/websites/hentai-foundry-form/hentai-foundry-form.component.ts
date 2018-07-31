@@ -1,5 +1,5 @@
 import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
-import { NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
 
 @Component({

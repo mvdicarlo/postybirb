@@ -34,7 +34,7 @@ const tumblrExpress = {
                     user.token = r.accessToken;
                     user.blogs = r.data.user.blogs;
                     user.name = r.data.user.name;
-                    store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
+                    db.set('tumblr', user).write();
                     res.send('Tumblr successfully authenticated. You are free to close this window now.');
                     this.stop();
                 }).fail(() => {
@@ -137,14 +137,14 @@ exports.authorize = function authenticateTumblr() {
  * @return {Promise}         key value
  */
 exports.refresh = function loadToken() {
-    const storedToken = store.get('tumblr');
+    const storedToken = db.get('tumblr').value();
     if (!storedToken) return;
 
     user = storedToken;
     return new Promise((resolve, reject) => {
         if (!user.token || !user.secret) {
             user = {};
-            store.remove('tumblr');
+            db.unset('tumblr').write();
             reject(false);
             return;
         }
@@ -153,10 +153,10 @@ exports.refresh = function loadToken() {
         .done((res) => {
             user.name = res.user.name;
             user.blogs = res.user.blogs;
-            store.set('tumblr', user, new Date().setMonth(new Date().getMonth() + 2));
+            db.set('tumblr', user).write();
             resolve(true);
         }).fail(() => {
-            store.remove('tumblr');
+            db.unset('tumblr').write();
             user = {};
             reject(false);
         });
@@ -168,7 +168,7 @@ exports.refresh = function loadToken() {
  *
  */
 exports.unauthorize = function unauthorize() {
-    store.remove('tumblr');
+    db.unset('tumblr').write();
     user = {};
 };
 

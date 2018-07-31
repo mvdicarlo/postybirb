@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
 import { Subscription } from 'rxjs';
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'furaffinity-folders',
   templateUrl: './furaffinity-folders.component.html',
   styleUrls: ['./furaffinity-folders.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -50,7 +50,7 @@ const authorizeWithPin = function pinAuth(pin) {
                   username: res.results.screen_name,
               };
 
-              store.set('twitter', oauth, new Date().setMonth(new Date().getMonth() + 2));
+              db.set('twitter', oauth).write();
               resolve(true);
           }
       }).fail((err) => {
@@ -62,7 +62,7 @@ const authorizeWithPin = function pinAuth(pin) {
 };
 
 function unauthorizeTwitter() {
-    store.remove('twitter');
+    db.unset('twitter').write();
     oauth = {};
     authorized = false;
 }
@@ -122,7 +122,7 @@ exports.refresh = function loadToken() {
 };
 
 function checkTokens(resolve, reject) {
-    const storedToken = store.get('twitter');
+    const storedToken = db.get('twitter').value();
     if (!storedToken) {
         reject(false);
         authorized = false;

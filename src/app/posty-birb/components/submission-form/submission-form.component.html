@@ -3,9 +3,7 @@
     <div class="submission-container">
       <submission-card-container #container (update)="selectedSubmissionsUpdated($event)"></submission-card-container>
     </div>
-    <div>
-    </div>
-    <div *ngIf="submissions.length > 0">
+    <div *ngIf="submissionsAreSelected()">
       <edit-form-dialog #editForm [selectedSubmissions]="submissions" (onSave)="onSaveSubmissionFromEdit()"></edit-form-dialog>
     </div>
   </mat-card-content>

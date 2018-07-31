@@ -1,7 +1,5 @@
 import { Website } from '../../interfaces/website.interface';
-import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { Observable } from 'rxjs';
 
 /**

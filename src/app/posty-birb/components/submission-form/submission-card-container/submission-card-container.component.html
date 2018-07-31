@@ -1,7 +1,7 @@
-<div class="submission-container" droppable [dragHintClass]="'drag-hint'" [dropScope]="['scheduled','unscheduled']" [dragOverClass]="'drag-highlight'" (onDrop)="dropForEdit($event)">
+<div class="submission-container">
   <div class="row no-gutters">
     <add-submission-file class="col-md-3 col-lg-3 col-xl-2" (added)="addFiles($event)"></add-submission-file>
-    <submission-card class="col-md-3 col-lg-3 col-xl-2" *ngFor="let data of editing$ | async" [submission]="data" (onSelect)="submissionSelected($event)" (onDelete)="submissionRemoved($event)"></submission-card>
+    <submission-card class="col-md-3 col-lg-3 col-xl-2" *ngFor="let data of editing$ | async; trackBy:trackBy" [submission]="data" (onSelect)="submissionSelected($event)" (onDelete)="submissionRemoved($event)"></submission-card>
   </div>
 </div>
 <div class="submission-file-select">

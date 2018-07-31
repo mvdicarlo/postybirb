@@ -1,7 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material';
 import { PostyBirbSubmission } from '../../../../commons/models/posty-birb/posty-birb-submission';
-import { SupportedWebsites } from '../../../../commons/enums/supported-websites';
 import { WebLogo } from '../../../../commons/enums/web-logo.enum';
 import { SubmissionRuleHelpDialogComponent } from '../../dialog/submission-rule-help-dialog/submission-rule-help-dialog.component';
 

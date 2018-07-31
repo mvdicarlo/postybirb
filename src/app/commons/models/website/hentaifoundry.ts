@@ -8,7 +8,6 @@ import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { Observable } from 'rxjs';
 
-
 @Injectable()
 export class HentaiFoundry extends BaseWebsite implements Website {
 

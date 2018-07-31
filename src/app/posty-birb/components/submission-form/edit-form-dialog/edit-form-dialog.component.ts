@@ -1,5 +1,5 @@
-import { Component, forwardRef, OnInit, AfterViewInit, AfterViewChecked, OnChanges, SimpleChanges, Input, Output, EventEmitter, Inject, OnDestroy, ViewChild, ViewChildren, QueryList } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { Component, OnInit, AfterViewInit, AfterViewChecked, OnChanges, SimpleChanges, Input, Output, EventEmitter, OnDestroy, ViewChild, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Subscription, BehaviorSubject } from 'rxjs';
 
 import { MatDialogRef, MatDialog } from '@angular/material';
@@ -19,7 +19,8 @@ import { TemplatesService, Template } from '../../../services/templates/template
 @Component({
   selector: 'edit-form-dialog',
   templateUrl: './edit-form-dialog.component.html',
-  styleUrls: ['./edit-form-dialog.component.css']
+  styleUrls: ['./edit-form-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges, AfterViewChecked {
   @Output() readonly onSave: EventEmitter<any> = new EventEmitter();
@@ -40,7 +41,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   public offlineWebsites: string[] = [];
   public unloadedTemplate: PostyBirbSubmission;
 
-  constructor(private managerService: WebsiteManagerService, private fb: FormBuilder, private dialog: MatDialog, private templates: TemplatesService) {
+  constructor(private managerService: WebsiteManagerService, private fb: FormBuilder, private dialog: MatDialog, private templates: TemplatesService, private _changeDetector: ChangeDetectorRef) {
     this.defaultDescription = new BehaviorSubject(undefined);
     this.form = this.fb.group({
       defaultDescription: [],
@@ -58,12 +59,12 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
       if (value && value instanceof Array) {
         this.form.controls.selectedWebsites.patchValue(value.filter(website => this.onlineWebsites.includes(website)), { emitEvent: false });
       }
+
+      this._changeDetector.markForCheck();
     });
 
     this.updateOnlineWebsites(this.managerService.getWebsiteStatuses());
     this.subscription = this.managerService.getObserver().subscribe(statuses => this.updateOnlineWebsites(statuses));
-
-    this.fillFromSingleSubmission();
   }
 
   ngAfterViewInit() {
@@ -115,6 +116,8 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
       this.form.patchValue(submission.getDefaultFields());
       if (this.websiteForms) this.websiteForms.forEach(form => form.writeValue(submission.getWebsiteFieldFor(form.website)));
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public websitesSelected(): boolean {
@@ -122,7 +125,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public showHelp(): void {
-    const dialogRef: MatDialogRef<SubmissionRuleHelpDialogComponent> = this.dialog.open(SubmissionRuleHelpDialogComponent);
+    this.dialog.open(SubmissionRuleHelpDialogComponent);
   }
 
   public save(): Promise<any> {
@@ -185,12 +188,14 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     this.form.patchValue(tmp.getDefaultFields());
     if (this.websiteForms) this.websiteForms.forEach(form => form.writeValue(tmp.getWebsiteFieldFor(form.website)));
     this.unloadedTemplate = tmp;
+    this._changeDetector.markForCheck();
   }
 
   public loadFromSubmission(event: any): void {
     const submission: PostyBirbSubmission = event.value;
     this.form.patchValue(submission.getDefaultFields());
     this.websiteForms.forEach(form => form.writeValue(submission.getWebsiteFieldFor(form.website)));
+    this._changeDetector.markForCheck();
   }
 
   public clear(): void {
@@ -199,6 +204,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     this.templateSelect.reset();
     // HACK: Probably not the best way to clear
     if (this.submissionSelect) this.submissionSelect.writeValue(undefined);
+    this._changeDetector.markForCheck();
   }
 
   private markUntouched(): void {

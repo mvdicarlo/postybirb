@@ -1,6 +1,6 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
-import { MatDialogRef, MatDialog, MAT_DIALOG_DATA } from '@angular/material';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { PostyBirbSubmission } from '../../../../commons/models/posty-birb/posty-birb-submission';
 
 @Component({
@@ -12,7 +12,7 @@ export class ScheduleSubmissionDialogComponent implements OnInit {
   public minDate: Date;
   public form: FormGroup;
 
-  constructor( @Inject(MAT_DIALOG_DATA) public data: PostyBirbSubmission, public dialogRef: MatDialogRef<ScheduleSubmissionDialogComponent>, private fb: FormBuilder) {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: PostyBirbSubmission, public dialogRef: MatDialogRef<ScheduleSubmissionDialogComponent>, private fb: FormBuilder) {
     this.form = fb.group({
       scheduledDate: [undefined]
     });

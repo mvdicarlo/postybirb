@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -8,7 +8,6 @@ import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { Observable } from 'rxjs';
 
-
 @Injectable()
 export class Inkbunny extends BaseWebsite implements Website {
   private userInformation: any;
@@ -16,7 +15,7 @@ export class Inkbunny extends BaseWebsite implements Website {
   constructor(private http: HttpClient) {
     super(SupportedWebsites.Inkbunny, 'https://inkbunny.net');
 
-    this.userInformation = store.get(SupportedWebsites.Inkbunny.toLowerCase()) || {
+    this.userInformation = db.get(SupportedWebsites.Inkbunny.toLowerCase()).value() || {
       name: null,
       sid: null,
     };
@@ -111,7 +110,7 @@ export class Inkbunny extends BaseWebsite implements Website {
               };
               this.loginToActual(username, password)
                 .then(() => {
-                  store.set(SupportedWebsites.Inkbunny.toLowerCase(), this.userInformation, new Date().setMonth(new Date().getMonth() + 2));
+                  db.set(SupportedWebsites.Inkbunny.toLowerCase(), this.userInformation).write();
                   resolve(true);
                 }).catch(() => reject(false));
 
@@ -130,7 +129,7 @@ export class Inkbunny extends BaseWebsite implements Website {
     };
 
     this.loginStatus = WebsiteStatus.Logged_Out;
-    store.remove(SupportedWebsites.Inkbunny.toLowerCase());
+    db.unset(SupportedWebsites.Inkbunny.toLowerCase()).write();
     this.logoutActual();
   }
 

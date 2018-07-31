@@ -143,7 +143,7 @@ export class BbCodeParse {
   }
 
   private addAdvertisement(text: string = '', website: string, type: ParseType): string {
-    const enabled = store.get('globalAdvertise');
+    const enabled = db.get('globalAdvertise').value();
     const append: boolean = enabled === undefined ? true : enabled;
 
     let newText: string = text;

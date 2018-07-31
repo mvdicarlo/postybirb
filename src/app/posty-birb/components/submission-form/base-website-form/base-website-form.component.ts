@@ -1,8 +1,7 @@
 import { Component, AfterViewInit, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
-import { FormGroup, FormBuilder, ControlValueAccessor, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder } from '@angular/forms';
 import { SupportedWebsites } from '../../../../commons/enums/supported-websites';
 import { Information, DescriptionModel, TagModel } from './information.interface';
-import { FieldValidator } from '../validators/field.validator';
 import { MatTab, MatTabGroup } from '@angular/material';
 import { Subscription, Observable } from 'rxjs';
 
@@ -141,7 +140,7 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
     }
   }
 
-  private areEqual(obj1, obj2): boolean {
+  protected areEqual(obj1, obj2): boolean {
     return JSON.stringify(obj1) == JSON.stringify(obj2);
   }
 

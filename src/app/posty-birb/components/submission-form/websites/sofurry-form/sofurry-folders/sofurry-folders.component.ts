@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
 import { Subscription } from 'rxjs';
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'sofurry-folders',
   templateUrl: './sofurry-folders.component.html',
   styleUrls: ['./sofurry-folders.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
   private statusSubscription: Subscription;
   public folders: any[];
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -57,6 +58,8 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
     } else {
       this.value = '';
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public onChange(event: any) {

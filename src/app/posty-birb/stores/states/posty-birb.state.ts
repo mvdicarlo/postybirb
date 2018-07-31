@@ -1,5 +1,5 @@
 import { isDevMode } from '@angular/core';
-import { State, Action, StateContext, Selector, NgxsOnInit } from '@ngxs/store';
+import { State, Action, StateContext, NgxsOnInit } from '@ngxs/store';
 import { TranslateService } from '@ngx-translate/core';
 import { SnotifyService } from 'ng-snotify';
 
@@ -63,16 +63,12 @@ export class PostyBirbState implements NgxsOnInit {
   constructor(private translate: TranslateService, private snotify: SnotifyService) { }
 
   ngxsOnInit(ctx: StateContext<PostyBirbSubmissionStateModel>) {
-    const state = store.get('PostyBirbState') || {
+    const state = db.get('PostyBirbState').value() || {
       editing: [],
       submissions: [],
       queued: [],
       logs: []
     };
-
-    const legacy: PostyBirbSubmissionStateModel = this.loadLegacyArchives();
-    if (legacy.submissions.length > 0) state.submissions = [...state.submissions, ...legacy.submissions].sort(sort);
-    if (legacy.editing.length > 0) state.editing = [...state.editing, ...legacy.editing].sort(sort);
 
     state.queued = [];
     state.submissions.forEach(archive => {
@@ -84,34 +80,14 @@ export class PostyBirbState implements NgxsOnInit {
     ctx.setState(state);
   }
 
-  // This will need to be removed some time in the future
-  private loadLegacyArchives(): PostyBirbSubmissionStateModel {
-    const legacyStore: PostyBirbSubmissionStateModel = {
-      editing: store.get('postybirb-in-progress-store') || [],
-      submissions: [],
-      queued: [],
-      logs: []
-    }
-
-    const legacyScheduled: SubmissionArchive[] = store.get('scheduledStore') || [];
-    const legacyUnscheduled: SubmissionArchive[] = store.get('unscheduledStore') || [];
-    legacyStore.submissions = [...legacyScheduled, ...legacyUnscheduled];
-
-    store.remove('scheduledStore');
-    store.remove('unscheduledStore');
-    store.remove('postybirb-in-progress-store');
-
-    return legacyStore;
-  }
-
   @Action(SaveState)
   saveState(ctx: StateContext<PostyBirbSubmissionStateModel>, action: SaveState) {
     if (isDevMode()) console.log('Saving State', action.state);
-    store.set('PostyBirbState', action.state || {
+    db.set('PostyBirbState', action.state || {
       editing: [],
       submissions: [],
       queued: []
-    });
+    }).write();
   }
 
   @Action(PostyBirbActions.AddSubmission)
@@ -299,7 +275,8 @@ export class PostyBirbState implements NgxsOnInit {
     const { queued, submissions }: PostyBirbSubmissionStateModel = ctx.getState();
     let newSubmissions = [...submissions];
     let queuedSubmissions = [...queued];
-    let submission = action.submission;
+
+    const submission = action.submission;
     const failed = submission.getSubmissionStatus() === SubmissionStatus.FAILED;
 
     this.outputNotification(submission);
