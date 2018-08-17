@@ -13,3 +13,7 @@ button {
   vertical-align: middle;
   font-size: inherit;
 }
+
+.no-outline {
+  box-shadow: none;
+}

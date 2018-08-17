@@ -17,7 +17,8 @@ export class PatreonFormComponent extends BaseWebsiteFormComponent {
 
     this.setOptionsForm({
       minimumDollarsToView: [0, Validators.min(0)],
-      chargePatrons: [false]
+      chargePatrons: [false],
+      patronsOnly: [false]
     });
   }
 

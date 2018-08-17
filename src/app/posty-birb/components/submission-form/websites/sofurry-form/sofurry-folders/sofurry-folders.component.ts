@@ -47,13 +47,11 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
   populateFolders(folders: any): void {
     this.folders = [];
     if (folders) {
-      folders.forEach((folder) => {
-        const folderItem = {
+      this.folders = folders.map(folder => {
+        return {
           value: folder.value,
           label: folder.name
         };
-
-        this.folders.push(folderItem);
       });
     } else {
       this.value = '';

@@ -139,18 +139,21 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
     const existingTags = [...nonDefaultTags, ...defaultTags];
 
-    (event.value || '').split(',').forEach(value => {
-      value = value.trim();
-      if (value.length >= this.minimumCharacterLength && !existingTags.includes(value)) {
-        if (existingTags.length < this.maximumTags) {
-          nonDefaultTags.push(value);
+    if (event.value) {
+      const tags = event.value.split(',');
+      for (let i = 0; i < tags.length; i++) {
+        const value = tags[i].trim();
+        if (value.length >= this.minimumCharacterLength && !existingTags.includes(value)) {
+          if (existingTags.length < this.maximumTags) {
+            nonDefaultTags.push(value);
+          }
+        } else if (existingTags.includes(value)) {
+          this.notify.translateNotification('Duplicate tag ignored', { tag: value }).subscribe(msg => {
+            this.notify.getNotify().warning(msg);
+          });
         }
-      } else if (existingTags.includes(value)) {
-        this.notify.translateNotification('Duplicate tag ignored', { tag: value }).subscribe(msg => {
-          this.notify.getNotify().warning(msg);
-        });
       }
-    });
+    }
 
     this.form.controls.tags.patchValue(nonDefaultTags);
 
@@ -176,17 +179,8 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
   private removeDuplicates(): void {
     const nonDefaultTags = this.form.value.tags || [];
     const defaultTags = this.getDefaultTags();
-    const newTags: string[] = [];
 
-    nonDefaultTags.forEach(tag => {
-      const index = defaultTags.indexOf(tag);
-
-      if (index === -1) {
-        newTags.push(tag);
-      }
-    });
-
-    this.form.controls.tags.patchValue(newTags);
+    this.form.controls.tags.patchValue(nonDefaultTags.filter(tag => !defaultTags.includes(tag)).map(tag => tag));
   }
 
   private getDefaultTags(): string[] {

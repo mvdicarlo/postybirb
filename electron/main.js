@@ -50,7 +50,7 @@ app.on('ready', () => {
         },
     });
 
-    mainWindowState.manage(win);
+    if (!Boolean(process.env.DEVELOP)) mainWindowState.manage(win);
 
     win.loadURL(`file://${__dirname}/dist/index.html`);
 

@@ -2,7 +2,7 @@
   <form [formGroup]="form" name="default_form" class="clearfix">
     <div class="row no-gutters">
       <div class="col-md-12 col-lg-12 col-xl-12 box">
-        <mat-form-field color="accent" class="website-select">
+        <mat-form-field color="accent" class="website-select" tourAnchor="pb.edit.websites">
           <mat-select [placeholder]="'Selected Websites' | translate" multiple="true" formControlName="selectedWebsites">
             <mat-optgroup label="{{'Available Websites' | translate}}">
               <mat-option *ngFor="let onlineWebsite of onlineWebsites" [value]="onlineWebsite">{{onlineWebsite}}</mat-option>
@@ -16,19 +16,19 @@
           <button type="button" matInput mat-raised-button color="accent" (click)="showHelp()">{{'Help' | translate}}</button>
         </div>
       </div>
-      <div name="default_fields" class="col-md-12 col-lg-12 col-xl-12" [class.hidden]=!websitesSelected()>
+      <div name="default_fields" class="col-md-12 col-lg-12 col-xl-12" [class.d-none]=!websitesSelected()>
         <div class="form-element" name="defaultDescription" [matTooltip]="'Default Description Tooltip' | translate" matTooltipPosition="above">
-          <h5>{{'Default Description' | translate}}</h5>
+          <h5 tourAnchor="pb.edit.description">{{'Default Description' | translate}}</h5>
           <description-field class="clearfix" formControlName="defaultDescription" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
         </div>
         <div class="form-element" name="defaultTags" [matTooltip]="'Default Tag Tooltip' | translate">
-          <h5>{{'Default Tags' | translate}}</h5>
+          <h5 tourAnchor="pb.edit.tags">{{'Default Tags' | translate}}</h5>
           <tag-field class="clearfix w-100" formControlName="defaultTags" [allowOverwrite]="false"></tag-field>
         </div>
       </div>
     </div>
   </form>
-  <form>
+  <form tourAnchor="pb.edit.custom">
     <mat-tab-group *ngIf="websitesSelected()" [disableRipple]="true">
       <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Derpibooru)">
         <ng-template mat-tab-label>
@@ -97,7 +97,7 @@
   </form>
 </div>
 <div class="row no-gutters edit-controls">
-  <div class="col-md-4 col-lg-4 col-xl-3" style="padding: 0 4px;">
+  <div class="col-md-4 col-lg-4 col-xl-3" style="padding: 0 4px" tourAnchor="pb.edit.template.load">
     <form-template-select class="w-100" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
   </div>
   <div class="col-md-3 col-lg-3 col-xl-3">
@@ -109,7 +109,7 @@
   </div>
   <div class="col-md col-lg col-xl">
     <button mat-button color="warn" (click)="clear()">{{'Clear' | translate}}</button>
-    <button mat-button color="accent" (click)="save()" [disabled]="!formsAreValid()">{{'Save' | translate}}</button>
-    <button mat-button color="accent" (click)="saveTemplate()" [matTooltip]="'Create Template Tooltip' | translate">{{'Save Template' | translate}}</button>
+    <button tourAnchor="pb.edit.saving" mat-button color="accent" (click)="save()" [disabled]="!formsAreValid()">{{'Save' | translate}}</button>
+    <button tourAnchor="pb.edit.template.save" mat-button color="accent" (click)="saveTemplate()" [matTooltip]="'Create Template Tooltip' | translate">{{'Save Template' | translate}}</button>
   </div>
 </div>

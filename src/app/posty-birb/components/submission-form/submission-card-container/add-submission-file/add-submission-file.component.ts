@@ -17,7 +17,7 @@ export class AddSubmissionFileComponent implements OnInit {
   ngOnInit() {
   }
 
-  public filesSelected(event: Event): void {
+  public async filesSelected(event: Event) {
     const files: File[] = event.target['files'];
 
     const convertedList: File[] = [];
@@ -29,7 +29,7 @@ export class AddSubmissionFileComponent implements OnInit {
     this.fileInput.nativeElement.value = '';
   }
 
-  public fileDrop(event: DragEvent): void {
+  public async fileDrop(event: DragEvent) {
     const fileList: FileList = event.dataTransfer.files;
     const files: File[] = [];
     for (let i = 0; i < fileList.length; i++) {

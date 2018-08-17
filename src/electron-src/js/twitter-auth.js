@@ -94,7 +94,7 @@ function postToTwitter(status, medias) {
             status: post,
             token: oauth.token,
             secret: oauth.secret,
-            medias: medias ? medias.map(m => m.toString('base64')) : [],
+            medias: medias || [],
         };
 
 
@@ -136,6 +136,7 @@ function checkTokens(resolve, reject) {
             resolve(true);
         }).fail(() => {
             reject(false);
+            unauthorizeTwitter();
         });
     }
 }

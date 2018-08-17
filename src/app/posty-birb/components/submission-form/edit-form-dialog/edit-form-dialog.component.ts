@@ -152,11 +152,12 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
 
         dialogRef.afterClosed().subscribe(selected => {
           if (selected) {
-            selected.forEach(submission => {
+            for (let i = 0; i < selected.length; i++) {
+              const submission = selected[i];
               submission.setWebsiteFields(this.generateWebsiteValuesObject());
               submission.setDefaultFields(this.form.value);
               submission.setUnpostedWebsites(this.form.value.selectedWebsites);
-            });
+            }
 
             this.markUntouched();
             this.onSave.emit(true);
@@ -216,7 +217,9 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     let onlineInserted: boolean = false;
     let offlineInserted: boolean = false;
 
-    Object.keys(statuses).forEach(website => {
+    const keys = Object.keys(statuses);
+    for (let i = 0; i < keys.length; i++) {
+      const website = keys[i];
       if (statuses[website] === WebsiteStatus.Logged_In) { // Add to Online, remove from Offline
         const index = this.offlineWebsites.indexOf(website);
         if (index !== -1) {
@@ -238,7 +241,8 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
           offlineInserted = true;
         }
       }
-    });
+
+    }
 
     if (onlineInserted) this.onlineWebsites.sort();
     if (offlineInserted) {

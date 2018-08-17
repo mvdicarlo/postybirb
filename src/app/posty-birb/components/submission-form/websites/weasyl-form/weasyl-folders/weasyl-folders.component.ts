@@ -47,7 +47,8 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
   populateFolders(folders: any): void {
     this.folders = [];
     if (folders) {
-      folders.forEach((folder) => {
+      for (let i = 0; i < folders.length; i++) {
+        const folder = folders[i];
         const folderItem = {
           value: folder.folder_id,
           label: folder.title
@@ -56,15 +57,16 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
         this.folders.push(folderItem);
 
         if (folder.subfolders) {
-          folder.subfolders.forEach((innerFolder) => {
+          for (let j = 0; j < folder.subfolders.length; j++) {
+            const innerFolder = folder.subfolders[j];
             const subFolderItem = {
               value: innerFolder.folder_id,
               label: `${folder.title} / ${innerFolder.title}`
             };
             this.folders.push(subFolderItem);
-          });
+          }
         }
-      });
+      }
     } else {
       this.value = '';
     }

@@ -54,7 +54,7 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
 
     getFileIcon(this.file.path, (err, icon) => {
       this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
-      this._changeDetector.markForCheck();
+      this._changeDetector.detectChanges();
     });
 
     this.submissionForm = this.fb.group({

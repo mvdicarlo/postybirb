@@ -122,20 +122,6 @@ export class HentaiFoundry extends BaseWebsite implements Website {
     const tags = super.formatTags(defaultTags, other);
     let tagString = tags.join(' ').trim();
 
-    if (tagString.length > maxLength) {
-      const newTags = [];
-
-      tagString.substring(0, maxLength)
-        .split(' ')
-        .forEach((tag) => {
-          if (tag.length >= 3) {
-            newTags.push(tag);
-          }
-        });
-
-      tagString = newTags.join(' ');
-    }
-
-    return tagString;
+    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(' ').filter(tag => tag.length >= 3).join(' ') : tagString;
   }
 }

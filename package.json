@@ -1,7 +1,7 @@
 {
   "name": "postybirb",
   "description": "Multimedia crossposter for multimedia websites",
-  "version": "0.9.0",
+  "version": "0.9.4",
   "author": "Michael DiCarlo (Lemonynade)",
   "license": "BSD-3",
   "homepage": "https://bitbucket.org/Michael_DiCarlo/postybirb-angular#readme",
@@ -51,6 +51,9 @@
     "ng-pick-datetime": "^6.0.5",
     "ng-snotify": "^4.2.0",
     "ng2-ckeditor": "^1.1.14",
+    "ngx-bootstrap": "^3.0.1",
+    "ngx-tour-core": "^3.0.0",
+    "ngx-tour-ngx-bootstrap": "^3.0.0",
     "rxjs": "^6.2.1",
     "rxjs-compat": "^6.2.1",
     "store": "^2.0.12",

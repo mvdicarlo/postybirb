@@ -129,7 +129,7 @@ export class Patreon extends BaseWebsite implements Website {
       content: submission.description,
       post_type: this.getMapping('post_type', submission.submissionData.submissionType),
       is_paid: options.chargePatrons,
-      min_cents_pledged_to_view: (options.minimumDollarsToView || 0) * 100,
+      min_cents_pledged_to_view: options.patronsOnly ? (options.minimumDollarsToView || 0) * 100 || 1 : (options.minimumDollarsToView || 0) * 100,
       title: submission.submissionData.title,
       tags: { publish: true }
     };

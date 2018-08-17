@@ -5,3 +5,7 @@
 mat-checkbox+mat-slide-toggle {
   padding-left: 5px;
 }
+
+description-help {
+  width: 80%;
+}

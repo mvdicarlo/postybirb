@@ -24,13 +24,15 @@ export class SaveDialogComponent {
         this.invalid.push(submission);
       }
 
-      (submission.getDefaultFieldFor('selectedWebsites') || []).forEach(website => {
+      const selectedWebsites = submission.getDefaultFieldFor('selectedWebsites') || [];
+      for (let i = 0; i < selectedWebsites.length; i++) {
+        const website = selectedWebsites[i];
         if (this.websiteMap[website]) {
           this.websiteMap[website].push(submission);
         } else {
           this.websiteMap[website] = [submission];
         }
-      });
+      }
     }
 
     this.websiteKeys = Object.keys(this.websiteMap);
@@ -41,7 +43,7 @@ export class SaveDialogComponent {
   }
 
   public showHelp(): void {
-    const dialogRef: MatDialogRef<SubmissionRuleHelpDialogComponent> = this.dialog.open(SubmissionRuleHelpDialogComponent);
+    this.dialog.open(SubmissionRuleHelpDialogComponent);
   }
 
 }

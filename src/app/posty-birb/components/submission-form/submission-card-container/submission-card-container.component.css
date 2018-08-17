@@ -29,14 +29,6 @@
   min-height: 100px;
 }
 
-.hidden {
-  display: none;
-}
-
 submission-card, add-submission-file {
   padding: 1px !important;
-}
-
-form {
-  text-align: right;
 }

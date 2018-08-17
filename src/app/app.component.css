@@ -1,14 +1,5 @@
-mat-toolbar {
-  width: 100%;
-  height: 100%;
-}
-
 mat-sidenav-container {
   height: 100%;
-}
-
-.no-outline:focus {
-  outline: none;
 }
 
 .toolbar {
@@ -29,8 +20,9 @@ mat-sidenav-container {
 }
 
 .toolbar-app-icon img {
-  max-height: 100%;
-  margin: auto;
+  height: 100%;
+  width: auto;
+  padding: 0.2em 0;
 }
 
 .toolbar-app-icon h3 {
@@ -42,8 +34,7 @@ mat-sidenav-container {
 }
 
 .toolbar-buttons {
-  margin-left: -16px;
-  margin-right: 5px;
+  margin-right: 6px;
 }
 
 .status-toolbar {
@@ -53,12 +44,7 @@ mat-sidenav-container {
 }
 
 .status-bar {
-  margin-left: -16px;
   height: 100%;
-}
-
-.status-bar * {
-  /* height: 100%; */
 }
 
 .kofi {
@@ -68,13 +54,13 @@ mat-sidenav-container {
 .kofi button {
   background-color: #46b798;
   height: 100%;
-  margin-right: -16px;
-  float: right;
   border-radius: 0;
+  margin: auto;
 }
 
-.container-fluid {
-  padding: 0 !important;
+.kofi img {
+  height: 100%;
+  width: auto;
 }
 
 .language-select {
@@ -84,14 +70,6 @@ mat-sidenav-container {
   background: #464545;
   color: #ffffff;
   z-index: 9999;
-}
-
-.full-height {
-  height: 100%;
-}
-
-.full-window {
-  height: 100vh;
 }
 
 .main-section {

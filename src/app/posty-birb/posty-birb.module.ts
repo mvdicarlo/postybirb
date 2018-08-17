@@ -10,6 +10,9 @@ import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 import { NgxsModule } from '@ngxs/store';
 import { PostyBirbState } from './stores/states/posty-birb.state';
 
+import { TourNgxBootstrapModule } from 'ngx-tour-ngx-bootstrap';
+import { PopoverConfig } from 'ngx-bootstrap';
+
 import {
   MatButtonModule,
   MatButtonToggleModule,
@@ -92,6 +95,12 @@ const routes: Routes = [
   { path: 'postybirb', component: PostyBirbAppComponent }
 ];
 
+export function getPopoverConfig(): PopoverConfig {
+  return Object.assign(new PopoverConfig(), {
+    triggers: ""
+  });
+}
+
 @NgModule({
   imports: [
     CommonModule,
@@ -102,6 +111,7 @@ const routes: Routes = [
     ]),
     CommonsModule.forRoot(),
     LogsModule.forRoot(),
+    TourNgxBootstrapModule.forRoot(),
     CKEditorModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
@@ -195,6 +205,9 @@ const routes: Routes = [
     DescriptionHelpComponent,
     FurryNetworkProfileSelectComponent,
     PostyBirbStatusBarComponent
+  ],
+  providers: [
+    { provide: PopoverConfig, useFactory: getPopoverConfig }
   ],
   schemas: [NO_ERRORS_SCHEMA]
 })

@@ -9,20 +9,20 @@
   </div>
   <div [class.inactive-description]="form.value.useDefault">
     <div *ngIf="form.value.simple">
-      <mat-form-field style="width: 100%;" color="accent">
+      <mat-form-field class="w-100" color="accent">
         <textarea (blur)="onBlur($event)" formControlName="description" matInput matTextareaAutosize matAutosizeMinRows="2" matAutosizeMaxRows="6"></textarea>
         <mat-hint>{{'Text will not be reformatted when posting' | translate}}</mat-hint>
         <mat-hint align="end">{{estimatedDescriptionCount}}</mat-hint>
       </mat-form-field>
-      <description-help style="width: 80%; display: inline-block;" (advertise)="addAdvertisement($event)" *ngIf="showHelp"></description-help>
+      <description-help class="d-inline-block" (advertise)="addAdvertisement($event)" *ngIf="showHelp"></description-help>
     </div>
     <div *ngIf="!form.value.simple">
       <div>
         <ckeditor formControlName="description" [config]="ckConfig" (blur)="onBlur($event)"></ckeditor>
       </div>
-      <div style="display: flex">
+      <div class="d-flex">
         <description-help style="flex: 10" *ngIf="showHelp"></description-help>
-        <span class="float-right" style="padding-right: 3px;">({{updateEstimatedCharacterCount() | async }})</span>
+        <span class="float-right" style="padding-right: 3px">({{updateEstimatedCharacterCount() | async }})</span>
       </div>
     </div>
   </div>

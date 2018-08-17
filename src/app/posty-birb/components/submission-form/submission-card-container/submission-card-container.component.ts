@@ -7,6 +7,8 @@ import { SubmissionCardComponent } from '../submission-card/submission-card.comp
 import { Select, Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
 
+import { TourService } from 'ngx-tour-ngx-bootstrap';
+
 @Component({
   selector: 'submission-card-container',
   templateUrl: './submission-card-container.component.html',
@@ -25,7 +27,7 @@ export class SubmissionCardContainerComponent implements OnDestroy {
   @ViewChildren(SubmissionCardComponent)
   private cards: QueryList<SubmissionCardComponent>;
 
-  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef) {
+  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef, private tourService: TourService) {
     this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
       this.submissions = editing || [];
       this._changeDetector.markForCheck();
@@ -124,6 +126,20 @@ export class SubmissionCardContainerComponent implements OnDestroy {
 
   public trackBy(index, item: SubmissionArchive) {
     return item.meta.id;
+  }
+
+  public isTutorialEnabled(): boolean {
+    const enabled = db.get('tutorial').value();
+    return enabled === undefined ? true : enabled;
+  }
+
+  public toggleTutorial(event: any): void {
+    db.set('tutorial', event.checked).write();
+    if (!event.checked) {
+      this.tourService.end();
+    } else {
+      this.tourService.start();
+    }
   }
 
 }

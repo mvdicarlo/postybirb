@@ -36,9 +36,9 @@ export class WebsiteManagerService {
 
   private bbcodeParser: BbCodeParse;
 
-  constructor(private derpibooru: Derpibooru, private deviantArt: DeviantArt, private e621: E621, private furaffinity: Furaffinity, private furiffic: Furiffic,
-    private furryNetwork: FurryNetwork, private hentaiFoundry: HentaiFoundry, private inkbunny: Inkbunny, private pixiv: Pixiv, private patreon: Patreon, private route50: Route50,
-    private soFurry: SoFurry, private tumblr: Tumblr, private twitter: Twitter, private weasyl: Weasyl, private notify: NotifyService) {
+  constructor(derpibooru: Derpibooru, deviantArt: DeviantArt, e621: E621, furaffinity: Furaffinity, furiffic: Furiffic,
+    furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, pixiv: Pixiv, patreon: Patreon, route50: Route50,
+    soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, private notify: NotifyService) {
     this.statusSubject = new Subject<any>();
     this.refreshMap = new Map<string, Website>();
     this.statusSubject = new Subject<WebsiteStatus>();
@@ -83,26 +83,27 @@ export class WebsiteManagerService {
 
   private refreshAuthorizedWebsites(): void {
     this.refreshMap.forEach((website, key) => {
-      website.refresh().then((success) => {
+      website.refresh().then(() => {
         this.checkLogin(key);
-      }, (err) => {
+      }, () => {
         this.checkLogin(key);
       });
     });
   }
 
   private refreshAuthorizedWebsite(websites: Website[] = []): void {
-    websites.forEach(website => {
-      website.refresh().then((success) => {
+    for (let i = 0; i < websites.length; i++) {
+      const website = websites[i];
+      website.refresh().then(() => {
         this.checkLogin(website.websiteName);
-      }, (err) => {
+      }, () => {
         this.checkLogin(website.websiteName);
       });
-    });
+    }
   }
 
   public refreshAllStatuses(): void {
-    this.websites.forEach((value, key, map) => {
+    this.websites.forEach((value, key) => {
       this.checkLogin(key);
     });
   }
@@ -118,7 +119,7 @@ export class WebsiteManagerService {
 
   public authorizeWebsite(website: string, authInfo: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.websites.get(website).authorize(authInfo).then((success) => resolve(success), (err) => reject(false));
+      this.websites.get(website).authorize(authInfo).then((success) => resolve(success), () => reject(false));
     });
   }
 
@@ -145,7 +146,7 @@ export class WebsiteManagerService {
 
   public getWebsiteStatuses(): any[] {
     const results: any = {};
-    this.websites.forEach((websiteObj, website, map) => {
+    this.websites.forEach((websiteObj, website) => {
       results[website] = websiteObj.getLoginStatus();
     });
 

@@ -27,19 +27,16 @@ export class SchedulerService {
 
     interval(60000).subscribe(() => {
       const now = new Date();
-      this.submissions.filter(s => {
+      for (let i = 0; i < this.submissions.length; i++) {
+        const s = this.submissions[i];
         const status = s.meta.submissionStatus;
-        if (status === SubmissionStatus.QUEUED || status === SubmissionStatus.POSTING) {
-          return false;
+        if (!(status === SubmissionStatus.QUEUED || status === SubmissionStatus.POSTING)) {
+          const sTime: Date = new Date(s.meta.schedule);
+          if (sTime <= now) {
+            this._store.dispatch(new PostyBirbStateAction.QueueSubmission(s));
+          }
         }
-
-        return true;
-      }).forEach(s => {
-        const sTime: Date = new Date(s.meta.schedule);
-        if (sTime <= now) {
-          this._store.dispatch(new PostyBirbStateAction.QueueSubmission(s));
-        }
-      })
+      }
     });
   }
 }

@@ -49,14 +49,16 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
   private populateFolders(folders: any): void {
     this.folders = [];
     if (folders) {
-      folders.forEach((folder) => {
+      for (let i = 0; i < folders.length; i++) {
+        const folder = folders[i];
         let parentName = null;
 
-        folders.forEach((f) => {
+        for (let j = 0; j < folders.length; j++) {
+          const f = folders[j];
           if (f.folderid === folder.parent && f.name !== 'Featured') {
             parentName = f.name;
           }
-        });
+        }
 
         let label = folder.name;
         if (parentName) {
@@ -69,7 +71,7 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
         };
 
         this.folders.push(folderItem);
-      });
+      }
     } else {
       this.value = [];
     }

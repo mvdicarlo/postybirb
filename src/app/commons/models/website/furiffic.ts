@@ -100,9 +100,9 @@ export class Furiffic extends BaseWebsite implements Website {
                   }
 
                   const tags = this.formatTags(submission.defaultTags, submission.customTags);
-                  tags.forEach((tag) => {
-                    editForm.append('tags[]', tag);
-                  });
+                  for (let i = 0; i < tags.length; i++) {
+                    editForm.append('tags[]', tags[i]);
+                  }
 
                   this.http.post(`${this.baseURL}/${this.userInfo.username}/edit/${id}`, editForm, { responseType: 'text' })
                     .subscribe(() => {
@@ -151,9 +151,9 @@ export class Furiffic extends BaseWebsite implements Website {
           journalData.set('rating', this.getMapping('rating', options.rating));
 
           const tags = this.formatTags(options.tags);
-          tags.forEach((tag) => {
-            journalData.append('tags[]', tag);
-          });
+          for (let i = 0; i < tags.length; i++) {
+            journalData.append('tags[]', tags[i]);
+          }
 
           let csrf = page.match(/csrfSeed = .*;/g) || [];
           let csrfValue = '';

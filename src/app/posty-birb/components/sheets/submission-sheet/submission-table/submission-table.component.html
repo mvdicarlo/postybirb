@@ -11,7 +11,7 @@ This is probably the weirdest html hack in here.
 This is all because of Electronjs having a weird rendering of sticky for this field.
 My solution was to fake it using absolute and essentially a copy of the size to emulate it being sticky.
  -->
-<div style="visibility: hidden" *ngIf="rows && rows.length > 0">
+<div class="invisible" *ngIf="rows && rows.length > 0">
   <div class="row no-gutters">
     <button *ngIf="allowPostAll" class="col-md col-lg col-xl col-sm" mat-raised-button color="accent" (click)="doPostAll()">{{ 'Post All' | translate }}</button>
     <button class="col-md col-lg col-xl col-sm" mat-raised-button color="warn" (click)="doClearAll()">{{ clearAllLabel | translate }}</button>

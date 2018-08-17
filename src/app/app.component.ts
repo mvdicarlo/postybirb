@@ -14,7 +14,7 @@ export class AppComponent {
   public showSidebar: boolean = false;
   private knownLanguages: any = ['de', 'en', 'es', 'fi', 'fr', 'pt'];
 
-  constructor(private translate: TranslateService, private update: UpdateService, private postManager: PostManagerService, private scheduler: SchedulerService) {
+  constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService) {
     this.version = window['appVersion'];
 
     let userLanguage = window.navigator.language.split('-')[0];

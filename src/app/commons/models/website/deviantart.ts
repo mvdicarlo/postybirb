@@ -140,11 +140,9 @@ export class DeviantArt extends BaseWebsite implements Website {
               if (options.freeDownload) submitForm.set('allow_free_download', 'false');
               if (options.feature) submitForm.set('feature', 'true');
               if ((options.folders || []).length > 0) {
-                let folderCount = 0;
-                options.folders.forEach((id) => {
-                  submitForm.set(`galleryids[${folderCount}]`, id);
-                  folderCount += 1;
-                });
+                for (let i = 0; i < options.folders.length; i++) {
+                  submitForm.set(`galleryids[${i}]`, options.folders[i]);
+                }
               }
 
               this.http.post(`${this.baseURL}/api/v1/oauth2/stash/publish`, submitForm)

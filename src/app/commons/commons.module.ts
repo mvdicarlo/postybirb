@@ -33,7 +33,6 @@ import { Weasyl } from './models/website/weasyl';
 
 import { WebsiteManagerService } from './services/website-manager/website-manager.service';
 import { UpdateService } from './services/update/update.service';
-import { HighlightLinkedService } from './directives/highlight-linked/highlight-linked.service';
 
 import { FileInputComponent } from './components/file-input/file-input.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
@@ -41,7 +40,6 @@ import { FileViewerComponent } from './components/file-viewer/file-viewer.compon
 import { BaseControlValueAccessorComponent } from './components/base-control-value-accessor/base-control-value-accessor.component';
 import { SafePipe } from './pipes/safe.pipe';
 import { WebsiteLogoComponent } from './components/website-logo/website-logo.component';
-import { HighlightLinkedDirective } from './directives/highlight-linked/highlight-linked.directive';
 
 @NgModule({
   imports: [
@@ -63,7 +61,6 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
     BaseControlValueAccessorComponent,
     SafePipe,
     WebsiteLogoComponent,
-    HighlightLinkedDirective
   ],
   exports: [
     FileViewerComponent,
@@ -72,7 +69,6 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
     BaseControlValueAccessorComponent,
     SafePipe,
     WebsiteLogoComponent,
-    HighlightLinkedDirective
   ],
   entryComponents: [
     ConfirmDialogComponent
@@ -93,7 +89,6 @@ import { HighlightLinkedDirective } from './directives/highlight-linked/highligh
     Tumblr,
     Twitter,
     Weasyl,
-    HighlightLinkedService,
     { provide: 'SnotifyToastConfig', useValue: ToastDefaults },
     SnotifyService
   ],

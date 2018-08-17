@@ -50,11 +50,15 @@ export class Twitter extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     const additionalFiles = (submission.submissionData.additionalFiles || []).map((additionalFile: any) => {
-      return additionalFile.getFileBuffer();
+      return { buffer: additionalFile.getFileBuffer().toString('base64'), type: additionalFile.getFileInfo().type };
     });
 
     return new Observable(observer => {
-      this.helper.post(submission.description.substring(0, 280).trim(), [submission.submissionData.submissionFile.getFileBuffer(), ...additionalFiles])
+      this.helper.post(submission.description.substring(0, 280).trim(),
+        [
+          { buffer: submission.submissionData.submissionFile.getFileBuffer().toString('base64'), type: submission.submissionData.submissionFile.getFileInfo().type }
+          , ...additionalFiles
+        ])
         .then((res) => {
           observer.next(res);
           observer.complete();

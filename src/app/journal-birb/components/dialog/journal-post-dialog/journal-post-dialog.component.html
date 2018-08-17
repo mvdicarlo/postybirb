@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>{{data.title}}</h2>
 <mat-dialog-content class="window">
-  <div class="row" style="max-height: 600px;">
+  <div class="row" style="max-height: 600px">
     <div class="col-md-12 col-lg-12 col-xl-12">
       <p [innerText]="data.description"></p>
       <br>
@@ -9,7 +9,7 @@
       </mat-chip-list>
     </div>
   </div>
-  <div class="col-md-12 col-lg-12 col-xl-12" style="margin-top: 10px;">
+  <div class="col-md-12 col-lg-12 col-xl-12" style="margin-top: 10px">
     <div class="row" *ngIf="selectedWebsites && selectedWebsites.length > 0">
       <div class="col-md-3 col-lg-3 col-xl-3" *ngFor="let website of selectedWebsites">
         <submit-status (complete)="submitComplete($event)" [data]="data" [website]="website"></submit-status>

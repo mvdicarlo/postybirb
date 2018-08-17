@@ -75,14 +75,16 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   public loadCollections(username: string): void {
     const collections = {};
-    Object.keys(this.collections).forEach(key => {
+    const keys = Object.keys(this.collections);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
       this.http.get(`${this.baseURL}/api/character/${username}/${key}/collections`,
         { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
         .subscribe((collection: any[]) => {
           collections[key] = collection;
           this.userCollections[username] = collections;
         });
-    });
+    }
   }
 
   getCollectionsForUser(username): any {
@@ -224,9 +226,9 @@ export class FurryNetwork extends BaseWebsite implements Website {
         this.http.post(uploadURL, file, { headers: headers })
           .subscribe((fileInfo: any) => {
             if (!fileInfo) {
-                observer.error(this.createError('fileInfo is null for post', submission));
-                observer.complete();
-                return;
+              observer.error(this.createError('fileInfo is null for post', submission));
+              observer.complete();
+              return;
             }
 
             this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })

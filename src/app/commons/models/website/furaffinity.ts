@@ -58,12 +58,9 @@ export class Furaffinity extends BaseWebsite implements Website {
       }
     }
 
-    const formattedFolderArray = [];
-    Object.keys(furAffinityFolders).forEach((key) => {
-      formattedFolderArray.push({ name: key, items: furAffinityFolders[key] });
-    });
-
-    this.otherInformation.folders = formattedFolderArray;
+    this.otherInformation.folders = Object.keys(furAffinityFolders).map(key => {
+      return { name: key, items: furAffinityFolders[key] };
+    }) || [];
   }
 
   getStatus(): Promise<WebsiteStatus> {
@@ -160,9 +157,9 @@ export class Furaffinity extends BaseWebsite implements Website {
               if (options.scraps) submitForm.set('scrap', '1');
 
               // Folders
-              options.folders.forEach((id) => {
-                submitForm.append('folder_ids[]', id);
-              });
+              for (let i = 0; i < options.folders.length; i++) {
+                submitForm.append('folder_ids[]', options.folders[i]);
+              }
 
               this.http.post(`${this.baseURL}/submit/`, submitForm, { responseType: 'text' })
                 .subscribe(res => {
@@ -217,21 +214,7 @@ export class Furaffinity extends BaseWebsite implements Website {
     const tags = super.formatTags(defaultTags, other);
     let tagString = tags.join(' ').trim();
 
-    if (tagString.length > maxLength) {
-      const newTags = [];
-
-      tagString.substring(0, maxLength)
-        .split(' ')
-        .forEach((tag) => {
-          if (tag.length >= 3) {
-            newTags.push(tag);
-          }
-        });
-
-      tagString = newTags.join(' ');
-    }
-
-    return tagString;
+    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(' ').filter(tag => tag.length >= 3).join(' ') : tagString;
   }
 
 }

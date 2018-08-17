@@ -137,7 +137,9 @@ export class BbCodeParse {
       parseObj.parsed = parseObj.parsed.replace('Posted using PostyBirb', '').replace('http://www.postybirb.com', ''); // extra check to remove the ad if it slipped in
     }
 
-    parseObj.parsed = this.customWebsiteParsing(parseObj.parsed, website);
+    if (!onlyShortcuts) {
+      parseObj.parsed = this.customWebsiteParsing(parseObj.parsed, website);
+    }
 
     return parseObj;
   }
@@ -227,44 +229,44 @@ export class BbCodeParse {
       newText = newText.replace(/:da/g, ':icon');
     }
 
-    for (const k in Object.keys(codes)) {
-      const key = Object.keys(codes)[k];
-      const matchedTags = newText.match(new RegExp(`:${key}.*?:`, 'gm'));
-      if (matchedTags) {
-        matchedTags.forEach((tag) => {
+    const keys = Object.keys(codes);
 
-          if (website === SupportedWebsites.Furaffinity && tag.includes('icon:')) return; //skip :dausernameicon: issue
+    for (let k = 0; k < keys.length; k++) {
+      const key = keys[k];
+      const matchedTags = newText.match(new RegExp(`:${key}.*?:`, 'gm')) || [];
+      for (let i = 0; i < matchedTags.length; i++) {
+        let tag = matchedTags[i];
+        if (website === SupportedWebsites.Furaffinity && tag.includes('icon:')) return; //skip :dausernameicon: issue
 
-          let username = tag.substring(1 + key.length, tag.length - 1);
-          if (key === 'tw') username = `@${username}`;
-          let url = (key === 'sf') ? `https://${username}${codes[key].url}` : codes[key].url + username;
+        let username = tag.substring(1 + key.length, tag.length - 1);
+        if (key === 'tw') username = `@${username}`;
+        let url = (key === 'sf') ? `https://${username}${codes[key].url}` : codes[key].url + username;
 
-          if (type === ParseType.BBCODE) {
-            if (website === SupportedWebsites.Inkbunny) {
-              if (key === 'da' || key === 'fa' || key === 'sf') {
-                url = `[${key}]${username}[/${key}]`;
-              } else if (key === 'ws') {
-                url = `[w]${username}[/w]`;
-              } else if (key === 'ib') {
-                url = `[iconname]${username}[/iconname]`;
-              } else {
-                url = `[url=${url}]${username}[/url]`;
-              }
+        if (type === ParseType.BBCODE) {
+          if (website === SupportedWebsites.Inkbunny) {
+            if (key === 'da' || key === 'fa' || key === 'sf') {
+              url = `[${key}]${username}[/${key}]`;
+            } else if (key === 'ws') {
+              url = `[w]${username}[/w]`;
+            } else if (key === 'ib') {
+              url = `[iconname]${username}[/iconname]`;
             } else {
               url = `[url=${url}]${username}[/url]`;
             }
-          } else if (type === ParseType.HTML) {
-            if (website === SupportedWebsites.Weasyl && key === 'ws') {
-              url = `<!~${username}>`; // https://www.weasyl.com/help/markdown
-            } else {
-              url = `<a href="${url}" target="_blank">${username}</a>`;
-            }
-          } else if (type === ParseType.MARKDOWN) {
-            url = `[${username}](${url})`;
+          } else {
+            url = `[url=${url}]${username}[/url]`;
           }
+        } else if (type === ParseType.HTML) {
+          if (website === SupportedWebsites.Weasyl && key === 'ws') {
+            url = `<!~${username}>`; // https://www.weasyl.com/help/markdown
+          } else {
+            url = `<a href="${url}" target="_blank">${username}</a>`;
+          }
+        } else if (type === ParseType.MARKDOWN) {
+          url = `[${username}](${url})`;
+        }
 
-          newText = newText.replace(tag, url);
-        });
+        newText = newText.replace(tag, url);
       }
     }
 
@@ -280,10 +282,11 @@ export class BbCodeParse {
   private parseHTML(text: string): string {
     let convertText = text; // need to convert size to pt
     const sizeMatches = convertText.match(/\[size=\d+\]/g) || [];
-    sizeMatches.forEach(match => {
+    for (let i = 0; i < sizeMatches.length; i++) {
+      const match = sizeMatches[i];
       const size = match.match(/\d+/g);
       convertText = convertText.replace(match, `[size=${size}pt]`);
-    });
+    }
 
     let newText = this.parser.process({ text: convertText, removeMisalignedTags: false, addInLineBreaks: true }).html;
     newText = newText.substr(0, newText.length - 6); // strip out random div tag
@@ -314,19 +317,20 @@ export class BbCodeParse {
     newText = newText.replace(/\[hr\]/g, '\n-----\n');
 
     const extraTags = newText.match(/\[.*?(\])/g) || [];
-    extraTags.forEach(tag => {
+    for (let i = 0; i < extraTags.length; i++) {
+      const tag = extraTags[i];
       if (!tag.toLowerCase().includes('url')) {
         newText = newText.replace(tag, '');
       }
-    });
+    }
 
     const urlMatches = newText.match(/\[url=.*?\url\]/g) || [];
-
-    urlMatches.forEach((urlTag) => {
+    for (let i = 0; i < urlMatches.length; i++) {
+      const urlTag = urlMatches[i];
       const url = urlTag.match(/=.*?(?=\])/g)[0].replace('=', '');
       const msg = urlTag.match(/\].*?(?=\[)/g)[0].replace(']', '');
       newText = newText.replace(urlTag, `[${msg}](${url})`);
-    });
+    }
 
     return newText;
   }
@@ -340,19 +344,38 @@ export class BbCodeParse {
   private parseText(text: string): string {
     let newText = text;
     const urlMatches = newText.match(/\[url=.*?\url\]/g) || [];
-
-    urlMatches.forEach((urlTag) => {
+    for (let i = 0; i < urlMatches.length; i++) {
+      const urlTag = urlMatches[i];
       const url = urlTag.match(/=.*?(?=\])/g)[0].replace('=', '');
       const msg = urlTag.match(/\].*?(?=\[)/g)[0].replace(']', '');
       newText = newText.replace(urlTag, url == msg ? url : `${url} (${msg})`);
-    });
+    }
 
     const otherTags = newText.match(/\[.*?\]/g) || [];
-    otherTags.forEach((tag) => {
-      newText = newText.replace(tag, '');
-    });
+    for (let i = 0; i < otherTags.length; i++) {
+      newText = newText.replace(otherTags[i], '');
+    }
 
     return newText;
+  }
+
+  public static guessBBCodeCount(text: string): number {
+    if (!text) return 0;
+
+    let estimate = text;
+
+    const bbcodeTags = text.match(/\[.*?(\[\/.*?(\]))/g) || [];
+    for (let i = 0; i < bbcodeTags.length; i++) {
+      const bbcodeTag = bbcodeTags[i];
+      const urlMatch = bbcodeTag.match(/url=.*?(?=\])/) || [];
+      if (urlMatch.length > 0) {
+        estimate = estimate.replace(bbcodeTag, urlMatch[0].replace('url=', ''));
+      } else {
+        estimate = estimate.replace(bbcodeTag, bbcodeTag.replace(/\[.*?(\])/g, ''));
+      }
+    }
+
+    return estimate.replace(/\[.*?(\])/g, '').length;;
   }
 
 }

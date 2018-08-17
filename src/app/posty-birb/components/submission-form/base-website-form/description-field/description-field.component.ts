@@ -5,6 +5,7 @@ import { DescriptionModel } from '../information.interface';
 import { timer, Observable, Subscription } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { NotifyService } from '../../../../../commons/services/notify/notify.service';
+import { BbCodeParse } from '../../../../../commons/helpers/bbcode-parse';
 
 @Component({
   selector: 'description-field',
@@ -121,20 +122,9 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
   public updateEstimatedCharacterCount(): Observable<number> {
     return new Observable<number>(observer => {
       let description = this.form.value.description;
-      let estimate: string = description;
-
       if (description) {
-        const bbcodeTags = description.match(/\[.*?(\[\/.*?(\]))/g) || [];
-        bbcodeTags.forEach(bbcodeTag => {
-          const urlMatch = bbcodeTag.match(/url=.*?(?=\])/) || [];
-          if (urlMatch.length > 0) {
-            estimate = estimate.replace(bbcodeTag, urlMatch[0].replace('url=', ''));
-          } else {
-            estimate = estimate.replace(bbcodeTag, bbcodeTag.replace(/\[.*?(\])/g, ''));
-          }
-        });
+        const totalEstimate: number = BbCodeParse.guessBBCodeCount(this.form.value.description);
 
-        const totalEstimate = estimate.replace(/\[.*?(\])/g, '').length;
         if (this.maxLength > 0) {
           if (totalEstimate > this.maxLength && !this.exceededNotification) {
             this.exceededNotification = true;

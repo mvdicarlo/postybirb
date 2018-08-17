@@ -216,38 +216,23 @@ export class PostyBirbSubmission {
   }
 
   public setAdditionalFiles(files: Array<FileInformation | FileObject> = []): void {
-    this.additionalFiles = files.map(f => {
-      return new FileWrapper(f);
-    });
+    this.additionalFiles = files.map(f => new FileWrapper(f));
   }
 
   public getAdditionalFilesSource(): Promise<string[]> {
-    const promises = [];
-    this.additionalFiles.forEach(f => promises.push(f.getFileSrc()));
-
-    return Promise.all(promises);
+    return Promise.all(this.additionalFiles.map(f => f.getFileSrc()));
   }
 
   public getAdditionalFilesFileInformation(): FileInformation[] {
-    return this.additionalFiles.map(f => {
-      return f.getFileInformation();
-    });
+    return this.additionalFiles.map(f => f.getFileInformation());
   }
 
   public getPreloadedAdditionalFiles(): Promise<FileInformation[]> {
-    const promises = [];
-
-    this.additionalFiles.forEach(f => {
-      promises.push(f.getFileInformationEnsureLoaded());
-    });
-
-    return Promise.all(promises);
+    return Promise.all(this.additionalFiles.map(f => f.getFileInformationEnsureLoaded()));
   }
 
   public getAdditionalFilesFileObjects(): FileObject[] {
-    return this.additionalFiles.map(f => {
-      return f.getFileObject();
-    });
+    return this.additionalFiles.map(f => f.getFileObject());
   }
 
   public getThumbnailFileSource(): Promise<string> {
@@ -371,7 +356,11 @@ export class PostyBirbSubmission {
   }
 
   public setWebsiteFields(websiteFields: object): void {
-    Object.keys(websiteFields).forEach(key => this.websiteFields.update(key, websiteFields[key]));
+    const keys = Object.keys(websiteFields);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      this.websiteFields.update(key, websiteFields[key]);
+    }
     this.emit();
   }
 
@@ -384,7 +373,11 @@ export class PostyBirbSubmission {
   }
 
   public setDefaultFields(defaultFields: object): void {
-    Object.keys(defaultFields).forEach(key => this.defaultFields.update(key, defaultFields[key]));
+    const keys = Object.keys(defaultFields);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      this.defaultFields.update(key, defaultFields[key]);
+    }
     this.emit();
   }
 

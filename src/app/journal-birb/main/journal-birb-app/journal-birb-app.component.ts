@@ -1,17 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Subscription ,  timer } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 
 import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { WebsiteStatus } from '../../../commons/enums/website-status.enum';
+import { BbCodeParse } from '../../../commons/helpers/bbcode-parse';
 import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
 import { JournalPostDialogComponent } from '../../components/dialog/journal-post-dialog/journal-post-dialog.component';
 
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog } from '@angular/material';
 import { MatSnackBar } from '@angular/material';
 
 @Component({
@@ -45,7 +46,7 @@ export class JournalBirbAppComponent implements OnInit, OnDestroy {
     SupportedWebsites.Weasyl
   ];
 
-  constructor(private fb: FormBuilder, private managerService: WebsiteManagerService, private dialog: MatDialog, private snackBar: MatSnackBar) {
+  constructor(fb: FormBuilder, private managerService: WebsiteManagerService, private dialog: MatDialog, private snackBar: MatSnackBar) {
     this.form = fb.group({
       title: ['', [Validators.required, Validators.minLength(5)]],
       description: ['', [Validators.required, Validators.minLength(1)]],
@@ -95,39 +96,29 @@ export class JournalBirbAppComponent implements OnInit, OnDestroy {
   }
 
   private handleWebsiteStatuses(statuses: any): void {
-    Object.keys(statuses).forEach((key) => {
+    const keys = Object.keys(statuses);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
       const value = statuses[key];
       if (value !== WebsiteStatus.Logged_In) {
         this.offlineMap.set(key, value);
       } else {
         this.offlineMap.delete(key);
       }
-    });
+    }
 
     this.updateSupportedWebsites();
   }
 
   private updateEstimatedCharacterCount(description: string): void {
-    description = (description || '');
-    let estimate: string = description;
-    const bbcodeTags = description.match(/\[.*?(\[\/.*?(\]))/g) || [];
-    bbcodeTags.forEach(bbcodeTag => {
-      const urlMatch = bbcodeTag.match(/url=.*?(?=\])/) || [];
-      if (urlMatch.length > 0) {
-        estimate = estimate.replace(bbcodeTag, urlMatch[0].replace('url=', ''));
-      } else {
-        estimate = estimate.replace(bbcodeTag, bbcodeTag.replace(/\[.*?(\])/g, ''));
-      }
-    });
-
-    this.estimatedDescriptionCount = estimate.replace(/\[.*?(\])/g, '').length;
+    this.estimatedDescriptionCount = BbCodeParse.guessBBCodeCount(description);
   }
 
   private updateSupportedWebsites(): void {
     const currentlySelectedWebsites: string[] = this.form.value.selectedWebsites || [];
 
     let offline: string[] = [];
-    this.offlineMap.forEach((value, key, map) => offline.push(key));
+    this.offlineMap.forEach((value, key) => offline.push(key));
     offline = offline.filter(website => this.allowedWebsites.includes(website));
 
     const online: string[] = this.allowedWebsites.filter(website => !offline.includes(website));
@@ -159,15 +150,17 @@ export class JournalBirbAppComponent implements OnInit, OnDestroy {
 
   public addTag(event: MatChipInputEvent): void {
     const existingTags = this.form.value.tags || [];
-
-    (event.value || '').split(',').forEach(value => {
-      value = value.trim();
-      if (value.length >= 3 && !existingTags.includes(value)) {
-        existingTags.push(value);
+    if (event.value) {
+      const tags = event.value.split(',');
+      for (let i = 0; i < tags.length; i++) {
+        const value = tags[i].trim();
+        if (value.length >= 3 && !existingTags.includes(value)) {
+          existingTags.push(value);
+        }
       }
-    });
 
-    this.form.controls.tags.patchValue(existingTags);
+      this.form.controls.tags.patchValue(existingTags);
+    }
 
     if (event.input) {
       event.input.value = '';

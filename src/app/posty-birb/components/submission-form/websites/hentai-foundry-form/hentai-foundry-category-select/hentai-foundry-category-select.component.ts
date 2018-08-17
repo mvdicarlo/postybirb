@@ -32,10 +32,12 @@ export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccess
   constructor(private _changeDetector: ChangeDetectorRef) {
     super();
 
-    Object.keys(this.categories).forEach(o => {
+    const keys = Object.keys(this.categories);
+    for (let i = 0; i < keys.length; i++) {
+      const o = keys[i];
       this.optMap.set(this.categories[o], o);
       this.options.push(this.categories[o]);
-    });
+    }
 
     this.options.sort();
   }

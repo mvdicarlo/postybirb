@@ -104,15 +104,16 @@ export class Pixiv extends BaseWebsite implements Website {
     // File properties
     const additionalFiles: any[] = submission.submissionData.additionalFiles || [];
     uploadForm.set('files[]', submission.submissionData.submissionFile.getRealFile());
+
     if (additionalFiles.length > 0) {
       const file: any = submission.submissionData.submissionFile.getRealFile();
       uploadForm.append('file_info[]', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
 
-      additionalFiles.forEach(f => {
-        uploadForm.append('files[]', f.getRealFile());
-        const file: any = f.getRealFile();
+      for (let i = 0; i < additionalFiles.length; i++) {
+        const file: any = additionalFiles[i].getRealFile();
+        uploadForm.append('files[]', file);
         uploadForm.append('file_info[]', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
-      });
+      }
     }
 
     const options = submission.options;
@@ -125,9 +126,9 @@ export class Pixiv extends BaseWebsite implements Website {
     } else if (sexualType !== '0') {
       uploadForm.set('x_restrict_sexual', sexualType);
       if (options.sexualTypes) {
-        options.sexualTypes.forEach((type) => {
-          uploadForm.set(type, 'on');
-        });
+        for (let i = 0; i < options.sexualTypes.length; i++) {
+          uploadForm.set(options.sexualTypes[i], 'on');
+        }
       }
     }
 
@@ -135,6 +136,6 @@ export class Pixiv extends BaseWebsite implements Website {
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
-    return super.formatTags(defaultTags, other).slice(0, 10).join(' ').trim();
+    return super.formatTags(defaultTags, other).slice(0, 10).join(' ');
   }
 }

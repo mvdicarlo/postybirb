@@ -211,7 +211,8 @@ export class SupportedWebsiteRestrictions {
     const rating: string = submission.getSubmissionRating();
     const submissionType: string = submission.getSubmissionType();
 
-    verify.websites.forEach(website => {
+    for (let i = 0; i < verify.websites.length; i++) {
+      const website = verify.websites[i];
       if (!verify.verifiedWebsites.hasOwnProperty(website)) verify.verifiedWebsites[website] = {};
       const w: any = this.webMap[website];
 
@@ -231,7 +232,7 @@ export class SupportedWebsiteRestrictions {
       if (sizeLimit > 0) {
         verify.verifiedWebsites[website].unsupportedByFileSize = sizeLimit;
       }
-    });
+    }
 
     return verify;
   }

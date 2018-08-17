@@ -7,11 +7,13 @@
 }
 
 html, body {
-  height: 100%;
-  width: 100%;
+  height: 100% !important;
+  max-height: 100vh !important;
+  width: 100% !important;
+  max-width: 100vw !important;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 body {
@@ -20,33 +22,26 @@ body {
   background-repeat: no-repeat !important;
 }
 
-@media ( min-width: 1400px) {
+@media (min-width: 1400px) {
   .container {
     max-width: 1340px !important;
   }
-}
-
-.no-side-pad {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-.hidden {
-  display: none;
-}
-
-.clearfix {
-  clear: both;
-  display: table;
-  content: "";
 }
 
 .website-form {
   overflow-y: hidden;
 }
 
-.linked-highlight {
-  border: 2px dashed #fcf98d !important;
+.no-overflow-x {
+  overflow-x: hidden !important;
+}
+
+.no-overflow {
+  overflow: hidden !important;
+}
+
+button {
+  outline: none !important;
 }
 
 /*Scrollbar Styling*/
@@ -102,4 +97,11 @@ mat-sidenav {
 
 mat-nav-list {
   max-height: 94vh;
+  overflow-x: hidden !important;
+}
+
+mat-toolbar {
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
 }

@@ -71,11 +71,12 @@ export class PostyBirbState implements NgxsOnInit {
     };
 
     state.queued = [];
-    state.submissions.forEach(archive => {
+    for (let i = 0; i < state.submissions.length; i++) {
+      const archive = state.submissions[i];
       if (archive.meta.submissionStatus === SubmissionStatus.QUEUED || archive.meta.submissionStatus === SubmissionStatus.POSTING) {
         archive.meta.submissionStatus = SubmissionStatus.INTERRUPTED
       }
-    });
+    }
 
     ctx.setState(state);
   }

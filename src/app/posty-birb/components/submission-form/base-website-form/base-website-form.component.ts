@@ -57,6 +57,7 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
   }
 
   ngAfterViewInit() {
+    // I am not happy about this, but I still have not thought of a better way for it
     setTimeout(function() {
       this._changeDetector.markForCheck();
       this._changeDetector.detectChanges();

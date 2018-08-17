@@ -36,9 +36,10 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
       this.scheduledSubmissions = [];
       this.logs = [];
 
-      submissions.submissions.forEach(s => {
+      for (let i = 0; i < submissions.submissions.length; i++) {
+        const s = submissions.submissions[i];
         s.meta.schedule ? this.scheduledSubmissions.push(s) : this.unscheduledSubmissions.push(s);
-      });
+      }
 
       this.queuedSubmissions = submissions.queued;
       this.logs = submissions.logs || [];

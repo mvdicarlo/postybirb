@@ -30,13 +30,13 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <div class="col-md-12 col-lg-12 col-xl-12" style="margin-bottom: 0px;">
+          <div class="col-md-12 col-lg-12 col-xl-12 mb-0">
             <ckeditor formControlName="description" [config]="ckConfig"></ckeditor>
           </div>
-          <div class="col-md-10 col-lg-10 col-xl-10" style="margin-top: 0;">
+          <div class="col-md-10 col-lg-10 col-xl-10 mt-0">
             <description-help (advertise)="addAdvertisement($event)"></description-help>
           </div>
-          <div class="col" style="text-align: right;">
+          <div class="col text-right">
             ({{estimatedDescriptionCount}})
           </div>
           <div class="col-md-12 col-lg-12 col-xl-12">
