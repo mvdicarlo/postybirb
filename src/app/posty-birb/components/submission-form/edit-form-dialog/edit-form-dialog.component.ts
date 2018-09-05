@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, AfterViewChecked, OnChanges, SimpleChanges, Input, Output, EventEmitter, OnDestroy, ViewChild, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, OnDestroy, ViewChild, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Subscription, BehaviorSubject } from 'rxjs';
 
@@ -22,7 +22,7 @@ import { TemplatesService, Template } from '../../../services/templates/template
   styleUrls: ['./edit-form-dialog.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges, AfterViewChecked {
+export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy, OnChanges {
   @Output() readonly onSave: EventEmitter<any> = new EventEmitter();
 
   @Input() selectedSubmissions: PostyBirbSubmission[] = [];
@@ -39,7 +39,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   public supportedWebsites: any = SupportedWebsites;
   public onlineWebsites: string[] = [];
   public offlineWebsites: string[] = [];
-  public unloadedTemplate: PostyBirbSubmission;
+  public template: PostyBirbSubmission;
 
   constructor(private managerService: WebsiteManagerService, private fb: FormBuilder, private dialog: MatDialog, private templates: TemplatesService, private _changeDetector: ChangeDetectorRef) {
     this.defaultDescription = new BehaviorSubject(undefined);
@@ -69,28 +69,6 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit() {
     this.fillFromSingleSubmission();
-  }
-
-  ngAfterViewChecked() {
-    if (this.unloadedTemplate) { // Load a selected template in for website forms that hadn't been loaded in yet
-      if (this.websiteForms) {
-        const websitesToApply = [...this.unloadedTemplate.getDefaultFieldFor('selectedWebsites')];
-        const forms = this.websiteForms.toArray();
-
-        for (let i = 0; i < forms.length; i++) {
-          const form = forms[i];
-          const index = websitesToApply.indexOf(form.website);
-          if (index !== -1) {
-            form.writeValue(this.unloadedTemplate.getWebsiteFieldFor(form.website));
-            websitesToApply.splice(index, 1);
-          }
-        }
-
-        if (websitesToApply.length === 0) {
-          this.unloadedTemplate = null;
-        }
-      }
-    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -188,7 +166,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     const tmp: PostyBirbSubmission = PostyBirbSubmission.fromArchive(template.template)
     this.form.patchValue(tmp.getDefaultFields());
     if (this.websiteForms) this.websiteForms.forEach(form => form.writeValue(tmp.getWebsiteFieldFor(form.website)));
-    this.unloadedTemplate = tmp;
+    this.template = tmp;
     this._changeDetector.markForCheck();
   }
 
@@ -249,16 +227,6 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
       this.offlineWebsites.sort();
       this.form.controls.selectedWebsites.patchValue(this.form.value.selectedWebsites.filter(website => !this.offlineWebsites.includes(website)));
     }
-  }
-
-  private buildWebsiteFormObject(): any {
-    const obj: any = {};
-
-    Object.keys(SupportedWebsites).forEach(website => {
-      obj[SupportedWebsites[website]] = [];
-    });
-
-    return obj;
   }
 
   public formsAreValid(): boolean {

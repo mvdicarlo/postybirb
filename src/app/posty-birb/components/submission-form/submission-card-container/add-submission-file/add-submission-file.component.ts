@@ -42,7 +42,7 @@ export class AddSubmissionFileComponent implements OnInit {
   }
 
   public copyFromClipboard(): void {
-    const { availableFormats, content } = window['getClipboardContents']();
+    const { availableFormats, content } = getClipboardContents();
 
     if (availableFormats.includes('image/png')) {
       const buffer = content.toJPEG(100);
@@ -54,7 +54,7 @@ export class AddSubmissionFileComponent implements OnInit {
   }
 
   public enableClipboardCopy(): boolean {
-    return window['getClipboardFormats']().includes('image/png');
+    return getClipboardFormats().includes('image/png');
   }
 
   private createPostyBirbSubmissions(files: File[]): PostyBirbSubmission[] {

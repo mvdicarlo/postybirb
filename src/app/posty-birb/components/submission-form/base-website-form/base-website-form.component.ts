@@ -1,15 +1,16 @@
-import { Component, AfterViewInit, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
+import { Component, AfterViewInit, DoCheck, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { SupportedWebsites } from '../../../../commons/enums/supported-websites';
 import { Information, DescriptionModel, TagModel } from './information.interface';
 import { MatTab, MatTabGroup } from '@angular/material';
 import { Subscription, Observable } from 'rxjs';
+import { EditFormDialogComponent } from '../edit-form-dialog/edit-form-dialog.component';
 
 @Component({
   selector: 'base-website-form',
   template: `<div></div>`,
 })
-export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDestroy {
+export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDestroy, DoCheck {
   @Input()
   get defaultTags(): TagModel { return this._defaultTags }
   set defaultTags(model: TagModel) {
@@ -22,6 +23,7 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
   private _defaultTags: TagModel = { tags: [], overwrite: false }
 
   @Input() defaultDescription: Observable<DescriptionModel>;
+  @Input() template: any;
 
   public supportedWebsites = SupportedWebsites;
 
@@ -34,10 +36,12 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
   public website: string;
 
   private subscription: Subscription = Subscription.EMPTY;
+  public isActive: boolean = false;
 
   private fb: FormBuilder;
   protected _changeDetector: ChangeDetectorRef;
   public matTab: MatTab;
+  private editForm: EditFormDialogComponent;
 
   constructor(injector: Injector) {
     this.fb = injector.get(FormBuilder);
@@ -47,7 +51,6 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
     const tabGroup: MatTabGroup = injector.get(MatTabGroup);
     this.subscription = tabGroup.selectedTabChange.subscribe((event) => {
       this._changeDetector.markForCheck();
-      this._changeDetector.detectChanges();
     });
 
     this.form = this.fb.group({
@@ -56,12 +59,19 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
     });
   }
 
+  ngDoCheck() {
+    if (this.matTab.position === 0 && !this.isActive) {
+      this._changeDetector.markForCheck();
+    }
+
+    this.isActive = this.matTab.position === 0;
+  }
+
   ngAfterViewInit() {
     // I am not happy about this, but I still have not thought of a better way for it
-    setTimeout(function() {
-      this._changeDetector.markForCheck();
-      this._changeDetector.detectChanges();
-    }.bind(this), 150);
+    // setTimeout(function() {
+    //   this._changeDetector.markForCheck();
+    // }.bind(this), 150);
   }
 
   ngOnDestroy() {
@@ -76,6 +86,13 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
 
       if (changes.defaultTags) {
         this.defaultTags = changes.defaultTags.currentValue;
+      }
+
+      if (changes.template) {
+        this.template = changes.template.currentValue;
+        if (this.template) {
+          this.writeValue(this.template.getWebsiteFieldFor(this.website))
+        }
       }
     }
   }

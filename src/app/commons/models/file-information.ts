@@ -55,7 +55,7 @@ export class FileInformation {
   private convertFileInfoToBuffer(fileInfo: FileObject): Promise<any> {
     this.isLoading = true;
     return new Promise(function(resolve, reject) {
-      window['readFile'](fileInfo.path, (buffer) => {
+      readFile(fileInfo.path, (buffer) => {
         resolve(buffer);
       }, (readErr) => {
         reject(Error('Unable to convert file to buffer'))

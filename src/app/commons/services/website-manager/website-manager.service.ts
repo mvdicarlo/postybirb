@@ -49,7 +49,7 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.e621, e621);
     this.websites.set(SupportedWebsites.Furaffinity, furaffinity);
     this.websites.set(SupportedWebsites.Furiffic, furiffic);
-    if (window['sfw'] !== 'true') this.websites.set(SupportedWebsites.HentaiFoundry, hentaiFoundry);
+    if (sfw !== 'true') this.websites.set(SupportedWebsites.HentaiFoundry, hentaiFoundry);
     this.websites.set(SupportedWebsites.Patreon, patreon);
     this.websites.set(SupportedWebsites.Pixiv, pixiv);
     this.websites.set(SupportedWebsites.Route50, route50);
@@ -62,7 +62,7 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.DeviantArt, deviantArt);
     this.refreshMap.set(SupportedWebsites.DeviantArt, deviantArt);
 
-    if (window['sfw'] !== 'true') {
+    if (sfw !== 'true') {
       this.websites.set(SupportedWebsites.Inkbunny, inkbunny);
       this.refreshMap.set(SupportedWebsites.Inkbunny, inkbunny);
     }

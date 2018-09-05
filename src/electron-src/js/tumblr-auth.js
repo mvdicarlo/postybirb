@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('./auth-server');
+const request = require('request');
 
 /**
  * Temp holder for authorization
@@ -20,8 +21,8 @@ let user = {
 const tumblrExpress = {
     app: null,
     server: null,
-    start() {
-        if (!this.app) {
+    start: function start() {
+        if (!this.server) {
             this.app = express();
             this.server = this.app.listen(4200);
 
@@ -44,7 +45,7 @@ const tumblrExpress = {
             });
         }
     },
-    stop() {
+    stop: function stop() {
         if (this.server) this.server.close();
         this.server = null;
         this.app = null;
@@ -139,8 +140,8 @@ exports.authorize = function authenticateTumblr() {
 exports.refresh = function loadToken() {
     const storedToken = db.get('tumblr').value();
     if (!storedToken) return;
-
     user = storedToken;
+
     return new Promise((resolve, reject) => {
         if (!user.token || !user.secret) {
             user = {};
@@ -149,16 +150,18 @@ exports.refresh = function loadToken() {
             return;
         }
 
-        $.post(auth.generateAuthUrl('/tumblr/refresh'), { token: user.token, secret: user.secret })
-        .done((res) => {
-            user.name = res.user.name;
-            user.blogs = res.user.blogs;
-            db.set('tumblr', user).write();
-            resolve(true);
-        }).fail(() => {
-            db.unset('tumblr').write();
-            user = {};
-            reject(false);
+        request.post({ url: auth.generateAuthUrl('/tumblr/refresh'), form: { token: user.token, secret: user.secret } }, (error, response, body) => {
+            const res = JSON.parse(body);
+            if (error) {
+                db.unset('tumblr').write();
+                user = {};
+                reject(false);
+            } else {
+                user.name = res.user.name;
+                user.blogs = res.user.blogs;
+                db.set('tumblr', user).write();
+                resolve(true);
+            }
         });
     });
 };
@@ -176,7 +179,9 @@ exports.post = function post(blog, tags, title, description, type, buffers) {
     return postToTumblr(blog, tags, title, description, type, buffers || false);
 };
 
-exports.stop = tumblrExpress.stop;
+exports.stop = function() {
+    tumblrExpress.stop();
+};
 exports.start = tumblrExpress.start;
 exports.isAuthorized = isAuthenticated;
 exports.getBlogs = getUserBlogs;

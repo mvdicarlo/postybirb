@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { interval } from 'rxjs/observable/interval';
+import { interval } from 'rxjs';
 import { Store } from '@ngxs/store';
 
 import { SubmissionArchive } from '../../../commons/models/posty-birb/posty-birb-submission';
@@ -26,17 +26,25 @@ export class SchedulerService {
     });
 
     interval(60000).subscribe(() => {
-      const now = new Date();
-      for (let i = 0; i < this.submissions.length; i++) {
-        const s = this.submissions[i];
-        const status = s.meta.submissionStatus;
-        if (!(status === SubmissionStatus.QUEUED || status === SubmissionStatus.POSTING)) {
-          const sTime: Date = new Date(s.meta.schedule);
-          if (sTime <= now) {
-            this._store.dispatch(new PostyBirbStateAction.QueueSubmission(s));
-          }
+      this.checkForScheduled();
+    });
+
+    if (immediatelyCheckForScheduled) {
+      this.checkForScheduled();
+    }
+  }
+
+  private checkForScheduled(): void {
+    const now = new Date();
+    for (let i = 0; i < this.submissions.length; i++) {
+      const s = this.submissions[i];
+      const status = s.meta.submissionStatus;
+      if (!(status === SubmissionStatus.QUEUED || status === SubmissionStatus.POSTING)) {
+        const sTime: Date = new Date(s.meta.schedule);
+        if (sTime <= now) {
+          this._store.dispatch(new PostyBirbStateAction.QueueSubmission(s));
         }
       }
-    });
+    }
   }
 }

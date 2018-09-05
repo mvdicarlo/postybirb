@@ -1,5 +1,27 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>0.9.5 (08/23/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>PostyBirb now has a Tray icon that will persist the app when the window is closed if there are any scheduled submissions. If a scheduled post is detected the app will now briefly open long enough for the submission to post and then close. (I do not
+      know what behavior this has when the computer is in sleep mode)</li>
+    <li>e621 should now return an alert with the reason for failure.</li>
+    <li>Twitter should now return an alert with the reason for failure.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>FurryNetwork should hopefully no longer get stuck posting.</li>
+    <li>Fixed issue where a corrupted config file would stop the app from loading. (Solution simply renews it)</li>
+    <li>Attempt to fix description fields sometimes not loading.</li>
+    <li>Fix for when autocompletes would not be opened when focus is given.</li>
+    <li>Fixed issue where loading a template would cause specific website tags to not work.</li>
+    <li>Fixed issue where you could sometimes get cannot GET /deviantart.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated Electron to 2.0.8 fixing a security vulnerability.</li>
+    <li>Updated Material Framework. Keep an eye out for any submissions/options that are incomplete since the last time I updated this framework it caused issues due to undocumented changes.</li>
+  </ul>
   <div>0.9.4 (08/13/2018)</div>
   <h5>New Features</h5>
   <ul>

@@ -15,7 +15,7 @@ export class AppComponent {
   private knownLanguages: any = ['de', 'en', 'es', 'fi', 'fr', 'pt'];
 
   constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService) {
-    this.version = window['appVersion'];
+    this.version = appVersion;
 
     let userLanguage = window.navigator.language.split('-')[0];
     if (this.knownLanguages.indexOf(userLanguage) === -1) {
@@ -37,7 +37,7 @@ export class AppComponent {
   }
 
   public openURL(url: string): void {
-    window['openUrlInBrowser'](url);
+    openUrlInBrowser(url);
   }
 
   // Load old configs into new config file and clear

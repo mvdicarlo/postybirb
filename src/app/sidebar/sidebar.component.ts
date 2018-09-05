@@ -48,11 +48,11 @@ export class SidebarComponent {
   }
 
   public openPlannedUpdates() {
-    window['openUrlInBrowser']('http://postybirb.com/update-blog');
+    openUrlInBrowser('http://postybirb.com/update-blog');
   }
 
   public openTranslationHelp() {
-    window['openUrlInBrowser']('http://www.postybirb.com/help-translate.html');
+    openUrlInBrowser('http://www.postybirb.com/help-translate.html');
   }
 
 }

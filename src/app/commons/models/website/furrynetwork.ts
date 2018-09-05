@@ -205,60 +205,74 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
-      const userProfile = submission.options.profile || this.userInformation.name;
-      let type = this.getMapping('content', submission.submissionData.submissionType);
-      const file = submission.submissionData.submissionFile.getRealFile();
-      const headers: HttpHeaders = new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`);
+      try {
+        const userProfile = submission.options.profile || this.userInformation.name;
+        let type = this.getMapping('content', submission.submissionData.submissionType);
+        const file = submission.submissionData.submissionFile.getRealFile();
+        const headers: HttpHeaders = new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`);
 
-      if (file.type === 'image/gif') type = 'multimedia';
-      let uploadURL = this.generateUploadUrl(userProfile, file, type);
+        if (file.type === 'image/gif') type = 'multimedia';
+        let uploadURL = this.generateUploadUrl(userProfile, file, type);
 
-      if (type === 'story') {
-        this.http.post(uploadURL, JSON.stringify(this.generatePostData(submission, type)), { headers: headers })
-          .subscribe(res => {
-            observer.next(res);
-            observer.complete();
-          }, err => {
-            observer.error(this.createError(err, submission));
-            observer.complete();
-          });
-      } else {
-        this.http.post(uploadURL, file, { headers: headers })
-          .subscribe((fileInfo: any) => {
-            if (!fileInfo) {
-              observer.error(this.createError('fileInfo is null for post', submission));
-              observer.complete();
-              return;
-            }
-
-            this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
+        if (type === 'story') {
+          try {
+            this.http.post(uploadURL, JSON.stringify(this.generatePostData(submission, type)), { headers: headers })
               .subscribe(res => {
                 observer.next(res);
                 observer.complete();
-
-                if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {
-                  const thumbnailFile = submission.submissionData.thumbnailFile.getRealFile();
-                  const thumbnailURL = `${this.baseURL}/api/submission/${userProfile}/${type}/${fileInfo.id}/thumbnail?` +
-                    'resumableChunkNumber=1' +
-                    '&resumableChunkSize=1048576' + `&resumableCurrentChunkSize=${thumbnailFile.size}
-                    &resumableTotalSize=${thumbnailFile.size}
-                    &resumableType=${thumbnailFile.type}
-                    &resumableIdentifier=${thumbnailFile.size}-${thumbnailFile.name.replace('.', '')}
-                    &resumableFilename=${thumbnailFile.name}&resumableRelativePath=${thumbnailFile.name}
-                    &resumableTotalChunks=1`;
-
-                  this.http.post(thumbnailURL, thumbnailFile, { headers: headers })
-                    .subscribe(success => {
-                      //NOTHING TO DO
-                    }, err => {
-                      //NOTHING TO DO
-                    });
-                }
+              }, err => {
+                observer.error(this.createError(err, submission));
+                observer.complete();
               });
-          }, err => {
-            observer.error(this.createError(err, submission));
+          } catch (e) {
+            observer.error(this.createError(e, submission));
             observer.complete();
-          });
+          }
+        } else {
+          this.http.post(uploadURL, file, { headers: headers })
+            .subscribe((fileInfo: any) => {
+              if (!fileInfo) {
+                observer.error(this.createError('fileInfo is null for post', submission));
+                observer.complete();
+                return;
+              }
+              try {
+                this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
+                  .subscribe(res => {
+                    observer.next(res);
+                    observer.complete();
+
+                    if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {
+                      const thumbnailFile = submission.submissionData.thumbnailFile.getRealFile();
+                      const thumbnailURL = `${this.baseURL}/api/submission/${userProfile}/${type}/${fileInfo.id}/thumbnail?` +
+                        'resumableChunkNumber=1' +
+                        '&resumableChunkSize=1048576' + `&resumableCurrentChunkSize=${thumbnailFile.size}
+                        &resumableTotalSize=${thumbnailFile.size}
+                        &resumableType=${thumbnailFile.type}
+                        &resumableIdentifier=${thumbnailFile.size}-${thumbnailFile.name.replace('.', '')}
+                        &resumableFilename=${thumbnailFile.name}&resumableRelativePath=${thumbnailFile.name}
+                        &resumableTotalChunks=1`;
+
+                      this.http.post(thumbnailURL, thumbnailFile, { headers: headers })
+                        .subscribe(success => {
+                          //NOTHING TO DO
+                        }, err => {
+                          //NOTHING TO DO
+                        });
+                    }
+                  });
+              } catch (e) {
+                observer.error(this.createError(e, submission));
+                observer.complete();
+              }
+            }, err => {
+              observer.error(this.createError(err, submission));
+              observer.complete();
+            });
+        }
+      } catch (e) {
+        observer.error(this.createError(e, submission));
+        observer.complete();
       }
     });
   }

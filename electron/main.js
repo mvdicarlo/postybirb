@@ -1,10 +1,14 @@
+const fs = require('fs');
 const path = require('path');
 const {
     app,
     BrowserWindow,
     Menu,
     dialog,
+    Tray,
 } = require('electron');
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
 const windowStateKeeper = require('electron-window-state');
 
 // const { appUpdater } = require('./updater');
@@ -21,19 +25,95 @@ require('electron-context-menu')({
     showInspectElement: false,
 });
 
-let win;
+let win = null;
+let tray = null;
+let clearCacheInterval = null;
+let updateInterval = null;
+let scheduledInterval = null;
+let adapter = null;
+let db = null;
+
+try {
+    adapter = new FileSync(path.join(app.getPath('userData'), 'postybirb.json'));
+    db = low(adapter);
+} catch (e) {
+    fs.unlinkSync(path.join(app.getPath('userData'), 'postybirb.json'));
+    adapter = new FileSync(path.join(app.getPath('userData'), 'postybirb.json'));
+    db = low(adapter);
+}
+
 app.disableHardwareAcceleration();
+
+const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window.
+    if (win) {
+        if (win.isMinimized()) {
+            win.restore();
+        }
+
+        win.focus();
+    } else if (tray) {
+        initialize();
+    }
+});
+
+if (shouldQuit) {
+    app.quit();
+    return;
+}
 
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
+    initialize();
+    scheduledInterval = setInterval(checkForScheduledPost, 30000);
 
+    tray = new Tray(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
+    const trayMenu = Menu.buildFromTemplate([
+        {
+            label: 'Open',
+            type: 'radio',
+            checked: false,
+            click() {
+                if (!hasWindows()) {
+                    initialize();
+                } else {
+                    win.show();
+                }
+            },
+        }, {
+            label: 'Quit',
+            type: 'radio',
+            checked: false,
+            click() {
+                clearInterval(scheduledInterval);
+                clearInterval(clearCacheInterval);
+                clearInterval(updateInterval);
+                app.quit();
+            },
+        },
+    ]);
+
+    tray.setTitle('PostyBirb');
+    tray.setContextMenu(trayMenu);
+    tray.setToolTip('PostyBirb');
+    tray.on('click', () => {
+        if (!hasWindows()) {
+            initialize();
+        } else {
+            win.show();
+        }
+    });
+});
+
+function initialize(show = true, openForScheduled = false) {
     const mainWindowState = windowStateKeeper({
         defaultWidth: 992,
         defaultHeight: 800,
     });
 
     win = new BrowserWindow({
+        show,
         width: mainWindowState.width,
         minWidth: 500,
         height: mainWindowState.height,
@@ -50,7 +130,17 @@ app.on('ready', () => {
         },
     });
 
-    if (!Boolean(process.env.DEVELOP)) mainWindowState.manage(win);
+    if (!process.env.DEVELOP) mainWindowState.manage(win);
+
+    win.immediatelyCheckForScheduled = openForScheduled;
+
+    win.db = db;
+
+    win.on('ready-to-show', () => {
+        if (openForScheduled) {
+            win.showInactive();
+        }
+    });
 
     win.loadURL(`file://${__dirname}/dist/index.html`);
 
@@ -60,6 +150,8 @@ app.on('ready', () => {
 
     win.on('closed', () => {
         win = null;
+        clearInterval(clearCacheInterval);
+        clearInterval(updateInterval);
     });
 
     win.webContents.on('did-fail-load', () => {
@@ -68,20 +160,72 @@ app.on('ready', () => {
 
     win.webContents.once('did-frame-finish-load', () => {
         if (!process.env.DEVELOP) {
-            setInterval(() => autoUpdater.checkForUpdatesAndNotify(), 60 * 60000);
+            updateInterval = setInterval(() => autoUpdater.checkForUpdatesAndNotify(), 60 * 60000);
             autoUpdater.checkForUpdatesAndNotify();
         }
 
-        setInterval(() => {
+        clearCacheInterval = setInterval(() => {
             win.webContents.session.getCacheSize((size) => {
                 if (size > 0) {
-                    if (Boolean(process.env.DEVELOP)) log.info(`Clearing Cache (${size})`);
+                    if (process.env.DEVELOP) log.info(`Clearing Cache (${size})`);
                     win.webContents.session.clearCache(() => {});
                 }
             });
         }, 10000);
     });
-});
+
+    return win;
+}
+
+function checkForScheduledPost() {
+    if (hasWindows()) return;
+
+    log.info('Checking for scheduled posts...');
+
+    fs.readFile(path.join(app.getPath('userData'), 'postybirb.json'), (err, data) => {
+        if (err) {
+            log.error(err);
+        } else {
+            try {
+                const config = JSON.parse(data);
+                const now = Date.now();
+                const submissions = config.PostyBirbState.submissions || [];
+                for (let i = 0; i < submissions.length; i++) {
+                    const s = submissions[i];
+                    if (s.meta.schedule) {
+                        const scheduledTime = new Date(s.meta.schedule).getTime();
+                        if (scheduledTime - now <= 0) {
+                            initialize(false, true);
+                            return;
+                        }
+                    }
+                }
+
+                log.info('No schedule posts scheduled soon.');
+            } catch (e) {
+                log.error(e);
+            }
+        }
+    });
+}
+
+function hasWindows() {
+    return BrowserWindow.getAllWindows().filter(b => b.isVisible()).length > 0;
+}
+
+function hasScheduled() {
+    const state = db.get('PostyBirbState').value() || {};
+    if (state.submissions) {
+        for (let i = 0; i < state.submissions.length; i++) {
+            const submission = state.submissions[i];
+            if (submission.meta.schedule) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 app.on('uncaughtException', (err) => {
     log.error(err);
@@ -92,7 +236,15 @@ process.on('uncaughtException', (err) => {
 });
 
 app.on('window-all-closed', () => {
-    app.quit();
+    if (!hasScheduled()) {
+        app.quit();
+    } else {
+        tray.displayBalloon({
+            title: 'Scheduled Submissions',
+            icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
+            content: 'PostyBirb will continue to run while there are scheduled submission. Close the app from the system tray to fully quit PostyBirb.',
+        });
+    }
 });
 
 // For details about these events, see the Wiki:

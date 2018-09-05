@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
 export class DonateDialogComponent {
 
   public openPayPal() {
-    window['openUrlInBrowser']('http://paypal.me/mvdicarlo');
+    openUrlInBrowser('http://paypal.me/mvdicarlo');
   }
 
 }

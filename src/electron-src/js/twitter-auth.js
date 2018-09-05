@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('./auth-server');
+const request = require('request');
 
 const app = express();
 let oauth = {};
@@ -102,9 +103,17 @@ function postToTwitter(status, medias) {
             .done(() => {
                 resolve(true);
             }).fail((err) => {
+                let errMsg = '';
+                try {
+                    errMsg = JSON.parse(JSON.parse(err.responseText).e.data).errors[0].message;
+                } catch (e) {
+                    // couldnt make message
+                }
+
                 reject({
                     err,
-                    msg: Error('Failed to post to Twitter.'),
+                    msg: errMsg,
+                    notify: errMsg,
                     status,
                 });
             });
@@ -127,16 +136,15 @@ function checkTokens(resolve, reject) {
         reject(false);
         authorized = false;
     } else {
-        $.post(auth.generateAuthUrl('/twitter/verify'), {
-            token: storedToken.token,
-            secret: storedToken.secret,
-        }).done(() => {
-            oauth = storedToken;
-            authorized = true;
-            resolve(true);
-        }).fail(() => {
-            reject(false);
-            unauthorizeTwitter();
+        request.post({ url: auth.generateAuthUrl('/twitter/verify'), form: { token: storedToken.token, secret: storedToken.secret } }, (error, response, body) => {
+            if (error) {
+                reject(false);
+                unauthorizeTwitter();
+            } else {
+                oauth = storedToken;
+                authorized = true;
+                resolve(true);
+            }
         });
     }
 }

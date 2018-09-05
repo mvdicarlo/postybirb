@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material';
 import { HTMLParser } from '../../helpers/html-parser';
 import { TranslateService } from '@ngx-translate/core';
-import { timer } from 'rxjs/observable/timer';
+import { timer } from 'rxjs';
 
 /**
  * @description
@@ -22,12 +22,12 @@ export class UpdateService {
   };
 
   constructor(private snackBar: MatSnackBar, private translate: TranslateService) {
-    this.version = window['appVersion'];
+    this.version = appVersion;
     timer(0, 30 * 60000).subscribe(this.checkForUpdate.bind(this));
   }
 
   private openDownload() {
-    window['openUrlInBrowser']('http://postybirb.com/download.html');
+    openUrlInBrowser('http://postybirb.com/download.html');
   }
 
   /**

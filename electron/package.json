@@ -1,6 +1,6 @@
 {
   "name": "PostyBirb",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "Multimedia crossposter for multimedia websites",
   "main": "main.js",
   "scripts": {
@@ -87,11 +87,12 @@
     "electron-window-state": "^4.1.1",
     "express": "^4.16.3",
     "lowdb": "^1.0.0",
+    "request": "^2.88.0",
     "store": "^2.0.12"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
-    "electron": "2.0.7",
+    "electron": "2.0.8",
     "electron-builder": "~20.19.2",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^15.0.2",

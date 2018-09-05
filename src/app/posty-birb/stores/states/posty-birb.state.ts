@@ -89,6 +89,10 @@ export class PostyBirbState implements NgxsOnInit {
       submissions: [],
       queued: []
     }).write();
+
+    if (action.state.queued.length === 0 && immediatelyCheckForScheduled) {
+      window.close();
+    }
   }
 
   @Action(PostyBirbActions.AddSubmission)

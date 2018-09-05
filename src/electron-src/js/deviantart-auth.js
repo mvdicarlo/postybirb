@@ -30,13 +30,12 @@ const deviantArtExpress = {
         if (!this.server) {
             this.app = express();
             this.server = this.app.listen(4200);
+            this.app.get('/deviantart', (req, res) => {
+                token.code = req.query.code;
+                res.redirect('https://www.deviantart.com');
+                getAccessToken(req.query.code);
+            });
         }
-
-        this.app.get('/deviantart', (req, res) => {
-            token.code = req.query.code;
-            res.redirect('https://www.deviantart.com');
-            getAccessToken(req.query.code);
-        });
     },
     stop() {
         if (this.server) this.server.close();
@@ -183,4 +182,6 @@ exports.unauthorize = function unauthorize() {
 
 exports.isAuthorized = isAuthenticated;
 exports.getAuthorizationToken = getToken;
-exports.stop = deviantArtExpress.stop;
+exports.stop = function() {
+    deviantArtExpress.stop();
+};

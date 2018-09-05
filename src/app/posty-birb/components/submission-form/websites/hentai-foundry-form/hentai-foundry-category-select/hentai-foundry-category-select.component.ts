@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
-import { timer, Observable } from 'rxjs';
-import { debounce, map } from 'rxjs/operators';
+import { debounceTime, map } from 'rxjs/operators';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { Categories } from './hentai-foundry.categories';
 
@@ -20,7 +19,7 @@ import { Categories } from './hentai-foundry.categories';
 })
 export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccessorComponent implements OnInit, OnDestroy {
   public control: FormControl = new FormControl();
-  public filteredOptions: Observable<string[]>;
+  public filteredOptions: string[];
   private categories: any = Categories;
   private options: string[] = [];
   private optMap: Map<string, string> = new Map();
@@ -43,8 +42,12 @@ export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccess
   }
 
   ngOnInit() {
-    this.filteredOptions = this.control.valueChanges
-      .pipe(debounce(() => timer(250)), map(val => this.filter(val)));
+    this.control.valueChanges
+      .pipe(debounceTime(250), map(val => this.filter(val)))
+      .subscribe(vals => {
+        this.filteredOptions = vals;
+        this._changeDetector.markForCheck();
+      });
   }
 
   ngOnDestroy() {
@@ -81,9 +84,8 @@ export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccess
     }
 
     this.onChangedCallback(v);
-
-    this.filteredOptions = this.control.valueChanges
-      .pipe(debounce(() => timer(250)), map(val => this.filter(val)));
+    this.filteredOptions = [];
+    this._changeDetector.markForCheck();
   }
 
   public onBlur(event: any) {
@@ -92,8 +94,8 @@ export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccess
       if (!this.auto.isOpen) {
         clearInterval(this.clearInterval);
 
-        this.filteredOptions = this.control.valueChanges
-          .pipe(debounce(() => timer(250)), map(val => this.filter(val)));
+        this.filteredOptions = []
+        this._changeDetector.markForCheck();
 
         this.onChange({ option: { value: this.search.nativeElement.value } })
       }
@@ -101,7 +103,8 @@ export class HentaiFoundryCategorySelectComponent extends BaseControlValueAccess
   }
 
   public onFocus(value: string): void {
-    this.control.patchValue(value);
+    this.filteredOptions = this.filter(value || '');
+    this._changeDetector.markForCheck();
   }
 
 }

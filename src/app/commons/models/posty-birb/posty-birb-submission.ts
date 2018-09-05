@@ -352,7 +352,12 @@ export class PostyBirbSubmission {
   }
 
   public getWebsiteFieldFor(website: string): any {
-    return JSON.parse(JSON.stringify(this.websiteFields.find(website)));
+    const data = this.websiteFields.find(website);
+    if (data) {
+      return JSON.parse(JSON.stringify(data));
+    }
+
+    return null;
   }
 
   public setWebsiteFields(websiteFields: object): void {
