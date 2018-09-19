@@ -39,35 +39,29 @@ export class E621 extends BaseWebsite implements Website {
     return new Promise(resolve => {
       this.http.get(`${this.baseURL}/user/home`, { responseType: 'text' })
         .subscribe(page => {
-          if (page.includes('Logout')) this.loginStatus = WebsiteStatus.Logged_In;
+          if (page.includes('Logout')) {
+            this.loginStatus = WebsiteStatus.Logged_In;
+
+            // try to get username
+            try {
+              const matcher = /Logged in as.*"/g;
+              const aTags = HTMLParser.getTagsOf(page, 'a');
+              if (aTags.length > 0) {
+                for (let i = 0; i < aTags.length; i++) {
+                  let tag = aTags[i];
+                  if (tag.match(matcher)) {
+                    this.info.username = tag.match(/Logged in as.*"/g)[0].split(' ')[3].replace('"', '') || null;
+                  }
+                }
+              }
+            } catch (e) { /* Do Nothing */ }
+          }
           else this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(this.loginStatus);
         }, err => {
           this.loginStatus = WebsiteStatus.Offline;
           resolve(this.loginStatus);
         });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/user/home`, { responseType: 'text' })
-        .subscribe(page => {
-          const matcher = /Logged in as.*"/g;
-          const aTags = HTMLParser.getTagsOf(page, 'a');
-          if (aTags.length > 0) {
-            for (let i = 0; i < aTags.length; i++) {
-              let tag = aTags[i];
-              if (tag.match(matcher)) {
-                resolve(tag.match(/Logged in as.*"/g)[0].split(' ')[3].replace('"', '') || null);
-                return;
-              }
-            }
-            reject(null);
-          } else {
-            reject(Error(`Not logged in to ${this.websiteName}`));
-          }
-        }, err => reject(Error(`Not logged in to ${this.websiteName}`)));
     });
   }
 

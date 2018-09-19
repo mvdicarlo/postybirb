@@ -32,10 +32,10 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.SoFurry).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.SoFurry).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.SoFurry]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.SoFurry).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.SoFurry).folders);
       }
     });
   }

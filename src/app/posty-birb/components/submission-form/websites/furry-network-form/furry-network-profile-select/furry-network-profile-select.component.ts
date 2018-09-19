@@ -32,10 +32,10 @@ export class FurryNetworkProfileSelectComponent extends BaseControlValueAccessor
   }
 
   ngAfterContentInit() {
-    this.populateProfiles(this.service.getOther(SupportedWebsites.FurryNetwork));
+    this.populateProfiles(this.service.getInfo(SupportedWebsites.FurryNetwork));
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.FurryNetwork]) {
-        this.populateProfiles(this.service.getOther(SupportedWebsites.FurryNetwork));
+        this.populateProfiles(this.service.getInfo(SupportedWebsites.FurryNetwork));
       }
     });
   }

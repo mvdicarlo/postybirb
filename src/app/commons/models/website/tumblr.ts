@@ -47,7 +47,7 @@ export class Tumblr extends BaseWebsite implements Website {
     });
   }
 
-  getOtherInfo(): any {
+  getInfo(): any {
     return {
       blogs: this.helper.getBlogs(),
       username: this.helper.getUsername()
@@ -58,7 +58,7 @@ export class Tumblr extends BaseWebsite implements Website {
     const options = submission.options;
 
     const type = this.getMapping('content', submission.submissionData.submissionType);
-    const blog = submission.options.blog || this.getOtherInfo().blogs[0].name;
+    const blog = submission.options.blog || this.getInfo().blogs[0].name;
     const title = options.useTitle ? `<h1>${submission.submissionData.title}</h1>` : '';
     const rating = this.getMapping('rating', submission.submissionData.submissionRating);
     let description = submission.parseDescription ? submission.description : submission.description;

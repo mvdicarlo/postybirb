@@ -31,25 +31,24 @@ export class Derpibooru extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(`${this.baseURL}`, { responseType: 'text' })
-        .subscribe(page => {
-          if (page.includes('Logout')) this.loginStatus = WebsiteStatus.Logged_In;
-          else this.loginStatus = WebsiteStatus.Logged_Out;
-          resolve(this.loginStatus);
-        }, err => {
-          this.loginStatus = WebsiteStatus.Offline;
-          resolve(this.loginStatus);
-        });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
       this.http.get(`${this.baseURL}/users/edit`, { responseType: 'text' })
         .subscribe(page => {
-          const username: string = page.match(/\/profiles\/.*?(?=")/g)[0].split('/')[2];
-          username ? resolve(username) : reject(null);
-        }, err => reject(Error(`Not logged in to ${this.websiteName}`)));
+          if (page.includes('Logout')) {
+            this.loginStatus = WebsiteStatus.Logged_In;
+
+            try {
+              const username: string = page.match(/\/profiles\/.*?(?=")/g)[0].split('/')[2];
+              this.info.username = username
+            } catch (e) { /* Do Nothing */ }
+          } else {
+            this.loginStatus = WebsiteStatus.Logged_Out;
+          }
+
+          resolve(this.loginStatus);
+        }, () => {
+          this.loginStatus = WebsiteStatus.Logged_Out;
+          resolve(this.loginStatus);
+        });
     });
   }
 

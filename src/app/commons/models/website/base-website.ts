@@ -11,14 +11,14 @@ export class BaseWebsite implements Website {
   protected loginStatus: WebsiteStatus;
   protected helper: any; //helpers such as twitter, deviantart, and tumblr bound to window
   protected mapping: any;
-  protected otherInformation: any;
+  protected info: any;
 
   constructor(websiteName: string, baseURL: string, helperName?: string) {
     this.websiteName = websiteName;
     this.baseURL = baseURL;
     this.loginStatus = WebsiteStatus.Logged_Out;
     this.mapping = {};
-    this.otherInformation = {};
+    this.info = {};
 
     if (helperName) {
       this.helper = window[helperName];
@@ -33,12 +33,13 @@ export class BaseWebsite implements Website {
 
   public getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      reject(null);
+      if (this.info.username) resolve(this.info.username);
+      else reject(Error(`Not logged in to ${this.websiteName}`));
     });
   }
 
-  public getOtherInfo(): any {
-    return this.otherInformation;
+  public getInfo(): any {
+    return this.info;
   }
 
   public getLoginStatus(): WebsiteStatus {

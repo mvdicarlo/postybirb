@@ -58,7 +58,7 @@ export class DeviantArt extends BaseWebsite implements Website {
     });
   }
 
-  getOtherInfo(): any {
+  getInfo(): any {
     return { folders: this.folders };
   }
 

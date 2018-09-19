@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, OnDestroy, ViewChild, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Subscription, BehaviorSubject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 import { MatDialogRef, MatDialog } from '@angular/material';
 import { SaveEditDialogComponent } from '../save-edit-dialog/save-edit-dialog.component';
@@ -68,6 +69,12 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngAfterViewInit() {
+    // force update so validations can occur
+    this.websiteForms.changes.pipe(debounceTime(250)).subscribe(() => {
+      this._changeDetector.detectChanges();
+      this._changeDetector.markForCheck();
+    });
+
     this.fillFromSingleSubmission();
   }
 
@@ -181,6 +188,7 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     this.form.reset();
     this.websiteForms.forEach(form => form.clear());
     this.templateSelect.reset();
+    this.template = null;
     // HACK: Probably not the best way to clear
     if (this.submissionSelect) this.submissionSelect.writeValue(undefined);
     this._changeDetector.markForCheck();

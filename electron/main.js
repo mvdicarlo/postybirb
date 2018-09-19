@@ -6,12 +6,12 @@ const {
     Menu,
     dialog,
     Tray,
+    nativeImage,
 } = require('electron');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const windowStateKeeper = require('electron-window-state');
 
-// const { appUpdater } = require('./updater');
 const template = require('./electron-menu');
 
 const { autoUpdater } = require('electron-updater');
@@ -31,15 +31,22 @@ let clearCacheInterval = null;
 let updateInterval = null;
 let scheduledInterval = null;
 let adapter = null;
-let db = null;
 
-try {
-    adapter = new FileSync(path.join(app.getPath('userData'), 'postybirb.json'));
-    db = low(adapter);
-} catch (e) {
-    fs.unlinkSync(path.join(app.getPath('userData'), 'postybirb.json'));
-    adapter = new FileSync(path.join(app.getPath('userData'), 'postybirb.json'));
-    db = low(adapter);
+const db = createDB('postybirb.json');
+const logdb = createDB('logs.json');
+
+function createDB(name) {
+    let ldb = null;
+    try {
+        adapter = new FileSync(path.join(app.getPath('userData'), name));
+        ldb = low(adapter);
+    } catch (e) {
+        fs.unlinkSync(path.join(app.getPath('userData'), name));
+        adapter = new FileSync(path.join(app.getPath('userData'), name));
+        ldb = low(adapter);
+    }
+
+    return ldb;
 }
 
 app.disableHardwareAcceleration();
@@ -68,7 +75,11 @@ app.on('ready', () => {
     initialize();
     scheduledInterval = setInterval(checkForScheduledPost, 30000);
 
-    tray = new Tray(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
+    let image = nativeImage.createFromPath(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
+    if (process.platform === 'darwin') image = image.resize({ width: 16, height: 16 });
+    image.setTemplateImage(true);
+
+    tray = new Tray(image);
     const trayMenu = Menu.buildFromTemplate([
         {
             label: 'Open',
@@ -94,7 +105,6 @@ app.on('ready', () => {
         },
     ]);
 
-    tray.setTitle('PostyBirb');
     tray.setContextMenu(trayMenu);
     tray.setToolTip('PostyBirb');
     tray.on('click', () => {
@@ -135,6 +145,7 @@ function initialize(show = true, openForScheduled = false) {
     win.immediatelyCheckForScheduled = openForScheduled;
 
     win.db = db;
+    win.logdb = logdb;
 
     win.on('ready-to-show', () => {
         if (openForScheduled) {
@@ -152,6 +163,8 @@ function initialize(show = true, openForScheduled = false) {
         win = null;
         clearInterval(clearCacheInterval);
         clearInterval(updateInterval);
+
+        attemptToClose();
     });
 
     win.webContents.on('did-fail-load', () => {
@@ -236,6 +249,10 @@ process.on('uncaughtException', (err) => {
 });
 
 app.on('window-all-closed', () => {
+    attemptToClose();
+});
+
+function attemptToClose() {
     if (!hasScheduled()) {
         app.quit();
     } else {
@@ -245,7 +262,7 @@ app.on('window-all-closed', () => {
             content: 'PostyBirb will continue to run while there are scheduled submission. Close the app from the system tray to fully quit PostyBirb.',
         });
     }
-});
+}
 
 // For details about these events, see the Wiki:
 // https://github.com/electron-userland/electron-builder/wiki/Auto-Update#events

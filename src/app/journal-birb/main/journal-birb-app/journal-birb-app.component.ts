@@ -38,7 +38,7 @@ export class JournalBirbAppComponent implements OnInit, OnDestroy {
     SupportedWebsites.Furiffic,
     SupportedWebsites.FurryNetwork,
     SupportedWebsites.Inkbunny,
-    // SupportedWebsites.Route50,
+    SupportedWebsites.Mastodon,
     SupportedWebsites.Patreon,
     SupportedWebsites.SoFurry,
     SupportedWebsites.Tumblr,

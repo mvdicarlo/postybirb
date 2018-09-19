@@ -90,6 +90,9 @@ import { SubmissionRowComponent } from './components/sheets/submission-sheet/sub
 import { SubmissionTableComponent } from './components/sheets/submission-sheet/submission-table/submission-table.component';
 import { HentaiFoundryCategorySelectComponent } from './components/submission-form/websites/hentai-foundry-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
 import { AdditionalImageOrderingDialogComponent } from './components/submission-form/submission-card/additional-image-ordering-dialog/additional-image-ordering-dialog.component';
+import { MastodonFormComponent } from './components/submission-form/websites/mastodon-form/mastodon-form.component';
+import { PaigeeWorldFormComponent } from './components/submission-form/websites/paigee-world-form/paigee-world-form.component';
+import { AryionFormComponent } from './components/submission-form/websites/aryion-form/aryion-form.component';
 
 const routes: Routes = [
   { path: 'postybirb', component: PostyBirbAppComponent }
@@ -185,7 +188,10 @@ export function getPopoverConfig(): PopoverConfig {
     SubmissionRowComponent,
     SubmissionTableComponent,
     HentaiFoundryCategorySelectComponent,
-    AdditionalImageOrderingDialogComponent
+    AdditionalImageOrderingDialogComponent,
+    MastodonFormComponent,
+    PaigeeWorldFormComponent,
+    AryionFormComponent
   ],
   entryComponents: [
     ScheduleSubmissionDialogComponent,

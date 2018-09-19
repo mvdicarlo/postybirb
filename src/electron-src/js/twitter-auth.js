@@ -126,10 +126,21 @@ function postToTwitter(status, medias) {
  */
 exports.refresh = function loadToken() {
     return new Promise((resolve, reject) => {
-        checkTokens(resolve, reject);
+        // checkTokens(resolve, reject);
+        const storedToken = db.get('twitter').value();
+        if (storedToken) {
+            authorized = true;
+            oauth = storedToken;
+            resolve(true);
+        } else {
+            authorized = false;
+            reject(false);
+        }
     });
 };
 
+
+// DEPRECATED (might cause issue on internet slowdown?)
 function checkTokens(resolve, reject) {
     const storedToken = db.get('twitter').value();
     if (!storedToken) {

@@ -20,6 +20,14 @@ export interface WebsiteRestrictions {
 
 export class SupportedWebsiteRestrictions {
   private static webMap: any = {
+    [SupportedWebsites.Aryion]: {
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'],
+      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedFileSize: {
+        default: 20, // a guess
+      }
+    },
     [SupportedWebsites.Derpibooru]: {
       supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'svg', 'gif'],
@@ -84,6 +92,22 @@ export class SupportedWebsiteRestrictions {
       supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
       supportedFileSize: {
         default: 300
+      }
+    },
+    [SupportedWebsites.Mastodon]: {
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'],
+      supportedTypes: ['Artwork', 'Animation'],
+      supportedFileSize: {
+        default: 8,
+      }
+    },
+    [SupportedWebsites.PaigeeWorld]: {
+      supportedRatings: ['General'],
+      supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif'],
+      supportedTypes: ['Artwork'],
+      supportedFileSize: {
+        default: 50
       }
     },
     [SupportedWebsites.Patreon]: {

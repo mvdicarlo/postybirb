@@ -15,3 +15,6 @@ Lemonynade (me)
 
 ES
 Lemonynade + Mixed
+
+RU
+Sledyn

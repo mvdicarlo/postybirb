@@ -1,4 +1,4 @@
-import { Component, Injector, AfterViewInit, forwardRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
 import { FurryNetwork } from '../../../../../commons/models/website/furrynetwork';
 
@@ -9,7 +9,7 @@ import { FurryNetwork } from '../../../../../commons/models/website/furrynetwork
   providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => FurryNetworkFormComponent) }],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FurryNetworkFormComponent extends BaseWebsiteFormComponent implements AfterViewInit {
+export class FurryNetworkFormComponent extends BaseWebsiteFormComponent {
   private collectionList: any = {};
 
   constructor(injector: Injector, private fn: FurryNetwork) {

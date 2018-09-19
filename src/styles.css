@@ -87,21 +87,10 @@ nav .mat-expansion-panel-body {
 
 /*Bad fix for sizing issues in the browser w/ height*/
 
-mat-sidenav-content {
-  max-height: 91vh;
-}
-
 mat-sidenav {
   width: auto !important;
 }
 
-mat-nav-list {
-  max-height: 94vh;
-  overflow-x: hidden !important;
-}
-
-mat-toolbar {
-  padding: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
+mat-sidenav-content {
+  margin-right: 0 !important;
 }

@@ -152,10 +152,17 @@ export class SubmissionCardComponent implements OnInit, OnDestroy {
     }
 
     this.data.setAdditionalFiles(fileInfoList);
+
+    this.altImageInput.nativeElement.value = '';
   }
 
   public getAltImageCount(): number {
     return this.data.getAdditionalFilesFileObjects().length;
+  }
+
+  public clearAdditionalImages(): void {
+    this.data.setAdditionalFiles([]);
+    this._changeDetector.markForCheck();
   }
 
   public showSummary(): void {

@@ -29,6 +29,9 @@ import { WebsiteStatusComponent } from './website-status/website-status.componen
 import { PatreonDialogComponent } from './website-row/patreon-dialog/patreon-dialog.component';
 import { DerpibooruDialogComponent } from './website-row/derpibooru-dialog/derpibooru-dialog.component';
 import { HentaiFoundryDialogComponent } from './website-row/hentai-foundry-dialog/hentai-foundry-dialog.component';
+import { MastodonDialogComponent } from './website-row/mastodon-dialog/mastodon-dialog.component';
+import { PaigeeworldDialogComponent } from './website-row/paigeeworld-dialog/paigeeworld-dialog.component';
+import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog.component';
 
 @NgModule({
   imports: [
@@ -59,7 +62,10 @@ import { HentaiFoundryDialogComponent } from './website-row/hentai-foundry-dialo
     WebsiteStatusComponent,
     PatreonDialogComponent,
     DerpibooruDialogComponent,
-    HentaiFoundryDialogComponent
+    HentaiFoundryDialogComponent,
+    MastodonDialogComponent,
+    PaigeeworldDialogComponent,
+    AryionDialogComponent
   ],
   entryComponents: [
     LoginPanelComponent,
@@ -78,7 +84,10 @@ import { HentaiFoundryDialogComponent } from './website-row/hentai-foundry-dialo
     TwitterDialogComponent,
     WebsiteStatusComponent,
     DerpibooruDialogComponent,
-    HentaiFoundryDialogComponent
+    HentaiFoundryDialogComponent,
+    MastodonDialogComponent,
+    PaigeeworldDialogComponent,
+    AryionDialogComponent
   ],
   exports: [
     PBWebsitesComponent

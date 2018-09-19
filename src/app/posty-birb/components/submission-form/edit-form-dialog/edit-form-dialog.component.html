@@ -30,6 +30,12 @@
   </form>
   <form tourAnchor="pb.edit.custom">
     <mat-tab-group *ngIf="websitesSelected()" [disableRipple]="true">
+      <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Aryion)">
+        <ng-template mat-tab-label>
+          <span [class.mat-error]="!aryionForm.isValid()">{{supportedWebsites.Aryion}}</span>
+        </ng-template>
+        <aryion-form #aryionForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></aryion-form>
+      </mat-tab>
       <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Derpibooru)">
         <ng-template mat-tab-label>
           <span [class.mat-error]="!derpibooruForm.isValid()">{{supportedWebsites.Derpibooru}}</span>
@@ -62,6 +68,12 @@
       </mat-tab>
       <mat-tab [label]="supportedWebsites.Inkbunny" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Inkbunny)">
         <inkbunny-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></inkbunny-form>
+      </mat-tab>
+      <mat-tab [label]="supportedWebsites.Mastodon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Mastodon)">
+        <mastodon-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></mastodon-form>
+      </mat-tab>
+      <mat-tab [label]="supportedWebsites.PaigeeWorld" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.PaigeeWorld)">
+        <paigee-world-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></paigee-world-form>
       </mat-tab>
       <mat-tab [label]="supportedWebsites.Patreon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Patreon)">
         <patreon-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></patreon-form>

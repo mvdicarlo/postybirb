@@ -51,7 +51,7 @@ export class SoFurry extends BaseWebsite implements Website {
                   name: opt.text
                 });
               }
-              this.otherInformation.folders = folderPairs;
+              this.info.folders = folderPairs;
             } catch (e) {
               console.warn(e);
             }

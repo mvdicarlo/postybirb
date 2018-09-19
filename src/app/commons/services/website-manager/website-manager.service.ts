@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { Website } from '../../interfaces/website.interface';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
@@ -8,6 +8,7 @@ import { PostyBirbSubmission } from '../../models/posty-birb/posty-birb-submissi
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { NotifyService } from '../notify/notify.service';
 
+import { Aryion } from '../../models/website/aryion';
 import { Derpibooru } from '../../models/website/derpibooru';
 import { DeviantArt } from '../../models/website/deviantart';
 import { E621 } from '../../models/website/e621';
@@ -16,7 +17,9 @@ import { Furiffic } from '../../models/website/furiffic';
 import { FurryNetwork } from '../../models/website/furrynetwork';
 import { HentaiFoundry } from '../../models/website/hentaifoundry';
 import { Inkbunny } from '../../models/website/inkbunny';
+import { Mastodon } from '../../models/website/mastodon';
 import { Pixiv } from '../../models/website/pixiv';
+import { PaigeeWorld } from '../../models/website/paigee-world';
 import { Patreon } from '../../models/website/patreon';
 import { Route50 } from '../../models/website/route50';
 import { SoFurry } from '../../models/website/sofurry';
@@ -31,25 +34,26 @@ import { Weasyl } from '../../models/website/weasyl';
 @Injectable()
 export class WebsiteManagerService {
   private websites: Map<string, Website>;
-  private statusSubject: Subject<any>;
+  private statusSubject: BehaviorSubject<any>;
   private refreshMap: Map<string, Website>;
 
   private bbcodeParser: BbCodeParse;
 
   constructor(derpibooru: Derpibooru, deviantArt: DeviantArt, e621: E621, furaffinity: Furaffinity, furiffic: Furiffic,
-    furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, pixiv: Pixiv, patreon: Patreon, route50: Route50,
-    soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, private notify: NotifyService) {
-    this.statusSubject = new Subject<any>();
+    furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, mastodon: Mastodon, pixiv: Pixiv, paigeeWorld: PaigeeWorld,
+    patreon: Patreon, route50: Route50, soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, aryion: Aryion, private notify: NotifyService) {
+    this.statusSubject = new BehaviorSubject<any>({});
     this.refreshMap = new Map<string, Website>();
-    this.statusSubject = new Subject<WebsiteStatus>();
     this.bbcodeParser = new BbCodeParse();
 
     this.websites = new Map<string, Website>();
+    this.websites.set(SupportedWebsites.Aryion, aryion);
     this.websites.set(SupportedWebsites.Derpibooru, derpibooru);
     this.websites.set(SupportedWebsites.e621, e621);
     this.websites.set(SupportedWebsites.Furaffinity, furaffinity);
     this.websites.set(SupportedWebsites.Furiffic, furiffic);
     if (sfw !== 'true') this.websites.set(SupportedWebsites.HentaiFoundry, hentaiFoundry);
+    this.websites.set(SupportedWebsites.PaigeeWorld, paigeeWorld);
     this.websites.set(SupportedWebsites.Patreon, patreon);
     this.websites.set(SupportedWebsites.Pixiv, pixiv);
     this.websites.set(SupportedWebsites.Route50, route50);
@@ -66,6 +70,9 @@ export class WebsiteManagerService {
       this.websites.set(SupportedWebsites.Inkbunny, inkbunny);
       this.refreshMap.set(SupportedWebsites.Inkbunny, inkbunny);
     }
+
+    this.websites.set(SupportedWebsites.Mastodon, mastodon);
+    this.refreshMap.set(SupportedWebsites.Mastodon, mastodon);
 
     this.websites.set(SupportedWebsites.Tumblr, tumblr);
     this.refreshMap.set(SupportedWebsites.Tumblr, tumblr);
@@ -111,9 +118,9 @@ export class WebsiteManagerService {
   public checkLogin(website: string): void {
     if (!this.websites.get(website)) return;
     this.websites.get(website).getStatus().then(result => {
-      this.statusSubject.next({ [website]: result });
+      this.statusSubject.next(this.getWebsiteStatuses());
     }).catch(result => {
-      this.statusSubject.next({ [website]: result });
+      this.statusSubject.next(this.getWebsiteStatuses());
     });
   }
 
@@ -140,8 +147,8 @@ export class WebsiteManagerService {
     return this.websites.get(website).getUser();
   }
 
-  public getOther(website: string): any {
-    return this.websites.get(website).getOtherInfo();
+  public getInfo(website: string): any {
+    return this.websites.get(website).getInfo();
   }
 
   public getWebsiteStatuses(): any[] {

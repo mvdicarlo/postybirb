@@ -24,11 +24,11 @@ export interface Website {
   getUser(): Promise<string>;
 
   /**
-   * @function getOtherInfo
+   * @function getInfo
    * @description returns other info that doesn't fit directly into a standard function
    * @example returning a list of folders
    */
-  getOtherInfo(): any;
+  getInfo(): any;
 
   /**
    * @function getLoginStatus

@@ -1,9 +1,21 @@
-mat-sidenav-container {
+.app-container {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 5vh 92vh 3vh;
+  grid-template-columns: 100%;
+}
+
+header mat-toolbar {
   height: 100%;
 }
 
-.toolbar {
-  height: 6vh;
+footer mat-toolbar {
+  height: auto !important;
+}
+
+mat-sidenav-container,
+mat-drawer-container {
+  height: 100%;
 }
 
 .toolbar-content {
@@ -37,18 +49,13 @@ mat-sidenav-container {
   margin-right: 6px;
 }
 
-.status-toolbar {
-  height: 3vh;
-  position: fixed;
-  bottom: 0;
-}
-
 .status-bar {
   height: 100%;
 }
 
 .kofi {
   height: 100%;
+  flex: 1;
 }
 
 .kofi button {
@@ -74,38 +81,6 @@ mat-sidenav-container {
 
 .main-section {
   z-index: 0;
-}
-
-.main-content {
   background: #222;
   height: 100%;
-}
-
-.width-toggle {
-  transition: width 0.2s, flex-basis 0.2s;
-}
-
-.sidebar-section {
-  z-index: 10;
-}
-
-.sidebar {
-  background: #424242;
-  height: 100%;
-  box-shadow: 3px 0 6px rgba(0, 0, 0, .24);
-  overflow-y: auto;
-}
-
-.sidebar div {
-  padding: 0;
-}
-
-.closed-sidebar {
-  padding: 0;
-  width: 0;
-  flex-basis: 0%;
-}
-
-.closed-sidebar div {
-  margin: 0;
 }

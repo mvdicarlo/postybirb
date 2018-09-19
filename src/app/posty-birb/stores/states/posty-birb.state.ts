@@ -1,4 +1,6 @@
 import { isDevMode } from '@angular/core';
+import { Subject, Subscription } from 'rxjs'
+import { debounceTime } from 'rxjs/operators';
 import { State, Action, StateContext, NgxsOnInit } from '@ngxs/store';
 import { TranslateService } from '@ngx-translate/core';
 import { SnotifyService } from 'ng-snotify';
@@ -11,7 +13,6 @@ export interface PostyBirbSubmissionStateModel {
   editing: SubmissionArchive[];
   submissions: SubmissionArchive[];
   queued: SubmissionArchive[];
-  logs: PostyBirbLog[];
 }
 
 export interface PostyBirbLog {
@@ -55,21 +56,36 @@ class SaveState {
     editing: [],
     submissions: [],
     queued: [],
-    logs: []
   }
 })
 export class PostyBirbState implements NgxsOnInit {
 
-  constructor(private translate: TranslateService, private snotify: SnotifyService) { }
+  private saveSubject: Subject<PostyBirbSubmissionStateModel>;
+
+  constructor(private translate: TranslateService, private snotify: SnotifyService) {
+    this.saveSubject = new Subject();
+    this.saveSubject.pipe(debounceTime(200)).subscribe((state) => {
+      if (isDevMode()) console.log('Saving State', state);
+      db.set('PostyBirbState', state || {
+        editing: [],
+        submissions: [],
+        queued: []
+      }).write();
+
+      if (state.queued.length === 0 && immediatelyCheckForScheduled) {
+        window.close();
+      }
+    });
+  }
 
   ngxsOnInit(ctx: StateContext<PostyBirbSubmissionStateModel>) {
     const state = db.get('PostyBirbState').value() || {
       editing: [],
       submissions: [],
-      queued: [],
-      logs: []
+      queued: []
     };
 
+    delete state.logs;
     state.queued = [];
     for (let i = 0; i < state.submissions.length; i++) {
       const archive = state.submissions[i];
@@ -83,16 +99,7 @@ export class PostyBirbState implements NgxsOnInit {
 
   @Action(SaveState)
   saveState(ctx: StateContext<PostyBirbSubmissionStateModel>, action: SaveState) {
-    if (isDevMode()) console.log('Saving State', action.state);
-    db.set('PostyBirbState', action.state || {
-      editing: [],
-      submissions: [],
-      queued: []
-    }).write();
-
-    if (action.state.queued.length === 0 && immediatelyCheckForScheduled) {
-      window.close();
-    }
+    this.saveSubject.next(action.state);
   }
 
   @Action(PostyBirbActions.AddSubmission)
@@ -309,7 +316,7 @@ export class PostyBirbState implements NgxsOnInit {
 
   @Action(PostyBirbActions.LogSubmissionPost)
   logSubmission(ctx: StateContext<PostyBirbSubmissionStateModel>, action: PostyBirbActions.LogSubmissionPost) {
-    const logs: any[] = ctx.getState().logs || [];
+    const logs: any[] = logdb.get('logs').value() || [];
 
     const log: PostyBirbLog = {
       responses: action.responses,
@@ -323,11 +330,7 @@ export class PostyBirbState implements NgxsOnInit {
       newLogs = newLogs.slice(0, 5);
     }
 
-    ctx.patchState({
-      logs: newLogs
-    });
-
-    ctx.dispatch(new SaveState(ctx.getState()));
+    logdb.set('logs', newLogs).write();
   }
 
   private outputNotification(submission: PostyBirbSubmission): void {

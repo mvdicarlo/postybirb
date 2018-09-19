@@ -43,12 +43,37 @@ export class Inkbunny extends BaseWebsite implements Website {
         .subscribe(page => {
           if (!page.includes('LOGIN')) {
             if (this.userInformation.name) this.loginStatus = WebsiteStatus.Logged_In;
-          }
-          else {
+          } else {
             this.loginStatus = WebsiteStatus.Logged_Out;
             this.unauthorize();
+            resolve(this.loginStatus);
+            return;
           }
-          resolve(this.loginStatus);
+
+          // check sid too
+          if (this.userInformation.sid) {
+            const formData = new FormData();
+            formData.set('sid', this.userInformation.sid);
+            formData.set('limit', '5');
+            this.http.post(`${this.baseURL}/api_watchlist.php`, formData, { responseType: 'text' })
+              .subscribe((res: any) => {
+                if (JSON.parse(res).error_code) {
+                  this.loginStatus = WebsiteStatus.Logged_Out;
+                  this.userInformation.sid = null;
+                  db.unset(SupportedWebsites.Inkbunny.toLowerCase()).write();
+                } else {
+                  this.loginStatus = WebsiteStatus.Logged_In;
+                }
+
+                resolve(this.loginStatus);
+              }, err => {
+                this.loginStatus = WebsiteStatus.Logged_Out;
+                resolve(this.loginStatus);
+              });
+          } else {
+            this.loginStatus = WebsiteStatus.Logged_Out;
+            resolve(this.loginStatus);
+          }
         }, err => {
           this.loginStatus = WebsiteStatus.Offline;
           resolve(this.loginStatus);

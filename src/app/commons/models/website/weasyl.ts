@@ -37,10 +37,10 @@ export class Weasyl extends BaseWebsite implements Website {
       this.http.get<any>(`${this.baseURL}/api/whoami`).subscribe(info => {
         if (info && info.login) {
           this.http.get<any>(`${this.baseURL}/api/users/${info.login}/view`).subscribe(user => {
-            this.otherInformation = user;
+            this.info = user;
             this.loginStatus = WebsiteStatus.Logged_In;
             resolve(WebsiteStatus.Logged_In);
-          }, err => {
+          }, () => {
             this.loginStatus = WebsiteStatus.Logged_Out;
             resolve(WebsiteStatus.Logged_Out);
           });
@@ -48,17 +48,10 @@ export class Weasyl extends BaseWebsite implements Website {
           this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(WebsiteStatus.Logged_Out);
         }
-      }, err => {
+      }, () => {
         this.loginStatus = WebsiteStatus.Logged_Out;
         resolve(WebsiteStatus.Logged_Out);
       });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get<any>(`${this.baseURL}/api/whoami`)
-        .subscribe(info => resolve(info.login || null), err => reject(err));
     });
   }
 
@@ -107,7 +100,7 @@ export class Weasyl extends BaseWebsite implements Website {
             thumbnailData.set('y2', '0');
             thumbnailData.set('thumbfile', '');
 
-            this.http.post(`${this.baseURL}/manage/thumbnail`, thumbnailData, { responseType: 'text' }).subscribe(thumbnailRes => {
+            this.http.post(`${this.baseURL}/manage/thumbnail`, thumbnailData, { responseType: 'text' }).subscribe(() => {
               observer.next(res);
               observer.complete();
             }, (err) => {
@@ -144,7 +137,7 @@ export class Weasyl extends BaseWebsite implements Website {
         journalData.set('content', description);
         journalData.set('tags', this.formatTags(options.tags) || '');
 
-        this.http.post(`${this.baseURL}/submit/journal`, journalData, { responseType: 'text' }).subscribe(res => {
+        this.http.post(`${this.baseURL}/submit/journal`, journalData, { responseType: 'text' }).subscribe(() => {
           observer.next(true);
           observer.complete();
         }, (err: HttpErrorResponse) => {

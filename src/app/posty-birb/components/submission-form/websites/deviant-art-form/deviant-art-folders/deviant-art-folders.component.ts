@@ -33,10 +33,10 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.DeviantArt).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.DeviantArt).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.DeviantArt]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.DeviantArt).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.DeviantArt).folders);
         this._changeDetector.detectChanges();
       }
     });

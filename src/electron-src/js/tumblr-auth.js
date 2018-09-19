@@ -151,12 +151,12 @@ exports.refresh = function loadToken() {
         }
 
         request.post({ url: auth.generateAuthUrl('/tumblr/refresh'), form: { token: user.token, secret: user.secret } }, (error, response, body) => {
-            const res = JSON.parse(body);
             if (error) {
                 db.unset('tumblr').write();
                 user = {};
                 reject(false);
             } else {
+                const res = JSON.parse(body);
                 user.name = res.user.name;
                 user.blogs = res.user.blogs;
                 db.set('tumblr', user).write();

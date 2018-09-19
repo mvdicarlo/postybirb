@@ -52,7 +52,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
             this.http.get(`${this.baseURL}/api/user`,
               { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
               .subscribe((info: any) => {
-                this.otherInformation = info;
+                this.info = info;
                 this.loginStatus = WebsiteStatus.Logged_In;
                 for (let i = 0; i < info.characters.length; i++) {
                   this.loadCollections(info.characters[i].name);

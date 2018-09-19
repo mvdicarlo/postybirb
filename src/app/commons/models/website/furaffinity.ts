@@ -58,57 +58,39 @@ export class Furaffinity extends BaseWebsite implements Website {
       }
     }
 
-    this.otherInformation.folders = Object.keys(furAffinityFolders).map(key => {
+    this.info.folders = Object.keys(furAffinityFolders).map(key => {
       return { name: key, items: furAffinityFolders[key] };
     }) || [];
   }
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' })
-        .subscribe(page => {
-          if (page.includes('logout-link')) {
-            this.http.get(`${this.baseURL}/controls/submissions`, { responseType: 'text' })
-              .subscribe(controlPage => {
-                try {
-                  this.parseFolders(controlPage);
-                } catch (e) { console.warn('Unable to get folders', e) }
-                this.loginStatus = WebsiteStatus.Logged_In;
-                resolve(WebsiteStatus.Logged_In);
-              }, () => {
-                this.loginStatus = WebsiteStatus.Logged_In;
-                resolve(WebsiteStatus.Logged_In);
-              });
-          } else {
-            this.loginStatus = WebsiteStatus.Logged_Out;
-            resolve(this.loginStatus);
-          }
-        }, () => {
-          this.loginStatus = WebsiteStatus.Offline;
-          resolve(WebsiteStatus.Offline);
-        });
-    });
-  }
 
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' })
-        .subscribe(page => {
-          const aTags = HTMLParser.getTagsOf(page, 'a');
-          const matcher = /href="\/user\/.*"/g;
-          if (aTags.length > 0) {
-            for (let i = 0; i < aTags.length; i++) {
-              let tag = aTags[i];
-              if (tag.match(matcher)) {
-                resolve(tag.match(matcher)[0].split('/')[2] || null);
-                return;
+      this.http.get(`${this.baseURL}/controls/submissions`, { responseType: 'text' })
+        .subscribe(controlPage => {
+          try {
+            if (controlPage.includes('logout-link')) {
+              const aTags = HTMLParser.getTagsOf(controlPage, 'a');
+              const matcher = /href="\/user\/.*"/g;
+              if (aTags.length > 0) {
+                for (let i = 0; i < aTags.length; i++) {
+                  let tag = aTags[i];
+                  if (tag.match(matcher)) {
+                    this.info.username = tag.match(matcher)[0].split('/')[2] || null;
+                    this.loginStatus = WebsiteStatus.Logged_In;
+                    break;
+                  }
+                }
               }
+
+              this.parseFolders(controlPage);
             }
-            reject(null);
-          } else {
-            reject(Error(`Not logged in to ${this.websiteName}`));
-          }
-        }, () => reject(Error(`Unable to access ${this.websiteName}`)));
+          } catch (e) { console.warn('Unable to get folders', e) }
+          resolve(WebsiteStatus.Logged_In);
+        }, () => {
+          this.loginStatus = WebsiteStatus.Logged_Out;
+          resolve(this.loginStatus);
+        });
     });
   }
 

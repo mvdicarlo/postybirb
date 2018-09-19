@@ -33,26 +33,22 @@ export class HentaiFoundry extends BaseWebsite implements Website {
     return new Promise(resolve => {
       this.http.get(`${this.baseURL}`, { responseType: 'text' })
         .subscribe((page: string) => {
-          if (page.includes('Logout')) this.loginStatus = WebsiteStatus.Logged_In;
-          else this.loginStatus = WebsiteStatus.Logged_Out;
+          if (page.includes('Logout')) {
+            this.loginStatus = WebsiteStatus.Logged_In;
+
+            try {
+              this.info.username = page.match(/\/user\/.*?(?=\/)/g)[0].split('/')[2];
+            } catch (e) { /* Do Nothing */ }
+          }
+          else {
+            this.loginStatus = WebsiteStatus.Logged_Out;
+          }
+
           resolve(this.loginStatus);
         }, err => {
           this.loginStatus = WebsiteStatus.Offline;
           resolve(this.loginStatus);
         });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}`, { responseType: 'text' })
-        .subscribe(page => {
-          try {
-            resolve(page.match(/\/user\/.*?(?=\/)/g)[0].split('/')[2]);
-          } catch (e) {
-            reject(false);
-          }
-        }, err => reject(Error(`Not logged in to ${this.websiteName}`)));
     });
   }
 

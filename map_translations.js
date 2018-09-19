@@ -1,11 +1,12 @@
 const fs = require('fs');
-const assetsDir = __dirname + '/src/assets/i18n/';
-const other = ['de.json'];
+
+const assetsDir = `${__dirname}/src/assets/i18n/`;
+const other = ['ru.json'];
 
 
 function loadEnglishFile() {
     const translationMap = {};
-    const file = fs.readFileSync(`${assetsDir  }en.json`);
+    const file = fs.readFileSync(`${assetsDir}en.json`);
     const json = JSON.parse(file);
 
     Object.keys(json).forEach((key) => {
@@ -17,7 +18,7 @@ function loadEnglishFile() {
 
 function loadOtherFiles() {
     const file = fs.readFileSync(assetsDir + other[0]);
-    return JSON.parse(file)
+    return JSON.parse(file);
 }
 
 function map(reverseMap, translationMap) {
@@ -37,4 +38,4 @@ const reverseMap = loadEnglishFile();
 const mapped = map(reverseMap, loadOtherFiles());
 
 
-fs.writeFile('mapped.json', JSON.stringify(mapped), 'utf8', () => { console.log('done') });
+fs.writeFile('mapped.json', JSON.stringify(mapped), 'utf8', () => { console.log('done'); });

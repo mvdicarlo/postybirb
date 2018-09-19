@@ -61,13 +61,16 @@
         <input tourAnchor="pb.card.schedule" class="w-100" matInput formControlName="schedule" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Time to post' | translate">
         <owl-date-time #dt1></owl-date-time>
       </mat-form-field>
-      <div name="alt-image-field" class="col-md-9 col-sm-9 col-xl-9 col-lg-9" *ngIf="submissionForm.value.submissionType === 'Artwork'">
+      <div name="alt-image-field" class="col-md-7 col-sm-7 col-xl-7 col-lg-7" *ngIf="submissionForm.value.submissionType === 'Artwork'">
         <input #altImageInput type="file" multiple class="d-none" (change)="addAltImages($event)">
-        <mat-form-field color="accent" class="w-100" [matTooltip]="'Only applies to Inkbunny, Pixiv, Tumblr, and Twitter' | translate">
+        <mat-form-field color="accent" class="w-100" [matTooltip]="'Only applies to Inkbunny, Mastodon, Pixiv, Tumblr, and Twitter' | translate">
           <input tourAnchor="pb.card.additional" type="text" accept="image/*" class="w-100" matInput readonly (click)="altImageInput.click()" [value]="getAltImageCount()" [placeholder]="'Additional Images' | translate">
         </mat-form-field>
       </div>
-      <div class="col-md-3 col-lg-3 col-xl-3 col-sm-3" *ngIf="submissionForm.value.submissionType === 'Artwork'">
+      <div class="col-md-5 col-lg-5 col-xl-5 col-sm-5" *ngIf="submissionForm.value.submissionType === 'Artwork' && getAltImageCount() > 0">
+        <button color="warn" mat-icon-button (click)="clearAdditionalImages()">
+                <mat-icon>clear</mat-icon>
+              </button>
         <button tourAnchor="pb.card.ordering" mat-icon-button (click)="orderImages()" [matTooltip]="'Order Images' | translate" matTooltipPosition="above">
               <mat-icon>sort</mat-icon>
             </button>

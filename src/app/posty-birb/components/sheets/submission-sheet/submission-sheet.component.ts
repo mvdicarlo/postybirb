@@ -42,7 +42,7 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
       }
 
       this.queuedSubmissions = submissions.queued;
-      this.logs = submissions.logs || [];
+      this.logs = logdb.get('logs').value() || [];
 
       this._changeDetector.detectChanges();
     });

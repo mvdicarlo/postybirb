@@ -33,28 +33,22 @@ export class Pixiv extends BaseWebsite implements Website {
     return new Promise(resolve => {
       this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
-          if (page.includes('Logout')) this.loginStatus = WebsiteStatus.Logged_In;
-          else this.loginStatus = WebsiteStatus.Logged_Out;
+          if (page.includes('Logout')) {
+            this.loginStatus = WebsiteStatus.Logged_In;
+
+            try {
+              this.info.username = page.match(/<a\sclass="(?=user-name).*?(?=<)/g)[0].split('>')[1];
+            } catch (e) { /* Do Nothing */ }
+          }
+          else {
+            this.loginStatus = WebsiteStatus.Logged_Out;
+          }
+
           resolve(this.loginStatus);
         }, err => {
           this.loginStatus = WebsiteStatus.Offline;
           resolve(WebsiteStatus.Offline);
         });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' })
-        .subscribe(page => {
-          try {
-            const username = page.match(/<a\sclass="(?=user-name).*?(?=<)/g)[0].split('>')[1];
-            if (username) resolve(username);
-            else reject(null);
-          } catch (e) {
-            reject(Error(`Not logged in to ${this.websiteName}`));
-          }
-        }, err => reject(Error(`Unable to access ${this.websiteName}`)));
     });
   }
 
@@ -130,6 +124,12 @@ export class Pixiv extends BaseWebsite implements Website {
           uploadForm.set(options.sexualTypes[i], 'on');
         }
       }
+    }
+
+    if (options.content) {
+      options.content.forEach(c => {
+        uploadForm.set(c, 'on');
+      });
     }
 
     return uploadForm;

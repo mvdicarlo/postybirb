@@ -1,4 +1,4 @@
-import { Component, AfterViewInit, DoCheck, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
+import { Component, DoCheck, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { SupportedWebsites } from '../../../../commons/enums/supported-websites';
 import { Information, DescriptionModel, TagModel } from './information.interface';
@@ -10,7 +10,7 @@ import { EditFormDialogComponent } from '../edit-form-dialog/edit-form-dialog.co
   selector: 'base-website-form',
   template: `<div></div>`,
 })
-export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDestroy, DoCheck {
+export class BaseWebsiteFormComponent implements OnChanges, OnDestroy, DoCheck {
   @Input()
   get defaultTags(): TagModel { return this._defaultTags }
   set defaultTags(model: TagModel) {
@@ -65,13 +65,6 @@ export class BaseWebsiteFormComponent implements OnChanges, AfterViewInit, OnDes
     }
 
     this.isActive = this.matTab.position === 0;
-  }
-
-  ngAfterViewInit() {
-    // I am not happy about this, but I still have not thought of a better way for it
-    // setTimeout(function() {
-    //   this._changeDetector.markForCheck();
-    // }.bind(this), 150);
   }
 
   ngOnDestroy() {

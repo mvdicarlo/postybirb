@@ -32,10 +32,10 @@ export class FuraffinityFoldersComponent extends BaseControlValueAccessorCompone
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.Furaffinity).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.Furaffinity).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Furaffinity]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.Furaffinity).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.Furaffinity).folders);
       }
     });
   }

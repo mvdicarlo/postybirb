@@ -15,6 +15,7 @@ interface ParseObject {
 export class BbCodeParse {
   private parser: any;
   private mapping: any = {
+    [SupportedWebsites.Aryion]: ParseType.TEXT,
     [SupportedWebsites.Derpibooru]: ParseType.TEXT,
     [SupportedWebsites.DeviantArt]: ParseType.HTML,
     [SupportedWebsites.e621]: ParseType.TEXT,
@@ -23,8 +24,10 @@ export class BbCodeParse {
     [SupportedWebsites.FurryNetwork]: ParseType.MARKDOWN,
     [SupportedWebsites.HentaiFoundry]: ParseType.BBCODE,
     [SupportedWebsites.Inkbunny]: ParseType.BBCODE,
+    [SupportedWebsites.Mastodon]: ParseType.TEXT,
     [SupportedWebsites.Pixiv]: ParseType.TEXT,
     [SupportedWebsites.Patreon]: ParseType.HTML,
+    [SupportedWebsites.PaigeeWorld]: ParseType.TEXT,
     [SupportedWebsites.Route50]: ParseType.TEXT,
     [SupportedWebsites.SoFurry]: ParseType.BBCODE,
     [SupportedWebsites.Tumblr]: ParseType.HTML,
@@ -41,43 +44,49 @@ export class BbCodeParse {
 
   private codes: any = {
     da: {
-      url: 'https://www.deviantart.com/',
+      url: 'https://deviantart.com/',
     },
     fn: {
       url: 'https://beta.furrynetwork.com/',
     },
     fr: {
-      url: 'https://www.furiffic/',
+      url: 'https://furiffic.com/',
     },
     fa: {
-      url: 'https://www.furaffinity.net/user/',
+      url: 'https://furaffinity.net/user/',
     },
     hf: {
       url: 'https://www.hentai-foundry.com/user/',
     },
     icon: {
-      url: 'https://www.furaffinity.net/user/',
+      url: 'https://furaffinity.net/user/',
     },
     ib: {
       url: 'https://www.inkbunny.net/',
     },
+    ma: {
+      url: 'https://mastodon.social/'
+    },
     pa: {
-      url: 'https://www.patreon.com/'
+      url: 'https://patreon.com/'
     },
     pic: {
-      url: 'https://www.picarto.tv/'
+      url: 'https://picarto.tv/'
+    },
+    pw: {
+      url: 'https://paigeeworld.com/u/'
     },
     sf: {
       url: '.sofurry.net',
     },
     tu: {
-      url: 'https://www.tumblr.com/blog/',
+      url: 'https://tumblr.com/blog/',
     },
     tw: {
       url: 'https://twitter.com/',
     },
     ws: {
-      url: 'https://www.weasyl.com/~',
+      url: 'https://weasyl.com/~',
     },
   };
 
@@ -239,7 +248,7 @@ export class BbCodeParse {
         if (website === SupportedWebsites.Furaffinity && tag.includes('icon:')) return; //skip :dausernameicon: issue
 
         let username = tag.substring(1 + key.length, tag.length - 1);
-        if (key === 'tw') username = `@${username}`;
+        if (key === 'tw' || key === 'ma') username = `@${username}`;
         let url = (key === 'sf') ? `https://${username}${codes[key].url}` : codes[key].url + username;
 
         if (type === ParseType.BBCODE) {

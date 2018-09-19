@@ -32,10 +32,10 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.Weasyl).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.Weasyl).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Weasyl]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.Weasyl).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.Weasyl).folders);
       }
     });
   }

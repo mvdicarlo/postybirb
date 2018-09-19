@@ -19,6 +19,7 @@ export class PixivFormComponent extends BaseWebsiteFormComponent {
     this.setOptionsForm({
       restrictSexual: ['0'],
       communityTags: [false],
+      content: [],
       original: [false],
       sexual: [false],
       sexualTypes: []

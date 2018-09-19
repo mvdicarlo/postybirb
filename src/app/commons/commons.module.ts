@@ -15,6 +15,7 @@ import {
 import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
 import { NotifyService } from './services/notify/notify.service';
 
+import { Aryion } from './models/website/aryion';
 import { Derpibooru } from './models/website/derpibooru';
 import { DeviantArt } from './models/website/deviantart';
 import { E621 } from './models/website/e621';
@@ -23,7 +24,9 @@ import { Furiffic } from './models/website/furiffic';
 import { FurryNetwork } from './models/website/furrynetwork';
 import { HentaiFoundry } from './models/website/hentaifoundry';
 import { Inkbunny } from './models/website/inkbunny';
+import { Mastodon } from './models/website/mastodon';
 import { Pixiv } from './models/website/pixiv';
+import { PaigeeWorld } from './models/website/paigee-world';
 import { Patreon } from './models/website/patreon';
 import { Route50 } from './models/website/route50';
 import { SoFurry } from './models/website/sofurry';
@@ -74,6 +77,7 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     ConfirmDialogComponent
   ],
   providers: [
+    Aryion,
     Derpibooru,
     DeviantArt,
     E621,
@@ -82,8 +86,10 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     FurryNetwork,
     HentaiFoundry,
     Inkbunny,
+    Mastodon,
     Pixiv,
     Patreon,
+    PaigeeWorld,
     Route50,
     SoFurry,
     Tumblr,

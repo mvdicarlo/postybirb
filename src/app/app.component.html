@@ -1,79 +1,72 @@
 <ng-snotify></ng-snotify>
 <tour-step-template></tour-step-template>
-<div class="container-fluid p-0 w-100 h-100">
-
-  <div class="row no-gutters">
-    <div class="col-lg-12 col-md-12 col-xl-12 col-sm-12 px-0 toolbar">
-      <mat-toolbar color="primary" class="mat-elevation-z6">
-        <div class="toolbar-content">
-          <div class="toolbar-buttons">
-            <button mat-icon-button="mat-icon-button" (click)="toggleSidebar()">
-              <mat-icon>menu</mat-icon>
-            </button>
-            <button mat-button="mat-button" (click)="loginPanel.toggle()">{{'Login' | translate}}</button>
-          </div>
-          <div class="toolbar-app-icon">
-            <img src="./assets/icon/minnowicon.png" alt="PostyBirb Icon">
-            <h3>PostyBirb</h3>
-            <span class="version-number">{{version}}</span>
-          </div>
-        </div>
-        <div class="kofi">
-          <button title="Join our Discord!" mat-button="mat-button" (click)="openURL('​https://www.discord.gg/jK5JQJF')">
-            <span>
-                <img src="./assets/other-images/discord_icon.svg" alt="Join our Discord!">
-            </span>
+<div class="app-container">
+  <header class="px-0">
+    <mat-toolbar color="primary" class="mat-elevation-z6 px-0">
+      <div class="toolbar-content">
+        <div class="toolbar-buttons">
+          <button mat-icon-button="mat-icon-button" (click)="menuSidenav.toggle()">
+            <mat-icon>menu</mat-icon>
           </button>
-          <button title="Support me on ko-fi.com" mat-button="mat-button" (click)="openURL('http://ko-fi.com/A81124JD')">
-            <span>
-              <img style="padding: 10px 0" src="https://ko-fi.com/img/cuplogo.svg">
-            </span>
-            <span> Buy Me a Coffee</span>
-          </button>
+          <button mat-button="mat-button" (click)="loginPanel.toggle()">{{'Login' | translate}}</button>
         </div>
-      </mat-toolbar>
-    </div>
-  </div>
-
-  <div class="row no-gutters h-100">
-    <div class="col-lg-2 col-xl-2 col-md-2 h-100 width-toggle sidebar-section" [class.closed-sidebar]="!showSidebar">
-      <div class="row no-gutters sidebar">
-        <div class="col-md-12 col-lg-12 col-xl-12">
-          <sidebar (login)="loginPanel.toggle()"></sidebar>
+        <div class="toolbar-app-icon">
+          <img src="./assets/icon/minnowicon.png" alt="PostyBirb Icon">
+          <h3>PostyBirb</h3>
+          <span class="version-number">{{version}}</span>
         </div>
       </div>
-    </div>
-    <div class="col-lg col-xl col-md h-100 px-0 main-section">
-      <div class="row no-gutters main-content">
-        <div class="col-xl-12 col-lg-12 col-md-12">
-          <mat-sidenav-container color="primary">
-            <mat-sidenav #loginPanel>
-              <mat-nav-list>
-                <pb-websites></pb-websites>
-              </mat-nav-list>
-            </mat-sidenav>
-            <router-outlet></router-outlet>
-            <div class="status-toolbar col-lg-12 px-0">
-              <mat-toolbar color="accent">
-                <div class="status-bar">
-                  <posty-birb-status-bar></posty-birb-status-bar>
-                </div>
-              </mat-toolbar>
-            </div>
-          </mat-sidenav-container>
-        </div>
+      <div class="kofi">​
+        <button title="Join our Discord!" mat-button="mat-button" (click)="openURL('https://discordapp.com/invite/jK5JQJF')">
+          <span>
+              <img src="./assets/other-images/discord_icon.svg" alt="Join our Discord!">
+          </span>
+        </button>
+        <button title="Support me on ko-fi.com" mat-button="mat-button" (click)="openURL('http://ko-fi.com/A81124JD')">
+          <span>
+            <img style="padding: 10px 0" src="https://ko-fi.com/img/cuplogo.svg">
+          </span>
+          <span> Buy Me a Coffee</span>
+        </button>
       </div>
-    </div>
+    </mat-toolbar>
+  </header>
+
+  <div class="main-section">
+    <mat-sidenav-container color="primary" [hasBackdrop]="false">
+      <mat-sidenav mode="push" #menuSidenav>
+        <sidebar (login)="loginPanel.toggle()"></sidebar>
+      </mat-sidenav>
+      <mat-drawer-container>
+        <mat-drawer mode="over" #loginPanel>
+          <mat-nav-list>
+            <pb-websites></pb-websites>
+          </mat-nav-list>
+        </mat-drawer>
+        <mat-drawer-content>
+          <router-outlet></router-outlet>
+        </mat-drawer-content>
+      </mat-drawer-container>
+    </mat-sidenav-container>
   </div>
+
+  <footer class="px-0">
+    <mat-toolbar color="accent" class="px-0">
+      <div class="status-bar">
+        <posty-birb-status-bar></posty-birb-status-bar>
+      </div>
+    </mat-toolbar>
+  </footer>
 </div>
 
 <div>
   <select class='language-select' name="language_select" id="language_select" title='Language Select' (change)="switchLanguage($event.target.value)">
-    <option value="de">DE</option>
-    <option value="en" selected="selected">EN</option>
-    <option value="es">ES</option>
-    <option value="fi">FI</option>
-    <option value="fr">FR</option>
-    <option value="pt">PT</option>
+    <option value="de" title="German">DE</option>
+    <option value="en" selected="selected" title="English">EN</option>
+    <option value="es" title="Spanish">ES</option>
+    <option value="fi" title="Finnish">FI</option>
+    <option value="fr" title="French">FR</option>
+    <option value="pt" title="Portuguese">PT</option>
+    <option value="ru" title="Russian">RU</option>
   </select>
 </div>

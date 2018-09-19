@@ -32,10 +32,10 @@ export class TumblrBlogSelectComponent extends BaseControlValueAccessorComponent
   }
 
   ngAfterContentInit() {
-    this.populateBlogs(this.service.getOther(SupportedWebsites.Tumblr));
+    this.populateBlogs(this.service.getInfo(SupportedWebsites.Tumblr));
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Tumblr]) {
-        this.populateBlogs(this.service.getOther(SupportedWebsites.Tumblr));
+        this.populateBlogs(this.service.getInfo(SupportedWebsites.Tumblr));
       }
     });
   }
