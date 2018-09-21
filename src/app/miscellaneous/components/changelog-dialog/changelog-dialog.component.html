@@ -1,6 +1,24 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
-  <div>0.9.5 (09/06/2018)</div>
+  <div>0.9.7 (09/20/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Mastodon will let you choose between art and social on login panel. (mostly untested since I don't have an art account)</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue where template description could break due to smiley conversion that should not have been happening.</li>
+    <li>Removed "All" media category from Hentai Foundry since it doesn't even work on their own website.</li>
+    <li>Fixed issue where username logged into would not change when swapping accounts when previously logged in.</li>
+    <li>Fixed issue where the rich text editor would try to copy formatted text when pasted from the web.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated electron to 3.0.0</li>
+    <li>Changed how app checks for login status before posting.</li>
+    <li>Minor code refactoring.</li>
+  </ul>
+  <div>0.9.6 (09/06/2018)</div>
   <h5>New Features</h5>
   <ul>
     <li>Mastodon is now supported.</li>

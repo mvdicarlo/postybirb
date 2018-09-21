@@ -41,36 +41,24 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
     this.statusSubscription.unsubscribe();
   }
 
-  handleStatusUpdate(status: any): void {
-    if (this.status.status !== status) {
-      switch (status) {
-        case WebsiteStatus.Logged_In:
-          this.status.status = WebsiteStatus.Logged_In;
-          this.webManager.getUsername(this.website).then(username => {
-            this.status.username = username;
-            this._changeDetector.markForCheck();
-          }).catch(() => {
-            this.status.username = 'Unknown';
-            this._changeDetector.markForCheck();
-          });
-          break;
-        case WebsiteStatus.Logged_Out:
-          this.status.username = '';
-          this.status.status = WebsiteStatus.Logged_Out;
-          break;
-        case WebsiteStatus.Offline:
-          this.status.username = '';
-          this.status.status = WebsiteStatus.Offline;
-          break;
-        default:
-          this.status.username = '';
-          this.status.status = WebsiteStatus.Logged_Out;
-          break;
-      }
+  async handleStatusUpdate(status: any) {
+    let update: boolean = status !== this.status.status;
+
+    if (status === WebsiteStatus.Logged_In) {
+      const username = await this.webManager.getUsername(this.website).catch(() => { });
+      update = this.status.username !== username || update;
+      this.status.username = username || 'Unknown';
+      this.status.status = WebsiteStatus.Logged_In;
+    } else {
+      this.status.status = status;
+      this.status.username = '';
+    }
+
+    if (update) {
+      this._changeDetector.markForCheck();
     }
 
     this.loading = false;
-    this._changeDetector.markForCheck();
   }
 
   openDialog(): void {
@@ -79,7 +67,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
       width: '90%'
     });
 
-    ref.afterClosed().subscribe(result => {
+    ref.afterClosed().subscribe(() => {
       this.webManager.checkLogin(this.website);
     });
   }

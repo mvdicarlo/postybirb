@@ -247,9 +247,7 @@ export class PostHandler {
       err.submission = sub;
     }
 
-    if (err.skipLog || !this.generateLogs()) {
-      // DO NOTHING
-    } else {
+    if (this.generateLogs() && !err.skipLog) {
       this.logger.error(LogName.PB_REPORT_LOG, err, 'Post Failed For ' + err.website, true);
     }
   }

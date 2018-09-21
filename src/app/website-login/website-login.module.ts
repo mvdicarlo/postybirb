@@ -8,7 +8,8 @@ import {
   MatDialogModule,
   MatInputModule,
   MatTooltipModule,
-  MatCheckboxModule
+  MatCheckboxModule,
+  MatRadioModule
 } from '@angular/material';
 
 import { PBWebsitesComponent } from './pb-websites.component';
@@ -42,7 +43,8 @@ import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog
     MatDialogModule,
     MatInputModule,
     MatTooltipModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatRadioModule
   ],
   declarations: [
     LoginPanelComponent,

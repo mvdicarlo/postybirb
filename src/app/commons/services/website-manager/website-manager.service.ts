@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, Subscriber } from 'rxjs';
 import { Website } from '../../interfaces/website.interface';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
@@ -166,7 +166,7 @@ export class WebsiteManagerService {
 
     const site = this.websites.get(website);
     return new Observable(observer => {
-      site.getUser().then(() => {
+      if (site.getLoginStatus() === WebsiteStatus.Logged_In) {
         site.checkAuthorized().then(() => {
           site.post(data).subscribe((success) => {
             observer.next(success);
@@ -176,21 +176,11 @@ export class WebsiteManagerService {
             observer.complete();
           });
         }).catch(() => {
-          observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
-          observer.complete();
-
-          this.notify.translateNotification('Not logged in').subscribe((msg) => {
-            this.notify.getNotify().error(`${msg} - ${website}`);
-          });
+          this.notLoggedIn(observer, website);
         });
-      }).catch(() => {
-        observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
-        observer.complete();
-
-        this.notify.translateNotification('Not logged in').subscribe((msg) => {
-          this.notify.getNotify().error(`${msg} - ${website}`);
-        });
-      });
+      } else {
+        this.notLoggedIn(observer, website);
+      }
     });
   }
 
@@ -202,7 +192,7 @@ export class WebsiteManagerService {
 
     const site = this.websites.get(website);
     return new Observable(observer => {
-      site.getUser().then(() => {
+      if (site.getLoginStatus() === WebsiteStatus.Logged_In) {
         site.checkAuthorized().then(() => {
           site.postJournal(title, parsedDescription, websiteOptions).subscribe((success) => {
             observer.next(success);
@@ -212,21 +202,20 @@ export class WebsiteManagerService {
             observer.complete();
           });
         }).catch(() => {
-          observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
-          observer.complete();
-
-          this.notify.translateNotification('Not logged in').subscribe((msg) => {
-            this.notify.getNotify().error(`${msg} - ${website}`);
-          });
+          this.notLoggedIn(observer, website);
         });
-      }).catch(() => {
-        observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
-        observer.complete();
+      } else {
+        this.notLoggedIn(observer, website);
+      }
+    });
+  }
 
-        this.notify.translateNotification('Not logged in').subscribe((msg) => {
-          this.notify.getNotify().error(`${msg} - ${website}`);
-        });
-      });
+  private notLoggedIn(observer: Subscriber<any>, website: string): void {
+    observer.error({ msg: `Not logged into: ${website}`, skipLog: true });
+    observer.complete();
+
+    this.notify.translateNotification('Not logged in').subscribe((msg) => {
+      this.notify.getNotify().error(`${msg} - ${website}`);
     });
   }
 

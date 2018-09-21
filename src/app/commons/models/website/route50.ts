@@ -37,35 +37,24 @@ export class Route50 extends BaseWebsite implements Website {
           if (page.includes('loggedin')) this.loginStatus = WebsiteStatus.Logged_In;
           else this.loginStatus = WebsiteStatus.Logged_Out;
 
+          try {
+            const aTags = HTMLParser.getTagsOf(page, 'a');
+            const matcher = /class="dispavatar.*"/g;
+            if (aTags.length > 0) {
+              for (let i = 0; i < aTags.length; i++) {
+                let tag = aTags[i];
+                if (tag.match(matcher)) {
+                  this.info.username = tag.split('"')[3] || null;
+                  break;
+                }
+              }
+            }
+          } catch (e) { }
+
           resolve(this.loginStatus);
         }, err => {
           this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(WebsiteStatus.Offline);
-        });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' })
-        .subscribe(page => {
-          const aTags = HTMLParser.getTagsOf(page, 'a');
-          const matcher = /class="dispavatar.*"/g;
-          if (aTags.length > 0) {
-            for (let i = 0; i < aTags.length; i++) {
-              let tag = aTags[i];
-              if (tag.match(matcher)) {
-                resolve(tag.split('"')[3] || null);
-                return;
-              }
-            }
-
-            reject(null);
-          } else {
-            reject(Error(`Not logged in to ${this.websiteName}`));
-          }
-        }, err => {
-          reject(Error(`Unable to access ${this.websiteName}`));
         });
     });
   }

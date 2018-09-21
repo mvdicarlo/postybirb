@@ -52,7 +52,8 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
       disableObjectResizing: true,
       htmlEncodeOutput: true,
       removeButtons: '',
-      scayt_autoStartup: true
+      scayt_autoStartup: true,
+      forcePasteAsPlainText: true
     };
   }
 

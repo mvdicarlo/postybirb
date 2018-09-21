@@ -6,20 +6,19 @@ let authorized = false;
 let oauth = null;
 let M = null;
 
-function getAccessTokens(code) {
+function getAccessTokens(info) {
     return new Promise((resolve, reject) => {
-        request.post({ url: auth.generateAuthUrl('/mastodon/authorize'), form: { code } }, (error, response, body) => {
+        request.post({ url: auth.generateAuthUrl(`/mastodon/authorize/${info.site}`), form: { code: info.code } }, (error, response, body) => {
             if (error || response.status === 500) {
                 reject(false);
             } else {
-                if (!M) {
-                    M = new Mastodon({
-                        access_token: body,
-                    });
-                }
+                M = new Mastodon({
+                    access_token: body,
+                    api_url: `https://mastodon.${info.site || 'social'}/api/v1/`,
+                });
 
                 getUsernameFromAPI(body).then((username) => {
-                    oauth = { token: body, username };
+                    oauth = { token: body, username, site: info.site };
                     db.set('mastodon', oauth).write();
                     authorized = true;
                     resolve(true);
@@ -62,7 +61,7 @@ function uploadMedia(media) {
         };
 
         request.post({
-            url: 'https://mastodon.social/api/v1/media',
+            url: `https://mastodon.${oauth.site || 'social'}/api/v1/media`,
             headers: {
                 Accept: '*/*',
                 'User-Agent': 'node-mastodon-client',
@@ -118,6 +117,7 @@ exports.refresh = function refresh() {
             if (!M) {
                 M = new Mastodon({
                     access_token: oauth.token,
+                    api_url: `https://mastodon.${oauth.site || 'social'}/api/v1/`,
                 });
             }
 
@@ -126,8 +126,8 @@ exports.refresh = function refresh() {
     });
 };
 
-exports.getAuthorizationURL = function getURL() {
-    return auth.generateAuthUrl('/mastodon/authorize');
+exports.getAuthorizationURL = function getURL(site) {
+    return auth.generateAuthUrl(`/mastodon/authorize/${site || 'social'}`);
 };
 
 exports.isAuthorized = function isAuthorized() {

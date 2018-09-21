@@ -30,8 +30,8 @@ export class Mastodon extends BaseWebsite implements Website {
 
   authorize(authInfo: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      if (!authInfo) {
-        resolve(this.helper.getAuthorizationURL());
+      if (!authInfo.code) {
+        resolve(this.helper.getAuthorizationURL(authInfo.site));
       } else {
         this.helper.authorize(authInfo).then(() => {
           resolve(true);

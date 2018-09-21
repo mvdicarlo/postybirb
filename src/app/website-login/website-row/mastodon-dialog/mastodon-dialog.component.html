@@ -1,5 +1,9 @@
 <h2 mat-dialog-title>Mastodon</h2>
 <mat-dialog-content class="login-window">
+  <mat-radio-group (change)="changeType($event)" value="social">
+    <mat-radio-button value="art">Art</mat-radio-button>
+    <mat-radio-button value="social">Social</mat-radio-button>
+  </mat-radio-group>
   <webview #webview src="" class="login-webview-window"></webview>
 </mat-dialog-content>
 <br>
