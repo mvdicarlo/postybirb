@@ -2,10 +2,10 @@
 <mat-dialog-content class="window">
   <div class="row" style="max-height: 600px">
     <div class="col-md-12 col-lg-12 col-xl-12">
-      <p [innerText]="data.description"></p>
+      <p [innerText]="data.description.description"></p>
       <br>
       <mat-chip-list>
-        <mat-chip color="accent" *ngFor="let tag of data.options.tags">{{tag}}</mat-chip>
+        <mat-chip color="accent" *ngFor="let tag of data.tags">{{tag}}</mat-chip>
       </mat-chip-list>
     </div>
   </div>

@@ -393,6 +393,8 @@ TRANSLATOR: <Person to be credited>
 
 "Your password is not stored."
 
+"is not complete"
+
 "{{value}} failed to post"
 
 "{{value}} posted successfully"

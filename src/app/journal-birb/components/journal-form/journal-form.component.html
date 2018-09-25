@@ -1,0 +1,54 @@
+<mat-card>
+  <mat-card-content>
+    <form [formGroup]="form" class="row no-gutters">
+
+      <mat-form-field color="accent" class="col-md-12 col-lg-12 col-xl-12">
+        <input matInput #title placeholder="{{'Title' | translate}}" formControlName="title" maxLength="50" required>
+        <mat-hint align="end" [class.mat-error]="title.value.length < 5">
+          {{title.value.length}} / {{title.maxLength}}
+        </mat-hint>
+      </mat-form-field>
+
+      <mat-form-field color="accent" class="col-md-12 col-lg-12 col-xl-12">
+        <mat-select [placeholder]="'Selected Websites' | translate" multiple="true" formControlName="websites" required>
+          <mat-optgroup [label]="'Available Websites' | translate">
+            <mat-option *ngFor="let item of onlineWebsites" [value]="item">{{item}}</mat-option>
+          </mat-optgroup>
+          <mat-optgroup *ngIf="offlineWebsites.length" disabled="true" [label]="'Offline' | translate">
+            <mat-option *ngFor="let item of offlineWebsites" [value]="item">{{item}}</mat-option>
+          </mat-optgroup>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="col-md-12 col-lg-12 col-xl-12">
+        <mat-radio-group formControlName="rating" required>
+          <mat-radio-button value="General">{{'General' | translate}}</mat-radio-button>
+          <mat-radio-button value="Mature">{{'Mature' | translate}}</mat-radio-button>
+          <mat-radio-button value="Explicit">{{'Adult' | translate}}</mat-radio-button>
+          <mat-radio-button value="Extreme">{{'Extreme' | translate}}</mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <div name="defaultDescription" [matTooltip]="'Default Description Tooltip' | translate" matTooltipPosition="above" class="col-md-12 col-lg-12 col-xl-12 mt-4">
+        <h5 tourAnchor="pb.edit.description">{{'Default Description' | translate}}</h5>
+        <description-field class="clearfix" formControlName="defaultDescription" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
+      </div>
+
+      <div name="tags" *ngIf="hasWebsitesWithTags" class="col-md-12 col-lg-12 col-xl-12 mt-2">
+        <h5 tourAnchor="pb.edit.tags">{{'Tags' | translate}}</h5>
+        <tag-field class="clearfix w-100" formControlName="tags" [allowOverwrite]="false"></tag-field>
+      </div>
+
+      <mat-tab-group *ngIf="form.value.websites && form.value.websites.length" class="w-100 mt-2">
+        <mat-tab *ngFor="let site of form.value.websites" [label]="site">
+          <additional-options [config]="getConfig(site)" [defaultDescription]="defaultDescription"></additional-options>
+        </mat-tab>
+      </mat-tab-group>
+
+    </form>
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-button color="warn" (click)="clearForm()">{{'New' | translate}}</button>
+    <button mat-button color="accent" (click)="post()" [disabled]="form.invalid">{{'Post' | translate}}</button>
+  </mat-card-actions>
+</mat-card>

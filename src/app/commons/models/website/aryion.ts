@@ -90,7 +90,7 @@ export class Aryion extends BaseWebsite implements Website {
           filename: submission.submissionData.submissionFile.getFileInfo().name || 'upload.jpg'
         }
       },
-      thumb: submission.submissionData.thumbnailFile ? {
+      thumb: submission.submissionData.thumbnailFile.realFile ? {
         value: submission.submissionData.thumbnailFile.getFileBuffer(),
         options: {
           contentType: submission.submissionData.thumbnailFile.getFileInfo().type,

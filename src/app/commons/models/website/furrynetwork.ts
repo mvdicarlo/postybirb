@@ -277,26 +277,26 @@ export class FurryNetwork extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      const data = {
+      const postData = {
         community_tags_allowed: false,
         collections: [],
-        content: description,
-        description: description.split('.')[0],
-        rating: this.getMapping('rating', options.rating),
-        title,
+        content: data.description,
+        description: data.description.split('.')[0],
+        rating: this.getMapping('rating', data.rating),
+        title: data.title,
         subtitle: null,
-        tags: this.formatTags(options.tags),
+        tags: this.formatTags(data.tags),
         status: 'public'
       };
 
-      this.http.post(`${this.baseURL}/api/journal`, data, { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
+      this.http.post(`${this.baseURL}/api/journal`, postData, { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
         .subscribe(res => {
           observer.next(true);
           observer.complete();
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

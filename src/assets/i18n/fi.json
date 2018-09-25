@@ -182,6 +182,7 @@
   "Drag Tooltip": "Raahaa ja järjestä uudelleen",
   "Duplicate tag ignored": "Tagit ({{tag}}) Epähuomioitu",
   "Invalid Login": "Väärä käyttäjätunnus tai salasana.",
+  "is not complete": "ei ole täydellinen",
   "JournalBirb dashboard": "Postita journali tai statuksesi yhdelle tai useammalle sivustolle yhdellä yksinkertaisella lomakkeella",
   "Min Tags Required": "Anna vähintään {{min}} tageja",
   "PostyBirb dashboard": "Ajoita tai lähetä multimedioita useammalle sivustolle yhdellä yksinkertaisella lomakkeella",

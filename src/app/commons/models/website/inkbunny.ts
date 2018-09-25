@@ -225,25 +225,25 @@ export class Inkbunny extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/newjournal_process.php`, { responseType: 'text' })
         .subscribe(page => {
           const journalData: FormData = new FormData();
           journalData.set('token', HTMLParser.getInputValue(page, 'token'));
-          journalData.set('title', title);
-          journalData.set('content', description);
+          journalData.set('title', data.title);
+          journalData.set('content', data.description);
 
           this.http.post(`${this.baseURL}/newjournal_process.php`, journalData, { responseType: 'text' })
             .subscribe(() => {
               observer.next(true);
               observer.complete();
             }, err => {
-              observer.error(this.createError(err, { title, description, options }));
+              observer.error(this.createError(err, data));
               observer.complete();
             });
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

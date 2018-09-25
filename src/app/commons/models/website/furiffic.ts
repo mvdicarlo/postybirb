@@ -128,22 +128,22 @@ export class Furiffic extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/${this.info.username}/journals/create`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('type', 'textual');
-          journalData.set('name', title);
+          journalData.set('name', data.title);
           journalData.set('link', '');
-          journalData.set('body', `[p]${description}[/p]`);
-          journalData.set('shortDescription', description.split('.')[0]);
+          journalData.set('body', `[p]${data.description}[/p]`);
+          journalData.set('shortDescription', data.description.split('.')[0]);
           journalData.set('thumbnailReset', '');
           journalData.set('thumbnailFile', '');
           journalData.set('visibility', 'public');
-          journalData.set('rating', this.getMapping('rating', options.rating));
+          journalData.set('rating', this.getMapping('rating', data.rating));
 
-          const tags = this.formatTags(options.tags);
+          const tags = this.formatTags(data.tags);
           for (let i = 0; i < tags.length; i++) {
             journalData.append('tags[]', tags[i]);
           }
@@ -161,11 +161,11 @@ export class Furiffic extends BaseWebsite implements Website {
               observer.next(true);
               observer.complete();
             }, err => {
-              observer.error(this.createError(err, { title, description, options }));
+              observer.error(this.createError(err, data));
               observer.complete();
             });
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

@@ -184,17 +184,12 @@ export class WebsiteManagerService {
     });
   }
 
-  public postJournal(website: string, title: string, description: string, options: any): Observable<any> {
-    let parsedDescription = this.bbcodeParser.parse(description, website).parsed;
-    const websiteOptions = Object.assign({}, options[website]);
-    websiteOptions.rating = options.rating;
-    websiteOptions.tags = options.tags;
-
+  public postJournal(website: string, data: any): Observable<any> {
     const site = this.websites.get(website);
     return new Observable(observer => {
       if (site.getLoginStatus() === WebsiteStatus.Logged_In) {
         site.checkAuthorized().then(() => {
-          site.postJournal(title, parsedDescription, websiteOptions).subscribe((success) => {
+          site.postJournal(this.buildJournalPost(website, data)).subscribe((success) => {
             observer.next(success);
             observer.complete();
           }, (err) => {
@@ -208,6 +203,30 @@ export class WebsiteManagerService {
         this.notLoggedIn(observer, website);
       }
     });
+  }
+
+  private buildJournalPost(website: string, data: any): any {
+    const options = data.options[website];
+
+    const obj: any = {
+      tags: data.tags,
+      title: data.title,
+      rating: data.rating,
+      options: options.options //weird nesting here
+    };
+
+    const defaultDescription = data.description ? data.description.description : '';
+    const customDescription = options.description;
+
+    let description = defaultDescription;
+    let parseDescription = data.description ? !data.description.simple : true;
+    if (customDescription && !customDescription.useDefault) { // Determine whether to use custom or default description
+      description = customDescription.description;
+      parseDescription = customDescription && !customDescription.useDefault ? !customDescription.simple : true;
+    }
+
+    obj.description = this.bbcodeParser.parse(description, website, !parseDescription).parsed;
+    return obj;
   }
 
   private notLoggedIn(observer: Subscriber<any>, website: string): void {

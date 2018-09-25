@@ -162,10 +162,10 @@ export class DeviantArt extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       const journalData = new FormData();
-      journalData.set('body', description);
+      journalData.set('body', data.description);
       journalData.set('access_token', this.helper.getAuthorizationToken());
 
       this.http.post(`${this.baseURL}/api/v1/oauth2/user/statuses/post`, journalData)
@@ -173,7 +173,7 @@ export class DeviantArt extends BaseWebsite implements Website {
           observer.next(true);
           observer.complete();
         }, err => {
-          observer.error(this.createError(err, { title, description }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

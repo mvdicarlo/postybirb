@@ -208,7 +208,9 @@ export function getPopoverConfig(): PopoverConfig {
   exports: [
     FormTemplateSelectComponent,
     TumblrBlogSelectComponent,
+    DescriptionFieldComponent,
     DescriptionHelpComponent,
+    TagFieldComponent,
     FurryNetworkProfileSelectComponent,
     PostyBirbStatusBarComponent
   ],

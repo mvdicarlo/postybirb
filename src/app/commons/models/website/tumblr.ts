@@ -88,11 +88,9 @@ export class Tumblr extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
-    const replacedDescription = description;
-
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      this.helper.post(options.blog, this.formatTags(options.tags), title, replacedDescription, 'text', undefined)
+      this.helper.post(data.options.blog || this.getInfo().blogs[0].name, this.formatTags(data.tags), data.title, data.description, 'text', undefined)
         .then((res) => {
           observer.next(res);
           observer.complete();

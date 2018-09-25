@@ -164,14 +164,14 @@ export class Furaffinity extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/controls/journal`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('key', HTMLParser.getInputValue(page, 'key'));
-          journalData.set('message', description);
-          journalData.set('subject', title);
+          journalData.set('message', data.description);
+          journalData.set('subject', data.title);
           journalData.set('submit', 'Create / Update Journal');
           journalData.set('id', '');
           journalData.set('do', 'update');
@@ -181,11 +181,11 @@ export class Furaffinity extends BaseWebsite implements Website {
               observer.next(true);
               observer.complete();
             }, err => {
-              observer.error(this.createError(err, { title, description }));
+              observer.error(this.createError(err, data));
               observer.complete();
             });
         }, err => {
-          observer.error(this.createError(err, { title, description }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

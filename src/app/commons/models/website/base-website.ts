@@ -101,7 +101,7 @@ export class BaseWebsite implements Website {
     return null;
   }
 
-  public postJournal(title: string, description: string, options?: any): Observable<any> {
+  public postJournal(data: any): Observable<any> {
     return null;
   }
 

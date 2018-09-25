@@ -27,6 +27,7 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
   @Input() exposeEditorChange: boolean = false;
   @Input() maxLength: number = 0;
   @Input() showHelp: boolean = true;
+  @Input() spellcheck: boolean = true;
 
   public form: FormGroup;
   public ckConfig: any;
@@ -37,7 +38,6 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
 
   constructor(private fb: FormBuilder, private _changeDetector: ChangeDetectorRef, private notify: NotifyService) {
     super();
-
     this.ckConfig = {
       height: 225,
       toolbar: [
@@ -52,7 +52,7 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
       disableObjectResizing: true,
       htmlEncodeOutput: true,
       removeButtons: '',
-      scayt_autoStartup: true,
+      // scayt_autoStartup: true, have too make it disabled for now until I update it to v5
       forcePasteAsPlainText: true
     };
   }

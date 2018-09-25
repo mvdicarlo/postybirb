@@ -153,14 +153,14 @@ export class Patreon extends BaseWebsite implements Website {
     };
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/post`, { responseType: 'text' })
         .subscribe(page => {
           const csrf = page.match(/csrfSignature = ".*"/g)[0].split('"')[1];
           const postUrl = `${this.baseURL}/api/posts?` + 'include=user_defined_tags.null%2Ccampaign.creator.null%2Ccampaign.rewards.campaign.null%2Ccampaign.rewards.creator.null&fields[post]=post_type%2Cmin_cents_pledged_to_view&fields[campaign]=is_monthly&fields[reward]=am' +
             'ount_cents%2Ctitle&fields[user]=[]&fields[post_tag]=value&json-api-version=1.0';
-          const data = JSON.stringify({
+          const postData = JSON.stringify({
             data: {
               type: 'post',
               attributes: {
@@ -169,10 +169,10 @@ export class Patreon extends BaseWebsite implements Website {
             }
           });
 
-          this.http.post(postUrl, data, { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
+          this.http.post(postUrl, postData, { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
             .subscribe((res: any) => {
               const link = `${res.links.self}`;
-              const formattedTags = this.formatTags(options.tags);
+              const formattedTags = this.formatTags(data.tags);
               const relationshipTags = formattedTags.map(tag => {
                 return {
                   id: tag.id,
@@ -181,11 +181,11 @@ export class Patreon extends BaseWebsite implements Website {
               });
 
               const attributes = {
-                content: description,
+                content: data.description,
                 post_type: 'text_only',
                 is_paid: false,
                 min_cents_pledged_to_view: 0,
-                title: title,
+                title: data.title,
                 tags: { publish: true }
               };
 
@@ -214,15 +214,15 @@ export class Patreon extends BaseWebsite implements Website {
                   observer.next(true);
                   observer.complete();
                 }, err => {
-                  observer.error(this.createError(err, { title, description, options }));
+                  observer.error(this.createError(err, data));
                   observer.complete();
                 });
             }, err => {
-              observer.error(this.createError(err, { title, description, options }));
+              observer.error(this.createError(err, data));
               observer.complete();
             })
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

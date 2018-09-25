@@ -69,9 +69,9 @@ export class Twitter extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      this.helper.post(description.substring(0, 280))
+      this.helper.post(data.description.substring(0, 280))
         .then((res) => {
           observer.next(res);
           observer.complete();

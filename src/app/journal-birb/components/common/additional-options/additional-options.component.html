@@ -1,0 +1,10 @@
+<div class="website-form">
+  <div name="description_field" class="col-lg-12 col-xl-12 col-md-12 col-sm-12">
+    <h5>{{'Description' | translate}}</h5>
+    <description-field class="clearfix" [defaultDescription]="defaultDescription" [spellcheck]="true" [formControl]="control"></description-field>
+  </div>
+  <div name="website_options" *ngIf="config.optionsComponent" class="col-lg-12 col-xl-12 col-md-12 col-sm-12 mt-1">
+    <h5>{{'Additional Options' | translate}}</h5>
+    <options-section [section]="config.optionsComponent"></options-section>
+  </div>
+</div>

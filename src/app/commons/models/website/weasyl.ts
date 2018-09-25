@@ -127,15 +127,15 @@ export class Weasyl extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/submit/journal`, { responseType: 'text' }).subscribe(uploadPage => {
         const journalData = new FormData();
         journalData.set('token', HTMLParser.getInputValue(uploadPage, 'token'));
-        journalData.set('title', title);
-        journalData.set('rating', this.getMapping('rating', options.rating));
-        journalData.set('content', description);
-        journalData.set('tags', this.formatTags(options.tags) || '');
+        journalData.set('title', data.title);
+        journalData.set('rating', this.getMapping('rating', data.rating));
+        journalData.set('content', data.description);
+        journalData.set('tags', this.formatTags(data.tags) || '');
 
         this.http.post(`${this.baseURL}/submit/journal`, journalData, { responseType: 'text' }).subscribe(() => {
           observer.next(true);
@@ -144,13 +144,13 @@ export class Weasyl extends BaseWebsite implements Website {
           if (err.error.includes('allowed ratings')) {
             observer.next(err);
           } else {
-            observer.error(this.createError(err, { title, description, options }));
+            observer.error(this.createError(err, data));
           }
 
           observer.complete();
         });
       }, err => {
-        observer.error(this.createError(err, { title, description, options }));
+        observer.error(this.createError(err, data));
         observer.complete();
       });
     });

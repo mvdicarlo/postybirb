@@ -285,4 +285,26 @@ export class EditFormDialogComponent implements OnInit, AfterViewInit, OnDestroy
     return vals;
   }
 
+  public getRequirements(): string[] {
+    const requirements = [];
+
+    if (!this.websiteForms) return;
+
+    const keys = this.form.value.selectedWebsites || [];
+    const websiteForms = this.websiteForms.toArray();
+
+    for (let i = 0; i < keys.length; i++) {
+      const website = keys[i];
+
+      for (let j = 0; j < websiteForms.length; j++) {
+        const form = websiteForms[j];
+        if (form.website === website && !form.isValid()) {
+          requirements.push(form.website);
+        }
+      }
+    }
+
+    return requirements;
+  }
+
 }

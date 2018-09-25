@@ -52,7 +52,7 @@ export interface Website {
    * @param {string} description - description for the journal/status
    * @param {any} options - any additional options that the journal/status might require
    */
-  postJournal(title: string, description: string, options?: any): Observable<any>;
+  postJournal(data: any): Observable<any>;
 
   /**
    * @function unauthorize

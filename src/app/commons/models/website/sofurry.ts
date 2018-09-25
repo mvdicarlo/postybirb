@@ -139,7 +139,7 @@ export class SoFurry extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     const url = `${this.baseURL}/upload/details?contentType=3`
 
     return new Observable(observer => {
@@ -148,11 +148,11 @@ export class SoFurry extends BaseWebsite implements Website {
           const journalData = new FormData();
           journalData.set('YII_CSRF_TOKEN', HTMLParser.getInputValue(page, 'YII_CSRF_TOKEN'));
           journalData.set('UploadForm[P_id]', HTMLParser.getInputValue(page, 'UploadForm[P_id]'));
-          journalData.set('UploadForm[P_title]', title);
-          journalData.set('UploadForm[textcontent]', description);
-          journalData.set('UploadForm[description]', description.split('.')[0]);
-          journalData.set('UploadForm[formtags]', this.formatTags(options.tags));
-          journalData.set('UploadForm[contentLevel]', this.getMapping('rating', options.rating));
+          journalData.set('UploadForm[P_title]', data.title);
+          journalData.set('UploadForm[textcontent]', data.description);
+          journalData.set('UploadForm[description]', data.description.split('.')[0]);
+          journalData.set('UploadForm[formtags]', this.formatTags(data.tags));
+          journalData.set('UploadForm[contentLevel]', this.getMapping('rating', data.rating));
           journalData.set('UploadForm[P_hidePublic]', '0');
           journalData.set('UploadForm[folderId]', '0');
           journalData.set('UploadForm[newFolderName]', '');
@@ -163,11 +163,11 @@ export class SoFurry extends BaseWebsite implements Website {
             observer.next(true);
             observer.complete();
           }, (err: HttpErrorResponse) => {
-            observer.error(this.createError(err, { title, description, options }));
+            observer.error(this.createError(err, data));
             observer.complete();
           });
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });
