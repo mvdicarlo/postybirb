@@ -125,56 +125,125 @@ LANGUAGE: GERMAN
 TRANSLATOR: Bravura Lion
 
 "Cancel"
+"Abbrechen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Cancel All"
+"Alles abbrechen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Category"
+"Kategorie"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Change File"
+"Datei ändern"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Changelog"
+"Changelog"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Charge Patrons"
 
 "Clear"
+"Löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Clear All"
+"Alles löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Clear Scheduled"
+"Geplante löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Clear Templates"
+"Templates löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Clear Unscheduled"
+"Lösche ungeplante"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Close"
+"Schliessen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Confirm Action"
+"Änderung bestätigen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Contact"
+"Kontakt"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Contact me on one of these sites:"
+"Kontaktiere mich auf einen dieser Seiten:"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Copy"
+"kopieren"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Copy Submission"
+"Submission kopieren"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Create Template"
+"Template erstellen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Critique"
 
 "Dashboard"
 
 "Default Description"
+"Standardbeschreibung"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Default Tags"
+"Standard Tags"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Delete"
+"löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Delete All"
+"Alles löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Delete Template"
+"Template löschen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Description"
+"Beschreibung"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Description Help"
 
