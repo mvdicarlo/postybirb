@@ -10,44 +10,119 @@ TRANSLATOR: <Person to be credited>
 -----------------------------------------------------------------------
 
 "Accepted Files"
+"Akzeptierte Dateien"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Accepted Ratings"
+"Akzeptierte Ratings"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Accepted Type"
+"Akzeptierter Typ"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Add Files"
+"Dateien hinzufügen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Add From Clipboard"
+"Von der Zwischenablage hinzufügen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Additional Images"
+"Weitere Bilder"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Additional Options"
+"Weitere Optionen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Adult"
+"Erwachsener"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "All"
+"Alle"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "All Ages"
+"Jedes Alter"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Allow Community Tags"
+"Community Tags erlauben"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Allow error logs"
+"Fehlermeldungen zulassen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Animation"
+"Animation"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Apply Edits"
+"Änderungen übernehmen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Apply Template"
+"Vorlage übernehmen"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Artwork"
+"Kunstwerk"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Authentication Failed"
+"Authentifizierungsfehler"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
+
 
 "Available Websites"
+"Verfügbare Websites"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Block Guests"
+"Gäste blockieren"
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "By using PostyBirb you agree to the Terms of Service and Rules of the sites that you are posting to. You are responsible for everything you post."
+"Mit der Nutzung von PostyBirb erklären Sie sich mit den Allgemeinen Geschäftsbedingungen und Regeln der Websites einverstanden, auf die Sie posten. Du bist für alles, was du veröffentlichst, verantwortlich."
+LANGUAGE: GERMAN
+TRANSLATOR: Bravura Lion
 
 "Cancel"
 
