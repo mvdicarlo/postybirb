@@ -1,110 +1,41 @@
-import { Component, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Component, OnDestroy, Output, EventEmitter, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription, Observable } from 'rxjs';
 
-import { PostyBirbSubmission } from '../../../../commons/models/posty-birb/posty-birb-submission';
-import { GalleryService } from '../../../services/gallery-service/gallery.service';
-import { GalleryStatus } from '../../../models/gallery-status.model';
+import { PostyBirbSubmission, SubmissionArchive } from '../../../../commons/models/posty-birb/posty-birb-submission';
+import { SubmissionCardComponent } from '../submission-card/submission-card.component';
+
+import { Select, Store } from '@ngxs/store';
+import { PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
+
+import { TourService } from 'ngx-tour-ngx-bootstrap';
 
 @Component({
   selector: 'submission-card-container',
   templateUrl: './submission-card-container.component.html',
-  styleUrls: ['./submission-card-container.component.css']
+  styleUrls: ['./submission-card-container.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionCardContainerComponent implements OnDestroy {
   @Output() update: EventEmitter<PostyBirbSubmission[]> = new EventEmitter();
 
-  public submissions: PostyBirbSubmission[] = [];
+  @Select(state => state.postybirb.editing) editing$: Observable<SubmissionArchive>;
+
   public selectedSubmissions: PostyBirbSubmission[] = [];
-  private gallerySubscription: Subscription;
-  private readonly STORE: string = 'postybirb-in-progress-store';
+  public submissions: SubmissionArchive[] = [];
+  private stateSubscription: Subscription = Subscription.EMPTY;
 
-  constructor(private galleryService: GalleryService) {
-    this.gallerySubscription = galleryService.getObserver().subscribe((submission: PostyBirbSubmission) => {
-      this.handleGalleryEvent(submission);
+  @ViewChildren(SubmissionCardComponent)
+  private cards: QueryList<SubmissionCardComponent>;
+
+  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef, private tourService: TourService) {
+    this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
+      this.submissions = editing || [];
+      this._changeDetector.markForCheck();
     });
-
-    // Restore in progress work if any
-    const archives: any[] = store.get(this.STORE) || [];
-    if (archives.length > 0) {
-      const restored: any[] = [];
-      for (let i = 0; i < archives.length; i++) {
-        restored.push(PostyBirbSubmission.fromArchive(archives[i]));
-      }
-
-      this.submissions = restored;
-    }
   }
 
   ngOnDestroy() {
-    if (this.gallerySubscription) this.gallerySubscription.unsubscribe();
-    this.saveInProgress();
-  }
-
-  public saveInProgress(): void {
-    // Save in progress work
-    if (this.submissions.length > 0) {
-      const save: any = [];
-      for (let i = 0; i < this.submissions.length; i++) {
-        const archive: any = this.submissions[i].asSubmissionArchive();
-        if (archive.submissionFile.path) { // Only save if not from clipboard
-          save.push(archive);
-        }
-      }
-
-      store.set(this.STORE, save);
-    } else {
-      store.remove(this.STORE);
-    }
-  }
-
-
-  private handleGalleryEvent(submission: PostyBirbSubmission): void {
-    const status: GalleryStatus = submission.getGalleryStatus();
-
-    if (status === GalleryStatus.COPY) {
-      submission.setId(null);
-      this.submissions.push(submission);
-    } else if (status === GalleryStatus.EDITING) {
-      const index = this.findSubmission(submission, this.submissions);
-      if (index === -1) {
-        this.submissions.push(submission);
-      }
-    } else if (status === GalleryStatus.SCHEDULE) {
-      const index = this.findSubmission(submission, this.submissions);
-      if (index !== -1) {
-        this.submissions[index].setSchedule(submission.getSchedule());
-      }
-    } else if (status === GalleryStatus.DELETE) {
-      this.submissionRemoved(submission);
-    }
-  }
-
-  public submissionSelected(submission: PostyBirbSubmission): void {
-    const index = this.findSubmission(submission, this.selectedSubmissions);
-
-    if (index === -1) {
-      this.selectedSubmissions.push(submission);
-    } else {
-      this.selectedSubmissions.splice(index, 1);
-    }
-
-    this.onUpdate();
-  }
-
-  public submissionRemoved(submission: PostyBirbSubmission): void {
-    const index = this.findSubmission(submission, this.selectedSubmissions);
-    const submissionIndex = this.findSubmission(submission, this.submissions);
-
-    if (submissionIndex !== -1) {
-      this.submissions.splice(submissionIndex, 1);
-    }
-
-    if (index !== -1) {
-      this.selectedSubmissions.splice(index, 1);
-      this.onUpdate();
-    }
-
-    this.saveInProgress();
+    this.stateSubscription.unsubscribe();
   }
 
   private findSubmission(submission: PostyBirbSubmission, arr: PostyBirbSubmission[]): number {
@@ -115,46 +46,99 @@ export class SubmissionCardContainerComponent implements OnDestroy {
     return -1;
   }
 
-  public addFiles(newSubmissions: PostyBirbSubmission[] = []): void {
-    for (let i = 0; i < newSubmissions.length; i++) {
-      const s = newSubmissions[i];
-      this.submissions.push(s);
+  public submissionSelected(event: any): void {
+    const submission = event.data;
+    const index = this.findSubmission(submission, this.selectedSubmissions);
+
+    if (event.selected) {
+      if (index === -1) this.selectedSubmissions.push(submission);
+    } else if (index !== -1) {
+      this.selectedSubmissions.splice(index, 1);
     }
 
-    this.saveInProgress();
+    this.onUpdate();
+  }
+
+  public submissionRemoved(submission: PostyBirbSubmission): void {
+    const index = this.findSubmission(submission, this.selectedSubmissions);
+
+    if (index !== -1) {
+      this.selectedSubmissions.splice(index, 1);
+      this.onUpdate();
+    }
+
+    this._store.dispatch(new PostyBirbStateAction.DeleteSubmission(submission.asSubmissionArchive()));
+  }
+
+  public addFiles(newSubmissions: PostyBirbSubmission[] = []): void {
+    this._store.dispatch(newSubmissions.map(s => new PostyBirbStateAction.EditSubmission(s.asSubmissionArchive(), false)))
   }
 
   public removeAll(): void {
-    this.submissions = [];
     this.selectedSubmissions = [];
     this.onUpdate();
 
-    this.saveInProgress();
+    this._store.dispatch(this.submissions.map(s => new PostyBirbStateAction.DeleteSubmission(s)));
   }
 
   public removeSelected(): void {
-    this.submissions = this.submissions.filter(submission => !this.selectedSubmissions.includes(submission));
+    this._store.dispatch(this.selectedSubmissions.map(s => new PostyBirbStateAction.DeleteSubmission(s.asSubmissionArchive())));
     this.selectedSubmissions = [];
     this.onUpdate();
-
-    this.saveInProgress();
   }
 
   public removeUnselected(): void {
-    this.submissions = [...this.selectedSubmissions];
+    this._store.dispatch(this.submissions.filter(s => !this.isSelected(s.meta.id)).map(s => new PostyBirbStateAction.DeleteSubmission(s)));
     this.onUpdate();
+  }
 
-    this.saveInProgress();
+  private isSelected(id: string): boolean {
+    for (let i = 0; i < this.selectedSubmissions.length; i++) {
+      if (this.selectedSubmissions[i].getId() == id) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private onUpdate(): void {
     this.update.emit(this.selectedSubmissions || []);
-    this.saveInProgress();
+    this._changeDetector.markForCheck();
   }
 
-  public dropForEdit(event: any): void {
-    if (event.dragData) {
-      this.galleryService.emit(event.dragData, GalleryStatus.EDITING);
+  public clearSelected(): void {
+    this.selectedSubmissions = [];
+    this._changeDetector.markForCheck();
+  }
+
+  public selectAll(): void {
+    if (this.cards.length > 0) {
+      this.cards.forEach(c => c.select());
+    }
+  }
+
+  public unselectAll(): void {
+    if (this.cards.length > 0) {
+      this.cards.forEach(c => c.select(false));
+    }
+  }
+
+  public trackBy(index, item: SubmissionArchive) {
+    return item.meta.id;
+  }
+
+  public isTutorialEnabled(): boolean {
+    const enabled = db.get('tutorial').value();
+    return enabled === undefined ? true : enabled;
+  }
+
+  public toggleTutorial(event: any): void {
+    db.set('tutorial', event.checked).write();
+    if (!event.checked) {
+      this.tourService.end();
+    } else {
+      this.tourService.start();
     }
   }
 

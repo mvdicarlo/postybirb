@@ -1,6 +1,9 @@
 const fs = require('fs');
-const shell = require('electron').shell;
-const clipboard = require('electron').clipboard;
+const path = require('path');
+const electron = require('electron');
+
+const shell = electron.shell;
+const clipboard = electron.clipboard;
 
 const _setImmediate = setImmediate;
 const _clearImmediate = clearImmediate;
@@ -14,39 +17,21 @@ process.once('loaded', () => {
 window.tumblr = require('./js/tumblr-auth.js');
 window.twitter = require('./js/twitter-auth.js');
 window.deviantart = require('./js/deviantart-auth.js');
-window.appVersion = require('electron').remote.app.getVersion();
-window.documentsPath = require('electron').remote.app.getPath('documents');
+window.mastodon = require('./js/mastodon-auth.js');
+window.aryion = require('./js/aryion-post.js');
 
-// Set up generic Documents folder
-fs.access(`${window.documentsPath}/PostyBirb`, fs.constants.F_OK, (err) => {
-    if (err) {
-        fs.mkdir(`${window.documentsPath}/PostyBirb`, (err) => {
-            if (err) {
-                console.error('Unable to create Documents subfolder');
-            } else {
-                fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
-                    if (err) {
-                        console.error('Unable to create Documents subfolder: temp');
-                    }
-                });
-            }
-        });
-    } else {
-        fs.access(`${window.documentsPath}/PostyBirb/temp`, fs.constants.F_OK, (err) => {
-            if (err) {
-                fs.mkdir(`${window.documentsPath}/PostyBirb/temp`, (err) => {
-                    if (err) {
-                        console.error('Unable to create Documents subfolder: temp');
-                    }
-                });
-            }
-        });
-    }
-});
-
-/**
- * These functions are used to limit what can be called from the app itself
- */
+window.appVersion = electron.remote.app.getVersion();
+window.sfw = electron.remote.process.env.SFW;
+window.nativeImage = electron.nativeImage;
+window.getFileIcon = electron.remote.app.getFileIcon;
+window.immediatelyCheckForScheduled = electron.remote.getCurrentWindow().immediatelyCheckForScheduled;
+window.db = electron.remote.getCurrentWindow().db; // db is now in the main process to reduce chance of json corruption by being closed during write
+window.logdb = electron.remote.getCurrentWindow().logdb; // db is now in the main process to reduce chance of json corruption by being closed during write
+window.browserwindow = electron.remote.BrowserWindow;
+window.relaunch = function relaunch() {
+    electron.remote.app.relaunch();
+    electron.remote.app.exit();
+};
 
 window.readFile = function readFile(filePath, successCallback, errorCallback, completeCallback) {
     fs.readFile(filePath, (readErr, buffer) => {

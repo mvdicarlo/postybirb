@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'tumblr-blog-select',
   templateUrl: './tumblr-blog-select.component.html',
   styleUrls: ['./tumblr-blog-select.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export class TumblrBlogSelectComponent extends BaseControlValueAccessorComponent
   private statusSubscription: Subscription;
   public blogs: any[];
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -31,10 +32,10 @@ export class TumblrBlogSelectComponent extends BaseControlValueAccessorComponent
   }
 
   ngAfterContentInit() {
-    this.populateBlogs(this.service.getOther(SupportedWebsites.Tumblr));
+    this.populateBlogs(this.service.getInfo(SupportedWebsites.Tumblr));
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Tumblr]) {
-        this.populateBlogs(this.service.getOther(SupportedWebsites.Tumblr));
+        this.populateBlogs(this.service.getInfo(SupportedWebsites.Tumblr));
       }
     });
   }
@@ -59,12 +60,16 @@ export class TumblrBlogSelectComponent extends BaseControlValueAccessorComponent
     } else {
       this.blogs = [];
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public writeValue(obj: any) {
     if (obj) {
       this.value = obj;
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public onChange(event: any) {

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'sofurry-folders',
   templateUrl: './sofurry-folders.component.html',
   styleUrls: ['./sofurry-folders.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
   private statusSubscription: Subscription;
   public folders: any[];
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -31,10 +32,10 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.SoFurry).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.SoFurry).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.SoFurry]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.SoFurry).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.SoFurry).folders);
       }
     });
   }
@@ -46,17 +47,17 @@ export class SofurryFoldersComponent extends BaseControlValueAccessorComponent i
   populateFolders(folders: any): void {
     this.folders = [];
     if (folders) {
-      folders.forEach((folder) => {
-        const folderItem = {
+      this.folders = folders.map(folder => {
+        return {
           value: folder.value,
           label: folder.name
         };
-
-        this.folders.push(folderItem);
       });
     } else {
       this.value = '';
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public onChange(event: any) {

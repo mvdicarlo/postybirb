@@ -1,56 +1,51 @@
-import { Component, ViewChild } from '@angular/core';
-import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { GalleryService } from '../../../posty-birb/services/gallery-service/gallery.service';
+import { Component, ViewChild, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { Store } from '@ngxs/store';
+import { PostyBirbStateAction } from '../../../posty-birb/stores/states/posty-birb.state';
+import { TemplatesService } from '../../../posty-birb/services/templates/templates.service';
 
 @Component({
   selector: 'postybirb-config',
   templateUrl: './postybirb-config.component.html',
   styleUrls: ['./postybirb-config.component.css']
 })
-export class PostybirbConfigComponent {
+export class PostybirbConfigComponent implements OnDestroy {
   @ViewChild('templateSelect') templateSelect: any;
   enableTemplateDelete: boolean;
   selectedTemplate: any;
 
-  constructor(private galleryService: GalleryService) { }
+  private submissions: any = null;
+  private subscription: Subscription = Subscription.EMPTY
+
+  constructor(private _store: Store, private templates: TemplatesService) {
+    this.subscription = _store.select(state => state.postybirb.submissions).subscribe(submissions => this.submissions = submissions);
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+  }
 
   resetScheduled(): void {
-    this.galleryService.clearScheduledSubmissions;
+    this._store.dispatch(this.submissions.filter(s => s.meta.schedule).map(s => new PostyBirbStateAction.DeleteSubmission(s)));
   }
 
   resetUnscheduled(): void {
-    this.galleryService.clearUnscheduledSubmissions();
+    this._store.dispatch(this.submissions.filter(s => !s.meta.schedule).map(s => new PostyBirbStateAction.DeleteSubmission(s)));
   }
 
   resetTemplates(): void {
-    store.remove('postybirb-profiles');
+    this.templates.deleteAll();
   }
 
   resetAllSettings(): void {
     this.resetScheduled();
     this.resetUnscheduled();
     this.resetTemplates();
-    store.remove('postybirb-temp');
   }
 
   deleteTemplate(): void {
     this.enableTemplateDelete = false;
-    const templates = store.get('postybirb-profiles') || [];
-
-
-    if (this.selectedTemplate) {
-      for (let i = 0; i < templates.length; i++) {
-        const template = templates[i];
-
-        if (template.name === this.selectedTemplate.name) {
-          templates.splice(i, 1);
-          break;
-        }
-      }
-    }
-
-    store.set('postybirb-profiles', templates);
-    this.templateSelect.refresh();
+    this.templates.deleteTemplate(this.selectedTemplate.name);
     this.selectedTemplate = null;
   }
 

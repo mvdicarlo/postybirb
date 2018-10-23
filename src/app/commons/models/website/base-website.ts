@@ -1,26 +1,24 @@
 import { Website } from '../../interfaces/website.interface';
-import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 /**
  * @abstract @class BaseWebsite
  */
 export class BaseWebsite implements Website {
-  protected websiteName: string;
+  public websiteName: string;
   protected baseURL: string;
   protected loginStatus: WebsiteStatus;
   protected helper: any; //helpers such as twitter, deviantart, and tumblr bound to window
   protected mapping: any;
-  protected otherInformation: any;
+  protected info: any;
 
   constructor(websiteName: string, baseURL: string, helperName?: string) {
     this.websiteName = websiteName;
     this.baseURL = baseURL;
     this.loginStatus = WebsiteStatus.Logged_Out;
     this.mapping = {};
-    this.otherInformation = {};
+    this.info = {};
 
     if (helperName) {
       this.helper = window[helperName];
@@ -35,12 +33,13 @@ export class BaseWebsite implements Website {
 
   public getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      reject(null);
+      if (this.info.username) resolve(this.info.username);
+      else reject(Error(`Not logged in to ${this.websiteName}`));
     });
   }
 
-  public getOtherInfo(): any {
-    return this.otherInformation;
+  public getInfo(): any {
+    return this.info;
   }
 
   public getLoginStatus(): WebsiteStatus {
@@ -52,6 +51,22 @@ export class BaseWebsite implements Website {
       this.helper.unauthorize();
       this.loginStatus = WebsiteStatus.Logged_Out;
     }
+  }
+
+  public checkAuthorized(): Promise<boolean> {
+    return new Promise(function(resolve, reject) {
+      if (this.helper) {
+        if (this.helper.checkAuthorized) {
+          this.helper.checkAuthorized().then(authorized => {
+            authorized ? resolve(true) : reject(false);
+          });
+        } else {
+          this.helper.isAuthorized() ? resolve(true) : reject(false);
+        }
+      } else {
+        resolve(true);
+      }
+    }.bind(this));
   }
 
   public authorize(authInfo: any): Promise<any> {
@@ -86,12 +101,12 @@ export class BaseWebsite implements Website {
     return null;
   }
 
-  public postJournal(title: string, description: string, options?: any): Observable<any> {
+  public postJournal(data: any): Observable<any> {
     return null;
   }
 
-  protected createError(err: any, submission: any, reason?: any): object {
-    return { website: this.websiteName, err, submission, reason };
+  protected createError(err: any, submission: any, notify?: string): object {
+    return { website: this.websiteName, err, msg: notify, submission, notify: notify ? true : false };
   }
 
   protected getMapping(type: string, value: string): any {

@@ -1,0 +1,47 @@
+<h2 mat-dialog-title>{{'Settings' | translate}}</h2>
+<mat-dialog-content>
+  <mat-accordion>
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>PostyBirb</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="row no-gutters">
+        <div class="col-md-12 col-xl-12 col-lg-12">
+          <mat-form-field color="accent">
+            <input matInput #intervalInput [value]="interval" [placeholder]="'Post Interval' | translate" type="number" step="0.5" min="0" (change)="changePostInterval(intervalInput.value)">
+            <mat-hint align="end">
+              {{ 'In minutes' | translate}}
+            </mat-hint>
+          </mat-form-field>
+        </div>
+        <div class="col-md-12 col-xl-12 col-lg-12">
+          <mat-slide-toggle [checked]="isAdvertiseEnabled()" (change)="toggleGlobalAdvertise($event)">{{ 'Advertise' | translate }}</mat-slide-toggle>
+        </div>
+        <div class="col-md-12 col-xl-12 col-lg-12">
+          <mat-slide-toggle [checked]="isStopAllSubmissionsEnabled()" (change)="toggleStopOnFailure($event)">{{ 'Stop posting on submission failure' | translate }}</mat-slide-toggle>
+        </div>
+        <div class="col-md-12 col-xl-12 col-lg-12">
+          <mat-slide-toggle [checked]="isGenerateErrorLogEnabled()" (change)="toggleGenerateErrorLog($event)">{{ 'Allow error logs' | translate }}</mat-slide-toggle>
+        </div>
+        <div class="col-md-12 col-xl-12 col-lg-12 mt-3">
+          <button mat-button mat-raised-button color="warn" (click)="resetScheduled()">{{'Clear Scheduled' | translate}}</button>
+          <button mat-button mat-raised-button color="warn" (click)="resetUnscheduled()">{{'Clear Unscheduled' | translate}}</button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{'Performance' | translate}}</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="row no-gutters">
+        <div class="col-md-12 col-xl-12 col-lg-12">
+          <mat-slide-toggle [checked]="isHardwareAccelerationOn()" (change)="toggleHardwareAccceleration($event)">{{ 'Hardware Acceleration' | translate }}</mat-slide-toggle>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

@@ -15,9 +15,15 @@ TRANSLATOR: <Person to be credited>
 
 "Accepted Type"
 
+"Add Additional Images"
+
 "Add Files"
 
 "Add From Clipboard"
+
+"Add Thumbnail"
+
+"Additional Images"
 
 "Additional Options"
 
@@ -29,9 +35,9 @@ TRANSLATOR: <Person to be credited>
 
 "Allow Community Tags"
 
-"Animation"
+"Allow error logs"
 
-"Apply Edits"
+"Animation"
 
 "Apply Template"
 
@@ -45,9 +51,13 @@ TRANSLATOR: <Person to be credited>
 
 "By using PostyBirb you agree to the Terms of Service and Rules of the sites that you are posting to. You are responsible for everything you post."
 
+"Cancel"
+
+"Cancel All"
+
 "Category"
 
-"Change file"
+"Change File"
 
 "Changelog"
 
@@ -87,11 +97,15 @@ TRANSLATOR: <Person to be credited>
 
 "Delete"
 
+"Delete All"
+
 "Delete Template"
 
 "Description"
 
 "Description Help"
+
+"Description is more than {{length}} characters"
 
 "Disable"
 
@@ -147,9 +161,13 @@ TRANSLATOR: <Person to be credited>
 
 "Ideology"
 
+"In minutes"
+
 "Incorrect username or password."
 
 "Initializing"
+
+"Interrupted"
 
 "Invalid for selected websites"
 
@@ -162,6 +180,8 @@ TRANSLATOR: <Person to be credited>
 "Logout"
 
 "Logs"
+
+"Manage Templates"
 
 "Mature"
 
@@ -203,9 +223,9 @@ TRANSLATOR: <Person to be credited>
 
 "Password"
 
-"Please provide a file"
+"Paused until"
 
-"Please provide at least "
+"Please provide a file"
 
 "Please provide at least {{min}} tags"
 
@@ -215,15 +235,13 @@ TRANSLATOR: <Person to be credited>
 
 "Post All"
 
+"Post Interval"
+
 "Post a journal or status to one or more websites from one simple form"
 
 "Posted"
 
 "Posting"
-
-"Posting will stop after current submission finishes."
-
-"PostyBirb Post Logs"
 
 "PostyBirb Settings"
 
@@ -231,15 +249,21 @@ TRANSLATOR: <Person to be credited>
 
 "Public"
 
+"Queued"
+
 "Rating"
 
 "Refresh"
 
 "Remove"
 
+"Remove Thumbnail"
+
 "Reset All"
 
 "Save"
+
+"Save Edits"
 
 "Save Template"
 
@@ -249,9 +273,9 @@ TRANSLATOR: <Person to be credited>
 
 "Schedule"
 
-"Schedule Submission"
-
 "Schedule or post multimedia submissions to multiple websites all at once from one simple form"
+
+"Scheduled"
 
 "Scheduled Submissions"
 
@@ -260,8 +284,6 @@ TRANSLATOR: <Person to be credited>
 "Select Folder"
 
 "Select Profile"
-
-"Selected"
 
 "Selected Websites"
 
@@ -285,9 +307,9 @@ TRANSLATOR: <Person to be credited>
 
 "Stop"
 
-"Stop On Failure"
+"Stop Editing"
 
-"Stop the next submissions from being posted"
+"Stop posting on submission failure"
 
 "Story"
 
@@ -323,8 +345,6 @@ TRANSLATOR: <Person to be credited>
 
 "This description will be used for all websites checked to use default"
 
-"Thumbnail"
-
 "Time to post"
 
 "Title"
@@ -335,7 +355,7 @@ TRANSLATOR: <Person to be credited>
 
 "Unposted"
 
-"Unselected"
+"Unscheduled"
 
 "Unsupported file size"
 
@@ -347,15 +367,19 @@ TRANSLATOR: <Person to be credited>
 
 "Update Available"
 
-"Use BBCode to format"
+"Upload additional images with this submission."
 
 "Use Default"
+
+"Use Title"
 
 "Use basic editor"
 
 "Username"
 
 "Using Default"
+
+"View Submissions"
 
 "Website"
 
@@ -364,6 +388,10 @@ TRANSLATOR: <Person to be credited>
 "Yes"
 
 "Your password is not stored."
+
+"is incomplete"
+
+"is not complete"
 
 "{{value}} failed to post"
 

@@ -1,8 +1,8 @@
-<div class="col-md-12">
+<div class="col-md-12 col-xl-12 col-lg-12 col-sm-12">
   <strong>
-    <span *ngIf="info.status === -1" style="color: red;">{{'Website Offline' | translate}}</span>
-    <span *ngIf="info.status === 0">{{'Not Logged In' | translate}}</span>
-    <span *ngIf="info.status === 1" style="color: green;">
+    <span *ngIf="info.status === -1" class="text-danger">{{'Website Offline' | translate}}</span>
+    <span *ngIf="info.status === 0" class="text-warning">{{'Not Logged In' | translate}}</span>
+    <span *ngIf="info.status === 1" class="text-success">
       {{info.username | uppercase}}
     </span>
   </strong>

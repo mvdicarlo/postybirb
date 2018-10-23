@@ -1,0 +1,36 @@
+img, video {
+  height: auto;
+  max-width: 100px;
+}
+
+td {
+  vertical-align: middle;
+}
+
+mat-progress-bar {
+  flex: 10;
+  margin: auto
+}
+
+.posting-status {
+  display: flex;
+  min-width: 200px;
+}
+
+.title-td {
+  max-width: 150px;
+  width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reorder button {
+  width: 100%;
+  display: block;
+}
+
+.status {
+  width: 110px;
+  max-width: 110px;
+  text-align: center;
+}

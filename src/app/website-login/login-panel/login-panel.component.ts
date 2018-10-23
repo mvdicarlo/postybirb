@@ -1,27 +1,31 @@
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { WebsiteManagerService } from '../../commons/services/website-manager/website-manager.service';
 import { WebsiteStatus } from '../../commons/enums/website-status.enum';
 import { WebLogo } from '../../commons/enums/web-logo.enum';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog } from '@angular/material';
+
+interface Status {
+  status: WebsiteStatus;
+  username: string;
+}
 
 @Component({
   selector: 'login-panel',
   templateUrl: './login-panel.component.html',
-  styleUrls: ['./login-panel.component.css']
+  styleUrls: ['./login-panel.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LoginPanelComponent implements OnInit, OnDestroy {
   @Input() dialogComponent: any;
   @Input() website: string;
 
-  private statusSubscription: Subscription;
-  public status: any;
+  private statusSubscription: Subscription = Subscription.EMPTY;
+  public status: Status;
   public loading: boolean;
   public logo: string;
 
-  constructor(private webManager: WebsiteManagerService, private dialog: MatDialog) {
-
-  }
+  constructor(private webManager: WebsiteManagerService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.status = { status: WebsiteStatus.Logged_Out, username: 'Unknown' };
@@ -31,35 +35,27 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
 
     this.logo = WebLogo[this.website];
     this.loading = true;
-    this.webManager.checkLogin(this.website);
   }
 
   ngOnDestroy() {
     this.statusSubscription.unsubscribe();
   }
 
-  handleStatusUpdate(status: any): void {
-    switch (status) {
-      case WebsiteStatus.Logged_In:
-        this.status.status = WebsiteStatus.Logged_In;
-        this.webManager.getUsername(this.website).then(username => {
-          this.status.username = username;
-        }).catch(err => {
-          this.status.username = 'Unknown';
-        });
-        break;
-      case WebsiteStatus.Logged_Out:
-        this.status.username = '';
-        this.status.status = WebsiteStatus.Logged_Out;
-        break;
-      case WebsiteStatus.Offline:
-        this.status.username = '';
-        this.status.status = WebsiteStatus.Offline;
-        break;
-      default:
-        this.status.username = '';
-        this.status.status = WebsiteStatus.Logged_Out;
-        break;
+  async handleStatusUpdate(status: any) {
+    let update: boolean = status !== this.status.status;
+
+    if (status === WebsiteStatus.Logged_In) {
+      const username = await this.webManager.getUsername(this.website).catch(() => { });
+      update = this.status.username !== username || update;
+      this.status.username = username || 'Unknown';
+      this.status.status = WebsiteStatus.Logged_In;
+    } else {
+      this.status.status = status;
+      this.status.username = '';
+    }
+
+    if (update) {
+      this._changeDetector.markForCheck();
     }
 
     this.loading = false;
@@ -71,7 +67,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
       width: '90%'
     });
 
-    ref.afterClosed().subscribe(result => {
+    ref.afterClosed().subscribe(() => {
       this.webManager.checkLogin(this.website);
     });
   }

@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'weasyl-folders',
   templateUrl: './weasyl-folders.component.html',
   styleUrls: ['./weasyl-folders.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
   private statusSubscription: Subscription;
   public folders: any[];
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -31,10 +32,10 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.Weasyl).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.Weasyl).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Weasyl]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.Weasyl).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.Weasyl).folders);
       }
     });
   }
@@ -46,7 +47,8 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
   populateFolders(folders: any): void {
     this.folders = [];
     if (folders) {
-      folders.forEach((folder) => {
+      for (let i = 0; i < folders.length; i++) {
+        const folder = folders[i];
         const folderItem = {
           value: folder.folder_id,
           label: folder.title
@@ -55,18 +57,21 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
         this.folders.push(folderItem);
 
         if (folder.subfolders) {
-          folder.subfolders.forEach((innerFolder) => {
+          for (let j = 0; j < folder.subfolders.length; j++) {
+            const innerFolder = folder.subfolders[j];
             const subFolderItem = {
               value: innerFolder.folder_id,
               label: `${folder.title} / ${innerFolder.title}`
             };
             this.folders.push(subFolderItem);
-          });
+          }
         }
-      });
+      }
     } else {
       this.value = '';
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public onChange(event: any) {

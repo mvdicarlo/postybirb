@@ -1,0 +1,5 @@
+<mat-form-field color="accent">
+  <mat-select #select [placeholder]="'Copy Submission' | translate" (selectionChange)="emit($event.value)">
+    <mat-option *ngFor="let record of submissions; trackBy:trackBy" [value]="record.archive">{{ record.name }}</mat-option>
+  </mat-select>
+</mat-form-field>

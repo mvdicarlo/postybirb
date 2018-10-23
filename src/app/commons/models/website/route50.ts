@@ -6,8 +6,7 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Route50 extends BaseWebsite implements Website {
@@ -33,40 +32,29 @@ export class Route50 extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('loggedin')) this.loginStatus = WebsiteStatus.Logged_In;
           else this.loginStatus = WebsiteStatus.Logged_Out;
+
+          try {
+            const aTags = HTMLParser.getTagsOf(page, 'a');
+            const matcher = /class="dispavatar.*"/g;
+            if (aTags.length > 0) {
+              for (let i = 0; i < aTags.length; i++) {
+                let tag = aTags[i];
+                if (tag.match(matcher)) {
+                  this.info.username = tag.split('"')[3] || null;
+                  break;
+                }
+              }
+            }
+          } catch (e) { }
 
           resolve(this.loginStatus);
         }, err => {
           this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(WebsiteStatus.Offline);
-        });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
-        .subscribe(page => {
-          const aTags = HTMLParser.getTagsOf(page, 'a');
-          const matcher = /class="dispavatar.*"/g;
-          if (aTags.length > 0) {
-            for (let i = 0; i < aTags.length; i++) {
-              let tag = aTags[i];
-              if (tag.match(matcher)) {
-                resolve(tag.split('"')[3] || null);
-                return;
-              }
-            }
-
-            reject(null);
-          } else {
-            reject(Error(`Not logged in to ${this.websiteName}`));
-          }
-        }, err => {
-          reject(Error(`Unable to access ${this.websiteName}`));
         });
     });
   }
@@ -93,7 +81,7 @@ export class Route50 extends BaseWebsite implements Website {
       this.http.post(`${this.baseURL}/galleries/submit`, uploadForm, { responseType: 'text' })
         .subscribe(res => {
           if (res.includes(submission.submissionData.title)) {
-            observer.next(true);
+            observer.next(res);
           } else observer.error(this.createError(res, submission));
           observer.complete();
         }, (err: HttpErrorResponse) => {

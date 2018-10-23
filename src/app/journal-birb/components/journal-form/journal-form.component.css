@@ -1,0 +1,11 @@
+mat-radio-button + mat-radio-button {
+  margin-left: 5px;
+}
+
+mat-card-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: #4a4a4a;
+  box-shadow: 0 -5px 5px -5px #333;
+}

@@ -1,5 +1,6 @@
 import { SupportedWebsites } from '../../commons/enums/supported-websites';
 import { FileObject } from '../../commons/interfaces/file-obect.interface';
+import { PostyBirbSubmission } from '../../commons/models/posty-birb/posty-birb-submission';
 
 export interface Restrictions {
   unsupportedByRating: any[];
@@ -11,8 +12,22 @@ export interface Restrictions {
   hasInvalid: boolean;
 }
 
+export interface WebsiteRestrictions {
+  data: PostyBirbSubmission;
+  websites: string[];
+  verifiedWebsites: any;
+}
+
 export class SupportedWebsiteRestrictions {
   private static webMap: any = {
+    [SupportedWebsites.Aryion]: {
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'],
+      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedFileSize: {
+        default: 20, // a guess
+      }
+    },
     [SupportedWebsites.Derpibooru]: {
       supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'svg', 'gif'],
@@ -63,12 +78,36 @@ export class SupportedWebsiteRestrictions {
         default: 25
       }
     },
+    [SupportedWebsites.HentaiFoundry]: { // This is essentially all a guess
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpeg', 'jpg', 'png', 'svg', 'gif'],
+      supportedTypes: ['Artwork'],
+      supportedFileSize: {
+        default: 50, // a guess
+      }
+    },
     [SupportedWebsites.Inkbunny]: {
       supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'],
       supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
       supportedFileSize: {
         default: 300
+      }
+    },
+    [SupportedWebsites.Mastodon]: {
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'],
+      supportedTypes: ['Artwork', 'Animation'],
+      supportedFileSize: {
+        default: 8,
+      }
+    },
+    [SupportedWebsites.PaigeeWorld]: {
+      supportedRatings: ['General'],
+      supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif'],
+      supportedTypes: ['Artwork'],
+      supportedFileSize: {
+        default: 50
       }
     },
     [SupportedWebsites.Patreon]: {
@@ -105,13 +144,14 @@ export class SupportedWebsiteRestrictions {
     },
     [SupportedWebsites.Tumblr]: {
       supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
-      supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'mp3'],
+      supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'],
       supportedTypes: ['Artwork', 'Animation', 'Music'],
       supportedFileSize: {
         default: 10,
         Artwork: {
           gif: 1
-        }
+        },
+        Animation: 100
       }
     },
     [SupportedWebsites.Twitter]: {
@@ -165,6 +205,60 @@ export class SupportedWebsiteRestrictions {
     }
 
     return fileSize <= sizeLimit;
+  }
+
+  private static isWithinFileSizeLimit(website: any, type: string, fileExtension: string, size: number): any {
+    const fileSize = this.convertFileSizeToMB(size);
+    const sizeRequirements = website.supportedFileSize;
+    let sizeLimit: number = 0;
+    const category: any = sizeRequirements[type];
+    if (typeof category === 'object') {
+      sizeLimit = category[fileExtension] || sizeRequirements.default;
+    } else {
+      //Assume number or null
+      sizeLimit = category || sizeRequirements.default;
+    }
+
+    return fileSize <= sizeLimit ? 0 : sizeLimit;
+  }
+
+  public static verifyWebsiteRestrictions(submission: PostyBirbSubmission): WebsiteRestrictions {
+    const verify: WebsiteRestrictions = {
+      data: submission,
+      websites: submission.getDefaultFieldFor('selectedWebsites') || [],
+      verifiedWebsites: {}
+    };
+
+    const file: FileObject = submission.getSubmissionFileObject();
+    const fileExtension: string = file.name.split('.').pop().toLowerCase();
+
+    const rating: string = submission.getSubmissionRating();
+    const submissionType: string = submission.getSubmissionType();
+
+    for (let i = 0; i < verify.websites.length; i++) {
+      const website = verify.websites[i];
+      if (!verify.verifiedWebsites.hasOwnProperty(website)) verify.verifiedWebsites[website] = {};
+      const w: any = this.webMap[website];
+
+      if (!w.supportedRatings.includes(rating)) {
+        verify.verifiedWebsites[website].unsupportedByRating = rating === 'Explicit' ? 'Adult' : rating;
+      }
+
+      if (!w.supportedTypes.includes(submissionType)) {
+        verify.verifiedWebsites[website].unsupportedByType = submissionType;
+      }
+
+      if (!w.supportedFileTypes.includes(fileExtension)) {
+        verify.verifiedWebsites[website].unsupportedByFileExtension = fileExtension;
+      }
+
+      const sizeLimit = this.isWithinFileSizeLimit(w, submissionType, fileExtension, file.size);
+      if (sizeLimit > 0) {
+        verify.verifiedWebsites[website].unsupportedByFileSize = sizeLimit;
+      }
+    }
+
+    return verify;
   }
 
   public static getSupportedWebsites(rating: string, submissionType: string, file: File | FileObject): Restrictions {

@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Mastodon</h2>
+<mat-dialog-content class="login-window">
+  <mat-radio-group (change)="changeType($event)" value="social">
+    <mat-radio-button value="art">Art</mat-radio-button>
+    <mat-radio-button value="social">Social</mat-radio-button>
+  </mat-radio-group>
+  <webview #webview src="" class="login-webview-window"></webview>
+</mat-dialog-content>
+<br>
+<div>
+  <mat-form-field color="accent">
+    <input type="text" matInput #codeInput placeholder="{{'Code' | translate}}" maxLength="150" required>
+  </mat-form-field>
+  <button mat-raised-button color="primary" (click)="submitCode(codeInput.value)" [disabled]="codeInput.value.length === 0">{{'Authorize' | translate}}</button>
+  <div *ngIf="failed" class="mat-error">{{'Authentication Failed' | translate}}</div>
+</div>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="primary" (click)="unauthorize()">{{'Unauthorize' | translate}}</button>
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

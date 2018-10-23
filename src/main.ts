@@ -9,8 +9,6 @@ if (environment.production) {
 }
 
 import * as store from 'store';
-import * as expirePlugin from 'store/plugins/expire';
 window['store'] = store;
-store.addPlugin(expirePlugin);
 
 platformBrowserDynamic().bootstrapModule(AppModule);

@@ -1,0 +1,17 @@
+<div class="w-100 sidebar-navigator-container animated zoomIn" *ngIf="show()" [ngSwitch]="item.file.type.split('/')[0]" [matTooltip]="item.file.name + ' > ' + item.form.value.title" matTooltipPosition="right">
+  <img [src]="item.src | safe" [alt]="item.file.name" *ngSwitchCase="'image'">
+  <video [src]="item.src | safe" [type]="item.file.type" *ngSwitchCase="'video'"></video>
+  <img [src]="item.fileIcon | safe" [alt]="item.file.name" *ngSwitchDefault>
+  <button class="actions" mat-icon-button (click)="trapEvent($event)" [matMenuTriggerFor]="actionMenu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+</div>
+
+<mat-menu #actionMenu="matMenu">
+  <button mat-menu-item [matMenuTriggerFor]="templateMenu" (mouseover)="loadTemplates()"><mat-icon>assignment</mat-icon>{{ 'Apply Template' | translate }}</button>
+  <button mat-menu-item (click)="deleteItem()" color="warn"><mat-icon color="warn">delete</mat-icon>{{'Delete' | translate}}</button>
+</mat-menu>
+
+<mat-menu #templateMenu="matMenu">
+  <button mat-menu-item *ngFor="let template of templates; trackBy:trackBy" (click)="applyTemplate(template)">{{ template.name }}</button>
+</mat-menu>

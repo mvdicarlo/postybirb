@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Inkbunny extends BaseWebsite implements Website {
@@ -16,7 +15,7 @@ export class Inkbunny extends BaseWebsite implements Website {
   constructor(private http: HttpClient) {
     super(SupportedWebsites.Inkbunny, 'https://inkbunny.net');
 
-    this.userInformation = store.get(SupportedWebsites.Inkbunny.toLowerCase()) || {
+    this.userInformation = db.get(SupportedWebsites.Inkbunny.toLowerCase()).value() || {
       name: null,
       sid: null,
     };
@@ -40,16 +39,41 @@ export class Inkbunny extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (!page.includes('LOGIN')) {
             if (this.userInformation.name) this.loginStatus = WebsiteStatus.Logged_In;
-          }
-          else {
+          } else {
             this.loginStatus = WebsiteStatus.Logged_Out;
             this.unauthorize();
+            resolve(this.loginStatus);
+            return;
           }
-          resolve(this.loginStatus);
+
+          // check sid too
+          if (this.userInformation.sid) {
+            const formData = new FormData();
+            formData.set('sid', this.userInformation.sid);
+            formData.set('limit', '5');
+            this.http.post(`${this.baseURL}/api_watchlist.php`, formData, { responseType: 'text' })
+              .subscribe((res: any) => {
+                if (JSON.parse(res).error_code) {
+                  this.loginStatus = WebsiteStatus.Logged_Out;
+                  this.userInformation.sid = null;
+                  db.unset(SupportedWebsites.Inkbunny.toLowerCase()).write();
+                } else {
+                  this.loginStatus = WebsiteStatus.Logged_In;
+                }
+
+                resolve(this.loginStatus);
+              }, err => {
+                this.loginStatus = WebsiteStatus.Logged_Out;
+                resolve(this.loginStatus);
+              });
+          } else {
+            this.loginStatus = WebsiteStatus.Logged_Out;
+            resolve(this.loginStatus);
+          }
         }, err => {
           this.loginStatus = WebsiteStatus.Offline;
           resolve(this.loginStatus);
@@ -65,7 +89,7 @@ export class Inkbunny extends BaseWebsite implements Website {
 
   private loginToActual(username: string, password: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/login.php`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/login.php`, { responseType: 'text' })
         .subscribe(page => {
           const loginForm: FormData = new FormData();
           loginForm.set('token', HTMLParser.getInputValue(page, 'token'));
@@ -102,7 +126,7 @@ export class Inkbunny extends BaseWebsite implements Website {
       if (!password || !username) {
         reject(false);
       } else {
-        this.http.post(`${url}username=${username}&password=${password}`)
+        this.http.post(`${url}username=${username}&password=${encodeURIComponent(password)}`) // testing encode
           .subscribe((res: any) => {
             if (res && res.sid) {
               this.userInformation = {
@@ -111,7 +135,7 @@ export class Inkbunny extends BaseWebsite implements Website {
               };
               this.loginToActual(username, password)
                 .then(() => {
-                  store.set(SupportedWebsites.Inkbunny.toLowerCase(), this.userInformation, new Date().setMonth(new Date().getMonth() + 2));
+                  db.set(SupportedWebsites.Inkbunny.toLowerCase(), this.userInformation).write();
                   resolve(true);
                 }).catch(() => reject(false));
 
@@ -130,8 +154,14 @@ export class Inkbunny extends BaseWebsite implements Website {
     };
 
     this.loginStatus = WebsiteStatus.Logged_Out;
-    store.remove(SupportedWebsites.Inkbunny.toLowerCase());
+    db.unset(SupportedWebsites.Inkbunny.toLowerCase()).write();
     this.logoutActual();
+  }
+
+  public checkAuthorized(): Promise<boolean> {
+    return new Promise(function(resolve, reject) {
+      this.userInformation && this.userInformation.sid ? resolve(true) : reject(false);
+    }.bind(this));
   }
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
@@ -144,7 +174,7 @@ export class Inkbunny extends BaseWebsite implements Website {
       uploadForm.set('uploadedfile[0]', submission.submissionData.submissionFile.getRealFile());
       if (submission.submissionData.additionalFiles && submission.submissionData.additionalFiles.length > 0) {
         for (let i = 0; i < submission.submissionData.additionalFiles.length; i++) {
-          uploadForm.set(`uploadedfile[${i}]`, submission.submissionData.additionalFiles[i].getRealFile());
+          uploadForm.set(`uploadedfile[${i + 1}]`, submission.submissionData.additionalFiles[i].getRealFile());
         }
       }
       if (submission.submissionData.thumbnailFile.getRealFile()) uploadForm.set('uploadedthumbnail[]', submission.submissionData.thumbnailFile.getRealFile());
@@ -195,25 +225,25 @@ export class Inkbunny extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/newjournal_process.php`, { responseType: 'text' })
         .subscribe(page => {
           const journalData: FormData = new FormData();
           journalData.set('token', HTMLParser.getInputValue(page, 'token'));
-          journalData.set('title', title);
-          journalData.set('content', description);
+          journalData.set('title', data.title);
+          journalData.set('content', data.description);
 
           this.http.post(`${this.baseURL}/newjournal_process.php`, journalData, { responseType: 'text' })
             .subscribe(() => {
               observer.next(true);
               observer.complete();
             }, err => {
-              observer.error(this.createError(err, { title, description, options }));
+              observer.error(this.createError(err, data));
               observer.complete();
             });
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

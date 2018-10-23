@@ -1,12 +1,16 @@
 .website-form {
-    width: 100%;
-    overflow-x: hidden;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .website-form .row div {
-    padding-right: 5px;
+  padding-right: 5px;
 }
 
 description-field {
-    width: 100%;
+  width: 100%;
+}
+
+.mat-tab-label-content {
+  font-weight: bold;
 }

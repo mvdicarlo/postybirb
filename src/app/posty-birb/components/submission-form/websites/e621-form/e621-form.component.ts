@@ -1,12 +1,12 @@
-import { Component, Injector, forwardRef } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
 
 @Component({
   selector: 'e621-form',
   templateUrl: './e621-form.component.html',
   styleUrls: ['./e621-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => E621FormComponent) }]
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => E621FormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class E621FormComponent extends BaseWebsiteFormComponent {
 

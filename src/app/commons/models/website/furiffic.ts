@@ -4,14 +4,11 @@ import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Furiffic extends BaseWebsite implements Website {
-  private userInfo: any = {};
 
   constructor(private http: HttpClient) {
     super(SupportedWebsites.Furiffic, 'https://www.furiffic.com');
@@ -34,28 +31,22 @@ export class Furiffic extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
-          if (page.includes('logout')) this.loginStatus = WebsiteStatus.Logged_In;
+          if (page.includes('logout')) {
+            this.loginStatus = WebsiteStatus.Logged_In;
+
+            try {
+              const username = page.match(/src=".*com\/accounts\/.*s/gm)[0].split('"')[1].split('/')[4].trim() || null;
+              this.info.username = username;
+            } catch (e) { /* Do Nothing */ }
+          }
           else this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(this.loginStatus);
         }, err => {
           this.loginStatus = WebsiteStatus.Offline;
           resolve(this.loginStatus);
         });
-    });
-  }
-
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
-        .subscribe(page => {
-          try {
-            const username = page.match(/src=".*com\/accounts\/.*s/gm)[0].split('"')[1].split('/')[4].trim() || null;
-            this.userInfo.username = username;
-            resolve(username);
-          } catch (e) { reject(Error('Unable to get username')) }
-        }, err => reject(Error(`Unable to access ${this.websiteName}`)));
     });
   }
 
@@ -69,7 +60,7 @@ export class Furiffic extends BaseWebsite implements Website {
       preForm.set('items[0][size]', file.size);
       preForm.set('items[0][clientId]', '0');
 
-      this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/preupload`, preForm)
+      this.http.post(`${this.baseURL}/${this.info.username}/gallery/preupload`, preForm)
         .subscribe(preUploadResponse => {
           const id = preUploadResponse[0].id;
 
@@ -77,12 +68,12 @@ export class Furiffic extends BaseWebsite implements Website {
           uploadFile.set('file', submission.submissionData.submissionFile.getRealFile());
           uploadFile.set('id', id);
 
-          this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/upload`, uploadFile)
+          this.http.post(`${this.baseURL}/${this.info.username}/gallery/upload`, uploadFile)
             .subscribe(() => {
               const retrieveUploadDataForm = new FormData();
               retrieveUploadDataForm.set('mediaIds[]', id);
 
-              this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/uploaddata`, retrieveUploadDataForm)
+              this.http.post(`${this.baseURL}/${this.info.username}/gallery/uploaddata`, retrieveUploadDataForm)
                 .subscribe(uploadData => {
                   const editForm = new FormData();
                   editForm.set('rating', this.getMapping('rating', submission.submissionData.submissionRating));
@@ -102,15 +93,15 @@ export class Furiffic extends BaseWebsite implements Website {
                   }
 
                   const tags = this.formatTags(submission.defaultTags, submission.customTags);
-                  tags.forEach((tag) => {
-                    editForm.append('tags[]', tag);
-                  });
+                  for (let i = 0; i < tags.length; i++) {
+                    editForm.append('tags[]', tags[i]);
+                  }
 
-                  this.http.post(`${this.baseURL}/${this.userInfo.username}/edit/${id}`, editForm, { responseType: 'text' })
+                  this.http.post(`${this.baseURL}/${this.info.username}/edit/${id}`, editForm, { responseType: 'text' })
                     .subscribe(() => {
                       const publish = new FormData();
                       publish.set('ids[]', id);
-                      this.http.post(`${this.baseURL}/${this.userInfo.username}/gallery/publish`, publish)
+                      this.http.post(`${this.baseURL}/${this.info.username}/gallery/publish`, publish)
                         .subscribe(() => {
                           observer.next(true);
                           observer.complete();
@@ -137,25 +128,25 @@ export class Furiffic extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/${this.userInfo.username}/journals/create`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/${this.info.username}/journals/create`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('type', 'textual');
-          journalData.set('name', title);
+          journalData.set('name', data.title);
           journalData.set('link', '');
-          journalData.set('body', `[p]${description}[/p]`);
-          journalData.set('shortDescription', description.split('.')[0]);
+          journalData.set('body', `[p]${data.description}[/p]`);
+          journalData.set('shortDescription', data.description.split('.')[0]);
           journalData.set('thumbnailReset', '');
           journalData.set('thumbnailFile', '');
           journalData.set('visibility', 'public');
-          journalData.set('rating', this.getMapping('rating', options.rating));
+          journalData.set('rating', this.getMapping('rating', data.rating));
 
-          const tags = this.formatTags(options.tags);
-          tags.forEach((tag) => {
-            journalData.append('tags[]', tag);
-          });
+          const tags = this.formatTags(data.tags);
+          for (let i = 0; i < tags.length; i++) {
+            journalData.append('tags[]', tags[i]);
+          }
 
           let csrf = page.match(/csrfSeed = .*;/g) || [];
           let csrfValue = '';
@@ -165,16 +156,16 @@ export class Furiffic extends BaseWebsite implements Website {
 
           journalData.set('__csrf', csrfValue);
 
-          this.http.post(`${this.baseURL}/${this.userInfo.username}/journals/create`, journalData, { responseType: 'text' })
+          this.http.post(`${this.baseURL}/${this.info.username}/journals/create`, journalData, { responseType: 'text' })
             .subscribe(() => {
               observer.next(true);
               observer.complete();
             }, err => {
-              observer.error(this.createError(err, { title, description, options }));
+              observer.error(this.createError(err, data));
               observer.complete();
             });
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>{{'Manage Templates' | translate}}</h2>
+<mat-dialog-content>
+  <div class="w-100" *ngFor="let template of templates">
+    <div class="w-100">
+      <mat-form-field color="accent" appearance="fill">
+        <mat-label>{{template.name}}</mat-label>
+        <input type="text" matInput maxLength="32" [value]="template.name" (input)="renamingTemplate(template, $event)">
+        <mat-icon matSuffix>edit</mat-icon>
+        <mat-hint class="text-danger" *ngIf="template.editing && template.rename != template.name && templateExists(template)">{{'Template names must be unique' | translate }}</mat-hint>
+        <mat-hint align="end" [class.text-danger]="(template.rename || template.name).trim().length < 2">{{ (template.rename || template.name).trim().length }} / 32</mat-hint>
+      </mat-form-field>
+      <button mat-icon-button [disabled]="!canSave(template)" (click)="renameTemplate(template)" *ngIf="template.editing"><mat-icon>save</mat-icon></button>
+      <button mat-icon-button (click)="clearRenaming(template)" *ngIf="template.editing"><mat-icon color="warn">cancel</mat-icon></button>
+      <button mat-icon-button (click)="openSummaryDialog(template)"><mat-icon>search</mat-icon></button>
+      <button mat-icon-button (click)="deleteTemplate(template)"><mat-icon color="warn">delete</mat-icon></button>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <div style="flex: 10">
+    <button mat-button color="warn" (click)="deleteAll()"><mat-icon>delete</mat-icon> {{ 'Delete All' | translate }}</button>
+  </div>
+  <button mat-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

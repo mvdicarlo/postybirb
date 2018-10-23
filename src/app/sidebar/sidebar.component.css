@@ -30,33 +30,34 @@ li>a {
   position: relative;
 }
 
-a:active,
-a:hover {
-    color: white !important;
-    text-decoration: none;
+a:active, a:hover {
+  text-decoration: none;
+  background-color: #524242;
+  color: white !important;
 }
 
 a {
-    cursor: pointer;
-    text-decoration: none;
-    color: #007bff !important;
+  cursor: pointer;
+  text-decoration: none;
+  color: #ccc !important;
 }
 
 h3 {
-    border: none;
-    font-size: 10px;
-    letter-spacing: 1px;
-    line-height: 24px;
-    font-weight: 400;
-    margin: 0;
-    padding: 0 16px;
-    background: #666;
+  border: none;
+  font-size: 10px;
+  letter-spacing: 1px;
+  line-height: 24px;
+  font-weight: 400;
+  margin: 0;
+  padding: 0 16px;
+  background: #666;
+  color: white;
 }
 
 .align-middle {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
 .expansion-panel {
-    background-color: #666 !important;
+  background-color: #666 !important;
 }

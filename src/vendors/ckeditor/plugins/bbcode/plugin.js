@@ -29,10 +29,10 @@
 
 	var bbcodeMap = { b: 'strong', u: 'u', i: 'em', color: 'span', size: 'span', quote: 'blockquote',
 					code: 'code', url: 'a', email: 'span', img: 'span', '*': 'li', list: 'ol', center: 'div',
-					left: 'div', right: 'div', hr: '*', p: '*' },
-		convertMap = { strong: 'b', b: 'b', u: 'u', em: 'i', i: 'i', code: 'code', li: '*', p: 'div', hr: 'br', pre: 'div',
-						h1: 'div', h2: 'div', h3: 'div', h4: 'div', h5: 'div', h6: 'div' },
-		tagnameMap = { strong: 'b', em: 'i', u: 'u', li: '*', ul: 'list', ol: 'list', code: 'code', a: 'link', img: 'img', blockquote: 'quote', p: 'div', hr: 'br' },
+					left: 'div', right: 'div', hr: '*', p: '*', s: 's', hr: 'hr' },
+		convertMap = { strong: 'b', b: 'b', u: 'u', em: 'i', i: 'i', code: 'code', li: '*', p: 'div', hr: 'hr', pre: 'div',
+						h1: 'div', h2: 'div', h3: 'div', h4: 'div', h5: 'div', h6: 'div', s: 's' },
+		tagnameMap = { strong: 'b', em: 'i', u: 'u', li: '*', ul: 'list', ol: 'list', code: 'code', a: 'link', img: 'img', blockquote: 'quote', p: 'div', hr: 'hr', s: 's' },
 		// 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'pre', 'li', 'blockquote', 'ul', 'ol',
 	    //   'table', 'thead', 'tbody', 'tfoot', 'td', 'th', 'hr'
 		stylesMap = { color: 'color', size: 'font-size' },
@@ -345,39 +345,42 @@
 				newPendingInline = [],
 				candidate = currentNode;
 
-			while ( candidate.type && candidate.name != tagName ) {
-				// If this is an inline element, add it to the pending list, if we're
-				// really closing one of the parents element later, they will continue
-				// after it.
-				if ( !candidate._.isBlockLike )
-					newPendingInline.unshift( candidate );
+			try {
+			    while (candidate.type && candidate.name != tagName) {
+							// If this is an inline element, add it to the pending list, if we're
+							// really closing one of the parents element later, they will continue
+							// after it.
+			        if (!candidate._.isBlockLike) { newPendingInline.unshift(candidate); }
 
-				// This node should be added to it's parent at this point. But,
-				// it should happen only if the closing tag is really closing
-				// one of the nodes. So, for now, we just cache it.
-				pendingAdd.push( candidate );
+							// This node should be added to it's parent at this point. But,
+							// it should happen only if the closing tag is really closing
+							// one of the nodes. So, for now, we just cache it.
+			        pendingAdd.push(candidate);
 
-				candidate = candidate.parent;
-			}
+			        candidate = candidate.parent;
+			    }
 
-			if ( candidate.type ) {
-				// Add all elements that have been found in the above loop.
-				for ( i = 0; i < pendingAdd.length; i++ ) {
-					var node = pendingAdd[ i ];
-					addElement( node, node.parent );
+				if ( candidate.type ) {
+					// Add all elements that have been found in the above loop.
+					for ( i = 0; i < pendingAdd.length; i++ ) {
+						var node = pendingAdd[ i ];
+						addElement( node, node.parent );
+					}
+
+					currentNode = candidate;
+
+
+					addElement( candidate, candidate.parent );
+
+					// The parent should start receiving new nodes now, except if
+					// addElement changed the currentNode.
+					if ( candidate == currentNode )
+						currentNode = currentNode.parent;
+
+					pendingInline = pendingInline.concat( newPendingInline );
 				}
+			} catch (e) {
 
-				currentNode = candidate;
-
-
-				addElement( candidate, candidate.parent );
-
-				// The parent should start receiving new nodes now, except if
-				// addElement changed the currentNode.
-				if ( candidate == currentNode )
-					currentNode = currentNode.parent;
-
-				pendingInline = pendingInline.concat( newPendingInline );
 			}
 		};
 
@@ -394,11 +397,11 @@
 						var lastIndex = 0;
 
 						// Create smiley from text emotion.
-						piece.replace( smileyRegExp, function( match, index ) {
-							addElement( new CKEDITOR.htmlParser.text( piece.substring( lastIndex, index ) ), currentNode );
-							addElement( new CKEDITOR.htmlParser.element( 'smiley', { desc: smileyReverseMap[ match ] } ), currentNode );
-							lastIndex = index + match.length;
-						} );
+						// piece.replace( smileyRegExp, function( match, index ) {
+						// 	addElement( new CKEDITOR.htmlParser.text( piece.substring( lastIndex, index ) ), currentNode );
+						// 	addElement( new CKEDITOR.htmlParser.element( 'smiley', { desc: smileyReverseMap[ match ] } ), currentNode );
+						// 	lastIndex = index + match.length;
+						// } );
 
 						if ( lastIndex != piece.length )
 							addElement( new CKEDITOR.htmlParser.text( piece.substring( lastIndex, piece.length ) ), currentNode );
@@ -643,20 +646,20 @@
 						if ( !element.attributes.href )
 							element.attributes.href = element.children[ 0 ].value;
 					},
-					smiley: function( element ) {
-						element.name = 'img';
-
-						var description = element.attributes.desc,
-							image = config.smiley_images[ CKEDITOR.tools.indexOf( config.smiley_descriptions, description ) ],
-							src = CKEDITOR.tools.htmlEncode( config.smiley_path + image );
-
-						element.attributes = {
-							src: src,
-							'data-cke-saved-src': src,
-							title: description,
-							alt: description
-						};
-					}
+					// smiley: function( element ) {
+					// 	element.name = 'img';
+					//
+					// 	var description = element.attributes.desc,
+					// 		image = config.smiley_images[ CKEDITOR.tools.indexOf( config.smiley_descriptions, description ) ],
+					// 		src = CKEDITOR.tools.htmlEncode( config.smiley_path + image );
+					//
+					// 	element.attributes = {
+					// 		src: src,
+					// 		'data-cke-saved-src': src,
+					// 		title: description,
+					// 		alt: description
+					// 	};
+					// }
 				}
 			} );
 
@@ -734,18 +737,19 @@
 									tagName = 'url';
 								}
 							}
-						} else if ( tagName == 'img' ) {
-							element.isEmpty = 0;
-
-							// Translate smiley (image) to text emotion.
-							var src = attributes[ 'data-cke-saved-src' ] || attributes.src,
-								alt = attributes.alt;
-
-							if ( src && src.indexOf( editor.config.smiley_path ) != -1 && alt )
-								return new CKEDITOR.htmlParser.text( smileyMap[ alt ] );
-							else
-								element.children = [ new CKEDITOR.htmlParser.text( src || "[img][/img]" ) ];
 						}
+						// else if ( tagName == 'img' ) { NOTE: I DO NOT WANT TO DO ANYTHING WITH IMAGES IN THE PARSER
+						// 	element.isEmpty = 0;
+						//
+						// 	// Translate smiley (image) to text emotion.
+						// 	var src = attributes[ 'data-cke-saved-src' ] || attributes.src,
+						// 		alt = attributes.alt;
+						//
+						// 	if ( src && src.indexOf( editor.config.smiley_path ) != -1 && alt )
+						// 		return new CKEDITOR.htmlParser.text( smileyMap[ alt ] );
+						// 	else
+						// 		element.children = [ new CKEDITOR.htmlParser.text( src || "[img][/img]" ) ];
+						// }
 
 						element.name = tagName;
 						(value) && ( element.attributes.option = value );
@@ -799,11 +803,12 @@
 								name = 'size';
 							else if ( element.getStyle( 'color' ) )
 								name = 'color';
-						} else if ( name == 'img' ) {
-							var src = element.data( 'cke-saved-src' ) || element.getAttribute( 'src' );
-							if ( src && src.indexOf( editor.config.smiley_path ) === 0 )
-								name = 'smiley';
 						}
+						// else if ( name == 'img' ) {
+						// 	var src = element.data( 'cke-saved-src' ) || element.getAttribute( 'src' );
+						// 	if ( src && src.indexOf( editor.config.smiley_path ) === 0 )
+						// 		name = 'smiley';
+						// }
 
 						return name;
 					} );

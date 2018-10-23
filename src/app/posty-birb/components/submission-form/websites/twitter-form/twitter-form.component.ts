@@ -1,14 +1,12 @@
-import { Component, Injector, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
-import { Information } from '../../base-website-form/information.interface';
 
 @Component({
   selector: 'twitter-form',
   templateUrl: './twitter-form.component.html',
   styleUrls: ['./twitter-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => TwitterFormComponent) }]
-
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => TwitterFormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TwitterFormComponent extends BaseWebsiteFormComponent {
 

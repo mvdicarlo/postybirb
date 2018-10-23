@@ -20,8 +20,6 @@ let token = {
     user: null,
 };
 
-let config = null;
-
 /**
  * Express server for authentication callbacks
  */
@@ -32,27 +30,12 @@ const deviantArtExpress = {
         if (!this.server) {
             this.app = express();
             this.server = this.app.listen(4200);
-        }
-
-        this.app.get('/deviantart', (req, res) => {
-            token.code = req.query.code;
-            res.redirect('https://www.deviantart.com');
-
-            if (config === null) {
-                auth.getKeys('deviantart').then((r) => {
-                    config = {
-                        client_id: r.k,
-                        client_secret: r.s,
-                    };
-
-                    getAccessToken(req.query.code);
-                }).catch(() => {
-                    deviantArtExpress.stop();
-                });
-            } else {
+            this.app.get('/deviantart', (req, res) => {
+                token.code = req.query.code;
+                res.redirect('https://www.deviantart.com');
                 getAccessToken(req.query.code);
-            }
-        });
+            });
+        }
     },
     stop() {
         if (this.server) this.server.close();
@@ -62,30 +45,23 @@ const deviantArtExpress = {
 };
 
 function getAccessToken(code) {
-    $.post(deviantArtAuthURL.accessToken, {
-        client_id: config.client_id,
-        client_secret: config.client_secret,
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: 'http://localhost:4200/deviantart',
-    }).done((res) => {
-        token.accessToken = res;
+    $.post(auth.generateAuthUrl('/deviantart/accesstoken'), { code })
+    .done((res) => {
+        token.accessToken = JSON.parse(res.body);
         deviantArtExpress.stop();
         getUser().then((userInfo) => {
             token.user = userInfo;
             setToken();
         }, () => {
-            // Error?
             setToken();
         });
-    })
-    .fail(() => {
+    }).fail(() => {
         deviantArtExpress.stop();
     });
 }
 
 function setToken() {
-    store.set('deviantart', token, new Date().setMonth(new Date().getMonth() + 2));
+    db.set('deviantart', token).write();
 }
 
 function getUser() {
@@ -100,20 +76,7 @@ function getUser() {
 
 function refreshToken(storedToken) {
     return new Promise((resolve, reject) => {
-        if (config === null) {
-            auth.getKeys('deviantart').then((res) => {
-                config = {
-                    client_id: res.k,
-                    client_secret: res.s,
-                };
-
-                checkTokens(resolve, reject, storedToken);
-            }).catch(() => {
-                reject(false);
-            });
-        } else {
-            checkTokens(resolve, reject, storedToken);
-        }
+        checkTokens(resolve, reject, storedToken);
     });
 }
 
@@ -124,21 +87,26 @@ function checkTokens(resolve, reject, storedToken) {
               token = storedToken;
               resolve(true);
           } else {
-              reject(false);
+              $.post(auth.generateAuthUrl('/deviantart/refresh'), { refresh_token: storedToken.accessToken.refresh_token })
+              .done((resp) => {
+                  token = storedToken;
+                  token.accessToken = JSON.parse(resp.body);
+                  setToken();
+                  resolve(true);
+              }).fail(() => {
+                  db.unset('deviantart').write();
+                  reject(false);
+              });
           }
       }).fail(() => {
-          $.post('https://www.deviantart.com/oauth2/token', {
-              grant_type: 'refresh_token',
-              client_id: config.client_id,
-              client_secret: config.client_secret,
-              refresh_token: storedToken.accessToken.refresh_token,
-          }).done((res) => {
+          $.post(auth.generateAuthUrl('/deviantart/refresh'), { refresh_token: storedToken.accessToken.refresh_token })
+          .done((res) => {
               token = storedToken;
-              token.accessToken = res;
+              token.accessToken = JSON.parse(res.body);
               setToken();
               resolve(true);
           }).fail(() => {
-              store.remove('deviantart');
+              db.unset('deviantart').write();
               reject(false);
           });
       });
@@ -154,7 +122,7 @@ function getToken() {
  */
 exports.getUserFolders = function getUserFolders() {
     return new Promise((resolve, reject) => {
-        $.get(`https://www.deviantart.com/api/v1/oauth2/gallery/folders?calculate_size=false&access_token=${token.accessToken.access_token}`)
+        $.get(`https://www.deviantart.com/api/v1/oauth2/gallery/folders?calculate_size=false&limit=50&access_token=${token.accessToken.access_token}`)
         .done((res) => {
             resolve(res.results);
         }).fail(() => {
@@ -179,13 +147,8 @@ function isAuthenticated() {
 exports.authorize = function authorizeDeviantArt() {
     token.accessCode = null;
     return new Promise((resolve) => {
-        $.get(auth.generateAuthUrl('/deviantart/authorize'))
-        .done((res) => {
-            deviantArtExpress.start();
-            resolve(res.url);
-        }).fail(() => {
-            resolve('');
-        });
+        deviantArtExpress.start();
+        resolve(auth.generateAuthUrl('/deviantart/authorize'));
     });
 };
 
@@ -198,8 +161,12 @@ exports.getUserInfo = function getUserInfo() {
  *
  */
 exports.refresh = function loadToken() {
-    const storedToken = store.get('deviantart');
-    if (!storedToken) return;
+    const storedToken = db.get('deviantart').value();
+    if (!storedToken) {
+        return new Promise((resolve, reject) => {
+            reject(Error('No token'));
+        });
+    }
 
     return refreshToken(storedToken);
 };
@@ -209,10 +176,12 @@ exports.refresh = function loadToken() {
  *
  */
 exports.unauthorize = function unauthorize() {
-    store.remove('deviantart');
+    db.unset('deviantart').write();
     token = {};
 };
 
 exports.isAuthorized = isAuthenticated;
 exports.getAuthorizationToken = getToken;
-exports.stop = deviantArtExpress.stop;
+exports.stop = function() {
+    deviantArtExpress.stop();
+};

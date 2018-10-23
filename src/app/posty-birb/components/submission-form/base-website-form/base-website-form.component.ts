@@ -1,15 +1,16 @@
-import { Component, OnChanges, SimpleChanges, Input, Injector } from '@angular/core';
-import { FormGroup, FormBuilder, ControlValueAccessor, Validators } from '@angular/forms';
+import { Component, DoCheck, OnChanges, OnDestroy, SimpleChanges, Input, Injector, ChangeDetectorRef } from '@angular/core';
+import { FormGroup, FormBuilder } from '@angular/forms';
 import { SupportedWebsites } from '../../../../commons/enums/supported-websites';
 import { Information, DescriptionModel, TagModel } from './information.interface';
-import { FieldValidator } from '../validators/field.validator';
-import { MatTab } from '@angular/material';
+import { MatTab, MatTabGroup } from '@angular/material';
+import { Subscription, Observable } from 'rxjs';
+import { EditFormDialogComponent } from '../edit-form-dialog/edit-form-dialog.component';
 
 @Component({
   selector: 'base-website-form',
   template: `<div></div>`,
 })
-export class BaseWebsiteFormComponent implements OnChanges {
+export class BaseWebsiteFormComponent implements OnChanges, OnDestroy, DoCheck {
   @Input()
   get defaultTags(): TagModel { return this._defaultTags }
   set defaultTags(model: TagModel) {
@@ -21,8 +22,8 @@ export class BaseWebsiteFormComponent implements OnChanges {
   }
   private _defaultTags: TagModel = { tags: [], overwrite: false }
 
-  @Input() defaultDescription: DescriptionModel;
-  @Input() tab: MatTab;
+  @Input() defaultDescription: Observable<DescriptionModel>;
+  @Input() template: any;
 
   public supportedWebsites = SupportedWebsites;
 
@@ -34,15 +35,40 @@ export class BaseWebsiteFormComponent implements OnChanges {
   public maximumTags: number = 200;
   public website: string;
 
+  private subscription: Subscription = Subscription.EMPTY;
+  public isActive: boolean = false;
+
   private fb: FormBuilder;
+  protected _changeDetector: ChangeDetectorRef;
+  public matTab: MatTab;
+  private editForm: EditFormDialogComponent;
 
   constructor(injector: Injector) {
     this.fb = injector.get(FormBuilder);
+    this._changeDetector = injector.get(ChangeDetectorRef);
+    this.matTab = injector.get(MatTab);
+
+    const tabGroup: MatTabGroup = injector.get(MatTabGroup);
+    this.subscription = tabGroup.selectedTabChange.subscribe((event) => {
+      this._changeDetector.markForCheck();
+    });
 
     this.form = this.fb.group({
       tags: [],
       description: []
     });
+  }
+
+  ngDoCheck() {
+    if (this.matTab.position === 0 && !this.isActive) {
+      this._changeDetector.markForCheck();
+    }
+
+    this.isActive = this.matTab.position === 0;
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -55,8 +81,11 @@ export class BaseWebsiteFormComponent implements OnChanges {
         this.defaultTags = changes.defaultTags.currentValue;
       }
 
-      if (changes.tab) {
-        this.tab = changes.tab.currentValue;
+      if (changes.template) {
+        this.template = changes.template.currentValue;
+        if (this.template) {
+          this.writeValue(this.template.getWebsiteFieldFor(this.website))
+        }
       }
     }
   }
@@ -122,7 +151,7 @@ export class BaseWebsiteFormComponent implements OnChanges {
     }
   }
 
-  private areEqual(obj1, obj2): boolean {
+  protected areEqual(obj1, obj2): boolean {
     return JSON.stringify(obj1) == JSON.stringify(obj2);
   }
 

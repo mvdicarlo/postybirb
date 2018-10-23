@@ -1,0 +1,58 @@
+.sticky-section {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: #222;
+}
+
+.sticky-section button {
+  padding: 0;
+  width: 100%;
+}
+
+.bottom-sticky {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  z-index: 10;
+  background-color: #222;
+}
+
+.bottom-sticky button {
+  padding: 0;
+  width: 100%;
+}
+
+.primary-container {
+  overflow: hidden;
+  height: 92vh;
+}
+
+.section {
+  max-height: 92vh;
+  overflow-y: overlay;
+  overflow-x: hidden;
+}
+
+.search {
+  padding: 0 5px;
+  margin-top: -5px;
+}
+
+.copy {
+  white-space: normal !important;
+  line-height: 1em;
+}
+
+.add-btn {
+  line-height: 1em;
+  padding: .5em 0 !important;
+  white-space: normal;
+}
+
+.onedrive {
+  line-height: 1rem;
+  font-size: 0.73rem;
+  text-align: center;
+}

@@ -1,5 +1,4 @@
 import { Component, OnInit, EventEmitter, Input, Output } from '@angular/core';
-import { SupportedWebsites } from '../../../../../commons/enums/supported-websites';
 import { WebLogo } from '../../../../../commons/enums/web-logo.enum';
 import { WebsiteManagerService } from '../../../../../commons/services/website-manager/website-manager.service';
 
@@ -31,13 +30,14 @@ export class SubmitStatusComponent implements OnInit {
   ngOnInit() {
     this.logo = WebLogo[this.website];
     this.status = SubmitStatus.INITIALIZING;
+    this.data = JSON.parse(JSON.stringify(this.data)); // hard copy
     setTimeout(this.submit.bind(this), this.wait, this.data);
   }
 
   private submit(data: any): void {
     this.status = SubmitStatus.POSTING;
 
-    this.managerService.postJournal(this.website, data.title, data.description, data.options).subscribe((success) => {
+    this.managerService.postJournal(this.website, data).subscribe((success) => {
       this.status = SubmitStatus.SUCCESS;
       this.emit(true)
     }, (err) => {

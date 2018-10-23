@@ -1,0 +1,66 @@
+.avatar {
+  width: unset !important;
+  height: 100px;
+  max-width: 205px;
+  flex-shrink: 0;
+}
+
+.img {
+  display: inline-block;
+}
+
+.img+.img {
+  border-left: 2px solid #111;
+}
+
+.img img, .img video {
+  width: 100px;
+  height: 100px;
+  border-radius: 2px;
+}
+
+.thumbnail {
+  vertical-align: bottom;
+}
+
+.thumbnail img, .thumbnail video {
+  width: 75px;
+  height: 75px;
+}
+
+.incompatibility-section p {
+  margin: 0 0 0 0.8rem;
+  font-style: italic;
+}
+
+.help-icon {
+  font-size: 0.95rem;
+}
+
+.shrink {
+  font-size: 0.75rem;
+}
+
+.card-actions {
+  z-index: 10;
+  position: sticky;
+  bottom: 0;
+  background-color: inherit;
+}
+
+.file-name {
+  font-size: 0.85em;
+}
+
+mat-card-content {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
+
+mat-form-field+mat-form-field {
+  padding-left: 3px;
+}
+
+mat-tab-group {
+  width: 100%;
+}

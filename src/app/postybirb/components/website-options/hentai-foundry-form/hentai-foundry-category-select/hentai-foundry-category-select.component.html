@@ -1,0 +1,10 @@
+<form class="w-100">
+  <mat-form-field class="w-100">
+    <input #search (focus)="onFocus(search.value)" (blur)="onBlur(search.value)" [placeholder]="'Category' | translate" matInput [formControl]="control" [matAutocomplete]="auto" class="w-100" required>
+    <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onChange($event)" class="w-100">
+      <mat-option *ngFor="let option of filteredOptions" [value]="option">
+        {{ option }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+</form>

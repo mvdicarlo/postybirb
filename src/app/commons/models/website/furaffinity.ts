@@ -6,8 +6,7 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Furaffinity extends BaseWebsite implements Website {
@@ -59,60 +58,39 @@ export class Furaffinity extends BaseWebsite implements Website {
       }
     }
 
-    const formattedFolderArray = [];
-    Object.keys(furAffinityFolders).forEach((key) => {
-      formattedFolderArray.push({ name: key, items: furAffinityFolders[key] });
-    });
-
-    this.otherInformation.folders = formattedFolderArray;
+    this.info.folders = Object.keys(furAffinityFolders).map(key => {
+      return { name: key, items: furAffinityFolders[key] };
+    }) || [];
   }
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
-        .subscribe(page => {
-          if (page.includes('logout-link')) {
-            this.http.get(`${this.baseURL}/controls/submissions`, { responseType: 'text' }).retry(1)
-              .subscribe(controlPage => {
-                try {
-                  this.parseFolders(controlPage);
-                } catch (e) { console.warn('Unable to get folders', e) }
-                this.loginStatus = WebsiteStatus.Logged_In;
-                resolve(WebsiteStatus.Logged_In);
-              }, () => {
-                this.loginStatus = WebsiteStatus.Logged_In;
-                resolve(WebsiteStatus.Logged_In);
-              });
-          } else {
-            this.loginStatus = WebsiteStatus.Logged_Out;
-            resolve(this.loginStatus);
-          }
-        }, () => {
-          this.loginStatus = WebsiteStatus.Offline;
-          resolve(WebsiteStatus.Offline);
-        });
-    });
-  }
 
-  getUser(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
-        .subscribe(page => {
-          const aTags = HTMLParser.getTagsOf(page, 'a');
-          const matcher = /href="\/user\/.*"/g;
-          if (aTags.length > 0) {
-            for (let i = 0; i < aTags.length; i++) {
-              let tag = aTags[i];
-              if (tag.match(matcher)) {
-                resolve(tag.match(matcher)[0].split('/')[2] || null);
-                return;
+      this.http.get(`${this.baseURL}/controls/submissions`, { responseType: 'text' })
+        .subscribe(controlPage => {
+          try {
+            if (controlPage.includes('logout-link')) {
+              const aTags = HTMLParser.getTagsOf(controlPage, 'a');
+              const matcher = /href="\/user\/.*"/g;
+              if (aTags.length > 0) {
+                for (let i = 0; i < aTags.length; i++) {
+                  let tag = aTags[i];
+                  if (tag.match(matcher)) {
+                    this.info.username = tag.match(matcher)[0].split('/')[2] || null;
+                    this.loginStatus = WebsiteStatus.Logged_In;
+                    break;
+                  }
+                }
               }
+
+              this.parseFolders(controlPage);
             }
-            reject(null);
-          } else {
-            reject(Error(`Not logged in to ${this.websiteName}`));
-          }
-        }, () => reject(Error(`Unable to access ${this.websiteName}`)));
+          } catch (e) { console.warn('Unable to get folders', e) }
+          resolve(WebsiteStatus.Logged_In);
+        }, () => {
+          this.loginStatus = WebsiteStatus.Logged_Out;
+          resolve(this.loginStatus);
+        });
     });
   }
 
@@ -161,13 +139,29 @@ export class Furaffinity extends BaseWebsite implements Website {
               if (options.scraps) submitForm.set('scrap', '1');
 
               // Folders
-              options.folders.forEach((id) => {
-                submitForm.append('folder_ids[]', id);
-              });
+              for (let i = 0; i < options.folders.length; i++) {
+                submitForm.append('folder_ids[]', options.folders[i]);
+              }
 
               this.http.post(`${this.baseURL}/submit/`, submitForm, { responseType: 'text' })
                 .subscribe(res => {
-                  if (!res.includes('Finalize')) observer.next(true);
+                  if (!res.includes('Finalize')) {
+                    observer.next(res);
+
+                    // Try to do the resolution fix
+                    try {
+                      const submissionId = HTMLParser.getInputValue(res, 'submission_ids[]');
+                      const updateResolution: FormData = new FormData();
+                      updateResolution.set('update', 'yes');
+                      updateResolution.set('newsubmission', submission.submissionData.submissionFile.getRealFile());
+                      this.http.post(`${this.baseURL}/controls/submissions/changesubmission/${submissionId}`, updateResolution, { responseType: 'text' })
+                        .subscribe(resolutionFix => {
+                          // Do nothing I guess
+                        });
+                    } catch (e) {
+                      console.warn(e);
+                    }
+                  }
                   else observer.error(this.createError(res, submission));
                   observer.complete();
                 }, err => {
@@ -186,14 +180,14 @@ export class Furaffinity extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/controls/journal`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/controls/journal`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('key', HTMLParser.getInputValue(page, 'key'));
-          journalData.set('message', description);
-          journalData.set('subject', title);
+          journalData.set('message', data.description);
+          journalData.set('subject', data.title);
           journalData.set('submit', 'Create / Update Journal');
           journalData.set('id', '');
           journalData.set('do', 'update');
@@ -203,11 +197,11 @@ export class Furaffinity extends BaseWebsite implements Website {
               observer.next(true);
               observer.complete();
             }, err => {
-              observer.error(this.createError(err, { title, description }));
+              observer.error(this.createError(err, data));
               observer.complete();
             });
         }, err => {
-          observer.error(this.createError(err, { title, description }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });
@@ -218,21 +212,7 @@ export class Furaffinity extends BaseWebsite implements Website {
     const tags = super.formatTags(defaultTags, other);
     let tagString = tags.join(' ').trim();
 
-    if (tagString.length > maxLength) {
-      const newTags = [];
-
-      tagString.substring(0, maxLength)
-        .split(' ')
-        .forEach((tag) => {
-          if (tag.length >= 3) {
-            newTags.push(tag);
-          }
-        });
-
-      tagString = newTags.join(' ');
-    }
-
-    return tagString;
+    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(' ').filter(tag => tag.length >= 3).join(' ') : tagString;
   }
 
 }

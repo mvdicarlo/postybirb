@@ -1,11 +1,11 @@
-<div class="picker-item" [class.selected]="isSelected" (click)="this.toggle()" [title]="title" *ngIf="src">
-  <img [src]="src | safe" [alt]="title" *ngIf="type.includes('image') || !type.includes('video')">
+<div [class.invalid-border]="!isValid" [class.valid-border]="isValid" class="picker-item" [class.selected]="isSelected" (click)="this.toggle()" [title]="title" *ngIf="src">
+  <img [src]="src | safe" [alt]="title" *ngIf="type.includes('image')">
+  <img [src]="fileIcon | safe" [alt]="title" *ngIf="type.includes('audio') || type.includes('text')">
   <video [src]="src | safe" [alt]="title" [type]="type" *ngIf="type.includes('video')"></video>
   <div class="invalid-icons">
-    <mat-icon color="warn" *ngIf="invalidFlags.hasInvalid" [matTooltip]="getInvalidWebsites()" matTooltipPosition="above">warning</mat-icon>
-    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByRating.length > 0" [matTooltip]="'Unsupported rating' | translate" matTooltipPosition="above">explicit</mat-icon>
-    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByType.length > 0" [matTooltip]="'Unsupported submission type' | translate" matTooltipPosition="above">format_clear</mat-icon>
-    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByExtension.length > 0" [matTooltip]="'Unsupported file type' | translate" matTooltipPosition="above">attach_file</mat-icon>
-    <mat-icon color="warn" *ngIf="invalidFlags.unsupportedByFileSize.length > 0" [matTooltip]="'Unsupported file size' | translate" matTooltipPosition="above">photo_size_select_large</mat-icon>
+    <mat-icon color="warn" *ngIf="restrictions.unsupportedByRating" [matTooltip]="translateText('Unsupported rating', restrictions.unsupportedByRating) | async" matTooltipPosition="above">explicit</mat-icon>
+    <mat-icon color="warn" *ngIf="restrictions.unsupportedByType" [matTooltip]="translateText('Unsupported submission type', restrictions.unsupportedByType) | async" matTooltipPosition="above">format_clear</mat-icon>
+    <mat-icon color="warn" *ngIf="restrictions.unsupportedByFileExtension" [matTooltip]="translateText('Unsupported file type', restrictions.unsupportedByFileExtension) | async" matTooltipPosition="above">attach_file</mat-icon>
+    <mat-icon color="warn" *ngIf="restrictions.unsupportedByFileSize > 0" [matTooltip]="translateText('Unsupported file size', '> ' + restrictions.unsupportedByFileSize + 'MB') | async" matTooltipPosition="above">photo_size_select_large</mat-icon>
   </div>
 </div>

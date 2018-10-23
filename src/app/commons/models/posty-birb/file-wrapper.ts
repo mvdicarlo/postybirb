@@ -40,7 +40,7 @@ export class FileWrapper {
         } else { // No available path (only have buffer)
           fileInformation.getAfterInitialized()
             .then(f => {
-              resolve(this.createSourceString(fileObject, f.getFileBuffer().toString('base64')));
+              resolve(this.createSourceString(fileObject, f.getFileBuffer()));
             });
         }
       }
@@ -75,7 +75,7 @@ export class FileWrapper {
     return this.getFileInformation().getAfterInitialized();
   }
 
-  private createSourceString(fileObject: FileObject, bufferString: string): string {
-    return `data:${fileObject.type};base64,${bufferString}`;
+  private createSourceString(fileObject: FileObject, buffer: any): string {
+    return `data:image/jpeg;base64,${nativeImage.createFromBuffer(buffer).toJPEG(90).toString('base64')}`;
   }
 }

@@ -16,14 +16,6 @@
   font-size: 4.5em;
 }
 
-.no-outline:focus {
-  outline: none;
-}
-
-.hidden {
-  display: none;
-}
-
 .file-btn {
   width: 100%;
   height: 80%;

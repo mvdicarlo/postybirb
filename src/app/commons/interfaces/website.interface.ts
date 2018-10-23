@@ -1,12 +1,13 @@
 import { WebsiteStatus } from '../enums/website-status.enum';
 import { PostyBirbSubmissionData } from './posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 /**
  * @interface
  * Interface used for every website model
  */
 export interface Website {
+  websiteName?: string;
 
   /**
    * @function getStatus
@@ -23,11 +24,11 @@ export interface Website {
   getUser(): Promise<string>;
 
   /**
-   * @function getOtherInfo
+   * @function getInfo
    * @description returns other info that doesn't fit directly into a standard function
    * @example returning a list of folders
    */
-  getOtherInfo(): any;
+  getInfo(): any;
 
   /**
    * @function getLoginStatus
@@ -51,7 +52,7 @@ export interface Website {
    * @param {string} description - description for the journal/status
    * @param {any} options - any additional options that the journal/status might require
    */
-  postJournal(title: string, description: string, options?: any): Observable<any>;
+  postJournal(data: any): Observable<any>;
 
   /**
    * @function unauthorize
@@ -64,6 +65,12 @@ export interface Website {
    * @async
    */
   authorize(authInfo: any): Promise<any>;
+
+  /**
+   * @function checkAuthorized
+   * @async
+   */
+  checkAuthorized(): Promise<boolean>;
 
   /**
    * @function refresh

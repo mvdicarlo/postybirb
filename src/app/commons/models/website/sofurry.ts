@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class SoFurry extends BaseWebsite implements Website {
@@ -33,7 +32,7 @@ export class SoFurry extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(`${this.baseURL}/upload/details?contentType=1`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/upload/details?contentType=1`, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('Logout')) {
             this.loginStatus = WebsiteStatus.Logged_In;
@@ -52,7 +51,7 @@ export class SoFurry extends BaseWebsite implements Website {
                   name: opt.text
                 });
               }
-              this.otherInformation.folders = folderPairs;
+              this.info.folders = folderPairs;
             } catch (e) {
               console.warn(e);
             }
@@ -70,7 +69,7 @@ export class SoFurry extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           try {
             let username = null;
@@ -97,7 +96,7 @@ export class SoFurry extends BaseWebsite implements Website {
     const uploadURL = `${this.baseURL}/upload/details?contentType=${contentType}`;
 
     return new Observable(observer => {
-      this.http.get(uploadURL, { responseType: 'text' }).retry(1)
+      this.http.get(uploadURL, { responseType: 'text' })
         .subscribe(uploadPage => {
           const uploadForm = new FormData();
           const options = submission.options;
@@ -118,10 +117,10 @@ export class SoFurry extends BaseWebsite implements Website {
 
           this.http.post(uploadURL, uploadForm, { responseType: 'text' }).subscribe(res => {
             try {
-              if (res.includes('sfContentTitle')) observer.next(true);
+              if (res.includes('sfContentTitle')) observer.next(res);
               else observer.error(this.createError(res, submission));
             } catch (e) {
-              observer.next(true);
+              observer.next(res);
             }
           }, (err: HttpErrorResponse) => {
             try {
@@ -140,20 +139,20 @@ export class SoFurry extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     const url = `${this.baseURL}/upload/details?contentType=3`
 
     return new Observable(observer => {
-      this.http.get(url, { responseType: 'text' }).retry(1)
+      this.http.get(url, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
           journalData.set('YII_CSRF_TOKEN', HTMLParser.getInputValue(page, 'YII_CSRF_TOKEN'));
           journalData.set('UploadForm[P_id]', HTMLParser.getInputValue(page, 'UploadForm[P_id]'));
-          journalData.set('UploadForm[P_title]', title);
-          journalData.set('UploadForm[textcontent]', description);
-          journalData.set('UploadForm[description]', description.split('.')[0]);
-          journalData.set('UploadForm[formtags]', this.formatTags(options.tags));
-          journalData.set('UploadForm[contentLevel]', this.getMapping('rating', options.rating));
+          journalData.set('UploadForm[P_title]', data.title);
+          journalData.set('UploadForm[textcontent]', data.description);
+          journalData.set('UploadForm[description]', data.description.split('.')[0]);
+          journalData.set('UploadForm[formtags]', this.formatTags(data.tags));
+          journalData.set('UploadForm[contentLevel]', this.getMapping('rating', data.rating));
           journalData.set('UploadForm[P_hidePublic]', '0');
           journalData.set('UploadForm[folderId]', '0');
           journalData.set('UploadForm[newFolderName]', '');
@@ -164,11 +163,11 @@ export class SoFurry extends BaseWebsite implements Website {
             observer.next(true);
             observer.complete();
           }, (err: HttpErrorResponse) => {
-            observer.error(this.createError(err, { title, description, options }));
+            observer.error(this.createError(err, data));
             observer.complete();
           });
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

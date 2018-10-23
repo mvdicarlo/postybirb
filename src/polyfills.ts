@@ -14,6 +14,10 @@
  * Learn more in https://angular.io/docs/ts/latest/guide/browser-support.html
  */
 
+(window as any).process = {
+  env: { DEBUG: undefined },
+};
+
 /***************************************************************************************************
  * BROWSER POLYFILLS
  */
@@ -53,7 +57,7 @@ import 'core-js/es7/reflect';
 /***************************************************************************************************
  * Zone JS is required by Angular itself.
  */
- import './zonejs-electron-fix.ts';
+import './zonejs-electron-fix.ts';
 import 'zone.js/dist/zone';  // Included with Angular CLI.
 
 

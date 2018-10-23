@@ -20,9 +20,10 @@ form {
 
 .info {
   width: 100%;
+  height: 100%;
   position: absolute;
-  top: 20px;
-  padding: 0px 5px;
+  top: 0;
+  padding: 0 4px;
 }
 
 .menu {
@@ -38,11 +39,11 @@ form {
 
 .select-checkbox {
   height: 20px;
+  margin-top: 5px;
   text-align: center;
 }
 
 mat-form-field {
-  width: 100%;
   font-size: 90%;
   margin-top: -10px;
 }
@@ -57,18 +58,7 @@ mat-form-field {
   float: left;
 }
 
-.ratings-field {
-  width: 50%;
-}
-
-.schedule-field {
-  width: 50%;
-  float: left;
-  padding-right: 4px;
-}
-
 .thumbnail-field {
-  width: 50%;
-  display: inline-block;
-  margin-top: -13px;
+  font-size: 90%;
+  margin-top: -10px;
 }

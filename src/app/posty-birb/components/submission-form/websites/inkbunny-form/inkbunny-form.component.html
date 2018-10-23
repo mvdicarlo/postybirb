@@ -1,7 +1,7 @@
 <div class="website-form">
   <form [formGroup]="form">
     <h5>{{'Description' | translate}}</h5>
-    <div name="description" *ngIf="tab.isActive">
+    <div name="description" *ngIf="isActive">
       <description-field class="clearfix" formControlName="description" [defaultDescription]="defaultDescription"></description-field>
     </div>
     <div name="tags">
@@ -9,7 +9,7 @@
       <tag-field class="clearfix w-100" formControlName="tags" [defaultTags]="defaultTags"></tag-field>
     </div>
   </form>
-  <div name="options" *ngIf="tab.isActive">
+  <div name="options" *ngIf="isActive">
     <h5>{{'Additional Options' | translate}}</h5>
     <form [formGroup]="optionsForm">
       <div class="row no-gutters">

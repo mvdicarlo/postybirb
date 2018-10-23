@@ -1,6 +1,6 @@
 <div class="website-form">
   <form [formGroup]="form">
-    <div name="description" *ngIf="tab.isActive">
+    <div name="description" *ngIf="isActive">
       <h5>{{'Description' | translate}}</h5>
       <description-field class="clearfix" formControlName="description" [defaultDescription]="defaultDescription"></description-field>
     </div>
@@ -9,7 +9,7 @@
       <tag-field class="clearfix w-100" formControlName="tags" [defaultTags]="defaultTags" [maximumTags]="5"></tag-field>
     </div>
   </form>
-  <div name="options" *ngIf="tab.isActive">
+  <div name="options" *ngIf="isActive">
     <h5>{{'Additional Options' | translate}}</h5>
     <form [formGroup]="optionsForm">
       <div class="row no-gutters">
@@ -17,6 +17,9 @@
           <mat-form-field color="accent">
             <input matInput type="number" placeholder="{{'Minimum Pledge' | translate}} $" formControlName="minimumDollarsToView">
           </mat-form-field>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="patronsOnly">{{'Patrons Only' | translate}}</mat-checkbox>
         </div>
         <div class="col-md-2 col-lg-2 col-xl-1">
           <mat-checkbox formControlName="chargePatrons">{{'Charge Patrons' | translate}}</mat-checkbox>

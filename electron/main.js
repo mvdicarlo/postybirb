@@ -1,12 +1,17 @@
+const fs = require('fs');
 const path = require('path');
 const {
     app,
     BrowserWindow,
     Menu,
     dialog,
+    Tray,
+    nativeImage,
 } = require('electron');
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+const windowStateKeeper = require('electron-window-state');
 
-// const { appUpdater } = require('./updater');
 const template = require('./electron-menu');
 
 const { autoUpdater } = require('electron-updater');
@@ -20,27 +25,142 @@ require('electron-context-menu')({
     showInspectElement: false,
 });
 
-let win;
+let win = null;
+let tray = null;
+let clearCacheInterval = null;
+let updateInterval = null;
+let scheduledInterval = null;
+let adapter = null;
+
+const db = createDB('postybirb.json');
+const logdb = createDB('logs.json');
+
+function createDB(name) {
+    let ldb = null;
+    try {
+        adapter = new FileSync(path.join(app.getPath('userData'), name));
+        ldb = low(adapter);
+    } catch (e) {
+        fs.unlinkSync(path.join(app.getPath('userData'), name));
+        adapter = new FileSync(path.join(app.getPath('userData'), name));
+        ldb = low(adapter);
+    }
+
+    return ldb;
+}
+
+function hardwareAccelerationState() {
+    const enabled = db.get('hardwareAcceleration').value();
+    const isEnabled = enabled === undefined ? true : enabled;
+    if (!isEnabled) {
+        app.disableHardwareAcceleration();
+    }
+
+    log.info(`Hardware Acceleration is ${isEnabled ? 'ON' : 'OFF'}`);
+}
+
+hardwareAccelerationState();
+
+const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
+  // Someone tried to run a second instance, we should focus our window.
+    if (win) {
+        if (win.isMinimized()) {
+            win.restore();
+        }
+
+        win.focus();
+    } else if (tray) {
+        initialize();
+    }
+});
+
+if (shouldQuit) {
+    app.quit();
+    return;
+}
 
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
+    initialize();
+    scheduledInterval = setInterval(checkForScheduledPost, 30000);
+
+    let image = nativeImage.createFromPath(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
+    if (process.platform === 'darwin') image = image.resize({ width: 16, height: 16 });
+    image.setTemplateImage(true);
+
+    tray = new Tray(image);
+    const trayMenu = Menu.buildFromTemplate([
+        {
+            label: 'Open',
+            type: 'radio',
+            checked: false,
+            click() {
+                if (!hasWindows()) {
+                    initialize();
+                } else {
+                    win.show();
+                }
+            },
+        }, {
+            label: 'Quit',
+            type: 'radio',
+            checked: false,
+            click() {
+                clearInterval(scheduledInterval);
+                clearInterval(clearCacheInterval);
+                clearInterval(updateInterval);
+                app.quit();
+            },
+        },
+    ]);
+
+    tray.setContextMenu(trayMenu);
+    tray.setToolTip('PostyBirb');
+    tray.on('click', () => {
+        if (!hasWindows()) {
+            initialize();
+        } else {
+            win.show();
+        }
+    });
+});
+
+function initialize(show = true, openForScheduled = false) {
+    const mainWindowState = windowStateKeeper({
+        defaultWidth: 992,
+        defaultHeight: 800,
+    });
 
     win = new BrowserWindow({
-        width: 992,
-        minWidth: 992,
-        height: 800,
-        minHeight: 800,
+        show,
+        width: mainWindowState.width,
+        minWidth: 500,
+        height: mainWindowState.height,
+        minHeight: 500,
         autoHideMenuBar: true,
         icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
         title: 'Posty Birb',
         webPreferences: {
-            devTools: false,
+            devTools: Boolean(process.env.DEVELOP),
             allowRunningInsecureContent: false,
             nodeIntegration: false,
             preload: `${__dirname}/dist/electron-src/index.js`,
-            webviewTag: true
+            webviewTag: true,
         },
+    });
+
+    if (!process.env.DEVELOP) mainWindowState.manage(win);
+
+    win.immediatelyCheckForScheduled = openForScheduled;
+
+    win.db = db;
+    win.logdb = logdb;
+
+    win.on('ready-to-show', () => {
+        if (openForScheduled) {
+            win.showInactive();
+        }
     });
 
     win.loadURL(`file://${__dirname}/dist/index.html`);
@@ -51,6 +171,10 @@ app.on('ready', () => {
 
     win.on('closed', () => {
         win = null;
+        clearInterval(clearCacheInterval);
+        clearInterval(updateInterval);
+
+        attemptToClose();
     });
 
     win.webContents.on('did-fail-load', () => {
@@ -59,20 +183,72 @@ app.on('ready', () => {
 
     win.webContents.once('did-frame-finish-load', () => {
         if (!process.env.DEVELOP) {
-            setInterval(() => autoUpdater.checkForUpdatesAndNotify(), 60 * 60000);
+            updateInterval = setInterval(() => autoUpdater.checkForUpdatesAndNotify(), 60 * 60000);
             autoUpdater.checkForUpdatesAndNotify();
         }
 
-        setInterval(() => {
+        clearCacheInterval = setInterval(() => {
             win.webContents.session.getCacheSize((size) => {
                 if (size > 0) {
-                    log.info(`Clearing Cache (${size})`);
+                    if (process.env.DEVELOP) log.info(`Clearing Cache (${size})`);
                     win.webContents.session.clearCache(() => {});
                 }
             });
         }, 10000);
     });
-});
+
+    return win;
+}
+
+function checkForScheduledPost() {
+    if (hasWindows()) return;
+
+    log.info('Checking for scheduled posts...');
+
+    fs.readFile(path.join(app.getPath('userData'), 'postybirb.json'), (err, data) => {
+        if (err) {
+            log.error(err);
+        } else {
+            try {
+                const config = JSON.parse(data);
+                const now = Date.now();
+                const submissions = config.PostyBirbState.submissions || [];
+                for (let i = 0; i < submissions.length; i++) {
+                    const s = submissions[i];
+                    if (s.meta.schedule) {
+                        const scheduledTime = new Date(s.meta.schedule).getTime();
+                        if (scheduledTime - now <= 0) {
+                            initialize(false, true);
+                            return;
+                        }
+                    }
+                }
+
+                log.info('No schedule posts scheduled soon.');
+            } catch (e) {
+                log.error(e);
+            }
+        }
+    });
+}
+
+function hasWindows() {
+    return BrowserWindow.getAllWindows().filter(b => b.isVisible()).length > 0;
+}
+
+function hasScheduled() {
+    const state = db.get('PostyBirbState').value() || {};
+    if (state.submissions) {
+        for (let i = 0; i < state.submissions.length; i++) {
+            const submission = state.submissions[i];
+            if (submission.meta.schedule) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 app.on('uncaughtException', (err) => {
     log.error(err);
@@ -83,8 +259,20 @@ process.on('uncaughtException', (err) => {
 });
 
 app.on('window-all-closed', () => {
-    app.quit();
+    attemptToClose();
 });
+
+function attemptToClose() {
+    if (!hasScheduled()) {
+        app.quit();
+    } else {
+        tray.displayBalloon({
+            title: 'Scheduled Submissions',
+            icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
+            content: 'PostyBirb will continue to run while there are scheduled submission. Close the app from the system tray to fully quit PostyBirb.',
+        });
+    }
+}
 
 // For details about these events, see the Wiki:
 // https://github.com/electron-userland/electron-builder/wiki/Auto-Update#events

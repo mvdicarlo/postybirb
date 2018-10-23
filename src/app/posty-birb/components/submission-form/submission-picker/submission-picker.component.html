@@ -1,5 +1,5 @@
 <div class="submission-scroller row no-gutters" [style.height]="height">
   <div class="submission animated fadeIn col-md-2 col-lg-2 col-xl-2" *ngFor="let s of submissions" [style.cursor]="readOnly ? '' : 'pointer'" [class.auto-selected]="selectedSubmissions.length === 0 && !readOnly">
-    <submission-picker-item [submission]="s" (select)="submissionSelected($event)" [readOnly]="readOnly"></submission-picker-item>
+    <submission-picker-item [website]="website" [submission]="s" (select)="submissionSelected($event)" [readOnly]="readOnly"></submission-picker-item>
   </div>
 </div>

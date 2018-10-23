@@ -1,22 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { UpdateService } from './commons/services/update/update.service';
-import { PostObserverService } from './posty-birb/services/post-observer/post-observer.service';
-
+import { PostManagerService } from './postybirb/services/post-manager/post-manager.service';
+import { SchedulerService } from './postybirb/services/scheduler/scheduler.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   public version: string;
-  public showSidebar: boolean = false;
-  private knownLanguages: any = ['en', 'es', 'fi', 'pt'];
+  public userLanguage: string = 'en';
+  private knownLanguages: any = ['de', 'en', 'es', 'fi', 'fr', 'pt', 'ru'];
 
-  constructor(private translate: TranslateService, private update: UpdateService, private postObserver: PostObserverService) {
+  @ViewChild('loginPanel') loginPanel: any;
 
-    this.version = window['appVersion'];
+  constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService) {
+    this.version = appVersion;
 
     let userLanguage = window.navigator.language.split('-')[0];
     if (this.knownLanguages.indexOf(userLanguage) === -1) {
@@ -26,22 +27,22 @@ export class AppComponent {
     translate.setDefaultLang('en');
     translate.use(userLanguage);
 
-    const firstTime = store.get('init');
-    if (!firstTime) {
-      store.clearAll();
-      store.set('init', true);
-    }
+    const storeLanguage = store.get('language');
+    this.userLanguage = storeLanguage || userLanguage;
+    this.translate.use(this.userLanguage);
+  }
+
+  ngAfterViewInit() {
+    window['loginPanel'] = this.loginPanel;
   }
 
   public switchLanguage(language: string): void {
     this.translate.use(language);
-  }
-
-  public toggleSidebar(): void {
-    this.showSidebar = !this.showSidebar;
+    store.set('language', language);
   }
 
   public openURL(url: string): void {
-    window['openUrlInBrowser'](url);
+    openUrlInBrowser(url);
   }
+
 }

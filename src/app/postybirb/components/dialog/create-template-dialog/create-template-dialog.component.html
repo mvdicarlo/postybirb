@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>{{'Create Template' | translate}}</h2>
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="acceptTemplate()">
+    <mat-form-field class="w-100" color="accent">
+      <input #nameInput type="text" formControlName="templateName" matInput [placeholder]="'Template Name' | translate" required="true" maxLength="32">
+      <mat-hint align="end" [class.text-danger]="nameInput.value.trim().length < 2">{{ nameInput.value.trim().length }} / 32</mat-hint>
+    </mat-form-field>
+    <br>
+    <button mat-raised-button color="warn" mat-dialog-close>{{'No' | translate}}</button>
+    <button mat-raised-button style="margin-left: 5px" color="primary" type="submit" [disabled]="form.invalid && !validLength()">{{'Yes' | translate}}</button>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+
+</mat-dialog-actions>

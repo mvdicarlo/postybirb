@@ -1,0 +1,12 @@
+.website-form {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.row div {
+    padding-right: 5px;
+}
+
+description-field {
+    width: 100%;
+}

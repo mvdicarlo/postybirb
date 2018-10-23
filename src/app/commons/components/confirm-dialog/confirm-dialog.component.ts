@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
 interface DialogFields {
@@ -9,13 +9,14 @@ interface DialogFields {
 @Component({
   selector: 'confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
-  styleUrls: ['./confirm-dialog.component.css']
+  styleUrls: ['./confirm-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 /**
  * Default Dialog Component for simple confirm/deny actions
  * @tutorial More documentation on Material Dialogs can be found https://material.angular.io/components/dialog/api
  */
 export class ConfirmDialogComponent {
-  constructor( @Inject(MAT_DIALOG_DATA) public data: DialogFields, public dialogRef: MatDialogRef<ConfirmDialogComponent>) { }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: DialogFields, public dialogRef: MatDialogRef<ConfirmDialogComponent>) { }
 
 }

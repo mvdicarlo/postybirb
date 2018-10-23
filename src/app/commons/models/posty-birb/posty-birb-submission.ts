@@ -7,19 +7,20 @@ import { FileWrapper } from './file-wrapper';
 import { Collection } from './collection';
 import { FileObject } from '../../interfaces/file-obect.interface';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { GalleryStatus } from '../../../posty-birb/models/gallery-status.model';
-import { SubmissionStatus } from '../../../posty-birb/enums/submission-status.enum';
-import { SubmissionData } from '../../../posty-birb/interfaces/submission-data.interface';
+import { SubmissionStatus } from '../../../postybirb/enums/submission-status.enum';
+import { SubmissionData } from '../../../postybirb/interfaces/submission-data.interface';
 
 /**
  * @interface
  * @description model used for the storage of submissions into local storage
+ * @deprecated - no longer used, merely kept for documentation
  */
 export interface SubmissionArchive {
   meta: SubmissionMetaData;
   websiteFields: any;
   defaultFields: any;
   submissionFile: FileObject;
+  submissionBuffer?: string;
   thumbnailFile?: FileObject;
   additionalFiles?: FileObject[];
 }
@@ -35,7 +36,6 @@ export interface SubmissionMetaData {
   submissionRating: string;
   submissionType: string;
   submissionStatus: SubmissionStatus;
-  galleryStatus: GalleryStatus;
   order: number;
   schedule: any;
 }
@@ -62,7 +62,6 @@ export class PostyBirbSubmission {
 
   private order: number = 0;
   private submissionStatus: SubmissionStatus = SubmissionStatus.UNPOSTED;
-  private galleryStatus: GalleryStatus;
 
   private subject: Subject<PostyBirbSubmission>;
 
@@ -70,7 +69,6 @@ export class PostyBirbSubmission {
     this.setId(id);
     this.setSubmissionFile(submissionFile);
     this.setThumbnailFile(new FileInformation(null, false));
-    this.setGalleryStatus(GalleryStatus.NEW);
 
     this.websiteFields = new Collection();
     this.defaultFields = new Collection();
@@ -88,27 +86,15 @@ export class PostyBirbSubmission {
   }
 
   /**
-   * @function copy
-   * @return {PostyBirbSubmission} a copy of the current object
-   */
-  public copy(): PostyBirbSubmission {
-    const copy: PostyBirbSubmission = PostyBirbSubmission.fromArchive(this.asSubmissionArchive());
-    copy.setDefaultFields(JSON.parse(JSON.stringify(this.getDefaultFields())));
-    copy.setWebsiteFields(JSON.parse(JSON.stringify(this.getWebsiteFields)));
-    return copy;
-  }
-
-  /**
    * @function fromArchive
    * @static
    * @description builds a PostyBirbSubmission object from a SubmissionArchive
    */
   public static fromArchive(archive: SubmissionArchive): PostyBirbSubmission {
-    const model: PostyBirbSubmission = new PostyBirbSubmission(archive.meta.id, archive.submissionFile);
+    const model: PostyBirbSubmission = new PostyBirbSubmission(archive.meta.id, archive.submissionBuffer ? new FileInformation(window['Buffer'].from(archive.submissionBuffer, 'base64'), false) : archive.submissionFile);
 
     const meta: SubmissionMetaData = archive.meta;
     model.setSubmissionStatus(meta.submissionStatus);
-    model.setGalleryStatus(meta.galleryStatus);
     model.setOrder(meta.order);
     model.setSchedule(meta.schedule);
     model.setSubmissionType(meta.submissionType);
@@ -132,8 +118,18 @@ export class PostyBirbSubmission {
     return {
       meta: this.getSubmissionMetaData(),
       submissionFile: this.submissionFile.getFileObject(),
+      submissionBuffer: this.submissionFile.getFileObject().path ? null : this.submissionFile.getFileInformation().getFileBuffer().toString('base64'),
       thumbnailFile: this.thumbnailFile ? this.thumbnailFile.getFileObject() : null,
       additionalFiles: this.getAdditionalFilesFileObjects(),
+      websiteFields: this.getWebsiteFields(),
+      defaultFields: this.getDefaultFields()
+    };
+  }
+
+  public asSubmissionTemplate(): SubmissionArchive {
+    return {
+      meta: this.getSubmissionMetaData(),
+      submissionFile: null,
       websiteFields: this.getWebsiteFields(),
       defaultFields: this.getDefaultFields()
     };
@@ -144,7 +140,6 @@ export class PostyBirbSubmission {
       title: this.getTitle(),
       order: this.getOrder(),
       submissionStatus: this.getSubmissionStatus(),
-      galleryStatus: this.getGalleryStatus(),
       submissionRating: this.getSubmissionRating(),
       submissionType: this.getSubmissionType(),
       id: this.getId(),
@@ -222,38 +217,23 @@ export class PostyBirbSubmission {
   }
 
   public setAdditionalFiles(files: Array<FileInformation | FileObject> = []): void {
-    this.additionalFiles = files.map(f => {
-      return new FileWrapper(f);
-    });
+    this.additionalFiles = files.map(f => new FileWrapper(f));
   }
 
   public getAdditionalFilesSource(): Promise<string[]> {
-    const promises = [];
-    this.additionalFiles.forEach(f => promises.push(f.getFileSrc()));
-
-    return Promise.all(promises);
+    return Promise.all(this.additionalFiles.map(f => f.getFileSrc()));
   }
 
   public getAdditionalFilesFileInformation(): FileInformation[] {
-    return this.additionalFiles.map(f => {
-      return f.getFileInformation();
-    });
+    return this.additionalFiles.map(f => f.getFileInformation());
   }
 
   public getPreloadedAdditionalFiles(): Promise<FileInformation[]> {
-    const promises = [];
-
-    this.additionalFiles.forEach(f => {
-      promises.push(f.getFileInformationEnsureLoaded());
-    });
-
-    return Promise.all(promises);
+    return Promise.all(this.additionalFiles.map(f => f.getFileInformationEnsureLoaded()));
   }
 
   public getAdditionalFilesFileObjects(): FileObject[] {
-    return this.additionalFiles.map(f => {
-      return f.getFileObject();
-    });
+    return this.additionalFiles.map(f => f.getFileObject());
   }
 
   public getThumbnailFileSource(): Promise<string> {
@@ -359,15 +339,6 @@ export class PostyBirbSubmission {
     return this.submissionStatus;
   }
 
-  public setGalleryStatus(status: GalleryStatus): void {
-    this.galleryStatus = status;
-    this.emit();
-  }
-
-  public getGalleryStatus(): GalleryStatus {
-    return this.galleryStatus;
-  }
-
   public setUnpostedWebsites(websites: string[]): void {
     this.unpostedWebsites = websites || [];
     this.emit();
@@ -382,11 +353,20 @@ export class PostyBirbSubmission {
   }
 
   public getWebsiteFieldFor(website: string): any {
-    return JSON.parse(JSON.stringify(this.websiteFields.find(website)));
+    const data = this.websiteFields.find(website);
+    if (data) {
+      return JSON.parse(JSON.stringify(data));
+    }
+
+    return null;
   }
 
   public setWebsiteFields(websiteFields: object): void {
-    Object.keys(websiteFields).forEach(key => this.websiteFields.update(key, websiteFields[key]));
+    const keys = Object.keys(websiteFields);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      this.websiteFields.update(key, websiteFields[key]);
+    }
     this.emit();
   }
 
@@ -399,7 +379,11 @@ export class PostyBirbSubmission {
   }
 
   public setDefaultFields(defaultFields: object): void {
-    Object.keys(defaultFields).forEach(key => this.defaultFields.update(key, defaultFields[key]));
+    const keys = Object.keys(defaultFields);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      this.defaultFields.update(key, defaultFields[key]);
+    }
     this.emit();
   }
 

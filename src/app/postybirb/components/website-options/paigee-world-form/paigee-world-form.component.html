@@ -1,0 +1,34 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-2 col-lg-2 col-xl-2">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="category" [placeholder]="'Category' | translate">
+              <mat-option value="welcomenewpwusers">Welcome</mat-option>
+              <mat-option value="paigeeworldocs">Paigeeworld OC</mat-option>
+              <mat-option value="ocs">OC</mat-option>
+              <mat-option value="fanart">Fan Art</mat-option>
+              <mat-option value="pwgallery">Gallery</mat-option>
+              <mat-option value="wip">WIP</mat-option>
+              <mat-option value="feedback">Feedback</mat-option>
+              <mat-option value="cosplay">Cosplay</mat-option>
+              <mat-option value="abstract">Abstract</mat-option>
+              <mat-option value="realism">Realism</mat-option>
+              <mat-option value="semirealism">SemiRealism</mat-option>
+              <mat-option value="painting">Painting</mat-option>
+              <mat-option value="photography">Photography</mat-option>
+              <mat-option value="anthro">Anthro</mat-option>
+              <mat-option value="cartoon">Cartoon</mat-option>
+              <mat-option value="craft">Crafts</mat-option>
+              <mat-option value="contest">User Contests</mat-option>
+              <mat-option value="roleplay">Roleplay</mat-option>
+              <mat-option value="pwmanga">Manga</mat-option>
+              <mat-option value="otherpw">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

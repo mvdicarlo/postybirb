@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterContentInit, Input, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { WebsiteManagerService } from '../../../../../../commons/services/website-manager/website-manager.service';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 
@@ -9,6 +9,7 @@ import { BaseControlValueAccessorComponent } from '../../../../../../commons/com
   selector: 'deviant-art-folders',
   templateUrl: './deviant-art-folders.component.html',
   styleUrls: ['./deviant-art-folders.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -22,7 +23,7 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
   public value: any[];
   public folders: any[];
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -32,10 +33,11 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
   }
 
   ngAfterContentInit() {
-    this.populateFolders(this.service.getOther(SupportedWebsites.DeviantArt).folders);
+    this.populateFolders(this.service.getInfo(SupportedWebsites.DeviantArt).folders);
     this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
       if (statuses[SupportedWebsites.DeviantArt]) {
-        this.populateFolders(this.service.getOther(SupportedWebsites.DeviantArt).folders);
+        this.populateFolders(this.service.getInfo(SupportedWebsites.DeviantArt).folders);
+        this._changeDetector.detectChanges();
       }
     });
   }
@@ -44,17 +46,19 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
     this.statusSubscription.unsubscribe();
   }
 
-  populateFolders(folders: any): void {
+  private populateFolders(folders: any): void {
     this.folders = [];
     if (folders) {
-      folders.forEach((folder) => {
+      for (let i = 0; i < folders.length; i++) {
+        const folder = folders[i];
         let parentName = null;
 
-        folders.forEach((f) => {
+        for (let j = 0; j < folders.length; j++) {
+          const f = folders[j];
           if (f.folderid === folder.parent && f.name !== 'Featured') {
             parentName = f.name;
           }
-        });
+        }
 
         let label = folder.name;
         if (parentName) {
@@ -67,16 +71,18 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
         };
 
         this.folders.push(folderItem);
-      });
+      }
     } else {
       this.value = [];
     }
   }
 
-  public writeValue(obj: any[]) {
+  public writeValue(obj: any[] = []) {
     if (obj) {
       this.value = obj;
     }
+
+    this._changeDetector.detectChanges();
   }
 
   public onChange(event: any): void {

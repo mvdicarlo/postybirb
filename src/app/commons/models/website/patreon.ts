@@ -1,13 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Patreon extends BaseWebsite implements Website {
@@ -23,20 +21,21 @@ export class Patreon extends BaseWebsite implements Website {
       },
       content: {
         Artwork: 'image_file',
-        Story: 0,
+        Story: 'text_only',
         Music: 'audio_embed',
         Animation: 0,
       },
       post_type: {
         Artwork: 'image_file',
-        Music: 'audio_file'
+        Music: 'audio_file',
+        Story: 'text_only'
       }
     };
   }
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (page.includes('Log In')) this.loginStatus = WebsiteStatus.Logged_Out;
           else this.loginStatus = WebsiteStatus.Logged_In;
@@ -50,7 +49,7 @@ export class Patreon extends BaseWebsite implements Website {
 
   getUser(): Promise<string> {
     return new Promise((resolve, reject) => {
-      this.http.get(`${this.baseURL}/user`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/user`, { responseType: 'text' })
         .subscribe(page => {
           const title = page.match(/<title(.|\s)*?(?=\/title)/)[0] || '';
           const user = title.length > 0 ? title.split(' ')[0].replace('<title>', '') : undefined;
@@ -61,7 +60,7 @@ export class Patreon extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/post`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/post`, { responseType: 'text' })
         .subscribe(page => {
           const csrf = page.match(/csrfSignature = ".*"/g)[0].split('"')[1];
           const postUrl = `${this.baseURL}/api/posts?` + 'include=user_defined_tags.null%2Ccampaign.creator.null%2Ccampaign.rewards.campaign.null%2Ccampaign.rewards.creator.null&fields[post]=post_type%2Cmin_cents_pledged_to_view&fields[campaign]=is_monthly&fields[reward]=am' +
@@ -74,6 +73,7 @@ export class Patreon extends BaseWebsite implements Website {
               }
             }
           });
+
           this.http.post(postUrl, data, { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
             .subscribe((res: any) => {
               const link = `${res.links.self}`;
@@ -87,7 +87,7 @@ export class Patreon extends BaseWebsite implements Website {
               submissionData.set('qqtotalfilesize', realFile.size.toString());
               submissionData.set('file', realFile);
 
-              this.http.post(`${link}/post_file?json-api-version=1.0`, submissionData,
+              this.http.post(`${link}/${submission.submissionData.submissionType !== 'Story' ? 'post_file' : 'attachments'}?json-api-version=1.0`, submissionData,
                 { headers: new HttpHeaders().set('X-CSRF-Signature', csrf).set('X-Requested-With', 'XMLHttpRequest') })
                 .subscribe((fileResponse: any) => {
                   const data: any = this.createPostData(submission);
@@ -95,7 +95,7 @@ export class Patreon extends BaseWebsite implements Website {
 
                   this.http.patch(url, JSON.stringify(data), { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
                     .subscribe(r => {
-                      observer.next(true);
+                      observer.next(r);
                       observer.complete();
                     }, err => {
                       observer.error(this.createError(err, submission));
@@ -127,14 +127,19 @@ export class Patreon extends BaseWebsite implements Website {
       }
     });
 
-    const attributes = {
+    const attributes: any = {
       content: submission.description,
       post_type: this.getMapping('post_type', submission.submissionData.submissionType),
       is_paid: options.chargePatrons,
-      min_cents_pledged_to_view: (options.minimumDollarsToView || 0) * 100,
+      min_cents_pledged_to_view: options.patronsOnly ? (options.minimumDollarsToView || 0) * 100 || 1 : (options.minimumDollarsToView || 0) * 100,
       title: submission.submissionData.title,
       tags: { publish: true }
     };
+
+    if (submission.options.schedule) {
+      attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
+      attributes.tags.publish = false;
+    }
 
     const relationships = {
       post_tag: {
@@ -155,14 +160,14 @@ export class Patreon extends BaseWebsite implements Website {
     };
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      this.http.get(`${this.baseURL}/post`, { responseType: 'text' }).retry(1)
+      this.http.get(`${this.baseURL}/post`, { responseType: 'text' })
         .subscribe(page => {
           const csrf = page.match(/csrfSignature = ".*"/g)[0].split('"')[1];
           const postUrl = `${this.baseURL}/api/posts?` + 'include=user_defined_tags.null%2Ccampaign.creator.null%2Ccampaign.rewards.campaign.null%2Ccampaign.rewards.creator.null&fields[post]=post_type%2Cmin_cents_pledged_to_view&fields[campaign]=is_monthly&fields[reward]=am' +
             'ount_cents%2Ctitle&fields[user]=[]&fields[post_tag]=value&json-api-version=1.0';
-          const data = JSON.stringify({
+          const postData = JSON.stringify({
             data: {
               type: 'post',
               attributes: {
@@ -171,10 +176,10 @@ export class Patreon extends BaseWebsite implements Website {
             }
           });
 
-          this.http.post(postUrl, data, { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
+          this.http.post(postUrl, postData, { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
             .subscribe((res: any) => {
               const link = `${res.links.self}`;
-              const formattedTags = this.formatTags(options.tags);
+              const formattedTags = this.formatTags(data.tags);
               const relationshipTags = formattedTags.map(tag => {
                 return {
                   id: tag.id,
@@ -183,11 +188,11 @@ export class Patreon extends BaseWebsite implements Website {
               });
 
               const attributes = {
-                content: description,
+                content: data.description,
                 post_type: 'text_only',
                 is_paid: false,
                 min_cents_pledged_to_view: 0,
-                title: title,
+                title: data.title,
                 tags: { publish: true }
               };
 
@@ -216,15 +221,15 @@ export class Patreon extends BaseWebsite implements Website {
                   observer.next(true);
                   observer.complete();
                 }, err => {
-                  observer.error(this.createError(err, { title, description, options }));
+                  observer.error(this.createError(err, data));
                   observer.complete();
                 });
             }, err => {
-              observer.error(this.createError(err, { title, description, options }));
+              observer.error(this.createError(err, data));
               observer.complete();
             })
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });

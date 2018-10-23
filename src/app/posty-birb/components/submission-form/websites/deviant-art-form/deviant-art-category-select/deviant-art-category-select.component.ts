@@ -1,8 +1,7 @@
-import { Component, OnInit, OnDestroy, Input, forwardRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
-import { timer } from 'rxjs/observable/timer';
-import { debounce, map, startWith } from 'rxjs/operators';
-import { Observable } from 'rxjs/Observable';
+import { Observable, from } from 'rxjs';
+import { debounceTime, map } from 'rxjs/operators';
 import { BaseControlValueAccessorComponent } from '../../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { Categories } from './deviant-art-categories-list';
 
@@ -10,6 +9,7 @@ import { Categories } from './deviant-art-categories-list';
   selector: 'deviant-art-category-select',
   templateUrl: './deviant-art-category-select.component.html',
   styleUrls: ['./deviant-art-category-select.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -20,20 +20,24 @@ import { Categories } from './deviant-art-categories-list';
 })
 export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorComponent implements OnInit, OnDestroy, ControlValueAccessor {
   public control: FormControl = new FormControl();
-  public filteredOptions: Observable<string[]>;
+  public filteredOptions: string[] = [];
   private options: string[] = Categories;
   private clearInterval: any;
 
   @ViewChild('auto') auto: any;
   @ViewChild('search') search: ElementRef;
 
-  constructor() {
+  constructor(private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
   ngOnInit() {
-    this.filteredOptions = this.control.valueChanges
-      .pipe(debounce(() => timer(250)), map(val => this.filter(val)));
+    this.control.valueChanges
+      .pipe(debounceTime(250), map(val => this.filter(val)))
+      .subscribe(vals => {
+        this.filteredOptions = vals;
+        this._changeDetector.markForCheck();
+      });
   }
 
   ngOnDestroy() {
@@ -59,7 +63,12 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
     if (category) {
       this.value = category;
       this.control.patchValue(category, { emitEvent: false });
+    } else {
+      this.value = null;
+      this.control.patchValue(null, { emitEvent: false });
     }
+
+    this._changeDetector.detectChanges();
   }
 
   public onChange(value) {
@@ -70,9 +79,8 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
     }
 
     this.onChangedCallback(this.value);
-
-    this.filteredOptions = this.control.valueChanges
-      .pipe(debounce(() => timer(250)), map(val => this.filter(val)));
+    this.filteredOptions = [];
+    this._changeDetector.markForCheck();
   }
 
   public onBlur(event: any) {
@@ -81,8 +89,8 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
       if (!this.auto.isOpen) {
         clearInterval(this.clearInterval);
 
-        this.filteredOptions = this.control.valueChanges
-          .pipe(debounce(() => timer(250)), map(val => this.filter(val)));
+        this.filteredOptions = [];
+        this._changeDetector.markForCheck();
 
         this.onChange({ option: { value: this.search.nativeElement.value } })
       }
@@ -90,6 +98,7 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
   }
 
   public onFocus(value: string): void {
-    this.control.patchValue(value);
+    this.filteredOptions = this.filter(value || '');
+    this._changeDetector.markForCheck();
   }
 }

@@ -1,13 +1,12 @@
-import { Component, Injector, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
-import { Information } from '../../base-website-form/information.interface';
 
 @Component({
   selector: 'pixiv-form',
   templateUrl: './pixiv-form.component.html',
   styleUrls: ['./pixiv-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => PixivFormComponent) }]
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => PixivFormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PixivFormComponent extends BaseWebsiteFormComponent {
 
@@ -20,6 +19,7 @@ export class PixivFormComponent extends BaseWebsiteFormComponent {
     this.setOptionsForm({
       restrictSexual: ['0'],
       communityTags: [false],
+      content: [],
       original: [false],
       sexual: [false],
       sexualTypes: []

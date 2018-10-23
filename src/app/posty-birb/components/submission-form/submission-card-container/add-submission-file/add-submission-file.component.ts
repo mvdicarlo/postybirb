@@ -1,11 +1,12 @@
-import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { PostyBirbSubmission } from '../../../../../commons/models/posty-birb/posty-birb-submission';
 import { FileInformation } from '../../../../../commons/models/file-information';
 
 @Component({
   selector: 'add-submission-file',
   templateUrl: './add-submission-file.component.html',
-  styleUrls: ['./add-submission-file.component.css']
+  styleUrls: ['./add-submission-file.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddSubmissionFileComponent implements OnInit {
   @Output() added: EventEmitter<PostyBirbSubmission[]> = new EventEmitter();
@@ -16,7 +17,7 @@ export class AddSubmissionFileComponent implements OnInit {
   ngOnInit() {
   }
 
-  public filesSelected(event: Event): void {
+  public async filesSelected(event: Event) {
     const files: File[] = event.target['files'];
 
     const convertedList: File[] = [];
@@ -28,7 +29,7 @@ export class AddSubmissionFileComponent implements OnInit {
     this.fileInput.nativeElement.value = '';
   }
 
-  public fileDrop(event: DragEvent): void {
+  public async fileDrop(event: DragEvent) {
     const fileList: FileList = event.dataTransfer.files;
     const files: File[] = [];
     for (let i = 0; i < fileList.length; i++) {
@@ -41,10 +42,11 @@ export class AddSubmissionFileComponent implements OnInit {
   }
 
   public copyFromClipboard(): void {
-    const { availableFormats, content } = window['getClipboardContents']();
+    const { availableFormats, content } = getClipboardContents();
 
     if (availableFormats.includes('image/png')) {
-      const buffer = content.toPNG();
+      const buffer = content.toJPEG(100);
+
       const fileInfo: FileInformation = new FileInformation(buffer, true);
       const pbs: PostyBirbSubmission = new PostyBirbSubmission(null, fileInfo);
       pbs.getPreloadedSubmissionFile().then(() => this.emit([pbs]));
@@ -52,7 +54,7 @@ export class AddSubmissionFileComponent implements OnInit {
   }
 
   public enableClipboardCopy(): boolean {
-    return window['getClipboardFormats']().includes('image/png');
+    return getClipboardFormats().includes('image/png');
   }
 
   private createPostyBirbSubmissions(files: File[]): PostyBirbSubmission[] {

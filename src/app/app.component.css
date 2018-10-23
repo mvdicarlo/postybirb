@@ -1,18 +1,21 @@
-mat-toolbar {
-  width: 100%;
+.app-container {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 5vh 92vh 3vh;
+  grid-template-columns: 100%;
+}
+
+header mat-toolbar {
   height: 100%;
 }
 
-mat-sidenav-container {
+footer mat-toolbar {
+  height: auto !important;
+}
+
+mat-sidenav-container,
+mat-drawer-container {
   height: 100%;
-}
-
-.no-outline:focus {
-  outline: none;
-}
-
-.toolbar {
-  height: 6vh;
 }
 
 .toolbar-content {
@@ -29,9 +32,9 @@ mat-sidenav-container {
 }
 
 .toolbar-app-icon img {
-  /*width: 50px;*/
-  max-height: 100%;
-  margin: auto;
+  height: 100%;
+  width: auto;
+  padding: 0.2em 0;
 }
 
 .toolbar-app-icon h3 {
@@ -43,25 +46,28 @@ mat-sidenav-container {
 }
 
 .toolbar-buttons {
-  margin-left: -15px;
-  margin-right: 5px;
+  margin-right: 6px;
+}
+
+.status-bar {
+  height: 100%;
 }
 
 .kofi {
-  flex: 1;
   height: 100%;
+  flex: 1;
 }
 
 .kofi button {
   background-color: #46b798;
   height: 100%;
-  margin-right: -16px;
-  float: right;
   border-radius: 0;
+  margin: auto;
 }
 
-.container-fluid {
-  padding: 0 !important;
+.kofi img {
+  height: 100%;
+  width: auto;
 }
 
 .language-select {
@@ -73,48 +79,8 @@ mat-sidenav-container {
   z-index: 9999;
 }
 
-.full-height {
-  height: 100%;
-}
-
-.full-window {
-  height: 100vh;
-}
-
 .main-section {
   z-index: 0;
-}
-
-.main-content {
   background: #222;
   height: 100%;
-}
-
-.width-toggle {
-  transition: width 0.2s, flex-basis 0.2s;
-}
-
-.sidebar-section {
-  z-index: 10;
-}
-
-.sidebar {
-  background: #424242;
-  height: 100%;
-  box-shadow: 3px 0 6px rgba(0, 0, 0, .24);
-  overflow-y: auto;
-}
-
-.sidebar div {
-  padding: 0;
-}
-
-.closed-sidebar {
-  padding: 0;
-  width: 0;
-  flex-basis: 0%;
-}
-
-.closed-sidebar div {
-  margin: 0;
 }

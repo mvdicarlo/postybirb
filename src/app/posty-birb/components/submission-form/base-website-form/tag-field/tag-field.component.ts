@@ -1,4 +1,4 @@
-import { Component, OnInit, OnChanges, AfterViewInit, SimpleChanges, forwardRef, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnChanges, AfterViewInit, SimpleChanges, forwardRef, Input, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup, FormBuilder, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseControlValueAccessorComponent } from '../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
 import { TagModel } from '../information.interface';
@@ -13,6 +13,7 @@ import { NotifyService } from '../../../../../commons/services/notify/notify.ser
   selector: 'tag-field',
   templateUrl: './tag-field.component.html',
   styleUrls: ['./tag-field.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -25,7 +26,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
   @Input() minimumTags: number = 0;
   @Input() maximumTags: number = 200;
   @Input() maxLength: number = 0;
-  @Input() minimumCharacterLength: number = 3;
+  @Input() minimumCharacterLength: number = 2;
   @Input() defaultTags: TagModel;
   @Input() allowOverwrite: boolean = true;
 
@@ -33,12 +34,15 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
   public form: FormGroup;
   public separatorKeysCodes = [ENTER, COMMA];
+  public params: any = { min: 0 };
 
-  constructor(private fb: FormBuilder, private notify: NotifyService) {
+  constructor(private fb: FormBuilder, private notify: NotifyService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
   ngOnInit() {
+    this.params.min = this.minimumTags;
+
     this.form = this.fb.group({
       overwrite: [false],
       tags: [[], [FieldValidator.minimumTags(this.minimumTags)]]
@@ -50,7 +54,10 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
       }
     });
 
-    this.form.valueChanges.subscribe(() => this.onChange());
+    this.form.valueChanges.subscribe(() => {
+      this.onChange();
+      this._changeDetector.markForCheck();
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -66,6 +73,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
   ngAfterViewInit() {
     this.onChange();
+    this._changeDetector.markForCheck();
   }
 
   public onChange() {
@@ -85,6 +93,8 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
     } else {
       this.form.reset({ overwrite: false, tags: [] }, { emitEvent: false });
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public validateTagCount(): boolean {
@@ -129,18 +139,21 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
     const existingTags = [...nonDefaultTags, ...defaultTags];
 
-    (event.value || '').split(',').forEach(value => {
-      value = value.trim();
-      if (value.length >= this.minimumCharacterLength && !existingTags.includes(value)) {
-        if (existingTags.length < this.maximumTags) {
-          nonDefaultTags.push(value);
+    if (event.value) {
+      const tags = event.value.split(',');
+      for (let i = 0; i < tags.length; i++) {
+        const value = tags[i].trim();
+        if (value.length >= this.minimumCharacterLength && !existingTags.includes(value)) {
+          if (existingTags.length < this.maximumTags) {
+            nonDefaultTags.push(value);
+          }
+        } else if (existingTags.includes(value)) {
+          this.notify.translateNotification('Duplicate tag ignored', { tag: value }).subscribe(msg => {
+            this.notify.getNotify().warning(msg);
+          });
         }
-      } else if (existingTags.includes(value)) {
-        this.notify.translateNotification('Duplicate tag ignored', { tag: value }).subscribe(msg => {
-          this.notify.getNotify().warning(msg);
-        })
       }
-    });
+    }
 
     this.form.controls.tags.patchValue(nonDefaultTags);
 
@@ -167,15 +180,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
     const nonDefaultTags = this.form.value.tags || [];
     const defaultTags = this.getDefaultTags();
 
-    nonDefaultTags.forEach(tag => {
-      const index = defaultTags.indexOf(tag);
-
-      if (index !== -1) {
-        nonDefaultTags.splice(index, 1);
-      }
-    });
-
-    this.form.controls.tags.patchValue(nonDefaultTags);
+    this.form.controls.tags.patchValue(nonDefaultTags.filter(tag => !defaultTags.includes(tag)).map(tag => tag));
   }
 
   private getDefaultTags(): string[] {

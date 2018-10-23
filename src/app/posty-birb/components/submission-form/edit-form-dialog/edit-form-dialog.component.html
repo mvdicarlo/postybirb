@@ -1,97 +1,114 @@
-<div class="edit-form">
-  <form [formGroup]="form" name="default_form" class="clearfix">
-    <div class="row no-gutters">
-      <div class="col-md-12 col-lg-12 col-xl-12 box">
-        <mat-form-field color="accent" class="website-select">
-          <mat-select [placeholder]="'Selected Websites' | translate" multiple="true" formControlName="selectedWebsites">
-            <mat-optgroup label="{{'Available Websites' | translate}}">
-              <mat-option *ngFor="let onlineWebsite of onlineWebsites" [value]="onlineWebsite">{{onlineWebsite}}</mat-option>
-            </mat-optgroup>
-            <mat-optgroup *ngIf="offlineWebsites.length > 0" disabled="true" label="{{'Offline' | translate}}">
-              <mat-option *ngFor="let website of offlineWebsites" [value]="website">{{website}}</mat-option>
-            </mat-optgroup>
-          </mat-select>
-        </mat-form-field>
-        <div class="website-select-help-btn">
-          <button type="button" matInput mat-raised-button color="accent" (click)="showHelp()">{{'Help' | translate}}</button>
-        </div>
-      </div>
-      <div name="default_fields" class="col-md-12 col-lg-12 col-xl-12" [class.hidden]=!websitesSelected()>
-        <div class="form-element" name="defaultDescription" [matTooltip]="'Default Description Tooltip' | translate" matTooltipPosition="above">
-          <h5>{{'Default Description' | translate}}</h5>
-          <description-field class="clearfix" formControlName="defaultDescription" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
-        </div>
-        <div class="form-element" name="defaultTags" [matTooltip]="'Default Tag Tooltip' | translate">
-          <h5>{{'Default Tags' | translate}}</h5>
-          <tag-field class="clearfix w-100" formControlName="defaultTags" [allowOverwrite]="false"></tag-field>
-        </div>
+<form [formGroup]="form" name="default_form" class="clearfix">
+  <div class="row no-gutters">
+    <div class="col-md-12 col-lg-12 col-xl-12 box">
+      <mat-form-field color="accent" class="website-select" tourAnchor="pb.edit.websites">
+        <mat-select [placeholder]="'Selected Websites' | translate" multiple="true" formControlName="selectedWebsites">
+          <mat-optgroup label="{{'Available Websites' | translate}}">
+            <mat-option *ngFor="let onlineWebsite of onlineWebsites" [value]="onlineWebsite">{{onlineWebsite}}</mat-option>
+          </mat-optgroup>
+          <mat-optgroup *ngIf="offlineWebsites.length > 0" disabled="true" label="{{'Offline' | translate}}">
+            <mat-option *ngFor="let website of offlineWebsites" [value]="website">{{website}}</mat-option>
+          </mat-optgroup>
+        </mat-select>
+      </mat-form-field>
+      <div class="website-select-help-btn">
+        <button type="button" matInput mat-raised-button color="accent" (click)="showHelp()">{{'Help' | translate}}</button>
       </div>
     </div>
-  </form>
-  <form>
-    <mat-tab-group *ngIf="websitesSelected()" [disableRipple]="true">
-      <mat-tab #derpibooru *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Derpibooru)">
-        <ng-template mat-tab-label>
-          <span [class.mat-error]="!derpibooruForm.isValid()">{{supportedWebsites.Derpibooru}}</span>
-        </ng-template>
-        <derpibooru-form #derpibooruForm [tab]="derpibooru" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></derpibooru-form>
-      </mat-tab>
-      <mat-tab #deviantArt [label]="supportedWebsites.DeviantArt" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.DeviantArt)">
-        <deviant-art-form [tab]="deviantArt" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></deviant-art-form>
-      </mat-tab>
-      <mat-tab #e621 *ngIf="form.value.selectedWebsites.includes(supportedWebsites.e621)">
-        <ng-template mat-tab-label>
-          <span [class.mat-error]="!e621Form.isValid()">{{supportedWebsites.e621}}</span>
-        </ng-template>
-        <e621-form #e621Form [tab]="e621" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></e621-form>
-      </mat-tab>
-      <mat-tab #furaffinity [label]="supportedWebsites.Furaffinity" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furaffinity)">
-        <furaffinity-form [tab]="furaffinity" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furaffinity-form>
-      </mat-tab>
-      <mat-tab #furryNetwork [label]="supportedWebsites.FurryNetwork" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.FurryNetwork)">
-        <furry-network-form [tab]="furryNetwork" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furry-network-form>
-      </mat-tab>
-      <mat-tab #furiffic [label]="supportedWebsites.Furiffic" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furiffic)">
-        <furiffic-form [tab]="furiffic" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furiffic-form>
-      </mat-tab>
-      <mat-tab #inkbunny [label]="supportedWebsites.Inkbunny" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Inkbunny)">
-        <inkbunny-form [tab]="inkbunny" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></inkbunny-form>
-      </mat-tab>
-      <mat-tab #patreon [label]="supportedWebsites.Patreon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Patreon)">
-        <patreon-form [tab]="patreon" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></patreon-form>
-      </mat-tab>
-      <mat-tab #pixiv *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Pixiv)">
-        <ng-template mat-tab-label>
-          <span [class.mat-error]="!pixivForm.isValid()">{{supportedWebsites.Pixiv}}</span>
-        </ng-template>
-        <pixiv-form #pixivForm [tab]="pixiv" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></pixiv-form>
-      </mat-tab>
-      <mat-tab #route50 [label]="supportedWebsites.Route50" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Route50)">
-        <route50-form [tab]="route50" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></route50-form>
-      </mat-tab>
-      <mat-tab #tumblr [label]="supportedWebsites.Tumblr" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Tumblr)">
-        <tumblr-form [tab]="tumblr" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></tumblr-form>
-      </mat-tab>
-      <mat-tab #twitter [label]="supportedWebsites.Twitter" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Twitter)">
-        <twitter-form [tab]="twitter" [defaultDescription]="defaultDescription"></twitter-form>
-      </mat-tab>
-      <mat-tab #sofurry *ngIf="form.value.selectedWebsites.includes(supportedWebsites.SoFurry)">
-        <ng-template mat-tab-label>
-          <span [class.mat-error]="!soFurryForm.isValid()">{{supportedWebsites.SoFurry}}</span>
-        </ng-template>
-        <sofurry-form #soFurryForm [tab]="sofurry" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></sofurry-form>
-      </mat-tab>
-      <mat-tab #weasyl *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Weasyl)">
-        <ng-template mat-tab-label>
-          <span [class.mat-error]="!weasylForm.isValid()">{{supportedWebsites.Weasyl}}</span>
-        </ng-template>
-        <weasyl-form #weasylForm [tab]="weasyl" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></weasyl-form>
-      </mat-tab>
-    </mat-tab-group>
-  </form>
-</div>
+    <div name="default_fields" class="col-md-12 col-lg-12 col-xl-12" [class.d-none]=!websitesSelected()>
+      <div class="form-element" name="defaultDescription" [matTooltip]="'Default Description Tooltip' | translate" matTooltipPosition="above">
+        <h5 tourAnchor="pb.edit.description">{{'Default Description' | translate}}</h5>
+        <description-field class="clearfix" formControlName="defaultDescription" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
+      </div>
+      <div class="form-element" name="defaultTags" [matTooltip]="'Default Tag Tooltip' | translate">
+        <h5 tourAnchor="pb.edit.tags">{{'Default Tags' | translate}}</h5>
+        <tag-field class="clearfix w-100" formControlName="defaultTags" [allowOverwrite]="false"></tag-field>
+      </div>
+    </div>
+  </div>
+</form>
+<mat-tab-group *ngIf="websitesSelected()" [disableRipple]="true" tourAnchor="pb.edit.custom">
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Aryion)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!aryionForm.isValid()">{{supportedWebsites.Aryion}}</span>
+    </ng-template>
+    <aryion-form #aryionForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></aryion-form>
+  </mat-tab>
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Derpibooru)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!derpibooruForm.isValid()">{{supportedWebsites.Derpibooru}}</span>
+    </ng-template>
+    <derpibooru-form #derpibooruForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></derpibooru-form>
+  </mat-tab>
+  <mat-tab #deviantArt [label]="supportedWebsites.DeviantArt" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.DeviantArt)">
+    <deviant-art-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></deviant-art-form>
+  </mat-tab>
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.e621)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!e621Form.isValid()">{{supportedWebsites.e621}}</span>
+    </ng-template>
+    <e621-form #e621Form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></e621-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Furaffinity" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furaffinity)">
+    <furaffinity-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furaffinity-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Furiffic" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Furiffic)">
+    <furiffic-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furiffic-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.FurryNetwork" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.FurryNetwork)">
+    <furry-network-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></furry-network-form>
+  </mat-tab>
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.HentaiFoundry)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!hfForm.isValid()">{{supportedWebsites.HentaiFoundry}}</span>
+    </ng-template>
+    <hentai-foundry-form #hfForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></hentai-foundry-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Inkbunny" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Inkbunny)">
+    <inkbunny-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></inkbunny-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Mastodon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Mastodon)">
+    <mastodon-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></mastodon-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.PaigeeWorld" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.PaigeeWorld)">
+    <paigee-world-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></paigee-world-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Patreon" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Patreon)">
+    <patreon-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></patreon-form>
+  </mat-tab>
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Pixiv)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!pixivForm.isValid()">{{supportedWebsites.Pixiv}}</span>
+    </ng-template>
+    <pixiv-form #pixivForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></pixiv-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Route50" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Route50)">
+    <route50-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></route50-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Tumblr" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Tumblr)">
+    <tumblr-form [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></tumblr-form>
+  </mat-tab>
+  <mat-tab [label]="supportedWebsites.Twitter" *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Twitter)">
+    <twitter-form [template]="template" [defaultDescription]="defaultDescription"></twitter-form>
+  </mat-tab>
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.SoFurry)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!soFurryForm.isValid()">{{supportedWebsites.SoFurry}}</span>
+    </ng-template>
+    <sofurry-form #soFurryForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></sofurry-form>
+  </mat-tab>
+  <mat-tab *ngIf="form.value.selectedWebsites.includes(supportedWebsites.Weasyl)">
+    <ng-template mat-tab-label>
+      <span [class.mat-error]="!weasylForm.isValid()">{{supportedWebsites.Weasyl}}</span>
+    </ng-template>
+    <weasyl-form #weasylForm [template]="template" [defaultTags]="defaultTags" [defaultDescription]="defaultDescription"></weasyl-form>
+  </mat-tab>
+</mat-tab-group>
 <div class="row no-gutters edit-controls">
-  <div class="col-md-4 col-lg-4 col-xl-3" style="padding: 0 4px;">
+  <div name="invalid_area" *ngIf="!formsAreValid()" class="col-md-12 col-lg-12 col-xl-12 col-sm-12 invalid-area">
+    <p *ngFor="let req of getRequirements()" class="mat-error m-0 ml-1"><b>{{ req }} {{ 'is not complete' | translate }}</b></p>
+  </div>
+  <div class="col-md-4 col-lg-4 col-xl-3" style="padding: 0 4px" tourAnchor="pb.edit.template.load">
     <form-template-select class="w-100" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
   </div>
   <div class="col-md-3 col-lg-3 col-xl-3">
@@ -103,7 +120,7 @@
   </div>
   <div class="col-md col-lg col-xl">
     <button mat-button color="warn" (click)="clear()">{{'Clear' | translate}}</button>
-    <button mat-button color="accent" (click)="save()" [disabled]="!formsAreValid()">{{'Save' | translate}}</button>
-    <button mat-button color="accent" (click)="saveTemplate()" [disabled]="!formsAreValid()" [matTooltip]="'Create Template Tooltip' | translate">{{'Save Template' | translate}}</button>
+    <button tourAnchor="pb.edit.saving" mat-button color="accent" (click)="save()" [disabled]="!formsAreValid()">{{'Save' | translate}}</button>
+    <button tourAnchor="pb.edit.template.save" mat-button color="accent" (click)="saveTemplate()" [matTooltip]="'Create Template Tooltip' | translate">{{'Save Template' | translate}}</button>
   </div>
 </div>

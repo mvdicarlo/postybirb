@@ -16,6 +16,15 @@ export class FileHandler {
       }
     }
 
-    return 'Artwork';
+    return this.guessFromMimeType(file);
+  }
+
+  public static guessFromMimeType(file: File): string {
+    if (file.type.includes('image')) return 'Artwork';
+    if (file.type.includes('audio')) return 'Music';
+    if (file.type.includes('video')) return 'Animation';
+    if (file.type.includes('text')) return 'Story';
+
+    alert('Unknown/unsupported file type');
   }
 }

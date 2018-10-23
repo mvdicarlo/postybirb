@@ -5,8 +5,8 @@
       <input type="text" formControlName="templateName" matInput [placeholder]="'Template Name' | translate" required="true" maxLength="16">
     </mat-form-field>
     <br>
-    <button mat-raised-button color="primary" mat-dialog-close>{{'No' | translate}}</button>
-    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">{{'Yes' | translate}}</button>
+    <button mat-raised-button color="warn" mat-dialog-close>{{'No' | translate}}</button>
+    <button mat-raised-button style="margin-left: 5px" color="primary" type="submit" [disabled]="form.invalid">{{'Yes' | translate}}</button>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="right">

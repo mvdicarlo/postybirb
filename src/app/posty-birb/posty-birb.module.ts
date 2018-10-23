@@ -4,9 +4,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { NgDragDropModule } from 'ng-drag-drop';
 import { CKEditorModule } from 'ng2-ckeditor';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+
+import { NgxsModule } from '@ngxs/store';
+import { PostyBirbState } from './stores/states/posty-birb.state';
+
+import { TourNgxBootstrapModule } from 'ngx-tour-ngx-bootstrap';
+import { PopoverConfig } from 'ngx-bootstrap';
 
 import {
   MatButtonModule,
@@ -24,29 +29,25 @@ import {
   MatIconModule,
   MatTabsModule,
   MatMenuModule,
-  MatSlideToggleModule
+  MatSlideToggleModule,
+  MatBadgeModule,
+  MatBottomSheetModule
 } from '@angular/material';
 
 import { CommonsModule } from '../commons/commons.module';
 import { LogsModule } from '../logs/logs.module';
 
-import { GalleryService } from './services/gallery-service/gallery.service';
-import { SubmissionStoreService } from './services/submission-store/submission-store.service';
-import { PostService } from './services/post/post.service';
-import { PostObserverService } from './services/post-observer/post-observer.service';
+import { PostManagerService } from './services/post-manager/post-manager.service';
+import { SchedulerService } from './services/scheduler/scheduler.service';
+import { TemplatesService } from './services/templates/templates.service';
 
 import { DescriptionHelpComponent } from './components/submission-form/base-website-form/description-field/description-help/description-help.component';
 import { FaSpeciesSelectComponent } from './components/submission-form/websites/furaffinity-form/fa-species-select/fa-species-select.component';
-import { PbGalleryComponent } from './components/pb-gallery/pb-gallery.component';
 import { WeasylFoldersComponent } from './components/submission-form/websites/weasyl-form/weasyl-folders/weasyl-folders.component';
 import { FuraffinityFoldersComponent } from './components/submission-form/websites/furaffinity-form/furaffinity-folders/furaffinity-folders.component';
 import { SofurryFoldersComponent } from './components/submission-form/websites/sofurry-form/sofurry-folders/sofurry-folders.component';
 import { TumblrBlogSelectComponent } from './components/submission-form/websites/tumblr-form/tumblr-blog-select/tumblr-blog-select.component';
-import { GalleryDisplayItemComponent } from './components/pb-gallery/gallery-display-item/gallery-display-item.component';
-import { SubmissionGalleryComponent } from './components/pb-gallery/submission-gallery/submission-gallery.component';
 import { DeviantArtFoldersComponent } from './components/submission-form/websites/deviant-art-form/deviant-art-folders/deviant-art-folders.component';
-import { PostDialogComponent } from './components/dialog/post-dialog/post-dialog.component';
-import { SubmitStatusComponent } from './components/dialog/post-dialog/submit-status/submit-status.component';
 import { ScheduleSubmissionDialogComponent } from './components/dialog/schedule-submission-dialog/schedule-submission-dialog.component';
 import { FurryNetworkProfileSelectComponent } from './components/submission-form/websites/furry-network-form/furry-network-profile-select/furry-network-profile-select.component';
 import { PostyBirbAppComponent } from './main/posty-birb-app/posty-birb-app.component';
@@ -82,19 +83,38 @@ import { SubmissionViewComponent } from './components/dialog/submission-view/sub
 import { SaveEditDialogComponent } from './components/submission-form/save-edit-dialog/save-edit-dialog.component';
 import { DerpibooruFormComponent } from './components/submission-form/websites/derpibooru-form/derpibooru-form.component';
 import { SubmissionSettingsDialogComponent } from './components/dialog/submission-settings-dialog/submission-settings-dialog.component';
+import { HentaiFoundryFormComponent } from './components/submission-form/websites/hentai-foundry-form/hentai-foundry-form.component';
+import { PostyBirbStatusBarComponent } from './components/posty-birb-status-bar/posty-birb-status-bar.component';
+import { SubmissionSheetComponent } from './components/sheets/submission-sheet/submission-sheet.component';
+import { SubmissionRowComponent } from './components/sheets/submission-sheet/submission-row/submission-row.component';
+import { SubmissionTableComponent } from './components/sheets/submission-sheet/submission-table/submission-table.component';
+import { HentaiFoundryCategorySelectComponent } from './components/submission-form/websites/hentai-foundry-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
+import { AdditionalImageOrderingDialogComponent } from './components/submission-form/submission-card/additional-image-ordering-dialog/additional-image-ordering-dialog.component';
+import { MastodonFormComponent } from './components/submission-form/websites/mastodon-form/mastodon-form.component';
+import { PaigeeWorldFormComponent } from './components/submission-form/websites/paigee-world-form/paigee-world-form.component';
+import { AryionFormComponent } from './components/submission-form/websites/aryion-form/aryion-form.component';
 
 const routes: Routes = [
   { path: 'postybirb', component: PostyBirbAppComponent }
 ];
+
+export function getPopoverConfig(): PopoverConfig {
+  return Object.assign(new PopoverConfig(), {
+    triggers: ""
+  });
+}
 
 @NgModule({
   imports: [
     CommonModule,
     TranslateModule,
     RouterModule.forChild(routes),
+    NgxsModule.forRoot([
+      PostyBirbState
+    ]),
     CommonsModule.forRoot(),
     LogsModule.forRoot(),
-    NgDragDropModule.forRoot(),
+    TourNgxBootstrapModule.forRoot(),
     CKEditorModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
@@ -115,21 +135,18 @@ const routes: Routes = [
     ReactiveFormsModule,
     FormsModule,
     MatIconModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatBadgeModule,
+    MatBottomSheetModule
   ],
   declarations: [
     DescriptionHelpComponent,
     FaSpeciesSelectComponent,
-    PbGalleryComponent,
     WeasylFoldersComponent,
     FuraffinityFoldersComponent,
     SofurryFoldersComponent,
     TumblrBlogSelectComponent,
-    GalleryDisplayItemComponent,
-    SubmissionGalleryComponent,
     DeviantArtFoldersComponent,
-    PostDialogComponent,
-    SubmitStatusComponent,
     ScheduleSubmissionDialogComponent,
     FurryNetworkProfileSelectComponent,
     PostyBirbAppComponent,
@@ -165,9 +182,18 @@ const routes: Routes = [
     SaveEditDialogComponent,
     DerpibooruFormComponent,
     SubmissionSettingsDialogComponent,
+    HentaiFoundryFormComponent,
+    PostyBirbStatusBarComponent,
+    SubmissionSheetComponent,
+    SubmissionRowComponent,
+    SubmissionTableComponent,
+    HentaiFoundryCategorySelectComponent,
+    AdditionalImageOrderingDialogComponent,
+    MastodonFormComponent,
+    PaigeeWorldFormComponent,
+    AryionFormComponent
   ],
   entryComponents: [
-    PostDialogComponent,
     ScheduleSubmissionDialogComponent,
     CreateTemplateDialogComponent,
     SubmissionRuleHelpDialogComponent,
@@ -175,13 +201,21 @@ const routes: Routes = [
     SaveDialogComponent,
     SubmissionViewComponent,
     SaveEditDialogComponent,
-    SubmissionSettingsDialogComponent
+    SubmissionSettingsDialogComponent,
+    SubmissionSheetComponent,
+    AdditionalImageOrderingDialogComponent
   ],
   exports: [
     FormTemplateSelectComponent,
     TumblrBlogSelectComponent,
+    DescriptionFieldComponent,
     DescriptionHelpComponent,
-    FurryNetworkProfileSelectComponent
+    TagFieldComponent,
+    FurryNetworkProfileSelectComponent,
+    PostyBirbStatusBarComponent
+  ],
+  providers: [
+    { provide: PopoverConfig, useFactory: getPopoverConfig }
   ],
   schemas: [NO_ERRORS_SCHEMA]
 })
@@ -189,7 +223,7 @@ export class PostyBirbModule {
   static forRoot(): ModuleWithProviders {
     return {
       ngModule: PostyBirbModule,
-      providers: [SubmissionStoreService, GalleryService, PostService, PostObserverService]
+      providers: [PostManagerService, SchedulerService, TemplatesService]
     }
   }
 }

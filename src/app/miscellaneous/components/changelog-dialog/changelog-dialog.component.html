@@ -1,5 +1,253 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>0.9.9 (10/16/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Patreon submissions can now be scheduled through additional options. (requested feature)</li>
+    <li>App will now remember the language you set it to.</li>
+    <li>Patreon will now accept pdf, rtf, txt, and md files.</li>
+    <li>Complete remake of PostyBirb's UI. Tutorial disabled for now. All feedback is welcome.</li>
+    <li>App will now attempt to re-upload a Fur Affinity submission to increase resolution limits.</li>
+    <li>Added template manager that lets you delete, view, and rename templates.</li>
+    <li>Can now disable/enable hardware acceleration in settings dialog.</li>
+    <li>Tag field will now block certain characters that most sites consider invalid ";|\\[]=*^%$!`~.?+</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Furry Network now refreshes its authentication keys correctly.</li>
+    <li>App will now wait a few seconds before trying to post a scheduled submission if it opened from tray.</li>
+    <li>Attempt to fix Inkbunny login issues for people with special characters in their password.</li>
+    <li>Fixed issue where Furry Network detecting an invalid tag would cause the post to hang indefinitely.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Text Editor will no longer force to plain text.</li>
+    <li>Text editor should try to remove inline images (they don't really work).</li>
+    <li>Removed old settings button found in sidebar. Option to clean all scheduled or unscheduled submissions can now be found in settings dialog.</li>
+    <li>Template name minimum length reduced to 2.</li>
+    <li>Big code refactor.</li>
+  </ul>
+  <div>0.9.8 (09/24/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>PostyBirb will now let you know if options are incomplete for a specific website.</li>
+    <li>Revamped a lot of JournalBirb to match more of PostyBirb.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue with Aryion not posting and claiming 'Not logged in'.</li>
+    <li>Fixed issue where default description would never be overwritten by custom. (had to turn off spellchecker for now sorry)</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Spellcheck turned off due to it causing description issues for now.</li>
+    <li>Angular updated to minor patch.</li>
+    <li>CKEditor updated to latest stable v4.</li>
+  </ul>
+  <div>0.9.7 (09/20/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Mastodon will let you choose between art and social on login panel. (mostly untested since I don't have an art account)</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue where template description could break due to smiley conversion that should not have been happening.</li>
+    <li>Removed "All" media category from Hentai Foundry since it doesn't even work on their own website.</li>
+    <li>Fixed issue where username logged into would not change when swapping accounts when previously logged in.</li>
+    <li>Fixed issue where the rich text editor would try to copy formatted text when pasted from the web.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated electron to 3.0.0</li>
+    <li>Changed how app checks for login status before posting.</li>
+    <li>Minor code refactoring.</li>
+  </ul>
+  <div>0.9.6 (09/06/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Mastodon is now supported.</li>
+    <li>PaigeeWorld is now supported.</li>
+    <li>Aryion/Eka's Portal now supported.</li>
+    <li>Added a remove all button to additional images.</li>
+    <li>Pixiv advanced options now includes Content (religion, violent, etc.).</li>
+    <li>PostyBirb may now show new polls that you can open and participate in.</li>
+    <li>Inkbunny will now try to verify access token.</li>
+    <li>Logins will now sort based on name and login status.</li>
+    <li>Russian translation option added (thanks to Sledyn).</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Discord button should now be working correctly.</li>
+    <li>Attempt to fix issue where a submission form sometimes won't allow any saving.</li>
+    <li>Fixed PostyBirb tray image size on OSX/Mac.</li>
+    <li>Fixed issue with twitter posts only posting a max of 3 images to a single post.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated Electron, Electron-Builder, Electron-Updater.</li>
+    <li>Reduced the amount of ambient calls to most websites.</li>
+    <li>Split logs and configs into separate .json files.</li>
+    <li>Finnish translations updated.</li>
+    <li>Updated how layout html is coded.</li>
+  </ul>
+  <div>0.9.5 (08/23/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>PostyBirb now has a Tray icon that will persist the app when the window is closed if there are any scheduled submissions. If a scheduled post is detected the app will now briefly open long enough for the submission to post and then close. (I do not
+      know what behavior this has when the computer is in sleep mode)</li>
+    <li>e621 should now return an alert with the reason for failure.</li>
+    <li>Twitter should now return an alert with the reason for failure.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>FurryNetwork should hopefully no longer get stuck posting.</li>
+    <li>Fixed issue where a corrupted config file would stop the app from loading. (Solution simply renews it)</li>
+    <li>Attempt to fix description fields sometimes not loading.</li>
+    <li>Fix for when autocompletes would not be opened when focus is given.</li>
+    <li>Fixed issue where loading a template would cause specific website tags to not work.</li>
+    <li>Fixed issue where you could sometimes get cannot GET /deviantart.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated Electron to 2.0.8 fixing a security vulnerability.</li>
+    <li>Updated Material Framework. Keep an eye out for any submissions/options that are incomplete since the last time I updated this framework it caused issues due to undocumented changes.</li>
+  </ul>
+  <div>0.9.4 (08/13/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Discord icon for PostyBirb Discord (doesn't really work on linux).</li>
+    <li>Patreon now has 'Patrons Only' option.</li>
+    <li>PostyBirb Tutorial added (only supported in english for now).</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Attempting to fix issue where oversized or undersized Twitter images will automatically be resized to fit requirements.</li>
+    <li>Certain websites such as Weasyl should no longer remove line breaks when using 'Simple' description modes.</li>
+    <li>MacOSX should no longer flicker hopefully.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated Electron to 2.0.7.</li>
+    <li>Performed refactoring to try to improve performance at a minute level.</li>
+    <li>HTML and CSS refactoring to be more clean and use more bootstrap native classes.</li>
+  </ul>
+  <div>0.9.3 (07/26/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>FurryNetwork folders finally supported. (sorry it took so damn long)</li>
+    <li>When selecting text or audio the image shown will at least not be empty.</li>
+    <li>You can now re-order additional images however you like.</li>
+    <li>Local Storage moved from chrome local storage to flat file storage. Some configs may be lost in transition.</li>
+    <li>The app will finally remember what window size you set it to.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue where clicking 'Remove Unselected' would remove all.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Now using lowdb instead of store.js for storing local data.</li>
+    <li>Better implemented file loading functionality supported by native electronjs.</li>
+  </ul>
+  <div>0.9.2 (07/24/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Select All / Unselect All in editing gallery.</li>
+    <li>Ability to set post interval between submissions.</li>
+    <li>Hentai Foundry category select is now an autocomplete and sorted.</li>
+    <li>German langauge support (thanks to kusuguttai).</li>
+    <li>Tumblr now supports mp4 animations again.</li>
+    <li>The submissions dialog now opens after a save.</li>
+    <li>Can now right click thumbnail field to clear it. (there used to be no way to remove thumbnails)</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>FurryNetwork tags should behave a bit better now.</li>
+    <li>If you edit a submission that is partially posted it will only save the unposted websites.</li>
+    <li>Fixed issue where links could be in the format link (link).</li>
+    <li>Tumblr error logs should now be a little more useful.</li>
+    <li>Potentially fixed an issue where slow internet could return Cannot GET /tumblr.</li>
+    <li>Fixed bug where descriptions of > 280 for Twitter would spam notifications.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Post failure message will now also include the websites that failed to be posted to.</li>
+    <li>App will now only store 5 logs at a maximum in local storage.</li>
+    <li>Fail messages will try to tell you more if from deviant art or tumblr.</li>
+    <li>Removed the Submission Type field (where you pick artwork, animation, etc) since it only seemed to cause more confusion and the app already maps these values.</li>
+    <li>Twitter and Tumblr will refresh on a longer timer than DeviantArt.</li>
+    <li>Updated Angular and Electron.</li>
+  </ul>
+  <div>0.9.1 (07/17/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Post button added to save dialog that will immediately queue the submission to post.</li>
+    <li>Warning notification added for when a description is too long for Twitter (when twitter is the selected option tab).</li>
+    <li>All posts successful or otherwise will now store a log of the post in the logs tab on the submission popup thing.</li>
+    <li>HR in descriptions now supported.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed a scenario where custom description options would sometimes not appear.</li>
+    <li>Fixed a good amount of strange behaviors with descriptions created using the text editor (notify me with any strange behavior in the future).</li>
+    <li>Derpibooru should detect username more accurately now.</li>
+    <li>Fixed weird issue with duplicate tags being incorrectly removed.</li>
+    <li>Attempted to fix corrupted templates issue (your templates will be lost in this update sorry :( ).</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Derpibooru and e621 no longer get the PostyBirb ad (requested by e621 admins).</li>
+    <li>OAuth officially correctly done (I think).</li>
+  </ul>
+  <div>0.9.0 (07/09/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>New Tumblr Additional option to disable/enable adding in the title.</li>
+    <li>Pixiv now supports Additional File uploads.</li>
+    <li>Summary dialog now also shows additional files (no thumbnail yet).</li>
+    <li>
+      Completely changed how posting, queueing, and editing galleries work.
+      <ul>
+        <li>Submissions now queue in the background and post silently.</li>
+        <li>You can access Queue, Scheduled, and Unschedule submissions from the bottom status bar.</li>
+      </ul>
+    </li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Websites that are unauthorized should notify that they are unauthorized when posting.</li>
+    <li>Fixed issue with tags not being deletable (tackled 1/2 in 0.8.9).</li>
+    <li>Fixed a stupid dialog typo.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Updated translations for new stuff.</li>
+    <li>Updated translation files on PostyBirb website.</li>
+    <li>A new line was added to the basic advertise message for PostyBirb.</li>
+    <li>Updated Electron and Electron packager.</li>
+  </ul>
+  <div>0.8.8 (06/27/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Hentai Foundry added to supported websites. (pictures only)</li>
+    <li>French language support added. (Thanks to Firebreath on FA)</li>
+    <li>Save dialog should be more easy to read for invalid submissions.</li>
+    <li>New settings menu for Submissions. Options to not generate error logs and to automatically stop on failure.</li>
+    <li>Scheduled submissions that fail no longer get unscheduled.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>All website folders now work correctly.</li>
+    <li>Fixed issue where an incomplete submission could be saved.</li>
+    <li>Gifs should now post correctly on Furry Network.</li>
+    <li>Weasyl thumbnails should now post successfully.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Upgraded to Angular 6.</li>
+    <li>Attempted to increase performance of primary PostyBirb submission form since it used to lag sometimes.</li>
+    <li>Sidebar navigation items are now white-ish by default and have a hover color effect.</li>
+  </ul>
   <div>
     <div>0.8.5 (06/18/2018)</div>
     <h5>New Features</h5>

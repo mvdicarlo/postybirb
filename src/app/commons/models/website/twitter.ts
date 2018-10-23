@@ -4,11 +4,8 @@ import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/fromPromise';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Twitter extends BaseWebsite implements Website {
@@ -53,14 +50,35 @@ export class Twitter extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     const additionalFiles = (submission.submissionData.additionalFiles || []).map((additionalFile: any) => {
-      return additionalFile.getFileBuffer();
+      return { buffer: additionalFile.getFileBuffer().toString('base64'), type: additionalFile.getFileInfo().type };
     });
 
-    return Observable
-      .fromPromise(this.helper.post(submission.description.substring(0, 280).trim(), [submission.submissionData.submissionFile.getFileBuffer(), ...additionalFiles]));
+    return new Observable(observer => {
+      this.helper.post(submission.description.substring(0, 280).trim(),
+        [
+          { buffer: submission.submissionData.submissionFile.getFileBuffer().toString('base64'), type: submission.submissionData.submissionFile.getFileInfo().type }
+          , ...additionalFiles
+        ])
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        }).catch((err) => {
+          observer.error(err);
+          observer.complete();
+        });
+    });
   }
 
-  postJournal(title: string, description: string): Observable<any> {
-    return Observable.fromPromise(this.helper.post(description.substring(0, 280)));
+  postJournal(data: any): Observable<any> {
+    return new Observable(observer => {
+      this.helper.post(data.description.substring(0, 280))
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        }).catch((err) => {
+          observer.error(err);
+          observer.complete();
+        });
+    });
   }
 }

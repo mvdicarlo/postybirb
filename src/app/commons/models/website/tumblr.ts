@@ -4,11 +4,8 @@ import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/fromPromise';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Tumblr extends BaseWebsite implements Website {
@@ -50,7 +47,7 @@ export class Tumblr extends BaseWebsite implements Website {
     });
   }
 
-  getOtherInfo(): any {
+  getInfo(): any {
     return {
       blogs: this.helper.getBlogs(),
       username: this.helper.getUsername()
@@ -58,33 +55,50 @@ export class Tumblr extends BaseWebsite implements Website {
   }
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
+    const options = submission.options;
+
     const type = this.getMapping('content', submission.submissionData.submissionType);
-    const blog = submission.options.blog || this.getOtherInfo().blogs[0].name;
-    const title = `<h1>${submission.submissionData.title}</h1>`;
+    const blog = submission.options.blog || this.getInfo().blogs[0].name;
+    const title = options.useTitle ? `<h1>${submission.submissionData.title}</h1>` : '';
     const rating = this.getMapping('rating', submission.submissionData.submissionRating);
-    let description = submission.parseDescription ? submission.description
-      .replace(/<div/gm, '<p')
-      .replace(/<\/div/gm, '</p')
-      .split('\n')
-      .join('<br>') : submission.description;
+    let description = submission.parseDescription ? submission.description : submission.description;
 
     description = title + description;
 
     let tags = this.formatTags(submission.defaultTags, submission.customTags);
     if (rating === this.getMapping('rating', 'Explicit') || rating === this.getMapping('rating', 'Mature') || rating === this.getMapping('rating', 'Extreme')) {
-      tags += ',#nsfw';
+      if (!(tags || '').toLowerCase().includes('#nsfw')) {
+        tags = '#nsfw,' + tags;
+      }
     }
 
     const additionalFiles = (submission.submissionData.additionalFiles || []).map((additionalFile: any) => {
-      return additionalFile.getFileBuffer();
+      return additionalFile.getRealFile();
     });
 
-    return Observable.fromPromise(this.helper.post(blog, tags, title, description, type, [submission.submissionData.submissionFile.getFileBuffer(), ...additionalFiles]));
+    return new Observable(observer => {
+      this.helper.post(blog, tags, title, description, type, [submission.submissionData.submissionFile.getRealFile(), ...additionalFiles])
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        }).catch((err) => {
+          observer.error(err);
+          observer.complete();
+        });
+    });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
-    const replacedDescription = description.replace(/<div/gm, '<p').replace(/<\/div/gm, '</p').split('\n').join('<br>');
-    return Observable.fromPromise(this.helper.post(options.blog, this.formatTags(options.tags), title, replacedDescription, 'text', undefined))
+  postJournal(data: any): Observable<any> {
+    return new Observable(observer => {
+      this.helper.post(data.options.blog || this.getInfo().blogs[0].name, this.formatTags(data.tags), data.title, data.description, 'text', undefined)
+        .then((res) => {
+          observer.next(res);
+          observer.complete();
+        }).catch((err) => {
+          observer.error(err);
+          observer.complete();
+        });
+    });
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {

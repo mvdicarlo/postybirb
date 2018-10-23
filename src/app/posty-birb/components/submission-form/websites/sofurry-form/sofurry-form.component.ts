@@ -1,13 +1,12 @@
-import { Component, Injector, forwardRef } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseWebsiteFormComponent } from '../../base-website-form/base-website-form.component';
-import { Information } from '../../base-website-form/information.interface';
 
 @Component({
   selector: 'sofurry-form',
   templateUrl: './sofurry-form.component.html',
   styleUrls: ['./sofurry-form.component.css'],
-  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => SofurryFormComponent) }]
+  providers: [{ provide: BaseWebsiteFormComponent, useExisting: forwardRef(() => SofurryFormComponent) }],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SofurryFormComponent extends BaseWebsiteFormComponent {
 

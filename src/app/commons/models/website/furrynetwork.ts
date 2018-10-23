@@ -4,19 +4,24 @@ import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class FurryNetwork extends BaseWebsite implements Website {
   private userInformation: any;
+  private collections: any = {
+    artwork: [],
+    story: [],
+    multimedia: []
+  };
+
+  private userCollections: any = {};
 
   constructor(private http: HttpClient) {
     super(SupportedWebsites.FurryNetwork, 'https://beta.furrynetwork.com');
 
-    this.userInformation = store.get(SupportedWebsites.FurryNetwork.toLowerCase()) || {
+    this.userInformation = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value() || {
       name: null,
       token: null,
     };
@@ -40,14 +45,17 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (this.userInformation.name) {
             this.http.get(`${this.baseURL}/api/user`,
               { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
-              .subscribe(info => {
-                this.otherInformation = info;
+              .subscribe((info: any) => {
+                this.info = info;
                 this.loginStatus = WebsiteStatus.Logged_In;
+                for (let i = 0; i < info.characters.length; i++) {
+                  this.loadCollections(info.characters[i].name);
+                }
                 resolve(this.loginStatus);
               }, err => {
                 this.loginStatus = WebsiteStatus.Logged_Out;
@@ -62,6 +70,24 @@ export class FurryNetwork extends BaseWebsite implements Website {
           resolve(WebsiteStatus.Offline);
         });
     });
+  }
+
+  public loadCollections(username: string): void {
+    const collections = {};
+    const keys = Object.keys(this.collections);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      this.http.get(`${this.baseURL}/api/character/${username}/${key}/collections`,
+        { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
+        .subscribe((collection: any[]) => {
+          collections[key] = collection;
+          this.userCollections[username] = collections;
+        });
+    }
+  }
+
+  getCollectionsForUser(username): any {
+    return this.userCollections[username];
   }
 
   getLoginStatus(): WebsiteStatus {
@@ -90,8 +116,8 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
           this.http.get(`${this.baseURL}/api/user`, { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
             .subscribe((info: any) => {
-              this.userInformation.name = info.characters[0].name
-              store.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation, new Date().setMonth(new Date().getMonth() + 2));
+              this.userInformation.name = info.characters[0].name;
+              db.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation).write();
               resolve(true);
             }, err => reject(false));
         }, err => {
@@ -107,23 +133,27 @@ export class FurryNetwork extends BaseWebsite implements Website {
     };
 
     this.loginStatus = WebsiteStatus.Logged_Out;
-    store.remove(SupportedWebsites.FurryNetwork.toLowerCase());
+    db.unset(SupportedWebsites.FurryNetwork.toLowerCase()).write();
   }
 
   refresh(): Promise<any> {
     return new Promise((resolve, reject) => {
-      const storedToken = store.get(SupportedWebsites.FurryNetwork.toLowerCase());
+      const storedToken = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value();
       if (!storedToken.token) reject('No token');
       this.http.post(`${this.baseURL}/api/oauth/token`, `client_id=123&grant_type=refresh_token&refresh_token=${storedToken.token.refresh_token}`, { headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded') }).subscribe((res: any) => {
         this.userInformation = storedToken;
         this.userInformation.token.access_token = res.access_token;
-        store.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation, new Date().setMonth(new Date().getMonth() + 2));
+        db.set(SupportedWebsites.FurryNetwork.toLowerCase(), this.userInformation).write();
         resolve(`Refreshed ${this.websiteName}`);
       }, err => {
         this.unauthorize();
         reject(`Unable to refresh ${this.websiteName}`);
       });
     });
+  }
+
+  public checkAuthorized(): Promise<boolean> {
+    return this.refresh();
   }
 
   private generateUploadUrl(userProfile: string, file: File, type: any): string {
@@ -149,7 +179,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
   private generatePostData(submission: PostyBirbSubmissionData, type: any): object {
     if (type === 'story') {
       return {
-        collections: [],
+        collections: submission.options.folders || [],
         description: submission.description || submission.submissionData.title,
         status: submission.options.status,
         title: submission.submissionData.title,
@@ -160,7 +190,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
       };
     } else {
       return {
-        collections: [],
+        collections: submission.options.folders || [],
         description: submission.description,
         status: submission.options.status,
         title: submission.submissionData.title,
@@ -174,83 +204,120 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
     return new Observable(observer => {
-      const userProfile = submission.options.profile || this.userInformation.name;
-      const type = this.getMapping('content', submission.submissionData.submissionType);
-      const file = submission.submissionData.submissionFile.getRealFile();
-      const headers: HttpHeaders = new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`);
+      try {
+        const userProfile = submission.options.profile || this.userInformation.name;
+        let type = this.getMapping('content', submission.submissionData.submissionType);
+        const file = submission.submissionData.submissionFile.getRealFile();
+        const headers: HttpHeaders = new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`);
 
-      let uploadURL = this.generateUploadUrl(userProfile, file, type);
+        if (file.type === 'image/gif') type = 'multimedia';
+        let uploadURL = this.generateUploadUrl(userProfile, file, type);
 
-      if (type === 'story') {
-        this.http.post(uploadURL, JSON.stringify(this.generatePostData(submission, type)), { headers: headers })
-          .subscribe(res => {
-            observer.next(true);
-            observer.complete();
-          }, err => {
-            observer.error(this.createError(err, submission));
-            observer.complete();
-          });
-      } else {
-        this.http.post(uploadURL, file, { headers: headers })
-          .subscribe((fileInfo: any) => {
-            this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
+        if (type === 'story') {
+          try {
+            this.http.post(uploadURL, JSON.stringify(this.generatePostData(submission, type)), { headers: headers })
               .subscribe(res => {
-                observer.next(true);
+                observer.next(res);
                 observer.complete();
-
-                if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {
-                  const thumbnailFile = submission.submissionData.thumbnailFile.getRealFile();
-                  const thumbnailURL = `${this.baseURL}/api/submission/${userProfile}/${type}/${fileInfo.id}/thumbnail?` +
-                    'resumableChunkNumber=1' +
-                    '&resumableChunkSize=1048576' + `&resumableCurrentChunkSize=${thumbnailFile.size}
-                    &resumableTotalSize=${thumbnailFile.size}
-                    &resumableType=${thumbnailFile.type}
-                    &resumableIdentifier=${thumbnailFile.size}-${thumbnailFile.name.replace('.', '')}
-                    &resumableFilename=${thumbnailFile.name}&resumableRelativePath=${thumbnailFile.name}
-                    &resumableTotalChunks=1`;
-
-                  this.http.post(thumbnailURL, thumbnailFile, { headers: headers })
-                    .subscribe(success => {
-                      //NOTHING TO DO
-                    }, err => {
-                      //NOTHING TO DO
-                    });
-                }
+              }, err => {
+                observer.error(this.createError(err, submission));
+                observer.complete();
               });
-          }, err => {
-            observer.error(this.createError(err, submission));
+          } catch (e) {
+            observer.error(this.createError(e, submission));
             observer.complete();
-          });
+          }
+        } else {
+          this.http.post(uploadURL, file, { headers: headers })
+            .subscribe((fileInfo: any) => {
+              if (!fileInfo) {
+                observer.error(this.createError('fileInfo is null for post', submission));
+                observer.complete();
+                return;
+              }
+              try {
+                this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
+                  .subscribe(res => {
+                    observer.next(res);
+                    observer.complete();
+
+                    if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {
+                      const thumbnailFile = submission.submissionData.thumbnailFile.getRealFile();
+                      const thumbnailURL = `${this.baseURL}/api/submission/${userProfile}/${type}/${fileInfo.id}/thumbnail?` +
+                        'resumableChunkNumber=1' +
+                        '&resumableChunkSize=1048576' + `&resumableCurrentChunkSize=${thumbnailFile.size}
+                        &resumableTotalSize=${thumbnailFile.size}
+                        &resumableType=${thumbnailFile.type}
+                        &resumableIdentifier=${thumbnailFile.size}-${thumbnailFile.name.replace('.', '')}
+                        &resumableFilename=${thumbnailFile.name}&resumableRelativePath=${thumbnailFile.name}
+                        &resumableTotalChunks=1`;
+
+                      this.http.post(thumbnailURL, thumbnailFile, { headers: headers })
+                        .subscribe(success => {
+                          //NOTHING TO DO
+                        }, err => {
+                          //NOTHING TO DO
+                        });
+                    }
+                  }, (err) => {
+                    let msg = '';
+                    try {
+                      if (err && err.error && err.error.errors) {
+                        const keys = Object.keys(err.error.errors);
+                        for (let i = 0; i < keys.length; i++) {
+                          msg += `${keys[i].toUpperCase()}: ${keys[i] + err.error.errors[keys[i]].toString()}\n`;
+                        }
+                      }
+                    } catch (e) { }
+
+                    observer.error(this.createError(err, submission, msg.trim()));
+                    observer.complete();
+                  });
+              } catch (e) {
+                observer.error(this.createError(e, submission));
+                observer.complete();
+              }
+            }, err => {
+              observer.error(this.createError(err, submission));
+              observer.complete();
+            });
+        }
+      } catch (e) {
+        observer.error(this.createError(e, submission));
+        observer.complete();
       }
     });
   }
 
-  postJournal(title: string, description: string, options: any): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      const data = {
+      const postData = {
         community_tags_allowed: false,
         collections: [],
-        content: description,
-        description: description.split('.')[0],
-        rating: this.getMapping('rating', options.rating),
-        title,
+        content: data.description,
+        description: data.description.split('.')[0],
+        rating: this.getMapping('rating', data.rating),
+        title: data.title,
         subtitle: null,
-        tags: this.formatTags(options.tags),
+        tags: this.formatTags(data.tags),
         status: 'public'
       };
 
-      this.http.post(`${this.baseURL}/api/journal`, data, { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
+      this.http.post(`${this.baseURL}/api/journal`, postData, { headers: new HttpHeaders().set('Authorization', `Bearer ${this.userInformation.token.access_token}`) })
         .subscribe(res => {
           observer.next(true);
           observer.complete();
         }, err => {
-          observer.error(this.createError(err, { title, description, options }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
-    return super.formatTags(defaultTags, other, '-').map(tag => { return tag.replace(/(\(|\))/g, '') }).slice(0, 30);
+    return super.formatTags(defaultTags, other, '-').filter(tag => tag.length <= 30 && tag.length >= 3)
+      .map(tag => { return tag.replace(/(\(|\)|:|#|;|\]|\[|')/g, '') })
+      .filter(tag => tag.length >= 3)
+      .slice(0, 30);
   }
 }

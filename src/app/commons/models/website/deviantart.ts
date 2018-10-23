@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/retry';
+import { Observable } from 'rxjs';
+import { HTMLParser } from '../../helpers/html-parser';
 
 @Injectable()
 export class DeviantArt extends BaseWebsite implements Website {
@@ -32,7 +32,7 @@ export class DeviantArt extends BaseWebsite implements Website {
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' }).retry(1)
+      this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
           if (this.helper.isAuthorized()) {
             if (this.folders.length === 0) {
@@ -58,13 +58,22 @@ export class DeviantArt extends BaseWebsite implements Website {
     });
   }
 
-  getOtherInfo(): any {
+  getInfo(): any {
     return { folders: this.folders };
   }
 
   unauthorize(): any {
     super.unauthorize();
-    this.http.post(`${this.baseURL}/users/logout`, null).subscribe(() => { });
+    this.http.get(`${this.baseURL}`, { responseType: 'text' }).subscribe((page) => {
+      const body = new URLSearchParams();
+      body.set('validate_token', HTMLParser.getInputValue(page, 'validate_token'));
+      body.set('validate_key', HTMLParser.getInputValue(page, 'validate_key'))
+      this.http.post(`${this.baseURL}/users/logout`, body.toString(), { headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded') }).subscribe(() => { });
+    });
+  }
+
+  public checkAuthorized(): Promise<boolean> {
+    return this.helper.refresh();
   }
 
   post(submission: PostyBirbSubmissionData): Observable<any> {
@@ -131,11 +140,13 @@ export class DeviantArt extends BaseWebsite implements Website {
               if (options.freeDownload) submitForm.set('allow_free_download', 'false');
               if (options.feature) submitForm.set('feature', 'true');
               if ((options.folders || []).length > 0) {
-                let folderCount = 0;
-                options.folders.forEach((id) => {
-                  submitForm.set(`galleryids[${folderCount}]`, id);
-                  folderCount += 1;
-                });
+                if (options.category && options.category.includes('scraps')) {
+                  // skip folders when set to scraps
+                } else {
+                  for (let i = 0; i < options.folders.length; i++) {
+                    submitForm.set(`galleryids[${i}]`, options.folders[i]);
+                  }
+                }
               }
 
               this.http.post(`${this.baseURL}/api/v1/oauth2/stash/publish`, submitForm)
@@ -143,7 +154,7 @@ export class DeviantArt extends BaseWebsite implements Website {
                   observer.next(true);
                   observer.complete();
                 }, err => {
-                  observer.error(this.createError(err, submission));
+                  observer.error(this.createError(err, submission, (err.error || {}).error_description));
                   observer.complete();
                 });
             }
@@ -155,10 +166,10 @@ export class DeviantArt extends BaseWebsite implements Website {
     });
   }
 
-  postJournal(title: string, description: string): Observable<any> {
+  postJournal(data: any): Observable<any> {
     return new Observable(observer => {
       const journalData = new FormData();
-      journalData.set('body', description);
+      journalData.set('body', data.description);
       journalData.set('access_token', this.helper.getAuthorizationToken());
 
       this.http.post(`${this.baseURL}/api/v1/oauth2/user/statuses/post`, journalData)
@@ -166,7 +177,7 @@ export class DeviantArt extends BaseWebsite implements Website {
           observer.next(true);
           observer.complete();
         }, err => {
-          observer.error(this.createError(err, { title, description }));
+          observer.error(this.createError(err, data));
           observer.complete();
         });
     });
