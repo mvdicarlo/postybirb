@@ -1,5 +1,32 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>0.9.9 (10/16/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Patreon submissions can now be scheduled through additional options. (requested feature)</li>
+    <li>App will now remember the language you set it to.</li>
+    <li>Patreon will now accept pdf, rtf, txt, and md files.</li>
+    <li>Complete remake of PostyBirb's UI. Tutorial disabled for now. All feedback is welcome.</li>
+    <li>App will now attempt to re-upload a Fur Affinity submission to increase resolution limits.</li>
+    <li>Added template manager that lets you delete, view, and rename templates.</li>
+    <li>Can now disable/enable hardware acceleration in settings dialog.</li>
+    <li>Tag field will now block certain characters that most sites consider invalid ";|\\[]=*^%$!`~.?+</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Furry Network now refreshes its authentication keys correctly.</li>
+    <li>App will now wait a few seconds before trying to post a scheduled submission if it opened from tray.</li>
+    <li>Attempt to fix Inkbunny login issues for people with special characters in their password.</li>
+    <li>Fixed issue where Furry Network detecting an invalid tag would cause the post to hang indefinitely.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Text Editor will no longer force to plain text.</li>
+    <li>Text editor should try to remove inline images (they don't really work).</li>
+    <li>Removed old settings button found in sidebar. Option to clean all scheduled or unscheduled submissions can now be found in settings dialog.</li>
+    <li>Template name minimum length reduced to 2.</li>
+    <li>Big code refactor.</li>
+  </ul>
   <div>0.9.8 (09/24/2018)</div>
   <h5>New Features</h5>
   <ul>

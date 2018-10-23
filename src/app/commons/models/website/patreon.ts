@@ -21,13 +21,14 @@ export class Patreon extends BaseWebsite implements Website {
       },
       content: {
         Artwork: 'image_file',
-        Story: 0,
+        Story: 'text_only',
         Music: 'audio_embed',
         Animation: 0,
       },
       post_type: {
         Artwork: 'image_file',
-        Music: 'audio_file'
+        Music: 'audio_file',
+        Story: 'text_only'
       }
     };
   }
@@ -72,6 +73,7 @@ export class Patreon extends BaseWebsite implements Website {
               }
             }
           });
+
           this.http.post(postUrl, data, { headers: new HttpHeaders().set('X-CSRF-Signature', csrf) })
             .subscribe((res: any) => {
               const link = `${res.links.self}`;
@@ -85,7 +87,7 @@ export class Patreon extends BaseWebsite implements Website {
               submissionData.set('qqtotalfilesize', realFile.size.toString());
               submissionData.set('file', realFile);
 
-              this.http.post(`${link}/post_file?json-api-version=1.0`, submissionData,
+              this.http.post(`${link}/${submission.submissionData.submissionType !== 'Story' ? 'post_file' : 'attachments'}?json-api-version=1.0`, submissionData,
                 { headers: new HttpHeaders().set('X-CSRF-Signature', csrf).set('X-Requested-With', 'XMLHttpRequest') })
                 .subscribe((fileResponse: any) => {
                   const data: any = this.createPostData(submission);
@@ -125,7 +127,7 @@ export class Patreon extends BaseWebsite implements Website {
       }
     });
 
-    const attributes = {
+    const attributes: any = {
       content: submission.description,
       post_type: this.getMapping('post_type', submission.submissionData.submissionType),
       is_paid: options.chargePatrons,
@@ -133,6 +135,11 @@ export class Patreon extends BaseWebsite implements Website {
       title: submission.submissionData.title,
       tags: { publish: true }
     };
+
+    if (submission.options.schedule) {
+      attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
+      attributes.tags.publish = false;
+    }
 
     const relationships = {
       post_tag: {

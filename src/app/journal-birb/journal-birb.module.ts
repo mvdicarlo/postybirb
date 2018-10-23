@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { PostyBirbModule } from '../posty-birb/posty-birb.module';
+import { PostybirbModule } from '../postybirb/postybirb.module';
 
 import {
   MatButtonModule,
@@ -36,7 +36,7 @@ const routes: Routes = [
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
-    PostyBirbModule,
+    PostybirbModule,
     MatButtonModule,
     MatCardModule,
     MatInputModule,

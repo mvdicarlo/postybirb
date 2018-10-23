@@ -2,7 +2,7 @@ import { Component, Input, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 
-import { DescriptionModel } from '../../../../posty-birb/components/submission-form/base-website-form/information.interface';
+import { DescriptionModel } from '../../../../postybirb/models/description.model';
 import { AdditionalOptions } from '../../../interfaces/additional-options.interface';
 import { OptionsSectionDirective } from '../../../directives/options-section.directive';
 

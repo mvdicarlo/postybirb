@@ -1,0 +1,19 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-3 col-lg-3 col-xl-2">
+          <sofurry-folders formControlName="folder"></sofurry-folders>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-radio-group formControlName="viewOptions">
+            <mat-radio-button value="0">{{'Public' | translate}}</mat-radio-button>
+            <mat-radio-button value="1">{{'Group Only' | translate}}</mat-radio-button>
+            <mat-radio-button value="2">{{'Friends Only' | translate}}</mat-radio-button>
+            <mat-radio-button value="3">{{'Hidden' | translate}}</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

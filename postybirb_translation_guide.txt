@@ -15,9 +15,13 @@ TRANSLATOR: <Person to be credited>
 
 "Accepted Type"
 
+"Add Additional Images"
+
 "Add Files"
 
 "Add From Clipboard"
+
+"Add Thumbnail"
 
 "Additional Images"
 
@@ -34,8 +38,6 @@ TRANSLATOR: <Person to be credited>
 "Allow error logs"
 
 "Animation"
-
-"Apply Edits"
 
 "Apply Template"
 
@@ -179,6 +181,8 @@ TRANSLATOR: <Person to be credited>
 
 "Logs"
 
+"Manage Templates"
+
 "Mature"
 
 "Mature Category"
@@ -210,8 +214,6 @@ TRANSLATOR: <Person to be credited>
 "Offline"
 
 "Open"
-
-"Order Images"
 
 "Original Work"
 
@@ -255,9 +257,13 @@ TRANSLATOR: <Person to be credited>
 
 "Remove"
 
+"Remove Thumbnail"
+
 "Reset All"
 
 "Save"
+
+"Save Edits"
 
 "Save Template"
 
@@ -267,25 +273,17 @@ TRANSLATOR: <Person to be credited>
 
 "Schedule"
 
-"Schedule Submission"
-
 "Schedule or post multimedia submissions to multiple websites all at once from one simple form"
 
 "Scheduled"
 
 "Scheduled Submissions"
 
-"Select"
-
-"Select All"
-
 "Select Blog"
 
 "Select Folder"
 
 "Select Profile"
-
-"Selected"
 
 "Selected Websites"
 
@@ -308,6 +306,8 @@ TRANSLATOR: <Person to be credited>
 "Status"
 
 "Stop"
+
+"Stop Editing"
 
 "Stop posting on submission failure"
 
@@ -345,8 +345,6 @@ TRANSLATOR: <Person to be credited>
 
 "This description will be used for all websites checked to use default"
 
-"Thumbnail"
-
 "Time to post"
 
 "Title"
@@ -359,10 +357,6 @@ TRANSLATOR: <Person to be credited>
 
 "Unscheduled"
 
-"Unselect All"
-
-"Unselected"
-
 "Unsupported file size"
 
 "Unsupported file type"
@@ -372,6 +366,8 @@ TRANSLATOR: <Person to be credited>
 "Unsupported submission type"
 
 "Update Available"
+
+"Upload additional images with this submission."
 
 "Use Default"
 
@@ -392,6 +388,8 @@ TRANSLATOR: <Person to be credited>
 "Yes"
 
 "Your password is not stored."
+
+"is incomplete"
 
 "is not complete"
 

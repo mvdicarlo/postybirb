@@ -1,0 +1,50 @@
+<h2 mat-dialog-title>{{title}}</h2>
+<mat-dialog-content>
+  <div class="row no-gutters">
+    <div class="col-md-2 col-lg-2 col-xl-2">
+      <file-viewer [file]="file" height="100" width="100"></file-viewer>
+      <div *ngIf="additionalFiles.length > 0">
+        <file-viewer *ngFor="let f of additionalFiles" [file]="f" height="100" width="100"></file-viewer>
+      </div>
+    </div>
+    <div class="col-md-10 col-lg-10 col-xl-10">
+      <div class="row no-gutters">
+        <p class="submission-types col-md-12 col-lg-12 col-xl-12">
+          {{submissionType | translate}} - {{submissionRating | translate}}
+        </p>
+        <div class="col-md-12 col-lg-12 col-xl-12">
+          <table class="table w-100">
+            <thead>
+              <tr>
+                <th>Website</th>
+                <th>{{'Description' | translate}}</th>
+                <th>{{'Tags' | translate}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-template ngFor let-website [ngForOf]="websites">
+                <tr>
+                  <td>
+                    <website-logo [website]="website" height="30px" width="50px"></website-logo>
+                  </td>
+                  <td class="description">{{websiteOptions[website].description}}</td>
+                  <td>
+                    <mat-chip-list [selectable]="false">
+                      <mat-chip [selected]="false" color="accent" *ngFor="let tag of websiteOptions[website].customTags">{{tag}}</mat-chip>
+                    </mat-chip-list>
+                    <mat-chip-list [selectable]="false">
+                      <mat-chip [selected]="false" color="accent" *ngFor="let tag of websiteOptions[website].defaultTags">{{tag}}</mat-chip>
+                    </mat-chip-list>
+                  </td>
+                </tr>
+              </ng-template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>
+</mat-dialog-actions>

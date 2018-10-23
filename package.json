@@ -1,7 +1,7 @@
 {
   "name": "postybirb",
   "description": "Multimedia crossposter for multimedia websites",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "author": "Michael DiCarlo (Lemonynade)",
   "license": "BSD-3",
   "homepage": "https://bitbucket.org/Michael_DiCarlo/postybirb-angular#readme",
@@ -60,8 +60,8 @@
     "zone.js": "^0.8.26"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.7.0",
-    "@angular/cli": "~6.2.3",
+    "@angular-devkit/build-angular": "^0.8.4",
+    "@angular/cli": "~6.2.4",
     "@angular/compiler-cli": "^6.1.0",
     "@angular/language-service": "^6.1.0",
     "@types/jasmine": "~2.8.6",

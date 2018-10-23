@@ -39,7 +39,7 @@ const tumblrExpress = {
                     res.send('Tumblr successfully authenticated. You are free to close this window now.');
                     this.stop();
                 }).fail(() => {
-                    res.send('Tubmlr failed to authenticate. Auth server may be down.');
+                    res.send('Tumblr failed to authenticate. Auth server may be down.');
                     this.stop();
                 });
             });

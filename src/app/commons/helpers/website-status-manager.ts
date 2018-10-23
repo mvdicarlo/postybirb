@@ -10,7 +10,7 @@ export class WebsiteStatusManager {
     let onlineInserted: boolean = false;
     let offlineInserted: boolean = false;
 
-    const keys = Object.keys(statuses).filter(s => this.allowedWebsites.includes(s));
+    const keys = this.allowedWebsites.length ? Object.keys(statuses).filter(s => this.allowedWebsites.includes(s)) : Object.keys(statuses);
     for (let i = 0; i < keys.length; i++) {
       const website = keys[i];
       if (statuses[website] === WebsiteStatus.Logged_In) { // Add to Online, remove from Offline

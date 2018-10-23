@@ -1,0 +1,20 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="blockGuests">{{'Block Guests' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="friendsOnly">{{'Friends Only' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="notify">{{'Notify' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="scraps">{{'Scraps' | translate}}</mat-checkbox>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

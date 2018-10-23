@@ -90,6 +90,7 @@ export class UpdateService {
     const name = HTMLParser.getInputValue(versionPage, 'pollName');
     if (poll) {
       this.snotify.confirm(name, 'New Poll', {
+        timeout: 20000,
         buttons: [{
           text: 'Open',
           action: function(toast) {

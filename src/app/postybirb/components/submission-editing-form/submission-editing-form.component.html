@@ -1,0 +1,176 @@
+<form [formGroup]="form">
+  <mat-card>
+    <mat-card-header>
+      <div mat-card-avatar class="avatar">
+        <div class="img" *ngIf="file" [ngSwitch]="file.type.split('/')[0]" [title]="file.name">
+          <img [src]="src | safe" [alt]="file.name" *ngSwitchCase="'image'">
+          <video [src]="src | safe" [type]="file.type" *ngSwitchCase="'video'"></video>
+          <img [src]="fileIcon | safe" [alt]="file.name" *ngSwitchDefault>
+        </div>
+
+        <div class="img thumbnail" *ngIf="thumbnail">
+          <img [src]="thumbnailSrc | safe" [alt]="thumbnail.name" [title]="thumbnail.name">
+        </div>
+        <p class="text-truncate file-name ml-1" *ngIf="file">
+          <em>{{ file.name }}</em>
+        </p>
+      </div>
+      <div mat-card-title class="w-100">
+        <div class="d-flex">
+          <div style="flex: 10"></div>
+          <copy-submission-select #copySelect (copy)="templateSelected($event)"></copy-submission-select>
+          <form-template-select style="margin-left: 2px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
+          <button type="button" mat-button color="accent" (click)="changeThumbnailFileInput.click()" *ngIf="!thumbnail" matTooltip="No larger than 2MB">{{ 'Add Thumbnail' | translate }}</button>
+          <button type="button" mat-button color="warn" (click)="removeThumbnail()" *ngIf="thumbnail">{{ 'Remove Thumbnail' | translate }}</button>
+          <button type="button" mat-button color="accent" (click)="changeFileInput.click()">{{ 'Change File' | translate }}</button>
+          <input type="file" single class="d-none" #changeFileInput (change)="changeFile($event)" single>
+          <input type="file" single class="d-none" accept="image/*" #changeThumbnailFileInput (change)="changeThumbnail($event)" single>
+        </div>
+        <div class="row no-gutters">
+          <mat-form-field color="accent" class="col-md-4 col-lg-4 col-xl-4">
+            <mat-label>{{ 'Title' | translate }}</mat-label>
+            <input matInput #title placeholder="{{'Title' | translate}}" formControlName="title" maxLength="50">
+            <mat-hint align="end">
+              {{title.value.trim().length}} / {{title.maxLength}}
+            </mat-hint>
+          </mat-form-field>
+          <mat-form-field name="ratings-field" color="accent" class="col-md-4 col-sm-4 col-xl-4 col-lg-4">
+            <mat-label>{{ 'Rating' | translate }}</mat-label>
+            <mat-select [placeholder]="'Rating' | translate" formControlName="rating" required>
+              <mat-option value="General">{{'General' | translate}}</mat-option>
+              <mat-option value="Mature">{{'Mature' | translate}}</mat-option>
+              <mat-option value="Explicit">{{'Adult' | translate}}</mat-option>
+              <mat-option value="Extreme">{{'Extreme' | translate}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field name="schedule-field" color="accent" class="col-md-4 col-sm-4 col-xl-4 col-lg-4" [matTooltip]="form.value.schedule | date:'medium'">
+            <mat-label>{{ 'Time to post' | translate }}</mat-label>
+            <input matInput formControlName="schedule" (focus)="dt1.open()" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Time to post' | translate">
+            <mat-icon style="vertical-align: bottom; font-size: 1.2em" matSuffix>access_time</mat-icon>
+            <owl-date-time #dt1></owl-date-time>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card-header>
+
+    <mat-card-content *ngIf="editing">
+      <div class="row no-gutters">
+        <div class="row no-gutters w-100 text-danger mb-2" name="incompatibility_section">
+          <div *ngFor="let key of getIssueKeys()" class="incompatibility-section col-md-4 col-lg-4 col-xl-3">
+            <strong>{{ key | uppercase }}</strong>
+            <p *ngIf="issues[key].unsupportedByRating">{{ 'Unsupported rating' | translate }}: {{ issues[key].unsupportedByRating | translate }}</p>
+            <p *ngIf="issues[key].unsupportedByType">{{ 'Unsupported submission type' | translate }}: {{ issues[key].unsupportedByType }}</p>
+            <p *ngIf="issues[key].unsupportedByFileExtension">{{ 'Unsupported file type' | translate }}: {{ issues[key].unsupportedByFileExtension }}</p>
+            <p *ngIf="issues[key].unsupportedByFileSize > 0">{{ 'Unsupported file size' | translate }}: {{ '>' + issues[key].unsupportedByFileSize + 'MB' }}</p>
+          </div>
+          <div *ngIf="getIssueKeys().length">
+            <button mat-button color="accent" (click)="openHelpDialog()">{{ 'Help' | translate }}</button>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-lg-12 col-xl-12">
+          <div class="d-flex">
+            <mat-form-field color="accent" style="flex: 10" *ngIf="onlineWebsites.length">
+              <mat-label>{{ 'Selected Websites' | translate }}</mat-label>
+              <mat-select [placeholder]="'Selected Websites' | translate" multiple="true" formControlName="websites" required>
+                <mat-optgroup [label]="'Available Websites' | translate">
+                  <mat-option *ngFor="let item of onlineWebsites" [value]="item">{{item}}</mat-option>
+                </mat-optgroup>
+                <mat-optgroup *ngIf="offlineWebsites.length" disabled="true" [label]="'Offline' | translate">
+                  <mat-option *ngFor="let item of offlineWebsites" [value]="item">{{item}}</mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+            <p class="text-danger" *ngIf="!onlineWebsites.length"><strong><em>{{ 'Not logged into any websites' | translate }}</em></strong></p>
+            <button mat-button style="display: block" type="button" (click)="openLogin()" color="accent">{{ 'Login' | translate }}</button>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-lg-12 col-xl-12" *ngIf="form.value.websites && form.value.websites.length">
+          <mat-horizontal-stepper #stepper>
+            <mat-step [stepControl]="descriptionForm">
+              <form [formGroup]="descriptionForm" class="row no-gutters">
+                <ng-template matStepLabel>{{ 'Description' | translate }}</ng-template>
+                <div class="col-md-12 col-lg-12 col-xl-12" name="default_description">
+                  <h5>{{'Default Description' | translate}} <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon></h5>
+                  <description-field class="clearfix" formControlName="default" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
+                </div>
+                <div class="my-1 col-md-12 col-lg-12 col-xl-12" *ngFor="let website of form.value.websites">
+                  <h5>{{ website }}</h5>
+                  <description-field class="clearfix" [formControlName]="website" [defaultDescription]="defaultDescription"></description-field>
+                </div>
+              </form>
+            </mat-step>
+
+            <mat-step [stepControl]="tagForm" *ngIf="supportsTags()">
+              <form [formGroup]="tagForm" class="row no-gutters">
+                <ng-template matStepLabel>
+                  <div>
+                    {{ 'Tags' | translate }}
+                    <div *ngFor="let website of getInvalidTagFields()" class="warn shrink">
+                      {{ website }} {{'is incomplete' | translate }}
+                    </div>
+                  </div>
+                </ng-template>
+                <div name="default_tags" class="col-md-12 col-lg-12 col-xl-12">
+                  <h5>{{'Default Tags' | translate}} <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon></h5>
+                  <tag-field class="clearfix w-100" formControlName="default" [allowOverwrite]="false"></tag-field>
+                </div>
+                <div class="my-1 col-md-12 col-lg-12 col-xl-12" *ngFor="let website of getTagWebsites()">
+                  <h5>{{ website }}</h5>
+                  <tag-field class="clearfix w-100" [formControlName]="website" [defaultTags]="defaultTags"></tag-field>
+                </div>
+              </form>
+            </mat-step>
+
+            <mat-step [stepControl]="optionsForm" *ngIf="supportsAdditionalOptions()">
+              <form [formGroup]="optionsForm" class="row no-gutters">
+                <ng-template matStepLabel>
+                  <div>
+                    {{ 'Additional Options' | translate }}
+                    <div *ngFor="let website of getIncompleteOptionsFields()" class="warn shrink">
+                      {{ website }} {{'is incomplete' | translate }}
+                    </div>
+                  </div>
+                </ng-template>
+                <mat-tab-group>
+                  <mat-tab *ngFor="let website of getSelectedWebsitesWithOptions()" [label]="website">
+                    <options-section [website]="website" [control]="optionsForm.get(website)"></options-section>
+                  </mat-tab>
+                </mat-tab-group>
+              </form>
+            </mat-step>
+
+            <mat-step *ngIf="supportsAdditionalImages()">
+              <ng-template matStepLabel>
+                <div>
+                  <span>{{ 'Additional Images' | translate }}</span>
+                  <mat-icon class="help-icon" color="accent" [matTooltip]="'Additional Images Help' | translate">info</mat-icon>
+                  <div *ngFor="let website of additionalImageWebsites()" class="shrink text-success">{{website}}</div>
+                </div>
+              </ng-template>
+              <additional-images [submission]="submission"></additional-images>
+            </mat-step>
+          </mat-horizontal-stepper>
+        </div>
+
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions [class.mat-elevation-z5]="editing" [class.card-actions]="editing">
+      <div class="row no-gutters">
+        <div class="col-md-7 col-lg-7 col-xl-7">
+          <button type="button" mat-button color="warn" (click)="clearForm()">{{ 'Clear' | translate }}</button>
+          <button type="button" mat-button color="accent" *ngIf="!editing" (click)="toggleEditing()">{{ 'Edit' | translate }}</button>
+          <button type="button" mat-button color="accent" *ngIf="editing" (click)="toggleEditing()">{{ 'Stop Editing' | translate }}</button>
+          <button type="button" mat-button color="accent" *ngIf="editing" [matTooltip]="'Create Template Tooltip' | translate" (click)="saveTemplate()">{{ 'Save Template' | translate }}</button>
+        </div>
+        <div class="col-md col-lg col-xl text-right">
+          <button type="button" mat-button color="warn" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
+          <button type="button" mat-button color="accent" (click)="save()" [matTooltip]="'Save Tooltip' | translate" [disabled]="!canSave()">{{ 'Save' | translate }}</button>
+          <button type="button" mat-button color="accent" (click)="post()" [disabled]="!canSave()">{{ 'Post' | translate }}</button>
+        </div>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</form>

@@ -145,7 +145,23 @@ export class Furaffinity extends BaseWebsite implements Website {
 
               this.http.post(`${this.baseURL}/submit/`, submitForm, { responseType: 'text' })
                 .subscribe(res => {
-                  if (!res.includes('Finalize')) observer.next(res);
+                  if (!res.includes('Finalize')) {
+                    observer.next(res);
+
+                    // Try to do the resolution fix
+                    try {
+                      const submissionId = HTMLParser.getInputValue(res, 'submission_ids[]');
+                      const updateResolution: FormData = new FormData();
+                      updateResolution.set('update', 'yes');
+                      updateResolution.set('newsubmission', submission.submissionData.submissionFile.getRealFile());
+                      this.http.post(`${this.baseURL}/controls/submissions/changesubmission/${submissionId}`, updateResolution, { responseType: 'text' })
+                        .subscribe(resolutionFix => {
+                          // Do nothing I guess
+                        });
+                    } catch (e) {
+                      console.warn(e);
+                    }
+                  }
                   else observer.error(this.createError(res, submission));
                   observer.complete();
                 }, err => {

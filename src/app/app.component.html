@@ -53,16 +53,17 @@
   <footer class="px-0">
     <mat-toolbar color="accent" class="px-0">
       <div class="status-bar">
-        <posty-birb-status-bar></posty-birb-status-bar>
+        <postybirb-status-bar>
+        </postybirb-status-bar>
       </div>
     </mat-toolbar>
   </footer>
 </div>
 
 <div>
-  <select class='language-select' name="language_select" id="language_select" title='Language Select' (change)="switchLanguage($event.target.value)">
+  <select class='language-select' name="language_select" id="language_select" title='Language Select' [(ngModel)]="userLanguage" (change)="switchLanguage($event.target.value)">
     <option value="de" title="German">DE</option>
-    <option value="en" selected="selected" title="English">EN</option>
+    <option value="en" title="English">EN</option>
     <option value="es" title="Spanish">ES</option>
     <option value="fi" title="Finnish">FI</option>
     <option value="fr" title="French">FR</option>

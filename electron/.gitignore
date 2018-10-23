@@ -5,3 +5,4 @@ dist/
 PBA/
 electron-dist/
 db.json
+.DS_Store

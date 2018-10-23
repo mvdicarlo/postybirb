@@ -1,0 +1,17 @@
+.website-section {
+  margin-top: 10px;
+}
+
+.website-section h5 {
+  text-align: center;
+}
+
+.submission-types {
+  font-weight: bold;
+}
+
+.description {
+  word-wrap: break-word;
+  font-size: .85em;
+  max-width: 500px;
+}

@@ -1,0 +1,7 @@
+<form class="w-100">
+  <mat-form-field color="accent" class="w-100">
+    <mat-select [placeholder]="'Load Template' | translate" [formControl]="control">
+      <mat-option *ngFor="let template of templates; trackBy:trackBy" [value]="template">{{template.name}}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</form>

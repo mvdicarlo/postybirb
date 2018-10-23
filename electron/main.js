@@ -49,7 +49,17 @@ function createDB(name) {
     return ldb;
 }
 
-app.disableHardwareAcceleration();
+function hardwareAccelerationState() {
+    const enabled = db.get('hardwareAcceleration').value();
+    const isEnabled = enabled === undefined ? true : enabled;
+    if (!isEnabled) {
+        app.disableHardwareAcceleration();
+    }
+
+    log.info(`Hardware Acceleration is ${isEnabled ? 'ON' : 'OFF'}`);
+}
+
+hardwareAccelerationState();
 
 const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
   // Someone tried to run a second instance, we should focus our window.

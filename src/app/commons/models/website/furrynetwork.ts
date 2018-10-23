@@ -4,7 +4,6 @@ import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
-import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { Observable } from 'rxjs';
 
@@ -260,6 +259,19 @@ export class FurryNetwork extends BaseWebsite implements Website {
                           //NOTHING TO DO
                         });
                     }
+                  }, (err) => {
+                    let msg = '';
+                    try {
+                      if (err && err.error && err.error.errors) {
+                        const keys = Object.keys(err.error.errors);
+                        for (let i = 0; i < keys.length; i++) {
+                          msg += `${keys[i].toUpperCase()}: ${keys[i] + err.error.errors[keys[i]].toString()}\n`;
+                        }
+                      }
+                    } catch (e) { }
+
+                    observer.error(this.createError(err, submission, msg.trim()));
+                    observer.complete();
                   });
               } catch (e) {
                 observer.error(this.createError(e, submission));
@@ -304,7 +316,8 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
     return super.formatTags(defaultTags, other, '-').filter(tag => tag.length <= 30 && tag.length >= 3)
-      .map(tag => { return tag.replace(/(\(|\)|:|;|\]|\[)/g, '') })
+      .map(tag => { return tag.replace(/(\(|\)|:|#|;|\]|\[|')/g, '') })
+      .filter(tag => tag.length >= 3)
       .slice(0, 30);
   }
 }

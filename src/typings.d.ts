@@ -2,6 +2,7 @@ declare var module: NodeModule;
 declare var appVersion: any;
 declare var db: any;
 declare var logdb: any;
+declare var relaunch: any;
 declare var getClipboardContents: any;
 declare var getClipboardFormats: any;
 declare var getFileIcon: any;

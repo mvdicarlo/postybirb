@@ -7,12 +7,13 @@ import { FileWrapper } from './file-wrapper';
 import { Collection } from './collection';
 import { FileObject } from '../../interfaces/file-obect.interface';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
-import { SubmissionStatus } from '../../../posty-birb/enums/submission-status.enum';
-import { SubmissionData } from '../../../posty-birb/interfaces/submission-data.interface';
+import { SubmissionStatus } from '../../../postybirb/enums/submission-status.enum';
+import { SubmissionData } from '../../../postybirb/interfaces/submission-data.interface';
 
 /**
  * @interface
  * @description model used for the storage of submissions into local storage
+ * @deprecated - no longer used, merely kept for documentation
  */
 export interface SubmissionArchive {
   meta: SubmissionMetaData;

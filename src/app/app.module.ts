@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
@@ -12,8 +13,7 @@ import * as $ from 'jquery';
 import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
 import { CommonsModule } from './commons/commons.module';
 import { JournalBirbModule } from './journal-birb/journal-birb.module';
-import { PostyBirbModule } from './posty-birb/posty-birb.module';
-import { ConfigModule } from './config/config.module';
+import { PostybirbModule } from './postybirb/postybirb.module';
 import { WebsiteLoginModule } from './website-login/website-login.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { LogsModule } from './logs/logs.module';
@@ -44,12 +44,12 @@ import { SidebarComponent } from './sidebar/sidebar.component';
   imports: [
     RouterModule.forRoot([]),
     BrowserModule,
+    FormsModule,
     BrowserAnimationsModule,
     MiscellaneousModule,
     DashboardModule,
     CommonsModule.forRoot(),
-    PostyBirbModule.forRoot(),
-    ConfigModule,
+    PostybirbModule.forRoot(),
     LogsModule,
     JournalBirbModule,
     WebsiteLoginModule,

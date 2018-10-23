@@ -1,0 +1,23 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-3 col-lg-3 col-xl-2">
+          <mat-form-field color="accent">
+            <input matInput type="number" placeholder="{{'Minimum Pledge' | translate}} $" formControlName="minimumDollarsToView">
+          </mat-form-field>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="patronsOnly">{{'Patrons Only' | translate}}</mat-checkbox>
+        </div>
+        <div class="col-md-2 col-lg-2 col-xl-1">
+          <mat-checkbox formControlName="chargePatrons">{{'Charge Patrons' | translate}}</mat-checkbox>
+        </div>
+        <mat-form-field name="schedule-field" color="accent" class="col-md-3 col-lg-3 col-xl-3">
+          <input class="w-100" matInput formControlName="schedule" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Schedule' | translate">
+          <owl-date-time #dt1></owl-date-time>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+</div>

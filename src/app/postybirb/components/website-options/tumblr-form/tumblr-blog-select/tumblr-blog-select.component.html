@@ -1,0 +1,5 @@
+<mat-form-field color="accent">
+  <mat-select [placeholder]="'Select Blog' | translate" (selectionChange)="onChange($event)" [(value)]="value">
+    <mat-option *ngFor="let blog of blogs" [value]="blog.value">{{blog.label}}</mat-option>
+  </mat-select>
+</mat-form-field>

@@ -28,6 +28,10 @@ window.immediatelyCheckForScheduled = electron.remote.getCurrentWindow().immedia
 window.db = electron.remote.getCurrentWindow().db; // db is now in the main process to reduce chance of json corruption by being closed during write
 window.logdb = electron.remote.getCurrentWindow().logdb; // db is now in the main process to reduce chance of json corruption by being closed during write
 window.browserwindow = electron.remote.BrowserWindow;
+window.relaunch = function relaunch() {
+    electron.remote.app.relaunch();
+    electron.remote.app.exit();
+};
 
 window.readFile = function readFile(filePath, successCallback, errorCallback, completeCallback) {
     fs.readFile(filePath, (readErr, buffer) => {

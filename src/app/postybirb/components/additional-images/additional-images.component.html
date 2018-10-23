@@ -1,0 +1,23 @@
+<button mat-button color="accent" (click)="file.click()"><mat-icon>add</mat-icon>{{ 'Add Additional Images' | translate }}</button>
+<input type="file" class="d-none" #file (change)="addFile($event)" accept="image/*" multiple>
+
+<div class="row no-gutters">
+  <div class="col-md-12 col-lg-12 col-xl-12" *ngFor="let img of additionalFiles">
+    <div class="row no-gutters">
+      <div class="col-md col-lg col-xl text-center" name="images">
+        <file-viewer [file]="img" height="125" width="125"></file-viewer>
+        <div class="d-inline-block" style="vertical-align: middle">
+          <button class="d-block" mat-icon-button (click)="moveUp(img)">
+              <mat-icon>keyboard_arrow_up</mat-icon>
+            </button>
+          <button class="d-block" mat-icon-button (click)="moveDown(img)">
+              <mat-icon>keyboard_arrow_down</mat-icon>
+            </button>
+          <button class="d-block" mat-icon-button (click)="delete(img)">
+              <mat-icon color="warn">delete</mat-icon>
+            </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

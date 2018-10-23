@@ -1,0 +1,13 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent" class="w-100">
+            <input matInput placeholder="{{'Spoiler Text' | translate}}" formControlName="spoilerText">
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

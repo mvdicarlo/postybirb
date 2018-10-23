@@ -4,7 +4,7 @@ import { Website } from '../../interfaces/website.interface';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { BbCodeParse } from '../../../commons/helpers/bbcode-parse';
-import { PostyBirbSubmission } from '../../models/posty-birb/posty-birb-submission';
+import { PostyBirbSubmissionModel } from '../../../postybirb/models/postybirb-submission-model';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { NotifyService } from '../notify/notify.service';
 
@@ -85,6 +85,7 @@ export class WebsiteManagerService {
 
     setInterval(this.refreshAllStatuses.bind(this), 10 * 60000);
     setInterval(this.refreshAuthorizedWebsite.bind(this), 4 * 60000, [deviantArt]);
+    setInterval(this.refreshAuthorizedWebsite.bind(this), 30 * 60000, [furryNetwork]);
     setInterval(this.refreshAuthorizedWebsite.bind(this), 120 * 60000, [tumblr, twitter]);
   }
 
@@ -160,7 +161,7 @@ export class WebsiteManagerService {
     return results;
   }
 
-  public post(website: string, submission: PostyBirbSubmission): Observable<any> {
+  public post(website: string, submission: PostyBirbSubmissionModel): Observable<any> {
     const data: PostyBirbSubmissionData = submission.getAllForWebsite(website);
     data.description = this.bbcodeParser.parse(data.description, website, !data.parseDescription).parsed;
 

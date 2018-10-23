@@ -1,18 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { UpdateService } from './commons/services/update/update.service';
-import { PostManagerService } from './posty-birb/services/post-manager/post-manager.service';
-import { SchedulerService } from './posty-birb/services/scheduler/scheduler.service';
+import { PostManagerService } from './postybirb/services/post-manager/post-manager.service';
+import { SchedulerService } from './postybirb/services/scheduler/scheduler.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   public version: string;
-  public showSidebar: boolean = false;
+  public userLanguage: string = 'en';
   private knownLanguages: any = ['de', 'en', 'es', 'fi', 'fr', 'pt', 'ru'];
+
+  @ViewChild('loginPanel') loginPanel: any;
 
   constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService) {
     this.version = appVersion;
@@ -25,35 +27,22 @@ export class AppComponent {
     translate.setDefaultLang('en');
     translate.use(userLanguage);
 
-    this.loadOlderStore();
+    const storeLanguage = store.get('language');
+    this.userLanguage = storeLanguage || userLanguage;
+    this.translate.use(this.userLanguage);
+  }
+
+  ngAfterViewInit() {
+    window['loginPanel'] = this.loginPanel;
   }
 
   public switchLanguage(language: string): void {
     this.translate.use(language);
+    store.set('language', language);
   }
 
   public openURL(url: string): void {
     openUrlInBrowser(url);
-  }
-
-  // Load old configs into new config file and clear
-  private loadOlderStore(): void {
-    const globalAdvertise = store.get('globalAdvertise');
-    if (globalAdvertise !== undefined) db.set('globalAdvertise', globalAdvertise).write();
-
-    const postInterval = store.get('postInterval');
-    if (postInterval !== undefined) db.set('postInterval', postInterval).write();
-
-    const stopOnFailure = store.get('stopOnFailure');
-    if (stopOnFailure !== undefined) db.set('stopOnFailure', stopOnFailure).write();
-
-    const generateLogOnFailure = store.get('generateLogOnFailure');
-    if (generateLogOnFailure !== undefined) db.set('generateLogOnFailure', generateLogOnFailure).write();
-
-    const templates = store.get('posty-birb-templates');
-    if (templates !== undefined) db.set('posty-birb-templates', templates).write();
-
-    store.clearAll(); // No longer using local storage
   }
 
 }

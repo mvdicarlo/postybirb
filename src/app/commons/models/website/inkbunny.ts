@@ -126,7 +126,7 @@ export class Inkbunny extends BaseWebsite implements Website {
       if (!password || !username) {
         reject(false);
       } else {
-        this.http.post(`${url}username=${username}&password=${password}`)
+        this.http.post(`${url}username=${username}&password=${encodeURIComponent(password)}`) // testing encode
           .subscribe((res: any) => {
             if (res && res.sid) {
               this.userInformation = {

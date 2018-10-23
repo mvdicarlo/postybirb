@@ -1,0 +1,4 @@
+<button class="btn btn-sm btn-secondary no-outline" (click)="openSubmissions()"><mat-icon>visibility</mat-icon><span> {{ 'View Submissions' | translate }} </span><span *ngIf="submissionCount !== 0" class="badge badge-danger">{{submissionCount}}</span></button>
+<button *ngIf="queueCount !== 0" class="btn btn-sm btn-secondary no-outline" (click)="openQueue()"><span>{{ 'Posting' | translate }} </span><span *ngIf="queueCount !== 0" class="badge badge-danger">{{queueCount}}</span></button>
+<button class="btn btn-sm btn-secondary no-outline" (click)="openSettings()"><mat-icon>settings</mat-icon><span> {{ 'Settings' | translate }} </span></button>
+<button class="btn btn-sm btn-secondary no-outline" (click)="openTemplateManager()"><mat-icon>assignment</mat-icon> {{ 'Manage Templates' | translate }}</button>

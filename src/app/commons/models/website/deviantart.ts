@@ -140,8 +140,12 @@ export class DeviantArt extends BaseWebsite implements Website {
               if (options.freeDownload) submitForm.set('allow_free_download', 'false');
               if (options.feature) submitForm.set('feature', 'true');
               if ((options.folders || []).length > 0) {
-                for (let i = 0; i < options.folders.length; i++) {
-                  submitForm.set(`galleryids[${i}]`, options.folders[i]);
+                if (options.category && options.category.includes('scraps')) {
+                  // skip folders when set to scraps
+                } else {
+                  for (let i = 0; i < options.folders.length; i++) {
+                    submitForm.set(`galleryids[${i}]`, options.folders[i]);
+                  }
                 }
               }
 

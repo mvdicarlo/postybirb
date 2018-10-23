@@ -1,0 +1,13 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent">
+            <input matInput placeholder="{{'Source URL' | translate}}" formControlName="sourceURL">
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
