@@ -88,13 +88,10 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
 
   public onChange() {
     const values = this.form.value;
-
-    const ret = this.validateTagCount() ? {
+    this.onChangedCallback({
       overwrite: values.overwrite,
       tags: values.tags
-    } : null;
-
-    this.onChangedCallback(ret);
+    });
   }
 
   public writeValue(model: TagModel) {

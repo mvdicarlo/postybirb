@@ -103,7 +103,7 @@ description-field {
 }
 
 .warn {
-  color: #e53935;
+  color: #e53935 !important;
 }
 
 /*Bad fix for sizing issues in the browser w/ height*/

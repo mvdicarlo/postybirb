@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -10,8 +11,9 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class Twitter extends BaseWebsite implements Website {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.Twitter, 'https://www.twitter.com', 'twitter');
+    this.coordinator.insertService(this.websiteName, this, 120 * 60000);
   }
 
   getStatus(): Promise<WebsiteStatus> {

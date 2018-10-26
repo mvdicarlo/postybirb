@@ -6,7 +6,7 @@ import { MatDialog } from '@angular/material';
 import { SnotifyService } from 'ng-snotify';
 
 import { AdditionalOptionsComponent } from '../common/additional-options/additional-options.component';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { WebsiteStatusManager } from '../../../commons/helpers/website-status-manager';
 import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
@@ -46,7 +46,7 @@ export class JournalFormComponent implements OnDestroy {
 
   @ViewChildren(AdditionalOptionsComponent) customizableWebsites: QueryList<AdditionalOptionsComponent>;
 
-  constructor(fb: FormBuilder, private websiteManager: WebsiteManagerService, private dialog: MatDialog, private snotify: SnotifyService) {
+  constructor(fb: FormBuilder, private websiteCoordinator: WebsiteCoordinatorService, private dialog: MatDialog, private snotify: SnotifyService) {
     this.statusManager = new WebsiteStatusManager(this.supportedWebsites);
     this.defaultDescription = new BehaviorSubject(undefined);
 
@@ -58,7 +58,7 @@ export class JournalFormComponent implements OnDestroy {
       rating: ['General', Validators.required]
     });
 
-    this.websiteStatusSubscription = websiteManager.getObserver().pipe(debounceTime(250))
+    this.websiteStatusSubscription = websiteCoordinator.asObservable().pipe(debounceTime(250))
       .subscribe((statuses: any) => this._updateWebsiteStatuses(statuses));
 
     this.form.controls.defaultDescription.valueChanges.subscribe(value => this.defaultDescription.next(value));

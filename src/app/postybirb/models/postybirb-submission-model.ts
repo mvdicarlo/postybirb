@@ -138,7 +138,7 @@ export class PostyBirbSubmissionModel {
   }
 
   public getAllForWebsite(website: string): PostyBirbSubmissionData {
-    const defaultDescriptionData = this.descriptionInfo.default;
+    const defaultDescriptionData = (this.descriptionInfo || {}).default;
 
     const defaultDescription = defaultDescriptionData ? defaultDescriptionData.description : '';
     const customDescription = this.descriptionInfo[website];
@@ -199,7 +199,7 @@ export class PostyBirbSubmissionModel {
   public getSubmissionMetaData(): SubmissionMetaData {
     return {
       id: this.id,
-      title: this.title,
+      title: this.title || 'New Submission',
       order: this.order,
       type: this.type,
       rating: this.rating,

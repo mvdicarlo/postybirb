@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -11,7 +12,7 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class Furaffinity extends BaseWebsite implements Website {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.Furaffinity, 'https://www.furaffinity.net');
     this.mapping = {
       rating: {
@@ -28,6 +29,8 @@ export class Furaffinity extends BaseWebsite implements Website {
         Animation: 'flash',
       }
     };
+
+    this.coordinator.insertService(this.websiteName, this);
   }
 
   private parseFolders(page: string): void {
@@ -84,9 +87,11 @@ export class Furaffinity extends BaseWebsite implements Website {
               }
 
               this.parseFolders(controlPage);
+            } else {
+              this.loginStatus = WebsiteStatus.Logged_Out;
             }
           } catch (e) { console.warn('Unable to get folders', e) }
-          resolve(WebsiteStatus.Logged_In);
+          resolve(this.loginStatus);
         }, () => {
           this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(this.loginStatus);
@@ -150,14 +155,16 @@ export class Furaffinity extends BaseWebsite implements Website {
 
                     // Try to do the resolution fix
                     try {
-                      const submissionId = HTMLParser.getInputValue(res, 'submission_ids[]');
-                      const updateResolution: FormData = new FormData();
-                      updateResolution.set('update', 'yes');
-                      updateResolution.set('newsubmission', submission.submissionData.submissionFile.getRealFile());
-                      this.http.post(`${this.baseURL}/controls/submissions/changesubmission/${submissionId}`, updateResolution, { responseType: 'text' })
-                        .subscribe(resolutionFix => {
-                          // Do nothing I guess
-                        });
+                      if (options.reupload) {
+                        const submissionId = HTMLParser.getInputValue(res, 'submission_ids[]');
+                        const updateResolution: FormData = new FormData();
+                        updateResolution.set('update', 'yes');
+                        updateResolution.set('newsubmission', submission.submissionData.submissionFile.getRealFile());
+                        this.http.post(`${this.baseURL}/controls/submissions/changesubmission/${submissionId}`, updateResolution, { responseType: 'text' })
+                          .subscribe(resolutionFix => {
+                            // Do nothing I guess
+                          });
+                      }
                     } catch (e) {
                       console.warn(e);
                     }

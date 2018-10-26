@@ -52,9 +52,25 @@
   font-size: 0.85em;
 }
 
+.rotate {
+  transition: transform 0.5s;
+}
+
+.editing {
+  transform: rotate(-180deg);
+}
+
+.highlight {
+  border: 1px solid blue;
+}
+
 mat-card-content {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
+}
+
+mat-card-actions {
+  padding-top: 0px !important;
 }
 
 mat-form-field+mat-form-field {

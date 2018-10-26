@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { WebsiteManagerService } from '../../../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
 import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
@@ -23,7 +23,7 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
   public value: any[];
   public folders: any[];
 
-  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
+  constructor(private service: WebsiteCoordinatorService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -34,7 +34,7 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
 
   ngAfterContentInit() {
     this.populateFolders(this.service.getInfo(SupportedWebsites.DeviantArt).folders);
-    this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
+    this.statusSubscription = this.service.asObservable().subscribe((statuses) => {
       if (statuses[SupportedWebsites.DeviantArt]) {
         this.populateFolders(this.service.getInfo(SupportedWebsites.DeviantArt).folders);
         this._changeDetector.detectChanges();
@@ -82,7 +82,7 @@ export class DeviantArtFoldersComponent extends BaseControlValueAccessorComponen
       this.value = obj;
     }
 
-    this._changeDetector.detectChanges();
+    this._changeDetector.markForCheck();
   }
 
   public onChange(event: any): void {

@@ -21,7 +21,8 @@ export class FuraffinityFormComponent extends BaseOptionForm {
       gender: ['0'],
       scraps: [false],
       disableComments: [false],
-      folders: [[]]
+      folders: [[]],
+      reupload: [false]
     });
   }
 

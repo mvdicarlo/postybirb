@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { WebsiteManagerService } from '../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../commons/services/website-coordinator/website-coordinator.service';
 import { WebsiteStatus } from '../../commons/enums/website-status.enum';
 import { WebLogo } from '../../commons/enums/web-logo.enum';
 import { MatDialog } from '@angular/material';
@@ -25,11 +25,11 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
   public loading: boolean;
   public logo: string;
 
-  constructor(private webManager: WebsiteManagerService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) { }
+  constructor(private websiteCoordinator: WebsiteCoordinatorService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
-    this.status = { status: WebsiteStatus.Logged_Out, username: 'Unknown' };
-    this.statusSubscription = this.webManager.getObserver().subscribe(message => {
+    this.status = { status: WebsiteStatus.Offline, username: 'Unknown' };
+    this.statusSubscription = this.websiteCoordinator.asObservable().subscribe(message => {
       if (message && message[this.website] !== undefined) this.handleStatusUpdate(message[this.website]);
     });
 
@@ -45,7 +45,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
     let update: boolean = status !== this.status.status;
 
     if (status === WebsiteStatus.Logged_In) {
-      const username = await this.webManager.getUsername(this.website).catch(() => { });
+      const username = await this.websiteCoordinator.getUsername(this.website).catch(() => { });
       update = this.status.username !== username || update;
       this.status.username = username || 'Unknown';
       this.status.status = WebsiteStatus.Logged_In;
@@ -68,7 +68,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
     });
 
     ref.afterClosed().subscribe(() => {
-      this.webManager.checkLogin(this.website);
+      this.websiteCoordinator.check(this.website);
     });
   }
 

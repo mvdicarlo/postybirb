@@ -1,6 +1,7 @@
 import { Website } from '../../interfaces/website.interface';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { Observable } from 'rxjs';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 
 /**
  * @abstract @class BaseWebsite
@@ -8,15 +9,23 @@ import { Observable } from 'rxjs';
 export class BaseWebsite implements Website {
   public websiteName: string;
   protected baseURL: string;
-  protected loginStatus: WebsiteStatus;
   protected helper: any; //helpers such as twitter, deviantart, and tumblr bound to window
   protected mapping: any;
   protected info: any;
+  protected coordinator: WebsiteCoordinatorService;
+
+  get loginStatus(): WebsiteStatus { return this._loginStatus }
+  set loginStatus(status: WebsiteStatus) {
+    this._loginStatus = status || WebsiteStatus.Logged_Out;
+    if (this.coordinator) {
+      this.coordinator.statusUpdated(this.websiteName, status);
+    }
+  }
+  private _loginStatus: WebsiteStatus = WebsiteStatus.Logged_Out;
 
   constructor(websiteName: string, baseURL: string, helperName?: string) {
     this.websiteName = websiteName;
     this.baseURL = baseURL;
-    this.loginStatus = WebsiteStatus.Logged_Out;
     this.mapping = {};
     this.info = {};
 

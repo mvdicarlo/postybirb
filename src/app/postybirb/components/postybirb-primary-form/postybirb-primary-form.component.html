@@ -1,6 +1,6 @@
 <div class="row no-gutters primary-container">
-  <div class="col-md-2 col-lg-2 col-xl-1 mat-elevation-z3 section">
-    <div class="w-100 sticky-section" (drop)="fileDrop($event)">
+  <div class="col-md-2 col-lg-2 col-xl-1 mat-elevation-z5 section sidebar-section">
+    <div class="w-100 sticky-section" [class.mat-elevation-z3]="submissionForms && submissionForms.length > 0" (drop)="fileDrop($event)">
       <button mat-button class="font-weight-bold add-btn" [matTooltip]="'Add Files Button Tooltip' | translate" (click)="fileInput.click()" color="primary"><mat-icon>add</mat-icon>{{'Add Files' | translate}}</button>
       <button mat-button color="primary" class="w-100 copy p-1" (click)="copyFromClipboard()" [disabled]="!enableClipboardCopy()">
         {{'Add From Clipboard' | translate}}
@@ -11,14 +11,17 @@
         <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
       </mat-form-field>
     </div>
-    <div *ngIf="submissionForms && submissionForms.length > 0">
+    <div class="overlay" *ngIf="submissionForms && submissionForms.length > 0">
       <sidebar-navigator *ngFor="let item of getSubmissionNavbarItems(); trackBy:trackBySidenav" [item]="item"></sidebar-navigator>
     </div>
     <div class="bottom-sticky" *ngIf="submissions.length">
-      <button mat-button color="warn" (click)="deleteAll()">{{ 'Delete All' | translate }}</button>
+      <button type="button" mat-button color="accent" (click)="saveAllValid()" [disabled]="!canSaveMany()" [matTooltip]="'Skips incomplete forms' | translate">
+        {{ 'Save All' | translate }}<mat-icon style="font-size: 1.2em" color="warn" *ngIf="hasIncomplete()">warning</mat-icon>
+      </button>
+      <button type="button" mat-button color="warn" (click)="deleteAll()">{{ 'Delete All' | translate }}</button>
     </div>
   </div>
-  <div class="col-md col-lg col-xl section">
+  <div class="col-md col-lg col-xl section overlay">
     <div name="editing_section" class="row no-gutters">
       <submission-editing-form @flyInOut (hiddenChange)="check()" class="col-md-12 col-lg-12 col-xl-12" *ngFor="let submission of editing$ | async; trackBy:trackBy" [archive]="submission"></submission-editing-form>
     </div>

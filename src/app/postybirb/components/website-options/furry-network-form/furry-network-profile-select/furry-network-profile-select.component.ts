@@ -1,6 +1,6 @@
 import { Component, OnInit, AfterContentInit, OnDestroy, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { WebsiteManagerService } from '../../../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
 import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
@@ -19,10 +19,10 @@ import { BaseControlValueAccessorComponent } from '../../../../../commons/compon
   ]
 })
 export class FurryNetworkProfileSelectComponent extends BaseControlValueAccessorComponent implements OnInit, AfterContentInit, OnDestroy, ControlValueAccessor {
-  private statusSubscription: Subscription;
+  private statusSubscription: Subscription = Subscription.EMPTY;
   public profiles: any[];
 
-  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
+  constructor(private service: WebsiteCoordinatorService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -33,7 +33,7 @@ export class FurryNetworkProfileSelectComponent extends BaseControlValueAccessor
 
   ngAfterContentInit() {
     this.populateProfiles(this.service.getInfo(SupportedWebsites.FurryNetwork));
-    this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
+    this.statusSubscription = this.service.asObservable().subscribe((statuses) => {
       if (statuses[SupportedWebsites.FurryNetwork]) {
         this.populateProfiles(this.service.getInfo(SupportedWebsites.FurryNetwork));
       }

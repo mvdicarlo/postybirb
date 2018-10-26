@@ -67,7 +67,7 @@ export class DeviantArtCategorySelectComponent extends BaseControlValueAccessorC
       this.control.patchValue(null, { emitEvent: false });
     }
 
-    this._changeDetector.detectChanges();
+    this._changeDetector.markForCheck();
   }
 
   public onChange(value) {

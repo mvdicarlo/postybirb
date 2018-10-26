@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -11,7 +12,7 @@ import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-
 @Injectable()
 export class Weasyl extends BaseWebsite implements Website {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.Weasyl, 'https://www.weasyl.com');
     this.mapping = {
       rating: {
@@ -30,6 +31,8 @@ export class Weasyl extends BaseWebsite implements Website {
         Journal: 'journal',
       }
     };
+
+    this.coordinator.insertService(this.websiteName, this);
   }
 
   getStatus(): Promise<WebsiteStatus> {

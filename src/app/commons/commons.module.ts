@@ -35,9 +35,9 @@ import { Twitter } from './models/website/twitter';
 import { Weasyl } from './models/website/weasyl';
 
 import { WebsiteManagerService } from './services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from './services/website-coordinator/website-coordinator.service';
 import { UpdateService } from './services/update/update.service';
 
-import { FileInputComponent } from './components/file-input/file-input.component';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 import { FileViewerComponent } from './components/file-viewer/file-viewer.component';
 import { BaseControlValueAccessorComponent } from './components/base-control-value-accessor/base-control-value-accessor.component';
@@ -60,7 +60,6 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
   declarations: [
     FileViewerComponent,
     ConfirmDialogComponent,
-    FileInputComponent,
     BaseControlValueAccessorComponent,
     SafePipe,
     WebsiteLogoComponent,
@@ -68,7 +67,6 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
   exports: [
     FileViewerComponent,
     ConfirmDialogComponent,
-    FileInputComponent,
     BaseControlValueAccessorComponent,
     SafePipe,
     WebsiteLogoComponent,
@@ -107,6 +105,7 @@ export class CommonsModule {
       providers: [
         UpdateService,
         WebsiteManagerService,
+        WebsiteCoordinatorService,
         NotifyService
       ]
     }

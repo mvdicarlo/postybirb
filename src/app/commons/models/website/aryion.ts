@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -11,8 +12,9 @@ import { Observable, from } from 'rxjs';
 @Injectable()
 export class Aryion extends BaseWebsite implements Website {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.Aryion, 'https://aryion.com', 'aryion');
+    this.coordinator.insertService(this.websiteName, this);
   }
 
   getStatus(): Promise<WebsiteStatus> {

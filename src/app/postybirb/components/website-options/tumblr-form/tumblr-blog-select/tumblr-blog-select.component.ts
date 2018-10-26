@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { WebsiteManagerService } from '../../../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
 import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
@@ -22,7 +22,7 @@ export class TumblrBlogSelectComponent extends BaseControlValueAccessorComponent
   private statusSubscription: Subscription;
   public blogs: any[];
 
-  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
+  constructor(private service: WebsiteCoordinatorService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -33,7 +33,7 @@ export class TumblrBlogSelectComponent extends BaseControlValueAccessorComponent
 
   ngAfterContentInit() {
     this.populateBlogs(this.service.getInfo(SupportedWebsites.Tumblr));
-    this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
+    this.statusSubscription = this.service.asObservable().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Tumblr]) {
         this.populateBlogs(this.service.getInfo(SupportedWebsites.Tumblr));
       }

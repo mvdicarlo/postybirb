@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { SubmissionArchive } from '../../models/postybirb-submission-model';
+import { SubmissionArchive, PostyBirbSubmissionModel } from '../../models/postybirb-submission-model';
+import { CreateTemplateDialogComponent } from '../../components/dialog/create-template-dialog/create-template-dialog.component';
 
 export interface Template {
   template: SubmissionArchive;
@@ -15,7 +17,7 @@ export class TemplatesService {
   private templateSubject: BehaviorSubject<Template[]>;
   private templates: Template[] = [];
 
-  constructor() {
+  constructor(private dialog: MatDialog) {
     this.templates = db.get(this.STORE).value() || [];
     this.sort();
 
@@ -83,6 +85,17 @@ export class TemplatesService {
 
   public nameExists(name: string): boolean {
     return this.findTemplateIndex(name) !== -1;
+  }
+
+  public saveTemplate(templateModel: PostyBirbSubmissionModel): void {
+    let dialogRef: MatDialogRef<CreateTemplateDialogComponent>;
+    dialogRef = this.dialog.open(CreateTemplateDialogComponent);
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.addTemplate(result, templateModel.asSubmissionTemplate());
+      }
+    });
   }
 
   private update(): void {

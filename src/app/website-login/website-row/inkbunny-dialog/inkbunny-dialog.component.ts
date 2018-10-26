@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { MatCheckboxChange } from '@angular/material';
 
@@ -16,7 +16,7 @@ export class InkbunnyDialogComponent implements OnInit {
 
   @ViewChild('passwordInput') pw: ElementRef;
 
-  constructor(private fb: FormBuilder, private service: WebsiteManagerService) {
+  constructor(private fb: FormBuilder, private service: WebsiteCoordinatorService) {
     this.loginForm = fb.group({
       username: ['', [Validators.required]],
       password: ['', Validators.required]

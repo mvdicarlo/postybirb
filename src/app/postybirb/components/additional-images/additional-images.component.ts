@@ -50,6 +50,8 @@ export class AdditionalImagesComponent implements OnInit {
       this.additionalFiles[index] = img;
       this.additionalFiles[index + 1] = original;
     }
+
+    this.submission.setAdditionalFiles(this.additionalFiles);
   }
 
   public async moveDown(img: FileInformation) {
@@ -60,6 +62,8 @@ export class AdditionalImagesComponent implements OnInit {
       this.additionalFiles[index] = img;
       this.additionalFiles[index - 1] = original;
     }
+
+    this.submission.setAdditionalFiles(this.additionalFiles);
   }
 
   public async delete(img: FileInformation) {

@@ -1,15 +1,17 @@
 import { Component, OnInit, OnDestroy, Input, EventEmitter, Output, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
-import { Subscription, BehaviorSubject } from 'rxjs';
+import { Subscription, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { MatDialog, MatDialogRef, MatBottomSheet } from '@angular/material';
+import { MatDialog, MatBottomSheet } from '@angular/material';
 
 import { Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 
 import { checkForWebsiteAndFileIncompatibility } from '../../helpers/incompatibility-checker.helper';
+import { checkForCompletion } from '../../helpers/completion-checker.helper';
+import { _trimSubmissionFields, _filelessSubmissionCopy } from '../../helpers/submission-manipulation.helper';
+
 import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
-import { CreateTemplateDialogComponent } from '../dialog/create-template-dialog/create-template-dialog.component';
 import { FileInformation } from '../../../commons/models/file-information';
 import { OptionsForms } from '../../models/website-options.model';
 import { OptionsSectionDirective } from '../../directives/options-section.directive';
@@ -20,7 +22,7 @@ import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { TagFieldComponent } from '../tag-field/tag-field.component';
 import { TagRequirements } from '../../models/website-tag-requirements.model';
 import { TemplatesService } from '../../services/templates/templates.service';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { WebsiteStatusManager } from '../../../commons/helpers/website-status-manager';
 
 @Component({
@@ -80,16 +82,31 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   public thumbnailSrc: any;
   public fileIcon: string;
   public editing: boolean = false;
+  public highlight: boolean = false;
 
   public onlineWebsites: string[] = [];
   public offlineWebsites: string[] = [];
   private websiteStatusSubscription = Subscription.EMPTY;
   private statusManager: WebsiteStatusManager;
 
-  public issues: any = {};
+  get issues(): any { return this._issues }
+  set issues(value: any) {
+    this._issues = value;
+    this._validate();
+    this._changeDetector.markForCheck();
+  }
+  private _issues: any = {};
 
-  constructor(fb: FormBuilder, private _store: Store, private bottomSheet: MatBottomSheet, private _changeDetector: ChangeDetectorRef, private websiteManager: WebsiteManagerService, private dialog: MatDialog, private templates: TemplatesService) {
+  public passing: boolean = false;
+  private validateSubject: Subject<any>;
+
+  constructor(fb: FormBuilder, private _store: Store, private bottomSheet: MatBottomSheet, private _changeDetector: ChangeDetectorRef, private websiteCoordinator: WebsiteCoordinatorService, private dialog: MatDialog, private templates: TemplatesService) {
     this.defaultDescription = new BehaviorSubject(undefined);
+    this.validateSubject = new Subject();
+    this.validateSubject.pipe(debounceTime(150)).subscribe(() => {
+      this.canSave();
+      this._changeDetector.markForCheck();
+    }); // try to limit calls to this
 
     this.form = fb.group({
       title: ['', Validators.maxLength(50)],
@@ -120,13 +137,23 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
     this.statusManager = new WebsiteStatusManager();
 
-    this.websiteStatusSubscription = websiteManager.getObserver().pipe(debounceTime(250))
+    this.websiteStatusSubscription = websiteCoordinator.asObservable().pipe(debounceTime(250))
       .subscribe((statuses: any) => this._updateWebsiteStatuses(statuses));
 
     this.form.controls.websites.valueChanges.pipe(debounceTime(200)).subscribe((websites: string[]) => {
       this.issues = checkForWebsiteAndFileIncompatibility(this.file, this.form.value.rating, this.submission.type, websites);
       this._changeDetector.markForCheck();
     });
+
+    this.form.controls.rating.valueChanges.pipe(debounceTime(200)).subscribe(rating => {
+      this.issues = checkForWebsiteAndFileIncompatibility(this.file, rating, this.submission.type, this.form.value.websites);
+      this._changeDetector.markForCheck();
+    });
+
+    this.form.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
+    this.descriptionForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
+    this.optionsForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
+    this.tagForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
   }
 
   ngOnInit() {
@@ -146,19 +173,6 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public toggleEditing(): void {
     this.editing = !this.editing;
-
-    if (!this.editing && this._modelHasChanged()) {
-      let dialogRef = this.dialog.open(ConfirmDialogComponent, {
-        data: { title: 'Save Edits' }
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this._updateSubmission();
-          this._store.dispatch(new PostyBirbStateAction.UpdateSubmission(this.submission.asSubmissionArchive()));
-        }
-      });
-    }
   }
 
   public async openHelpDialog() {
@@ -247,6 +261,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     this.tagForm.reset();
     this.descriptionForm.reset();
     this.optionsForm.reset();
+    this.submission.setAdditionalFiles([]);
 
     this.issues = {};
     this.templateSelect.reset();
@@ -254,18 +269,32 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   }
 
   public canSave(): boolean {
+    if (Object.keys(this.issues).length) {
+      this.passing = false;
+      return false;
+    }
+
     if (this.form.valid) {
+      if (!this.editing && !checkForCompletion(_filelessSubmissionCopy(this.form.value, this.descriptionForm.value, this.tagForm.value, this.optionsForm.value))) {
+        this.passing = false;
+        return false;
+      }
+
       if (this.getInvalidTagFields().length) {
+        this.passing = false;
         return false; // has invalid tag fields
       }
 
       if (this.getIncompleteOptionsFields().length) {
+        this.passing = false;
         return false;
       }
 
+      this.passing = true;
       return true;
     }
 
+    this.passing = false;
     return false;
   }
 
@@ -279,25 +308,18 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   }
 
   public saveTemplate(): void {
-    let dialogRef: MatDialogRef<CreateTemplateDialogComponent>;
-    dialogRef = this.dialog.open(CreateTemplateDialogComponent);
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const submission: PostyBirbSubmissionModel = new PostyBirbSubmissionModel(null, null);
-        submission.descriptionInfo = this.descriptionForm.value;
-        submission.tagInfo = this.tagForm.value;
-        submission.optionInfo = this.optionsForm.value;
-        submission.unpostedWebsites = this.form.value.websites;
-        this.templates.addTemplate(result, submission.asSubmissionTemplate());
-      }
-    });
+    const submission: PostyBirbSubmissionModel = new PostyBirbSubmissionModel(null, null);
+    submission.descriptionInfo = this.descriptionForm.value;
+    submission.tagInfo = this.tagForm.value;
+    submission.optionInfo = this.optionsForm.value;
+    submission.unpostedWebsites = this.form.value.websites;
+    this.templates.saveTemplate(submission);
   }
 
   public async save() {
     if (this.canSave()) {
-      this._updateSubmission();
-      this._store.dispatch(new PostyBirbStateAction.AddSubmission(this._trimSubmissionFields(this.submission).asSubmissionArchive(), true));
+      this._updateSubmission(this.submission);
+      this._store.dispatch(new PostyBirbStateAction.AddSubmission(_trimSubmissionFields(this.submission, this.submission.unpostedWebsites).asSubmissionArchive(), true));
 
       this.bottomSheet.open(SubmissionSheetComponent, {
         data: { index: 0 }
@@ -313,8 +335,8 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          this._updateSubmission();
-          const archive = this._trimSubmissionFields(this.submission).asSubmissionArchive()
+          this._updateSubmission(this.submission);
+          const archive = _trimSubmissionFields(this.submission, this.submission.unpostedWebsites).asSubmissionArchive()
           this._store.dispatch([new PostyBirbStateAction.AddSubmission(archive, true), new PostyBirbStateAction.QueueSubmission(archive)]);
 
           this.bottomSheet.open(SubmissionSheetComponent, {
@@ -427,75 +449,17 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     this._changeDetector.markForCheck();
   }
 
-  private _modelHasChanged(): boolean {
-    let current: SubmissionArchive = this.submission.asSubmissionArchive();
-    const withUpdates: PostyBirbSubmissionModel = PostyBirbSubmissionModel.fromArchive(current);
-    current = this._trimSubmissionFields(PostyBirbSubmissionModel.fromArchive(current)).asSubmissionArchive();
-
+  public _updateSubmission(submission: PostyBirbSubmissionModel): PostyBirbSubmissionModel {
     const values = this.form.value;
-    withUpdates.title = values.title;
-    withUpdates.rating = values.rating;
-    withUpdates.descriptionInfo = this.descriptionForm.value;
-    withUpdates.tagInfo = this.tagForm.value;
-    withUpdates.optionInfo = this.optionsForm.value;
-    withUpdates.unpostedWebsites = values.websites;
-    withUpdates.schedule = values.schedule;
+    submission.title = values.title;
+    submission.rating = values.rating;
+    submission.descriptionInfo = this.descriptionForm.value;
+    submission.tagInfo = this.tagForm.value;
+    submission.optionInfo = this.optionsForm.value;
+    submission.unpostedWebsites = values.websites;
+    submission.schedule = values.schedule;
 
-    return JSON.stringify(current, (key, value) => {
-      if (value !== null) return value
-    }) != JSON.stringify(this._trimSubmissionFields(withUpdates).asSubmissionArchive(), (key, value) => {
-      if (value !== null) return value
-    });
-  }
-
-  private _updateSubmission(): PostyBirbSubmissionModel {
-    const values = this.form.value;
-    this.submission.title = values.title;
-    this.submission.rating = values.rating;
-    this.submission.descriptionInfo = this.descriptionForm.value;
-    this.submission.tagInfo = this.tagForm.value;
-    this.submission.optionInfo = this.optionsForm.value;
-    this.submission.unpostedWebsites = values.websites;
-    this.submission.schedule = values.schedule;
-
-    return this.submission;
-  }
-
-  // clean out unused things due to removing websites
-  private _trimSubmissionFields(model: PostyBirbSubmissionModel): PostyBirbSubmissionModel {
-    const websites = model.unpostedWebsites;
-
-    const tagKeys = Object.keys(model.tagInfo || {});
-    for (let i = 0; i < tagKeys.length; i++) {
-      const key = tagKeys[i];
-
-      if (key == 'default') continue;
-      if (!websites.includes(key)) {
-        delete model.tagInfo[key];
-      }
-    }
-
-    const descriptionKeys = Object.keys(model.descriptionInfo || {});
-    for (let i = 0; i < descriptionKeys.length; i++) {
-      const key = descriptionKeys[i];
-
-      if (key == 'default') continue;
-      if (!websites.includes(key)) {
-        delete model.descriptionInfo[key];
-      }
-    }
-
-    const optionKeys = Object.keys(model.optionInfo || {});
-    for (let i = 0; i < optionKeys.length; i++) {
-      const key = optionKeys[i];
-
-      if (key == 'default') continue;
-      if (!websites.includes(key)) {
-        delete model.optionInfo[key];
-      }
-    }
-
-    return model;
+    return submission;
   }
 
   private _loadFileIconImage(): void {
@@ -515,6 +479,15 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  public async _validate() {
+    this.validateSubject.next();
+  }
+
+  public toggleHighlight() {
+    this.highlight = !this.highlight;
+    this._changeDetector.markForCheck();
   }
 
 }

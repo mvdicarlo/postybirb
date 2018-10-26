@@ -1,4 +1,4 @@
-import { Directive, ViewContainerRef, ComponentFactoryResolver, Input, OnInit, AfterViewInit, Type } from '@angular/core';
+import { Directive, ViewContainerRef, ComponentFactoryResolver, Input, OnInit, AfterViewInit, Type, Output, EventEmitter } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
 import { BaseOptionForm } from '../components/base-option-form/base-option-form.component';
@@ -15,6 +15,7 @@ export interface OptionSection {
 export class OptionsSectionDirective implements OnInit, AfterViewInit {
   @Input() website: string;
   @Input() control: FormControl;
+  @Output() readonly optionChanges: EventEmitter<any> = new EventEmitter();
 
   private section: OptionSection;
 
@@ -35,6 +36,7 @@ export class OptionsSectionDirective implements OnInit, AfterViewInit {
     this.control.patchValue(this.component.optionsForm.value || {}, { emitEvent: false }); //get vals for checking
     this.component.optionsForm.valueChanges.subscribe(values => { // subscribe to changes and push up
       this.control.setValue(values, { emitEvent: false });
+      this.optionChanges.emit();
     });
 
     this.control.valueChanges.subscribe(values => { // listen to templates and resets

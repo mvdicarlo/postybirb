@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { MatDialogRef, MatRadioChange } from '@angular/material';
 
@@ -14,7 +14,7 @@ export class MastodonDialogComponent implements OnInit {
   private type: string = 'social';
   public failed: boolean;
 
-  constructor(private service: WebsiteManagerService, private dialogRef: MatDialogRef<MastodonDialogComponent>) {
+  constructor(private service: WebsiteCoordinatorService, private dialogRef: MatDialogRef<MastodonDialogComponent>) {
     this.mastodon = window['mastodon'];
   }
 

@@ -31,13 +31,23 @@
 
 .section {
   max-height: 92vh;
-  overflow-y: overlay;
   overflow-x: hidden;
+}
+
+.overlay {
+  overflow-y: overlay;
+}
+
+.sidebar-section {
+  overflow-y: hidden !important;
+  display: grid;
+  grid-template-columns: 100%;
+  grid-template-rows: auto 1fr auto;
 }
 
 .search {
   padding: 0 5px;
-  margin-top: -5px;
+  margin: -1em 0;
 }
 
 .copy {

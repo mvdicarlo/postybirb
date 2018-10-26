@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -12,7 +13,7 @@ import { HTMLParser } from '../../helpers/html-parser';
 export class DeviantArt extends BaseWebsite implements Website {
   private folders: any[] = [];
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.DeviantArt, 'https://www.deviantart.com', 'deviantart');
     this.mapping = {
       rating: {
@@ -28,26 +29,22 @@ export class DeviantArt extends BaseWebsite implements Website {
         Animation: 'flash/animations',
       }
     };
+
+    this.coordinator.insertService(this.websiteName, this, 4 * 60000);
   }
 
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
-      this.http.get(this.baseURL, { responseType: 'text' })
-        .subscribe(page => {
-          if (this.helper.isAuthorized()) {
-            if (this.folders.length === 0) {
-              this.folders = this.helper.getUserFolders().then((folders) => {
-                this.folders = folders;
-              });
-            }
-            this.loginStatus = WebsiteStatus.Logged_In;
-          } else this.loginStatus = WebsiteStatus.Logged_Out;
+      if (this.helper.isAuthorized()) {
+        if (this.folders.length === 0) {
+          this.folders = this.helper.getUserFolders().then((folders) => {
+            this.folders = folders;
+          });
+        }
+        this.loginStatus = WebsiteStatus.Logged_In;
+      } else this.loginStatus = WebsiteStatus.Logged_Out;
 
-          resolve(this.loginStatus);
-        }, () => {
-          this.loginStatus = WebsiteStatus.Offline;
-          resolve(this.loginStatus);
-        });
+      resolve(this.loginStatus);
     });
   }
 

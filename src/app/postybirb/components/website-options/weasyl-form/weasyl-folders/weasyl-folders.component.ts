@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, AfterContentInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { WebsiteManagerService } from '../../../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
 import { Subscription } from 'rxjs';
 import { SupportedWebsites } from '../../../../../commons/enums/supported-websites';
 import { BaseControlValueAccessorComponent } from '../../../../../commons/components/base-control-value-accessor/base-control-value-accessor.component';
@@ -22,7 +22,7 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
   private statusSubscription: Subscription;
   public folders: any[];
 
-  constructor(private service: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
+  constructor(private service: WebsiteCoordinatorService, private _changeDetector: ChangeDetectorRef) {
     super();
   }
 
@@ -33,7 +33,7 @@ export class WeasylFoldersComponent extends BaseControlValueAccessorComponent im
 
   ngAfterContentInit() {
     this.populateFolders(this.service.getInfo(SupportedWebsites.Weasyl).folders);
-    this.statusSubscription = this.service.getObserver().subscribe((statuses) => {
+    this.statusSubscription = this.service.asObservable().subscribe((statuses) => {
       if (statuses[SupportedWebsites.Weasyl]) {
         this.populateFolders(this.service.getInfo(SupportedWebsites.Weasyl).folders);
       }

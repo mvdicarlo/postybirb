@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject, Subscriber } from 'rxjs';
+import { Observable, Subscriber } from 'rxjs';
 import { Website } from '../../interfaces/website.interface';
 import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
@@ -34,16 +34,12 @@ import { Weasyl } from '../../models/website/weasyl';
 @Injectable()
 export class WebsiteManagerService {
   private websites: Map<string, Website>;
-  private statusSubject: BehaviorSubject<any>;
-  private refreshMap: Map<string, Website>;
 
   private bbcodeParser: BbCodeParse;
 
   constructor(derpibooru: Derpibooru, deviantArt: DeviantArt, e621: E621, furaffinity: Furaffinity, furiffic: Furiffic,
     furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, mastodon: Mastodon, pixiv: Pixiv, paigeeWorld: PaigeeWorld,
     patreon: Patreon, route50: Route50, soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, aryion: Aryion, private notify: NotifyService) {
-    this.statusSubject = new BehaviorSubject<any>({});
-    this.refreshMap = new Map<string, Website>();
     this.bbcodeParser = new BbCodeParse();
 
     this.websites = new Map<string, Website>();
@@ -59,97 +55,14 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.Route50, route50);
     this.websites.set(SupportedWebsites.SoFurry, soFurry);
     this.websites.set(SupportedWebsites.Weasyl, weasyl);
-
     this.websites.set(SupportedWebsites.FurryNetwork, furryNetwork);
-    this.refreshMap.set(SupportedWebsites.FurryNetwork, furryNetwork);
-
     this.websites.set(SupportedWebsites.DeviantArt, deviantArt);
-    this.refreshMap.set(SupportedWebsites.DeviantArt, deviantArt);
-
     if (sfw !== 'true') {
       this.websites.set(SupportedWebsites.Inkbunny, inkbunny);
-      this.refreshMap.set(SupportedWebsites.Inkbunny, inkbunny);
     }
-
     this.websites.set(SupportedWebsites.Mastodon, mastodon);
-    this.refreshMap.set(SupportedWebsites.Mastodon, mastodon);
-
     this.websites.set(SupportedWebsites.Tumblr, tumblr);
-    this.refreshMap.set(SupportedWebsites.Tumblr, tumblr);
-
     this.websites.set(SupportedWebsites.Twitter, twitter);
-    this.refreshMap.set(SupportedWebsites.Twitter, twitter);
-
-    this.refreshAuthorizedWebsites();
-    this.refreshAllStatuses();
-
-    setInterval(this.refreshAllStatuses.bind(this), 10 * 60000);
-    setInterval(this.refreshAuthorizedWebsite.bind(this), 4 * 60000, [deviantArt]);
-    setInterval(this.refreshAuthorizedWebsite.bind(this), 30 * 60000, [furryNetwork]);
-    setInterval(this.refreshAuthorizedWebsite.bind(this), 120 * 60000, [tumblr, twitter]);
-  }
-
-  private refreshAuthorizedWebsites(): void {
-    this.refreshMap.forEach((website, key) => {
-      website.refresh().then(() => {
-        this.checkLogin(key);
-      }, () => {
-        this.checkLogin(key);
-      });
-    });
-  }
-
-  private refreshAuthorizedWebsite(websites: Website[] = []): void {
-    for (let i = 0; i < websites.length; i++) {
-      const website = websites[i];
-      website.refresh().then(() => {
-        this.checkLogin(website.websiteName);
-      }, () => {
-        this.checkLogin(website.websiteName);
-      });
-    }
-  }
-
-  public refreshAllStatuses(): void {
-    this.websites.forEach((value, key) => {
-      this.checkLogin(key);
-    });
-  }
-
-  public checkLogin(website: string): void {
-    if (!this.websites.get(website)) return;
-    this.websites.get(website).getStatus().then(result => {
-      this.statusSubject.next(this.getWebsiteStatuses());
-    }).catch(result => {
-      this.statusSubject.next(this.getWebsiteStatuses());
-    });
-  }
-
-  public authorizeWebsite(website: string, authInfo: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.websites.get(website).authorize(authInfo).then((success) => resolve(success), () => reject(false));
-    });
-  }
-
-  public unauthorizeWebsite(website: string): void {
-    this.websites.get(website).unauthorize();
-    this.checkLogin(website);
-  }
-
-  /**
-   * @function getObserver
-   * @description provides an observer that outputs when website statuses are updated
-   */
-  public getObserver(): Observable<any> {
-    return this.statusSubject.asObservable();
-  }
-
-  public getUsername(website: string): Promise<string> {
-    return this.websites.get(website).getUser();
-  }
-
-  public getInfo(website: string): any {
-    return this.websites.get(website).getInfo();
   }
 
   public getWebsiteStatuses(): any[] {

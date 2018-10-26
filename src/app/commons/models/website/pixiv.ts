@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -11,7 +12,7 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class Pixiv extends BaseWebsite implements Website {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.Pixiv, 'https://www.pixiv.net');
     this.mapping = {
       rating: {
@@ -27,6 +28,8 @@ export class Pixiv extends BaseWebsite implements Website {
         Animation: 0,
       }
     };
+
+    this.coordinator.insertService(this.websiteName, this);
   }
 
   getStatus(): Promise<WebsiteStatus> {

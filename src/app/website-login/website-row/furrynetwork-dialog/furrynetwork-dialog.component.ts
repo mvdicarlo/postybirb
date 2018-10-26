@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 
 @Component({
@@ -13,7 +13,7 @@ export class FurrynetworkDialogComponent implements OnInit {
   isLoggedIn: boolean;
   invalidLoginCredentials: boolean;
 
-  constructor(private fb: FormBuilder, private service: WebsiteManagerService) {
+  constructor(private fb: FormBuilder, private service: WebsiteCoordinatorService) {
     this.loginForm = fb.group({
       username: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]

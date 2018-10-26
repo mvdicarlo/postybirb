@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { debounceTime } from 'rxjs/operators';
-import { WebsiteManagerService } from '../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../commons/enums/supported-websites';
 
 import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog.component';
@@ -38,7 +38,7 @@ export class PBWebsitesComponent implements OnInit {
   public availableWebsites: LoginObject[];
   public websites: LoginObject[];
 
-  constructor(private webManager: WebsiteManagerService, private _changeDetector: ChangeDetectorRef) {
+  constructor(private websiteCoordinator: WebsiteCoordinatorService, private _changeDetector: ChangeDetectorRef) {
     this.availableWebsites = [
       {
         website: SupportedWebsites.Aryion,
@@ -100,7 +100,7 @@ export class PBWebsitesComponent implements OnInit {
 
   ngOnInit() {
     this.websites = this.availableWebsites;
-    this.webManager.getObserver().pipe(debounceTime(200)).subscribe(statuses => {
+    this.websiteCoordinator.asObservable().pipe(debounceTime(200)).subscribe(statuses => {
       this.websites = [...this.availableWebsites].sort((a, b) => {
         const aStatus = statuses[a.website] || -1;
         const bStatus = statuses[b.website] || -1;

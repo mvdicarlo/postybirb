@@ -19,7 +19,6 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { LogsModule } from './logs/logs.module';
 
 import { SnotifyModule } from 'ng-snotify'; // imported for usage in root
-import { TourNgxBootstrapModule } from 'ngx-tour-ngx-bootstrap';
 
 import {
   MatButtonModule,
@@ -63,7 +62,6 @@ import { SidebarComponent } from './sidebar/sidebar.component';
     MatListModule,
     HttpClientModule,
     SnotifyModule,
-    TourNgxBootstrapModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

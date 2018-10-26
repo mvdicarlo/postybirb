@@ -1,6 +1,6 @@
 import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { Validators } from '@angular/forms';
-import { WebsiteManagerService } from '../../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../../commons/services/website-coordinator/website-coordinator.service';
 import { BaseOptionForm } from '../../base-option-form/base-option-form.component';
 
 @Component({
@@ -13,7 +13,7 @@ import { BaseOptionForm } from '../../base-option-form/base-option-form.componen
 export class AryionFormComponent extends BaseOptionForm {
   public folders: any[] = [];
 
-  constructor(injector: Injector, websiteManager: WebsiteManagerService) {
+  constructor(injector: Injector, websiteManager: WebsiteCoordinatorService) {
     super(injector);
     this.website = this.supportedWebsites.Aryion;
 

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -18,7 +19,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
 
   private userCollections: any = {};
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.FurryNetwork, 'https://beta.furrynetwork.com');
 
     this.userInformation = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value() || {
@@ -41,6 +42,8 @@ export class FurryNetwork extends BaseWebsite implements Website {
         Animation: 'multimedia',
       }
     };
+
+    this.coordinator.insertService(this.websiteName, this, 30 * 60000);
   }
 
   getStatus(): Promise<WebsiteStatus> {

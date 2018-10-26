@@ -33,7 +33,7 @@ export class FurryNetworkFormComponent extends BaseOptionForm {
   }
 
   public getCollectionKeys(): string[] {
-    return Object.keys(this.collectionList).sort();
+    return Object.keys(this.collectionList || {}).sort();
   }
 
 }

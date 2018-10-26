@@ -10,6 +10,7 @@
     "compile": "ng build --vendor-chunk=false",
     "build": "ng build --vendor-chunk=false --aot",
     "prod": "ng build --prod --output-hashing=none --aot",
+    "analyze": "ng build --prod --stats-json && webpack-bundle-analyzer electron/dist/stats.json",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -51,9 +52,6 @@
     "ng-pick-datetime": "^6.0.5",
     "ng-snotify": "^4.2.0",
     "ng2-ckeditor": "^1.2.1",
-    "ngx-bootstrap": "^3.0.1",
-    "ngx-tour-core": "^3.0.0",
-    "ngx-tour-ngx-bootstrap": "^3.0.0",
     "rxjs": "^6.2.1",
     "store": "^2.0.12",
     "uniqid": "^4.1.1",

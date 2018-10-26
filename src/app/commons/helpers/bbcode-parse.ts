@@ -29,7 +29,7 @@ export class BbCodeParse {
     [SupportedWebsites.Patreon]: ParseType.HTML,
     [SupportedWebsites.PaigeeWorld]: ParseType.TEXT,
     [SupportedWebsites.Route50]: ParseType.TEXT,
-    [SupportedWebsites.SoFurry]: ParseType.BBCODE,
+    [SupportedWebsites.SoFurry]: ParseType.HTML,
     [SupportedWebsites.Tumblr]: ParseType.HTML,
     [SupportedWebsites.Twitter]: ParseType.TEXT,
     [SupportedWebsites.Weasyl]: ParseType.HTML,
@@ -248,7 +248,10 @@ export class BbCodeParse {
         if (website === SupportedWebsites.Furaffinity && tag.includes('icon:')) return; //skip :dausernameicon: issue
 
         let username = tag.substring(1 + key.length, tag.length - 1);
-        if (key === 'tw' || key === 'ma') username = `@${username}`;
+        if (key === 'tw' || key === 'ma') {
+          username = `${username}`; // @ symbol causes some issues
+        }
+
         let url = (key === 'sf') ? `https://${username}${codes[key].url}` : codes[key].url + username;
 
         if (type === ParseType.BBCODE) {

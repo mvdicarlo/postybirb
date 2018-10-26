@@ -263,6 +263,8 @@ TRANSLATOR: <Person to be credited>
 
 "Save"
 
+"Save All"
+
 "Save Edits"
 
 "Save Template"
@@ -293,7 +295,13 @@ TRANSLATOR: <Person to be credited>
 
 "Sexual Themes"
 
+"Show Less"
+
+"Show More"
+
 "Show Password"
+
+"Skips incomplete forms"
 
 "Something not working right?"
 
@@ -318,8 +326,6 @@ TRANSLATOR: <Person to be credited>
 "Strong Language"
 
 "Submission Failed"
-
-"Submission Gallery"
 
 "Submission Help"
 

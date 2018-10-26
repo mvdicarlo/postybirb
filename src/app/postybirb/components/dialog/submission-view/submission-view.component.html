@@ -27,7 +27,7 @@
                   <td>
                     <website-logo [website]="website" height="30px" width="50px"></website-logo>
                   </td>
-                  <td class="description">{{websiteOptions[website].description}}</td>
+                  <td class="description"><span [innerText]="websiteOptions[website].description"></span></td>
                   <td>
                     <mat-chip-list [selectable]="false">
                       <mat-chip [selected]="false" color="accent" *ngFor="let tag of websiteOptions[website].customTags">{{tag}}</mat-chip>

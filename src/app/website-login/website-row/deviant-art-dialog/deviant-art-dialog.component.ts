@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 
 @Component({
@@ -11,7 +11,7 @@ export class DeviantArtDialogComponent implements OnInit, OnDestroy {
   @ViewChild('webview') webview: ElementRef;
   private deviantart: any;
 
-  constructor(private service: WebsiteManagerService) {
+  constructor(private service: WebsiteCoordinatorService) {
     this.deviantart = window['deviantart'];
   }
 

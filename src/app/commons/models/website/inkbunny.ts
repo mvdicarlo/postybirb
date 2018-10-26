@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
+
 import { Website } from '../../interfaces/website.interface';
 import { BaseWebsite } from './base-website';
 import { SupportedWebsites } from '../../enums/supported-websites';
@@ -12,7 +14,7 @@ import { Observable } from 'rxjs';
 export class Inkbunny extends BaseWebsite implements Website {
   private userInformation: any;
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
     super(SupportedWebsites.Inkbunny, 'https://inkbunny.net');
 
     this.userInformation = db.get(SupportedWebsites.Inkbunny.toLowerCase()).value() || {
@@ -35,6 +37,8 @@ export class Inkbunny extends BaseWebsite implements Website {
         Animation: 1,
       }
     };
+
+    this.coordinator.insertService(this.websiteName, this);
   }
 
   getStatus(): Promise<WebsiteStatus> {

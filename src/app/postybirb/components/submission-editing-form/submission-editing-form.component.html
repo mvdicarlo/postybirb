@@ -1,5 +1,5 @@
 <form [formGroup]="form">
-  <mat-card>
+  <mat-card [class.highlight]="highlight">
     <mat-card-header>
       <div mat-card-avatar class="avatar">
         <div class="img" *ngIf="file" [ngSwitch]="file.type.split('/')[0]" [title]="file.name">
@@ -18,7 +18,7 @@
       <div mat-card-title class="w-100">
         <div class="d-flex">
           <div style="flex: 10"></div>
-          <copy-submission-select #copySelect (copy)="templateSelected($event)"></copy-submission-select>
+          <copy-submission-select #copySelect [ignoreId]="archive.meta.id" (copy)="templateSelected($event)"></copy-submission-select>
           <form-template-select style="margin-left: 2px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
           <button type="button" mat-button color="accent" (click)="changeThumbnailFileInput.click()" *ngIf="!thumbnail" matTooltip="No larger than 2MB">{{ 'Add Thumbnail' | translate }}</button>
           <button type="button" mat-button color="warn" (click)="removeThumbnail()" *ngIf="thumbnail">{{ 'Remove Thumbnail' | translate }}</button>
@@ -64,7 +64,7 @@
             <p *ngIf="issues[key].unsupportedByFileSize > 0">{{ 'Unsupported file size' | translate }}: {{ '>' + issues[key].unsupportedByFileSize + 'MB' }}</p>
           </div>
           <div *ngIf="getIssueKeys().length">
-            <button mat-button color="accent" (click)="openHelpDialog()">{{ 'Help' | translate }}</button>
+            <button mat-stroked-button color="accent" (click)="openHelpDialog()">{{ 'Help' | translate }}</button>
           </div>
         </div>
 
@@ -135,7 +135,7 @@
                 </ng-template>
                 <mat-tab-group>
                   <mat-tab *ngFor="let website of getSelectedWebsitesWithOptions()" [label]="website">
-                    <options-section [website]="website" [control]="optionsForm.get(website)"></options-section>
+                    <options-section (optionChanges)="_validate()" [website]="website" [control]="optionsForm.get(website)"></options-section>
                   </mat-tab>
                 </mat-tab-group>
               </form>
@@ -159,16 +159,17 @@
 
     <mat-card-actions [class.mat-elevation-z5]="editing" [class.card-actions]="editing">
       <div class="row no-gutters">
+        <div class="col-md-12 col-lg-12 col-xl-12">
+          <button class="w-100 font-weight-bold" mat-button (click)="toggleEditing()">{{ editing ? 'Show Less' : 'Show More' | translate}}<mat-icon class="rotate" [class.editing]="editing">keyboard_arrow_down</mat-icon></button>
+        </div>
         <div class="col-md-7 col-lg-7 col-xl-7">
           <button type="button" mat-button color="warn" (click)="clearForm()">{{ 'Clear' | translate }}</button>
-          <button type="button" mat-button color="accent" *ngIf="!editing" (click)="toggleEditing()">{{ 'Edit' | translate }}</button>
-          <button type="button" mat-button color="accent" *ngIf="editing" (click)="toggleEditing()">{{ 'Stop Editing' | translate }}</button>
-          <button type="button" mat-button color="accent" *ngIf="editing" [matTooltip]="'Create Template Tooltip' | translate" (click)="saveTemplate()">{{ 'Save Template' | translate }}</button>
+          <button type="button" mat-button color="accent" [matTooltip]="'Create Template Tooltip' | translate" (click)="saveTemplate()">{{ 'Save Template' | translate }}</button>
         </div>
         <div class="col-md col-lg col-xl text-right">
           <button type="button" mat-button color="warn" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
-          <button type="button" mat-button color="accent" (click)="save()" [matTooltip]="'Save Tooltip' | translate" [disabled]="!canSave()">{{ 'Save' | translate }}</button>
-          <button type="button" mat-button color="accent" (click)="post()" [disabled]="!canSave()">{{ 'Post' | translate }}</button>
+          <button type="button" mat-button color="accent" (click)="save()" [matTooltip]="'Save Tooltip' | translate" [disabled]="!passing">{{ 'Save' | translate }}</button>
+          <button type="button" mat-button color="accent" (click)="post()" [disabled]="!passing">{{ 'Post' | translate }}</button>
         </div>
       </div>
     </mat-card-actions>

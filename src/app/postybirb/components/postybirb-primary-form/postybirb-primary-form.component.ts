@@ -23,10 +23,10 @@ import { SubmissionEditingFormComponent } from '../submission-editing-form/submi
     trigger('flyInOut', [
       transition(':enter', [
         style({ transform: 'translateX(-100%)' }),
-        animate(600, style({ transform: 'translateX(0)' }))
+        animate(500, style({ transform: 'translateX(0)' }))
       ]),
       transition(':leave', [
-        animate(600, style({ transform: 'translateX(100%)', opacity: '0' }))
+        animate(500, style({ transform: 'translateX(100%)', opacity: '0' }))
       ])
     ])
   ]
@@ -143,6 +143,46 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
         this._store.dispatch(this.submissions.map(s => new PostyBirbStateAction.DeleteSubmission(s)));
       }
     });
+  }
+
+  public async saveAllValid() {
+    if (!this.canSaveMany()) return;
+
+    let dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: { title: 'Save All' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.submissionForms.forEach(form => form.save());
+      }
+    });
+  }
+
+  public canSaveMany(): boolean {
+    if (this.submissionForms && this.submissionForms.length) {
+      const forms = this.submissionForms.toArray();
+      for (let i = 0; i < forms.length; i++) {
+        if (forms[i].passing) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  public hasIncomplete(): boolean {
+    if (this.canSaveMany()) {
+      const forms = this.submissionForms.toArray();
+      for (let i = 0; i < forms.length; i++) {
+        if (!forms[i].passing) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
 }

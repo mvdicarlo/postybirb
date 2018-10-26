@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
-import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
+import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { MatDialogRef } from '@angular/material';
 
@@ -13,7 +13,7 @@ export class TwitterDialogComponent implements OnInit, OnDestroy {
   private twitter: any;
   public failed: boolean;
 
-  constructor(private service: WebsiteManagerService, private dialogRef: MatDialogRef<TwitterDialogComponent>) {
+  constructor(private service: WebsiteCoordinatorService, private dialogRef: MatDialogRef<TwitterDialogComponent>) {
     this.twitter = window['twitter'];
     this.twitter.start();
   }
