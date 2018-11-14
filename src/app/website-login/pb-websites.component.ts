@@ -9,6 +9,7 @@ import { DeviantArtDialogComponent } from './website-row/deviant-art-dialog/devi
 import { E621DialogComponent } from './website-row/e621-dialog/e621-dialog.component';
 import { FuraffinityLoginDialogComponent } from './website-row/furaffinity-login-dialog/furaffinity-login-dialog.component';
 import { FurifficDialogComponent } from './website-row/furiffic-dialog/furiffic-dialog.component';
+import { FurryAminoDialogComponent } from './website-row/furry-amino-dialog/furry-amino-dialog.component';
 import { FurrynetworkDialogComponent } from './website-row/furrynetwork-dialog/furrynetwork-dialog.component';
 import { HentaiFoundryDialogComponent } from './website-row/hentai-foundry-dialog/hentai-foundry-dialog.component';
 import { InkbunnyDialogComponent } from './website-row/inkbunny-dialog/inkbunny-dialog.component';
@@ -58,6 +59,9 @@ export class PBWebsitesComponent implements OnInit {
       }, {
         website: SupportedWebsites.Furiffic,
         dialogComponent: FurifficDialogComponent
+      }, {
+        website: SupportedWebsites.FurryAmino,
+        dialogComponent: FurryAminoDialogComponent
       }, {
         website: SupportedWebsites.FurryNetwork,
         dialogComponent: FurrynetworkDialogComponent

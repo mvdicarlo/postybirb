@@ -19,6 +19,9 @@ const TagRequirements: any = {
   [SupportedWebsites.Furiffic]: {
     maxTags: 30
   },
+  [SupportedWebsites.FurryAmino]: {
+    exclude: true
+  },
   [SupportedWebsites.FurryNetwork]: {
     maxTags: 30,
     minCharacterLength: 3

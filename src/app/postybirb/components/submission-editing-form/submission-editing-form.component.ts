@@ -24,6 +24,7 @@ import { TagRequirements } from '../../models/website-tag-requirements.model';
 import { TemplatesService } from '../../services/templates/templates.service';
 import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { WebsiteStatusManager } from '../../../commons/helpers/website-status-manager';
+import { SubmissionSaveDialogComponent } from '../dialog/submission-save-dialog/submission-save-dialog.component';
 
 @Component({
   selector: 'submission-editing-form',
@@ -199,7 +200,8 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
       websites.includes(SupportedWebsites.Inkbunny) ||
       websites.includes(SupportedWebsites.Tumblr) ||
       websites.includes(SupportedWebsites.Twitter) ||
-      websites.includes(SupportedWebsites.Mastodon)
+      websites.includes(SupportedWebsites.Mastodon) ||
+      websites.includes(SupportedWebsites.FurryAmino)
     ) {
       return true;
     }
@@ -227,6 +229,19 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     }
 
     return [];
+  }
+
+  public tagFieldIsFailing(website: string): boolean {
+    if (this.tagFields && this.tagFields.length) {
+      const fields = this.tagFields.toArray();
+      for (let field in fields) {
+          if (fields[field].formControlName == website) {
+            return !fields[field].validateTagCount();
+          }
+      }
+    }
+
+    return false;
   }
 
   public getIncompleteOptionsFields(): string[] {
@@ -318,19 +333,29 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public async save() {
     if (this.canSave()) {
-      this._updateSubmission(this.submission);
-      this._store.dispatch(new PostyBirbStateAction.AddSubmission(_trimSubmissionFields(this.submission, this.submission.unpostedWebsites).asSubmissionArchive(), true));
+      const submission = this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive()));
+      let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
+        data: [submission]
+      });
 
-      this.bottomSheet.open(SubmissionSheetComponent, {
-        data: { index: 0 }
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this._updateSubmission(this.submission);
+          this._store.dispatch(new PostyBirbStateAction.AddSubmission(_trimSubmissionFields(this.submission, this.submission.unpostedWebsites).asSubmissionArchive(), true));
+
+          this.bottomSheet.open(SubmissionSheetComponent, {
+            data: { index: 0 }
+          });
+        }
       });
     }
   }
 
   public async post() {
     if (this.canSave()) {
-      let dialogRef = this.dialog.open(ConfirmDialogComponent, {
-        data: { title: 'Post' }
+      const submission = this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive()));
+      let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
+        data: [submission]
       });
 
       dialogRef.afterClosed().subscribe(result => {
@@ -371,7 +396,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     const files: File[] = event.target['files'];
 
     if (files.length > 0) {
-      this.submission.setSubmissionFile(new FileInformation(files[0], true));
+      this.submission.setSubmissionFile(new FileInformation(files[0], false));
       this.file = this.submission.getSubmissionFileObject();
 
       this._loadFileIconImage();
@@ -388,8 +413,8 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
     const files: File[] = event.target['files'];
 
-    if (files.length > 0 && files[0].size <= 2000000) { // no thumbnails over 2MB
-      this.submission.setThumbnailFile(new FileInformation(files[0], true));
+    if (files.length > 0 && files[0].size <= 2000000 && files[0].type.includes('image')) { // no thumbnails over 2MB
+      this.submission.setThumbnailFile(new FileInformation(files[0], false));
 
       this.submission.getThumbnailFileSource().then(src => {
         this.thumbnailSrc = src;

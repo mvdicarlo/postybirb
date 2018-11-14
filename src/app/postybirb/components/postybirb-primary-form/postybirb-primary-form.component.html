@@ -1,5 +1,5 @@
 <div class="row no-gutters primary-container">
-  <div class="col-md-2 col-lg-2 col-xl-1 mat-elevation-z5 section sidebar-section">
+  <div class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-1 mat-elevation-z5 section sidebar-section">
     <div class="w-100 sticky-section" [class.mat-elevation-z3]="submissionForms && submissionForms.length > 0" (drop)="fileDrop($event)">
       <button mat-button class="font-weight-bold add-btn" [matTooltip]="'Add Files Button Tooltip' | translate" (click)="fileInput.click()" color="primary"><mat-icon>add</mat-icon>{{'Add Files' | translate}}</button>
       <button mat-button color="primary" class="w-100 copy p-1" (click)="copyFromClipboard()" [disabled]="!enableClipboardCopy()">
@@ -21,9 +21,11 @@
       <button type="button" mat-button color="warn" (click)="deleteAll()">{{ 'Delete All' | translate }}</button>
     </div>
   </div>
-  <div class="col-md col-lg col-xl section overlay">
-    <div name="editing_section" class="row no-gutters">
-      <submission-editing-form @flyInOut (hiddenChange)="check()" class="col-md-12 col-lg-12 col-xl-12" *ngFor="let submission of editing$ | async; trackBy:trackBy" [archive]="submission"></submission-editing-form>
+  <div class="col-sm col-md col-lg col-xl section overlay">
+    <div class="container px-0">
+      <div name="editing_section" class="row no-gutters">
+        <submission-editing-form @flyInOut (hiddenChange)="check()" class="col col-md-12 col-lg-12 col-xl-12" *ngFor="let submission of editing$ | async; trackBy:trackBy" [archive]="submission"></submission-editing-form>
+      </div>
     </div>
   </div>
 </div>

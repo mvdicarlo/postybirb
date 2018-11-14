@@ -33,6 +33,7 @@ import { HentaiFoundryDialogComponent } from './website-row/hentai-foundry-dialo
 import { MastodonDialogComponent } from './website-row/mastodon-dialog/mastodon-dialog.component';
 import { PaigeeworldDialogComponent } from './website-row/paigeeworld-dialog/paigeeworld-dialog.component';
 import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog.component';
+import { FurryAminoDialogComponent } from './website-row/furry-amino-dialog/furry-amino-dialog.component';
 
 @NgModule({
   imports: [
@@ -67,7 +68,8 @@ import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog
     HentaiFoundryDialogComponent,
     MastodonDialogComponent,
     PaigeeworldDialogComponent,
-    AryionDialogComponent
+    AryionDialogComponent,
+    FurryAminoDialogComponent
   ],
   entryComponents: [
     LoginPanelComponent,
@@ -89,7 +91,8 @@ import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog
     HentaiFoundryDialogComponent,
     MastodonDialogComponent,
     PaigeeworldDialogComponent,
-    AryionDialogComponent
+    AryionDialogComponent,
+    FurryAminoDialogComponent
   ],
   exports: [
     PBWebsitesComponent

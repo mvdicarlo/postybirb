@@ -3,7 +3,7 @@
     <mat-checkbox formControlName="overwrite">{{'Overwrite Default' | translate}}</mat-checkbox>
   </div>
   <div class="d-flex">
-    <mat-form-field color="accent" class="w-100" (click)="tagInput.focus()" [class.mat-form-field-invalid]="!validateTagCount()">
+    <mat-form-field color="accent" class="w-100" (click)="tagInput.focus()">
       <mat-chip-list #chipList>
         <mat-chip *ngFor="let tag of form.value.tags" [selectable]="true" [removable]="true" (removed)="removeTag(tag)">
           {{tag}}

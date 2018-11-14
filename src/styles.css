@@ -29,6 +29,7 @@ body {
 
 .website-form {
   overflow-y: hidden;
+  margin-top: 4px;
 }
 
 .no-overflow-x {
@@ -63,55 +64,10 @@ button {
   background: linear-gradient(to left, #22ADD4, #1E98BA);
 }
 
-/* Changes to Material */
-
-.mat-drawer-container {
-  background-color: inherit !important;
-}
-
-nav .mat-expansion-panel-body {
-  padding: 0 !important;
-}
-
-.mat-tab-labels {
-  flex-wrap: wrap;
-}
-
-.mat-tab-label-active {
-  background-color: rgba(187, 222, 251, 0.1) !important;
-}
-
-.mat-card-header-text {
-  width: 100%;
-}
-
-.mat-form-field-appearance-standard .mat-form-field-flex {
-  padding-top: 0 !important;
-}
-
-.mat-tab-label-content {
-  font-weight: bold;
-}
-
-.mat-horizontal-stepper-header {
-  height: unset !important;
-  min-height: 72px;
-}
-
 description-field {
   width: 100%;
 }
 
 .warn {
   color: #e53935 !important;
-}
-
-/*Bad fix for sizing issues in the browser w/ height*/
-
-mat-sidenav {
-  width: auto !important;
-}
-
-mat-sidenav-content {
-  margin-right: 0 !important;
 }

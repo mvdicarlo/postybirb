@@ -49,7 +49,7 @@ TRANSLATOR: <Person to be credited>
 
 "Block Guests"
 
-"By using PostyBirb you agree to the Terms of Service and Rules of the sites that you are posting to. You are responsible for everything you post."
+"By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post."
 
 "Cancel"
 

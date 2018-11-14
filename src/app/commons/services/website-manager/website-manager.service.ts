@@ -14,6 +14,7 @@ import { DeviantArt } from '../../models/website/deviantart';
 import { E621 } from '../../models/website/e621';
 import { Furaffinity } from '../../models/website/furaffinity';
 import { Furiffic } from '../../models/website/furiffic';
+import { FurryAmino } from '../../models/website/furry-amino';
 import { FurryNetwork } from '../../models/website/furrynetwork';
 import { HentaiFoundry } from '../../models/website/hentaifoundry';
 import { Inkbunny } from '../../models/website/inkbunny';
@@ -39,7 +40,8 @@ export class WebsiteManagerService {
 
   constructor(derpibooru: Derpibooru, deviantArt: DeviantArt, e621: E621, furaffinity: Furaffinity, furiffic: Furiffic,
     furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, mastodon: Mastodon, pixiv: Pixiv, paigeeWorld: PaigeeWorld,
-    patreon: Patreon, route50: Route50, soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, aryion: Aryion, private notify: NotifyService) {
+    patreon: Patreon, route50: Route50, soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, aryion: Aryion, furryAmino: FurryAmino,
+    private notify: NotifyService) {
     this.bbcodeParser = new BbCodeParse();
 
     this.websites = new Map<string, Website>();
@@ -63,6 +65,7 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.Mastodon, mastodon);
     this.websites.set(SupportedWebsites.Tumblr, tumblr);
     this.websites.set(SupportedWebsites.Twitter, twitter);
+    this.websites.set(SupportedWebsites.FurryAmino, furryAmino);
   }
 
   public getWebsiteStatuses(): any[] {

@@ -31,6 +31,7 @@ import {
   MatProgressBarModule,
   MatExpansionModule
 } from '@angular/material';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { CommonsModule } from '../commons/commons.module';
 import { LogsModule } from '../logs/logs.module';
@@ -89,6 +90,8 @@ import { WeasylFoldersComponent } from './components/website-options/weasyl-form
 import { WeasylFormComponent } from './components/website-options/weasyl-form/weasyl-form.component';
 import { CopySubmissionSelectComponent } from './components/copy-submission-select/copy-submission-select.component';
 import { ManageTemplatesDialogComponent } from './components/dialog/manage-templates-dialog/manage-templates-dialog.component';
+import { SubmissionSaveDialogComponent } from './components/dialog/submission-save-dialog/submission-save-dialog.component';
+import { FurryAminoFormComponent } from './components/website-options/furry-amino-form/furry-amino-form.component';
 
 const routes: Routes = [
   {
@@ -126,6 +129,7 @@ const routes: Routes = [
     MatExpansionModule,
     MatTooltipModule,
     MatProgressBarModule,
+    DragDropModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
     ReactiveFormsModule,
@@ -181,6 +185,8 @@ const routes: Routes = [
     WeasylFormComponent,
     CopySubmissionSelectComponent,
     ManageTemplatesDialogComponent,
+    SubmissionSaveDialogComponent,
+    FurryAminoFormComponent,
   ],
   entryComponents: [
     AryionFormComponent,
@@ -207,7 +213,9 @@ const routes: Routes = [
     TumblrFormComponent,
     TwitterFormComponent,
     WeasylFormComponent,
-    ManageTemplatesDialogComponent
+    FurryAminoFormComponent,
+    ManageTemplatesDialogComponent,
+    SubmissionSaveDialogComponent
   ],
   exports: [
     DescriptionFieldComponent,

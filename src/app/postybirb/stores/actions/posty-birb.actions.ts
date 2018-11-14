@@ -63,9 +63,7 @@ export class CompleteSubmission {
 
 export class ReorderSubmission {
   static readonly type: string = '[Submission] Reorder';
-  constructor(public archive: SubmissionArchive) {
-    this.archive = Helpers.copy(archive);
-  }
+  constructor(public previousIndex: number, public currentIndex: number) {}
 }
 
 export class LogSubmissionPost {

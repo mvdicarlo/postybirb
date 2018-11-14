@@ -2,47 +2,47 @@
   <div name="options" *ngIf="isActive">
     <form [formGroup]="optionsForm">
       <div class="row no-gutters">
-        <div class="col-md-3 col-lg-3 col-xl-2">
-          <mat-checkbox formControlName="original">{{'Original Work' | translate}}</mat-checkbox>
-        </div>
-        <div class="col-md-4 col-lg-4 col-xl-3">
+        <div class="col-md col-lg col-xl">
           <mat-checkbox formControlName="communityTags">{{'Allow Community Tags' | translate}}</mat-checkbox>
+          <mat-checkbox formControlName="original">{{'Original Work' | translate}}</mat-checkbox>
+          <mat-checkbox formControlName="sexual" *ngIf="optionsForm.value.restrictSexual === '0'">{{'Sexual Content' | translate}}</mat-checkbox>
         </div>
-      </div>
-      <div class="row no-gutters">
-        <div class="col-md-5 col-lg-5 col-xl-5">
-          <mat-form-field class="w-100" color="accent">
-            <mat-select formControlName="content" [placeholder]="'Content' | translate" multiple>
-              <mat-option value="violent">{{'Violence' | translate}}</mat-option>
-              <mat-option value="drug">References to drugs, alcohol, and smoking</mat-option>
-              <mat-option value="thoughts">Strong language/Sensitive themes</mat-option>
-              <mat-option value="antisocial">Depictions of criminal activity</mat-option>
-              <mat-option value="religion">Religious imagery</mat-option>
-            </mat-select>
-          </mat-form-field>
+
+        <div class="col-md-9 col-lg-9 col-xl-9">
+          <div class="row no-gutters">
+            <div class="col-md-5 col-lg-5 col-xl-5">
+              <mat-form-field class="w-100" color="accent">
+                <mat-select formControlName="content" [placeholder]="'Content' | translate" multiple>
+                  <mat-option value="violent">{{'Violence' | translate}}</mat-option>
+                  <mat-option value="drug">References to drugs, alcohol, and smoking</mat-option>
+                  <mat-option value="thoughts">Strong language/Sensitive themes</mat-option>
+                  <mat-option value="antisocial">Depictions of criminal activity</mat-option>
+                  <mat-option value="religion">Religious imagery</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-3 col-lg-3 col-xl-2">
+              <mat-form-field class="w-100" color="accent">
+                <mat-select formControlName="restrictSexual" [placeholder]="'Viewing Restrictions' | translate">
+                  <mat-option value="0">{{'All Ages' | translate}}</mat-option>
+                  <mat-option value="1">R-18</mat-option>
+                  <mat-option value="2">R-18G</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-3 col-lg-3 col-xl-3" *ngIf="optionsForm.value.restrictSexual !== '0'">
+              <mat-form-field color="accent" class="w-100">
+                <mat-select formControlName="sexualTypes" [placeholder]="'Mature Category' | translate" multiple>
+                  <mat-option value="lo">{{'Minors' | translate}}</mat-option>
+                  <mat-option value="furry">Furry</mat-option>
+                  <mat-option value="bl">BL</mat-option>
+                  <mat-option value="yuri">GL</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
         </div>
-        <div class="col-md-3 col-lg-3 col-xl-2">
-          <mat-form-field class="w-100" color="accent">
-            <mat-select formControlName="restrictSexual" [placeholder]="'Viewing Restrictions' | translate">
-              <mat-option value="0">{{'All Ages' | translate}}</mat-option>
-              <mat-option value="1">R-18</mat-option>
-              <mat-option value="2">R-18G</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-md-2 col-lg-2 col-xl-2" *ngIf="optionsForm.value.restrictSexual === '0'">
-          <mat-checkbox formControlName="sexual">{{'Sexual Content' | translate}}</mat-checkbox>
-        </div>
-        <div class="col-md-3 col-lg-3 col-xl-3" *ngIf="optionsForm.value.restrictSexual !== '0'">
-          <mat-form-field color="accent" class="w-100">
-            <mat-select formControlName="sexualTypes" [placeholder]="'Mature Category' | translate" multiple>
-              <mat-option value="lo">{{'Minors' | translate}}</mat-option>
-              <mat-option value="furry">Furry</mat-option>
-              <mat-option value="bl">BL</mat-option>
-              <mat-option value="yuri">GL</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
+
       </div>
     </form>
   </div>

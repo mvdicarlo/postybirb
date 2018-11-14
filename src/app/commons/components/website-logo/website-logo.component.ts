@@ -9,8 +9,8 @@ import { WebLogo } from '../../enums/web-logo.enum';
 })
 export class WebsiteLogoComponent {
   @Input() website: string;
-  @Input() height: string;
-  @Input() width: string;
+  @Input() height: string = '50px';
+  @Input() width: string = '50px';
 
   public readonly webLogo: any = WebLogo;
 

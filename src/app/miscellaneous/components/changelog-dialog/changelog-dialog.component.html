@@ -1,16 +1,20 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
-  <div>0.9.9 (10/16/2018)</div>
+  <div>1.0.1 (11/07/2018)</div>
   <h5>New Features</h5>
   <ul>
-    <li>Patreon submissions can now be scheduled through additional options. (requested feature)</li>
-    <li>App will now remember the language you set it to.</li>
+    <li>Massive remake of PostyBirb UI.</li>
+    <li>FurryAmino added to PostyBirb.</li>
+    <li>Fur Affinity now has a new option to re-upload a Fur Affinity submission to increase resolution limits. (On by default)</li>
+    <li>Patreon submissions can now be scheduled through additional options.</li>
     <li>Patreon will now accept pdf, rtf, txt, and md files.</li>
-    <li>Complete remake of PostyBirb's UI. Tutorial disabled for now. All feedback is welcome.</li>
-    <li>Fur Affinity now has a new option to re-upload a Fur Affinity submission to increase resolution limits.</li>
+    <li>App will now remember the language you set it to.</li>
     <li>Added template manager that lets you delete, view, and rename templates.</li>
     <li>Can now disable/enable hardware acceleration in settings dialog.</li>
-    <li>Tag field will now block certain characters that most sites consider invalid ";|\\[]=*^%$!`~.?+</li>
+    <li>Tag field will now block certain characters that most sites consider invalid ";|\[]=*^%$!`~.?+</li>
+    <li>Will now display username for website being posted to during posting.</li>
+    <li>You can now re-order submissions in the submission sheet by dragging.</li>
+    <li>You can now copy a submission's data into one being edited.</li>
   </ul>
   <h5>Bug Fixes</h5>
   <ul>
@@ -18,6 +22,7 @@
     <li>App will now wait a few seconds before trying to post a scheduled submission if it opened from tray.</li>
     <li>Attempt to fix Inkbunny login issues for people with special characters in their password.</li>
     <li>Fixed issue where Furry Network detecting an invalid tag would cause the post to hang indefinitely.</li>
+    <li>Attempt to fix Furrific posting issues (I need more failure logs to detect any further issue).</li>
   </ul>
   <h5>Miscellaneous</h5>
   <ul>
@@ -27,7 +32,7 @@
     <li>Text editor should try to remove inline images (they don't really work).</li>
     <li>Removed old settings button found in sidebar. Option to clean all scheduled or unscheduled submissions can now be found in settings dialog.</li>
     <li>Template name minimum length reduced to 2.</li>
-    <li>Big code refactor.</li>
+    <li>Updated Angular to v7</li>
   </ul>
   <div>0.9.8 (09/24/2018)</div>
   <h5>New Features</h5>

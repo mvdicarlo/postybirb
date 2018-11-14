@@ -10,6 +10,7 @@ const SupportedWebsites = {
   e621: 'e621',
   Furaffinity: 'Fur Affinity',
   Furiffic: 'Furiffic',
+  FurryAmino: 'Furry Amino',
   FurryNetwork: 'FurryNetwork',
   HentaiFoundry: 'Hentai Foundry',
   Inkbunny: 'Inkbunny',

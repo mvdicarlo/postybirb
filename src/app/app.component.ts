@@ -3,6 +3,9 @@ import { TranslateService } from '@ngx-translate/core';
 import { UpdateService } from './commons/services/update/update.service';
 import { PostManagerService } from './postybirb/services/post-manager/post-manager.service';
 import { SchedulerService } from './postybirb/services/scheduler/scheduler.service';
+import { MatDialog } from '@angular/material';
+import { ConfirmDialogComponent } from './commons/components/confirm-dialog/confirm-dialog.component';
+import { AgreementDialogComponent } from './miscellaneous/components/agreement-dialog/agreement-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +19,7 @@ export class AppComponent implements AfterViewInit {
 
   @ViewChild('loginPanel') loginPanel: any;
 
-  constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService) {
+  constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService, private dialog: MatDialog) {
     this.version = appVersion;
 
     let userLanguage = window.navigator.language.split('-')[0];
@@ -34,6 +37,20 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     window['loginPanel'] = this.loginPanel;
+    if (!store.get('licenseAgreement')) {
+      this.dialog.open(AgreementDialogComponent, {
+        closeOnNavigation: false,
+        disableClose: true
+      })
+      .afterClosed()
+      .subscribe(result => {
+        if (result === true) {
+          store.set('licenseAgreement', true);
+        } else {
+          window.close();
+        }
+      });
+    }
   }
 
   public switchLanguage(language: string): void {

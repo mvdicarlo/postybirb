@@ -1,0 +1,17 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md-3 col-lg-3 col-xl-3">
+          <mat-form-field color="accent">
+            <mat-select [placeholder]="'Category' | translate" formControlName="categories" multiple>
+              <mat-optgroup [label]="category.label" *ngFor="let category of categories">
+                <mat-option *ngFor="let cat of category.nested" [value]="cat.categoryId">{{cat.label}}</mat-option>
+              </mat-optgroup>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

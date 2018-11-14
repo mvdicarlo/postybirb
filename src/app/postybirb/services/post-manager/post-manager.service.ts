@@ -125,6 +125,7 @@ export class PostHandler {
 
   private waitMap: any = {
     [SupportedWebsites.Furaffinity]: 20500,
+    [SupportedWebsites.FurryAmino]: 30000,
     [SupportedWebsites.DeviantArt]: 6000,
     [SupportedWebsites.Pixiv]: 60 * 1000 * 10
   };
@@ -212,7 +213,7 @@ export class PostHandler {
   private generateTimeout(website: string): number {
     const now = Date.now();
     const lastPosted: number = db.get(`lastPosted${website}`).value() || 0;
-    const wait: number = this.waitMap[website] || 500;
+    const wait: number = this.waitMap[website] || 3000;
 
     return lastPosted + wait <= now ? 100 : Math.abs(now - lastPosted - wait);
   }

@@ -1,7 +1,7 @@
 .app-container {
   min-height: 100%;
   display: grid;
-  grid-template-rows: 5vh 92vh 3vh;
+  grid-template-rows: 40px calc(100vh - 66px) 26px;
   grid-template-columns: 100%;
 }
 
@@ -10,7 +10,7 @@ header mat-toolbar {
 }
 
 footer mat-toolbar {
-  height: auto !important;
+  height: 100% !important;
 }
 
 mat-sidenav-container,
@@ -77,6 +77,9 @@ mat-drawer-container {
   background: #464545;
   color: #ffffff;
   z-index: 9999;
+  height: 26px;
+  border: none;
+  outline: none;
 }
 
 .main-section {

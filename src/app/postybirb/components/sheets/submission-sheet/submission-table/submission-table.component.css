@@ -2,10 +2,30 @@ submission-row {
   display: table-row;
 }
 
+submission-row:hover {
+  background-color: #234;
+}
+
+button {
+  border-radius: unset !important;
+}
+
 .submission-table-footer {
   /* position: sticky;
   bottom: 0; */
   position: absolute;
   width: 100%;
   bottom: 0;
+}
+
+.movable {
+  cursor: move;
+  background-color: inherit;
+}
+
+.drag-placeholder {
+  background: #ccc;
+  border: dotted 3px #999;
+  min-height: 60px;
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }

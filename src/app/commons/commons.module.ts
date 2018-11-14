@@ -21,6 +21,7 @@ import { DeviantArt } from './models/website/deviantart';
 import { E621 } from './models/website/e621';
 import { Furaffinity } from './models/website/furaffinity';
 import { Furiffic } from './models/website/furiffic';
+import { FurryAmino } from './models/website/furry-amino';
 import { FurryNetwork } from './models/website/furrynetwork';
 import { HentaiFoundry } from './models/website/hentaifoundry';
 import { Inkbunny } from './models/website/inkbunny';
@@ -81,6 +82,7 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     E621,
     Furaffinity,
     Furiffic,
+    FurryAmino,
     FurryNetwork,
     HentaiFoundry,
     Inkbunny,

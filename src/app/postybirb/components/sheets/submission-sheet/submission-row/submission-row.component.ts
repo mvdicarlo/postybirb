@@ -12,6 +12,7 @@ import { ScheduleSubmissionDialogComponent } from '../../../dialog/schedule-subm
 import { SubmissionViewComponent } from '../../../dialog/submission-view/submission-view.component';
 import { SubmissionStatus } from '../../../../enums/submission-status.enum';
 import { PostManagerService, PostHandler } from '../../../../services/post-manager/post-manager.service';
+import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
 
 @Component({
   selector: 'submission-row',
@@ -20,7 +21,6 @@ import { PostManagerService, PostHandler } from '../../../../services/post-manag
 })
 export class SubmissionRowComponent implements OnInit, OnDestroy {
   @Input() archive: SubmissionArchive;
-  @Input() reorder: boolean = false;
 
   public submission: PostyBirbSubmissionModel;
   public submissionStatus: any = SubmissionStatus;
@@ -36,12 +36,14 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
   public currentlyPostingTo: string = null;
   public logo: any = null;
   public waitingUntil: Date = null;
+  public postingUsername: string;
 
   private subscription: Subscription = Subscription.EMPTY;
   private handlerSubscription: Subscription = Subscription.EMPTY;
   private handler: PostHandler = null;
 
-  constructor(private _store: Store, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef, private postManager: PostManagerService, private router: Router) { }
+  constructor(private _store: Store, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef,
+    private postManager: PostManagerService, private websiteCoordinator: WebsiteCoordinatorService, private router: Router) { }
 
   ngOnInit() {
     this.submission = PostyBirbSubmissionModel.fromArchive(this.archive);
@@ -61,12 +63,23 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
             this.remainingAmount = this.handler.getPercentageDone();
             this.waitingUntil = this.handler.waitingFor;
             this._changeDetector.detectChanges();
+
+            if (website) {
+              this.websiteCoordinator.getUsername(website).then(username => {
+                this.postingUsername = username;
+                this._changeDetector.markForCheck();
+              }).catch(() => {
+                this.postingUsername = 'Unknown';
+                this._changeDetector.markForCheck();
+              });
+            }
           });
         } else {
           this.handler = null;
           this.logo = null;
           this.remainingAmount = 0;
           this.waitingUntil = null;
+          this.postingUsername = null;
           this.handlerSubscription.unsubscribe();
         }
 
@@ -151,16 +164,6 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
         }
       });
     }
-  }
-
-  public moveUp(): void {
-    this.archive.meta.order -= 1.1;
-    this._store.dispatch(new PostyBirbStateAction.ReorderSubmission(this.archive));
-  }
-
-  public moveDown(): void {
-    this.archive.meta.order += 1.1;
-    this._store.dispatch(new PostyBirbStateAction.ReorderSubmission(this.archive));
   }
 
   public isQueued(): boolean {

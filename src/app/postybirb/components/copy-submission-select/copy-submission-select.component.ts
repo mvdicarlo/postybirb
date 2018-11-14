@@ -16,7 +16,8 @@ interface Record {
   styleUrls: ['./copy-submission-select.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[class.d-none]': 'submissions.length < 1'
+    '[class.d-none]': 'submissions.length < 1',
+    '[class.d-inline-block]': 'submissions.length >= 1'
   }
 })
 export class CopySubmissionSelectComponent implements OnInit, OnDestroy {

@@ -1,7 +1,14 @@
 <table class="table table-dark table-hover mb-0">
-  <tbody>
+  <tbody cdkDropList (cdkDropListDropped)="drop($event)" *ngIf="allowReorder">
     <ng-template ngFor let-row [ngForOf]="rows">
-      <submission-row [archive]="row" [reorder]="allowReorder"></submission-row>
+      <submission-row class="movable" [archive]="row" cdkDragLockAxis="y" cdkDrag>
+        <div class="drag-placeholder" *cdkDragPlaceholder></div>
+      </submission-row>
+    </ng-template>
+  </tbody>
+  <tbody *ngIf="!allowReorder">
+    <ng-template ngFor let-row [ngForOf]="rows">
+      <submission-row [archive]="row"></submission-row>
     </ng-template>
   </tbody>
 </table>

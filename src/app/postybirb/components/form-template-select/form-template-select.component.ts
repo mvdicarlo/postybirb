@@ -7,7 +7,11 @@ import { Template, TemplatesService } from '../../services/templates/templates.s
   selector: 'form-template-select',
   templateUrl: './form-template-select.component.html',
   styleUrls: ['./form-template-select.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.d-none]': '!templates || templates.length < 1',
+    '[class.d-inline-block]': 'templates && templates.length >= 1'
+  }
 })
 export class FormTemplateSelectComponent implements OnInit, OnDestroy {
   @Output() onSelect: EventEmitter<any> = new EventEmitter(); // emits submission archive

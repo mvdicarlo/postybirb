@@ -1,8 +1,10 @@
 <ng-container *ngIf="isIdle()">
   <td name="file">
-    <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image')">
-    <img [src]="fileIcon | safe" [alt]="file.name" *ngIf="file.type.includes('audio') || file.type.includes('text')">
-    <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
+    <div class="img" *ngIf="file" [ngSwitch]="file.type.split('/')[0]" [title]="file.name">
+      <img [src]="src | safe" [alt]="file.name" *ngSwitchCase="'image'">
+      <video [src]="src | safe" [type]="file.type" *ngSwitchCase="'video'"></video>
+      <img [src]="fileIcon | safe" [alt]="file.name" *ngSwitchDefault>
+    </div>
   </td>
   <td name="title" class="title-td text-truncate text-center" [title]="archive.meta.title">
     {{ archive.meta.title }}
@@ -34,10 +36,6 @@
         <mat-icon>delete</mat-icon>
       </button>
   </td>
-  <td *ngIf="reorder" name="reorder" class="reorder">
-    <button *ngIf="archive.meta.order > 0" mat-icon-button color="primary" (click)="moveUp()"><mat-icon>keyboard_arrow_up</mat-icon></button>
-    <button mat-icon-button color="primary" (click)="moveDown()"><mat-icon>keyboard_arrow_down</mat-icon></button>
-  </td>
 </ng-container>
 
 <ng-container *ngIf="!isIdle()">
@@ -50,6 +48,7 @@
     {{ archive.meta.submissionStatus | translate }}
     <div *ngIf="isPosting()">
       <img *ngIf="logo" [src]="logo" [alt]="currentlyPostingTo" height="30px" width="50px">
+      <div>{{postingUsername | uppercase}}</div>
       <div *ngIf="waitingUntil"><em>{{ 'Paused until' | translate }} {{ waitingUntil | date:'shortTime' }}</em></div>
     </div>
   </td>

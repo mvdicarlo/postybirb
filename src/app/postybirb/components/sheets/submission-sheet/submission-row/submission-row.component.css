@@ -1,6 +1,7 @@
 img, video {
   height: auto;
   max-width: 100px;
+  min-width: 50px;
 }
 
 td {

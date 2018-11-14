@@ -6,10 +6,15 @@
           <img [src]="src | safe" [alt]="file.name" *ngSwitchCase="'image'">
           <video [src]="src | safe" [type]="file.type" *ngSwitchCase="'video'"></video>
           <img [src]="fileIcon | safe" [alt]="file.name" *ngSwitchDefault>
+          <button [matTooltip]="'Change File' | translate" type="button" mat-icon-button (click)="changeFileInput.click()">
+            <mat-icon color="warn">attach_file</mat-icon>
+          </button>
         </div>
-
         <div class="img thumbnail" *ngIf="thumbnail">
           <img [src]="thumbnailSrc | safe" [alt]="thumbnail.name" [title]="thumbnail.name">
+          <button [matTooltip]="'Remove Thumbnail' | translate" type="button" mat-icon-button (click)="removeThumbnail()">
+            <mat-icon color="warn">close</mat-icon>
+          </button>
         </div>
         <p class="text-truncate file-name ml-1" *ngIf="file">
           <em>{{ file.name }}</em>
@@ -17,24 +22,23 @@
       </div>
       <div mat-card-title class="w-100">
         <div class="d-flex">
-          <div style="flex: 10"></div>
-          <copy-submission-select #copySelect [ignoreId]="archive.meta.id" (copy)="templateSelected($event)"></copy-submission-select>
-          <form-template-select style="margin-left: 2px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
-          <button type="button" mat-button color="accent" (click)="changeThumbnailFileInput.click()" *ngIf="!thumbnail" matTooltip="No larger than 2MB">{{ 'Add Thumbnail' | translate }}</button>
-          <button type="button" mat-button color="warn" (click)="removeThumbnail()" *ngIf="thumbnail">{{ 'Remove Thumbnail' | translate }}</button>
-          <button type="button" mat-button color="accent" (click)="changeFileInput.click()">{{ 'Change File' | translate }}</button>
+          <div style="flex: 10">
+            <button type="button" class="pl-0 pr-2" mat-button color="accent" (click)="changeThumbnailFileInput.click()" *ngIf="!thumbnail" matTooltip="No larger than 2MB">{{ 'Add Thumbnail' | translate }}</button>
+            <copy-submission-select #copySelect [ignoreId]="archive.meta.id" (copy)="templateSelected($event)"></copy-submission-select>
+            <form-template-select style="margin-left: 2px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
+          </div>
           <input type="file" single class="d-none" #changeFileInput (change)="changeFile($event)" single>
           <input type="file" single class="d-none" accept="image/*" #changeThumbnailFileInput (change)="changeThumbnail($event)" single>
         </div>
         <div class="row no-gutters">
-          <mat-form-field color="accent" class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="col-md-3 col-lg-3 col-xl-3">
             <mat-label>{{ 'Title' | translate }}</mat-label>
             <input matInput #title placeholder="{{'Title' | translate}}" formControlName="title" maxLength="50">
             <mat-hint align="end">
               {{title.value.trim().length}} / {{title.maxLength}}
             </mat-hint>
           </mat-form-field>
-          <mat-form-field name="ratings-field" color="accent" class="col-md-4 col-sm-4 col-xl-4 col-lg-4">
+          <mat-form-field name="ratings-field" color="accent" class="col-md-2 col-lg-2 col-xl-2">
             <mat-label>{{ 'Rating' | translate }}</mat-label>
             <mat-select [placeholder]="'Rating' | translate" formControlName="rating" required>
               <mat-option value="General">{{'General' | translate}}</mat-option>
@@ -43,7 +47,7 @@
               <mat-option value="Extreme">{{'Extreme' | translate}}</mat-option>
             </mat-select>
           </mat-form-field>
-          <mat-form-field name="schedule-field" color="accent" class="col-md-4 col-sm-4 col-xl-4 col-lg-4" [matTooltip]="form.value.schedule | date:'medium'">
+          <mat-form-field name="schedule-field" color="accent" class="col-md-3 col-lg-3 col-xl-3" [matTooltip]="form.value.schedule | date:'medium'">
             <mat-label>{{ 'Time to post' | translate }}</mat-label>
             <input matInput formControlName="schedule" (focus)="dt1.open()" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Time to post' | translate">
             <mat-icon style="vertical-align: bottom; font-size: 1.2em" matSuffix>access_time</mat-icon>
@@ -87,18 +91,30 @@
         </div>
 
         <div class="col-md-12 col-lg-12 col-xl-12" *ngIf="form.value.websites && form.value.websites.length">
-          <mat-horizontal-stepper #stepper>
+          <mat-horizontal-stepper>
             <mat-step [stepControl]="descriptionForm">
               <form [formGroup]="descriptionForm" class="row no-gutters">
                 <ng-template matStepLabel>{{ 'Description' | translate }}</ng-template>
                 <div class="col-md-12 col-lg-12 col-xl-12" name="default_description">
-                  <h5>{{'Default Description' | translate}} <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon></h5>
+                  <h5>{{'Default Description' | translate}}
+                    <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
+                  </h5>
                   <description-field class="clearfix" formControlName="default" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
                 </div>
-                <div class="my-1 col-md-12 col-lg-12 col-xl-12" *ngFor="let website of form.value.websites">
-                  <h5>{{ website }}</h5>
-                  <description-field class="clearfix" [formControlName]="website" [defaultDescription]="defaultDescription"></description-field>
-                </div>
+
+                <mat-accordion class="my-1 col-md-12 col-lg-12 col-xl-12">
+                  <mat-expansion-panel *ngFor="let website of form.value.websites">
+                    <mat-expansion-panel-header class="scrollable-content">
+                      <mat-panel-title>
+                        <strong class="auto-margin" [class.text-warning]="descriptionForm.value[website] && !descriptionForm.value[website].useDefault">{{ website }}</strong>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <mat-icon class="auto-margin" color="warn" *ngIf="field.exceededNotification">warning</mat-icon>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <description-field #field class="clearfix" [formControlName]="website" [defaultDescription]="defaultDescription"></description-field>
+                  </mat-expansion-panel>
+                </mat-accordion>
               </form>
             </mat-step>
 
@@ -113,13 +129,24 @@
                   </div>
                 </ng-template>
                 <div name="default_tags" class="col-md-12 col-lg-12 col-xl-12">
-                  <h5>{{'Default Tags' | translate}} <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon></h5>
+                  <h5>{{'Default Tags' | translate}}
+                    <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
+                  </h5>
                   <tag-field class="clearfix w-100" formControlName="default" [allowOverwrite]="false"></tag-field>
                 </div>
-                <div class="my-1 col-md-12 col-lg-12 col-xl-12" *ngFor="let website of getTagWebsites()">
-                  <h5>{{ website }}</h5>
-                  <tag-field class="clearfix w-100" [formControlName]="website" [defaultTags]="defaultTags"></tag-field>
-                </div>
+                <mat-accordion class="my-1 col-md-12 col-lg-12 col-xl-12">
+                  <mat-expansion-panel *ngFor="let website of getTagWebsites()" [class.bg-danger]="!field.validateTagCount()">
+                    <mat-expansion-panel-header class="scrollable-content">
+                      <mat-panel-title>
+                        <strong class="auto-margin" [class.text-warning]="tagForm.value[website] && tagForm.value[website].overwrite">{{ website }}</strong>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <span *ngIf="tagForm.value[website] && tagForm.value[website].tags" class="text-info auto-margin">{{tagForm.value[website].tags.join(', ')}}</span>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <tag-field #field class="clearfix w-100" [formControlName]="website" [defaultTags]="defaultTags"></tag-field>
+                  </mat-expansion-panel>
+                </mat-accordion>
               </form>
             </mat-step>
 
@@ -159,14 +186,16 @@
 
     <mat-card-actions [class.mat-elevation-z5]="editing" [class.card-actions]="editing">
       <div class="row no-gutters">
-        <div class="col-md-12 col-lg-12 col-xl-12">
-          <button class="w-100 font-weight-bold" mat-button (click)="toggleEditing()">{{ editing ? 'Show Less' : 'Show More' | translate}}<mat-icon class="rotate" [class.editing]="editing">keyboard_arrow_down</mat-icon></button>
-        </div>
-        <div class="col-md-7 col-lg-7 col-xl-7">
+        <div class="col-md-4 col-lg-4 col-xl-3">
           <button type="button" mat-button color="warn" (click)="clearForm()">{{ 'Clear' | translate }}</button>
           <button type="button" mat-button color="accent" [matTooltip]="'Create Template Tooltip' | translate" (click)="saveTemplate()">{{ 'Save Template' | translate }}</button>
         </div>
-        <div class="col-md col-lg col-xl text-right">
+        <div class="col-md col-lg col-xl">
+          <button class="w-100 font-weight-bold" mat-button (click)="toggleEditing()">{{ editing ? 'Show Less' : 'Show More' | translate}}
+            <mat-icon class="rotate" [class.editing]="editing">keyboard_arrow_down</mat-icon>
+          </button>
+        </div>
+        <div class="col-md-5 col-lg-5 col-xl-4 text-right">
           <button type="button" mat-button color="warn" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
           <button type="button" mat-button color="accent" (click)="save()" [matTooltip]="'Save Tooltip' | translate" [disabled]="!passing">{{ 'Save' | translate }}</button>
           <button type="button" mat-button color="accent" (click)="post()" [disabled]="!passing">{{ 'Post' | translate }}</button>

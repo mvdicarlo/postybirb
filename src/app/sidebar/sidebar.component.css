@@ -60,4 +60,5 @@ h3 {
 
 .expansion-panel {
   background-color: #666 !important;
+  border-radius: unset;
 }

@@ -5,6 +5,7 @@ import { DeviantArtFormComponent } from '../components/website-options/deviant-a
 import { E621FormComponent } from '../components/website-options/e621-form/e621-form.component';
 import { FuraffinityFormComponent } from '../components/website-options/furaffinity-form/furaffinity-form.component';
 import { FurifficFormComponent } from '../components/website-options/furiffic-form/furiffic-form.component';
+import { FurryAminoFormComponent } from '../components/website-options/furry-amino-form/furry-amino-form.component';
 import { FurryNetworkFormComponent } from '../components/website-options/furry-network-form/furry-network-form.component';
 import { HentaiFoundryFormComponent } from '../components/website-options/hentai-foundry-form/hentai-foundry-form.component';
 import { InkbunnyFormComponent } from '../components/website-options/inkbunny-form/inkbunny-form.component';
@@ -38,6 +39,9 @@ const OptionsForms: any = {
   [SupportedWebsites.Furiffic]: {
     component: FurifficFormComponent,
     exclude: true
+  },
+  [SupportedWebsites.FurryAmino]: {
+    component: FurryAminoFormComponent,
   },
   [SupportedWebsites.FurryNetwork]: {
     component: FurryNetworkFormComponent

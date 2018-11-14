@@ -1,6 +1,5 @@
 button {
-  height: 3vh;
-  line-height: 0;
+  height: 100%;
   color: inherit;
   background-color: inherit;
   vertical-align: top;

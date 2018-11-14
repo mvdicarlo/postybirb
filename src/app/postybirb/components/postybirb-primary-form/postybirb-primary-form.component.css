@@ -26,12 +26,12 @@
 
 .primary-container {
   overflow: hidden;
-  height: 92vh;
+  height: 100%;
 }
 
 .section {
-  max-height: 92vh;
   overflow-x: hidden;
+  height: 100%;
 }
 
 .overlay {

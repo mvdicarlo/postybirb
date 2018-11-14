@@ -40,7 +40,7 @@ export class Furiffic extends BaseWebsite implements Website {
             this.loginStatus = WebsiteStatus.Logged_In;
 
             try {
-              const username = page.match(/src=".*com\/accounts\/.*s/gm)[0].split('"')[1].split('/')[4].trim() || null;
+              const username = page.match(/"username":".*?"/g)[0].replace(/"/g, '').split(':')[1].trim() || null;
               this.info.username = username;
             } catch (e) { /* Do Nothing */ }
           }

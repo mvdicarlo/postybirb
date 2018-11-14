@@ -96,30 +96,41 @@ export class PostyBirbState implements NgxsOnInit {
       }
     }
 
-    this.updateFromOldArchives(state);
-
-    ctx.setState(state);
+    ctx.setState(this.updateFromOldArchives(state));
   }
 
-  private updateFromOldArchives(state: PostyBirbSubmissionStateModel): void {
+  private updateFromOldArchives(state: PostyBirbSubmissionStateModel): PostyBirbSubmissionStateModel {
+    const newState = {
+      editing: [],
+      submissions: [],
+      queued: []
+    };
+
     for (let i = 0; i < state.editing.length; i++) {
-      state.editing[i] = this.convertOldArchive(state.editing[i]);
+      newState.editing.push(this.convertOldArchive(state.editing[i]))
     }
 
     for (let i = 0; i < state.submissions.length; i++) {
-      state.submissions[i] = this.convertOldArchive(state.submissions[i]);
+      newState.submissions.push(this.convertOldArchive(state.submissions[i]))
     }
+
+    return newState;
   }
 
   private convertOldArchive(old: any): SubmissionArchive {
     if (old.defaultFields) {
-      const newArchive: any = {
+      const newArchive: SubmissionArchive = {
         meta: old.meta,
-        additionalfiles: old.additionalFiles,
+        additionalFiles: old.additionalFiles,
         thumbnailFile: old.thumbnailFile,
         submissionBuffer: old.submissionBuffer,
-        submissionfile: old.submissionFile
+        submissionFile: old.submissionFile,
+        descriptionInfo: {},
+        tagInfo: {},
+        optionInfo: {}
       };
+
+      newArchive.meta.rating = old.meta.submissionRating;
 
       const descriptions = {
         default: old.defaultFields.defaultDescription,
@@ -137,6 +148,8 @@ export class PostyBirbState implements NgxsOnInit {
         const website = keys[i];
         const wData = websiteData[website];
         options[website] = wData.options;
+        descriptions[website] = wData.description;
+        tags[website] = wData.tags;
       }
 
       newArchive.optionInfo = options;
@@ -240,8 +253,17 @@ export class PostyBirbState implements NgxsOnInit {
     const { submissions }: PostyBirbSubmissionStateModel = ctx.getState();
     let newSubmissions = [...submissions];
 
-    const index: number = this.findIndex(action.archive.meta.id, submissions);
-    newSubmissions[index] = action.archive;
+    for (let i = 0; i < newSubmissions.length; i++) {
+        const submission: SubmissionArchive = newSubmissions[i];
+        if (submission.meta.order == action.previousIndex) {
+          submission.meta.order = action.currentIndex;
+          continue;
+        }
+
+        if (submission.meta.order == action.currentIndex) {
+          submission.meta.order = action.previousIndex;
+        }
+    }
 
     newSubmissions = newSubmissions.sort(sort);
     for (let i = 0; i < newSubmissions.length; i++) {

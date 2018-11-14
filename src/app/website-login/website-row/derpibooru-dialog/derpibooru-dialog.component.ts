@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, AfterContentInit } from '@angular/core';
 
 @Component({
   selector: 'derpibooru-dialog',
   templateUrl: './derpibooru-dialog.component.html',
   styleUrls: ['./derpibooru-dialog.component.css']
 })
-export class DerpibooruDialogComponent {
+export class DerpibooruDialogComponent implements AfterContentInit {
+  public show: boolean = false;
 
-  constructor() { }
-
+  ngAfterContentInit() {
+    setTimeout(() => this.show = true, 150);
+  }
 }

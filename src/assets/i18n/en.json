@@ -22,6 +22,6 @@
     "Stop On Error": "Submission did not post successfully. Would you like to stop?",
     "Submission failed message": "{{value}} failed to post",
     "Submission posted message": "{{value}} posted successfully",
-    "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the sites that you are posting to. You are responsible for everything you post.",
+    "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post.",
     "Your password is not stored.": "Your password is not stored."
 }

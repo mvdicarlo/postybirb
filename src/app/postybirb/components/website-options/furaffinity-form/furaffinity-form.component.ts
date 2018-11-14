@@ -22,7 +22,7 @@ export class FuraffinityFormComponent extends BaseOptionForm {
       scraps: [false],
       disableComments: [false],
       folders: [[]],
-      reupload: [false]
+      reupload: [true]
     });
   }
 

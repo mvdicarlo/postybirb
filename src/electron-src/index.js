@@ -19,6 +19,7 @@ window.twitter = require('./js/twitter-auth.js');
 window.deviantart = require('./js/deviantart-auth.js');
 window.mastodon = require('./js/mastodon-auth.js');
 window.aryion = require('./js/aryion-post.js');
+window.amino = require('./js/furry-amino-post.js');
 
 window.appVersion = electron.remote.app.getVersion();
 window.sfw = electron.remote.process.env.SFW;

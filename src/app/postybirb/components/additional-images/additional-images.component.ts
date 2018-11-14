@@ -33,7 +33,7 @@ export class AdditionalImagesComponent implements OnInit {
 
     const convertedList: FileInformation[] = [];
     for (let i = 0; i < files.length; i++) {
-      convertedList.push(new FileInformation(files[i], true));
+      convertedList.push(new FileInformation(files[i], false));
     }
 
     this.submission.addAdditionalFiles(convertedList);

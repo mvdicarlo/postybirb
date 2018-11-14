@@ -3,7 +3,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { FormControl } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatBottomSheet } from '@angular/material';
 
 import { Select, Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
@@ -11,8 +11,11 @@ import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 import { PostyBirbSubmissionModel, SubmissionArchive } from '../../models/postybirb-submission-model';
 import { FileInformation } from '../../../commons/models/file-information';
 import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
+import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-sheet.component';
 
 import { SubmissionEditingFormComponent } from '../submission-editing-form/submission-editing-form.component';
+import { SubmissionSaveDialogComponent } from '../dialog/submission-save-dialog/submission-save-dialog.component';
+import { _trimSubmissionFields } from '../../helpers/submission-manipulation.helper';
 
 @Component({
   selector: 'postybirb-primary-form',
@@ -23,10 +26,10 @@ import { SubmissionEditingFormComponent } from '../submission-editing-form/submi
     trigger('flyInOut', [
       transition(':enter', [
         style({ transform: 'translateX(-100%)' }),
-        animate(500, style({ transform: 'translateX(0)' }))
+        animate(450, style({ transform: 'translateX(0)' }))
       ]),
       transition(':leave', [
-        animate(500, style({ transform: 'translateX(100%)', opacity: '0' }))
+        animate(450, style({ transform: 'translateX(100%)', opacity: '0' }))
       ])
     ])
   ]
@@ -41,7 +44,7 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
   public searchControl: FormControl = new FormControl();
   private stateSubscription: Subscription = Subscription.EMPTY;
 
-  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef, private dialog: MatDialog) {
+  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef, private dialog: MatDialog, private bottomSheet: MatBottomSheet) {
     this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
       this.submissions = editing || [];
       this._changeDetector.markForCheck();
@@ -119,7 +122,7 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
 
   private _createSubmissions(files: File[]): void {
     const newSubmissions = files.filter(file => file.size <= 200000000).map(file => {
-      return new PostyBirbSubmissionModel(new FileInformation(file, true));
+      return new PostyBirbSubmissionModel(new FileInformation(file, false));
     });
 
     this._store.dispatch(newSubmissions.map(s => new PostyBirbStateAction.EditSubmission(s.asSubmissionArchive(), false)))
@@ -147,14 +150,22 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
 
   public async saveAllValid() {
     if (!this.canSaveMany()) return;
+    const data: PostyBirbSubmissionModel[] = this.submissionForms.toArray()
+      .filter(form => form.passing)
+      .map(form => {
+        return form._updateSubmission(form.submission);
+      });
 
-    let dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: { title: 'Save All' }
+    let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
+      data
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.submissionForms.forEach(form => form.save());
+        this._store.dispatch(data.map(submission => new PostyBirbStateAction.AddSubmission(_trimSubmissionFields(submission, submission.unpostedWebsites).asSubmissionArchive(), true)));
+        this.bottomSheet.open(SubmissionSheetComponent, {
+          data: { index: 0 }
+        });
       }
     });
   }

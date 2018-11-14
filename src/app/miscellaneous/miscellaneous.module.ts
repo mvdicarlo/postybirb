@@ -6,11 +6,13 @@ import { LicenseDialogComponent } from './components/license-dialog/license-dial
 import { DonateDialogComponent } from './components/donate-dialog/donate-dialog.component';
 import { ContactDialogComponent } from './components/contact-dialog/contact-dialog.component';
 import { ChangelogDialogComponent } from './components/changelog-dialog/changelog-dialog.component';
+import { AgreementDialogComponent } from './components/agreement-dialog/agreement-dialog.component';
 
 import {
   MatButtonModule,
   MatButtonToggleModule,
-  MatDialogModule
+  MatDialogModule,
+  MatTabsModule
 } from '@angular/material'
 
 @NgModule({
@@ -19,19 +21,22 @@ import {
     MatButtonModule,
     MatButtonToggleModule,
     MatDialogModule,
+    MatTabsModule,
     TranslateModule
   ],
   declarations: [
     ChangelogDialogComponent,
     ContactDialogComponent,
     DonateDialogComponent,
-    LicenseDialogComponent
+    LicenseDialogComponent,
+    AgreementDialogComponent
   ],
   entryComponents: [
     ChangelogDialogComponent,
     ContactDialogComponent,
     DonateDialogComponent,
-    LicenseDialogComponent
+    LicenseDialogComponent,
+    AgreementDialogComponent
   ]
 })
 export class MiscellaneousModule { }

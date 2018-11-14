@@ -1,5 +1,8 @@
 import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { SubmissionArchive } from '../../../../models/postybirb-submission-model';
+import { Store } from '@ngxs/store';
+import { PostyBirbStateAction } from '../../../../stores/states/posty-birb.state';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'submission-table',
@@ -19,7 +22,7 @@ export class SubmissionTableComponent implements OnInit, OnChanges {
   @Input() allowReorder: boolean = false;
   @Input() clearAllLabel: string = 'Clear All';
 
-  constructor(private _changeDetector: ChangeDetectorRef) { }
+  constructor(private _changeDetector: ChangeDetectorRef, private _store: Store) { }
 
   ngOnInit() { }
 
@@ -38,6 +41,10 @@ export class SubmissionTableComponent implements OnInit, OnChanges {
 
   public doPostAll(): void {
     this.postAll.emit();
+  }
+
+  public drop(event: CdkDragDrop<any>) {
+    this._store.dispatch(new PostyBirbStateAction.ReorderSubmission(event.previousIndex, event.currentIndex));
   }
 
 }

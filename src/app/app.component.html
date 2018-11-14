@@ -14,6 +14,11 @@
           <h3>PostyBirb</h3>
           <span class="version-number">{{version}}</span>
         </div>
+        <div>
+          <button mat-button class="text-warning" (click)="openURL('http://www.postybirb.com/contact.html')">
+            <mat-icon>bug_report</mat-icon><span>Feedback/Report a Bug</span>
+          </button>
+        </div>
       </div>
       <div class="kofi">​
         <button title="Join our Discord!" mat-button="mat-button" (click)="openURL('https://discordapp.com/invite/jK5JQJF')">
@@ -23,7 +28,7 @@
         </button>
         <button title="Support me on ko-fi.com" mat-button="mat-button" (click)="openURL('http://ko-fi.com/A81124JD')">
           <span>
-            <img style="padding: 10px 0" src="https://ko-fi.com/img/cuplogo.svg">
+            <img style="padding: 4px 0" src="https://ko-fi.com/img/cuplogo.svg">
           </span>
           <span> Buy Me a Coffee</span>
         </button>
@@ -61,12 +66,12 @@
 
 <div>
   <select class='language-select' name="language_select" id="language_select" title='Language Select' [(ngModel)]="userLanguage" (change)="switchLanguage($event.target.value)">
-    <option value="de" title="German">DE</option>
-    <option value="en" title="English">EN</option>
-    <option value="es" title="Spanish">ES</option>
-    <option value="fi" title="Finnish">FI</option>
-    <option value="fr" title="French">FR</option>
-    <option value="pt" title="Portuguese">PT</option>
-    <option value="ru" title="Russian">RU</option>
+    <option value="en" title="English">English</option>
+    <option value="fi" title="Finnish">Finnish</option>
+    <option value="fr" title="French">French</option>
+    <option value="de" title="German">German</option>
+    <option value="pt" title="Portuguese">Portuguese</option>
+    <option value="ru" title="Russian">Russian</option>
+    <option value="es" title="Spanish">Spanish</option>
   </select>
 </div>

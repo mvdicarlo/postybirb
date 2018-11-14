@@ -5,3 +5,61 @@ $accent:  mat-palette($mat-light-blue, 600, 100, 800);
 $warn:    mat-palette($mat-red, 600);
 $theme:  mat-dark-theme($primary, $accent, $warn);
 @include angular-material-theme($theme);
+
+mat-sidenav {
+  width: auto !important;
+}
+
+mat-sidenav-content {
+  margin-right: 0 !important;
+}
+
+.mat-drawer-container {
+  background-color: inherit !important;
+}
+
+nav .mat-expansion-panel-body {
+  padding: 0 !important;
+}
+
+.mat-tab-labels {
+  flex-wrap: wrap;
+}
+
+.mat-tab-label-active {
+  background-color: rgba(187, 222, 251, 0.1) !important;
+}
+
+.mat-card-header-text {
+  width: 100%;
+}
+
+.mat-form-field-appearance-standard .mat-form-field-flex {
+  padding-top: 0 !important;
+}
+
+.mat-tab-label-content {
+  font-weight: bold;
+}
+
+.mat-horizontal-stepper-header {
+  height: unset !important;
+  min-height: 72px;
+}
+
+.mat-stepper-horizontal-line {
+  display: none !important;
+}
+
+.mat-card-title {
+  font-size: 14px !important;
+}
+
+/* mat-accordion */
+.scrollable-content .mat-content {
+  height: 100%;
+}
+
+mat-panel-description {
+  overflow-y: auto;
+}

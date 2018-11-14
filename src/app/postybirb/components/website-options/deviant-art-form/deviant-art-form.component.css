@@ -10,3 +10,7 @@
 description-field {
     width: 100%;
 }
+
+mat-checkbox {
+  display: block;
+}

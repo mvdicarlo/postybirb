@@ -19,6 +19,9 @@ const DescriptionRequirements: any = {
   [SupportedWebsites.Furiffic]: {
 
   },
+  [SupportedWebsites.FurryAmino]: {
+
+  },
   [SupportedWebsites.FurryNetwork]: {
 
   },

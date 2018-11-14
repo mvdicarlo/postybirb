@@ -44,6 +44,22 @@ export class SupportedWebsiteRestrictions {
         default: 10
       }
     },
+    [SupportedWebsites.Furiffic]: {
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'],
+      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedFileSize: {
+        default: 25
+      }
+    },
+    [SupportedWebsites.FurryAmino]: {
+      supportedRatings: ['General'],
+      supportedFileTypes: ['jpg', 'jpeg', 'png', 'gif'],
+      supportedTypes: ['Artwork'],
+      supportedFileSize: {
+        default: 10 // a guess
+      }
+    },
     [SupportedWebsites.FurryNetwork]: {
       supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'mp3', 'mp4', 'webm', 'swf', 'gif', 'wav', 'txt'],
@@ -51,14 +67,6 @@ export class SupportedWebsiteRestrictions {
       supportedFileSize: {
         default: 32,
         Animation: 200
-      }
-    },
-    [SupportedWebsites.Furiffic]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
-      supportedFileTypes: ['jpg', 'jpreg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
-      supportedFileSize: {
-        default: 25
       }
     },
     [SupportedWebsites.HentaiFoundry]: { // This is essentially all a guess

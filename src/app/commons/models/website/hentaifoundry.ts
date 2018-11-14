@@ -29,7 +29,7 @@ export class HentaiFoundry extends BaseWebsite implements Website {
       }
     };
 
-    this.coordinator.insertService(this.websiteName, this);
+    if (sfw !== 'true') this.coordinator.insertService(this.websiteName, this);
   }
 
   getStatus(): Promise<WebsiteStatus> {

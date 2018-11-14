@@ -1,5 +1,5 @@
 <table class="table table-dark table-hover mb-0" style="margin-top: -8px">
   <tbody>
-    <login-panel *ngFor="let webLogin of websites" website="{{webLogin.website}}" [dialogComponent]="webLogin.dialogComponent"></login-panel>
+    <login-panel [matTooltip]="webLogin.website" matTooltipPosition="right" *ngFor="let webLogin of websites" website="{{webLogin.website}}" [dialogComponent]="webLogin.dialogComponent"></login-panel>
   </tbody>
 </table>

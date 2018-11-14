@@ -18,3 +18,7 @@ mat-icon {
     display: block;
     margin: auto;
 }
+
+mat-card-title {
+  font-weight: bold;
+}

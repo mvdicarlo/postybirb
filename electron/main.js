@@ -32,6 +32,24 @@ let updateInterval = null;
 let scheduledInterval = null;
 let adapter = null;
 
+const hasLock = app.requestSingleInstanceLock();
+if (!hasLock) {
+  app.quit();
+  return;
+} else {
+  app.on('second-instance', () => {
+    if (win) {
+        if (win.isMinimized()) {
+            win.restore();
+        }
+
+        win.focus();
+    } else if (tray) {
+        initialize();
+    }
+  });
+}
+
 const db = createDB('postybirb.json');
 const logdb = createDB('logs.json');
 
@@ -41,7 +59,11 @@ function createDB(name) {
         adapter = new FileSync(path.join(app.getPath('userData'), name));
         ldb = low(adapter);
     } catch (e) {
-        fs.unlinkSync(path.join(app.getPath('userData'), name));
+        try {
+            fs.unlinkSync(path.join(app.getPath('userData'), name));
+        } catch (e) {
+        // nothing
+        }
         adapter = new FileSync(path.join(app.getPath('userData'), name));
         ldb = low(adapter);
     }
@@ -59,31 +81,19 @@ function hardwareAccelerationState() {
     log.info(`Hardware Acceleration is ${isEnabled ? 'ON' : 'OFF'}`);
 }
 
-hardwareAccelerationState();
-
-const shouldQuit = app.makeSingleInstance((commandLine, workingDirectory) => {
-  // Someone tried to run a second instance, we should focus our window.
-    if (win) {
-        if (win.isMinimized()) {
-            win.restore();
-        }
-
-        win.focus();
-    } else if (tray) {
-        initialize();
-    }
-});
-
-if (shouldQuit) {
-    app.quit();
-    return;
+if (process.platform == 'win32' || process.platform == 'darwin') {
+  hardwareAccelerationState();
+} else {
+  app.disableHardwareAcceleration();
 }
+
+app.commandLine.appendSwitch('auto-detect', 'false')
 
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
     initialize();
-    scheduledInterval = setInterval(checkForScheduledPost, 30000);
+    scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
 
     let image = nativeImage.createFromPath(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
     if (process.platform === 'darwin') image = image.resize({ width: 16, height: 16 });

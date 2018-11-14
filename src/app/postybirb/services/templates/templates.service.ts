@@ -126,7 +126,10 @@ export class TemplatesService {
     if (old.defaultFields) {
       const newArchive: any = {
         meta: old.meta,
-        websites: old.defaultFields.selectedWebsites
+        websites: old.defaultFields.selectedWebsites,
+        descriptionInfo: {},
+        tagInfo: {},
+        optionInfo: {}
       };
 
       const descriptions = {
@@ -143,8 +146,10 @@ export class TemplatesService {
       const keys = Object.keys(websiteData);
       for (let i = 0; i < keys.length; i++) {
         const website = keys[i];
-        const wData = websiteData[website].options;
-        options[website] = wData;
+        const wData = websiteData[website];
+        options[website] = wData.options;
+        descriptions[website] = wData.description;
+        tags[website] = wData.tags;
       }
 
       newArchive.optionInfo = options;

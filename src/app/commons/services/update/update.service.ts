@@ -81,7 +81,7 @@ export class UpdateService {
         this.showNotification(`${message} ${updates}`, 'Get', this.defaultNotifySettings);
       });
     } else if (updates) {
-      this.showNotification(updates, null, this.defaultNotifySettings);
+      this.showNotification(updates, 'OK', this.defaultNotifySettings, false);
     }
   }
 
@@ -104,11 +104,13 @@ export class UpdateService {
     }
   }
 
-  private showNotification(message: string, action: string, configs: any): void {
+  private showNotification(message: string, action: string, configs: any, doAction: boolean = true): void {
     let snackbarRef = this.snackBar.open(message, action, configs);
-    snackbarRef.onAction().subscribe(() => {
-      this.openDownload();
-    });
+    if (doAction) {
+      snackbarRef.onAction().subscribe(() => {
+        this.openDownload();
+      });
+    }
   }
 
 }

@@ -21,6 +21,7 @@ export class BbCodeParse {
     [SupportedWebsites.e621]: ParseType.TEXT,
     [SupportedWebsites.Furaffinity]: ParseType.BBCODE,
     [SupportedWebsites.Furiffic]: ParseType.BBCODE,
+    [SupportedWebsites.FurryAmino]: ParseType.TEXT,
     [SupportedWebsites.FurryNetwork]: ParseType.MARKDOWN,
     [SupportedWebsites.HentaiFoundry]: ParseType.BBCODE,
     [SupportedWebsites.Inkbunny]: ParseType.BBCODE,
