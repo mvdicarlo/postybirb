@@ -91,18 +91,29 @@
         </div>
 
         <div class="col-md-12 col-lg-12 col-xl-12" *ngIf="form.value.websites && form.value.websites.length">
+          <div class="row no-gutters">
+            <div class="mb-3 col-md-12 col-lg-12 col-xl-12" name="default_description">
+              <h5>{{'Default Description' | translate}}
+                <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
+              </h5>
+              <description-field class="clearfix" [formControl]="descriptionForm.controls.default" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
+            </div>
+
+            <div name="default_tags" class="col-md-12 col-lg-12 col-xl-12">
+              <h5>{{'Default Tags' | translate}}
+                <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
+              </h5>
+              <tag-field class="clearfix w-100" [formControl]="tagForm.controls.default" [allowOverwrite]="false"></tag-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-lg-12 col-xl-12" *ngIf="form.value.websites && form.value.websites.length">
           <mat-horizontal-stepper>
             <mat-step [stepControl]="descriptionForm">
               <form [formGroup]="descriptionForm" class="row no-gutters">
                 <ng-template matStepLabel>{{ 'Description' | translate }}</ng-template>
-                <div class="col-md-12 col-lg-12 col-xl-12" name="default_description">
-                  <h5>{{'Default Description' | translate}}
-                    <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
-                  </h5>
-                  <description-field class="clearfix" formControlName="default" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
-                </div>
-
-                <mat-accordion class="my-1 col-md-12 col-lg-12 col-xl-12">
+                <mat-accordion class="col-md-12 col-lg-12 col-xl-12">
                   <mat-expansion-panel *ngFor="let website of form.value.websites">
                     <mat-expansion-panel-header class="scrollable-content">
                       <mat-panel-title>
@@ -128,13 +139,7 @@
                     </div>
                   </div>
                 </ng-template>
-                <div name="default_tags" class="col-md-12 col-lg-12 col-xl-12">
-                  <h5>{{'Default Tags' | translate}}
-                    <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
-                  </h5>
-                  <tag-field class="clearfix w-100" formControlName="default" [allowOverwrite]="false"></tag-field>
-                </div>
-                <mat-accordion class="my-1 col-md-12 col-lg-12 col-xl-12">
+                <mat-accordion class="col-md-12 col-lg-12 col-xl-12">
                   <mat-expansion-panel *ngFor="let website of getTagWebsites()" [class.bg-danger]="!field.validateTagCount()">
                     <mat-expansion-panel-header class="scrollable-content">
                       <mat-panel-title>

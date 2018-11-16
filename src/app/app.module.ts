@@ -18,7 +18,8 @@ import { WebsiteLoginModule } from './website-login/website-login.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { LogsModule } from './logs/logs.module';
 
-import { SnotifyModule } from 'ng-snotify'; // imported for usage in root
+import { SnotifyModule } from 'ng-snotify';
+import { HotkeyModule } from 'angular2-hotkeys';
 
 import {
   MatButtonModule,
@@ -62,6 +63,7 @@ import { SidebarComponent } from './sidebar/sidebar.component';
     MatListModule,
     HttpClientModule,
     SnotifyModule,
+    HotkeyModule.forRoot(),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

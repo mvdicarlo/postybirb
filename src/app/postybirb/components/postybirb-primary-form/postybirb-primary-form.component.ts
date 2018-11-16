@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import { animate, style, transition, trigger } from '@angular/animations';
 import { FormControl } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { MatDialog, MatBottomSheet } from '@angular/material';
+import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
 import { Select, Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
@@ -43,8 +44,12 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
   public submissions: SubmissionArchive[] = [];
   public searchControl: FormControl = new FormControl();
   private stateSubscription: Subscription = Subscription.EMPTY;
+  private hotKeys: Hotkey[] = [];
 
-  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef, private dialog: MatDialog, private bottomSheet: MatBottomSheet) {
+  constructor(private _store: Store, private _changeDetector: ChangeDetectorRef,
+    private dialog: MatDialog,
+    private bottomSheet: MatBottomSheet,
+    private _hotKeysService: HotkeysService) {
     this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
       this.submissions = editing || [];
       this._changeDetector.markForCheck();
@@ -64,10 +69,16 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
 
   ngAfterViewInit() {
     this.submissionForms.changes.pipe(debounceTime(150)).subscribe(() => this._changeDetector.markForCheck());
+
+    this.hotKeys.push(<Hotkey> this._hotKeysService.add(new Hotkey('ctrl+shift+n', (event: KeyboardEvent): boolean => {
+      this.fileInput.nativeElement.click();
+      return false;
+    }, undefined, 'Create a new submission')));
   }
 
   ngOnDestroy() {
     this.stateSubscription.unsubscribe();
+    this._hotKeysService.remove(this.hotKeys);
   }
 
   public getSubmissionNavbarItems(): SubmissionEditingFormComponent[] {

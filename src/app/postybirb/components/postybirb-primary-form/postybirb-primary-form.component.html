@@ -6,7 +6,7 @@
         {{'Add From Clipboard' | translate}}
       </button>
       <div class="warn onedrive">{{ 'Avoid OneDrive Directories' | translate }}</div>
-      <mat-form-field class="w-100 search" color="accent" *ngIf="submissionForms && submissionForms.length > 0">
+      <mat-form-field class="w-100 search" color="accent" *ngIf="submissionForms && submissionForms.length > 1">
         <input matInput [formControl]="searchControl">
         <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
       </mat-form-field>

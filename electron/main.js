@@ -19,6 +19,7 @@ const log = require('electron-log');
 
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
+autoUpdater.autoDownload = false;
 log.info('Starting PostyBirb...');
 
 require('electron-context-menu')({
@@ -31,13 +32,14 @@ let clearCacheInterval = null;
 let updateInterval = null;
 let scheduledInterval = null;
 let adapter = null;
+let updateDialogShowing = false;
 
 const hasLock = app.requestSingleInstanceLock();
 if (!hasLock) {
-  app.quit();
-  return;
-} else {
-  app.on('second-instance', () => {
+    app.quit();
+    return;
+}
+app.on('second-instance', () => {
     if (win) {
         if (win.isMinimized()) {
             win.restore();
@@ -47,8 +49,8 @@ if (!hasLock) {
     } else if (tray) {
         initialize();
     }
-  });
-}
+});
+
 
 const db = createDB('postybirb.json');
 const logdb = createDB('logs.json');
@@ -82,18 +84,17 @@ function hardwareAccelerationState() {
 }
 
 if (process.platform == 'win32' || process.platform == 'darwin') {
-  hardwareAccelerationState();
+    hardwareAccelerationState();
 } else {
-  app.disableHardwareAcceleration();
+    app.disableHardwareAcceleration();
 }
 
-app.commandLine.appendSwitch('auto-detect', 'false')
+app.commandLine.appendSwitch('auto-detect', 'false');
 
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
     initialize();
-    scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
 
     let image = nativeImage.createFromPath(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
     if (process.platform === 'darwin') image = image.resize({ width: 16, height: 16 });
@@ -192,11 +193,6 @@ function initialize(show = true, openForScheduled = false) {
     });
 
     win.webContents.once('did-frame-finish-load', () => {
-        if (!process.env.DEVELOP) {
-            updateInterval = setInterval(() => autoUpdater.checkForUpdatesAndNotify(), 60 * 60000);
-            autoUpdater.checkForUpdatesAndNotify();
-        }
-
         clearCacheInterval = setInterval(() => {
             win.webContents.session.getCacheSize((size) => {
                 if (size > 0) {
@@ -206,6 +202,14 @@ function initialize(show = true, openForScheduled = false) {
             });
         }, 10000);
     });
+
+    if (!process.env.DEVELOP) {
+        updateInterval = setInterval(() => {
+            autoUpdater.checkForUpdates();
+        }, 3 * 60 * 60000);
+
+        autoUpdater.checkForUpdates();
+    }
 
     return win;
 }
@@ -276,6 +280,7 @@ function attemptToClose() {
     if (!hasScheduled()) {
         app.quit();
     } else {
+        scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
         tray.displayBalloon({
             title: 'Scheduled Submissions',
             icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
@@ -298,7 +303,28 @@ autoUpdater.on('checking-for-update', () => {
 });
 
 autoUpdater.on('update-available', (info) => {
-    log.info(info);
+    if (!updateDialogShowing) {
+        let message = `${app.getName()} ${info.version} is now available.`;
+        if (info.releaseNotes) {
+            const splitNotes = info.releaseNotes.replace(/(<\w*>|<\/\w*>)/gm, '');
+            message += `\n\nRelease notes:\n${splitNotes}`;
+        }
+
+        dialog.showMessageBox({
+            type: 'question',
+            buttons: ['Install and Relaunch', 'Later'],
+            defaultId: 0,
+            message,
+        }, (response) => {
+            if (response === 0) {
+                setTimeout(() => autoUpdater.downloadUpdate(), 1);
+            }
+
+            updateDialogShowing = false;
+        });
+
+        updateDialogShowing = true;
+    }
 });
 
 autoUpdater.on('error', (err) => {
@@ -306,21 +332,5 @@ autoUpdater.on('error', (err) => {
 });
 
 autoUpdater.on('update-downloaded', (info) => {
-    let message = `${app.getName()} ${info.version} is now available. It will be installed the next time you restart the application.`;
-    if (info.releaseNotes) {
-        const splitNotes = info.releaseNotes.replace(/(<\w*>|<\/\w*>)/gm, '');
-        message += `\n\nRelease notes:\n${splitNotes}`;
-    }
-
-    dialog.showMessageBox({
-        type: 'question',
-        buttons: ['Install and Relaunch', 'Later'],
-        defaultId: 0,
-        message: `A new version of ${app.getName()} has been downloaded`,
-        detail: message,
-    }, (response) => {
-        if (response === 0) {
-            setTimeout(() => autoUpdater.quitAndInstall(), 1);
-        }
-    });
+    setTimeout(() => autoUpdater.quitAndInstall(), 1);
 });

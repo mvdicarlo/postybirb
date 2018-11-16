@@ -1,6 +1,6 @@
 {
   "name": "PostyBirb",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Multimedia crossposter for multimedia websites",
   "main": "main.js",
   "scripts": {

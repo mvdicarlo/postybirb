@@ -1,11 +1,12 @@
 import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { UpdateService } from './commons/services/update/update.service';
 import { PostManagerService } from './postybirb/services/post-manager/post-manager.service';
 import { SchedulerService } from './postybirb/services/scheduler/scheduler.service';
 import { MatDialog } from '@angular/material';
-import { ConfirmDialogComponent } from './commons/components/confirm-dialog/confirm-dialog.component';
 import { AgreementDialogComponent } from './miscellaneous/components/agreement-dialog/agreement-dialog.component';
+import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,7 @@ export class AppComponent implements AfterViewInit {
 
   @ViewChild('loginPanel') loginPanel: any;
 
-  constructor(private translate: TranslateService, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService, private dialog: MatDialog) {
+  constructor(private translate: TranslateService, private router: Router, update: UpdateService, postManager: PostManagerService, scheduler: SchedulerService, private dialog: MatDialog, private _hotKeysService: HotkeysService) {
     this.version = appVersion;
 
     let userLanguage = window.navigator.language.split('-')[0];
@@ -51,6 +52,23 @@ export class AppComponent implements AfterViewInit {
         }
       });
     }
+
+    this._hotKeysService.add(new Hotkey('ctrl+l', (event: KeyboardEvent): boolean => {
+      if (this.loginPanel) {
+        this.loginPanel.toggle();
+      }
+      return false;
+    }, undefined, 'Login'));
+
+    this._hotKeysService.add(new Hotkey('ctrl+p', (event: KeyboardEvent): boolean => {
+      this.router.navigate(['/postybirb'], { skipLocationChange: true });
+      return false;
+    }, undefined, 'Open PostyBirb'));
+
+    this._hotKeysService.add(new Hotkey('ctrl+j', (event: KeyboardEvent): boolean => {
+      this.router.navigate(['/journalbirb'], { skipLocationChange: true });
+      return false;
+    }, undefined, 'Open JournalBirb'));
   }
 
   public switchLanguage(language: string): void {
