@@ -29,7 +29,8 @@ import {
   MatTabsModule,
   MatTooltipModule,
   MatProgressBarModule,
-  MatExpansionModule
+  MatExpansionModule,
+  MatButtonToggleModule
 } from '@angular/material';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
@@ -37,6 +38,7 @@ import { CommonsModule } from '../commons/commons.module';
 import { LogsModule } from '../logs/logs.module';
 
 import { PostManagerService } from './services/post-manager/post-manager.service';
+import { PostService } from './services/post/post.service';
 import { SchedulerService } from './services/scheduler/scheduler.service';
 import { TemplatesService } from './services/templates/templates.service';
 
@@ -92,6 +94,9 @@ import { CopySubmissionSelectComponent } from './components/copy-submission-sele
 import { ManageTemplatesDialogComponent } from './components/dialog/manage-templates-dialog/manage-templates-dialog.component';
 import { SubmissionSaveDialogComponent } from './components/dialog/submission-save-dialog/submission-save-dialog.component';
 import { FurryAminoFormComponent } from './components/website-options/furry-amino-form/furry-amino-form.component';
+import { BulkSubmissionEditingFormComponent } from './components/bulk-submission-editing-form/bulk-submission-editing-form.component';
+import { BulkUpdateDialogComponent } from './components/dialog/bulk-update-dialog/bulk-update-dialog.component';
+import { NewgroundsFormComponent } from './components/website-options/newgrounds-form/newgrounds-form.component';
 
 const routes: Routes = [
   {
@@ -129,6 +134,7 @@ const routes: Routes = [
     MatExpansionModule,
     MatTooltipModule,
     MatProgressBarModule,
+    MatButtonToggleModule,
     DragDropModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
@@ -187,6 +193,9 @@ const routes: Routes = [
     ManageTemplatesDialogComponent,
     SubmissionSaveDialogComponent,
     FurryAminoFormComponent,
+    BulkSubmissionEditingFormComponent,
+    BulkUpdateDialogComponent,
+    NewgroundsFormComponent,
   ],
   entryComponents: [
     AryionFormComponent,
@@ -215,7 +224,9 @@ const routes: Routes = [
     WeasylFormComponent,
     FurryAminoFormComponent,
     ManageTemplatesDialogComponent,
-    SubmissionSaveDialogComponent
+    SubmissionSaveDialogComponent,
+    BulkUpdateDialogComponent,
+    NewgroundsFormComponent
   ],
   exports: [
     DescriptionFieldComponent,
@@ -230,7 +241,7 @@ export class PostybirbModule {
   static forRoot(): ModuleWithProviders {
     return {
       ngModule: PostybirbModule,
-      providers: [PostManagerService, SchedulerService, TemplatesService]
+      providers: [PostManagerService, PostService, SchedulerService, TemplatesService]
     }
   }
 }

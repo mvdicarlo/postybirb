@@ -69,7 +69,7 @@ export class Mastodon extends BaseWebsite implements Website {
   postJournal(data: any): Observable<any> {
     return from(this.helper.post(null, // files
       'Story', // submission type
-      data.descriptiondescription.substring(0, 500).trim(), // status
+      data.description.substring(0, 500).trim(), // status
       false, //sensitive,
       null
     ));

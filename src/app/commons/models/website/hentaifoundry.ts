@@ -102,8 +102,13 @@ export class HentaiFoundry extends BaseWebsite implements Website {
 
           this.http.post(`${this.baseURL}/pictures/create`, uploadForm, { responseType: 'text' })
             .subscribe((res: any) => {
-              if (!res.includes('Submit new picture')) observer.next(res);
-              else observer.error(this.createError(res, submission));
+              try {
+                if (!res.includes('Submit new picture')) observer.next(res);
+                else observer.error(this.createError(res, submission));
+              } catch (err) {
+                observer.error(this.createError({ res, err }, submission));
+              }
+
               observer.complete();
             }, err => {
               observer.error(this.createError(err, submission));

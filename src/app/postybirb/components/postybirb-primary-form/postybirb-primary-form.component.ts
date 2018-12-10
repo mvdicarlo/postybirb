@@ -3,7 +3,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { FormControl } from '@angular/forms';
 import { Observable, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { MatDialog, MatBottomSheet } from '@angular/material';
+import { MatDialog, MatBottomSheet, MatButtonToggleChange } from '@angular/material';
 import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
 import { Select, Store } from '@ngxs/store';
@@ -17,12 +17,15 @@ import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-
 import { SubmissionEditingFormComponent } from '../submission-editing-form/submission-editing-form.component';
 import { SubmissionSaveDialogComponent } from '../dialog/submission-save-dialog/submission-save-dialog.component';
 import { _trimSubmissionFields } from '../../helpers/submission-manipulation.helper';
+import { EditableSubmissionsService } from '../../services/editable-submissions/editable-submissions.service';
+import { BulkUpdateService } from '../../services/bulk-update/bulk-update.service';
 
 @Component({
   selector: 'postybirb-primary-form',
   templateUrl: './postybirb-primary-form.component.html',
   styleUrls: ['./postybirb-primary-form.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [EditableSubmissionsService, BulkUpdateService],
   animations: [
     trigger('flyInOut', [
       transition(':enter', [
@@ -45,9 +48,10 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
   public searchControl: FormControl = new FormControl();
   private stateSubscription: Subscription = Subscription.EMPTY;
   private hotKeys: Hotkey[] = [];
+  public editMode: string = 'single';
 
   constructor(private _store: Store, private _changeDetector: ChangeDetectorRef,
-    private dialog: MatDialog,
+    private dialog: MatDialog, private editableSubmissionsService: EditableSubmissionsService,
     private bottomSheet: MatBottomSheet,
     private _hotKeysService: HotkeysService) {
     this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
@@ -59,9 +63,7 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
   ngOnInit() {
     this.searchControl.valueChanges.pipe(debounceTime(150)).subscribe(value => {
       const filter = value.toLowerCase().trim();
-      this.getSubmissionNavbarItems().forEach(item => {
-        item.hidden = filter;
-      });
+      this.editableSubmissionsService.filter(filter);
 
       this._changeDetector.markForCheck();
     });
@@ -86,7 +88,8 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
   }
 
   public async filesSelected(event: Event) {
-    event.stopPropagation();
+    event.stopPropagation()
+    event.preventDefault();
     const files: File[] = event.target['files'];
 
     const convertedList: File[] = [];
@@ -194,17 +197,8 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
     return false;
   }
 
-  public hasIncomplete(): boolean {
-    if (this.canSaveMany()) {
-      const forms = this.submissionForms.toArray();
-      for (let i = 0; i < forms.length; i++) {
-        if (!forms[i].passing) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+  public async changeMode(change: MatButtonToggleChange) {
+    this.editMode = change.value || 'single';
   }
 
 }

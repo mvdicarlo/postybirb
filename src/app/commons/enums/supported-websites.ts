@@ -15,6 +15,7 @@ const SupportedWebsites = {
   HentaiFoundry: 'Hentai Foundry',
   Inkbunny: 'Inkbunny',
   Mastodon: 'Mastodon',
+  Newgrounds: 'Newgrounds',
   PaigeeWorld: 'Paigee World',
   Patreon: 'Patreon',
   Pixiv: 'Pixiv',

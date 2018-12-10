@@ -2,31 +2,32 @@
   <mat-card [class.highlight]="highlight">
     <mat-card-header>
       <div mat-card-avatar class="avatar">
-        <div class="img" *ngIf="file" [ngSwitch]="file.type.split('/')[0]" [title]="file.name">
-          <img [src]="src | safe" [alt]="file.name" *ngSwitchCase="'image'">
-          <video [src]="src | safe" [type]="file.type" *ngSwitchCase="'video'"></video>
-          <img [src]="fileIcon | safe" [alt]="file.name" *ngSwitchDefault>
+        <div class="img" *ngIf="file" [title]="file.name">
+          <img [src]="fileIcon | safe" [alt]="file.name">
           <button [matTooltip]="'Change File' | translate" type="button" mat-icon-button (click)="changeFileInput.click()">
             <mat-icon color="warn">attach_file</mat-icon>
           </button>
+          <p class="text-truncate file-name" *ngIf="file">
+            <em>{{ file.name }}</em>
+          </p>
         </div>
-        <div class="img thumbnail" *ngIf="thumbnail">
-          <img [src]="thumbnailSrc | safe" [alt]="thumbnail.name" [title]="thumbnail.name">
-          <button [matTooltip]="'Remove Thumbnail' | translate" type="button" mat-icon-button (click)="removeThumbnail()">
-            <mat-icon color="warn">close</mat-icon>
+        <div class="img thumbnail">
+          <img *ngIf="thumbnail" [src]="thumbnailIcon | safe" [alt]="thumbnail.name" [title]="thumbnail.name">
+          <button *ngIf="thumbnail" [matTooltip]="'Remove Thumbnail' | translate" type="button" mat-icon-button (click)="removeThumbnail()">
+            <mat-icon style="font-size: 3em; height: unset !important" color="warn">close</mat-icon>
+          </button>
+          <button class="p-0" type="button" mat-stroked-button color="accent" (click)="changeThumbnailFileInput.click()" *ngIf="!thumbnail" matTooltip="No larger than 2MB">
+            <mat-icon style="font-size: 32px; height: 10px" color="accent">add</mat-icon>
+            <span class="d-block" style="font-weight: bold">
+              {{ 'Thumbnail' | translate }}
+            </span>
           </button>
         </div>
-        <p class="text-truncate file-name ml-1" *ngIf="file">
-          <em>{{ file.name }}</em>
-        </p>
       </div>
       <div mat-card-title class="w-100">
-        <div class="d-flex">
-          <div style="flex: 10">
-            <button type="button" class="pl-0 pr-2" mat-button color="accent" (click)="changeThumbnailFileInput.click()" *ngIf="!thumbnail" matTooltip="No larger than 2MB">{{ 'Add Thumbnail' | translate }}</button>
-            <copy-submission-select #copySelect [ignoreId]="archive.meta.id" (copy)="templateSelected($event)"></copy-submission-select>
-            <form-template-select style="margin-left: 2px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
-          </div>
+        <div class="row no-gutters">
+          <copy-submission-select class="col-md-4 col-lg-4 col-xl-3" #copySelect [ignoreId]="archive.meta.id" (copy)="templateSelected($event, true)"></copy-submission-select>
+          <form-template-select class="col-md-4 col-lg-4 col-xl-2" style="padding-left: 3px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
           <input type="file" single class="d-none" #changeFileInput (change)="changeFile($event)" single>
           <input type="file" single class="d-none" accept="image/*" #changeThumbnailFileInput (change)="changeThumbnail($event)" single>
         </div>
@@ -47,7 +48,7 @@
               <mat-option value="Extreme">{{'Extreme' | translate}}</mat-option>
             </mat-select>
           </mat-form-field>
-          <mat-form-field name="schedule-field" color="accent" class="col-md-3 col-lg-3 col-xl-3" [matTooltip]="form.value.schedule | date:'medium'">
+          <mat-form-field style="padding-left: 4px !important" name="schedule-field" color="accent" class="col-md-3 col-lg-3 col-xl-3" [matTooltip]="form.value.schedule | date:'medium'">
             <mat-label>{{ 'Time to post' | translate }}</mat-label>
             <input matInput formControlName="schedule" (focus)="dt1.open()" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Time to post' | translate">
             <mat-icon style="vertical-align: bottom; font-size: 1.2em" matSuffix>access_time</mat-icon>
@@ -57,7 +58,13 @@
       </div>
     </mat-card-header>
 
-    <mat-card-content *ngIf="editing">
+    <mat-card-content *ngIf="!editing && form.value.websites && form.value.websites.length" class="table-dark py-2">
+      <div class="d-inline-block mr-2" *ngFor="let website of form.value.websites">
+        <website-logo class="d-block" style="width: 100px;" [website]="website" width="100%" height="40px"></website-logo>
+      </div>
+    </mat-card-content>
+
+    <mat-card-content *ngIf="editing" class="py-0">
       <div class="row no-gutters">
         <div class="row no-gutters w-100 text-danger mb-2" name="incompatibility_section">
           <div *ngFor="let key of getIssueKeys()" class="incompatibility-section col-md-4 col-lg-4 col-xl-3">
@@ -65,7 +72,7 @@
             <p *ngIf="issues[key].unsupportedByRating">{{ 'Unsupported rating' | translate }}: {{ issues[key].unsupportedByRating | translate }}</p>
             <p *ngIf="issues[key].unsupportedByType">{{ 'Unsupported submission type' | translate }}: {{ issues[key].unsupportedByType }}</p>
             <p *ngIf="issues[key].unsupportedByFileExtension">{{ 'Unsupported file type' | translate }}: {{ issues[key].unsupportedByFileExtension }}</p>
-            <p *ngIf="issues[key].unsupportedByFileSize > 0">{{ 'Unsupported file size' | translate }}: {{ '>' + issues[key].unsupportedByFileSize + 'MB' }}</p>
+            <p *ngIf="issues[key].unsupportedByFileSize > 0">{{ 'Unsupported file size' | translate }}: {{ '> ' + issues[key].unsupportedByFileSize + 'MB' }}</p>
           </div>
           <div *ngIf="getIssueKeys().length">
             <button mat-stroked-button color="accent" (click)="openHelpDialog()">{{ 'Help' | translate }}</button>
@@ -167,7 +174,7 @@
                 </ng-template>
                 <mat-tab-group>
                   <mat-tab *ngFor="let website of getSelectedWebsitesWithOptions()" [label]="website">
-                    <options-section (optionChanges)="_validate()" [website]="website" [control]="optionsForm.get(website)"></options-section>
+                    <options-section (optionChanges)="saveAndValidate()" [website]="website" [control]="optionsForm.get(website)"></options-section>
                   </mat-tab>
                 </mat-tab-group>
               </form>
@@ -196,14 +203,14 @@
           <button type="button" mat-button color="accent" [matTooltip]="'Create Template Tooltip' | translate" (click)="saveTemplate()">{{ 'Save Template' | translate }}</button>
         </div>
         <div class="col-md col-lg col-xl">
-          <button class="w-100 font-weight-bold" mat-button (click)="toggleEditing()">{{ editing ? 'Show Less' : 'Show More' | translate}}
+          <button class="w-100 font-weight-bold" mat-button (click)="toggleEditing()">{{ (editing ? 'Show Less' : 'Show More') | translate}}
             <mat-icon class="rotate" [class.editing]="editing">keyboard_arrow_down</mat-icon>
           </button>
         </div>
         <div class="col-md-5 col-lg-5 col-xl-4 text-right">
           <button type="button" mat-button color="warn" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
-          <button type="button" mat-button color="accent" (click)="save()" [matTooltip]="'Save Tooltip' | translate" [disabled]="!passing">{{ 'Save' | translate }}</button>
-          <button type="button" mat-button color="accent" (click)="post()" [disabled]="!passing">{{ 'Post' | translate }}</button>
+          <button type="button" mat-button color="accent" (click)="save()" [matTooltip]="'Save Tooltip' | translate" [disabled]="!passing">{{ (form.value.schedule ? 'Schedule' : 'Save' )| translate }}</button>
+          <button type="button" mat-button color="accent" (click)="post()" [disabled]="!passing" *ngIf="!form.value.schedule">{{ 'Post' | translate }}</button>
         </div>
       </div>
     </mat-card-actions>

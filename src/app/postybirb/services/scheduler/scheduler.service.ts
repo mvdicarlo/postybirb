@@ -36,14 +36,19 @@ export class SchedulerService {
 
   private checkForScheduled(): void {
     const now = new Date();
-    for (let i = 0; i < this.submissions.length; i++) {
-      const s = this.submissions[i];
-      const status = s.meta.submissionStatus;
-      if (!(status === SubmissionStatus.QUEUED || status === SubmissionStatus.POSTING)) {
-        const sTime: Date = new Date(s.meta.schedule);
-        if (sTime <= now) {
-          this._store.dispatch(new PostyBirbStateAction.QueueSubmission(s));
-        }
+    const available = this.submissions
+      .filter(s => s.meta.schedule) // if scheduled
+      .filter(s => new Date(s.meta.schedule) <= now); // if time to post
+
+    for (let i = 0; i < available.length; i++) {
+      const submission = available[i];
+      switch (submission.meta.submissionStatus) {
+        case SubmissionStatus.QUEUED:
+          break;
+        case SubmissionStatus.POSTING:
+          break;
+        default:
+          this._store.dispatch(new PostyBirbStateAction.QueueSubmission(submission));
       }
     }
   }

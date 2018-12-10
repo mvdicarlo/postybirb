@@ -38,16 +38,21 @@ export class Weasyl extends BaseWebsite implements Website {
   getStatus(): Promise<WebsiteStatus> {
     return new Promise(resolve => {
       this.http.get<any>(`${this.baseURL}/api/whoami`).subscribe(info => {
-        if (info && info.login) {
-          this.http.get<any>(`${this.baseURL}/api/users/${info.login}/view`).subscribe(user => {
-            this.info = user;
-            this.loginStatus = WebsiteStatus.Logged_In;
-            resolve(WebsiteStatus.Logged_In);
-          }, () => {
+        try {
+          if (info && info.login) {
+            this.http.get<any>(`${this.baseURL}/api/users/${info.login}/view`).subscribe(user => {
+              this.info = user;
+              this.loginStatus = WebsiteStatus.Logged_In;
+              resolve(WebsiteStatus.Logged_In);
+            }, () => {
+              this.loginStatus = WebsiteStatus.Logged_Out;
+              resolve(WebsiteStatus.Logged_Out);
+            });
+          } else {
             this.loginStatus = WebsiteStatus.Logged_Out;
             resolve(WebsiteStatus.Logged_Out);
-          });
-        } else {
+          }
+        } catch (err) {
           this.loginStatus = WebsiteStatus.Logged_Out;
           resolve(WebsiteStatus.Logged_Out);
         }

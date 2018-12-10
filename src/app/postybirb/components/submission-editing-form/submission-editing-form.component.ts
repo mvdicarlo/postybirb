@@ -25,6 +25,7 @@ import { TemplatesService } from '../../services/templates/templates.service';
 import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { WebsiteStatusManager } from '../../../commons/helpers/website-status-manager';
 import { SubmissionSaveDialogComponent } from '../dialog/submission-save-dialog/submission-save-dialog.component';
+import { EditableSubmissionsService } from '../../services/editable-submissions/editable-submissions.service';
 
 @Component({
   selector: 'submission-editing-form',
@@ -79,8 +80,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public file: any;
   public thumbnail: any;
-  public src: any;
-  public thumbnailSrc: any;
+  public thumbnailIcon: any;
   public fileIcon: string;
   public editing: boolean = false;
   public highlight: boolean = false;
@@ -100,17 +100,28 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public passing: boolean = false;
   private validateSubject: Subject<any>;
+  private saveEditsSubject: Subject<any>;
 
-  constructor(fb: FormBuilder, private _store: Store, private bottomSheet: MatBottomSheet, private _changeDetector: ChangeDetectorRef, private websiteCoordinator: WebsiteCoordinatorService, private dialog: MatDialog, private templates: TemplatesService) {
+  constructor(fb: FormBuilder, private _store: Store, private bottomSheet: MatBottomSheet, private _changeDetector: ChangeDetectorRef,
+    private websiteCoordinator: WebsiteCoordinatorService, private dialog: MatDialog, private templates: TemplatesService,
+    private editableSubmissionService: EditableSubmissionsService) {
     this.defaultDescription = new BehaviorSubject(undefined);
+
     this.validateSubject = new Subject();
     this.validateSubject.pipe(debounceTime(150)).subscribe(() => {
       this.canSave();
       this._changeDetector.markForCheck();
+
+      this.editableSubmissionService.setPassing(this.archive.meta.id, this.passing);
+    }); // try to limit calls to this
+
+    this.saveEditsSubject = new Subject();
+    this.saveEditsSubject.pipe(debounceTime(2000)).subscribe(() => {
+      this._saveEditState();
     }); // try to limit calls to this
 
     this.form = fb.group({
-      title: ['', Validators.maxLength(50)],
+      title: [null, Validators.maxLength(50)],
       rating: [null, Validators.required],
       schedule: [null],
       websites: [null, Validators.required]
@@ -158,6 +169,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.editableSubmissionService.addEditingForm(this.archive.meta.id, this);
     this.submission = PostyBirbSubmissionModel.fromArchive(this.archive);
     this.file = this.submission.getSubmissionFileObject();
     this._loadFileIconImage();
@@ -170,6 +182,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.websiteStatusSubscription.unsubscribe();
     this.defaultDescription.complete();
+    this.editableSubmissionService.removeEditingForm(this.archive.meta.id);
   }
 
   public toggleEditing(): void {
@@ -235,9 +248,9 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     if (this.tagFields && this.tagFields.length) {
       const fields = this.tagFields.toArray();
       for (let field in fields) {
-          if (fields[field].formControlName == website) {
-            return !fields[field].validateTagCount();
-          }
+        if (fields[field].formControlName == website) {
+          return !fields[field].validateTagCount();
+        }
       }
     }
 
@@ -266,21 +279,31 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   }
 
   public async clearForm() {
-    this.form.reset({
-      rating: null,
-      title: 'New Submission',
-      websites: null,
-      schedule: null
+    let dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Clear'
+      }
     });
 
-    this.tagForm.reset();
-    this.descriptionForm.reset();
-    this.optionsForm.reset();
-    this.submission.setAdditionalFiles([]);
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.form.reset({
+          rating: null,
+          title: null,
+          websites: null,
+          schedule: null
+        });
 
-    this.issues = {};
-    this.templateSelect.reset();
-    this.copySelect.reset();
+        this.tagForm.reset();
+        this.descriptionForm.reset();
+        this.optionsForm.reset();
+        this.submission.setAdditionalFiles([]);
+
+        this.issues = {};
+        this.templateSelect.reset();
+        this.copySelect.reset();
+      }
+    });
   }
 
   public canSave(): boolean {
@@ -313,9 +336,9 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     return false;
   }
 
-  public templateSelected(template: SubmissionArchive): void {
+  public templateSelected(template: SubmissionArchive, useUnpostedWebsites: boolean = false /* Template vs Copy */): void {
     const tmp: PostyBirbSubmissionModel = PostyBirbSubmissionModel.fromArchive(template);
-    this.form.controls.websites.patchValue(tmp.unpostedWebsites);
+    this.form.controls.websites.patchValue(useUnpostedWebsites ? tmp.unpostedWebsites : (template.websites || tmp.unpostedWebsites));
     this.descriptionForm.patchValue(tmp.descriptionInfo || {});
     this.tagForm.patchValue(tmp.tagInfo || {});
     this.optionsForm.patchValue(tmp.optionInfo || {});
@@ -402,7 +425,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
       this._loadFileIconImage();
 
       this.issues = checkForWebsiteAndFileIncompatibility(this.file, this.form.value.rating, this.submission.type, this.form.value.websites);
-      this._changeDetector.markForCheck();
+      this._saveEditState();
     }
 
     this.changeFileInput.nativeElement.value = '';
@@ -416,14 +439,13 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     if (files.length > 0 && files[0].size <= 2000000 && files[0].type.includes('image')) { // no thumbnails over 2MB
       this.submission.setThumbnailFile(new FileInformation(files[0], false));
 
+      this.thumbnail = this.submission.getThumbnailFileObject();
       this.submission.getThumbnailFileSource().then(src => {
-        this.thumbnailSrc = src;
+        this.thumbnailIcon = src;
         this._changeDetector.markForCheck();
       });
 
-      this.thumbnail = this.submission.getThumbnailFileObject();
-
-      this._changeDetector.markForCheck();
+      this._saveState();
     }
 
     this.changeThumbnailFileInput.nativeElement.value = '';
@@ -432,18 +454,22 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   public async removeThumbnail() {
     this.submission.setThumbnailFile(null);
     this.thumbnail = null;
-    this.thumbnailSrc = null;
-    this._changeDetector.markForCheck();
+    this.thumbnailIcon = null;
+
+    this._saveState();
   }
 
   private async _initialize() {
     if (this.submission.getThumbnailFileObject()) {
       this.thumbnail = this.submission.getThumbnailFileObject();
-      this.thumbnailSrc = await this.submission.getThumbnailFileSource();
+      this.thumbnailIcon = await this.submission.getThumbnailFileIcon({
+        height: 100,
+        width: 100
+      });
     }
 
     this.form.patchValue({
-      title: this.submission.title || 'New Submission',
+      title: this.submission.title,
       rating: this.submission.rating || null,
       schedule: this.submission.schedule || null,
       websites: this.submission.unpostedWebsites || []
@@ -454,11 +480,39 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     this.optionsForm.patchValue(this.submission.optionInfo || {});
 
     this._changeDetector.markForCheck();
+
+    this._initiateSaveTracker();
+  }
+
+  private _initiateSaveTracker(): void {
+    setTimeout(function() {
+      try {
+        this.tagForm.valueChanges.pipe(debounceTime(1000))
+        .subscribe(() => {
+          this._saveState();
+        });
+
+        this.descriptionForm.valueChanges.pipe(debounceTime(1000))
+        .subscribe(() => {
+          this._saveState();
+        });
+
+        this.form.valueChanges.pipe(debounceTime(1000))
+        .subscribe(() => {
+          this._saveState();
+        });
+
+        this.optionsForm.valueChanges.pipe(debounceTime(1000))
+        .subscribe(() => {
+          this._saveState();
+        });
+      } catch (e) { /* swallow it */}
+    }.bind(this), 2000);
   }
 
   private _includesSearch(search: string): boolean {
     if (this.file && this.file.name.toLowerCase().includes(search)) return true;
-    if (this.form.value.title.toLowerCase().includes(search)) return true;
+    if ((this.form.value.title || '').toLowerCase().includes(search)) return true;
     return false;
   }
 
@@ -476,7 +530,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public _updateSubmission(submission: PostyBirbSubmissionModel): PostyBirbSubmissionModel {
     const values = this.form.value;
-    submission.title = values.title;
+    submission.title = values.title || 'New Submission';
     submission.rating = values.rating;
     submission.descriptionInfo = this.descriptionForm.value;
     submission.tagInfo = this.tagForm.value;
@@ -489,25 +543,32 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   private _loadFileIconImage(): void {
     if (this.file && this.file.type) {
-      const fileType: string = this.file.type.split('/')[0]
-      if (fileType != 'video' && fileType != 'image') {
-        this.src = null;
-        getFileIcon(this.file.path, (err, icon) => {
-          this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
-          this._changeDetector.detectChanges();
-        });
-      } else {
-        this.fileIcon = null;
-        this.submission.getSubmissionFileSource().then(src => {
-          this.src = src;
-          this._changeDetector.markForCheck();
-        });
-      }
+      this.submission.getSubmissionFileIcon({
+        height: 400,
+        width: 200
+      }).then(data => {
+        this.fileIcon = data;
+        this._changeDetector.markForCheck();
+      });
     }
+  }
+
+  public async saveAndValidate() {
+    this.validateSubject.next();
+    this.saveEditsSubject.next();
   }
 
   public async _validate() {
     this.validateSubject.next();
+  }
+
+  public async _saveState() {
+    this.saveEditsSubject.next();
+  }
+
+  private _saveEditState(): void {
+    // potentially expensive call?
+    this._store.dispatch(new PostyBirbStateAction.UpdateSubmission(this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive())).asSubmissionArchive()));
   }
 
   public toggleHighlight() {

@@ -1,5 +1,57 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>1.0.6 (12/07/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>Newgrounds added.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Additional Options now correctly triggers the autosave for edit form.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>After saving a bulk edit, it will now bring you to the single mode to let you finish up the ratings, title, etc.</li>
+  </ul>
+  <div>1.0.5 (12/05/2018)</div>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Mastodon journal posts now work.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Form will no longer say 'Post' when there is a time to post. Instead it will save 'Schedule'.</li>
+  </ul>
+  <div>1.0.4 (11/19/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>There is now a config export button that can be found in View Submissions -> Logs</li>
+    <li>Collapsed submissions in editing will now show icons for the websites that are selected for it.</li>
+    <li>Bulk update form is now available. Saving it will only save the edits, and will not send to submission view. Must still go to single and save manually.</li>
+    <li>PostyBirb will now automatically save edits to a submission after roughly 6 seconds now.</li>
+    <li>Scheduled submissions that fail to post will now become unscheduled to avoid a scenario where a duplicate post could occur.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue where incorrect language would be loaded in.</li>
+    <li>Fixed issue of mastodon.art not working.</li>
+    <li>Fixed minor and unlikely bug where templates would not always use all selected websites.</li>
+    <li>Attempt to fix issue with pasting text into description containing hidden html.</li>
+    <li>Attempt to fix Derpibooru posting issues. (It works for me at least)</li>
+    <li>:sf: description tag now links to correct url.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>More UI Tweaks.</li>
+    <li>Tumblr now only allows a rating of General and Mature. (due to recent policy changes)</li>
+    <li>Turned off hardware acceleration by default. You can turn it on in Settings.</li>
+    <li>Worked on improving performance/input lag issues.</li>
+    <li>To help with performance, app will now store a thumbnail of submission files and selected thumbnails in a temp directory that is cleared when the application is closed.</li>
+    <li>Rewrote posting code in an attempt to squash a rare double posting bug.</li>
+    <li>Updated FurAffinity species list.</li>
+    <li>Updated how translation guide is generated so context can be easily applied.</li>
+    <li>Removed unused translations from guide.</li>
+  </ul>
   <div>1.0.2 (11/15/2018)</div>
   <h5>New Features</h5>
   <ul>

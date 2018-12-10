@@ -34,6 +34,9 @@ const DescriptionRequirements: any = {
   [SupportedWebsites.Mastodon]: {
     maxLength: 500
   },
+  [SupportedWebsites.Newgrounds]: {
+    maxLength: 12288
+  },
   [SupportedWebsites.PaigeeWorld]: {
     maxLength: 1000
   },

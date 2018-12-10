@@ -93,8 +93,13 @@ export class E621 extends BaseWebsite implements Website {
 
           this.http.post(`${this.baseURL}/post/create`, uploadForm)
             .subscribe((res: any) => {
-              if (res.success) observer.next(res);
-              else observer.error(this.createError(res, submission, res.reason));
+              try {
+                if (res.success) observer.next(res);
+                else observer.error(this.createError(res, submission, res.reason));
+              } catch (err) {
+                observer.error(this.createError({ res, err }, submission, res.reason));
+              }
+
               observer.complete();
             }, err => {
               observer.error(this.createError(err, submission));

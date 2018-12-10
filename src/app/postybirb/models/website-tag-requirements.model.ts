@@ -35,6 +35,9 @@ const TagRequirements: any = {
   [SupportedWebsites.Mastodon]: {
     exclude: true
   },
+  [SupportedWebsites.Newgrounds]: {
+    maxTags: 12
+  },
   [SupportedWebsites.PaigeeWorld]: {
 
   },

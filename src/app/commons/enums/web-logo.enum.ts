@@ -16,6 +16,7 @@ const WebLogo = {
   [SupportedWebsites.HentaiFoundry]: './assets/web-icons/hentaifoundry_logo.png',
   [SupportedWebsites.Inkbunny]: './assets/web-icons/inkbunny_logo.png',
   [SupportedWebsites.Mastodon]: './assets/web-icons/mastodon_logo.png',
+  [SupportedWebsites.Newgrounds]: './assets/web-icons/newgrounds_logo.png',
   [SupportedWebsites.PaigeeWorld]: './assets/web-icons/paigeeworld_logo.png',
   [SupportedWebsites.Patreon]: './assets/web-icons/patreon_logo.svg',
   [SupportedWebsites.Pixiv]: './assets/web-icons/pixiv_logo.svg',

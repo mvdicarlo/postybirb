@@ -18,6 +18,7 @@ import { SofurryFormComponent } from '../components/website-options/sofurry-form
 import { TumblrFormComponent } from '../components/website-options/tumblr-form/tumblr-form.component';
 import { TwitterFormComponent } from '../components/website-options/twitter-form/twitter-form.component';
 import { WeasylFormComponent } from '../components/website-options/weasyl-form/weasyl-form.component';
+import { NewgroundsFormComponent } from '../components/website-options/newgrounds-form/newgrounds-form.component';
 
 const OptionsForms: any = {
   [SupportedWebsites.Aryion]: {
@@ -54,6 +55,10 @@ const OptionsForms: any = {
   },
   [SupportedWebsites.Mastodon]: {
     component: MastodonFormComponent
+  },
+  [SupportedWebsites.Newgrounds]: {
+    component: NewgroundsFormComponent,
+    requiredFields: ['nudity', 'violence', 'text', 'adult']
   },
   [SupportedWebsites.PaigeeWorld]: {
     component: PaigeeWorldFormComponent

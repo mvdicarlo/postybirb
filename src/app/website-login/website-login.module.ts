@@ -34,6 +34,7 @@ import { MastodonDialogComponent } from './website-row/mastodon-dialog/mastodon-
 import { PaigeeworldDialogComponent } from './website-row/paigeeworld-dialog/paigeeworld-dialog.component';
 import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog.component';
 import { FurryAminoDialogComponent } from './website-row/furry-amino-dialog/furry-amino-dialog.component';
+import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgrounds-dialog.component';
 
 @NgModule({
   imports: [
@@ -69,30 +70,32 @@ import { FurryAminoDialogComponent } from './website-row/furry-amino-dialog/furr
     MastodonDialogComponent,
     PaigeeworldDialogComponent,
     AryionDialogComponent,
-    FurryAminoDialogComponent
+    FurryAminoDialogComponent,
+    NewgroundsDialogComponent
   ],
   entryComponents: [
     LoginPanelComponent,
+    AryionDialogComponent,
+    DerpibooruDialogComponent,
+    DeviantArtDialogComponent,
+    E621DialogComponent,
     FuraffinityLoginDialogComponent,
-    WeasylDialogComponent,
     FurifficDialogComponent,
+    FurryAminoDialogComponent,
+    FurrynetworkDialogComponent,
+    HentaiFoundryDialogComponent,
+    InkbunnyDialogComponent,
+    MastodonDialogComponent,
+    NewgroundsDialogComponent,
+    PaigeeworldDialogComponent,
     PatreonDialogComponent,
     PixivDialogComponent,
-    SofurryDialogComponent,
-    E621DialogComponent,
-    FurrynetworkDialogComponent,
-    TumblrDialogComponent,
-    DeviantArtDialogComponent,
-    InkbunnyDialogComponent,
     Route50DialogComponent,
+    SofurryDialogComponent,
+    TumblrDialogComponent,
     TwitterDialogComponent,
+    WeasylDialogComponent,
     WebsiteStatusComponent,
-    DerpibooruDialogComponent,
-    HentaiFoundryDialogComponent,
-    MastodonDialogComponent,
-    PaigeeworldDialogComponent,
-    AryionDialogComponent,
-    FurryAminoDialogComponent
   ],
   exports: [
     PBWebsitesComponent

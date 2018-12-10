@@ -21,10 +21,8 @@ export class AdditionalImagesComponent implements OnInit {
   }
 
   private _load(): void {
-    this.submission.getPreloadedAdditionalFiles().then(files => {
-      this.additionalFiles = files;
-      this._changeDetector.markForCheck();
-    });
+    this.additionalFiles = this.submission.getAdditionalFilesFileInformation();
+    this._changeDetector.markForCheck();
   }
 
   public async addFile(event: Event) {

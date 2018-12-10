@@ -26,7 +26,7 @@ export class SubmissionSettingsDialogComponent implements OnDestroy {
 
   public isHardwareAccelerationOn(): boolean {
     const enabled = db.get('hardwareAcceleration').value();
-    return enabled === undefined ? true : enabled;
+    return enabled === undefined ? false : enabled;
   }
 
   public toggleHardwareAccceleration(event: any): void {

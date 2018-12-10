@@ -1,6 +1,6 @@
 <mat-form-field color="accent" class="w-100">
-  <mat-select [placeholder]="'Species' | translate" [value]="value" (selectionChange)="onChange($event)">
-    <mat-option value="1" selected="selected">Unspecified / Any</mat-option>
+  <mat-select name="species" [placeholder]="'Species' | translate" [value]="value" (selectionChange)="onChange($event)">
+    <mat-option value="1" selected>Unspecified / Any</mat-option>
     <mat-optgroup label="Amphibian">
       <mat-option value="1001">Frog</mat-option>
       <mat-option value="1002">Newt</mat-option>
@@ -177,6 +177,7 @@
     </mat-optgroup>
     <mat-optgroup label="Vulpines">
       <mat-option value="6072">Fennec</mat-option>
+      <mat-option value="6075">Fox</mat-option>
       <mat-option value="6015">Vulpine (Other)</mat-option>
     </mat-optgroup>
     <mat-optgroup label="Other">

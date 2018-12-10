@@ -63,31 +63,31 @@ export class Tumblr extends BaseWebsite implements Website {
     const type = this.getMapping('content', submission.submissionData.submissionType);
     const blog = submission.options.blog || this.getInfo().blogs[0].name;
     const title = options.useTitle ? `<h1>${submission.submissionData.title}</h1>` : '';
-    const rating = this.getMapping('rating', submission.submissionData.submissionRating);
+    const rating = submission.submissionData.submissionRating;
     let description = submission.parseDescription ? submission.description : submission.description;
 
     description = title + description;
 
     let tags = this.formatTags(submission.defaultTags, submission.customTags);
-    if (rating === this.getMapping('rating', 'Explicit') || rating === this.getMapping('rating', 'Mature') || rating === this.getMapping('rating', 'Extreme')) {
-      if (!(tags || '').toLowerCase().includes('#nsfw')) {
-        tags = '#nsfw,' + tags;
-      }
-    }
 
     const additionalFiles = (submission.submissionData.additionalFiles || []).map((additionalFile: any) => {
       return additionalFile.getRealFile();
     });
 
     return new Observable(observer => {
-      this.helper.post(blog, tags, title, description, type, [submission.submissionData.submissionFile.getRealFile(), ...additionalFiles])
-        .then((res) => {
-          observer.next(res);
-          observer.complete();
-        }).catch((err) => {
-          observer.error(err);
-          observer.complete();
-        });
+      if (rating === 'General' || rating === 'Mature') {
+        this.helper.post(blog, tags, title, description, type, [submission.submissionData.submissionFile.getRealFile(), ...additionalFiles])
+          .then((res) => {
+            observer.next(res);
+            observer.complete();
+          }).catch((err) => {
+            observer.error(err);
+            observer.complete();
+          });
+      } else {
+        observer.error(this.createError('Must be General or Mature', submission, 'Must be General or Mature'));
+        observer.complete();
+      }
     });
   }
 

@@ -1,7 +1,7 @@
 PostyBirb Translation Guide
 
 Each text translation that occurs in PostyBirb is in this file.
-Please put the relevant translation beneath the text being translated.
+Please put the relevant translation in the translation field. (Internal field should be ignored)
 Please specify the language it is being translated to.
 
 LANGUAGE: <Language being translated to>
@@ -9,397 +9,1227 @@ TRANSLATOR: <Person to be credited>
 
 -----------------------------------------------------------------------
 
-"Accepted Files"
-
-"Accepted Ratings"
-
-"Accepted Type"
-
-"Add Additional Images"
-
-"Add Files"
-
-"Add From Clipboard"
-
-"Add Thumbnail"
-
-"Additional Images"
-
-"Additional Options"
-
-"Adult"
-
-"All"
-
-"All Ages"
-
-"Allow Community Tags"
-
-"Allow error logs"
-
-"Animation"
-
-"Apply Template"
-
-"Artwork"
-
-"Authentication Failed"
-
-"Available Websites"
-
-"Block Guests"
-
-"By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post."
-
-"Cancel"
-
-"Cancel All"
-
-"Category"
-
-"Change File"
-
-"Changelog"
-
-"Charge Patrons"
-
-"Clear"
-
-"Clear All"
-
-"Clear Scheduled"
-
-"Clear Templates"
-
-"Clear Unscheduled"
-
-"Close"
-
-"Confirm Action"
-
-"Contact"
-
-"Contact me on one of these sites:"
-
-"Copy"
-
-"Copy Submission"
-
-"Create Template"
-
-"Critique"
-
-"Dashboard"
-
-"Default Description"
-
-"Default Tags"
-
-"Delete"
-
-"Delete All"
-
-"Delete Template"
-
-"Description"
-
-"Description Help"
-
-"Description is more than {{length}} characters"
-
-"Disable"
-
-"Disable Comments"
-
-"Donate"
-
-"Donations incentivize me to continue to keep PostyBirb updated."
-
-"Draft"
-
-"Drag to reorder"
-
-"Drag with your mouse or hold Shift or Ctrl (Command) to select multiple files."
-
-"Duplicate tag ({{tag}}) ignored"
-
-"Edit"
-
-"Edit Selected"
-
-"Edit Submissions"
-
-"Emergency Stop"
-
-"Enabled"
-
-"Extreme"
-
-"Failed"
-
-"Failure"
-
-"Feature"
-
-"Friends Only"
-
-"Gender"
-
-"General"
-
-"Gore/Violence"
-
-"Group Only"
-
-"Help"
-
-"Help Advertise PostyBirb"
-
-"Help Translate"
-
-"Hidden"
-
-"Ideology"
-
-"In minutes"
-
-"Incorrect username or password."
-
-"Initializing"
-
-"Interrupted"
-
-"Invalid for selected websites"
-
-"License"
-
-"Load Template"
-
-"Login"
-
-"Logout"
-
-"Logs"
-
-"Manage Templates"
-
-"Mature"
-
-"Mature Category"
-
-"Mature Content"
-
-"Minimum Pledge"
-
-"Minors"
-
-"Moderate"
-
-"Music"
-
-"New"
-
-"No"
-
-"No Free Download"
-
-"None"
-
-"Not Logged In"
-
-"Notify"
-
-"Nudity"
-
-"Offline"
-
-"Open"
-
-"Original Work"
-
-"Other"
-
-"Overwrite Default"
-
-"Password"
-
-"Paused until"
-
-"Please provide a file"
-
-"Please provide at least {{min}} tags"
-
-"Please separate each tag with a comma (one, two, three)"
-
-"Post"
-
-"Post All"
-
-"Post Interval"
-
-"Post a journal or status to one or more websites from one simple form"
-
-"Posted"
-
-"Posting"
-
-"PostyBirb Settings"
-
-"PostyBirb has been provided free because I cannot guarantee optimal functionality at all times."
-
-"Public"
-
-"Queued"
-
-"Rating"
-
-"Refresh"
-
-"Remove"
-
-"Remove Thumbnail"
-
-"Reset All"
-
-"Save"
-
-"Save All"
-
-"Save Edits"
-
-"Save Template"
-
-"Save current form to allow it to be reused in future submissions"
-
-"Save submissions to the gallery for posting"
-
-"Schedule"
-
-"Schedule or post multimedia submissions to multiple websites all at once from one simple form"
-
-"Scheduled"
-
-"Scheduled Submissions"
-
-"Select Blog"
-
-"Select Folder"
-
-"Select Profile"
-
-"Selected Websites"
-
-"Settings"
-
-"Sexual Content"
-
-"Sexual Themes"
-
-"Show Less"
-
-"Show More"
-
-"Show Password"
-
-"Skips incomplete forms"
-
-"Something not working right?"
-
-"Source URL"
-
-"Species"
-
-"Sta.sh Only"
-
-"Status"
-
-"Stop"
-
-"Stop Editing"
-
-"Stop posting on submission failure"
-
-"Story"
-
-"Strict"
-
-"Strong Language"
-
-"Submission Failed"
-
-"Submission Help"
-
-"Submission Posted"
-
-"Submission Type"
-
-"Submission did not post successfully. Would you like to stop?"
-
-"Success"
-
-"Summary"
-
-"Tags"
-
-"Tags that will be sent to all websites unless overwritten"
-
-"Template Name"
-
-"Text will not be reformatted when posting"
-
-"Theme"
-
-"This description will be used for all websites checked to use default"
-
-"Time to post"
-
-"Title"
-
-"Unauthorize"
-
-"Unlisted"
-
-"Unposted"
-
-"Unscheduled"
-
-"Unsupported file size"
-
-"Unsupported file type"
-
-"Unsupported rating"
-
-"Unsupported submission type"
-
-"Update Available"
-
-"Upload additional images with this submission."
-
-"Use Default"
-
-"Use Title"
-
-"Use basic editor"
-
-"Username"
-
-"Using Default"
-
-"View Submissions"
-
-"Website"
-
-"Website Offline"
-
-"Yes"
-
-"Your password is not stored."
-
-"is incomplete"
-
-"is not complete"
-
-"{{value}} failed to post"
-
-"{{value}} posted successfully"
+{
+  "Internal": "Accepted Files",
+  "Translate Me": "Accepted Files",
+  "Context": "A header that shows a list of accepted file types (e.g. .txt, .jpeg)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Accepted Ratings",
+  "Translate Me": "Accepted Ratings",
+  "Context": "A header that shows a list of accepted ratings per submission (General, Adult, Explicit)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Accepted Type",
+  "Translate Me": "Accepted Type",
+  "Context": "A header that shows a list of accepted Types (Story, Artwork, etc)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Add Additional Images",
+  "Translate Me": "Add Additional Images",
+  "Context": "Text for a button that allows users to add additional images to the submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Add Files",
+  "Translate Me": "Add Files",
+  "Context": "Text for a button that users use to start a submission form",
+  "Translated": ""
+}
+
+{
+  "Internal": "Add From Clipboard",
+  "Translate Me": "Add From Clipboard",
+  "Context": "Text for a button that users use to copy an image from their clipboard to start a submission form",
+  "Translated": ""
+}
+
+{
+  "Internal": "Additional Images",
+  "Translate Me": "Additional Images",
+  "Context": "Header for a section where users add additional images to a submission form",
+  "Translated": ""
+}
+
+{
+  "Internal": "Additional Options",
+  "Translate Me": "Additional Options",
+  "Context": "Header for a section where users add/change website options",
+  "Translated": ""
+}
+
+{
+  "Internal": "Adult",
+  "Translate Me": "Adult",
+  "Context": "A submission rating. Meaning explicit content or something you wouldn't consider SFW",
+  "Translated": ""
+}
+
+{
+  "Internal": "All",
+  "Translate Me": "All",
+  "Translated": ""
+}
+
+{
+  "Internal": "All Ages",
+  "Translate Me": "All Ages",
+  "Context": "Safe for all ages (found in Pixiv additional options)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Allow Community Tags",
+  "Translate Me": "Allow Community Tags",
+  "Context": "A checkbox option (Pixiv)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Animation",
+  "Translate Me": "Animation",
+  "Context": "A type of submission that is an animation (mostly hidden)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Apply Template",
+  "Translate Me": "Apply Template",
+  "Context": "A button that allows users to apply a template from the postybirb sidebar",
+  "Translated": ""
+}
+
+{
+  "Internal": "Artwork",
+  "Translate Me": "Artwork",
+  "Context": "A type of submission that is an image (mostly hidden)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Authentication Failed",
+  "Translate Me": "Authentication Failed",
+  "Context": "Message shown when unable to authenticate a website",
+  "Translated": ""
+}
+
+{
+  "Internal": "Available Websites",
+  "Translate Me": "Available Websites",
+  "Translated": ""
+}
+
+{
+  "Internal": "Block Guests",
+  "Translate Me": "Block Guests",
+  "Context": "A checkbox option (Inkbunny)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Bulk",
+  "Translate Me": "Bulk",
+  "Context": "A mode indicator for editing forms in bulk, rather than single (subject to change in the future)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Bulk Update",
+  "Translate Me": "Bulk Update",
+  "Context": "Header for dialog that completes a bulk update",
+  "Translated": ""
+}
+
+{
+  "Internal": "Website Agreement",
+  "Translate Me": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Cancel",
+  "Translate Me": "Cancel",
+  "Translated": ""
+}
+
+{
+  "Internal": "Cancel All",
+  "Translate Me": "Cancel All",
+  "Translated": ""
+}
+
+{
+  "Internal": "Category",
+  "Translate Me": "Category",
+  "Context": "Header for website options that can be put into categories (e.g. FurAffinity)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Change File",
+  "Translate Me": "Change File",
+  "Translated": ""
+}
+
+{
+  "Internal": "Changelog",
+  "Translate Me": "Changelog",
+  "Translated": ""
+}
+
+{
+  "Internal": "Charge Patrons",
+  "Translate Me": "Charge Patrons",
+  "Context": "A checkbox option for Patreon (whether to charge patrons or not)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Clear",
+  "Translate Me": "Clear",
+  "Context": "Clear form",
+  "Translated": ""
+}
+
+{
+  "Internal": "Clear All",
+  "Translate Me": "Clear All",
+  "Context": "Clear all stored submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Clear Scheduled",
+  "Translate Me": "Clear Scheduled",
+  "Context": "Clear all scheduled submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Clear Templates",
+  "Translate Me": "Clear Templates",
+  "Translated": ""
+}
+
+{
+  "Internal": "Clear Unscheduled",
+  "Translate Me": "Clear Unscheduled",
+  "Context": "Clear all unscheduled submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Close",
+  "Translate Me": "Close",
+  "Translated": ""
+}
+
+{
+  "Internal": "Confirm Action",
+  "Translate Me": "Confirm Action",
+  "Context": "Header for dialog to confirm an action",
+  "Translated": ""
+}
+
+{
+  "Internal": "Contact",
+  "Translate Me": "Contact",
+  "Context": "Contact information",
+  "Translated": ""
+}
+
+{
+  "Internal": "Contact Message",
+  "Translate Me": "Contact me on one of these sites:",
+  "Translated": ""
+}
+
+{
+  "Internal": "Copy",
+  "Translate Me": "Copy",
+  "Translated": ""
+}
+
+{
+  "Internal": "Copy Submission",
+  "Translate Me": "Copy Submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create Template",
+  "Translate Me": "Create Template",
+  "Context": "Create Template",
+  "Translated": ""
+}
+
+{
+  "Internal": "Critique",
+  "Translate Me": "Critique",
+  "Context": "A checkbox for website options",
+  "Translated": ""
+}
+
+{
+  "Internal": "Dashboard",
+  "Translate Me": "Dashboard",
+  "Translated": ""
+}
+
+{
+  "Internal": "Default Description",
+  "Translate Me": "Default Description",
+  "Context": "Generic description used by all websites unless changed elsewhere",
+  "Translated": ""
+}
+
+{
+  "Internal": "Default Tags",
+  "Translate Me": "Default Tags",
+  "Context": "Generic tags used by all websites unless changes elsewhere",
+  "Translated": ""
+}
+
+{
+  "Internal": "Delete",
+  "Translate Me": "Delete",
+  "Translated": ""
+}
+
+{
+  "Internal": "Delete All",
+  "Translate Me": "Delete All",
+  "Translated": ""
+}
+
+{
+  "Internal": "Delete Template",
+  "Translate Me": "Delete Template",
+  "Translated": ""
+}
+
+{
+  "Internal": "Description",
+  "Translate Me": "Description",
+  "Translated": ""
+}
+
+{
+  "Internal": "Description Help",
+  "Translate Me": "Description Help",
+  "Context": "Text for a button that shows description help",
+  "Translated": ""
+}
+
+{
+  "Internal": "Description length exceeded",
+  "Translate Me": "Description is more than {{length}} characters",
+  "Translated": ""
+}
+
+{
+  "Internal": "Disable",
+  "Translate Me": "Disable",
+  "Translated": ""
+}
+
+{
+  "Internal": "Disable Comments",
+  "Translate Me": "Disable Comments",
+  "Translated": ""
+}
+
+{
+  "Internal": "Donate",
+  "Translate Me": "Donate",
+  "Context": "Donate",
+  "Translated": ""
+}
+
+{
+  "Internal": "Donate Incentive",
+  "Translate Me": "Donations incentivize me to continue to keep PostyBirb updated.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Draft",
+  "Translate Me": "Draft",
+  "Translated": ""
+}
+
+{
+  "Internal": "Drag Tooltip",
+  "Translate Me": "Drag to reorder",
+  "Translated": ""
+}
+
+{
+  "Internal": "Add Files Button Tooltip",
+  "Translate Me": "Drag with your mouse or hold Shift or Ctrl (Command) to select multiple files.",
+  "Context": "A tooltip that appears when you hover over the Add Files button.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Duplicate tag ignored",
+  "Translate Me": "Duplicate tag ({{tag}}) ignored",
+  "Translated": ""
+}
+
+{
+  "Internal": "Edit",
+  "Translate Me": "Edit",
+  "Translated": ""
+}
+
+{
+  "Internal": "Edit Submissions",
+  "Translate Me": "Edit Submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Emergency Stop",
+  "Translate Me": "Emergency Stop",
+  "Context": "Button that immediately stops the app posting and restarts the app",
+  "Translated": ""
+}
+
+{
+  "Internal": "Enabled",
+  "Translate Me": "Enabled",
+  "Translated": ""
+}
+
+{
+  "Internal": "Extreme",
+  "Translate Me": "Extreme",
+  "Context": "A submission rating. Refers to adult and anything that could be considered offensive",
+  "Translated": ""
+}
+
+{
+  "Internal": "Failed",
+  "Translate Me": "Failed",
+  "Translated": ""
+}
+
+{
+  "Internal": "Failure",
+  "Translate Me": "Failure",
+  "Translated": ""
+}
+
+{
+  "Internal": "Feature",
+  "Translate Me": "Feature",
+  "Translated": ""
+}
+
+{
+  "Internal": "Friends Only",
+  "Translate Me": "Friends Only",
+  "Context": "A checkbox option (Inkbunny)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Gender",
+  "Translate Me": "Gender",
+  "Context": "FurAffinity Option",
+  "Translated": ""
+}
+
+{
+  "Internal": "General",
+  "Translate Me": "General",
+  "Context": "A submission rating. Refers to anything SFW.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Gore/Violence",
+  "Translate Me": "Gore/Violence",
+  "Context": "Pixiv category option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Group Only",
+  "Translate Me": "Group Only",
+  "Context": "SoFurry option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Help",
+  "Translate Me": "Help",
+  "Translated": ""
+}
+
+{
+  "Internal": "Advertise",
+  "Translate Me": "Help Advertise PostyBirb",
+  "Translated": ""
+}
+
+{
+  "Internal": "Help Translate",
+  "Translate Me": "Help Translate",
+  "Context": "Help Translate",
+  "Translated": ""
+}
+
+{
+  "Internal": "Hidden",
+  "Translate Me": "Hidden",
+  "Context": "SoFurry option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Ideology",
+  "Translate Me": "Ideology",
+  "Context": "Pixiv option",
+  "Translated": ""
+}
+
+{
+  "Internal": "In minutes",
+  "Translate Me": "In minutes",
+  "Context": "Denotes that the form field is counted in minutes (1 = 1 minute)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Invalid Login",
+  "Translate Me": "Incorrect username or password.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Initializing",
+  "Translate Me": "Initializing",
+  "Translated": ""
+}
+
+{
+  "Internal": "Interrupted",
+  "Translate Me": "Interrupted",
+  "Translated": ""
+}
+
+{
+  "Internal": "License",
+  "Translate Me": "License",
+  "Translated": ""
+}
+
+{
+  "Internal": "Load Template",
+  "Translate Me": "Load Template",
+  "Translated": ""
+}
+
+{
+  "Internal": "Login",
+  "Translate Me": "Login",
+  "Translated": ""
+}
+
+{
+  "Internal": "Logout",
+  "Translate Me": "Logout",
+  "Translated": ""
+}
+
+{
+  "Internal": "Logs",
+  "Translate Me": "Logs",
+  "Translated": ""
+}
+
+{
+  "Internal": "Manage Templates",
+  "Translate Me": "Manage Templates",
+  "Translated": ""
+}
+
+{
+  "Internal": "Mature",
+  "Translate Me": "Mature",
+  "Context": "A submission rating. Refers to things not quite SFW, but not necessarily explicit in nature.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Mature Category",
+  "Translate Me": "Mature Category",
+  "Context": "A website option header",
+  "Translated": ""
+}
+
+{
+  "Internal": "Mature Content",
+  "Translate Me": "Mature Content",
+  "Context": "A website option header",
+  "Translated": ""
+}
+
+{
+  "Internal": "Minimum Pledge",
+  "Translate Me": "Minimum Pledge",
+  "Translated": ""
+}
+
+{
+  "Internal": "Minors",
+  "Translate Me": "Minors",
+  "Context": "Rating option for Pixiv",
+  "Translated": ""
+}
+
+{
+  "Internal": "Moderate",
+  "Translate Me": "Moderate",
+  "Context": "Rating option for Pixiv",
+  "Translated": ""
+}
+
+{
+  "Internal": "Music",
+  "Translate Me": "Music",
+  "Context": "Submission type for music/audio submissions (mostly hidden)",
+  "Translated": ""
+}
+
+{
+  "Internal": "New",
+  "Translate Me": "New",
+  "Translated": ""
+}
+
+{
+  "Internal": "No",
+  "Translate Me": "No",
+  "Translated": ""
+}
+
+{
+  "Internal": "No Free Download",
+  "Translate Me": "No Free Download",
+  "Context": "DeviantArt option",
+  "Translated": ""
+}
+
+{
+  "Internal": "None",
+  "Translate Me": "None",
+  "Translated": ""
+}
+
+{
+  "Internal": "Not Logged In",
+  "Translate Me": "Not Logged In",
+  "Translated": ""
+}
+
+{
+  "Internal": "Notify",
+  "Translate Me": "Notify",
+  "Context": "Common website option. Whether or not to notify watchers (DA, IB, Weasyl)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Nudity",
+  "Translate Me": "Nudity",
+  "Translated": ""
+}
+
+{
+  "Internal": "Offline",
+  "Translate Me": "Offline",
+  "Translated": ""
+}
+
+{
+  "Internal": "Open",
+  "Translate Me": "Open",
+  "Translated": ""
+}
+
+{
+  "Internal": "Original Work",
+  "Translate Me": "Original Work",
+  "Context": "Website option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Other",
+  "Translate Me": "Other",
+  "Context": "Website Option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Overwrite Default",
+  "Translate Me": "Overwrite Default",
+  "Context": "A checkbox option for tags",
+  "Translated": ""
+}
+
+{
+  "Internal": "Password",
+  "Translate Me": "Password",
+  "Translated": ""
+}
+
+{
+  "Internal": "Paused until",
+  "Translate Me": "Paused until",
+  "Context": "Posting submission is waiting for some timer to occur",
+  "Translated": ""
+}
+
+{
+  "Internal": "Min Tags Required",
+  "Translate Me": "Please provide at least {{min}} tags",
+  "Translated": ""
+}
+
+{
+  "Internal": "Comma Separate Tags",
+  "Translate Me": "Please separate each tag with a comma (one, two, three)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Post",
+  "Translate Me": "Post",
+  "Context": "Post/Send/Upload submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Post All",
+  "Translate Me": "Post All",
+  "Context": "Send/Upload/Post all submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Post Interval",
+  "Translate Me": "Post Interval",
+  "Context": "Time in between each submission (in minutes) manually set by user in Settings",
+  "Translated": ""
+}
+
+{
+  "Internal": "JournalBirb dashboard",
+  "Translate Me": "Post a journal or status to one or more websites from one simple form",
+  "Context": "General description for JournalBirb shown in dashboard",
+  "Translated": ""
+}
+
+{
+  "Internal": "Posted",
+  "Translate Me": "Posted",
+  "Translated": ""
+}
+
+{
+  "Internal": "Posting",
+  "Translate Me": "Posting",
+  "Translated": ""
+}
+
+{
+  "Internal": "Donate Reason",
+  "Translate Me": "PostyBirb has been provided free because I cannot guarantee optimal functionality at all times.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Public",
+  "Translate Me": "Public",
+  "Context": "Website option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Queued",
+  "Translate Me": "Queued",
+  "Context": "Submission state of being in queue",
+  "Translated": ""
+}
+
+{
+  "Internal": "Rating",
+  "Translate Me": "Rating",
+  "Context": "Content rating of submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Refresh",
+  "Translate Me": "Refresh",
+  "Context": "(deprecated)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Remove Thumbnail",
+  "Translate Me": "Remove Thumbnail",
+  "Translated": ""
+}
+
+{
+  "Internal": "Rich Text",
+  "Translate Me": "Rich Text",
+  "Context": "Mode for description text editor",
+  "Translated": ""
+}
+
+{
+  "Internal": "Save",
+  "Translate Me": "Save",
+  "Context": "Save/store submission for posting",
+  "Translated": ""
+}
+
+{
+  "Internal": "Save All",
+  "Translate Me": "Save All",
+  "Translated": ""
+}
+
+{
+  "Internal": "Save Template",
+  "Translate Me": "Save Template",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create Template Tooltip",
+  "Translate Me": "Save current form to allow it to be reused in future submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Save Tooltip",
+  "Translate Me": "Save submission to the gallery for posting",
+  "Translated": ""
+}
+
+{
+  "Internal": "Schedule",
+  "Translate Me": "Schedule",
+  "Context": "Button text to schedule a submission to post at a certain time",
+  "Translated": ""
+}
+
+{
+  "Internal": "PostyBirb dashboard",
+  "Translate Me": "Schedule or post multimedia submissions to multiple websites all at once from one simple form",
+  "Context": "General description for PostyBirb shown in dashboard",
+  "Translated": ""
+}
+
+{
+  "Internal": "Scheduled",
+  "Translate Me": "Scheduled",
+  "Context": "Header for section that displays scheduled submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Select Blog",
+  "Translate Me": "Select Blog",
+  "Context": "Tumblr option header for selecting blog",
+  "Translated": ""
+}
+
+{
+  "Internal": "Select Folder",
+  "Translate Me": "Select Folder",
+  "Context": "Generic select header for selecting folder(s)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Select Profile",
+  "Translate Me": "Select Profile",
+  "Context": "Website option header for FurryNetwork",
+  "Translated": ""
+}
+
+{
+  "Internal": "Selected Websites",
+  "Translate Me": "Selected Websites",
+  "Translated": ""
+}
+
+{
+  "Internal": "Settings",
+  "Translate Me": "Settings",
+  "Translated": ""
+}
+
+{
+  "Internal": "Sexual Content",
+  "Translate Me": "Sexual Content",
+  "Context": "A checkbox for Pixiv (maybe DA) options that spedcifies if the content has sexual content",
+  "Translated": ""
+}
+
+{
+  "Internal": "Sexual Themes",
+  "Translate Me": "Sexual Themes",
+  "Context": "A checkbox for Pixiv (I think)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Show Less",
+  "Translate Me": "Show Less",
+  "Translated": ""
+}
+
+{
+  "Internal": "Show More",
+  "Translate Me": "Show More",
+  "Translated": ""
+}
+
+{
+  "Internal": "Show Password",
+  "Translate Me": "Show Password",
+  "Translated": ""
+}
+
+{
+  "Internal": "Simple",
+  "Translate Me": "Simple",
+  "Context": "Simple/basic/easy mode",
+  "Translated": ""
+}
+
+{
+  "Internal": "Single",
+  "Translate Me": "Single",
+  "Context": "An individual submission mode",
+  "Translated": ""
+}
+
+{
+  "Internal": "Skips incomplete forms",
+  "Translate Me": "Skips incomplete forms",
+  "Context": "Generic warning tooltip for Save All button",
+  "Translated": ""
+}
+
+{
+  "Internal": "Source URL",
+  "Translate Me": "Source URL",
+  "Context": "e621 website option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Species",
+  "Translate Me": "Species",
+  "Context": "FurAffinity species category option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Sta.sh Only",
+  "Translate Me": "Sta.sh Only",
+  "Context": " DeviantArt option (marked for removal in the future)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Status",
+  "Translate Me": "Status",
+  "Context": "FurryNetwork website option to denote status of submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Stop posting on submission failure",
+  "Translate Me": "Stop posting on submission failure",
+  "Translated": ""
+}
+
+{
+  "Internal": "Story",
+  "Translate Me": "Story",
+  "Context": "Submission type for text/story submissions (mostly hidden)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Strict",
+  "Translate Me": "Strict",
+  "Context": "DeviantArt maturity option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Strong Language",
+  "Translate Me": "Strong Language",
+  "Context": "Maturity website option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Submission Failed",
+  "Translate Me": "Submission Failed",
+  "Translated": ""
+}
+
+{
+  "Internal": "Submission Help",
+  "Translate Me": "Submission Help",
+  "Translated": ""
+}
+
+{
+  "Internal": "Submission Posted",
+  "Translate Me": "Submission Posted",
+  "Translated": ""
+}
+
+{
+  "Internal": "Submission Type",
+  "Translate Me": "Submission Type",
+  "Context": "(deprecated) ignore me",
+  "Translated": ""
+}
+
+{
+  "Internal": "Stop On Error",
+  "Translate Me": "Submission did not post successfully. Would you like to stop?",
+  "Context": "(deprecated) ignore me",
+  "Translated": ""
+}
+
+{
+  "Internal": "Summary",
+  "Translate Me": "Summary",
+  "Context": "Button tooltip to display summary",
+  "Translated": ""
+}
+
+{
+  "Internal": "Tags",
+  "Translate Me": "Tags",
+  "Context": "Section header for Tag section",
+  "Translated": ""
+}
+
+{
+  "Internal": "Default Tag Tooltip",
+  "Translate Me": "Tags that will be sent to all websites unless overwritten",
+  "Translated": ""
+}
+
+{
+  "Internal": "Template Name",
+  "Translate Me": "Template Name",
+  "Translated": ""
+}
+
+{
+  "Internal": "Text will not be reformatted when posting",
+  "Translate Me": "Text will not be reformatted when posting",
+  "Translated": ""
+}
+
+{
+  "Internal": "Theme",
+  "Translate Me": "Theme",
+  "Context": "Generic website option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Default Description Tooltip",
+  "Translate Me": "This description will be used for all websites checked to use default",
+  "Translated": ""
+}
+
+{
+  "Internal": "Thumbnail",
+  "Translate Me": "Thumbnail",
+  "Translated": ""
+}
+
+{
+  "Internal": "Time to post",
+  "Translate Me": "Time to post",
+  "Context": "The time to post a submission (the schedule time)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Title",
+  "Translate Me": "Title",
+  "Context": "Title of a submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unauthorize",
+  "Translate Me": "Unauthorize",
+  "Context": "To revoke access to an authorized website (essentially to logout)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unlisted",
+  "Translate Me": "Unlisted",
+  "Context": "FurryNetwork (maybe SoFurry) visibility option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unposted",
+  "Translate Me": "Unposted",
+  "Context": "Submission status of a submission that has not been posted",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unscheduled",
+  "Translate Me": "Unscheduled",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unsupported file size",
+  "Translate Me": "Unsupported file size",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unsupported file type",
+  "Translate Me": "Unsupported file type",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unsupported rating",
+  "Translate Me": "Unsupported rating",
+  "Translated": ""
+}
+
+{
+  "Internal": "Unsupported submission type",
+  "Translate Me": "Unsupported submission type",
+  "Translated": ""
+}
+
+{
+  "Internal": "Update Available",
+  "Translate Me": "Update Available",
+  "Translated": ""
+}
+
+{
+  "Internal": "Additional Images Help",
+  "Translate Me": "Upload additional images with this submission.",
+  "Translated": ""
+}
+
+{
+  "Internal": "Use Default",
+  "Translate Me": "Use Default",
+  "Context": "To use a default setting (in this case description)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Use Title",
+  "Translate Me": "Use Title",
+  "Context": "Tumblr website option to display the title",
+  "Translated": ""
+}
+
+{
+  "Internal": "Username",
+  "Translate Me": "Username",
+  "Translated": ""
+}
+
+{
+  "Internal": "Using Default",
+  "Translate Me": "Using Default",
+  "Translated": ""
+}
+
+{
+  "Internal": "View Submissions",
+  "Translate Me": "View Submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "Website",
+  "Translate Me": "Website",
+  "Translated": ""
+}
+
+{
+  "Internal": "Website Offline",
+  "Translate Me": "Website Offline",
+  "Translated": ""
+}
+
+{
+  "Internal": "Yes",
+  "Translate Me": "Yes",
+  "Translated": ""
+}
+
+{
+  "Internal": "Your password is not stored.",
+  "Translate Me": "Your password is not stored.",
+  "Translated": ""
+}
+
+{
+  "Internal": "is incomplete",
+  "Translate Me": "is incomplete",
+  "Translated": ""
+}
+
+{
+  "Internal": "is not complete",
+  "Translate Me": "is not complete",
+  "Translated": ""
+}
+
+{
+  "Internal": "Submission failed message",
+  "Translate Me": "{{value}} failed to post",
+  "Translated": ""
+}
+
+{
+  "Internal": "Submission posted message",
+  "Translate Me": "{{value}} posted successfully",
+  "Translated": ""
+}
 

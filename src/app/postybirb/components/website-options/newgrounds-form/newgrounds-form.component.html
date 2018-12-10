@@ -1,0 +1,83 @@
+<div class="website-form">
+  <div name="options" *ngIf="isActive">
+    <form [formGroup]="optionsForm">
+      <div class="row no-gutters">
+        <div class="col-md col-lg col-xl">
+          <mat-checkbox formControlName="sketch">{{'Sketch' | translate}}</mat-checkbox>
+          <mat-checkbox formControlName="creativeCommons">{{'Use a Creative Commons license?' | translate}}</mat-checkbox>
+          <mat-checkbox formControlName="commercial" *ngIf="optionsForm.value.creativeCommons">{{'Allow Commercial Uses' | translate}}</mat-checkbox>
+          <mat-checkbox formControlName="modification" *ngIf="optionsForm.value.creativeCommons">{{'Allow Modifications?' | translate}}</mat-checkbox>
+
+          <table>
+            <thead>
+              <th></th>
+              <th></th>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ 'Nudity' | translate}}<span class="warn">*</span></td>
+                <td>
+                  <mat-radio-group formControlName="nudity" required>
+                    <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                    <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                    <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+                  </mat-radio-group>
+                </td>
+              </tr>
+
+              <tr>
+                <td>{{ 'Violence' | translate}}<span class="warn">*</span></td>
+                <td>
+                  <mat-radio-group formControlName="violence" required>
+                    <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                    <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                    <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+                  </mat-radio-group>
+                </td>
+              </tr>
+
+              <tr>
+                <td>{{ 'Explicit Text' | translate}}<span class="warn">*</span></td>
+                <td>
+                  <mat-radio-group formControlName="text" required>
+                    <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                    <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                    <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+                  </mat-radio-group>
+                </td>
+              </tr>
+
+              <tr>
+                <td>{{ 'Adult Themes' | translate}}<span class="warn">*</span></td>
+                <td>
+                  <mat-radio-group formControlName="adult" required>
+                    <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                    <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                    <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+                  </mat-radio-group>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="col-md-7 col-lg-7 col-xl-7">
+          <div class="row no-gutters">
+            <div class="col-md col-lg col-xl">
+              <mat-form-field class="w-100" color="accent">
+                <mat-select formControlName="category" [placeholder]="'Category' | translate">
+                  <mat-option [value]="1">{{'Illustration' | translate}}</mat-option>
+                  <mat-option [value]="3">Fine Art</mat-option>
+                  <mat-option [value]="4">3D Art</mat-option>
+                  <mat-option [value]="5">Pixel Art</mat-option>
+                  <mat-option [value]="6">Other</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,34 @@
+.help-icon {
+  font-size: 0.95rem;
+}
+
+.shrink {
+  font-size: 0.75rem;
+}
+.auto-margin {
+  margin: auto 0;
+}
+
+.card-actions {
+  z-index: 10;
+  position: sticky;
+  bottom: 0;
+  background-color: inherit;
+}
+
+mat-card-actions {
+  padding-top: 0px !important;
+  border-radius: inherit;
+}
+
+mat-form-field+mat-form-field {
+  padding-left: 3px;
+}
+
+mat-tab-group {
+  width: 100%;
+}
+
+mat-panel-description {
+  max-width: 80%;
+}

@@ -63,3 +63,11 @@ nav .mat-expansion-panel-body {
 mat-panel-description {
   overflow-y: auto;
 }
+
+.mat-button-toggle-label-content {
+  line-height: 36px !important;
+}
+
+.mat-button-toggle-checked {
+  background-color: #039be5 !important;
+}

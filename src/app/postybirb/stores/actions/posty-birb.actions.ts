@@ -13,6 +13,11 @@ class Helpers {
   }
 }
 
+export class UpdateWebsites {
+    static readonly type: string ='[Submission] Website Update';
+    constructor(public archive: SubmissionArchive, public websites: string[]) { }
+}
+
 export class UpdateSubmission {
   static readonly type: string = '[Submission] Update';
   constructor(public archive: SubmissionArchive) { }

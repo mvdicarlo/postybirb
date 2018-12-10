@@ -8,6 +8,7 @@ const {
     Tray,
     nativeImage,
 } = require('electron');
+const rimraf = require('rimraf');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const windowStateKeeper = require('electron-window-state');
@@ -75,7 +76,7 @@ function createDB(name) {
 
 function hardwareAccelerationState() {
     const enabled = db.get('hardwareAcceleration').value();
-    const isEnabled = enabled === undefined ? true : enabled;
+    const isEnabled = enabled === undefined ? false : enabled;
     if (!isEnabled) {
         app.disableHardwareAcceleration();
     }
@@ -89,7 +90,9 @@ if (process.platform == 'win32' || process.platform == 'darwin') {
     app.disableHardwareAcceleration();
 }
 
+// these two commands need to be checked for removal on electron 3.1.0+
 app.commandLine.appendSwitch('auto-detect', 'false');
+app.commandLine.appendSwitch('no-proxy-server');
 
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
@@ -121,7 +124,9 @@ app.on('ready', () => {
                 clearInterval(scheduledInterval);
                 clearInterval(clearCacheInterval);
                 clearInterval(updateInterval);
-                app.quit();
+                rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
+                  app.quit();
+                });
             },
         },
     ]);
@@ -278,7 +283,9 @@ app.on('window-all-closed', () => {
 
 function attemptToClose() {
     if (!hasScheduled()) {
+      rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
         app.quit();
+      });
     } else {
         scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
         tray.displayBalloon({

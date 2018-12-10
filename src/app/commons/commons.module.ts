@@ -25,6 +25,7 @@ import { FurryAmino } from './models/website/furry-amino';
 import { FurryNetwork } from './models/website/furrynetwork';
 import { HentaiFoundry } from './models/website/hentaifoundry';
 import { Inkbunny } from './models/website/inkbunny';
+import { Newgrounds } from './models/website/newgrounds';
 import { Mastodon } from './models/website/mastodon';
 import { Pixiv } from './models/website/pixiv';
 import { PaigeeWorld } from './models/website/paigee-world';
@@ -86,6 +87,7 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     FurryNetwork,
     HentaiFoundry,
     Inkbunny,
+    Newgrounds,
     Mastodon,
     Pixiv,
     Patreon,

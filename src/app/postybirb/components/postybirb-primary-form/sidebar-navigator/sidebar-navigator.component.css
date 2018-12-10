@@ -26,3 +26,9 @@ img:hover, video:hover {
   top: 1px;
   right: 1px;
 }
+
+.bulk-select {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+}

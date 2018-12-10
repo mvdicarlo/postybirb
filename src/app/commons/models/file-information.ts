@@ -1,4 +1,5 @@
 import { FileObject } from '../interfaces/file-obect.interface';
+import * as uniqid from 'uniqid';
 
 /**
  * @class FileInformation
@@ -12,7 +13,7 @@ export class FileInformation {
   private isLoading: boolean;
   private initialized: boolean;
 
-  constructor(file: File | FileObject | any, initialize: boolean) {
+  constructor(file: File | FileObject | any, initialize: boolean, filename?: string) {
     if (file instanceof File) { // an actual File
       this.setRealFile(file);
       this.setFileInfo(this.convertFileToFileObject(file));
@@ -29,7 +30,7 @@ export class FileInformation {
         this.setRealFile(this.convertBufferToFile(file, {
           type: 'image/png',
           size: 0,
-          name: 'unknown.png',
+          name: filename ? filename : uniqid() + '.png',
           path: ''
         }));
         this.setFileInfo(this.convertFileToFileObject(this.getRealFile()));

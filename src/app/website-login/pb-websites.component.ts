@@ -22,6 +22,7 @@ import { SofurryDialogComponent } from './website-row/sofurry-dialog/sofurry-dia
 import { TumblrDialogComponent } from './website-row/tumblr-dialog/tumblr-dialog.component';
 import { TwitterDialogComponent } from './website-row/twitter-dialog/twitter-dialog.component';
 import { WeasylDialogComponent } from './website-row/weasyl-dialog/weasyl-dialog.component';
+import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgrounds-dialog.component';
 
 interface LoginObject {
   website: string;
@@ -74,6 +75,9 @@ export class PBWebsitesComponent implements OnInit {
       }, {
         website: SupportedWebsites.Mastodon,
         dialogComponent: MastodonDialogComponent
+      }, {
+        website: SupportedWebsites.Newgrounds,
+        dialogComponent: NewgroundsDialogComponent
       }, {
         website: SupportedWebsites.PaigeeWorld,
         dialogComponent: PaigeeworldDialogComponent

@@ -16,10 +16,7 @@
   right: 0;
   width: 100%;
   height: 100%;
-}
-
-.img+.img {
-  border-left: 2px solid #111;
+  z-index: 1;
 }
 
 .img img, .img video {
@@ -30,11 +27,13 @@
 
 .thumbnail {
   vertical-align: bottom;
+  width: 100px;
+  height: 100px;
 }
 
 .thumbnail img, .thumbnail video {
-  width: 75px;
-  height: 75px;
+  width: 100px;
+  height: 100px;
 }
 
 .incompatibility-section p {
@@ -58,7 +57,16 @@
 }
 
 .file-name {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   font-size: 0.85em;
+  max-width: 100px;
+  width: 100%;
+  background-color: #333;
+  opacity: 0.6;
+  padding: 0;
+  margin: 0;
 }
 
 .rotate {
@@ -75,11 +83,6 @@
 
 .auto-margin {
   margin: auto 0;
-}
-
-mat-card-content {
-  padding-top: 0px !important;
-  padding-bottom: 0px !important;
 }
 
 mat-card-actions {

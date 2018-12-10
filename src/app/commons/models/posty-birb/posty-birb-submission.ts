@@ -91,7 +91,7 @@ export class PostyBirbSubmission {
    * @description builds a PostyBirbSubmission object from a SubmissionArchive
    */
   public static fromArchive(archive: SubmissionArchive): PostyBirbSubmission {
-    const model: PostyBirbSubmission = new PostyBirbSubmission(archive.meta.id, archive.submissionBuffer ? new FileInformation(window['Buffer'].from(archive.submissionBuffer, 'base64'), false) : archive.submissionFile);
+    const model: PostyBirbSubmission = new PostyBirbSubmission(archive.meta.id, archive.submissionBuffer ? new FileInformation(Buffer.from(archive.submissionBuffer, 'base64'), false, archive.submissionFile ? archive.submissionFile.name : null) : archive.submissionFile);
 
     const meta: SubmissionMetaData = archive.meta;
     model.setSubmissionStatus(meta.submissionStatus);

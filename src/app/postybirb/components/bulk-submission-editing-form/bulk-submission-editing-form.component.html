@@ -1,0 +1,129 @@
+<form [formGroup]="form">
+  <mat-card>
+    <mat-card-content class="py-0">
+      <div class="row no-gutters">
+        <copy-submission-select class="col-md-4 col-lg-4 col-xl-3" #copySelect (copy)="templateSelected($event, true)"></copy-submission-select>
+        <form-template-select class="col-md-4 col-lg-4 col-xl-2" style="padding-left: 3px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
+      </div>
+
+      <div class="row no-gutters">
+        <div class="col-md-12 col-lg-12 col-xl-12">
+          <div class="d-flex">
+            <mat-form-field color="accent" style="flex: 10" *ngIf="onlineWebsites.length">
+              <mat-label>{{ 'Selected Websites' | translate }}</mat-label>
+              <mat-select [placeholder]="'Selected Websites' | translate" multiple="true" formControlName="websites" required>
+                <mat-optgroup [label]="'Available Websites' | translate">
+                  <mat-option *ngFor="let item of onlineWebsites" [value]="item">{{item}}</mat-option>
+                </mat-optgroup>
+                <mat-optgroup *ngIf="offlineWebsites.length" disabled="true" [label]="'Offline' | translate">
+                  <mat-option *ngFor="let item of offlineWebsites" [value]="item">{{item}}</mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+            <p class="text-danger" *ngIf="!onlineWebsites.length"><strong><em>{{ 'Not logged into any websites' | translate }}</em></strong></p>
+            <button mat-button style="display: block" type="button" (click)="openLogin()" color="accent">{{ 'Login' | translate }}</button>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-lg-12 col-xl-12" *ngIf="form.value.websites && form.value.websites.length">
+          <div class="row no-gutters">
+            <div class="mb-3 col-md-12 col-lg-12 col-xl-12" name="default_description">
+              <h5>{{'Default Description' | translate}}
+                <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
+              </h5>
+              <description-field class="clearfix" [formControl]="descriptionForm.controls.default" [allowOverwrite]="false" [allowEditorChange]="true" [exposeEditorChange]="true"></description-field>
+            </div>
+
+            <div name="default_tags" class="col-md-12 col-lg-12 col-xl-12">
+              <h5>{{'Default Tags' | translate}}
+                <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
+              </h5>
+              <tag-field class="clearfix w-100" [formControl]="tagForm.controls.default" [allowOverwrite]="false"></tag-field>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 col-lg-12 col-xl-12" *ngIf="form.value.websites && form.value.websites.length">
+          <mat-horizontal-stepper>
+            <mat-step [stepControl]="descriptionForm">
+              <form [formGroup]="descriptionForm" class="row no-gutters">
+                <ng-template matStepLabel>{{ 'Description' | translate }}</ng-template>
+                <mat-accordion class="col-md-12 col-lg-12 col-xl-12">
+                  <mat-expansion-panel *ngFor="let website of form.value.websites">
+                    <mat-expansion-panel-header class="scrollable-content">
+                      <mat-panel-title>
+                        <strong class="auto-margin" [class.text-warning]="descriptionForm.value[website] && !descriptionForm.value[website].useDefault">{{ website }}</strong>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <mat-icon class="auto-margin" color="warn" *ngIf="field.exceededNotification">warning</mat-icon>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <description-field #field class="clearfix" [formControlName]="website" [defaultDescription]="defaultDescription"></description-field>
+                  </mat-expansion-panel>
+                </mat-accordion>
+              </form>
+            </mat-step>
+
+            <mat-step [stepControl]="tagForm" *ngIf="supportsTags()">
+              <form [formGroup]="tagForm" class="row no-gutters">
+                <ng-template matStepLabel>
+                  <div>
+                    {{ 'Tags' | translate }}
+                    <div *ngFor="let website of getInvalidTagFields()" class="warn shrink">
+                      {{ website }} {{'is incomplete' | translate }}
+                    </div>
+                  </div>
+                </ng-template>
+                <mat-accordion class="col-md-12 col-lg-12 col-xl-12">
+                  <mat-expansion-panel *ngFor="let website of getTagWebsites()" [class.bg-danger]="!field.validateTagCount()">
+                    <mat-expansion-panel-header class="scrollable-content">
+                      <mat-panel-title>
+                        <strong class="auto-margin" [class.text-warning]="tagForm.value[website] && tagForm.value[website].overwrite">{{ website }}</strong>
+                      </mat-panel-title>
+                      <mat-panel-description>
+                        <span *ngIf="tagForm.value[website] && tagForm.value[website].tags" class="text-info auto-margin">{{tagForm.value[website].tags.join(', ')}}</span>
+                      </mat-panel-description>
+                    </mat-expansion-panel-header>
+                    <tag-field #field class="clearfix w-100" [formControlName]="website" [defaultTags]="defaultTags"></tag-field>
+                  </mat-expansion-panel>
+                </mat-accordion>
+              </form>
+            </mat-step>
+
+            <mat-step [stepControl]="optionsForm" *ngIf="supportsAdditionalOptions()">
+              <form [formGroup]="optionsForm" class="row no-gutters">
+                <ng-template matStepLabel>
+                  <div>
+                    {{ 'Additional Options' | translate }}
+                    <div *ngFor="let website of getIncompleteOptionsFields()" class="warn shrink">
+                      {{ website }} {{'is incomplete' | translate }}
+                    </div>
+                  </div>
+                </ng-template>
+                <mat-tab-group>
+                  <mat-tab *ngFor="let website of getSelectedWebsitesWithOptions()" [label]="website">
+                    <options-section (optionChanges)="_validate()" [website]="website" [control]="optionsForm.get(website)"></options-section>
+                  </mat-tab>
+                </mat-tab-group>
+              </form>
+            </mat-step>
+
+          </mat-horizontal-stepper>
+        </div>
+
+      </div>
+    </mat-card-content>
+
+    <mat-card-actions class="mat-elevation-z5 card-actions">
+      <div class="row no-gutters">
+        <div class="col-md-10 col-lg-10 col-xl-10">
+          <button type="button" mat-button color="warn" (click)="clearForm()">{{ 'Clear' | translate }}</button>
+          <button type="button" mat-button color="accent" [matTooltip]="'Create Template Tooltip' | translate" (click)="saveTemplate()">{{ 'Save Template' | translate }}</button>
+        </div>
+        <div class="col-md col-lg col-xl text-right">
+          <button type="button" mat-button color="accent" (click)="save()" [disabled]="!passing">{{ 'Save' | translate }}</button>
+        </div>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</form>

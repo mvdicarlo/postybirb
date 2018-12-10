@@ -26,6 +26,7 @@ export class BbCodeParse {
     [SupportedWebsites.HentaiFoundry]: ParseType.BBCODE,
     [SupportedWebsites.Inkbunny]: ParseType.BBCODE,
     [SupportedWebsites.Mastodon]: ParseType.TEXT,
+    [SupportedWebsites.Newgrounds]: ParseType.TEXT,
     [SupportedWebsites.Pixiv]: ParseType.TEXT,
     [SupportedWebsites.Patreon]: ParseType.HTML,
     [SupportedWebsites.PaigeeWorld]: ParseType.TEXT,
@@ -78,7 +79,7 @@ export class BbCodeParse {
       url: 'https://paigeeworld.com/u/'
     },
     sf: {
-      url: '.sofurry.net',
+      url: '.sofurry.com',
     },
     tu: {
       url: 'https://tumblr.com/blog/',

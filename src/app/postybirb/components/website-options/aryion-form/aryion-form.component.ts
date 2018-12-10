@@ -20,7 +20,7 @@ export class AryionFormComponent extends BaseOptionForm {
     this.folders = websiteManager.getInfo(this.website).folders || [];
 
     this.setOptionsForm({
-      folderId: [this.folders[0].value || null, Validators.required],
+      folderId: [this.folders.length && this.folders[0].value || null, Validators.required],
       viewPerm: ['ALL', Validators.required],
       commentPerm: ['USER', Validators.required],
       tagPerm: ['USER', Validators.required],

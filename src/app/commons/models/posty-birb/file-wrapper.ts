@@ -75,6 +75,48 @@ export class FileWrapper {
     return this.getFileInformation().getAfterInitialized();
   }
 
+  public getIcon(dimensions: { height: number, width: number }): Promise<string> {
+    return new Promise((resolve) => {
+      const fileInformation: FileInformation = this.getFileInformation();
+      const fileInfo: FileObject = this.getFileInformation().getFileInfo();
+      const filename = `${JSON.stringify(fileInfo)}_${dimensions.height}x${dimensions.width}`;
+      temporaryFileExists(filename)
+        .then((path) => resolve(path))
+        .catch(() => {
+          if (fileInfo.type.includes('image')) {
+            if (fileInfo.type.includes('gif')) {
+              resolve(fileInfo.path);
+            } else {
+              let ni = null;
+              if (fileInformation.getFileBuffer()) {
+                ni = nativeImage.createFromBuffer(fileInformation.getFileBuffer());
+              } else {
+                ni = nativeImage.createFromPath(fileInfo.path);
+              }
+
+              if (ni.isEmpty()) {
+                this.getFileSrc().then((src) => resolve(src));
+              } else {
+                ni = ni.resize(dimensions);
+
+                storeTemporaryFile(ni.toJPEG(90), filename)
+                  .then((path => resolve(path)));
+              }
+            }
+          } else {
+            getFileIcon(fileInfo.path, {
+              size: 'normal'
+            }, (err, icon) => {
+              const ni = icon.resize(dimensions);
+
+              storeTemporaryFile(ni.toJPEG(90), filename)
+                .then((path => resolve(path)));
+            });
+          }
+        });
+    });
+  }
+
   private createSourceString(fileObject: FileObject, buffer: any): string {
     return `data:image/jpeg;base64,${nativeImage.createFromBuffer(buffer).toJPEG(90).toString('base64')}`;
   }

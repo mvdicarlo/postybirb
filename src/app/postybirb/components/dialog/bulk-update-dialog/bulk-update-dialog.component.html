@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>{{'Bulk Update' | translate}}</h2>
+<mat-dialog-content>
+  <mat-form-field color="accent">
+    <mat-select [value]="selected" (selectionChange)="selectionChanged($event)" multiple>
+      <mat-option *ngFor="let archive of archives" [value]="archive.meta.id">
+        <img style="width: 40px; height: 40px;" [src]="archive.submissionFile.path | safe" [alt]="archive.submissionFile.name">
+        {{ archive.meta.title ? archive.meta.title : archive.submissionFile.name }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" mat-dialog-close>{{'Cancel' | translate}}</button>
+  <button mat-raised-button color="primary" (click)="updateSelected()">{{'Yes' | translate}}</button>
+</mat-dialog-actions>

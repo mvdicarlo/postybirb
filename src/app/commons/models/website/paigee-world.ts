@@ -45,17 +45,22 @@ export class PaigeeWorld extends BaseWebsite implements Website {
   getStatus(): Promise<WebsiteStatus> {
     return new Promise((resolve, reject) => {
       this.getBearerToken().then(() => {
-        this.http.get(`${this.baseURL}/currentuser`, { headers: new HttpHeaders().append('Authorization', this.bearer), responseType: 'json' })
-          .subscribe((user: any) => {
-            if (user && user.username) {
-              this.username = user.username;
-              this.loginStatus = WebsiteStatus.Logged_In;
-            } else {
-              this.loginStatus = WebsiteStatus.Logged_Out;
-            }
+        if (this.bearer) {
+          this.http.get(`${this.baseURL}/currentuser`, { headers: new HttpHeaders().append('Authorization', this.bearer), responseType: 'json' })
+            .subscribe((user: any) => {
+              if (user && user.username) {
+                this.username = user.username;
+                this.loginStatus = WebsiteStatus.Logged_In;
+              } else {
+                this.loginStatus = WebsiteStatus.Logged_Out;
+              }
 
-            resolve(this.loginStatus);
-          });
+              resolve(this.loginStatus);
+            });
+        } else {
+          this.loginStatus = WebsiteStatus.Logged_Out;
+          resolve(this.loginStatus);
+        }
       }).catch(() => console.error('Unable to retrieve bearer due to window being destroyed.'));
     });
   }

@@ -1,0 +1,7 @@
+mat-checkbox {
+  display: block;
+}
+
+mat-radio-button+mat-radio-button {
+  margin-left: 1em;
+}

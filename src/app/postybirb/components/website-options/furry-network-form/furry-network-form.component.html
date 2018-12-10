@@ -23,7 +23,7 @@
             </div>
             <div class="col-md-3 col-lg-3 col-xl-2">
               <mat-form-field class="w-100" color="accent">
-                <mat-select value="public" formControlName="status">
+                <mat-select value="public" formControlName="status" [placeholder]="'Status' | translate">
                   <mat-option value="public">{{'Public' | translate}}</mat-option>
                   <mat-option value="unlisted">{{'Unlisted' | translate}}</mat-option>
                   <mat-option value="draft">{{'Draft' | translate}}</mat-option>

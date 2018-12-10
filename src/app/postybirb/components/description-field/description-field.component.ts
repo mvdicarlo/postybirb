@@ -49,7 +49,7 @@ export class DescriptionFieldComponent extends BaseControlValueAccessorComponent
         { name: 'Link', items: ['Link', 'Unlink'] }
       ],
       removePlugins: 'magicline,elementspath,dialogadvtab,div,filebrowser,flash,format,forms,iframe,liststyle,pagebreak,showborders,stylescombo,templates',
-      extraPlugins: 'panelbutton,bbcode,colorbutton,basicstyles,newpage,justify,font,horizontalrule',
+      extraPlugins: 'pasteparser,panelbutton,bbcode,colorbutton,basicstyles,newpage,justify,font,horizontalrule',
       disableObjectResizing: true,
       htmlEncodeOutput: true,
       removeButtons: '',

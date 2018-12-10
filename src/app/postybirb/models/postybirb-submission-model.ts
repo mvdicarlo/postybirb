@@ -39,7 +39,7 @@ export class PostyBirbSubmissionModel {
   private thumbnailFile: FileWrapper;
   private additionalFiles: FileWrapper[] = [];
 
-  public title: string = 'New Submission';
+  public title: string;
   public schedule: any;
   public rating: string;
   public type: string;
@@ -69,6 +69,18 @@ export class PostyBirbSubmissionModel {
     return this.submissionFile.getFileSrc();
   }
 
+  public getSubmissionFileIcon(dimensions: { height: number, width: number }): Promise<string> {
+    return new Promise(function(resolve, reject) {
+      if (this.submissionFile) {
+        this.submissionFile.getIcon(dimensions).then(data => {
+          resolve(data);
+        });
+      } else {
+        reject(Error('No set submission file'));
+      }
+    }.bind(this));
+  }
+
   public getPreloadedSubmissionFile(): Promise<FileInformation> {
     return new Promise(function(resolve, reject) {
       if (this.submissionFile) {
@@ -93,6 +105,18 @@ export class PostyBirbSubmissionModel {
 
   public getThumbnailFileSource(): Promise<string> {
     return this.thumbnailFile.getFileSrc();
+  }
+
+  public getThumbnailFileIcon(dimensions: { height: number, width: number }): Promise<string> {
+    return new Promise(function(resolve, reject) {
+      if (this.thumbnailFile) {
+        this.thumbnailFile.getIcon(dimensions).then(data => {
+          resolve(data);
+        });
+      } else {
+        reject(Error('No set thumbnail file'));
+      }
+    }.bind(this));
   }
 
   public getPreloadedThumbnailFile(): Promise<FileInformation> {
@@ -199,7 +223,7 @@ export class PostyBirbSubmissionModel {
   public getSubmissionMetaData(): SubmissionMetaData {
     return {
       id: this.id,
-      title: this.title || 'New Submission',
+      title: this.title,
       order: this.order,
       type: this.type,
       rating: this.rating,
@@ -214,7 +238,7 @@ export class PostyBirbSubmissionModel {
   }
 
   public static fromArchive(archive: SubmissionArchive): PostyBirbSubmissionModel {
-    const model: PostyBirbSubmissionModel = new PostyBirbSubmissionModel(archive.submissionBuffer ? new FileInformation(window['Buffer'].from(archive.submissionBuffer, 'base64'), false) : archive.submissionFile, archive.meta.id);
+    const model: PostyBirbSubmissionModel = new PostyBirbSubmissionModel(archive.submissionBuffer ? new FileInformation(window['Buffer'].from(archive.submissionBuffer, 'base64'), false, archive.submissionFile ? archive.submissionFile.name : null) : archive.submissionFile, archive.meta.id);
 
     const meta: SubmissionMetaData = archive.meta;
     model.order = meta.order;

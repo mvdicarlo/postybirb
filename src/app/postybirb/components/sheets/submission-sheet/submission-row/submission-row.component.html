@@ -1,9 +1,7 @@
 <ng-container *ngIf="isIdle()">
   <td name="file">
-    <div class="img" *ngIf="file" [ngSwitch]="file.type.split('/')[0]" [title]="file.name">
-      <img [src]="src | safe" [alt]="file.name" *ngSwitchCase="'image'">
-      <video [src]="src | safe" [type]="file.type" *ngSwitchCase="'video'"></video>
-      <img [src]="fileIcon | safe" [alt]="file.name" *ngSwitchDefault>
+    <div class="img" *ngIf="file" [title]="file.name">
+      <img [src]="fileIcon | safe" [alt]="file.name">
     </div>
   </td>
   <td name="title" class="title-td text-truncate text-center" [title]="archive.meta.title">
@@ -40,8 +38,9 @@
 
 <ng-container *ngIf="!isIdle()">
   <td name="file">
-    <img [src]="src | safe" [alt]="file.name" *ngIf="file.type.includes('image') || !file.type.includes('video')">
-    <video [src]="src | safe" [type]="file.type" *ngIf="file.type.includes('video')"></video>
+    <div class="img" *ngIf="file" [title]="file.name">
+      <img [src]="fileIcon | safe" [alt]="file.name">
+    </div>
   </td>
   <td name="title" class="title-td text-center" [title]="archive.meta.title">{{ archive.meta.title }}</td>
   <td name="status" class="status">

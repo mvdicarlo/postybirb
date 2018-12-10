@@ -1,18 +1,17 @@
-<div class="w-100 sidebar-navigator-container animated zoomIn" *ngIf="show()" (contextmenu)="menuTrigger.openMenu()" [ngSwitch]="item.file.type.split('/')[0]" [matTooltip]="item.file.name + ' > ' + item.form.value.title" matTooltipPosition="right">
-  <img [src]="item.src | safe" [alt]="item.file.name" *ngSwitchCase="'image'">
-  <video [src]="item.src | safe" [type]="item.file.type" *ngSwitchCase="'video'"></video>
-  <img [src]="item.fileIcon | safe" [alt]="item.file.name" *ngSwitchDefault>
-  <button #menuTrigger="matMenuTrigger" class="actions" mat-icon-button (click)="trapEvent($event)" [matMenuTriggerFor]="actionMenu">
+<div class="w-100 sidebar-navigator-container animated zoomIn" *ngIf="file && !hide" (contextmenu)="menuTrigger.openMenu()" [matTooltip]="file.name + ' > ' + archive.meta.title" matTooltipPosition="right">
+  <img [src]="fileIcon | safe" [alt]="file.name">
+  <button *ngIf="editMode === 'single'" #menuTrigger="matMenuTrigger" class="actions" mat-icon-button (click)="trapEvent($event)" [matMenuTriggerFor]="actionMenu">
     <mat-icon>more_vert</mat-icon>
   </button>
-  <mat-icon class="incomplete-icon" *ngIf="!item.passing" color="warn">warning</mat-icon>
+  <mat-icon class="incomplete-icon" *ngIf="!passing" color="warn">warning</mat-icon>
+  <mat-checkbox class="bulk-select" *ngIf="editMode === 'bulk'" (change)="_checkedForBulk($event.checked)"></mat-checkbox>
 </div>
 
 <mat-menu #actionMenu="matMenu">
   <ng-template matMenuContent>
     <button type="button" mat-menu-item [matMenuTriggerFor]="templateMenu" (mouseover)="loadTemplates()"><mat-icon>assignment</mat-icon>{{ 'Apply Template' | translate }}</button>
     <button type="button" mat-menu-item (click)="showSummary()"><mat-icon>search</mat-icon>{{ 'Summary' | translate }}</button>
-    <button type="button" mat-menu-item (click)="saveSubmission()" [disabled]="!item.passing"><mat-icon>save</mat-icon>{{ 'Save' | translate }}</button>
+    <button type="button" mat-menu-item (click)="saveSubmission()" [disabled]="!passing"><mat-icon>save</mat-icon>{{ 'Save' | translate }}</button>
     <button type="button" class="warn" mat-menu-item (click)="deleteItem()" color="warn"><mat-icon color="warn">delete</mat-icon>{{'Delete' | translate}}</button>
   </ng-template>
 </mat-menu>

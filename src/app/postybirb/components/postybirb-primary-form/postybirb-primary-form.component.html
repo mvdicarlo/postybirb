@@ -1,30 +1,38 @@
 <div class="row no-gutters primary-container">
-  <div class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-1 mat-elevation-z5 section sidebar-section">
+  <div class="col-2 col-sm-2 col-md-2 col-lg-2 col-xl-2 mat-elevation-z5 section sidebar-section">
     <div class="w-100 sticky-section" [class.mat-elevation-z3]="submissionForms && submissionForms.length > 0" (drop)="fileDrop($event)">
       <button mat-button class="font-weight-bold add-btn" [matTooltip]="'Add Files Button Tooltip' | translate" (click)="fileInput.click()" color="primary"><mat-icon>add</mat-icon>{{'Add Files' | translate}}</button>
       <button mat-button color="primary" class="w-100 copy p-1" (click)="copyFromClipboard()" [disabled]="!enableClipboardCopy()">
         {{'Add From Clipboard' | translate}}
       </button>
       <div class="warn onedrive">{{ 'Avoid OneDrive Directories' | translate }}</div>
+      <mat-button-toggle-group class="w-100" (change)="changeMode($event)">
+        <mat-button-toggle style="width: 50%" value="single" [checked]="editMode === 'single'">{{ 'Single' | translate }}</mat-button-toggle>
+        <mat-button-toggle style="width: 50%" value="bulk" [checked]="editMode === 'bulk'">{{ 'Bulk' | translate }}</mat-button-toggle>
+      </mat-button-toggle-group>
       <mat-form-field class="w-100 search" color="accent" *ngIf="submissionForms && submissionForms.length > 1">
         <input matInput [formControl]="searchControl">
         <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
       </mat-form-field>
     </div>
-    <div class="overlay" *ngIf="submissionForms && submissionForms.length > 0">
-      <sidebar-navigator *ngFor="let item of getSubmissionNavbarItems(); trackBy:trackBySidenav" [item]="item"></sidebar-navigator>
+    <div class="overlay">
+      <sidebar-navigator *ngFor="let submission of editing$ | async; trackBy:trackBy" [editMode]="editMode" [archive]="submission"></sidebar-navigator>
     </div>
     <div class="bottom-sticky" *ngIf="submissions.length">
-      <button type="button" mat-button color="accent" (click)="saveAllValid()" [disabled]="!canSaveMany()" [matTooltip]="'Skips incomplete forms' | translate">
-        {{ 'Save All' | translate }}<mat-icon style="font-size: 1.2em" color="warn" *ngIf="hasIncomplete()">warning</mat-icon>
+      <button *ngIf="editMode === 'single'" type="button" mat-button color="accent" (click)="saveAllValid()" [disabled]="!canSaveMany()" [matTooltip]="'Skips incomplete forms' | translate">
+        {{ 'Save All' | translate }}
       </button>
       <button type="button" mat-button color="warn" (click)="deleteAll()">{{ 'Delete All' | translate }}</button>
     </div>
   </div>
-  <div class="col-sm col-md col-lg col-xl section overlay">
+  <div class="col col-sm col-md col-lg col-xl section overlay">
     <div class="container px-0">
-      <div name="editing_section" class="row no-gutters">
+      <div name="editing_section" class="row no-gutters" *ngIf="editMode === 'single'">
         <submission-editing-form @flyInOut (hiddenChange)="check()" class="col col-md-12 col-lg-12 col-xl-12" *ngFor="let submission of editing$ | async; trackBy:trackBy" [archive]="submission"></submission-editing-form>
+      </div>
+
+      <div name="bulk_editing_section" class="row no-gutters" *ngIf="editMode === 'bulk'">
+        <bulk-submission-editing-form @flyInOut class="col col-md-12 col-lg-12 col-xl-12" (bulkSaved)="changeMode({ value: 'single' })"></bulk-submission-editing-form>
       </div>
     </div>
   </div>

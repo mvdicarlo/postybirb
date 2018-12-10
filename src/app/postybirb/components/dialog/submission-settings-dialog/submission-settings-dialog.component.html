@@ -20,9 +20,9 @@
         <div class="col-md-12 col-xl-12 col-lg-12">
           <mat-slide-toggle [checked]="isStopAllSubmissionsEnabled()" (change)="toggleStopOnFailure($event)">{{ 'Stop posting on submission failure' | translate }}</mat-slide-toggle>
         </div>
-        <div class="col-md-12 col-xl-12 col-lg-12">
+        <!-- <div class="col-md-12 col-xl-12 col-lg-12">
           <mat-slide-toggle [checked]="isGenerateErrorLogEnabled()" (change)="toggleGenerateErrorLog($event)">{{ 'Allow error logs' | translate }}</mat-slide-toggle>
-        </div>
+        </div> -->
         <div class="col-md-12 col-xl-12 col-lg-12 mt-3">
           <button mat-button mat-raised-button color="warn" (click)="resetScheduled()">{{'Clear Scheduled' | translate}}</button>
           <button mat-button mat-raised-button color="warn" (click)="resetUnscheduled()">{{'Clear Unscheduled' | translate}}</button>

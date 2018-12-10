@@ -1,5 +1,5 @@
 import { isDevMode } from '@angular/core';
-import { Subject, Subscription } from 'rxjs'
+import { Subject } from 'rxjs'
 import { debounceTime } from 'rxjs/operators';
 import { State, Action, StateContext, NgxsOnInit } from '@ngxs/store';
 import { TranslateService } from '@ngx-translate/core';
@@ -205,6 +205,23 @@ export class PostyBirbState implements NgxsOnInit {
     return ctx.dispatch(new SaveState(ctx.getState()));
   }
 
+  @Action(PostyBirbActions.UpdateWebsites)
+  updateSubmissionWebsites(ctx: StateContext<PostyBirbSubmissionStateModel>, action: PostyBirbActions.UpdateWebsites) {
+    const { submissions } = ctx.getState();
+    let newSubmissions = [...submissions];
+
+    const index: number = this.findIndex(action.archive.meta.id, newSubmissions);
+    if (index !== -1) {
+      newSubmissions[index].meta.unpostedWebsites = action.websites;
+    }
+
+    ctx.patchState({
+      submissions: newSubmissions
+    });
+
+    return ctx.dispatch(new SaveState(ctx.getState()));
+  }
+
   @Action(PostyBirbActions.UpdateSubmission)
   updateSubmission(ctx: StateContext<PostyBirbSubmissionStateModel>, action: PostyBirbActions.UpdateSubmission) {
     const { editing } = ctx.getState();
@@ -313,15 +330,19 @@ export class PostyBirbState implements NgxsOnInit {
     const { queued, submissions }: PostyBirbSubmissionStateModel = ctx.getState();
     let newSubmissions = [...submissions];
 
-    const index: number = this.findIndex(action.archive.meta.id, newSubmissions);
-    newSubmissions[index].meta.submissionStatus = SubmissionStatus.QUEUED;
+    // don't want to re-queue the same submission
+    const queuedIndex = this.findIndex(action.archive.meta.id, queued);
+    if (queuedIndex === -1) {
+      const index: number = this.findIndex(action.archive.meta.id, newSubmissions);
+      newSubmissions[index].meta.submissionStatus = SubmissionStatus.QUEUED;
 
-    ctx.patchState({
-      queued: [...queued, action.archive],
-      submissions: newSubmissions
-    });
+      ctx.patchState({
+        queued: [...queued, action.archive],
+        submissions: newSubmissions
+      });
 
-    return ctx.dispatch(new SaveState(ctx.getState()));
+      return ctx.dispatch(new SaveState(ctx.getState()));
+    }
   }
 
   @Action(PostyBirbActions.DequeueSubmission)
@@ -383,10 +404,12 @@ export class PostyBirbState implements NgxsOnInit {
 
     this.outputNotification(submission);
 
-    if (!failed) {
-      const index: number = this.findIndex(submission.getId(), newSubmissions);
-      if (index !== -1) {
+    const index: number = this.findIndex(submission.getId(), newSubmissions);
+    if (index !== -1) {
+      if (!failed) {
         newSubmissions.splice(index, 1);
+      } else {
+        newSubmissions[index] = submission.asSubmissionArchive();
       }
     }
 
@@ -400,8 +423,7 @@ export class PostyBirbState implements NgxsOnInit {
       submissions: newSubmissions
     });
 
-    if (failed) return ctx.dispatch(new PostyBirbActions.AddSubmission(submission.asSubmissionArchive(), true));
-    else return ctx.dispatch(new SaveState(ctx.getState()));
+    return ctx.dispatch(new SaveState(ctx.getState()));
   }
 
   @Action(PostyBirbActions.LogSubmissionPost)

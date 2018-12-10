@@ -3,7 +3,7 @@
   <mat-card-content>
     <div class="row">
       <div class="col-md-6">
-        <mat-card class="app-item" (click)="activate('postybirb')">
+        <mat-card class="app-item" routerLink="postybirb" skipLocationChange>
           <mat-card-title>
             PostyBirb
           </mat-card-title>
@@ -14,7 +14,7 @@
         </mat-card>
       </div>
       <div class="col-md-6">
-        <mat-card class="app-item" (click)="activate('journalbirb')">
+        <mat-card class="app-item" routerLink="journalbirb" skipLocationChange>
           <mat-card-title>
             JournalBirb
           </mat-card-title>

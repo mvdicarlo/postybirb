@@ -59,38 +59,60 @@ export class Derpibooru extends BaseWebsite implements Website {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/images/new`, { responseType: 'text' })
         .subscribe(uploadFormPage => {
-          const uploadForm = new FormData();
           const options = submission.options;
 
-          const tags: string[] = this.formatTags(submission.defaultTags, submission.customTags);
+          const tags: string[] = this.formatTags(submission.defaultTags, submission.customTags, ' ');
           const ratingTag: string = this.getMapping('rating', submission.submissionData.submissionRating);
           if (!tags.includes(ratingTag)) tags.push(ratingTag);
 
-          //Primary
-          uploadForm.set('authenticity_token', HTMLParser.getInputValue(uploadFormPage, 'authenticity_token'));
-          uploadForm.set('image[tag_input]', tags.join(', ').trim());
-          uploadForm.set('image[image]', submission.submissionData.submissionFile.getRealFile());
-          uploadForm.set('image[description]', submission.description);
+          // //Primary
+          // uploadForm.set('authenticity_token', HTMLParser.getInputValue(uploadFormPage, 'authenticity_token'));
+          // uploadForm.set('image[tag_input]', tags.join(', ').trim());
+          // uploadForm.set('image[image]', submission.submissionData.submissionFile.getRealFile());
+          // uploadForm.set('image[description]', submission.description);
+          //
+          // uploadForm.set('image[source_url]', options.sourceURL || '');
+          //
+          // //Ignored properties
+          // uploadForm.set('utf8', '✓');
+          // uploadForm.set('scraper_url', '');
+          // uploadForm.set('commit', 'Create Image');
+          // uploadForm.set('image[anonymous]', '0');
+          // uploadForm.set('image[image_cache]', '');
+          // uploadForm.set('commit', 'Create Image');
 
-          uploadForm.set('image[source_url]', options.sourceURL || '');
-
-          //Ignored properties
-          uploadForm.set('utf8', '✓');
-          uploadForm.set('scraper_url', '');
-          uploadForm.set('commit', 'Create Image');
-          uploadForm.set('image[anonymous]', '0');
-          uploadForm.set('image[image_cache]', '');
-          uploadForm.set('commit', 'Create Image');
-
-          this.http.post(`${this.baseURL}/images`, uploadForm, { responseType: 'text' })
-            .subscribe((res: any) => {
+          requestpost.post({
+            'authenticity_token': HTMLParser.getInputValue(uploadFormPage, 'authenticity_token'),
+            'image[description]': submission.description,
+            'image[tag_input]': tags.join(', ').trim(),
+            'image[image]': {
+              value: submission.submissionData.submissionFile.getFileBuffer(),
+              options: {
+                contentType: submission.submissionData.submissionFile.getFileInfo().type,
+                filename: submission.submissionData.submissionFile.getFileInfo().name || 'upload.jpg'
+              }
+            },
+            'image[source_url]': options.sourceURL || '',
+            'utf8': '✓',
+            'scraper_url': '',
+            'commit': 'Create Image',
+            'image[anonymous]': '0',
+            'image[image_cache]': ''
+          }, this.baseURL, `${this.baseURL}/images`)
+          .then((res) => {
+            try {
               if (res.includes('Uploaded')) observer.next(res);
               else observer.error(this.createError(res, submission));
-              observer.complete();
-            }, err => {
-              observer.error(this.createError(err, submission));
-              observer.complete();
-            });
+            } catch (err) {
+              observer.error(this.createError({ res, err }, submission));
+            }
+
+            observer.complete();
+          })
+          .catch((err) => {
+            observer.error(this.createError(err, submission));
+            observer.complete();
+          });
         }, err => {
           observer.error(this.createError(err, submission));
           observer.complete();

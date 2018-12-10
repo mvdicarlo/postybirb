@@ -93,6 +93,14 @@ export class SupportedWebsiteRestrictions {
         default: 8,
       }
     },
+    [SupportedWebsites.Newgrounds]: {
+      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
+      supportedTypes: ['Artwork'],
+      supportedFileSize: {
+        default: 40, // I think this is the right amount
+      }
+    },
     [SupportedWebsites.PaigeeWorld]: {
       supportedRatings: ['General'],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif'],
@@ -134,7 +142,7 @@ export class SupportedWebsiteRestrictions {
       }
     },
     [SupportedWebsites.Tumblr]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: ['General', 'Mature'],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'],
       supportedTypes: ['Artwork', 'Animation', 'Music'],
       supportedFileSize: {

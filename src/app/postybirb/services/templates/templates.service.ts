@@ -93,7 +93,9 @@ export class TemplatesService {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.addTemplate(result, templateModel.asSubmissionTemplate());
+        const template = templateModel.asSubmissionTemplate();
+        template.websites = template.meta.unpostedWebsites;
+        this.addTemplate(result, template);
       }
     });
   }

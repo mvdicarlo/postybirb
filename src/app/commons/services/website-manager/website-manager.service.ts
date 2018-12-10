@@ -18,6 +18,7 @@ import { FurryAmino } from '../../models/website/furry-amino';
 import { FurryNetwork } from '../../models/website/furrynetwork';
 import { HentaiFoundry } from '../../models/website/hentaifoundry';
 import { Inkbunny } from '../../models/website/inkbunny';
+import { Newgrounds } from '../../models/website/newgrounds';
 import { Mastodon } from '../../models/website/mastodon';
 import { Pixiv } from '../../models/website/pixiv';
 import { PaigeeWorld } from '../../models/website/paigee-world';
@@ -41,6 +42,7 @@ export class WebsiteManagerService {
   constructor(derpibooru: Derpibooru, deviantArt: DeviantArt, e621: E621, furaffinity: Furaffinity, furiffic: Furiffic,
     furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, mastodon: Mastodon, pixiv: Pixiv, paigeeWorld: PaigeeWorld,
     patreon: Patreon, route50: Route50, soFurry: SoFurry, tumblr: Tumblr, twitter: Twitter, weasyl: Weasyl, aryion: Aryion, furryAmino: FurryAmino,
+    newgrounds: Newgrounds,
     private notify: NotifyService) {
     this.bbcodeParser = new BbCodeParse();
 
@@ -50,6 +52,7 @@ export class WebsiteManagerService {
     this.websites.set(SupportedWebsites.e621, e621);
     this.websites.set(SupportedWebsites.Furaffinity, furaffinity);
     this.websites.set(SupportedWebsites.Furiffic, furiffic);
+    this.websites.set(SupportedWebsites.Newgrounds, newgrounds);
     if (sfw !== 'true') this.websites.set(SupportedWebsites.HentaiFoundry, hentaiFoundry);
     this.websites.set(SupportedWebsites.PaigeeWorld, paigeeWorld);
     this.websites.set(SupportedWebsites.Patreon, patreon);

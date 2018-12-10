@@ -11,8 +11,8 @@ import { ConfirmDialogComponent } from '../../../../../commons/components/confir
 import { ScheduleSubmissionDialogComponent } from '../../../dialog/schedule-submission-dialog/schedule-submission-dialog.component';
 import { SubmissionViewComponent } from '../../../dialog/submission-view/submission-view.component';
 import { SubmissionStatus } from '../../../../enums/submission-status.enum';
-import { PostManagerService, PostHandler } from '../../../../services/post-manager/post-manager.service';
 import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
+import { PostService } from '../../../../services/post/post.service';
 
 @Component({
   selector: 'submission-row',
@@ -27,7 +27,6 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
 
   public file: any;
   public fileIcon: string;
-  public src: string;
   public title: string;
   public status: string;
   public schedule: Date;
@@ -37,13 +36,13 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
   public logo: any = null;
   public waitingUntil: Date = null;
   public postingUsername: string;
+  public isPostingService: boolean = false;
 
   private subscription: Subscription = Subscription.EMPTY;
   private handlerSubscription: Subscription = Subscription.EMPTY;
-  private handler: PostHandler = null;
 
   constructor(private _store: Store, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef,
-    private postManager: PostManagerService, private websiteCoordinator: WebsiteCoordinatorService, private router: Router) { }
+    private postService: PostService, private websiteCoordinator: WebsiteCoordinatorService, private router: Router) { }
 
   ngOnInit() {
     this.submission = PostyBirbSubmissionModel.fromArchive(this.archive);
@@ -52,45 +51,47 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
     this.title = this.submission.title;
     this.status = this.submission.submissionStatus;
     this.schedule = this.submission.schedule;
-    this.submission.getSubmissionFileSource().then(src => {
-      this.src = src || '';
-      this.subscription = this.postManager.asObservable().subscribe((handler: PostHandler) => {
-        if (handler && handler.getId() === this.submission.getId()) {
-          this.handler = handler;
-          this.handlerSubscription = handler.subscribeToWebsiteUpdates().subscribe((website) => {
-            this.currentlyPostingTo = website;
-            this.logo = WebLogo[website];
-            this.remainingAmount = this.handler.getPercentageDone();
-            this.waitingUntil = this.handler.waitingFor;
-            this._changeDetector.detectChanges();
+    this.subscription = this.postService.postingIdObserver().subscribe((id: string) => {
+      if (id && id === this.submission.getId()) {
+        this.isPostingService = true;
+        this.handlerSubscription = this.postService.subscribeToWebsiteUpdates().subscribe((website) => {
+          this.currentlyPostingTo = website;
+          this.logo = WebLogo[website];
+          this.remainingAmount = this.postService.getPercentageDone();
+          this.waitingUntil = this.postService.waitingFor;
+          this._changeDetector.markForCheck();
 
-            if (website) {
-              this.websiteCoordinator.getUsername(website).then(username => {
-                this.postingUsername = username;
-                this._changeDetector.markForCheck();
-              }).catch(() => {
-                this.postingUsername = 'Unknown';
-                this._changeDetector.markForCheck();
-              });
-            }
-          });
-        } else {
-          this.handler = null;
-          this.logo = null;
-          this.remainingAmount = 0;
-          this.waitingUntil = null;
-          this.postingUsername = null;
-          this.handlerSubscription.unsubscribe();
-        }
+          if (website) {
+            this.websiteCoordinator.getUsername(website).then(username => {
+              this.postingUsername = username;
+              this._changeDetector.markForCheck();
+            }).catch(() => {
+              this.postingUsername = 'Unknown';
+              this._changeDetector.markForCheck();
+            });
+          }
+        });
+      } else {
+        this.isPostingService = false;
+        this.logo = null;
+        this.remainingAmount = 0;
+        this.waitingUntil = null;
+        this.postingUsername = null;
+        this.handlerSubscription.unsubscribe();
+      }
 
-        this._changeDetector.detectChanges();
-      });
-    });
-
-    getFileIcon(this.file.path, (err, icon) => {
-      this.fileIcon = 'data:image/jpeg;base64, ' + icon.toJPEG(100).toString('base64');
       this._changeDetector.markForCheck();
     });
+
+    if (this.file) {
+      this.submission.getSubmissionFileIcon({
+        height: 100,
+        width: 100
+      }).then(path => {
+        this.fileIcon = path;
+        this._changeDetector.markForCheck();
+      });
+    }
   }
 
   ngOnDestroy() {
@@ -137,8 +138,8 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
   }
 
   public cancelPosting(): void {
-    if (this.handler) {
-      this.handler.stop();
+    if (this.isPostingService) {
+      this.postService.stop();
     } else {
       this._store.dispatch(new PostyBirbStateAction.DequeueSubmission(this.archive));
     }

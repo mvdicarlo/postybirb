@@ -4,12 +4,15 @@
       <mat-checkbox (blur)="onBlur()" formControlName="useDefault" color="accent">{{'Use Default' | translate}}</mat-checkbox>
     </ng-template>
     <ng-template [ngIf]="(allowEditorChange && !form.value.useDefault) || exposeEditorChange">
-      <mat-slide-toggle formControlName="simple">{{'Use basic editor' | translate}}</mat-slide-toggle>
+      <mat-button-toggle-group formControlName="simple" style="border-bottom-left-radius: 0;border-bottom-right-radius: 0;">
+        <mat-button-toggle [value]="false">{{ 'Rich Text' | translate }}</mat-button-toggle>
+        <mat-button-toggle [value]="true">{{ 'Simple' | translate }}</mat-button-toggle>
+      </mat-button-toggle-group>
     </ng-template>
   </div>
   <div [class.inactive-description]="form.value.useDefault" *ngIf="!form.value.useDefault">
     <div *ngIf="form.value.simple">
-      <mat-form-field class="w-100" color="accent">
+      <mat-form-field appearance="outline" class="w-100" color="accent">
         <textarea (blur)="onBlur($event)" formControlName="description" matInput matTextareaAutosize matAutosizeMinRows="2" matAutosizeMaxRows="6"></textarea>
         <mat-hint>{{'Text will not be reformatted when posting' | translate}}</mat-hint>
         <mat-hint align="end">{{estimatedDescriptionCount}}</mat-hint>

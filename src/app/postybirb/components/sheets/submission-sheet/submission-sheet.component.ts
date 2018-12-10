@@ -8,6 +8,9 @@ import { SubmissionSettingsDialogComponent } from '../../dialog/submission-setti
 import { PostyBirbStateAction } from '../../../stores/states/posty-birb.state';
 import { ConfirmDialogComponent } from '../../../../commons/components/confirm-dialog/confirm-dialog.component';
 import { LoggerService } from '../../../../logs/services/logger/logger.service';
+import { saveAs } from 'file-saver';
+import { SubmissionStatus } from '../../../enums/submission-status.enum';
+import { PostService } from '../../../services/post/post.service';
 
 @Component({
   selector: 'submission-sheet',
@@ -24,7 +27,9 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
   public logs: any[] = [];
   public selectedIndex: number = 0;
 
-  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) private data: any, private _store: Store, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef, private logger: LoggerService) { }
+  constructor(@Inject(MAT_BOTTOM_SHEET_DATA) private data: any, private _store: Store,
+  private dialog: MatDialog, private _changeDetector: ChangeDetectorRef,
+  private logger: LoggerService, private postService: PostService) { }
 
   ngOnInit() {
     this.selectedIndex = this.data.index || 0;
@@ -76,13 +81,15 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this._store.dispatch(submissions.map(s => new PostyBirbStateAction.DeleteSubmission(s)));
+        this._store.dispatch(submissions.filter(s => s.meta.submissionStatus !== SubmissionStatus.POSTING)
+        .map(s => new PostyBirbStateAction.DeleteSubmission(s)));
       }
     });
   }
 
   public dequeueAll(submissions: SubmissionArchive[] = []): void {
     this._store.dispatch(new PostyBirbStateAction.DequeueAllSubmissions());
+    this.postService.stop();
   }
 
   public postAll(submissions: SubmissionArchive[] = []): void {
@@ -103,8 +110,15 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
     location.reload();
   }
 
-  public saveLog(log: any): void {
+  public async saveLog(log: any) {
     this.logger.info(log.archive.meta.title, log, '', true);
+  }
+
+  public async exportConfig() {
+    getConfig(config => {
+      const blob = new Blob([config], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, 'postybirb.json')
+    })
   }
 
 }
