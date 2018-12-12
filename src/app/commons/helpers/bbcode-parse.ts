@@ -48,6 +48,9 @@ export class BbCodeParse {
     da: {
       url: 'https://deviantart.com/',
     },
+    db: {
+      url: 'https://derpibooru.org/profiles/'
+    },
     fn: {
       url: 'https://beta.furrynetwork.com/',
     },

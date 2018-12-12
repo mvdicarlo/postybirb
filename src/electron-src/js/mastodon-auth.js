@@ -8,13 +8,13 @@ let M = null;
 
 function getAccessTokens(info) {
     return new Promise((resolve, reject) => {
-        request.post({ url: auth.generateAuthUrl(`/mastodon/authorize/${info.site}`), form: { code: info.code } }, (error, response, body) => {
+        request.post({ url: auth.generateAuthUrl(`/mastodon/authorize/instance/${encodeURIComponent(info.site)}`), form: { code: info.code } }, (error, response, body) => {
             if (error || response.status === 500) {
                 reject(false);
             } else {
                 M = new Mastodon({
                     access_token: body,
-                    api_url: `https://mastodon.${info.site || 'social'}/api/v1/`,
+                    api_url: `${info.site}/api/v1/`,
                 });
 
                 getUsernameFromAPI(body).then((username) => {
@@ -61,7 +61,7 @@ function uploadMedia(media) {
         };
 
         request.post({
-            url: `https://mastodon.${oauth.site || 'social'}/api/v1/media`,
+            url: `${oauth.site}/api/v1/media`,
             headers: {
                 Accept: '*/*',
                 'User-Agent': 'node-mastodon-client',
@@ -114,10 +114,14 @@ exports.refresh = function refresh() {
             oauth = storedToken;
             authorized = true;
 
+            // fix legacy urls
+            if (oauth.site === 'art') oauth.site = 'https://mastodon.art';
+            if (oauth.site === 'social') oauth.site = 'https://mastodon.social';
+
             if (!M) {
                 M = new Mastodon({
                     access_token: oauth.token,
-                    api_url: `https://mastodon.${oauth.site || 'social'}/api/v1/`,
+                    api_url: `${oauth.site}/api/v1/`,
                 });
             }
 
@@ -127,7 +131,7 @@ exports.refresh = function refresh() {
 };
 
 exports.getAuthorizationURL = function getURL(site) {
-    return auth.generateAuthUrl(`/mastodon/authorize/${site || 'social'}`);
+    return auth.generateAuthUrl(`/mastodon/authorize/instance/${encodeURIComponent(site)}`);
 };
 
 exports.isAuthorized = function isAuthorized() {

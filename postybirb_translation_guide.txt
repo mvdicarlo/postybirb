@@ -322,13 +322,6 @@ TRANSLATOR: <Person to be credited>
 }
 
 {
-  "Internal": "Description Help",
-  "Translate Me": "Description Help",
-  "Context": "Text for a button that shows description help",
-  "Translated": ""
-}
-
-{
   "Internal": "Description length exceeded",
   "Translate Me": "Description is more than {{length}} characters",
   "Translated": ""
@@ -896,6 +889,13 @@ TRANSLATOR: <Person to be credited>
   "Internal": "Sexual Themes",
   "Translate Me": "Sexual Themes",
   "Context": "A checkbox for Pixiv (I think)",
+  "Translated": ""
+}
+
+{
+  "Internal": "Shortcuts",
+  "Translate Me": "Shortcuts",
+  "Context": "Text for a button that shows description help and shortcuts",
   "Translated": ""
 }
 
