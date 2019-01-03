@@ -11,6 +11,7 @@ import {
   MatTooltipModule,
   MatSnackBarModule
 } from '@angular/material';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
 import { NotifyService } from './services/notify/notify.service';
@@ -45,6 +46,8 @@ import { FileViewerComponent } from './components/file-viewer/file-viewer.compon
 import { BaseControlValueAccessorComponent } from './components/base-control-value-accessor/base-control-value-accessor.component';
 import { SafePipe } from './pipes/safe.pipe';
 import { WebsiteLogoComponent } from './components/website-logo/website-logo.component';
+import { PopupComponent } from './components/popup/popup.component';
+import { PersistSessionPipe } from './pipes/persist-session.pipe';
 
 @NgModule({
   imports: [
@@ -57,7 +60,8 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     MatInputModule,
     MatTooltipModule,
     MatSnackBarModule,
-    SnotifyModule
+    SnotifyModule,
+    OverlayModule
   ],
   declarations: [
     FileViewerComponent,
@@ -65,6 +69,8 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     BaseControlValueAccessorComponent,
     SafePipe,
     WebsiteLogoComponent,
+    PopupComponent,
+    PersistSessionPipe,
   ],
   exports: [
     FileViewerComponent,
@@ -72,6 +78,8 @@ import { WebsiteLogoComponent } from './components/website-logo/website-logo.com
     BaseControlValueAccessorComponent,
     SafePipe,
     WebsiteLogoComponent,
+    PopupComponent,
+    PersistSessionPipe
   ],
   entryComponents: [
     ConfirmDialogComponent

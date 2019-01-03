@@ -30,7 +30,7 @@ export class DeviantArt extends BaseWebsite implements Website {
       }
     };
 
-    this.coordinator.insertService(this.websiteName, this, 4 * 60000);
+    this.coordinator.insertService(this.websiteName, this, 6 * 60000);
   }
 
   getStatus(): Promise<WebsiteStatus> {

@@ -13,6 +13,8 @@ import { SubmissionViewComponent } from '../../../dialog/submission-view/submiss
 import { SubmissionStatus } from '../../../../enums/submission-status.enum';
 import { WebsiteCoordinatorService } from '../../../../../commons/services/website-coordinator/website-coordinator.service';
 import { PostService } from '../../../../services/post/post.service';
+import { PostyBirbQueueStateAction } from '../../../../stores/states/posty-birb-queue.state';
+import { PostStateTrackerService } from '../../../../services/post-state-tracker/post-state-tracker.service';
 
 @Component({
   selector: 'submission-row',
@@ -20,7 +22,13 @@ import { PostService } from '../../../../services/post/post.service';
   styleUrls: ['./submission-row.component.css']
 })
 export class SubmissionRowComponent implements OnInit, OnDestroy {
-  @Input() archive: SubmissionArchive;
+  @Input()
+  get archive(): SubmissionArchive { return this._archive };
+  set archive(archive: SubmissionArchive) {
+    this._archive = archive;
+    this.submission = PostyBirbSubmissionModel.fromArchive(archive);
+  }
+  private _archive: SubmissionArchive;
 
   public submission: PostyBirbSubmissionModel;
   public submissionStatus: any = SubmissionStatus;
@@ -39,10 +47,9 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
   public isPostingService: boolean = false;
 
   private subscription: Subscription = Subscription.EMPTY;
-  private handlerSubscription: Subscription = Subscription.EMPTY;
 
   constructor(private _store: Store, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef,
-    private postService: PostService, private websiteCoordinator: WebsiteCoordinatorService, private router: Router) { }
+    private postService: PostService, private websiteCoordinator: WebsiteCoordinatorService, private router: Router, private _stateTracker: PostStateTrackerService) { }
 
   ngOnInit() {
     this.submission = PostyBirbSubmissionModel.fromArchive(this.archive);
@@ -51,33 +58,38 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
     this.title = this.submission.title;
     this.status = this.submission.submissionStatus;
     this.schedule = this.submission.schedule;
-    this.subscription = this.postService.postingIdObserver().subscribe((id: string) => {
-      if (id && id === this.submission.getId()) {
-        this.isPostingService = true;
-        this.handlerSubscription = this.postService.subscribeToWebsiteUpdates().subscribe((website) => {
-          this.currentlyPostingTo = website;
-          this.logo = WebLogo[website];
-          this.remainingAmount = this.postService.getPercentageDone();
-          this.waitingUntil = this.postService.waitingFor;
-          this._changeDetector.markForCheck();
 
-          if (website) {
-            this.websiteCoordinator.getUsername(website).then(username => {
-              this.postingUsername = username;
-              this._changeDetector.markForCheck();
-            }).catch(() => {
-              this.postingUsername = 'Unknown';
-              this._changeDetector.markForCheck();
-            });
+    this.subscription = this._stateTracker.stateChanges.subscribe(state => {
+      if (state) {
+        if (state.id === this.submission.getId()) {
+          this.isPostingService = true;
+          this.remainingAmount = state.percent;
+          this.waitingUntil = state.waitingFor;
+
+          if (state.currentWebsite) {
+            this.currentlyPostingTo = state.currentWebsite;
+            this.logo = WebLogo[state.currentWebsite];
+            this.websiteCoordinator.getUsername(state.currentWebsite)
+              .then(username => {
+                this.postingUsername = username;
+                this._changeDetector.markForCheck();
+              }).catch(() => {
+                this.postingUsername = 'Unknown';
+                this._changeDetector.markForCheck();
+              });
+          } else {
+            this.logo = null;
+            this.remainingAmount = 0;
+            this.waitingUntil = null;
+            this.postingUsername = null;
+            this.currentlyPostingTo = null;
           }
-        });
+          this._changeDetector.detectChanges();
+        } else {
+          this._cleanPostInformation();
+        }
       } else {
-        this.isPostingService = false;
-        this.logo = null;
-        this.remainingAmount = 0;
-        this.waitingUntil = null;
-        this.postingUsername = null;
-        this.handlerSubscription.unsubscribe();
+        this._cleanPostInformation();
       }
 
       this._changeDetector.markForCheck();
@@ -96,7 +108,6 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
-    this.handlerSubscription.unsubscribe();
   }
 
   public deleteItem(): void {
@@ -131,7 +142,7 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          this._store.dispatch(new PostyBirbStateAction.QueueSubmission(this.archive));
+          this._store.dispatch(new PostyBirbQueueStateAction.EnqueueSubmission(this.archive));
         }
       });
     }
@@ -141,7 +152,7 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
     if (this.isPostingService) {
       this.postService.stop();
     } else {
-      this._store.dispatch(new PostyBirbStateAction.DequeueSubmission(this.archive));
+      this._store.dispatch(new PostyBirbQueueStateAction.DequeueSubmission(this.archive));
     }
   }
 
@@ -161,7 +172,7 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
 
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          this._store.dispatch(new PostyBirbStateAction.AddSubmission(result.asSubmissionArchive(), true))
+          this._store.dispatch(new PostyBirbStateAction.AddSubmission(result.asSubmissionArchive(), true, false))
         }
       });
     }
@@ -183,6 +194,15 @@ export class SubmissionRowComponent implements OnInit, OnDestroy {
   public getMode(): string {
     if (this.isQueued()) return 'buffer';
     if (this.isPosting()) return 'determinate';
+  }
+
+  private _cleanPostInformation(): void {
+    this.isPostingService = false;
+    this.logo = null;
+    this.remainingAmount = 0;
+    this.waitingUntil = null;
+    this.postingUsername = null;
+    this.currentlyPostingTo = null;
   }
 
 }

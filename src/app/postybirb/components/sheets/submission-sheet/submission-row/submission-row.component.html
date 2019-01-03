@@ -1,6 +1,6 @@
 <ng-container *ngIf="isIdle()">
   <td name="file">
-    <div class="img" *ngIf="file" [title]="file.name">
+    <div class="img" *ngIf="file && fileIcon" [title]="file.name">
       <img [src]="fileIcon | safe" [alt]="file.name">
     </div>
   </td>
@@ -38,7 +38,7 @@
 
 <ng-container *ngIf="!isIdle()">
   <td name="file">
-    <div class="img" *ngIf="file" [title]="file.name">
+    <div class="img" *ngIf="file && fileIcon" [title]="file.name">
       <img [src]="fileIcon | safe" [alt]="file.name">
     </div>
   </td>
@@ -48,7 +48,7 @@
     <div *ngIf="isPosting()">
       <img *ngIf="logo" [src]="logo" [alt]="currentlyPostingTo" height="30px" width="50px">
       <div>{{postingUsername | uppercase}}</div>
-      <div *ngIf="waitingUntil"><em>{{ 'Paused until' | translate }} {{ waitingUntil | date:'shortTime' }}</em></div>
+      <div *ngIf="waitingUntil"><em>{{ 'Paused until' | translate }} {{ waitingUntil | date:'mediumTime' }}</em></div>
     </div>
   </td>
   <td colspan="2" name="posting_status">

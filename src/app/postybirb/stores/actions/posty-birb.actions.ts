@@ -1,4 +1,5 @@
 import { SubmissionArchive, PostyBirbSubmissionModel } from '../../models/postybirb-submission-model';
+import { SubmissionStatus } from '../../enums/submission-status.enum';
 
 class Helpers {
   static copy(data: any): any {
@@ -15,12 +16,23 @@ class Helpers {
 
 export class UpdateWebsites {
     static readonly type: string ='[Submission] Website Update';
-    constructor(public archive: SubmissionArchive, public websites: string[]) { }
+    constructor(public archive: SubmissionArchive, public websites: string[]) {
+      this.archive = Helpers.copy(archive);
+    }
 }
 
-export class UpdateSubmission {
+export class UpdateStatus {
+    static readonly type: string ='[Submission] Status Update';
+    constructor(public archive: SubmissionArchive, public status: SubmissionStatus) {
+      this.archive = Helpers.copy(archive);
+    }
+}
+
+export class UpdateSubmission { // refers to editing submissions only
   static readonly type: string = '[Submission] Update';
-  constructor(public archive: SubmissionArchive) { }
+  constructor(public archive: SubmissionArchive) {
+    this.archive = Helpers.copy(archive);
+  }
 }
 
 export class EditSubmission {
@@ -32,7 +44,7 @@ export class EditSubmission {
 
 export class AddSubmission {
   static readonly type: string = '[Submission] Add';
-  constructor(public archive: SubmissionArchive, public update: boolean) {
+  constructor(public archive: SubmissionArchive, public update: boolean, public openSheet: boolean = true) {
     this.archive = Helpers.copy(archive);
   }
 }
@@ -40,25 +52,6 @@ export class AddSubmission {
 export class DeleteSubmission {
   static readonly type: string = '[Submission] Delete';
   constructor(public archive: SubmissionArchive) { }
-}
-
-export class QueueSubmission {
-  static readonly type: string = '[Submission] Queue';
-  constructor(public archive: SubmissionArchive) {
-    this.archive = Helpers.copy(archive);
-  }
-}
-
-export class DequeueSubmission {
-  static readonly type: string = '[Submission] Dequeue';
-  constructor(public archive: SubmissionArchive, public interrupted: boolean = false) {
-    this.archive = Helpers.copy(archive);
-  }
-}
-
-export class DequeueAllSubmissions {
-  static readonly type: string = '[Submission] Dequeue All';
-  constructor() { }
 }
 
 export class CompleteSubmission {

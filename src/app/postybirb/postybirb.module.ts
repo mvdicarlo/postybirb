@@ -33,6 +33,7 @@ import {
   MatButtonToggleModule
 } from '@angular/material';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 import { CommonsModule } from '../commons/commons.module';
 import { LogsModule } from '../logs/logs.module';
@@ -97,6 +98,8 @@ import { FurryAminoFormComponent } from './components/website-options/furry-amin
 import { BulkSubmissionEditingFormComponent } from './components/bulk-submission-editing-form/bulk-submission-editing-form.component';
 import { BulkUpdateDialogComponent } from './components/dialog/bulk-update-dialog/bulk-update-dialog.component';
 import { NewgroundsFormComponent } from './components/website-options/newgrounds-form/newgrounds-form.component';
+import { PostyBirbQueueState } from './stores/states/posty-birb-queue.state';
+import { TitleTruncateDisplayComponent } from './components/title-truncate-display/title-truncate-display.component';
 
 const routes: Routes = [
   {
@@ -112,7 +115,8 @@ const routes: Routes = [
     LogsModule.forRoot(),
     RouterModule.forChild(routes),
     NgxsModule.forRoot([
-      PostyBirbState
+      PostyBirbState,
+      PostyBirbQueueState
     ]),
     CKEditorModule,
     FormsModule,
@@ -135,6 +139,7 @@ const routes: Routes = [
     MatTooltipModule,
     MatProgressBarModule,
     MatButtonToggleModule,
+    OverlayModule,
     DragDropModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
@@ -196,6 +201,7 @@ const routes: Routes = [
     BulkSubmissionEditingFormComponent,
     BulkUpdateDialogComponent,
     NewgroundsFormComponent,
+    TitleTruncateDisplayComponent,
   ],
   entryComponents: [
     AryionFormComponent,

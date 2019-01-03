@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Newgrounds</h2>
 <mat-dialog-content class="login-window">
-  <webview *ngIf="show" src="https://www.newgrounds.com/login" class="login-webview-window"></webview>
+  <webview #webview class="login-webview-window" webpreferences="nativeWindowOpen=1" allowpopups></webview>
 </mat-dialog-content>
 <mat-dialog-actions class="float-right">
   <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>

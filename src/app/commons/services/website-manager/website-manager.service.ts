@@ -28,6 +28,7 @@ import { SoFurry } from '../../models/website/sofurry';
 import { Tumblr } from '../../models/website/tumblr';
 import { Twitter } from '../../models/website/twitter';
 import { Weasyl } from '../../models/website/weasyl';
+import { PostReport } from '../../models/website/base-website';
 
 /**
  * @description
@@ -38,6 +39,8 @@ export class WebsiteManagerService {
   private websites: Map<string, Website>;
 
   private bbcodeParser: BbCodeParse;
+
+  private hasAlreadySeenAndMayBeAttemptingList: string[] = [];
 
   constructor(derpibooru: Derpibooru, deviantArt: DeviantArt, e621: E621, furaffinity: Furaffinity, furiffic: Furiffic,
     furryNetwork: FurryNetwork, hentaiFoundry: HentaiFoundry, inkbunny: Inkbunny, mastodon: Mastodon, pixiv: Pixiv, paigeeWorld: PaigeeWorld,
@@ -80,25 +83,57 @@ export class WebsiteManagerService {
     return results;
   }
 
-  public post(website: string, submission: PostyBirbSubmissionModel): Observable<any> {
+  public post(website: string, submission: PostyBirbSubmissionModel): Observable<PostReport> {
     const data: PostyBirbSubmissionData = submission.getAllForWebsite(website);
     data.description = this.bbcodeParser.parse(data.description, website, !data.parseDescription).parsed;
 
     const site = this.websites.get(website);
     return new Observable(observer => {
+      const attempt: string = `${submission.getId()}-${website}`;
+      if (this.hasAlreadySeenAndMayBeAttemptingList.includes(attempt)) {
+        observer.error({
+          err: 'PostyBirb somehow tried to double post to the same website',
+          website,
+          submission: data,
+          notify: 'PostyBirb somehow tried to double post to the same website',
+          msg: 'PostyBirb somehow tried to double post to the same website'
+        });
+        observer.complete();
+        return;
+      } else {
+        this.hasAlreadySeenAndMayBeAttemptingList.push(attempt);
+      }
+
+      const attemptIndex: number = this.hasAlreadySeenAndMayBeAttemptingList.indexOf(attempt);
+
       if (site.getLoginStatus() === WebsiteStatus.Logged_In) {
         site.checkAuthorized().then(() => {
-          site.post(data).subscribe((success) => {
-            observer.next(success);
-            observer.complete();
-          }, (err) => {
-            observer.error(err);
-            observer.complete();
-          });
+          if (fakePosts) { // I really should do this with karma and do real testing (if I ever learn to do that well)
+            const rand = Math.floor(Math.random() * 100);
+            if (rand >= 10) {
+              observer.next({ err: null, website, submission: data, notify: 'Completed on random', msg: 'Completed on random '});
+              observer.complete();
+            } else {
+              this.hasAlreadySeenAndMayBeAttemptingList.splice(attemptIndex, 1);
+              observer.error({ err: null, website, submission: data, notify: 'Failed on random', msg: 'Failed on random '});
+              observer.complete();
+            }
+          } else {
+            site.post(data).subscribe((success) => {
+              observer.next(success);
+              observer.complete();
+            }, (err) => {
+              this.hasAlreadySeenAndMayBeAttemptingList.splice(attemptIndex, 1);
+              observer.error(err);
+              observer.complete();
+            });
+          }
         }).catch(() => {
+          this.hasAlreadySeenAndMayBeAttemptingList.splice(attemptIndex, 1);
           this.notLoggedIn(observer, website);
         });
       } else {
+        this.hasAlreadySeenAndMayBeAttemptingList.splice(attemptIndex, 1);
         this.notLoggedIn(observer, website);
       }
     });

@@ -1,15 +1,37 @@
-<div class="w-100 sidebar-navigator-container animated zoomIn" *ngIf="file && !hide" (contextmenu)="menuTrigger.openMenu()" [matTooltip]="file.name + ' > ' + archive.meta.title" matTooltipPosition="right">
+<div #origin="cdkOverlayOrigin" cdkOverlayOrigin class="w-100 sidebar-navigator-container animated zoomIn" *ngIf="file && fileIcon" (contextmenu)="menuTrigger.openMenu()" [matTooltip]="file.name + ' > ' + archive.meta.title" matTooltipPosition="right">
   <img [src]="fileIcon | safe" [alt]="file.name">
-  <button *ngIf="editMode === 'single'" #menuTrigger="matMenuTrigger" class="actions" mat-icon-button (click)="trapEvent($event)" [matMenuTriggerFor]="actionMenu">
+  <button #menuTrigger="matMenuTrigger" class="actions" mat-icon-button (click)="trapEvent($event)" [matMenuTriggerFor]="actionMenu">
     <mat-icon>more_vert</mat-icon>
   </button>
-  <mat-icon class="incomplete-icon" *ngIf="!passing" color="warn">warning</mat-icon>
+  <mat-icon class="incomplete-icon" *ngIf="!passing" color="warn" [matTooltip]="'is incomplete' | translate">warning</mat-icon>
   <mat-checkbox class="bulk-select" *ngIf="editMode === 'bulk'" (change)="_checkedForBulk($event.checked)"></mat-checkbox>
+  <mat-checkbox [(checked)]="checkedForEdit" name="single-select" class="bulk-select" *ngIf="editMode === 'single'" (change)="_toggleChecked($event.checked)"></mat-checkbox>
+
+  <popup [overlayOrigin]="origin">
+    <form [formGroup]="simpleForm" class="simple-form">
+      <mat-form-field color="accent" class="d-block" style="color: white">
+        <mat-label>{{ 'Title' | translate }}</mat-label>
+        <input matInput #title placeholder="{{'Title' | translate}}" formControlName="title" maxLength="50">
+        <mat-hint align="end">
+          {{title.value.trim().length}} / {{title.maxLength}}
+        </mat-hint>
+      </mat-form-field>
+      <mat-form-field name="ratings-field" color="accent" class="d-block">
+        <mat-label>{{ 'Rating' | translate }}</mat-label>
+        <mat-select [placeholder]="'Rating' | translate" formControlName="rating" required>
+          <mat-option value="General">{{'General' | translate}}</mat-option>
+          <mat-option value="Mature">{{'Mature' | translate}}</mat-option>
+          <mat-option value="Explicit">{{'Adult' | translate}}</mat-option>
+          <mat-option value="Extreme">{{'Extreme' | translate}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </form>
+  </popup>
 </div>
 
 <mat-menu #actionMenu="matMenu">
   <ng-template matMenuContent>
-    <button type="button" mat-menu-item [matMenuTriggerFor]="templateMenu" (mouseover)="loadTemplates()"><mat-icon>assignment</mat-icon>{{ 'Apply Template' | translate }}</button>
+    <button type="button" mat-menu-item [matMenuTriggerFor]="templateMenu" (mouseover)="loadTemplates()" *ngIf="editMode === 'single'"><mat-icon>assignment</mat-icon>{{ 'Apply Template' | translate }}</button>
     <button type="button" mat-menu-item (click)="showSummary()"><mat-icon>search</mat-icon>{{ 'Summary' | translate }}</button>
     <button type="button" mat-menu-item (click)="saveSubmission()" [disabled]="!passing"><mat-icon>save</mat-icon>{{ 'Save' | translate }}</button>
     <button type="button" class="warn" mat-menu-item (click)="deleteItem()" color="warn"><mat-icon color="warn">delete</mat-icon>{{'Delete' | translate}}</button>

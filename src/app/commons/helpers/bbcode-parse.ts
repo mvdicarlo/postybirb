@@ -172,6 +172,10 @@ export class BbCodeParse {
       } else {
         newText += this.adMapping[type];
       }
+
+      if (newText && newText.length) {
+        newText = newText.trim();
+      }
     }
 
     return newText;

@@ -3,8 +3,9 @@ import { interval } from 'rxjs';
 import { Store } from '@ngxs/store';
 
 import { SubmissionArchive } from '../../models/postybirb-submission-model';
-import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 import { SubmissionStatus } from '../../enums/submission-status.enum';
+import { PostyBirbQueueStateAction } from '../../stores/states/posty-birb-queue.state';
+import { filter } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -26,9 +27,18 @@ export class SchedulerService {
     });
 
     if (immediatelyCheckForScheduled) {
-      setTimeout(this.checkForScheduled.bind(this), 6500); // wait some time to let websites load
+      setTimeout(this.checkForScheduled.bind(this), 10000); // wait some time to let websites load
     } else {
-      interval(60000).subscribe(() => {
+      interval(60000)
+      .pipe(
+        filter(() => {
+          let posting: any = null;
+          _store.selectSnapshot(state => posting = state.postybirbqueue.posting);
+          return !posting;
+        }),
+        filter((() => this.submissions.length > 0))
+      ) // ignore interval when in posting state
+      .subscribe(() => {
         this.checkForScheduled();
       });
     }
@@ -48,7 +58,7 @@ export class SchedulerService {
         case SubmissionStatus.POSTING:
           break;
         default:
-          this._store.dispatch(new PostyBirbStateAction.QueueSubmission(submission));
+          this._store.dispatch(new PostyBirbQueueStateAction.EnqueueSubmission(submission));
       }
     }
   }

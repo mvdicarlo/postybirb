@@ -1,23 +1,27 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnDestroy, ViewChild, ElementRef, AfterContentInit } from '@angular/core';
 import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
   selector: 'deviant-art-dialog',
   templateUrl: './deviant-art-dialog.component.html',
   styleUrls: ['./deviant-art-dialog.component.css']
 })
-export class DeviantArtDialogComponent implements OnInit, OnDestroy {
+export class DeviantArtDialogComponent extends BaseWebsiteDialog implements AfterContentInit, OnDestroy {
   @ViewChild('webview') webview: ElementRef;
   private deviantart: any;
 
   constructor(private service: WebsiteCoordinatorService) {
+    super();
+
     this.deviantart = window['deviantart'];
   }
 
-  ngOnInit() {
+  ngAfterContentInit() {
     this.service.authorizeWebsite(SupportedWebsites.DeviantArt, undefined).then((url) => {
-      this.webview.nativeElement.src = url;
+      this.url = url;
+      super.ngAfterContentInit();
     });
   }
 

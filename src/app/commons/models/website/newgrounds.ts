@@ -62,13 +62,13 @@ export class Newgrounds extends BaseWebsite implements Website {
             violence: options.violence,
             language_textual: options.text,
             adult_themes: options.adult,
-            thumb_crop_width: 450,
-            thumb_crop_height: 450,
-            thumb_top_x: 175,
+            thumb_crop_width: 0,
+            thumb_crop_height: 0,
+            thumb_top_x: 0,
             thumb_top_y: 0
           };
 
-          const tags = this.formatTags(submission.defaultTags, submission.customTags, '-').slice(0, 12); // find out if m/m is legal
+          const tags = this.formatTags(submission.defaultTags, submission.customTags);
           for (let i = 0; i < tags.length; i++) {
             data[`tag_${i}`] = tags[i];
           }
@@ -90,5 +90,11 @@ export class Newgrounds extends BaseWebsite implements Website {
             });
         });
     });
+  }
+
+  formatTags(defaultTags: string[] = [], other: string[] = []): any {
+    return super.formatTags(defaultTags, other, '-')
+      .map(tag => { return tag.replace(/(\(|\)|:|#|;|\]|\[|')/g, '').replace(/_/g, '-') })
+      .slice(0, 12);
   }
 }

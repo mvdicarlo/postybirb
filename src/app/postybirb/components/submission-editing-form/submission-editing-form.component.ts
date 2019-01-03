@@ -1,14 +1,12 @@
-import { Component, OnInit, OnDestroy, Input, EventEmitter, Output, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, ViewChild, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef, ChangeDetectionStrategy, ElementRef, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { Subscription, BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { MatDialog, MatBottomSheet } from '@angular/material';
+import { MatDialog } from '@angular/material';
 
 import { Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 
-import { checkForWebsiteAndFileIncompatibility } from '../../helpers/incompatibility-checker.helper';
-import { checkForCompletion } from '../../helpers/completion-checker.helper';
 import { _trimSubmissionFields, _filelessSubmissionCopy } from '../../helpers/submission-manipulation.helper';
 
 import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
@@ -17,14 +15,12 @@ import { OptionsForms } from '../../models/website-options.model';
 import { OptionsSectionDirective } from '../../directives/options-section.directive';
 import { PostyBirbSubmissionModel, SubmissionArchive } from '../../models/postybirb-submission-model';
 import { SubmissionRuleHelpDialogComponent } from '../dialog/submission-rule-help-dialog/submission-rule-help-dialog.component';
-import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-sheet.component';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { TagFieldComponent } from '../tag-field/tag-field.component';
 import { TagRequirements } from '../../models/website-tag-requirements.model';
 import { TemplatesService } from '../../services/templates/templates.service';
 import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { WebsiteStatusManager } from '../../../commons/helpers/website-status-manager';
-import { SubmissionSaveDialogComponent } from '../dialog/submission-save-dialog/submission-save-dialog.component';
 import { EditableSubmissionsService } from '../../services/editable-submissions/editable-submissions.service';
 
 @Component({
@@ -37,28 +33,20 @@ import { EditableSubmissionsService } from '../../services/editable-submissions/
   }
 })
 export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
-  @Output() readonly hiddenChange: EventEmitter<any> = new EventEmitter();
-  @Input() archive: SubmissionArchive;
-  public submission: PostyBirbSubmissionModel;
-
-  get hidden() { return this._hidden }
-  set hidden(search: any) {
-    if (!search) {
-      if (this.hidden) {
-        this._hidden = false;
-        this._changeDetector.markForCheck();
-      }
-    } else if (this._includesSearch(search)) {
-      this._hidden = false;
-      this._changeDetector.markForCheck();
-    } else {
-      this._hidden = true;
-      this._changeDetector.markForCheck();
+  @Input()
+  get archive(): SubmissionArchive { return this._archive }
+  set archive(value: SubmissionArchive) {
+    if (!this._archive) {
+      this._archive = value;
+      this.canSave();
+    } else if (this.archive !== value) {
+      this._archive = value;
+      this.form.patchValue(value.meta, { emitEvent: false });
+      this.canSave();
     }
-
-    this.hiddenChange.emit();
   }
-  private _hidden: boolean = false;
+  private _archive: SubmissionArchive;
+  public submission: PostyBirbSubmissionModel;
 
   @ViewChild('title') title: ElementRef;
   @ViewChild('changeFileInput') changeFileInput: ElementRef;
@@ -90,19 +78,13 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   private websiteStatusSubscription = Subscription.EMPTY;
   private statusManager: WebsiteStatusManager;
 
-  get issues(): any { return this._issues }
-  set issues(value: any) {
-    this._issues = value;
-    this._validate();
-    this._changeDetector.markForCheck();
-  }
-  private _issues: any = {};
+  public issues: any = {};
 
   public passing: boolean = false;
   private validateSubject: Subject<any>;
   private saveEditsSubject: Subject<any>;
 
-  constructor(fb: FormBuilder, private _store: Store, private bottomSheet: MatBottomSheet, private _changeDetector: ChangeDetectorRef,
+  constructor(fb: FormBuilder, private _store: Store, private _changeDetector: ChangeDetectorRef,
     private websiteCoordinator: WebsiteCoordinatorService, private dialog: MatDialog, private templates: TemplatesService,
     private editableSubmissionService: EditableSubmissionsService) {
     this.defaultDescription = new BehaviorSubject(undefined);
@@ -111,12 +93,10 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     this.validateSubject.pipe(debounceTime(150)).subscribe(() => {
       this.canSave();
       this._changeDetector.markForCheck();
-
-      this.editableSubmissionService.setPassing(this.archive.meta.id, this.passing);
     }); // try to limit calls to this
 
     this.saveEditsSubject = new Subject();
-    this.saveEditsSubject.pipe(debounceTime(2000)).subscribe(() => {
+    this.saveEditsSubject.pipe(debounceTime(500)).subscribe(() => {
       this._saveEditState();
     }); // try to limit calls to this
 
@@ -151,16 +131,6 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
     this.websiteStatusSubscription = websiteCoordinator.asObservable().pipe(debounceTime(250))
       .subscribe((statuses: any) => this._updateWebsiteStatuses(statuses));
-
-    this.form.controls.websites.valueChanges.pipe(debounceTime(200)).subscribe((websites: string[]) => {
-      this.issues = checkForWebsiteAndFileIncompatibility(this.file, this.form.value.rating, this.submission.type, websites);
-      this._changeDetector.markForCheck();
-    });
-
-    this.form.controls.rating.valueChanges.pipe(debounceTime(200)).subscribe(rating => {
-      this.issues = checkForWebsiteAndFileIncompatibility(this.file, rating, this.submission.type, this.form.value.websites);
-      this._changeDetector.markForCheck();
-    });
 
     this.form.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
     this.descriptionForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
@@ -303,37 +273,16 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
         this.templateSelect.reset();
         this.copySelect.reset();
       }
+
+      this._saveEditState();
     });
   }
 
   public canSave(): boolean {
-    if (Object.keys(this.issues).length) {
-      this.passing = false;
-      return false;
-    }
-
-    if (this.form.valid) {
-      if (!this.editing && !checkForCompletion(_filelessSubmissionCopy(this.form.value, this.descriptionForm.value, this.tagForm.value, this.optionsForm.value))) {
-        this.passing = false;
-        return false;
-      }
-
-      if (this.getInvalidTagFields().length) {
-        this.passing = false;
-        return false; // has invalid tag fields
-      }
-
-      if (this.getIncompleteOptionsFields().length) {
-        this.passing = false;
-        return false;
-      }
-
-      this.passing = true;
-      return true;
-    }
-
-    this.passing = false;
-    return false;
+    this.issues = this.editableSubmissionService.getIssues(this.archive.meta.id);
+    this.passing = this.editableSubmissionService.isPassing(this.archive.meta.id);
+    this._changeDetector.markForCheck();
+    return this.passing;
   }
 
   public templateSelected(template: SubmissionArchive, useUnpostedWebsites: boolean = false /* Template vs Copy */): void {
@@ -356,57 +305,18 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public async save() {
     if (this.canSave()) {
-      const submission = this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive()));
-      let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
-        data: [submission]
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this._updateSubmission(this.submission);
-          this._store.dispatch(new PostyBirbStateAction.AddSubmission(_trimSubmissionFields(this.submission, this.submission.unpostedWebsites).asSubmissionArchive(), true));
-
-          this.bottomSheet.open(SubmissionSheetComponent, {
-            data: { index: 0 }
-          });
-        }
-      });
+      this.editableSubmissionService.saveForm(this.submission.getId(), false, this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive())).asSubmissionArchive());
     }
   }
 
   public async post() {
     if (this.canSave()) {
-      const submission = this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive()));
-      let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
-        data: [submission]
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this._updateSubmission(this.submission);
-          const archive = _trimSubmissionFields(this.submission, this.submission.unpostedWebsites).asSubmissionArchive()
-          this._store.dispatch([new PostyBirbStateAction.AddSubmission(archive, true), new PostyBirbStateAction.QueueSubmission(archive)]);
-
-          this.bottomSheet.open(SubmissionSheetComponent, {
-            data: { index: 0 }
-          });
-        }
-      });
+      this.editableSubmissionService.saveForm(this.submission.getId(), true, this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive())).asSubmissionArchive());
     }
   }
 
   public async deleteSubmission() {
-    let dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Delete'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this._store.dispatch(new PostyBirbStateAction.DeleteSubmission(this.archive));
-      }
-    });
+    this.editableSubmissionService.deleteForm(this.submission.getId());
   }
 
   public async openLogin() {
@@ -424,7 +334,6 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
       this._loadFileIconImage();
 
-      this.issues = checkForWebsiteAndFileIncompatibility(this.file, this.form.value.rating, this.submission.type, this.form.value.websites);
       this._saveEditState();
     }
 
@@ -487,33 +396,27 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   private _initiateSaveTracker(): void {
     setTimeout(function() {
       try {
-        this.tagForm.valueChanges.pipe(debounceTime(1000))
+        this.tagForm.valueChanges.pipe(debounceTime(250))
         .subscribe(() => {
           this._saveState();
         });
 
-        this.descriptionForm.valueChanges.pipe(debounceTime(1000))
+        this.descriptionForm.valueChanges.pipe(debounceTime(250))
         .subscribe(() => {
           this._saveState();
         });
 
-        this.form.valueChanges.pipe(debounceTime(1000))
+        this.form.valueChanges.pipe(debounceTime(250))
         .subscribe(() => {
           this._saveState();
         });
 
-        this.optionsForm.valueChanges.pipe(debounceTime(1000))
+        this.optionsForm.valueChanges.pipe(debounceTime(250))
         .subscribe(() => {
           this._saveState();
         });
       } catch (e) { /* swallow it */}
     }.bind(this), 2000);
-  }
-
-  private _includesSearch(search: string): boolean {
-    if (this.file && this.file.name.toLowerCase().includes(search)) return true;
-    if ((this.form.value.title || '').toLowerCase().includes(search)) return true;
-    return false;
   }
 
   private _updateWebsiteStatuses(statuses: any): void {
@@ -530,7 +433,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public _updateSubmission(submission: PostyBirbSubmissionModel): PostyBirbSubmissionModel {
     const values = this.form.value;
-    submission.title = values.title || 'New Submission';
+    submission.title = values.title;
     submission.rating = values.rating;
     submission.descriptionInfo = this.descriptionForm.value;
     submission.tagInfo = this.tagForm.value;

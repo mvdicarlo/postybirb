@@ -197,6 +197,42 @@ export class PostyBirbSubmissionModel {
     };
   }
 
+  public getAllForWebsiteNoFile(website: string): PostyBirbSubmissionData { // since I use this a lot in checking, I want a no file version
+    const defaultDescriptionData = (this.descriptionInfo || {}).default;
+
+    const defaultDescription = defaultDescriptionData ? defaultDescriptionData.description : '';
+    const customDescription = this.descriptionInfo[website];
+
+    let description = defaultDescription;
+    let parseDescription = defaultDescriptionData ? !defaultDescriptionData.simple : true;
+    if (customDescription && !customDescription.useDefault) { // Determine whether to use custom or default description
+      description = customDescription.description;
+      parseDescription = customDescription && !customDescription.useDefault ? !customDescription.simple : true;
+    }
+
+    const customTags = this.tagInfo[website];
+    const overwriteTags: boolean = customTags && customTags.overwrite ? true : false;
+    const defaultTags = overwriteTags ? [] : this.tagInfo.default ? this.tagInfo.default.tags : [];
+
+    const submissionData: SubmissionData = {
+      title: this.title,
+      submissionFile: null,
+      thumbnailFile: null,
+      additionalFiles: null,
+      submissionRating: this.rating,
+      submissionType: this.type
+    };
+
+    return {
+      description: description || '',
+      parseDescription,
+      defaultTags,
+      customTags: customTags && customTags.tags ? customTags.tags : [],
+      options: Object.assign({}, this.optionInfo[website]),
+      submissionData
+    };
+  }
+
   public asSubmissionArchive(): SubmissionArchive {
     return {
       meta: this.getSubmissionMetaData(),

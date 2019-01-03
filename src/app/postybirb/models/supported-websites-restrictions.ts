@@ -221,7 +221,7 @@ export class SupportedWebsiteRestrictions {
     return fileSize <= sizeLimit ? 0 : sizeLimit;
   }
 
-  public static verifyWebsiteRestrictionsAndIncompatibilities(file: File, rating: string, type: string, websites: string[]): any {
+  public static verifyWebsiteRestrictionsAndIncompatibilities(file: File|FileObject, rating: string, type: string, websites: string[]): any {
     const issues: any = {};
 
     const fileExtension: string = file.name.split('.').pop().toLowerCase();

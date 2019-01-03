@@ -39,8 +39,8 @@ export class SubmissionViewComponent {
     this.submissionType = submission.type;
     this.submissionRating = submission.rating;
     this.title = submission.title;
-    this.description = (submission.descriptionInfo.default || {}).description || '';
-    this.tags = (submission.tagInfo.default || {}).tags || [];
+    this.description = submission.descriptionInfo ? (submission.descriptionInfo.default || {}).description || '' : '';
+    this.tags = submission.tagInfo ? (submission.tagInfo.default || {}).tags || [] : [];
     this.websites = submission.unpostedWebsites || [];
   }
 

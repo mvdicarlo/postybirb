@@ -21,6 +21,11 @@ export class TwitterDialogComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.failed = false;
     this.service.authorizeWebsite(SupportedWebsites.Twitter, { step: 1 }).then((url) => {
+      if (getPartition()) {
+        if (!this.webview.nativeElement.partition) {
+          this.webview.nativeElement.partition = getPartition();
+        }
+      }
       this.webview.nativeElement.src = url;
     });
   }

@@ -14,7 +14,9 @@ export class TwitterFormComponent extends BaseOptionForm {
     super(injector);
     this.website = this.supportedWebsites.Twitter;
 
-    this.setOptionsForm({});
+    this.setOptionsForm({
+      useTitle: [false]
+    });
   }
 
 }

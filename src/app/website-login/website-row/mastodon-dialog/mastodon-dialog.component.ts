@@ -1,15 +1,16 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterContentInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { WebsiteCoordinatorService } from '../../../commons/services/website-coordinator/website-coordinator.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { MatDialogRef } from '@angular/material';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
   selector: 'mastodon-dialog',
   templateUrl: './mastodon-dialog.component.html',
   styleUrls: ['./mastodon-dialog.component.css']
 })
-export class MastodonDialogComponent implements OnInit {
+export class MastodonDialogComponent extends BaseWebsiteDialog implements AfterContentInit {
   @ViewChild('webview') webview: ElementRef;
   private mastodon: any;
   public failed: boolean;
@@ -18,6 +19,7 @@ export class MastodonDialogComponent implements OnInit {
   public loading: boolean = false;
 
   constructor(private service: WebsiteCoordinatorService, private dialogRef: MatDialogRef<MastodonDialogComponent>, fb: FormBuilder) {
+    super();
     this.mastodon = window['mastodon'];
     this.websiteForm = fb.group({
       url: ['mastodon', Validators.required],
@@ -25,12 +27,21 @@ export class MastodonDialogComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
+  ngAfterContentInit() {
+    this.webview.nativeElement.addEventListener('did-start-loading', () => { this.loading = true });
+    this.webview.nativeElement.addEventListener('did-stop-loading', () => { this.loading = false });
+    this.auth();
+  }
+
+  public auth() {
     this.failed = false;
     this._setUrlData();
-    this.webview.nativeElement.addEventListener('did-start-loading', () => { this.loading = true })
-    this.webview.nativeElement.addEventListener('did-stop-loading', () => { this.loading = false })
     this.service.authorizeWebsite(SupportedWebsites.Mastodon, { site: this.url }).then((url) => {
+      if (getPartition()) {
+        if (!this.webview.nativeElement.partition) {
+          this.webview.nativeElement.partition = getPartition();
+        }
+      }
       this.webview.nativeElement.src = url;
     });
   }
@@ -93,6 +104,6 @@ export class MastodonDialogComponent implements OnInit {
 
   public unauthorize() {
     this.service.unauthorizeWebsite(SupportedWebsites.Mastodon);
-    this.ngOnInit();
+    this.auth();
   }
 }

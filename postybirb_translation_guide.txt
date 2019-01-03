@@ -661,6 +661,12 @@ TRANSLATOR: <Person to be credited>
 }
 
 {
+  "Internal": "Open Login Profile",
+  "Translate Me": "Open Login Profile",
+  "Translated": ""
+}
+
+{
   "Internal": "Original Work",
   "Translate Me": "Original Work",
   "Context": "Website option",

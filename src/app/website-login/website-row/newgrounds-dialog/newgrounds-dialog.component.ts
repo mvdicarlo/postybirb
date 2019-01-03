@@ -1,14 +1,14 @@
-import { Component, AfterContentInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
   selector: 'newgrounds-dialog',
   templateUrl: './newgrounds-dialog.component.html',
   styleUrls: ['./newgrounds-dialog.component.css']
 })
-export class NewgroundsDialogComponent implements AfterContentInit {
-  public show: boolean = false;
-
-  ngAfterContentInit() {
-    setTimeout(() => this.show = true, 150);
+export class NewgroundsDialogComponent extends BaseWebsiteDialog {
+  constructor() {
+    super();
+    this.url = 'https://www.newgrounds.com/login';
   }
 }

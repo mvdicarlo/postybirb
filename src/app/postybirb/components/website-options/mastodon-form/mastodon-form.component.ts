@@ -15,7 +15,8 @@ export class MastodonFormComponent extends BaseOptionForm {
     this.website = this.supportedWebsites.Mastodon;
 
     this.setOptionsForm({
-      spoilerText: [null]
+      spoilerText: [null],
+      useTitle: [false]
     });
   }
 

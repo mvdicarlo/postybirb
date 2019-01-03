@@ -1,5 +1,6 @@
 .sheet-container {
   margin: -8px -16px;
+  min-width: 50vw;
 }
 
 mat-slide-toggle {

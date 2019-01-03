@@ -101,3 +101,10 @@ mat-tab-group {
 mat-panel-description {
   max-width: 80%;
 }
+
+title-truncate-display {
+  display: block;
+  background-color: rgba(0, 0, 0, 0.32);
+  border-radius: 4px;
+  font-size: 0.9em;
+}

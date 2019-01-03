@@ -27,6 +27,7 @@ window.requestpost = require('./js/request-post.js');
 window.appVersion = electron.remote.app.getVersion();
 window.getPath = electron.remote.app.getPath;
 window.sfw = electron.remote.process.env.SFW;
+window.fakePosts = electron.remote.process.env.FAKEPOSTS;
 window.nativeImage = electron.nativeImage;
 window.getFileIcon = electron.remote.app.getFileIcon;
 window.immediatelyCheckForScheduled = electron.remote.getCurrentWindow().immediatelyCheckForScheduled;
@@ -38,7 +39,28 @@ window.relaunch = function relaunch() {
     electron.remote.app.exit();
 };
 
+window.getPartition = function getPartition() {
+  const partition = electron.remote.getCurrentWindow().partition;
+  if (partition) {
+    return `persist:${partition}`;
+  }
+
+  return null;
+}
+
 window.tempMap = {}; // temporary file map
+
+const profilesDB = electron.remote.getCurrentWindow().profilesdb;
+window.getAppProfiles = function getAppProfiles() {
+  return profilesDB.get('profiles').value() || [];
+}
+
+const ipc = electron.ipcRenderer;
+window.addOrOpenAppProfile = function addOrOpenAppProfile(profile) {
+  if (profile) {
+    ipc.send('open-profile', profile);
+  }
+}
 
 window.readFile = function readFile(filePath, successCallback, errorCallback, completeCallback) {
     fs.readFile(filePath, (readErr, buffer) => {
@@ -48,12 +70,6 @@ window.readFile = function readFile(filePath, successCallback, errorCallback, co
         } else if (successCallback) successCallback(buffer);
 
         if (completeCallback) completeCallback();
-    });
-};
-
-window.getConfig = function getConfig(cb) {
-    fs.readFile(path.join(getPath('appData'), 'PostyBirb', 'postybirb.json'), 'utf8', (err, data) => {
-        cb(data);
     });
 };
 

@@ -33,6 +33,28 @@ exports.post = function post(data) {
                         });
                     } else {
                       if (res.statusCode === 200) {
+                        if (body.includes('uploadImageError')) {
+                          reject({
+                              err: body,
+                              msg: body,
+                              data,
+                          });
+                          return;
+                        }
+
+                        try {
+                          const crops = body.split(',');
+                          data.thumb_crop_width = crops[1].trim();
+                          data.thumb_crop_height = crops[2].trim();
+                        } catch (e) {
+                          reject({
+                              err: e,
+                              msg: body,
+                              data,
+                          });
+                          return;
+                        }
+
                         const jar = request.jar();
                         res.headers['set-cookie'].map(c => {
                           const cookie = request.cookie(c);
@@ -69,6 +91,8 @@ exports.post = function post(data) {
                                 } catch (err) {
                                   reject({ data, err, msg: body });
                                 }
+                              } else {
+                                reject({ data, err: body, msg: body });
                               }
                             }
                         });

@@ -13,7 +13,7 @@ import { Observable } from 'rxjs';
 export class Derpibooru extends BaseWebsite implements Website {
 
   constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
-    super(SupportedWebsites.Derpibooru, 'https://www.derpibooru.org');
+    super(SupportedWebsites.Derpibooru, 'https://derpibooru.org');
     this.mapping = {
       rating: {
         General: 'safe',
@@ -59,47 +59,36 @@ export class Derpibooru extends BaseWebsite implements Website {
     return new Observable(observer => {
       this.http.get(`${this.baseURL}/images/new`, { responseType: 'text' })
         .subscribe(uploadFormPage => {
+          if (!uploadFormPage.includes('Upload an Image')) {
+            observer.error(this.createError(uploadFormPage, submission, 'Derpibooru is acting up. Try logging in again.'));
+            observer.complete();
+            return;
+          }
+
           const options = submission.options;
 
           const tags: string[] = this.formatTags(submission.defaultTags, submission.customTags, ' ');
           const ratingTag: string = this.getMapping('rating', submission.submissionData.submissionRating);
           if (!tags.includes(ratingTag)) tags.push(ratingTag);
 
-          // //Primary
-          // uploadForm.set('authenticity_token', HTMLParser.getInputValue(uploadFormPage, 'authenticity_token'));
-          // uploadForm.set('image[tag_input]', tags.join(', ').trim());
-          // uploadForm.set('image[image]', submission.submissionData.submissionFile.getRealFile());
-          // uploadForm.set('image[description]', submission.description);
-          //
-          // uploadForm.set('image[source_url]', options.sourceURL || '');
-          //
-          // //Ignored properties
-          // uploadForm.set('utf8', '✓');
-          // uploadForm.set('scraper_url', '');
-          // uploadForm.set('commit', 'Create Image');
-          // uploadForm.set('image[anonymous]', '0');
-          // uploadForm.set('image[image_cache]', '');
-          // uploadForm.set('commit', 'Create Image');
+          //Primary
+          const uploadForm: FormData = new FormData();
+          uploadForm.set('authenticity_token', HTMLParser.getInputValue(uploadFormPage, 'authenticity_token'));
+          uploadForm.set('image[tag_input]', tags.join(', ').trim());
+          uploadForm.set('image[image]', submission.submissionData.submissionFile.getRealFile());
+          uploadForm.set('image[description]', submission.description);
 
-          requestpost.post({
-            'authenticity_token': HTMLParser.getInputValue(uploadFormPage, 'authenticity_token'),
-            'image[description]': submission.description,
-            'image[tag_input]': tags.join(', ').trim(),
-            'image[image]': {
-              value: submission.submissionData.submissionFile.getFileBuffer(),
-              options: {
-                contentType: submission.submissionData.submissionFile.getFileInfo().type,
-                filename: submission.submissionData.submissionFile.getFileInfo().name || 'upload.jpg'
-              }
-            },
-            'image[source_url]': options.sourceURL || '',
-            'utf8': '✓',
-            'scraper_url': '',
-            'commit': 'Create Image',
-            'image[anonymous]': '0',
-            'image[image_cache]': ''
-          }, this.baseURL, `${this.baseURL}/images`)
-          .then((res) => {
+          uploadForm.set('image[source_url]', options.sourceURL || '');
+
+          //Ignored properties
+          uploadForm.set('utf8', '✓');
+          uploadForm.set('scraper_url', '');
+          uploadForm.set('image[anonymous]', '0');
+          uploadForm.set('image[image_cache]', '');
+          uploadForm.set('commit', 'Create Image');
+
+          this.http.post(`${this.baseURL}/images`, uploadForm, { responseType: 'text'})
+          .subscribe(res => {
             try {
               if (res.includes('Uploaded')) observer.next(res);
               else observer.error(this.createError(res, submission));
@@ -108,11 +97,10 @@ export class Derpibooru extends BaseWebsite implements Website {
             }
 
             observer.complete();
-          })
-          .catch((err) => {
+          }, err => {
             observer.error(this.createError(err, submission));
             observer.complete();
-          });
+          })
         }, err => {
           observer.error(this.createError(err, submission));
           observer.complete();

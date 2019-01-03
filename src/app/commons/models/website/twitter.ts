@@ -56,7 +56,7 @@ export class Twitter extends BaseWebsite implements Website {
     });
 
     return new Observable(observer => {
-      this.helper.post(submission.description.substring(0, 280).trim(),
+      this.helper.post(`${submission.options.useTitle ? submission.submissionData.title + '\n\n': ''}${submission.description}`.substring(0, 280).trim(),
         [
           { buffer: submission.submissionData.submissionFile.getFileBuffer().toString('base64'), type: submission.submissionData.submissionFile.getFileInfo().type }
           , ...additionalFiles
@@ -73,7 +73,7 @@ export class Twitter extends BaseWebsite implements Website {
 
   postJournal(data: any): Observable<any> {
     return new Observable(observer => {
-      this.helper.post(data.description.substring(0, 280))
+      this.helper.post(data.description.substring(0, 280).trim())
         .then((res) => {
           observer.next(res);
           observer.complete();

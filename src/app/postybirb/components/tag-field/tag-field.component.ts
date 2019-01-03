@@ -82,7 +82,7 @@ export class TagFieldComponent extends BaseControlValueAccessorComponent impleme
   }
 
   ngAfterViewInit() {
-    this.onChange();
+    // this.onChange(); not sure if this is needed anymore
     this._changeDetector.markForCheck();
   }
 

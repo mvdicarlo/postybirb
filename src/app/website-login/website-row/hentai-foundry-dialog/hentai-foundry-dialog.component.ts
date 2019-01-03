@@ -1,14 +1,14 @@
-import { Component, AfterContentInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
-  selector: 'app-hentai-foundry-dialog',
+  selector: 'hentai-foundry-dialog',
   templateUrl: './hentai-foundry-dialog.component.html',
   styleUrls: ['./hentai-foundry-dialog.component.css']
 })
-export class HentaiFoundryDialogComponent implements AfterContentInit {
-  public show: boolean = false;
-
-  ngAfterContentInit() {
-    setTimeout(() => this.show = true, 150);
+export class HentaiFoundryDialogComponent extends BaseWebsiteDialog {
+  constructor() {
+    super();
+    this.url = 'https://www.hentai-foundry.com/site/login';
   }
 }

@@ -11,6 +11,7 @@ import { LoggerService } from '../../../../logs/services/logger/logger.service';
 import { saveAs } from 'file-saver';
 import { SubmissionStatus } from '../../../enums/submission-status.enum';
 import { PostService } from '../../../services/post/post.service';
+import { PostyBirbQueueStateAction } from '../../../stores/states/posty-birb-queue.state';
 
 @Component({
   selector: 'submission-sheet',
@@ -46,7 +47,7 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
         s.meta.schedule ? this.scheduledSubmissions.push(s) : this.unscheduledSubmissions.push(s);
       }
 
-      this.queuedSubmissions = submissions.queued;
+      this.queuedSubmissions = submissions.submissions.filter(s => (s.meta.submissionStatus === SubmissionStatus.POSTING || s.meta.submissionStatus === SubmissionStatus.QUEUED));
       this.logs = logdb.get('logs').value() || [];
 
       this._changeDetector.detectChanges();
@@ -88,7 +89,7 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   public dequeueAll(submissions: SubmissionArchive[] = []): void {
-    this._store.dispatch(new PostyBirbStateAction.DequeueAllSubmissions());
+    this._store.dispatch(new PostyBirbQueueStateAction.DequeueAllSubmissions());
     this.postService.stop();
   }
 
@@ -101,7 +102,7 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this._store.dispatch(submissions.map(s => new PostyBirbStateAction.QueueSubmission(s)));
+        this._store.dispatch(submissions.map(s => new PostyBirbQueueStateAction.EnqueueSubmission(s)));
       }
     });
   }
@@ -115,10 +116,17 @@ export class SubmissionSheetComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   public async exportConfig() {
-    getConfig(config => {
-      const blob = new Blob([config], { type: "text/plain;charset=utf-8" });
-      saveAs(blob, 'postybirb.json')
-    })
+    const config = JSON.stringify(db.getState(), null, 1);
+    const blob = new Blob([config], { type: "text/plain;charset=utf-8" });
+    let name = null;
+    try {
+      const partition = getPartition();
+      if (partition) {
+        name = partition.split(':')[1] + '.json';
+      }
+    } catch (e) {}
+
+    saveAs(blob, name || 'postybirb.json')
   }
 
 }

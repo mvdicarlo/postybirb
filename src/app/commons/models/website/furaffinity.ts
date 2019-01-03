@@ -106,6 +106,12 @@ export class Furaffinity extends BaseWebsite implements Website {
       initForm.set('submission_type', this.getMapping('content', submission.submissionData.submissionType));
 
       this.http.post(`${this.baseURL}/submit/`, initForm, { responseType: 'text' }).subscribe(fileSubmitPage => {
+        if (fileSubmitPage.includes('Flood protection')) {
+          observer.error(this.createError('', submission, 'FA Flood Protection encountered'));
+          observer.complete();
+          return;
+        }
+
         const uploadForm = new FormData();
         uploadForm.set('key', HTMLParser.getInputValue(fileSubmitPage, 'key'));
         uploadForm.set('part', '3');
@@ -116,7 +122,19 @@ export class Furaffinity extends BaseWebsite implements Website {
 
         this.http.post(`${this.baseURL}/submit/`, uploadForm, { responseType: 'text' })
           .subscribe(uploadPage => {
-            if (!uploadPage.includes('Finalize Submission')) {
+            if (fileSubmitPage.includes('Flood protection')) {
+              observer.error(this.createError('', submission, 'FA Flood Protection encountered'));
+              observer.complete();
+              return;
+            }
+
+            if (uploadPage.includes('pageid-error')) {
+              observer.error(this.createError(uploadPage, submission, 'Unknown error'));
+              observer.complete();
+              return;
+            }
+
+            if (!uploadPage.includes('pageid-submit-finalize')) {
               observer.error(this.createError(uploadPage, submission));
               observer.complete();
             } else {
@@ -150,7 +168,7 @@ export class Furaffinity extends BaseWebsite implements Website {
 
               this.http.post(`${this.baseURL}/submit/`, submitForm, { responseType: 'text' })
                 .subscribe(res => {
-                  if (!res.includes('Finalize')) {
+                  if (!res.includes('pageid-submit-finalize')) {
                     observer.next(res);
 
                     // Try to do the resolution fix

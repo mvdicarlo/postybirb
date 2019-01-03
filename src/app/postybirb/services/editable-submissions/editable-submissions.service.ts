@@ -1,39 +1,58 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { SubmissionArchive } from '../../models/postybirb-submission-model';
+import { SubmissionArchive, PostyBirbSubmissionModel } from '../../models/postybirb-submission-model';
 import { debounceTime } from 'rxjs/operators';
 import { SubmissionEditingFormComponent } from '../../components/submission-editing-form/submission-editing-form.component';
 import { SidebarNavigatorComponent } from '../../components/postybirb-primary-form/sidebar-navigator/sidebar-navigator.component';
+import { MatDialog } from '@angular/material';
+import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
+import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
+import { checkForCompletion } from '../../helpers/completion-checker.helper';
+import { _filelessSubmissionCopy, _trimSubmissionFields } from '../../helpers/submission-manipulation.helper';
+import { checkForWebsiteAndFileIncompatibility } from '../../helpers/incompatibility-checker.helper';
+import { Observable, Subscription, BehaviorSubject } from 'rxjs';
+import { SubmissionSaveDialogComponent } from '../../components/dialog/submission-save-dialog/submission-save-dialog.component';
+import { PostyBirbQueueStateAction } from '../../stores/states/posty-birb-queue.state';
 
 export interface Tracker {
-  filtered: boolean;
   editingForm: SubmissionEditingFormComponent,
   navigator: SidebarNavigatorComponent,
   archive: SubmissionArchive,
-  passing?: boolean;
+  passing: boolean;
+  issues: any;
+  editing: boolean;
 }
 
 @Injectable()
 export class EditableSubmissionsService {
   private editingArchives: Map<string,Tracker>;
-  private lastFilter: string = '';
+  private subject: BehaviorSubject<Tracker[]> = new BehaviorSubject([]);
+  private stateSubscription: Subscription = Subscription.EMPTY;
+  public changes: Observable<Tracker[]>;
 
-  constructor(private _store: Store) {
+  // TODO clean up on close of providers
+
+  constructor(private _store: Store, private dialog: MatDialog) {
     this.editingArchives = new Map();
+    this.changes = this.subject.asObservable();
 
-    _store.select(state => state.postybirb.editing).pipe(debounceTime(50)).subscribe((editing: SubmissionArchive[]) => {
+    this.stateSubscription = _store.select(state => state.postybirb.editing).pipe(debounceTime(50)).subscribe((editing: SubmissionArchive[]) => {
       for (let i = 0; i < editing.length; i++) {
           const archive: SubmissionArchive = editing[i];
           if (this.editingArchives.has(archive.meta.id)) {
             const tracker: Tracker = this.editingArchives.get(archive.meta.id);
             tracker.archive = archive;
+            tracker.passing = this.canSave(archive);
+            tracker.issues = checkForWebsiteAndFileIncompatibility(archive.submissionFile, archive.meta.rating, archive.meta.type, archive.meta.unpostedWebsites);
             this.editingArchives.set(archive.meta.id, tracker);
           } else {
             this.editingArchives.set(archive.meta.id, {
-              filtered: false,
               editingForm: null,
               navigator: null,
-              archive
+              archive,
+              passing: this.canSave(archive),
+              issues: checkForWebsiteAndFileIncompatibility(archive.submissionFile, archive.meta.rating, archive.meta.type, archive.meta.unpostedWebsites),
+              editing: false
             });
           }
       }
@@ -50,32 +69,14 @@ export class EditableSubmissionsService {
             this.editingArchives.delete(idKeys[i]);
           }
       }
+
+      this._update();
     });
   }
 
-  private createIfNecessary(id: string): void {
-    if (!this.editingArchives.has(id)) {
-      this.editingArchives.set(id, {
-        filtered: false,
-        navigator: null,
-        editingForm: null,
-        archive: null
-      });
-    }
-  }
-
   public addEditingForm(id: string, form: SubmissionEditingFormComponent): void {
-    this.createIfNecessary(id);
     const tracker: Tracker = this.editingArchives.get(id);
-    tracker.editingForm = form;
-    if (form && this.lastFilter.length) {
-      form.hidden = this.lastFilter;
-      tracker.filtered = form.hidden;
-    } else {
-      tracker.filtered = false;
-    }
-
-    this.editingArchives.set(id, tracker);
+    if (tracker) tracker.editingForm = form;
   }
 
   public removeEditingForm(id: string): void {
@@ -83,29 +84,29 @@ export class EditableSubmissionsService {
   }
 
   public addNavigator(id: string, navigator: SidebarNavigatorComponent): void {
-    this.createIfNecessary(id);
     const tracker: Tracker = this.editingArchives.get(id);
-    tracker.navigator = navigator;
-    this.editingArchives.set(id, tracker);
+    if (tracker) tracker.navigator = navigator;
   }
 
   public removeNavigator(id: string): void {
       this.addNavigator(id, null);
   }
 
-  public filter(filter: string): void {
-    this.lastFilter = filter || '';
+  public async toggleEditing(id: string, isEditing: boolean) {
+    const tracker: Tracker = this.editingArchives.get(id);
+    if (tracker) {
+      tracker.editing = isEditing;
+      this._update();
+    }
+  }
 
-    this.editingArchives.forEach((value: Tracker, key: string) => {
-      if (value.editingForm) {
-        value.editingForm.hidden = filter;
-        value.filtered = value.editingForm.hidden;
+  public isEditing(id: string): boolean {
+    const tracker: Tracker = this.editingArchives.get(id);
+    if (tracker) {
+      return tracker.editing;
+    }
 
-        if (value.navigator) {
-          value.navigator.hide = value.filtered;
-        }
-      }
-    });
+    return false;
   }
 
   public applyTemplate(id: string, template: any): void {
@@ -115,25 +116,39 @@ export class EditableSubmissionsService {
     }
   }
 
-  public highlightForm(id: string): void {
-    const tracker: Tracker = this.editingArchives.get(id);
-    if (tracker.editingForm) {
-      tracker.editingForm.toggleHighlight();
-    }
-  }
-
   public deleteForm(id: string): void {
-    const tracker: Tracker = this.editingArchives.get(id);
-    if (tracker.editingForm) {
-      tracker.editingForm.deleteSubmission();
-    }
+    let dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this._store.dispatch(new PostyBirbStateAction.DeleteSubmission(this.editingArchives.get(id).archive));
+      }
+    });
   }
 
-  public saveForm(id: string): void {
+  public saveForm(id: string, post: boolean = false, archive?: SubmissionArchive): void {
     const tracker: Tracker = this.editingArchives.get(id);
-    if (tracker.editingForm) {
-      tracker.editingForm.save();
-    }
+    const archiveToSave: SubmissionArchive = archive ? archive : tracker.archive;
+    const submission: PostyBirbSubmissionModel = PostyBirbSubmissionModel.fromArchive(archiveToSave);
+
+    let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
+      data: [submission]
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const trimmedSubmission = _trimSubmissionFields(submission, submission.unpostedWebsites).asSubmissionArchive();
+        if (post) {
+          this._store.dispatch([new PostyBirbStateAction.AddSubmission(trimmedSubmission, true), new PostyBirbQueueStateAction.EnqueueSubmission(trimmedSubmission)]);
+        } else {
+          this._store.dispatch(new PostyBirbStateAction.AddSubmission(trimmedSubmission, true));
+        }
+      }
+    });
   }
 
   public scrollToForm(id: string): void {
@@ -143,26 +158,38 @@ export class EditableSubmissionsService {
     }
   }
 
-  public getForm(id: string): SubmissionEditingFormComponent {
-    const tracker: Tracker = this.editingArchives.get(id);
-    return tracker ? tracker.editingForm : null;
-  }
-
-  public isFiltered(id: string): boolean {
-    return (this.editingArchives.get(id).filtered || false);
-  }
-
   public isPassing(id: string): boolean {
     const tracker: Tracker = this.editingArchives.get(id);
-    return tracker.passing || false;
+    return (tracker.passing && Object.keys(tracker.issues).length == 0) || false;
   }
 
-  public setPassing(id: string, passing: boolean): void {
-    const tracker: Tracker = this.editingArchives.get(id);
-    tracker.passing = passing;
-    this.editingArchives.set(id, tracker);
-    if (tracker.navigator) {
-      tracker.navigator.passing = passing;
+  public getIssues(id: string): any {
+    return this.editingArchives.get(id).issues;
+  }
+
+  public canSave(archive: SubmissionArchive): boolean {
+    if (archive.meta.rating) {
+      if (!checkForCompletion(PostyBirbSubmissionModel.fromArchive(archive))) {
+        return false;
+      }
+
+      return true;
     }
+
+    return false;
+  }
+
+  public clean(): void {
+    this.subject.complete();
+    this.stateSubscription.unsubscribe();
+  }
+
+  private _update(): void {
+    const submissions: Tracker[] = [];
+    this.editingArchives.forEach((value: Tracker, key: string) => {
+      submissions.push(value);
+    });
+
+    this.subject.next(submissions);
   }
 }

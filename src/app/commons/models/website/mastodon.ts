@@ -60,7 +60,7 @@ export class Mastodon extends BaseWebsite implements Website {
 
     return from(this.helper.post(files, // files
       submission.submissionData.submissionType, // submission type
-      submission.description.substring(0, 500).trim(), // status
+      `${submission.options.useTitle ? submission.submissionData.title + '\n' : ''}${submission.description}`.substring(0, 500).trim(), // status
       submission.submissionData.submissionRating !== 'General', //sensitive,
       submission.options.spoilerText
     ));

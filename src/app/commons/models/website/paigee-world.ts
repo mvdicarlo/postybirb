@@ -25,7 +25,12 @@ export class PaigeeWorld extends BaseWebsite implements Website {
         return;
       }
 
-      const win = new window['browserwindow']({ show: false });
+      const win = new window['browserwindow']({
+        show: false,
+        webPreferences: {
+          partition: getPartition()
+        }
+      });
       win.loadURL(this.baseURL + '/login');
       win.once('ready-to-show', () => {
         if (win.isDestroyed()) {

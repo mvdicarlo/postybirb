@@ -4,36 +4,34 @@ const {
     app,
     BrowserWindow,
     Menu,
-    dialog,
     Tray,
     nativeImage,
+    ipcMain,
 } = require('electron');
 const rimraf = require('rimraf');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
-const windowStateKeeper = require('electron-window-state');
 
-const template = require('./electron-menu');
+const template = require('./src/electron-menu');
+const autoUpdater = require('./src/auto-updater');
+const PostyBirbWindow = require('./postybirb-window');
 
-const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 
-autoUpdater.logger = log;
-autoUpdater.logger.transports.file.level = 'info';
-autoUpdater.autoDownload = false;
 log.info('Starting PostyBirb...');
 
 require('electron-context-menu')({
     showInspectElement: false,
 });
 
-let win = null;
+const PRIMARY_WINDOW_NAME = 'postybirb';
+const profileWindows = {};
+const dbStore = {}; // store of all dbs for lookup
+
 let tray = null;
-let clearCacheInterval = null;
 let updateInterval = null;
 let scheduledInterval = null;
 let adapter = null;
-let updateDialogShowing = false;
 
 const hasLock = app.requestSingleInstanceLock();
 if (!hasLock) {
@@ -41,6 +39,7 @@ if (!hasLock) {
     return;
 }
 app.on('second-instance', () => {
+  const win = profileWindows[PRIMARY_WINDOW_NAME];
     if (win) {
         if (win.isMinimized()) {
             win.restore();
@@ -48,34 +47,38 @@ app.on('second-instance', () => {
 
         win.focus();
     } else if (tray) {
-        initialize();
+        createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
     }
 });
 
-
-const db = createDB('postybirb.json');
-const logdb = createDB('logs.json');
+const postybirbProfilesdb = createDB('profiles'); // stored list of created profiles
 
 function createDB(name) {
     let ldb = null;
-    try {
-        adapter = new FileSync(path.join(app.getPath('userData'), name));
-        ldb = low(adapter);
-    } catch (e) {
+    if (dbStore[name]) {
+        ldb = dbStore[name];
+    } else {
+        const fileName = `${name}.json`;
         try {
-            fs.unlinkSync(path.join(app.getPath('userData'), name));
+            adapter = new FileSync(path.join(app.getPath('userData'), fileName));
+            ldb = low(adapter);
         } catch (e) {
-        // nothing
+            try {
+                fs.unlinkSync(path.join(app.getPath('userData'), fileName));
+            } catch (e) {
+          // nothing
+            }
+            adapter = new FileSync(path.join(app.getPath('userData'), fileName));
+            ldb = low(adapter);
         }
-        adapter = new FileSync(path.join(app.getPath('userData'), name));
-        ldb = low(adapter);
+        dbStore[name] = ldb;
     }
 
     return ldb;
 }
 
 function hardwareAccelerationState() {
-    const enabled = db.get('hardwareAcceleration').value();
+    const enabled = createDB('postybirb').get('hardwareAcceleration').value();
     const isEnabled = enabled === undefined ? false : enabled;
     if (!isEnabled) {
         app.disableHardwareAcceleration();
@@ -97,158 +100,137 @@ app.commandLine.appendSwitch('no-proxy-server');
 app.on('ready', () => {
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);
-    initialize();
+    createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
 
     let image = nativeImage.createFromPath(path.join(__dirname, '/dist/assets/icon/minnowicon.png'));
     if (process.platform === 'darwin') image = image.resize({ width: 16, height: 16 });
     image.setTemplateImage(true);
 
-    tray = new Tray(image);
-    const trayMenu = Menu.buildFromTemplate([
-        {
-            label: 'Open',
-            type: 'radio',
-            checked: false,
-            click() {
-                if (!hasWindows()) {
-                    initialize();
-                } else {
-                    win.show();
-                }
-            },
-        }, {
-            label: 'Quit',
-            type: 'radio',
-            checked: false,
-            click() {
-                clearInterval(scheduledInterval);
-                clearInterval(clearCacheInterval);
-                clearInterval(updateInterval);
-                rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
+    const trayItems = [
+      {
+          label: 'Open',
+          click() {
+            createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
+          },
+      }, {
+        label: 'Profiles',
+        submenu: getAllProfiles().filter(profile => profile !== PRIMARY_WINDOW_NAME).map(profile => {
+          return {
+            label: profile,
+            click: function() {
+              createOrOpenNewProfile(profile);
+            }
+          }
+        })
+      }, {
+          label: 'Quit',
+          click() {
+              clearInterval(scheduledInterval);
+              clearInterval(updateInterval);
+              rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
                   app.quit();
-                });
-            },
-        },
-    ]);
+              });
+          },
+      },
+    ];
+
+    tray = new Tray(image);
+    const trayMenu = Menu.buildFromTemplate(trayItems);
 
     tray.setContextMenu(trayMenu);
     tray.setToolTip('PostyBirb');
     tray.on('click', () => {
         if (!hasWindows()) {
-            initialize();
+            createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
         } else {
-            win.show();
+            createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
         }
     });
+
+    ipcMain.on('open-profile', (event, profile) => {
+      if (profile && profile !== 'profiles') { // do not allow one to be created that is named profile
+        profile = profile.toLowerCase();
+        createOrOpenNewProfile(profile);
+      }
+    });
+
+    scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
 });
 
-function initialize(show = true, openForScheduled = false) {
-    const mainWindowState = windowStateKeeper({
-        defaultWidth: 992,
-        defaultHeight: 800,
-    });
-
-    win = new BrowserWindow({
-        show,
-        width: mainWindowState.width,
-        minWidth: 500,
-        height: mainWindowState.height,
-        minHeight: 500,
-        autoHideMenuBar: true,
-        icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
-        title: 'Posty Birb',
-        webPreferences: {
-            devTools: Boolean(process.env.DEVELOP),
-            allowRunningInsecureContent: false,
-            nodeIntegration: false,
-            preload: `${__dirname}/dist/electron-src/index.js`,
-            webviewTag: true,
-        },
-    });
-
-    if (!process.env.DEVELOP) mainWindowState.manage(win);
-
-    win.immediatelyCheckForScheduled = openForScheduled;
-
-    win.db = db;
-    win.logdb = logdb;
-
-    win.on('ready-to-show', () => {
-        if (openForScheduled) {
-            win.showInactive();
-        }
-    });
-
-    win.loadURL(`file://${__dirname}/dist/index.html`);
-
-    win.on('page-title-updated', (e) => {
-        e.preventDefault();
-    });
-
-    win.on('closed', () => {
-        win = null;
-        clearInterval(clearCacheInterval);
-        clearInterval(updateInterval);
-
-        attemptToClose();
-    });
-
-    win.webContents.on('did-fail-load', () => {
-        win.loadURL(`file://${__dirname}/dist/index.html`);
-    });
-
-    win.webContents.once('did-frame-finish-load', () => {
-        clearCacheInterval = setInterval(() => {
-            win.webContents.session.getCacheSize((size) => {
-                if (size > 0) {
-                    if (process.env.DEVELOP) log.info(`Clearing Cache (${size})`);
-                    win.webContents.session.clearCache(() => {});
-                }
-            });
-        }, 10000);
-    });
-
-    if (!process.env.DEVELOP) {
-        updateInterval = setInterval(() => {
-            autoUpdater.checkForUpdates();
-        }, 3 * 60 * 60000);
-
+if (!process.env.DEVELOP) {
+    updateInterval = setInterval(() => {
         autoUpdater.checkForUpdates();
-    }
+    }, 3 * 60 * 60000);
 
-    return win;
+    autoUpdater.checkForUpdates();
+}
+
+function createOrOpenNewProfile(name, show = true, openForScheduled = false) {
+    if (!profileWindows[name]) {
+        addProfileToProfileDB(name);
+        const profileDb = createDB(name == PRIMARY_WINDOW_NAME ? PRIMARY_WINDOW_NAME : `${name}`); // try to keep postybirb.json unique
+        const profileLogDb = createDB(`${name}-logs`);
+        profileWindows[name] = new PostyBirbWindow(profileDb, profileLogDb, postybirbProfilesdb).initialize(name, show, openForScheduled);
+        profileWindows[name].on('closed', () => {
+            delete profileWindows[name];
+            if (!Object.keys(profileWindows).length) {
+              attemptToClose();
+            }
+        });
+    } else if (openForScheduled) {
+        profileWindows[name].showInactive();
+    } else {
+      const win = profileWindows[name];
+      if (win.isMinimized()) {
+        win.restore();
+      } else {
+        win.show();
+      }
+      win.focus();
+    }
+}
+
+function getAllProfiles() {
+    return postybirbProfilesdb.get('profiles').value() || [];
+}
+
+function addProfileToProfileDB(name) {
+    if (name) name = name.toLowerCase();
+    const profiles = getAllProfiles();
+    if (!profiles.includes(name)) {
+        profiles.push(name);
+        postybirbProfilesdb.set('profiles', profiles.sort()).write();
+    }
 }
 
 function checkForScheduledPost() {
-    if (hasWindows()) return;
-
     log.info('Checking for scheduled posts...');
+    [...getAllProfiles()].forEach(profile => checkForScheduledToPost(profile));
+}
 
-    fs.readFile(path.join(app.getPath('userData'), 'postybirb.json'), (err, data) => {
-        if (err) {
-            log.error(err);
-        } else {
-            try {
-                const config = JSON.parse(data);
-                const now = Date.now();
-                const submissions = config.PostyBirbState.submissions || [];
-                for (let i = 0; i < submissions.length; i++) {
-                    const s = submissions[i];
-                    if (s.meta.schedule) {
-                        const scheduledTime = new Date(s.meta.schedule).getTime();
-                        if (scheduledTime - now <= 0) {
-                            initialize(false, true);
-                            return;
-                        }
-                    }
-                }
+function checkForScheduledToPost(name) {
+    log.info(`Checking for scheduled posts in ${name}`);
+    const now = Date.now();
+    const state = createDB(name).get('PostyBirbState').value();
 
-                log.info('No schedule posts scheduled soon.');
-            } catch (e) {
-                log.error(e);
-            }
-        }
-    });
+    try {
+      if (state && state.submissions) {
+          for (let i = 0; i < state.submissions.length; i++) {
+              const s = state.submissions[i];
+              if (s.meta.schedule) {
+                  const scheduledTime = new Date(s.meta.schedule).getTime();
+                  if (scheduledTime - now <= 0) {
+                      createOrOpenNewProfile(name, false, true);
+                      return;
+                  }
+              }
+          }
+      }
+    } catch (e) {
+      log.error(e);
+    }
+
+    log.info(`No scheduled posts found in ${name}`);
 }
 
 function hasWindows() {
@@ -256,15 +238,29 @@ function hasWindows() {
 }
 
 function hasScheduled() {
-    const state = db.get('PostyBirbState').value() || {};
-    if (state.submissions) {
-        for (let i = 0; i < state.submissions.length; i++) {
-            const submission = state.submissions[i];
-            if (submission.meta.schedule) {
-                return true;
-            }
+    const profiles = [...getAllProfiles()];
+    for (let i = 0; i < profiles.length; i++) {
+        if (checkForScheduled(profiles[i])) {
+            return true;
         }
     }
+
+    return false;
+}
+
+function checkForScheduled(name) {
+    const state = createDB(name).get('PostyBirbState').value();
+    try {
+        if (state.submissions) {
+            for (let i = 0; i < state.submissions.length; i++) {
+                const submission = state.submissions[i];
+                if (submission.meta.schedule) {
+                    return true;
+                }
+            }
+        }
+    } catch (e) { /* Skip */ }
+
 
     return false;
 }
@@ -283,11 +279,10 @@ app.on('window-all-closed', () => {
 
 function attemptToClose() {
     if (!hasScheduled()) {
-      rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
-        app.quit();
-      });
+        rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
+            app.quit();
+        });
     } else {
-        scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
         tray.displayBalloon({
             title: 'Scheduled Submissions',
             icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
@@ -295,49 +290,3 @@ function attemptToClose() {
         });
     }
 }
-
-// For details about these events, see the Wiki:
-// https://github.com/electron-userland/electron-builder/wiki/Auto-Update#events
-//
-// The app doesn't need to listen to any events except `update-downloaded`
-//
-// Uncomment any of the below events to listen for them.  Also,
-// look in the previous section to see them being used.
-//-------------------------------------------------------------------
-
-autoUpdater.on('checking-for-update', () => {
-    log.info('Checking for update...');
-});
-
-autoUpdater.on('update-available', (info) => {
-    if (!updateDialogShowing) {
-        let message = `${app.getName()} ${info.version} is now available.`;
-        if (info.releaseNotes) {
-            const splitNotes = info.releaseNotes.replace(/(<\w*>|<\/\w*>)/gm, '');
-            message += `\n\nRelease notes:\n${splitNotes}`;
-        }
-
-        dialog.showMessageBox({
-            type: 'question',
-            buttons: ['Install and Relaunch', 'Later'],
-            defaultId: 0,
-            message,
-        }, (response) => {
-            if (response === 0) {
-                setTimeout(() => autoUpdater.downloadUpdate(), 1);
-            }
-
-            updateDialogShowing = false;
-        });
-
-        updateDialogShowing = true;
-    }
-});
-
-autoUpdater.on('error', (err) => {
-    log.error(err);
-});
-
-autoUpdater.on('update-downloaded', (info) => {
-    setTimeout(() => autoUpdater.quitAndInstall(), 1);
-});

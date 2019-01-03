@@ -76,7 +76,7 @@ mat-drawer-container {
   right: 0;
   background: #464545;
   color: #ffffff;
-  z-index: 9999;
+  z-index: 9000;
   height: 26px;
   border: none;
   outline: none;

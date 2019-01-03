@@ -3,16 +3,17 @@
   position: relative;
 }
 
+.sidebar-navigator-container:hover img {
+  opacity: 0.85;
+}
+
 img, video {
+  pointer-events: none;
   height: 100px;
   width: 100%;
   margin: auto;
   opacity: 0.68;
   transition: all .3s;
-}
-
-img:hover, video:hover {
-  opacity: 1;
 }
 
 .incomplete-icon {

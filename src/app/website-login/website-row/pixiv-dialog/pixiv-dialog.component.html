@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Pixiv</h2>
 <mat-dialog-content class="login-window">
-  <webview *ngIf="show" src="https://www.pixiv.net/" class="login-webview-window"></webview>
+  <webview #webview class="login-webview-window"></webview>
 </mat-dialog-content>
 <mat-dialog-actions class="float-right">
   <button mat-raised-button color="warn" mat-dialog-close>{{'Close' | translate}}</button>

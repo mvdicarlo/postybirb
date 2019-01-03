@@ -80,8 +80,7 @@ const OptionsForms: any = {
     component: TumblrFormComponent
   },
   [SupportedWebsites.Twitter]: {
-    component: TwitterFormComponent,
-    exclude: true
+    component: TwitterFormComponent
   },
   [SupportedWebsites.Weasyl]: {
     component: WeasylFormComponent

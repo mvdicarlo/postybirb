@@ -1,14 +1,14 @@
-import { Component, AfterContentInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
   selector: 'furiffic-dialog',
   templateUrl: './furiffic-dialog.component.html',
   styleUrls: ['./furiffic-dialog.component.css']
 })
-export class FurifficDialogComponent implements AfterContentInit {
-  public show: boolean = false;
-
-  ngAfterContentInit() {
-    setTimeout(() => this.show = true, 150);
+export class FurifficDialogComponent extends BaseWebsiteDialog {
+  constructor() {
+    super();
+    this.url = 'https://www.furiffic.com/';
   }
 }

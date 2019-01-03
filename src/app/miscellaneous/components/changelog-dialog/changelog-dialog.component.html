@@ -1,5 +1,48 @@
 <h2 mat-dialog-title="mat-dialog-title">{{'Changelog' | translate}}</h2>
 <mat-dialog-content>
+  <div>1.1.0 (12/19/2018)</div>
+  <h5>New Features</h5>
+  <ul>
+    <li>You can now create a profile that contains different accounts.</li>
+    <li>If a title is longer than a selected website allows, it will display a warning.</li>
+    <li>Saving a submission will no longer automatically open the bottom sheet. It will instead ask first.</li>
+    <li>Saving in a bulk edit no longer immediately takes you back to single mode.</li>
+    <li>You now select a submission to open its editing form from the side bar in single mode.</li>
+    <li>Notifications will now show a countdown bar.</li>
+    <li>You can now change the title and rating of a submission by hovering over it in the sidebar.</li>
+    <li>Mastodon and Twitter now have a new additional options 'Use Title' (like Tumblr) that will append the title name to the top of the status. This option is turned off by default.</li>
+  </ul>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Fixed issue where summary form would break when no description or tags were in it yet.</li>
+    <li>Fixed issue where logged in username would not update when users would log out of one account and into another without closing the login window.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>App now logs unexpected errors to a server so I can try and debug unseen issues.</li>
+    <li>Decoupled a lot of validation out of the single submission editing form in favor of a service.</li>
+    <li>Delete All and Save All will only apply to submissions shown in the sidebar (ignores filtered).</li>
+    <li>Can now save submissions that are not incomplete from the bulk edit mode.</li>
+    <li>Updated Angular.</li>
+    <li>Updated Electron to 3.0.11.</li>
+    <li>Limited the amount of notifications that can be shown to 5.</li>
+    <li>Changed how Fur Affinity posting code detects success and errors.</li>
+  </ul>
+  <div>1.0.9 (12/17/2018)</div>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Attempt again to make it so the same submission re-posting to the same website impossible to occur.</li>
+  </ul>
+  <h5>Miscellaneous</h5>
+  <ul>
+    <li>Attmept to make DA token more stable during posting.</li>
+  </ul>
+  <div>1.0.8 (12/14/2018)</div>
+  <h5>Bug Fixes</h5>
+  <ul>
+    <li>Should now be able to login with facebook/google for Newgrounds.</li>
+    <li>Fixed issue where adding a _ to a tag would make Newgrounds fail.</li>
+  </ul>
   <div>1.0.6 (12/11/2018)</div>
   <h5>New Features</h5>
   <ul>

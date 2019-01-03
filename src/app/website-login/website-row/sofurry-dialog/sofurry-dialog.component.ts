@@ -1,14 +1,14 @@
-import { Component, AfterContentInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
   selector: 'sofurry-dialog',
   templateUrl: './sofurry-dialog.component.html',
   styleUrls: ['./sofurry-dialog.component.css']
 })
-export class SofurryDialogComponent implements AfterContentInit {
-  public show: boolean = false;
-
-  ngAfterContentInit() {
-    setTimeout(() => this.show = true, 150);
+export class SofurryDialogComponent extends BaseWebsiteDialog {
+  constructor() {
+    super();
+    this.url = 'https://www.sofurry.com/';
   }
 }

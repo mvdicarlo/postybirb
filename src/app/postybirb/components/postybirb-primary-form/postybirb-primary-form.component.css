@@ -36,6 +36,7 @@
 
 .overlay {
   overflow-y: overlay;
+  z-index: 10;
 }
 
 .sidebar-section {

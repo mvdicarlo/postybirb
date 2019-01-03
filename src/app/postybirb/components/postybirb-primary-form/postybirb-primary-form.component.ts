@@ -1,23 +1,22 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, ViewChildren, QueryList, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { FormControl } from '@angular/forms';
-import { Observable, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
-import { MatDialog, MatBottomSheet, MatButtonToggleChange } from '@angular/material';
+import { Subject, Observable } from 'rxjs';
+import { debounceTime, takeUntil, map } from 'rxjs/operators';
+import { MatDialog, MatButtonToggleChange } from '@angular/material';
 import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
-import { Select, Store } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
 
 import { PostyBirbSubmissionModel, SubmissionArchive } from '../../models/postybirb-submission-model';
 import { FileInformation } from '../../../commons/models/file-information';
 import { ConfirmDialogComponent } from '../../../commons/components/confirm-dialog/confirm-dialog.component';
-import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-sheet.component';
 
 import { SubmissionEditingFormComponent } from '../submission-editing-form/submission-editing-form.component';
 import { SubmissionSaveDialogComponent } from '../dialog/submission-save-dialog/submission-save-dialog.component';
 import { _trimSubmissionFields } from '../../helpers/submission-manipulation.helper';
-import { EditableSubmissionsService } from '../../services/editable-submissions/editable-submissions.service';
+import { EditableSubmissionsService, Tracker } from '../../services/editable-submissions/editable-submissions.service';
 import { BulkUpdateService } from '../../services/bulk-update/bulk-update.service';
 
 @Component({
@@ -42,45 +41,53 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
   @ViewChild('fileInput') fileInput: ElementRef;
   @ViewChildren(SubmissionEditingFormComponent) submissionForms: QueryList<SubmissionEditingFormComponent>;
 
-  @Select(state => state.postybirb.editing) editing$: Observable<SubmissionArchive>;
-
-  public submissions: SubmissionArchive[] = [];
+  public submissions: Tracker[] = [];
   public searchControl: FormControl = new FormControl();
-  private stateSubscription: Subscription = Subscription.EMPTY;
   private hotKeys: Hotkey[] = [];
   public editMode: string = 'single';
+  private lastFilter: string = '';
+  private destroy$: Subject<any> = new Subject();
+  private replay$: Subject<Tracker[]> = new Subject();
+  public filtered: Observable<SubmissionArchive[]>
+  public filteredSubmissions: SubmissionArchive[] = [];
+  public editing: SubmissionArchive[] = [];
 
   constructor(private _store: Store, private _changeDetector: ChangeDetectorRef,
     private dialog: MatDialog, private editableSubmissionsService: EditableSubmissionsService,
-    private bottomSheet: MatBottomSheet,
     private _hotKeysService: HotkeysService) {
-    this.stateSubscription = _store.select(state => state.postybirb.editing).subscribe(editing => {
-      this.submissions = editing || [];
-      this._changeDetector.markForCheck();
-    });
+
+    const replayObserv$ = this.replay$.asObservable();
+    replayObserv$.pipe(takeUntil(this.destroy$)).subscribe(archives => this.submissions = archives);
+
+    const filtered$ = replayObserv$.pipe(takeUntil(this.destroy$), map(trackers => trackers.filter(this._filterTracker.bind(this))));
+    filtered$.pipe(takeUntil(this.destroy$), map(t => t.filter(tr => tr.editing)), map(t => t.map(tr => tr.archive)))
+      .subscribe(editing => this.editing = editing);
+
+    this.filtered = filtered$.pipe(takeUntil(this.destroy$), map(t => t.map(tr => tr.archive)));
+    this.filtered.subscribe(filtered => this.filteredSubmissions = filtered);
+
+    const editable$ = editableSubmissionsService.changes;
+    editable$.pipe(takeUntil(this.destroy$)).subscribe(t => this.replay$.next(t));
   }
 
   ngOnInit() {
     this.searchControl.valueChanges.pipe(debounceTime(150)).subscribe(value => {
-      const filter = value.toLowerCase().trim();
-      this.editableSubmissionsService.filter(filter);
-
-      this._changeDetector.markForCheck();
+      this.lastFilter = value.toLowerCase().trim();
+      this.replay$.next(this.submissions); // force replay
     });
   }
 
   ngAfterViewInit() {
-    this.submissionForms.changes.pipe(debounceTime(150)).subscribe(() => this._changeDetector.markForCheck());
-
-    this.hotKeys.push(<Hotkey> this._hotKeysService.add(new Hotkey('ctrl+shift+n', (event: KeyboardEvent): boolean => {
+    this.hotKeys.push(<Hotkey>this._hotKeysService.add(new Hotkey('ctrl+shift+n', (event: KeyboardEvent): boolean => {
       this.fileInput.nativeElement.click();
       return false;
     }, undefined, 'Create a new submission')));
   }
 
   ngOnDestroy() {
-    this.stateSubscription.unsubscribe();
+    this.destroy$.next();
     this._hotKeysService.remove(this.hotKeys);
+    this.editableSubmissionsService.clean();
   }
 
   public getSubmissionNavbarItems(): SubmissionEditingFormComponent[] {
@@ -134,6 +141,15 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
     this._changeDetector.markForCheck();
   }
 
+  private _filterTracker(tracker: Tracker): boolean {
+    const archive = tracker.archive;
+    if (this.lastFilter) {
+      return (archive.meta.title || '').includes(this.lastFilter) || (archive.submissionFile.name || '').includes(this.lastFilter);
+    } else {
+      return true;
+    }
+  }
+
   private _createSubmissions(files: File[]): void {
     const newSubmissions = files.filter(file => file.size <= 200000000).map(file => {
       return new PostyBirbSubmissionModel(new FileInformation(file, false));
@@ -157,17 +173,17 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this._store.dispatch(this.submissions.map(s => new PostyBirbStateAction.DeleteSubmission(s)));
+        this._store.dispatch(this.filteredSubmissions.map(s => new PostyBirbStateAction.DeleteSubmission(s)));
       }
     });
   }
 
   public async saveAllValid() {
     if (!this.canSaveMany()) return;
-    const data: PostyBirbSubmissionModel[] = this.submissionForms.toArray()
-      .filter(form => form.passing)
-      .map(form => {
-        return form._updateSubmission(form.submission);
+    const data: PostyBirbSubmissionModel[] = this.filteredSubmissions
+      .filter(s => this.editableSubmissionsService.isPassing(s.meta.id))
+      .map(s => {
+        return PostyBirbSubmissionModel.fromArchive(s);
       });
 
     let dialogRef = this.dialog.open(SubmissionSaveDialogComponent, {
@@ -177,18 +193,15 @@ export class PostybirbPrimaryFormComponent implements OnInit, AfterViewInit, OnD
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this._store.dispatch(data.map(submission => new PostyBirbStateAction.AddSubmission(_trimSubmissionFields(submission, submission.unpostedWebsites).asSubmissionArchive(), true)));
-        this.bottomSheet.open(SubmissionSheetComponent, {
-          data: { index: 0 }
-        });
       }
     });
   }
 
   public canSaveMany(): boolean {
-    if (this.submissionForms && this.submissionForms.length) {
-      const forms = this.submissionForms.toArray();
-      for (let i = 0; i < forms.length; i++) {
-        if (forms[i].passing) {
+    if (this.filteredSubmissions.length) {
+      for (let i = 0; i < this.filteredSubmissions.length; i++) {
+        const submission: SubmissionArchive = this.filteredSubmissions[i];
+        if (this.editableSubmissionsService.isPassing(submission.meta.id)) {
           return true;
         }
       }

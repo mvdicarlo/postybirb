@@ -1,5 +1,10 @@
 <table class="table table-dark table-hover mb-0" style="margin-top: -8px">
   <tbody>
+    <tr>
+      <td colspan="3" style="padding-bottom: 0; padding-top: 0">
+        <app-profile-manager></app-profile-manager>
+      </td>
+    </tr>
     <login-panel [matTooltip]="webLogin.website" matTooltipPosition="right" *ngFor="let webLogin of websites" website="{{webLogin.website}}" [dialogComponent]="webLogin.dialogComponent"></login-panel>
   </tbody>
 </table>

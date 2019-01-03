@@ -3,15 +3,20 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { CommonsModule } from '../commons/commons.module';
+
 import {
   MatButtonModule,
   MatDialogModule,
   MatInputModule,
   MatTooltipModule,
   MatCheckboxModule,
-  MatRadioModule
+  MatRadioModule,
+  MatSelectModule,
+  MatIconModule
 } from '@angular/material';
 
+import { BaseWebsiteDialog } from './website-row/base-website-dialog/base-website-dialog.component';
 import { PBWebsitesComponent } from './pb-websites.component';
 import { LoginPanelComponent } from './login-panel/login-panel.component';
 import { FuraffinityLoginDialogComponent } from './website-row/furaffinity-login-dialog/furaffinity-login-dialog.component';
@@ -35,6 +40,8 @@ import { PaigeeworldDialogComponent } from './website-row/paigeeworld-dialog/pai
 import { AryionDialogComponent } from './website-row/aryion-dialog/aryion-dialog.component';
 import { FurryAminoDialogComponent } from './website-row/furry-amino-dialog/furry-amino-dialog.component';
 import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgrounds-dialog.component';
+import { AppProfileManagerComponent } from './app-profile-manager/app-profile-manager.component';
+import { ProfileAddDialogComponent } from './dialog/profile-add-dialog/profile-add-dialog.component';
 
 @NgModule({
   imports: [
@@ -46,9 +53,13 @@ import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgr
     MatInputModule,
     MatTooltipModule,
     MatCheckboxModule,
-    MatRadioModule
+    MatRadioModule,
+    CommonsModule,
+    MatSelectModule,
+    MatIconModule
   ],
   declarations: [
+    BaseWebsiteDialog,
     LoginPanelComponent,
     FuraffinityLoginDialogComponent,
     WeasylDialogComponent,
@@ -71,7 +82,9 @@ import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgr
     PaigeeworldDialogComponent,
     AryionDialogComponent,
     FurryAminoDialogComponent,
-    NewgroundsDialogComponent
+    NewgroundsDialogComponent,
+    AppProfileManagerComponent,
+    ProfileAddDialogComponent,
   ],
   entryComponents: [
     LoginPanelComponent,
@@ -96,6 +109,8 @@ import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgr
     TwitterDialogComponent,
     WeasylDialogComponent,
     WebsiteStatusComponent,
+    BaseWebsiteDialog,
+    ProfileAddDialogComponent
   ],
   exports: [
     PBWebsitesComponent

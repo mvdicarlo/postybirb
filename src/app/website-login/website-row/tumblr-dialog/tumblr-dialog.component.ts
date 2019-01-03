@@ -17,6 +17,9 @@ export class TumblrDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.service.authorizeWebsite(SupportedWebsites.Tumblr, undefined).then((url) => {
+      if (getPartition()) {
+        this.webview.nativeElement.partition = getPartition();
+      }
       this.webview.nativeElement.src = url;
     });
   }

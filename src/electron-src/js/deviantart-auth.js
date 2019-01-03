@@ -160,7 +160,7 @@ exports.getUserInfo = function getUserInfo() {
  * loadToken - try to load authentication token and verify it is still valid
  *
  */
-exports.refresh = function loadToken() {
+function loadToken() {
     const storedToken = db.get('deviantart').value();
     if (!storedToken) {
         return new Promise((resolve, reject) => {
@@ -180,6 +180,8 @@ exports.unauthorize = function unauthorize() {
     token = {};
 };
 
+exports.refresh = loadToken;
+exports.checkAuthorized = loadToken;
 exports.isAuthorized = isAuthenticated;
 exports.getAuthorizationToken = getToken;
 exports.stop = function() {

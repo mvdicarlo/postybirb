@@ -3,6 +3,14 @@ import { WebsiteStatus } from '../../enums/website-status.enum';
 import { Observable } from 'rxjs';
 import { WebsiteCoordinatorService } from '../../services/website-coordinator/website-coordinator.service';
 
+export interface PostReport {
+  err?: any;
+  website: string;
+  notify: any;
+  msg: string;
+  submission: any;
+}
+
 /**
  * @abstract @class BaseWebsite
  */
@@ -106,7 +114,7 @@ export class BaseWebsite implements Website {
     }.bind(this));
   }
 
-  public post(submission: any): Observable<any> {
+  public post(submission: any): Observable<PostReport> {
     return null;
   }
 
@@ -114,7 +122,7 @@ export class BaseWebsite implements Website {
     return null;
   }
 
-  protected createError(err: any, submission: any, notify?: string): object {
+  protected createError(err: any, submission: any, notify?: string): PostReport {
     return { website: this.websiteName, err, msg: notify, submission, notify: notify ? true : false };
   }
 

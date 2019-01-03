@@ -54,10 +54,7 @@ export class LoginPanelComponent implements OnInit, OnDestroy {
       this.status.username = '';
     }
 
-    if (update) {
-      this._changeDetector.markForCheck();
-    }
-
+    this._changeDetector.markForCheck();
     this.loading = false;
   }
 

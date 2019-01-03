@@ -10,7 +10,7 @@ export function checkForCompletion(submission: PostyBirbSubmissionModel): boolea
 
   for (let i = 0; i < websites.length; i++) {
     const website = websites[i];
-    const data: PostyBirbSubmissionData = submission.getAllForWebsite(website);
+    const data: PostyBirbSubmissionData = submission.getAllForWebsiteNoFile(website);
 
     const tagRequirements = TagRequirements[website];
     if (!tagRequirements.exclude && tagRequirements.minTags) {

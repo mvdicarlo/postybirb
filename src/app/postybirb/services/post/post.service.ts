@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { Store } from '@ngxs/store';
 
 import { SnotifyService } from 'ng-snotify';
@@ -8,42 +7,41 @@ import { SubmissionStatus } from '../../enums/submission-status.enum';
 import { WebsiteManagerService } from '../../../commons/services/website-manager/website-manager.service';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { PostyBirbStateAction } from '../../stores/states/posty-birb.state';
+import { PostReport } from '../../../commons/models/website/base-website';
+import { PostStateTrackerService } from '../post-state-tracker/post-state-tracker.service';
 
 @Injectable()
 export class PostService {
   private waitMap: any = {
-    [SupportedWebsites.Furaffinity]: 30000,
+    [SupportedWebsites.Furaffinity]: 45000,
     [SupportedWebsites.FurryAmino]: 30000,
     [SupportedWebsites.DeviantArt]: 6000,
     [SupportedWebsites.Pixiv]: 60 * 1000 * 10
   };
 
   private callback: any; // callback function
-  private currentlyPostingTo: BehaviorSubject<string> = new BehaviorSubject(undefined);
-  private postingSubmissionId: BehaviorSubject<string> = new BehaviorSubject(undefined);
   private failedPosts: string[] = [];
+  private postAttempts: string[] = [];
   private postingSubmission: PostyBirbSubmissionModel;
   private postTo: string[] = [];
   private originalPostCount: number = 1;
   private responses: any[] = [];
   private stopPosting: boolean = false;
-  public waitingFor: Date;
   private waiting: any; // timeout
   private postFn: any; // posting fn
   public isPosting: boolean = false;
   private waitingInterval: any; //timeout for post interval
   private submission: SubmissionArchive;
 
-  constructor(private manager: WebsiteManagerService, private snotify: SnotifyService, private _store: Store) { }
+  constructor(private manager: WebsiteManagerService, private snotify: SnotifyService, private _store: Store, private _stateTracker: PostStateTrackerService) { }
 
   public _clean(): void {
     this.callback = null;
-    this.currentlyPostingTo.next(undefined);
     this.failedPosts = [];
     this.postingSubmission = null;
     this.postTo = [];
+    this.postAttempts = [];
     this.responses = [];
-    this.waitingFor = null;
     this.stopPosting = false;
     this.originalPostCount = 1;
     clearTimeout(this.waiting);
@@ -51,23 +49,11 @@ export class PostService {
     this.postFn = null;
     this.isPosting = false;
     this.submission = null;
-  }
-
-  public subscribeToWebsiteUpdates(): Observable<string> {
-    return this.currentlyPostingTo.asObservable();
+    this._stateTracker.updateState(null);
   }
 
   public getPercentageDone(): number {
     return (1 - this.postTo.length / this.originalPostCount) * 100;
-  }
-
-  public postingIdObserver(): Observable<string> {
-    return this.postingSubmissionId.asObservable();
-  }
-
-  public setWaitingFor(interval: number, website?: string): void {
-    this.waitingFor = interval ? new Date(Date.now() + interval) : null;
-    this.currentlyPostingTo.next(website || '');
   }
 
   public stopIfMatchingId(id: string): void {
@@ -82,7 +68,7 @@ export class PostService {
     clearTimeout(this.waiting);
     if (this.postFn) {
       this.postFn();
-    } else if (this.waitingInterval) {
+    } else if (this.waitingInterval) { // no post fn set yet so just call end (e.g. skipInterval)
       clearTimeout(this.waitingInterval);
       this.waitingInterval = null;
       this._canPost(); //force call of end call
@@ -91,25 +77,30 @@ export class PostService {
 
   private done(status: SubmissionStatus): void { // completion call
     this.isPosting = false;
-    this.callback(this.postingSubmission, {
+
+    const response = Object.assign({}, {
       status,
-      remainingWebsites: this.postTo,
-      responses: this.responses,
-      failedWebsites: this.failedPosts
+      remainingWebsites: [...this.postTo],
+      responses: [...this.responses],
+      failedWebsites: [...this.failedPosts]
     });
 
+    const cb = this.callback;
+    const postingSubmission = this.postingSubmission;
+
+    this._clean();
+    cb(postingSubmission, response);
   }
 
   public post(submission: SubmissionArchive, callback: any, waitInterval: number = 0) {
-    this._clean();
     this.postTo = submission.meta.unpostedWebsites || [];
+    this.postAttempts = [];
     this.originalPostCount = this.postTo.length;
     this.submission = submission;
     this.postingSubmission = PostyBirbSubmissionModel.fromArchive(submission);
     this.callback = callback;
 
-    this.setWaitingFor(waitInterval);
-    this.postingSubmissionId.next(submission.meta.id);
+    this._updateState(null, waitInterval);
     this.isPosting = true;
 
     this.waitingInterval = setTimeout(this._startPosting.bind(this), waitInterval);
@@ -118,29 +109,45 @@ export class PostService {
   private _startPosting(): void {
     if (this._canPost()) {
       const website: string = this.postTo.shift();
-      this.currentlyPostingTo.next(website);
-      this._attemptToPost(website)
-        .then((success) => {
-          if (success) {
-            // NOTE: Saved with dispatch in case of app reset/crash
-            this._store.dispatch(new PostyBirbStateAction.UpdateWebsites(this.submission, [...this.postTo, ...this.failedPosts].sort()));
-            this.responses.push({ website, success });
-          }
 
-          this._startPosting();
-        })
-        .catch((err) => {
-          if (err) {
-            this.responses.push({ website, err });
-            this.failedPosts.push(website);
-
-            if (err.notify && err.msg) {
-              this.snotify.error((err.msg || '').toString(), website);
+      // try to catch any website that was somehow re-inserted (should not be possible but I am ensuring behavior)
+      if (this.postAttempts.includes(website)) {
+        this._startPosting();
+      } else {
+        this.postAttempts.push(website);
+        this._updateState(website, 0);
+        this._attemptToPost(website)
+          .then((success) => {
+            if (success) {
+              if (!(success instanceof Object)) {
+                success = { success };
+              }
+              // NOTE: Saved with dispatch in case of app reset/crash
+              this._store.dispatch(new PostyBirbStateAction.UpdateWebsites(this.submission, [...this.postTo, ...this.failedPosts].sort()));
+              success.website = website;
+              this.responses.push(success);
             }
-          }
 
-          this._startPosting();
-        });
+            this._startPosting();
+          })
+          .catch((err) => {
+            if (err) {
+              if (!(err instanceof Object)) {
+                err = { err };
+              }
+
+              err.website = website;
+              this.responses.push(err);
+              this.failedPosts.push(website);
+
+              if (err.notify && err.msg) {
+                this.snotify.error((err.msg || '').toString(), website);
+              }
+            }
+
+            this._startPosting();
+          });
+      }
     }
   }
 
@@ -174,21 +181,19 @@ export class PostService {
   }
 
   private _attemptToPost(website: string): Promise<any> {
+    clearTimeout(this.waiting);
     this.waiting = null;
     this.postFn = null;
     const interval: number = this._getInterval(website);
-    if (interval >= 30000) {
-      this.setWaitingFor(interval, website);
-    } else {
-      this.setWaitingFor(null, website);
-    }
+    this._updateState(website, interval);
 
     return this._post(interval, website);
   }
 
-  private _post(interval, website): Promise<any> {
+  private _post(interval, website): Promise<PostReport> {
     return new Promise(function(resolve, reject) {
       this.postFn = function() {
+        this._updateState(website, null);
         this.postFn = null; // protect from double call
         if (this.stopPosting) {
           this.postTo.push(website);
@@ -225,7 +230,7 @@ export class PostService {
     const lastPosted: number = db.get(`lastPosted${website}`).value() || 0;
     const wait: number = this.waitMap[website] || 4000;
 
-    return lastPosted + wait <= now ? 3000 : Math.max(Math.abs(now - lastPosted - wait), 3000);
+    return lastPosted + wait <= now ? 4000 : Math.max(Math.abs(now - lastPosted - wait), 3000);
   }
 
   private setLastPosted(website: string): void {
@@ -235,6 +240,15 @@ export class PostService {
   private stopOnError(): boolean {
     const enabled = db.get('stopOnFailure').value();
     return enabled === undefined ? true : enabled;
+  }
+
+  private _updateState(website: string, waitingInterval: number): void {
+    this._stateTracker.updateState({
+      id: this.submission.meta.id,
+      percent: this.getPercentageDone(),
+      currentWebsite: website,
+      waitingFor: waitingInterval ? new Date(Date.now() + waitingInterval) : null
+    });
   }
 
 }

@@ -1,14 +1,14 @@
-import { Component, AfterContentInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { BaseWebsiteDialog } from '../base-website-dialog/base-website-dialog.component';
 
 @Component({
   selector: 'aryion-dialog',
   templateUrl: './aryion-dialog.component.html',
   styleUrls: ['./aryion-dialog.component.css']
 })
-export class AryionDialogComponent implements AfterContentInit {
-  public show: boolean = false;
-
-  ngAfterContentInit() {
-    setTimeout(() => this.show = true, 150);
+export class AryionDialogComponent extends BaseWebsiteDialog {
+  constructor() {
+    super();
+    this.url = 'https://aryion.com/forum/ucp.php?mode=login';
   }
 }

@@ -8,6 +8,7 @@ import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 import { SubmissionSheetComponent } from '../sheets/submission-sheet/submission-sheet.component';
 import { SubmissionSettingsDialogComponent } from '../dialog/submission-settings-dialog/submission-settings-dialog.component';
 import { ManageTemplatesDialogComponent } from '../dialog/manage-templates-dialog/manage-templates-dialog.component';
+import { SubmissionStatus } from '../../enums/submission-status.enum';
 
 @Component({
   selector: 'postybirb-status-bar',
@@ -16,8 +17,6 @@ import { ManageTemplatesDialogComponent } from '../dialog/manage-templates-dialo
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
-
-  private queueSubscription: Subscription = Subscription.EMPTY;
   private submissionSubscription: Subscription = Subscription.EMPTY;
 
   public queueCount: number = 0;
@@ -32,11 +31,7 @@ export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.submissionSubscription = this._store.select(state => state.postybirb.submissions).subscribe(submissions => {
       this.submissionCount = submissions.length;
-      this._changeDetector.markForCheck();
-    });
-
-    this.queueSubscription = this._store.select(state => state.postybirb.queued).subscribe(submissions => {
-      this.queueCount = submissions.length
+      this.queueCount = submissions.filter(s => (s.meta.submissionStatus === SubmissionStatus.POSTING || s.meta.submissionStatus === SubmissionStatus.QUEUED)).length;
       this._changeDetector.markForCheck();
     });
 
@@ -72,13 +67,13 @@ export class PostyBirbStatusBarComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.queueSubscription.unsubscribe();
     this.submissionSubscription.unsubscribe();
   }
 
   public async openQueue() {
     this.bottomSheet.open(SubmissionSheetComponent, {
-      data: { index: 2 }
+      data: { index: 2 },
+      autoFocus: false
     });
   }
 

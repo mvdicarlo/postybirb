@@ -10,16 +10,16 @@
         <mat-button-toggle style="width: 50%" value="single" [checked]="editMode === 'single'">{{ 'Single' | translate }}</mat-button-toggle>
         <mat-button-toggle style="width: 50%" value="bulk" [checked]="editMode === 'bulk'">{{ 'Bulk' | translate }}</mat-button-toggle>
       </mat-button-toggle-group>
-      <mat-form-field class="w-100 search" color="accent" *ngIf="submissionForms && submissionForms.length > 1">
+      <mat-form-field class="w-100 search" color="accent">
         <input matInput [formControl]="searchControl">
         <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
       </mat-form-field>
     </div>
     <div class="overlay">
-      <sidebar-navigator *ngFor="let submission of editing$ | async; trackBy:trackBy" [editMode]="editMode" [archive]="submission"></sidebar-navigator>
+      <sidebar-navigator *ngFor="let submission of filtered | async; trackBy:trackBy" [editMode]="editMode" [archive]="submission"></sidebar-navigator>
     </div>
     <div class="bottom-sticky" *ngIf="submissions.length">
-      <button *ngIf="editMode === 'single'" type="button" mat-button color="accent" (click)="saveAllValid()" [disabled]="!canSaveMany()" [matTooltip]="'Skips incomplete forms' | translate">
+      <button type="button" mat-button color="accent" (click)="saveAllValid()" [disabled]="!canSaveMany()" [matTooltip]="'Skips incomplete forms' | translate">
         {{ 'Save All' | translate }}
       </button>
       <button type="button" mat-button color="warn" (click)="deleteAll()">{{ 'Delete All' | translate }}</button>
@@ -28,11 +28,11 @@
   <div class="col col-sm col-md col-lg col-xl section overlay">
     <div class="container px-0">
       <div name="editing_section" class="row no-gutters" *ngIf="editMode === 'single'">
-        <submission-editing-form @flyInOut (hiddenChange)="check()" class="col col-md-12 col-lg-12 col-xl-12" *ngFor="let submission of editing$ | async; trackBy:trackBy" [archive]="submission"></submission-editing-form>
+        <submission-editing-form @flyInOut class="col col-md-12 col-lg-12 col-xl-12" *ngFor="let submission of editing; trackBy:trackBy" [archive]="submission"></submission-editing-form>
       </div>
 
       <div name="bulk_editing_section" class="row no-gutters" *ngIf="editMode === 'bulk'">
-        <bulk-submission-editing-form @flyInOut class="col col-md-12 col-lg-12 col-xl-12" (bulkSaved)="changeMode({ value: 'single' })"></bulk-submission-editing-form>
+        <bulk-submission-editing-form @flyInOut class="col col-md-12 col-lg-12 col-xl-12"></bulk-submission-editing-form>
       </div>
     </div>
   </div>

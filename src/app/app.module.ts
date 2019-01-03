@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
@@ -35,6 +35,7 @@ import {
 import { FullscreenOverlayContainer, OverlayContainer } from '@angular/cdk/overlay';
 import { AppComponent } from './app.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
+import { UIErrorHandler } from './app.uierrorhandler.service';
 
 @NgModule({
   declarations: [
@@ -73,7 +74,8 @@ import { SidebarComponent } from './sidebar/sidebar.component';
     }),
   ],
   providers: [
-    { provide: OverlayContainer, useClass: FullscreenOverlayContainer }
+    { provide: OverlayContainer, useClass: FullscreenOverlayContainer },
+    { provide: ErrorHandler, useClass: UIErrorHandler }
   ],
   bootstrap: [AppComponent],
   schemas: []

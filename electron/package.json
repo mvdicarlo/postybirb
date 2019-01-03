@@ -1,11 +1,12 @@
 {
   "name": "PostyBirb",
-  "version": "1.0.6",
+  "version": "1.1.1",
   "description": "Multimedia crossposter for multimedia websites",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "DEVELOP=true SFW=true electron main.js",
+    "fake": "DEVELOP=true SFW=true FAKEPOSTS=true electron main.js",
     "clean": "rm -rf PBA/; rm -rf electron-dist/",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
@@ -96,7 +97,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
-    "electron": "^3.0.10",
+    "electron": "^3.0.13",
     "electron-builder": "~20.34.0",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^15.0.2",

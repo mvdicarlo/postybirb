@@ -287,7 +287,7 @@ export class BulkSubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public _updateSubmission(submission: PostyBirbSubmissionModel): PostyBirbSubmissionModel {
     const values = this.form.value;
-    submission.title = values.title || 'New Submission';
+    submission.title = values.title;
     submission.rating = values.rating;
     submission.descriptionInfo = this.descriptionForm.value;
     submission.tagInfo = this.tagForm.value;

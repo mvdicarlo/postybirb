@@ -8,6 +8,7 @@ import { WebsiteStatus } from '../../enums/website-status.enum';
 export class WebsiteCoordinatorService {
   private websites: Map<string, Website>;
   private statusMap: Map<string, WebsiteStatus>;
+  private usernameMap: Map<string, string>;
   private websiteStatusSubject: BehaviorSubject<any>;
   private statusObservable: Observable<any>;
   private internalNotifier: Subject<any>;
@@ -16,6 +17,7 @@ export class WebsiteCoordinatorService {
   constructor() {
     this.websites = new Map();
     this.statusMap = new Map();
+    this.usernameMap = new Map();
 
     this.websiteStatusSubject = new BehaviorSubject({});
     this.statusObservable = this.websiteStatusSubject.asObservable();
@@ -49,6 +51,29 @@ export class WebsiteCoordinatorService {
     if (this.statusMap.get(name) !== status) {
       this.statusMap.set(name, status);
       this.internalNotifier.next(name);
+
+      const website: Website = this.websites.get(name);
+      website.getUser()
+      .then(user => {
+        if (!this.usernameMap.has(name)) {
+          this.usernameMap.set(name, user);
+        } else if (!user) {
+          this.usernameMap.delete(name);
+        }
+      }).catch(err => {
+        // dunno what to do with this honestly
+      });
+    } else {
+      const website: Website = this.websites.get(name);
+      website.getUser()
+      .then(user => {
+        if (user && user != this.usernameMap.get(name)) {
+          this.usernameMap.set(name, user);
+          this.internalNotifier.next(name);
+        }
+      }).catch(err => {
+        // dunno what to do with this honestly
+      });
     }
   }
 

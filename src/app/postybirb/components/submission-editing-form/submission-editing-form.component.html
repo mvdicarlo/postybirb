@@ -2,7 +2,7 @@
   <mat-card [class.highlight]="highlight">
     <mat-card-header>
       <div mat-card-avatar class="avatar">
-        <div class="img" *ngIf="file" [title]="file.name">
+        <div class="img" *ngIf="file && fileIcon" [title]="file.name">
           <img [src]="fileIcon | safe" [alt]="file.name">
           <button [matTooltip]="'Change File' | translate" type="button" mat-icon-button (click)="changeFileInput.click()">
             <mat-icon color="warn">attach_file</mat-icon>
@@ -35,6 +35,9 @@
           <mat-form-field color="accent" class="col-md-3 col-lg-3 col-xl-3">
             <mat-label>{{ 'Title' | translate }}</mat-label>
             <input matInput #title placeholder="{{'Title' | translate}}" formControlName="title" maxLength="50">
+            <mat-hint style="max-width: 65%">
+              <title-truncate-display [websites]="form.value.websites" [title]=form.value.title></title-truncate-display>
+            </mat-hint>
             <mat-hint align="end">
               {{title.value.trim().length}} / {{title.maxLength}}
             </mat-hint>
