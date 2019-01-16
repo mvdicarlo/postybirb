@@ -24,10 +24,8 @@ export class Weasyl extends BaseWebsite implements Website {
       content: {
         Artwork: 'visual',
         Story: 'literary',
-        Poetry: 'literary',
         Music: 'multimedia',
         Animation: 'multimedia',
-        Character: 'character',
         Journal: 'journal',
       }
     };
@@ -90,9 +88,8 @@ export class Weasyl extends BaseWebsite implements Website {
         if (options.critique) uploadForm.set('critique', 'on');
         if (options.folder) uploadForm.set('folderid', options.folder);
         else uploadForm.set('folderid', '');
-
-        //Ignored properties
-        uploadForm.set('subtype', '');
+        if (options.category) uploadForm.set('subtype', options.category);
+        else uploadForm.set('subtype', '');
 
         this.http.post(weasylURL, uploadForm, { responseType: 'text' }).subscribe(res => {
           if (res.includes('Submission Information')) {

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSelectChange, MatDialog } from '@angular/material';
 import { ProfileAddDialogComponent } from '../dialog/profile-add-dialog/profile-add-dialog.component';
+import { ProfileRemoveDialogComponent } from '../dialog/profile-remove-dialog/profile-remove-dialog.component';
 
 @Component({
   selector: 'app-profile-manager',
@@ -27,6 +28,19 @@ export class AppProfileManagerComponent implements OnInit {
         addOrOpenAppProfile(profile);
         this.appProfiles.push(profile);
         this.appProfiles = this.appProfiles.sort();
+      }
+    });
+  }
+
+  public async openDeleteProfileDialog() {
+    const dialogRef = this.dialog.open(ProfileRemoveDialogComponent);
+    dialogRef.afterClosed().subscribe(profile => {
+      if (profile) {
+        removeAppProfile(profile);
+        const index: number = this.appProfiles.indexOf(profile);
+        if (index !== -1) {
+          this.appProfiles.splice(index, 1);
+        }
       }
     });
   }

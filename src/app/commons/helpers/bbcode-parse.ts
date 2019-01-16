@@ -254,7 +254,7 @@ export class BbCodeParse {
       const matchedTags = newText.match(new RegExp(`:${key}.*?:`, 'gm')) || [];
       for (let i = 0; i < matchedTags.length; i++) {
         let tag = matchedTags[i];
-        if (website === SupportedWebsites.Furaffinity && tag.includes('icon:')) return; //skip :dausernameicon: issue
+        if (website === SupportedWebsites.Furaffinity && tag.includes('icon:')) continue; //skip :dausernameicon: issue
 
         let username = tag.substring(1 + key.length, tag.length - 1);
         if (key === 'tw' || key === 'ma') {

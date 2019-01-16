@@ -44,12 +44,12 @@ module.exports = class PostyBirbWindow {
         icon: path.join(__dirname, '/dist/assets/icon/minnowicon.png'),
         title: `Posty Birb${ partition ? ' - ' + partition : ''}`,
         webPreferences: {
-            devTools: Boolean(process.env.DEVELOP),
+            devTools: process.env.DEVELOP === 'true',
             allowRunningInsecureContent: false,
             nodeIntegration: false,
             preload: `${__dirname}/dist/electron-src/index.js`,
             webviewTag: true,
-            partition: partition ? 'persist:' + partition : null
+            partition: partition ? 'persist:' + partition : null,
         },
     });
 

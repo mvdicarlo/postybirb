@@ -1,150 +1,152 @@
 import { SupportedWebsites } from '../../commons/enums/supported-websites';
 import { FileObject } from '../../commons/interfaces/file-obect.interface';
+import { Rating } from '../enums/rating.enum';
+import { SubmissionType } from '../enums/submission-type.enum';
 
 export class SupportedWebsiteRestrictions {
   private static webMap: any = {
     [SupportedWebsites.Aryion]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 20, // a guess
       }
     },
     [SupportedWebsites.Derpibooru]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'svg', 'gif'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 50, // a guess
       }
     },
     [SupportedWebsites.DeviantArt]: {
-      supportedRatings: ['General', 'Mature'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt', 'swf', 'tiff', 'tif'],
-      supportedTypes: ['Artwork', 'Story', 'Animation'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION],
       supportedFileSize: {
         default: 30,
         Animation: 200
       }
     },
     [SupportedWebsites.e621]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'webm'],
-      supportedTypes: ['Artwork', 'Animation'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.ANIMATION],
       supportedFileSize: {
         default: 100
       }
     },
     [SupportedWebsites.Furaffinity]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 10
       }
     },
     [SupportedWebsites.Furiffic]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 25
       }
     },
     [SupportedWebsites.FurryAmino]: {
-      supportedRatings: ['General'],
+      supportedRatings: [Rating.GENERAL],
       supportedFileTypes: ['jpg', 'jpeg', 'png', 'gif'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 10 // a guess
       }
     },
     [SupportedWebsites.FurryNetwork]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'mp3', 'mp4', 'webm', 'swf', 'gif', 'wav', 'txt'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 32,
         Animation: 200
       }
     },
     [SupportedWebsites.HentaiFoundry]: { // This is essentially all a guess
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'svg', 'gif'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 50, // a guess
       }
     },
     [SupportedWebsites.Inkbunny]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 300
       }
     },
     [SupportedWebsites.Mastodon]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'],
-      supportedTypes: ['Artwork', 'Animation'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.ANIMATION],
       supportedFileSize: {
         default: 8,
       }
     },
     [SupportedWebsites.Newgrounds]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'bmp'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 40, // I think this is the right amount
       }
     },
     [SupportedWebsites.PaigeeWorld]: {
-      supportedRatings: ['General'],
+      supportedRatings: [Rating.GENERAL],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 50
       }
     },
     [SupportedWebsites.Patreon]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'],
-      supportedTypes: ['Artwork', 'Music', 'Story'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 200
       }
     },
     [SupportedWebsites.Pixiv]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 8
       }
     },
     [SupportedWebsites.Route50]: {
-      supportedRatings: ['General'],
+      supportedRatings: [Rating.GENERAL],
       supportedFileTypes: ['jpg', 'jpreg', 'png', 'gif', 'txt', 'mp3', 'midi', 'css', 'swf'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 10
       }
     },
     [SupportedWebsites.SoFurry]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'],
-      supportedTypes: ['Artwork', 'Animation', 'Music', 'Story'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 50
       }
     },
     [SupportedWebsites.Tumblr]: {
-      supportedRatings: ['General', 'Mature'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE,],
       supportedFileTypes: ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'],
-      supportedTypes: ['Artwork', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 10,
         Artwork: {
@@ -154,9 +156,9 @@ export class SupportedWebsiteRestrictions {
       }
     },
     [SupportedWebsites.Twitter]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpeg', 'jpg', 'png', 'gif', 'webp'],
-      supportedTypes: ['Artwork'],
+      supportedTypes: [SubmissionType.ARTWORK],
       supportedFileSize: {
         default: 5,
         Artwork: {
@@ -165,9 +167,9 @@ export class SupportedWebsiteRestrictions {
       }
     },
     [SupportedWebsites.Weasyl]: {
-      supportedRatings: ['General', 'Mature', 'Explicit', 'Extreme'],
+      supportedRatings: [Rating.GENERAL, Rating.MATURE, Rating.ADULT, Rating.EXTREME],
       supportedFileTypes: ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'],
-      supportedTypes: ['Artwork', 'Story', 'Animation', 'Music'],
+      supportedTypes: [SubmissionType.ARTWORK, SubmissionType.STORY, SubmissionType.ANIMATION, SubmissionType.MUSIC],
       supportedFileSize: {
         default: 10,
         Story: {
@@ -232,7 +234,7 @@ export class SupportedWebsiteRestrictions {
       const w: any = this.webMap[website];
 
       if (rating && !w.supportedRatings.includes(rating)) {
-        issues[website].unsupportedByRating = rating === 'Explicit' ? 'Adult' : rating;
+        issues[website].unsupportedByRating = rating === Rating.ADULT ? 'Adult' : rating;
       }
 
       if (type && !w.supportedTypes.includes(type)) {

@@ -39,7 +39,7 @@ if (!hasLock) {
     return;
 }
 app.on('second-instance', () => {
-  const win = profileWindows[PRIMARY_WINDOW_NAME];
+    const win = profileWindows[PRIMARY_WINDOW_NAME];
     if (win) {
         if (win.isMinimized()) {
             win.restore();
@@ -94,11 +94,22 @@ if (process.platform == 'win32' || process.platform == 'darwin') {
 }
 
 // these two commands need to be checked for removal on electron 3.1.0+
-app.commandLine.appendSwitch('auto-detect', 'false');
-app.commandLine.appendSwitch('no-proxy-server');
+// app.commandLine.appendSwitch('auto-detect', 'false');
+// app.commandLine.appendSwitch('no-proxy-server');
 
 app.on('ready', () => {
-    const menu = Menu.buildFromTemplate(template);
+    const profileMenu = {
+        label: 'Profile',
+        submenu:
+            getAllProfiles().map(profile => ({
+                label: profile,
+                type: 'normal',
+                click() { createOrOpenNewProfile(profile) },
+            })),
+    };
+
+    const menu = Menu.buildFromTemplate([profileMenu, ...template]);
+
     Menu.setApplicationMenu(menu);
     createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
 
@@ -107,31 +118,29 @@ app.on('ready', () => {
     image.setTemplateImage(true);
 
     const trayItems = [
-      {
-          label: 'Open',
-          click() {
-            createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
-          },
-      }, {
-        label: 'Profiles',
-        submenu: getAllProfiles().filter(profile => profile !== PRIMARY_WINDOW_NAME).map(profile => {
-          return {
-            label: profile,
-            click: function() {
-              createOrOpenNewProfile(profile);
-            }
-          }
-        })
-      }, {
-          label: 'Quit',
-          click() {
-              clearInterval(scheduledInterval);
-              clearInterval(updateInterval);
-              rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
-                  app.quit();
-              });
-          },
-      },
+        {
+            label: 'Open',
+            click() {
+                createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
+            },
+        }, {
+            label: 'Profiles',
+            submenu: getAllProfiles().filter(profile => profile !== PRIMARY_WINDOW_NAME).map(profile => ({
+                label: profile,
+                click() {
+                    createOrOpenNewProfile(profile);
+                },
+            })),
+        }, {
+            label: 'Quit',
+            click() {
+                clearInterval(scheduledInterval);
+                clearInterval(updateInterval);
+                rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
+                    app.quit();
+                });
+            },
+        },
     ];
 
     tray = new Tray(image);
@@ -148,22 +157,28 @@ app.on('ready', () => {
     });
 
     ipcMain.on('open-profile', (event, profile) => {
-      if (profile && profile !== 'profiles') { // do not allow one to be created that is named profile
-        profile = profile.toLowerCase();
-        createOrOpenNewProfile(profile);
+        if (profile && profile !== 'profiles') { // do not allow one to be created that is named profile
+            profile = profile.toLowerCase();
+            createOrOpenNewProfile(profile);
+        }
+    });
+
+    ipcMain.on('remove-profile', (event, profile) => {
+      if (profile && profile !== 'postybirb') {
+        removeProfile(profile);
       }
     });
 
     scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
-});
 
-if (!process.env.DEVELOP) {
-    updateInterval = setInterval(() => {
+    if (!process.env.DEVELOP) {
+        updateInterval = setInterval(() => {
+            autoUpdater.checkForUpdates();
+        }, 3 * 60 * 60000);
+
         autoUpdater.checkForUpdates();
-    }, 3 * 60 * 60000);
-
-    autoUpdater.checkForUpdates();
-}
+    }
+});
 
 function createOrOpenNewProfile(name, show = true, openForScheduled = false) {
     if (!profileWindows[name]) {
@@ -174,19 +189,19 @@ function createOrOpenNewProfile(name, show = true, openForScheduled = false) {
         profileWindows[name].on('closed', () => {
             delete profileWindows[name];
             if (!Object.keys(profileWindows).length) {
-              attemptToClose();
+                attemptToClose();
             }
         });
     } else if (openForScheduled) {
         profileWindows[name].showInactive();
     } else {
-      const win = profileWindows[name];
-      if (win.isMinimized()) {
-        win.restore();
-      } else {
-        win.show();
-      }
-      win.focus();
+        const win = profileWindows[name];
+        if (win.isMinimized()) {
+            win.restore();
+        } else {
+            win.show();
+        }
+        win.focus();
     }
 }
 
@@ -203,6 +218,23 @@ function addProfileToProfileDB(name) {
     }
 }
 
+function removeProfile(name) {
+  const profiles = getAllProfiles();
+  const index = profiles.indexOf(name);
+  if (index !== -1) {
+    profiles.splice(index, 1);
+    postybirbProfilesdb.set('profiles', profiles.sort()).write();
+
+    fs.unlink(path.join(app.getPath('userData'), `${name}.json`), (err) => {
+      if (err) log.error(err);
+    });
+
+    fs.unlink(path.join(app.getPath('userData'), `${name}-logs.json`), (err) => {
+      if (err) log.error(err);
+    });
+  }
+}
+
 function checkForScheduledPost() {
     log.info('Checking for scheduled posts...');
     [...getAllProfiles()].forEach(profile => checkForScheduledToPost(profile));
@@ -214,20 +246,20 @@ function checkForScheduledToPost(name) {
     const state = createDB(name).get('PostyBirbState').value();
 
     try {
-      if (state && state.submissions) {
-          for (let i = 0; i < state.submissions.length; i++) {
-              const s = state.submissions[i];
-              if (s.meta.schedule) {
-                  const scheduledTime = new Date(s.meta.schedule).getTime();
-                  if (scheduledTime - now <= 0) {
-                      createOrOpenNewProfile(name, false, true);
-                      return;
-                  }
-              }
-          }
-      }
+        if (state && state.submissions) {
+            for (let i = 0; i < state.submissions.length; i++) {
+                const s = state.submissions[i];
+                if (s.meta.schedule) {
+                    const scheduledTime = new Date(s.meta.schedule).getTime();
+                    if (scheduledTime - now <= 0) {
+                        createOrOpenNewProfile(name, false, true);
+                        return;
+                    }
+                }
+            }
+        }
     } catch (e) {
-      log.error(e);
+        log.error(e);
     }
 
     log.info(`No scheduled posts found in ${name}`);

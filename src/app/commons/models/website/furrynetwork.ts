@@ -85,6 +85,8 @@ export class FurryNetwork extends BaseWebsite implements Website {
         .subscribe((collection: any[]) => {
           collections[key] = collection;
           this.userCollections[username] = collections;
+        }, err => {
+          // should we do anything with this?
         });
     }
   }

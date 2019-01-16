@@ -104,10 +104,10 @@ export class FileInformation {
             this.setBuffer(buffer);
             this.setRealFile(this.convertBufferToFile(buffer, file));
             this.initialized = true;
-            resolve(this.initialized);
-          }).catch(() => { // This shouldn't happen
-            this.initialized = true;
-            resolve(this.initialized);
+            resolve(true);
+          }).catch(() => { // Missing file
+            this.initialized = false;
+            reject(false);
           });
         } else { //Only happens if we are initializing a null object
           this.initialized = true;
@@ -124,7 +124,9 @@ export class FileInformation {
       } else {
         this.initialize().then(() => {
           resolve(this)
-        }).catch(() => resolve(this));
+        }).catch(() => {
+          reject(this);
+        });
       }
     });
   }

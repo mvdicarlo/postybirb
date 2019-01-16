@@ -18,7 +18,8 @@ export class InkbunnyFormComponent extends BaseOptionForm {
       blockGuests: [false],
       friendsOnly: [false],
       notify: [true],
-      scraps: [false]
+      scraps: [false],
+      rating: [null]
     });
   }
 

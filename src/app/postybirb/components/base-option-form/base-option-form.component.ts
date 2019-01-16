@@ -3,6 +3,8 @@ import { FormGroup, FormBuilder } from '@angular/forms';
 import { SupportedWebsites } from '../../../commons/enums/supported-websites';
 import { MatTab, MatTabGroup } from '@angular/material';
 import { Subscription } from 'rxjs';
+import { SubmissionType } from '../../enums/submission-type.enum';
+import { Rating } from '../../enums/rating.enum';
 
 @Component({
   selector: 'base-option-form',
@@ -10,6 +12,8 @@ import { Subscription } from 'rxjs';
 })
 export class BaseOptionForm implements DoCheck, OnDestroy {
   public supportedWebsites = SupportedWebsites;
+  public submissionType: SubmissionType = SubmissionType.ARTWORK;
+  public rating: Rating = Rating.GENERAL;
   public website: string;
 
   public optionsForm: FormGroup;

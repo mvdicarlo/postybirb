@@ -15,7 +15,7 @@ export class TitleTruncateDisplayComponent implements OnInit {
   get websites(): string[] { return this._websites }
   set websites(websites: string[]) {
     this._websites = websites || [];
-    if (!websites.length) this.shouldShow = false;
+    if (!this._websites.length) this.shouldShow = false;
     this._changeDetector.markForCheck();
   }
   private _websites: string[] =  [];

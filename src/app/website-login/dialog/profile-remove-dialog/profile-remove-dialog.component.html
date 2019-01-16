@@ -1,0 +1,18 @@
+<h2 mat-dialog-title></h2>
+<mat-dialog-content>
+  <form [formGroup]="form" (ngSubmit)="removeProfile()">
+    <mat-form-field color="accent">
+      <mat-select formControlName="profile">
+        <mat-option *ngFor="let p of appProfiles" [value]="p">
+          {{ p | uppercase }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <br>
+    <button mat-raised-button color="warn" mat-dialog-close>{{'No' | translate}}</button>
+    <button mat-raised-button style="margin-left: 5px" color="primary" type="submit" [disabled]="form.invalid">{{'Yes' | translate}}</button>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+
+</mat-dialog-actions>

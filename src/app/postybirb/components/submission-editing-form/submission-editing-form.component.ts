@@ -57,6 +57,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   @ViewChildren(OptionsSectionDirective) optionsFields: QueryList<OptionsSectionDirective>;
 
   public form: FormGroup;
+  public savingEdits: boolean = false;
 
   public descriptionForm: FormGroup;
   public defaultDescription: BehaviorSubject<any>;
@@ -105,7 +106,7 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
       rating: [null, Validators.required],
       schedule: [null],
       websites: [null, Validators.required]
-    });
+    }, { updateOn: 'blur' });
 
     this.descriptionForm = fb.group({
       default: [null]
@@ -132,10 +133,10 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
     this.websiteStatusSubscription = websiteCoordinator.asObservable().pipe(debounceTime(250))
       .subscribe((statuses: any) => this._updateWebsiteStatuses(statuses));
 
-    this.form.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
-    this.descriptionForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
-    this.optionsForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
-    this.tagForm.valueChanges.pipe(debounceTime(200)).subscribe(() => this._validate());
+    this.form.valueChanges.pipe(debounceTime(250)).subscribe(() => this._validate());
+    this.descriptionForm.valueChanges.pipe(debounceTime(250)).subscribe(() => this._validate());
+    this.optionsForm.valueChanges.pipe(debounceTime(250)).subscribe(() => this._validate());
+    this.tagForm.valueChanges.pipe(debounceTime(250)).subscribe(() => this._validate());
   }
 
   ngOnInit() {
@@ -470,8 +471,16 @@ export class SubmissionEditingFormComponent implements OnInit, OnDestroy {
   }
 
   private _saveEditState(): void {
-    // potentially expensive call?
-    this._store.dispatch(new PostyBirbStateAction.UpdateSubmission(this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive())).asSubmissionArchive()));
+    this.savingEdits = true;
+
+    this._store
+    .dispatch(new PostyBirbStateAction.UpdateSubmission(this._updateSubmission(PostyBirbSubmissionModel.fromArchive(this.submission.asSubmissionArchive())).asSubmissionArchive()))
+    .subscribe(() => {
+      this.savingEdits = false;
+      this._changeDetector.markForCheck();
+    }
+  );
+    this._changeDetector.markForCheck();
   }
 
   public toggleHighlight() {

@@ -35,8 +35,11 @@ export class PostService {
 
   constructor(private manager: WebsiteManagerService, private snotify: SnotifyService, private _store: Store, private _stateTracker: PostStateTrackerService) { }
 
+  public setCompletionCallback(cb: () => void): void {
+    this.callback = cb;
+  }
+
   public _clean(): void {
-    this.callback = null;
     this.failedPosts = [];
     this.postingSubmission = null;
     this.postTo = [];
@@ -76,8 +79,6 @@ export class PostService {
   }
 
   private done(status: SubmissionStatus): void { // completion call
-    this.isPosting = false;
-
     const response = Object.assign({}, {
       status,
       remainingWebsites: [...this.postTo],
@@ -85,20 +86,18 @@ export class PostService {
       failedWebsites: [...this.failedPosts]
     });
 
-    const cb = this.callback;
     const postingSubmission = this.postingSubmission;
 
     this._clean();
-    cb(postingSubmission, response);
+    this.callback(postingSubmission, response);
   }
 
-  public post(submission: SubmissionArchive, callback: any, waitInterval: number = 0) {
+  public post(submission: SubmissionArchive, waitInterval: number = 0) {
     this.postTo = submission.meta.unpostedWebsites || [];
     this.postAttempts = [];
     this.originalPostCount = this.postTo.length;
     this.submission = submission;
     this.postingSubmission = PostyBirbSubmissionModel.fromArchive(submission);
-    this.callback = callback;
 
     this._updateState(null, waitInterval);
     this.isPosting = true;
@@ -123,12 +122,15 @@ export class PostService {
                 success = { success };
               }
               // NOTE: Saved with dispatch in case of app reset/crash
-              this._store.dispatch(new PostyBirbStateAction.UpdateWebsites(this.submission, [...this.postTo, ...this.failedPosts].sort()));
-              success.website = website;
-              this.responses.push(success);
+              this._store.dispatch(new PostyBirbStateAction.UpdateWebsites(this.submission, [...this.postTo, ...this.failedPosts].sort()))
+              .subscribe(() => {
+                success.website = website;
+                this.responses.push(success);
+                this._startPosting();
+              });
+            } else {
+              this._startPosting();
             }
-
-            this._startPosting();
           })
           .catch((err) => {
             if (err) {
@@ -212,9 +214,12 @@ export class PostService {
                       this.setLastPosted(website);
                       reject(err);
                     });
-                });
-              });
-            });
+                })
+                .catch(() => this._fileLoadError(reject, 'Could not load additional image file for submission'));
+              })
+              .catch(() => this._fileLoadError(reject, 'Could not load thumbnail file for submission'));
+            })
+            .catch(() => this._fileLoadError(reject, 'Could not load primary file for submission'));
           } catch (err) {
             reject(err);
           }
@@ -249,6 +254,11 @@ export class PostService {
       currentWebsite: website,
       waitingFor: waitingInterval ? new Date(Date.now() + waitingInterval) : null
     });
+  }
+
+  private _fileLoadError(reject: any, msg: string): void {
+    alert(msg);
+    reject(msg);
   }
 
 }

@@ -196,16 +196,16 @@ export class Inkbunny extends BaseWebsite implements Website {
             editForm.set('title', submission.submissionData.title);
             editForm.set('desc', submission.description);
 
-
-            const rating = this.getMapping('rating', submission.submissionData.submissionRating);
-            if (rating !== 0) {
-              editForm.set(`tag[${rating}]`, 'yes');
-            }
-
             editForm.set('keywords', this.formatTags(submission.defaultTags, submission.customTags));
 
             // Extra options
             const options = submission.options;
+
+            const rating = this.getMapping('rating', submission.submissionData.submissionRating);
+            if (rating !== 0 || options.rating) {
+              editForm.set(`tag[${options.rating || rating}]`, 'yes'); // use the one specified by user if provided, otherwise use default rating
+            }
+
             if (options.scraps) editForm.set('scraps', 'yes');
             if (!options.notify) editForm.set('visibility', 'yes_nowatch');
             else editForm.set('visibility', 'yes');

@@ -15,6 +15,7 @@ process.once('loaded', () => {
     global.Buffer = _Buffer;
 });
 
+const cookieSolutions = require('./js/cookie-solutions.js');
 window.tumblr = require('./js/tumblr-auth.js');
 window.twitter = require('./js/twitter-auth.js');
 window.deviantart = require('./js/deviantart-auth.js');
@@ -59,6 +60,12 @@ const ipc = electron.ipcRenderer;
 window.addOrOpenAppProfile = function addOrOpenAppProfile(profile) {
   if (profile) {
     ipc.send('open-profile', profile);
+  }
+}
+
+window.removeAppProfile = function removeAppProfile(profile) {
+  if (profile) {
+    ipc.send('remove-profile', profile);
   }
 }
 

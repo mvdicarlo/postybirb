@@ -1,4 +1,5 @@
 import { FileObject } from '../../commons/interfaces/file-obect.interface';
+import { SubmissionType } from '../enums/submission-type.enum';
 
 export class FileHandler {
   private static acceptedFileTypes: any = {
@@ -24,10 +25,10 @@ export class FileHandler {
   }
 
   public static guessFromMimeType(file: File | FileObject): string {
-    if (file.type.includes('image')) return 'Artwork';
-    if (file.type.includes('audio')) return 'Music';
-    if (file.type.includes('video')) return 'Animation';
-    if (file.type.includes('text')) return 'Story';
+    if (file.type.includes('image')) return SubmissionType.ARTWORK;
+    if (file.type.includes('audio')) return SubmissionType.MUSIC;
+    if (file.type.includes('video')) return SubmissionType.ANIMATION;
+    if (file.type.includes('text')) return SubmissionType.STORY;
 
     alert('Unknown/unsupported file type');
   }

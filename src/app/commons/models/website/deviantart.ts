@@ -65,7 +65,7 @@ export class DeviantArt extends BaseWebsite implements Website {
       const body = new URLSearchParams();
       body.set('validate_token', HTMLParser.getInputValue(page, 'validate_token'));
       body.set('validate_key', HTMLParser.getInputValue(page, 'validate_key'))
-      this.http.post(`${this.baseURL}/users/logout`, body.toString(), { headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded') }).subscribe(() => { });
+      this.http.post(`${this.baseURL}/users/logout`, body.toString(), { responseType: 'text', headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded') }).subscribe(() => { });
     });
   }
 

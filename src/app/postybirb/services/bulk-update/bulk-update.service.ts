@@ -31,6 +31,7 @@ export class BulkUpdateService {
           if (result && result.length > 0) {
             const selectedSubmissions = this.archives.filter(archive => result.includes(archive.meta.id));
             this._store.dispatch(selectedSubmissions.map(archive => {
+              if (update.meta.rating) archive.meta.rating = update.meta.rating;
               archive.descriptionInfo = update.descriptionInfo;
               archive.optionInfo = update.optionInfo;
               archive.tagInfo = update.tagInfo;

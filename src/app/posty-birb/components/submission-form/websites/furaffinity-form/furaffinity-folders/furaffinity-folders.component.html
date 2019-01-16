@@ -1,7 +1,0 @@
-<mat-form-field color="accent" class="w-100">
-  <mat-select [placeholder]="'Select Folder' | translate" (selectionChange)="onChange($event)" multiple="true" [value]="value">
-    <mat-optgroup [label]="group.name" *ngFor="let group of folders">
-      <mat-option *ngFor="let option of group.items" [value]="option.value">{{option.label}}</mat-option>
-    </mat-optgroup>
-  </mat-select>
-</mat-form-field>

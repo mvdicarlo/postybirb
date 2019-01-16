@@ -68,7 +68,7 @@ export class BulkSubmissionEditingFormComponent implements OnInit, OnDestroy {
 
     this.form = fb.group({
       title: [null, Validators.maxLength(50)],
-      rating: ['General', Validators.required],
+      rating: [],
       schedule: [null],
       websites: [null, Validators.required]
     });
@@ -113,7 +113,9 @@ export class BulkSubmissionEditingFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    store.set('bulkUpdate', this._updateSubmission(new PostyBirbSubmissionModel(null)).asSubmissionTemplate());
+    const saveVariable = this._updateSubmission(new PostyBirbSubmissionModel(null)).asSubmissionTemplate();
+    saveVariable.meta.rating = this.form.value.rating;
+    store.set('bulkUpdate', saveVariable);
     this.websiteStatusSubscription.unsubscribe();
     this.defaultDescription.complete();
   }
@@ -198,7 +200,7 @@ export class BulkSubmissionEditingFormComponent implements OnInit, OnDestroy {
         store.remove('bulkUpdate');
 
         this.form.reset({
-          rating: 'General',
+          rating: null,
           title: null,
           websites: null,
           schedule: null
@@ -241,6 +243,7 @@ export class BulkSubmissionEditingFormComponent implements OnInit, OnDestroy {
 
   public templateSelected(template: SubmissionArchive, useUnpostedWebsites: boolean = false /* Template vs Copy */): void {
     const tmp: PostyBirbSubmissionModel = PostyBirbSubmissionModel.fromArchive(template);
+    this.form.controls.rating.patchValue(tmp.rating);
     this.form.controls.websites.patchValue(useUnpostedWebsites ? tmp.unpostedWebsites : (template.websites || tmp.unpostedWebsites));
     this.descriptionForm.patchValue(tmp.descriptionInfo || {});
     this.tagForm.patchValue(tmp.tagInfo || {});

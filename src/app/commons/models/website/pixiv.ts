@@ -100,12 +100,18 @@ export class Pixiv extends BaseWebsite implements Website {
 
     // File properties
     const additionalFiles: any[] = submission.submissionData.additionalFiles || [];
-    uploadForm.set('files[]', submission.submissionData.submissionFile.getRealFile());
+
+    if (submission.submissionData.thumbnailFile.getRealFile()) {
+      const thumbnail = submission.submissionData.thumbnailFile.getRealFile();
+      uploadForm.append('files[]', thumbnail);
+      uploadForm.append('file_info[]', JSON.stringify({ name: thumbnail.name, size: thumbnail.size, type: thumbnail.type }));
+    }
+
+    const file: any = submission.submissionData.submissionFile.getRealFile();
+    uploadForm.append('files[]', file);
+    uploadForm.append('file_info[]', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
 
     if (additionalFiles.length > 0) {
-      const file: any = submission.submissionData.submissionFile.getRealFile();
-      uploadForm.append('file_info[]', JSON.stringify({ name: file.name, size: file.size, type: file.type }));
-
       for (let i = 0; i < additionalFiles.length; i++) {
         const file: any = additionalFiles[i].getRealFile();
         uploadForm.append('files[]', file);

@@ -85,6 +85,12 @@
   margin: auto 0;
 }
 
+.saving-spinner {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
 mat-card-actions {
   padding-top: 0px !important;
   border-radius: inherit;

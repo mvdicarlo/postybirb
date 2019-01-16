@@ -157,10 +157,16 @@ exports.refresh = function loadToken() {
                 reject(false);
             } else {
                 const res = JSON.parse(body);
-                user.name = res.user.name;
-                user.blogs = res.user.blogs;
-                db.set('tumblr', user).write();
-                resolve(true);
+                if (res && res.user) {
+                  user.name = res.user.name;
+                  user.blogs = res.user.blogs;
+                  db.set('tumblr', user).write();
+                  resolve(true);
+                } else {
+                  db.unset('tumblr').write();
+                  user = {};
+                  reject(false);
+                }
             }
         });
     });

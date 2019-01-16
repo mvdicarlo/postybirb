@@ -406,7 +406,7 @@ export class PostyBirbState implements NgxsOnInit {
 
     if (arr.length > 0) {
       for (let i = 0; i < arr.length; i++) {
-        if (arr[i].meta.id === id) return i;
+        if (arr[i] && arr[i].meta.id === id) return i;
       }
     }
 

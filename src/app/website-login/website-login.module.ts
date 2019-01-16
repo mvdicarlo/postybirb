@@ -42,6 +42,7 @@ import { FurryAminoDialogComponent } from './website-row/furry-amino-dialog/furr
 import { NewgroundsDialogComponent } from './website-row/newgrounds-dialog/newgrounds-dialog.component';
 import { AppProfileManagerComponent } from './app-profile-manager/app-profile-manager.component';
 import { ProfileAddDialogComponent } from './dialog/profile-add-dialog/profile-add-dialog.component';
+import { ProfileRemoveDialogComponent } from './dialog/profile-remove-dialog/profile-remove-dialog.component';
 
 @NgModule({
   imports: [
@@ -85,6 +86,7 @@ import { ProfileAddDialogComponent } from './dialog/profile-add-dialog/profile-a
     NewgroundsDialogComponent,
     AppProfileManagerComponent,
     ProfileAddDialogComponent,
+    ProfileRemoveDialogComponent,
   ],
   entryComponents: [
     LoginPanelComponent,
@@ -110,7 +112,8 @@ import { ProfileAddDialogComponent } from './dialog/profile-add-dialog/profile-a
     WeasylDialogComponent,
     WebsiteStatusComponent,
     BaseWebsiteDialog,
-    ProfileAddDialogComponent
+    ProfileAddDialogComponent,
+    ProfileRemoveDialogComponent
   ],
   exports: [
     PBWebsitesComponent

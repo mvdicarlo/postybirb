@@ -84,7 +84,9 @@ export class PostyBirbSubmissionModel {
   public getPreloadedSubmissionFile(): Promise<FileInformation> {
     return new Promise(function(resolve, reject) {
       if (this.submissionFile) {
-        this.submissionFile.getFileInformationEnsureLoaded().then(fileInformation => resolve(fileInformation));
+        this.submissionFile.getFileInformationEnsureLoaded()
+        .then(fileInformation => resolve(fileInformation))
+        .catch(() => reject());
       } else {
         reject(Error('No set submission file'));
       }
@@ -122,7 +124,9 @@ export class PostyBirbSubmissionModel {
   public getPreloadedThumbnailFile(): Promise<FileInformation> {
     return new Promise(function(resolve, reject) {
       if (this.submissionFile) {
-        this.thumbnailFile.getFileInformationEnsureLoaded().then(fileInformation => resolve(fileInformation));
+        this.thumbnailFile.getFileInformationEnsureLoaded()
+        .then(fileInformation => resolve(fileInformation))
+        .catch(() => reject());
       } else {
         reject(Error('No set submission file'));
       }

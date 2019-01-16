@@ -15,7 +15,9 @@ import { PostyBirbQueueStateAction } from '../../stores/states/posty-birb-queue.
 export class PostManagerService {
   public posting: boolean = false;
 
-  constructor(@Inject(forwardRef(() => Store)) private _store: Store, private postService: PostService) {}
+  constructor(@Inject(forwardRef(() => Store)) private _store: Store, private postService: PostService) {
+    postService.setCompletionCallback(this.completed.bind(this));
+  }
 
   public startPosting(archive: SubmissionArchive, useSkipInterval: boolean): boolean {
     this.posting = true;
@@ -41,13 +43,13 @@ export class PostManagerService {
   private beginNextPost(archive: SubmissionArchive, useSkipInterval: boolean): void {
     if (useSkipInterval) {
       const interval = Number(db.get('postInterval').value() || 0);
-      this.postService.post(archive, this.completed.bind(this), interval * 60000);
+      this.postService.post(archive, interval * 60000);
     } else {
-      this.postService.post(archive, this.completed.bind(this), 0);
+      this.postService.post(archive, 0);
     }
   }
 
-  private completed(model: PostyBirbSubmissionModel, res: { status, remainingWebsites, responses, failedWebsites }) {
+  public completed(model: PostyBirbSubmissionModel, res: { status, remainingWebsites, responses, failedWebsites }) {
     this.posting = false;
     model.submissionStatus = res.status;
     model.unpostedWebsites = [...res.remainingWebsites, ...res.failedWebsites].sort();

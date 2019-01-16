@@ -1,5 +1,6 @@
 declare var module: NodeModule;
 declare var addOrOpenAppProfile: any;
+declare var removeAppProfile: any;
 declare var appVersion: any;
 declare var db: any;
 declare var fakePosts: any;

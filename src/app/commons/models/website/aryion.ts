@@ -42,6 +42,9 @@ export class Aryion extends BaseWebsite implements Website {
                   }
 
                   resolve(this.loginStatus);
+                }, err => {
+                  this.loginStatus = WebsiteStatus.Logged_Out;
+                  resolve(this.loginStatus);
                 });
             } catch (e) {
               this.loginStatus = WebsiteStatus.Logged_Out;
@@ -89,14 +92,14 @@ export class Aryion extends BaseWebsite implements Website {
         value: submission.submissionData.submissionFile.getFileBuffer(),
         options: {
           contentType: submission.submissionData.submissionFile.getFileInfo().type,
-          filename: submission.submissionData.submissionFile.getFileInfo().name || 'upload.jpg'
+          filename: (submission.submissionData.submissionFile.getFileInfo() || {}).name || 'upload.jpg'
         }
       },
       thumb: submission.submissionData.thumbnailFile.realFile ? {
         value: submission.submissionData.thumbnailFile.getFileBuffer(),
         options: {
-          contentType: submission.submissionData.thumbnailFile.getFileInfo().type,
-          filename: submission.submissionData.thumbnailFile.getFileInfo().name || 'thumbnail.jpg'
+          contentType: (submission.submissionData.thumbnailFile.getFileInfo() || {}).type,
+          filename: (submission.submissionData.thumbnailFile.getFileInfo() || {}).name || 'thumbnail.jpg'
         }
       } : '',
       desc: submission.description,

@@ -1,5 +1,6 @@
 import { Component, Injector, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseOptionForm } from '../../base-option-form/base-option-form.component';
+import { SubmissionType } from '../../../enums/submission-type.enum';
 
 @Component({
   selector: 'weasyl-form',
@@ -10,6 +11,8 @@ import { BaseOptionForm } from '../../base-option-form/base-option-form.componen
 })
 export class WeasylFormComponent extends BaseOptionForm {
 
+  public submissionTypes: any = SubmissionType;
+
   constructor(injector: Injector) {
     super(injector);
     this.website = this.supportedWebsites.Weasyl;
@@ -18,7 +21,8 @@ export class WeasylFormComponent extends BaseOptionForm {
       critique: [false],
       friendsOnly: [false],
       notify: [true],
-      folder: ['']
+      folder: [''],
+      category: []
     });
   }
 

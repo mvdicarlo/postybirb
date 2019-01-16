@@ -30,6 +30,9 @@
           <form-template-select class="col-md-4 col-lg-4 col-xl-2" style="padding-left: 3px" #templateSelect (onSelect)="templateSelected($event)"></form-template-select>
           <input type="file" single class="d-none" #changeFileInput (change)="changeFile($event)" single>
           <input type="file" single class="d-none" accept="image/*" #changeThumbnailFileInput (change)="changeThumbnail($event)" single>
+          <div class="saving-spinner" *ngIf="savingEdits">
+            <mat-spinner [diameter]="35"></mat-spinner>
+          </div>
         </div>
         <div class="row no-gutters">
           <mat-form-field color="accent" class="col-md-3 col-lg-3 col-xl-3">
@@ -177,7 +180,7 @@
                 </ng-template>
                 <mat-tab-group>
                   <mat-tab *ngFor="let website of getSelectedWebsitesWithOptions()" [label]="website">
-                    <options-section (optionChanges)="saveAndValidate()" [website]="website" [control]="optionsForm.get(website)"></options-section>
+                    <options-section (optionChanges)="saveAndValidate()" [website]="website" [submissionType]="submission.type" [rating]="form.value.rating" [control]="optionsForm.get(website)"></options-section>
                   </mat-tab>
                 </mat-tab-group>
               </form>

@@ -3,6 +3,8 @@ import { FormControl } from '@angular/forms';
 
 import { BaseOptionForm } from '../components/base-option-form/base-option-form.component';
 import { OptionsForms } from '../models/website-options.model';
+import { SubmissionType } from '../enums/submission-type.enum';
+import { Rating } from '../enums/rating.enum';
 
 export interface OptionSection {
   component: Type<BaseOptionForm>;
@@ -15,7 +17,18 @@ export interface OptionSection {
 export class OptionsSectionDirective implements OnInit, AfterViewInit {
   @Input() website: string;
   @Input() control: FormControl;
+  @Input() submissionType: SubmissionType;
   @Output() readonly optionChanges: EventEmitter<any> = new EventEmitter();
+
+  @Input()
+  get rating(): Rating { return this._rating }
+  set rating(rating: Rating) {
+    this._rating = rating || Rating.GENERAL;
+    if (this.component) {
+      this.component.rating = this._rating;
+    }
+  }
+  private _rating: Rating = Rating.GENERAL;
 
   private section: OptionSection;
 
@@ -28,6 +41,7 @@ export class OptionsSectionDirective implements OnInit, AfterViewInit {
 
     if (this.section) {
       this.component = (<BaseOptionForm>this.viewContainerRef.createComponent(this.cfr.resolveComponentFactory(this.section.component)).instance);
+      this.component.submissionType = this.submissionType;
     }
   }
 

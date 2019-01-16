@@ -30,7 +30,8 @@ import {
   MatTooltipModule,
   MatProgressBarModule,
   MatExpansionModule,
-  MatButtonToggleModule
+  MatButtonToggleModule,
+  MatProgressSpinnerModule
 } from '@angular/material';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { OverlayModule } from '@angular/cdk/overlay';
@@ -136,6 +137,7 @@ const routes: Routes = [
     MatStepperModule,
     MatTabsModule,
     MatExpansionModule,
+    MatProgressSpinnerModule,
     MatTooltipModule,
     MatProgressBarModule,
     MatButtonToggleModule,
