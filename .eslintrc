@@ -1,0 +1,31 @@
+{
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
+    "mocha": true,
+    "jquery": true
+  },
+  "globals": {
+    "alertify": true,
+    "translate": true,
+    "store": true,
+    "webMap": true,
+    "alert": true
+  },
+  "rules": {
+    "no-use-before-define": ["error", {
+      "functions": false,
+      "classes": false
+    }],
+    "indent": ["error", 4],
+    "no-undef": ["error", {
+      "typeof": false
+    }],
+    "no-plusplus": ["error", {
+      "allowForLoopAfterthoughts": true
+    }]
+  }
+}
