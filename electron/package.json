@@ -4,7 +4,11 @@
   "description": "postybirb crossposter nodejs angular electronjs electron",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf PBA/; rm -rf electron-dist/",
+    "start": "set DEVELOP=true SFW=true&&electron main.js",
+    "eb-unix": "electron-builder -m",
+    "eb-linux": "electron-builder -l",
+    "eb-windows": "electron-builder -w"
   },
   "repository": {
     "type": "git",
@@ -24,9 +28,71 @@
     "url": "https://github.com/mvdicarlo/postybirb/issues"
   },
   "homepage": "https://github.com/mvdicarlo/postybirb#readme",
+  "build": {
+    "appId": "com.lemonynade.postybirb",
+    "productName": "PostyBirb",
+    "publish": {
+      "provider": "github",
+      "owner": "mvdicarlo",
+      "repo": "postybirb"
+    },
+    "directories": {
+      "buildResources": "build",
+      "output": "electron-dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "icon": "icons/icon.icns",
+      "target": [
+        "zip",
+        "dmg"
+      ]
+    },
+    "linux": {
+      "artifactName": "${productName}-${version}.${ext}",
+      "icon": "icons/icon_256x256x32.png",
+      "category": "Network",
+      "target": [
+        "AppImage",
+        "snap"
+      ]
+    },
+    "win": {
+      "icon": "icons/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
+    }
+  },
   "devDependencies": {
     "electron": "^3.1.1",
-    "electron-builder": "^20.34.0"
+    "electron-builder": "^20.34.0",
+    "eslint": "^3.19.0",
+    "babel-eslint": "^7.2.3",
+    "eslint-config-airbnb": "^15.0.2",
+    "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jsx-a11y": "^5.1.1",
+    "eslint-plugin-react": "^7.1.0"
   },
   "dependencies": {
     "electron-context-menu": "^0.10.1",
