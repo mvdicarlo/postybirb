@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "compile": "ng build --vendor-chunk=false",
+    "build": "ng build --vendor-chunk=false --aot",
+    "prod": "ng build --prod --output-hashing=none --aot",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

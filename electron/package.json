@@ -1,0 +1,40 @@
+{
+  "name": "postybirb",
+  "version": "2.0.0",
+  "description": "postybirb crossposter nodejs angular electronjs electron",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
+  },
+  "keywords": [
+    "postybirb",
+    "crossposter",
+    "nodejs",
+    "angular",
+    "electronjs",
+    "electron"
+  ],
+  "author": "Michael DiCarlo",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/mvdicarlo/postybirb/issues"
+  },
+  "homepage": "https://github.com/mvdicarlo/postybirb#readme",
+  "devDependencies": {
+    "electron": "^3.1.1",
+    "electron-builder": "^20.34.0"
+  },
+  "dependencies": {
+    "electron-context-menu": "^0.10.1",
+    "electron-log": "^2.2.17",
+    "electron-updater": "^4.0.6",
+    "electron-window-state": "^5.0.3",
+    "express": "^4.16.4",
+    "got": "^9.6.0",
+    "mastodon-api": "^1.3.0"
+  }
+}
