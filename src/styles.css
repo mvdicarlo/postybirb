@@ -1,5 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-
 /* CSS to force fullscreen */
 html, body {
   height: 100% !important;
@@ -22,4 +21,25 @@ body {
   .container {
     max-width: 1340px !important;
   }
+}
+
+/* Scrollbar CSS Customization */
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 8px;
+  background-color: #888;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #1f1f1f;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #eee;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(to left, #22ADD4, #1E98BA);
 }
