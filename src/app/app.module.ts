@@ -7,7 +7,11 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import {
-  MatToolbarModule
+  MatToolbarModule,
+  MatSidenavModule,
+  MatIconModule,
+  MatTooltipModule,
+  MatButtonModule
 } from '@angular/material';
 
 import { AppComponent } from './app.component';
@@ -27,7 +31,11 @@ import { AppComponent } from './app.component';
         deps: [HttpClient]
       }
     }),
-    MatToolbarModule
+    MatToolbarModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatButtonModule
   ],
   providers: [],
   bootstrap: [AppComponent]

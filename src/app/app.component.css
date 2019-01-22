@@ -19,3 +19,44 @@
 mat-toolbar {
   height: 40px;
 }
+
+.app-layout {
+  display: grid;
+  grid-template-rows: 40px calc(100vh - 40px);
+}
+
+mat-drawer a {
+  position: relative;
+  display: block;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  border-bottom: 1px solid #6f6f6f;
+}
+
+mat-drawer a i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: lightgray;
+  font-size: 1.5em;
+}
+
+mat-drawer a:hover {
+  background-color: #6f6f6f;
+  color: white;
+}
+
+mat-sidenav-container {
+  height: 100%;
+}
+
+.drawer-control {
+  width: 50px;
+}
+
+.drawer-control button {
+  width: 50px;
+  outline: none;
+}

@@ -1,7 +1,51 @@
-<mat-toolbar color="primary" class="mat-elevation-z6">
-  <div class="app-icon">
-    <img src="./assets/icon/minnowicon.png" alt="PostyBirb Icon">
-    <h3>PostyBirb</h3>
-    <span class="version-number">{{version}}</span>
-  </div>
-</mat-toolbar>
+<div class="app-layout">
+  <mat-toolbar color="primary" class="mat-elevation-z6 pl-0">
+    <div class="drawer-control">
+      <button mat-icon-button (click)="drawer.toggle()" [matTooltip]="'Menu' | translate" matTooltipPosition="right">
+        <mat-icon>menu</mat-icon>
+      </button>
+    </div>
+    <div class="app-icon">
+      <img src="./assets/icon/minnowicon.png" alt="PostyBirb Icon">
+      <h3>PostyBirb</h3>
+      <span class="version-number">{{version}}</span>
+    </div>
+  </mat-toolbar>
+
+  <mat-drawer-container>
+    <mat-drawer mode="side" opened #drawer>
+      <a [matTooltip]="'Login' | translate" matTooltipPosition="right" (click)="loginPanel.toggle()">
+        <i class="fas fa-users"></i>
+      </a>
+      <a [matTooltip]="'Changelog' | translate" matTooltipPosition="right">
+        <i class="fas fa-hammer"></i>
+      </a>
+      <a [matTooltip]="'Help translate' | translate" matTooltipPosition="right">
+        <i class="fas fa-language"></i>
+      </a>
+      <a [matTooltip]="'License' | translate" matTooltipPosition="right">
+        <i class="fas fa-file-contract"></i>
+      </a>
+      <a [matTooltip]="'Join our Discord!' | translate" matTooltipPosition="right">
+        <i class="fab fa-discord"></i>
+      </a>
+      <a [matTooltip]="'Settings' | translate" matTooltipPosition="right">
+        <i class="fas fa-cog"></i>
+      </a>
+    </mat-drawer>
+
+    <mat-drawer-content>
+      <mat-sidenav-container [autosize]="true">
+        <mat-sidenav mode="over" #loginPanel>
+          Login content
+        </mat-sidenav>
+
+        <mat-sidenav-content>
+          <div class="container">
+            Main Content
+          </div>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </mat-drawer-content>
+  </mat-drawer-container>
+</div>
