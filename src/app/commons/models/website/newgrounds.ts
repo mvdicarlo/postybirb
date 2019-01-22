@@ -8,6 +8,7 @@ import { WebsiteStatus } from '../../enums/website-status.enum';
 import { HTMLParser } from '../../helpers/html-parser';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { Observable } from 'rxjs';
+import { FileInformation } from '../file-information';
 
 @Injectable()
 export class Newgrounds extends BaseWebsite implements Website {
@@ -44,43 +45,66 @@ export class Newgrounds extends BaseWebsite implements Website {
         .subscribe(uploadPage => {
           const options = submission.options;
 
-          const data: any = {
-            userkey: HTMLParser.getInputValue(uploadPage, 'userkey'),
+          const file: File = submission.submissionData.submissionFile.getRealFile();
+          const userkey = HTMLParser.getInputValue(uploadPage, 'userkey');
+          const data1: any = {
+            userkey,
+            qquuid: window.URL.createObjectURL(file).split('///')[1],
+            qqfilename: file.name,
+            qqtotalfilesize: file.size,
+            qqfile: {
+                  value: submission.submissionData.submissionFile.getFileBuffer(),
+                  options: {
+                    contentType: submission.submissionData.submissionFile.getFileInfo().type,
+                    filename: submission.submissionData.submissionFile.getFileInfo().name || 'upload.jpg'
+                  }
+            }
+          };
+
+          const thumbfile: FileInformation = submission.submissionData.thumbnailFile.realFile ? submission.submissionData.thumbnailFile : submission.submissionData.submissionFile;
+          const thumb: File = thumbfile.getRealFile();
+          const nativeImg = nativeImage.createFromBuffer(thumbfile.getFileBuffer());
+          const sizes = nativeImg.getSize();
+          const data2: any = {
+            userkey,
             title: submission.submissionData.title,
-            description: submission.description,
-            file_path: {
-              value: submission.submissionData.submissionFile.getFileBuffer(),
+            description: `<p>${submission.description}</p>`.replace(/\n/g, '<br>'),
+            thumbnail: {
+              value: thumbfile.getFileBuffer(),
               options: {
-                contentType: submission.submissionData.submissionFile.getFileInfo().type,
-                filename: submission.submissionData.submissionFile.getFileInfo().name || 'upload.jpg'
+                contentType: thumb.type,
+                filename: 'blob'
               }
             },
-            cc_commercial: options.commercial ? 'on' : 'off',
-            cc_modification: options.modification ? 'on' : 'off',
+            cc_commercial: options.commercial ? 'yes' : 'no',
+            cc_modification: options.modification ? 'yes' : 'no',
             category_id: options.category,
             nudity: options.nudity,
             violence: options.violence,
             language_textual: options.text,
             adult_themes: options.adult,
-            thumb_crop_width: 0,
-            thumb_crop_height: 0,
+            encoder: 2,
+            thumb_crop_width: sizes.width,
+            thumb_crop_height: sizes.height,
             thumb_top_x: 0,
-            thumb_top_y: 0
+            thumb_top_y: 0,
+            thumb_animation_frame: 0
           };
+
+          if (options.creativeCommons) {
+            data2.use_creative_commons = 1;
+          }
 
           const tags = this.formatTags(submission.defaultTags, submission.customTags);
           for (let i = 0; i < tags.length; i++) {
-            data[`tag_${i}`] = tags[i];
+            data2[`tag_${i}`] = tags[i];
           }
 
           if (!options.sketch) {
-            data.public = '1'
-          }
-          if (options.creativeCommons) {
-            data.use_creative_commons = 'on';
+            data2.public = '1'
           }
 
-          window['newgrounds'].post(data)
+          window['newgrounds'].post(data1, data2)
             .then((res) => {
               observer.next(res);
               observer.complete();

@@ -95,7 +95,9 @@ if (process.platform == 'win32' || process.platform == 'darwin') {
 
 // these two commands need to be checked for removal on electron 3.1.0+
 // app.commandLine.appendSwitch('auto-detect', 'false');
-// app.commandLine.appendSwitch('no-proxy-server');
+app.commandLine.appendSwitch('no-proxy-server');
+app.commandLine.appendSwitch('proxy-server', 'direct://');
+app.commandLine.appendSwitch('proxy-bypass-list', '*');
 
 app.on('ready', () => {
     const profileMenu = {

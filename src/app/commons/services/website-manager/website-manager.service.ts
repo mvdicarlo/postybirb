@@ -101,7 +101,7 @@ export class WebsiteManagerService {
         observer.complete();
         return;
       } else {
-        this.hasAlreadySeenAndMayBeAttemptingList.push(attempt);
+        // this.hasAlreadySeenAndMayBeAttemptingList.push(attempt); currently disabled because I don't think it provides any benefit currently
       }
 
       const attemptIndex: number = this.hasAlreadySeenAndMayBeAttemptingList.indexOf(attempt);

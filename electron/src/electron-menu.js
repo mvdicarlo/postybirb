@@ -48,8 +48,9 @@ const template = [{
         role: 'minimize',
     }, {
         role: 'close',
-    },
-    ],
+    }, {
+        role: 'quit',
+    }],
 }, {
     role: 'help',
     submenu: [{

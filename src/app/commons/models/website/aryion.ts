@@ -103,7 +103,7 @@ export class Aryion extends BaseWebsite implements Website {
         }
       } : '',
       desc: submission.description,
-      tags: this.formatTags(submission.defaultTags, submission.customTags).join('\n'),
+      tags: this.formatTags(submission.defaultTags, submission.customTags).filter(f => !f.match(/(v|V)ore/)).filter(f => !f.match(/(n|N)on-vore/)).join('\n'),
       'reqtag[]': submission.options.reqtag === 1 ? 'Non-Vore' : '',
       view_perm: submission.options.viewPerm,
       comment_perm: submission.options.commentPerm,

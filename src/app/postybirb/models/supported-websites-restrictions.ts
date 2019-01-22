@@ -187,29 +187,7 @@ export class SupportedWebsiteRestrictions {
     return Object.assign({}, this.webMap);
   }
 
-  private static convertFileSizeToMB(size): number {
-    return size / 1000000;
-  }
-
-  private static fileSizeSupported(website: any, type: string, file: File | FileObject): boolean {
-    const fileSize = this.convertFileSizeToMB(file.size);
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    const sizeRequirements = website.supportedFileSize;
-
-    let sizeLimit: number = 0;
-    const category: any = sizeRequirements[type];
-    if (typeof category === 'object') {
-      sizeLimit = category[fileExtension] || sizeRequirements.default;
-    } else {
-      //Assume number or null
-      sizeLimit = category || sizeRequirements.default;
-    }
-
-    return fileSize <= sizeLimit;
-  }
-
   private static isWithinFileSizeLimit(website: any, type: string, fileExtension: string, size: number): any {
-    const fileSize = this.convertFileSizeToMB(size);
     const sizeRequirements = website.supportedFileSize;
     let sizeLimit: number = 0;
     const category: any = sizeRequirements[type];
@@ -220,7 +198,7 @@ export class SupportedWebsiteRestrictions {
       sizeLimit = category || sizeRequirements.default;
     }
 
-    return fileSize <= sizeLimit ? 0 : sizeLimit;
+    return size <= Math.pow(1024, 2) * sizeLimit ? 0 : sizeLimit;
   }
 
   public static verifyWebsiteRestrictionsAndIncompatibilities(file: File|FileObject, rating: string, type: string, websites: string[]): any {

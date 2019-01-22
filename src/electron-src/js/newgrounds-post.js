@@ -1,7 +1,7 @@
 const session = require('electron').remote.session;
 const request = require('request');
 
-exports.post = function post(data) {
+exports.post = function post(data, optsData) {
     return new Promise((resolve, reject) => {
         session.defaultSession.cookies.get({ url: 'https://www.newgrounds.com' }, (err, cookies) => {
             if (err) {
@@ -13,16 +13,17 @@ exports.post = function post(data) {
                     jar.setCookie(cookie, 'https://www.newgrounds.com');
                 });
 
-                request.post('https://www.newgrounds.com/art/submit/uploadImage', {
+                request.post('https://www.newgrounds.com/parkfile', {
                   jar,
                   formData: data,
-                  gzip: true,
                   headers: {
                     'Origin': 'https://www.newgrounds.com',
                     'Referer': `https://www.newgrounds.com/art/submit/create`,
                     'Accept-Encoding': 'gzip, deflate, br',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-                    'Content-Type': 'multipart/form-data'
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                    'TE': 'Trailers',
+                    'X-Requested-With': 'XMLHttpRequest'
                   }
                 }, (e, res, body) => {
                     if (e) {
@@ -33,7 +34,8 @@ exports.post = function post(data) {
                         });
                     } else {
                       if (res.statusCode === 200) {
-                        if (body.includes('uploadImageError')) {
+                        const json = JSON.parse(body);
+                        if (!json.success) {
                           reject({
                               err: body,
                               msg: body,
@@ -42,18 +44,8 @@ exports.post = function post(data) {
                           return;
                         }
 
-                        try {
-                          const crops = body.split(',');
-                          data.thumb_crop_width = crops[1].trim();
-                          data.thumb_crop_height = crops[2].trim();
-                        } catch (e) {
-                          reject({
-                              err: e,
-                              msg: body,
-                              data,
-                          });
-                          return;
-                        }
+                        optsData.parked_id = json.parked_id;
+                        optsData.parked_url = json.parked_url;
 
                         const jar = request.jar();
                         res.headers['set-cookie'].map(c => {
@@ -63,14 +55,15 @@ exports.post = function post(data) {
                         delete data.file_path;
                         request.post('https://www.newgrounds.com/art/submit/create', {
                           jar,
-                          formData: data,
+                          formData: optsData,
                           headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Origin': 'https://www.newgrounds.com',
                             'Referer': `https://www.newgrounds.com/art/submit/create`,
                             'Accept-Encoding': 'gzip, deflate, br',
                             'Accept': '*',
-                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                            'Content-Type': 'multipart/form-data',
+                            'TE': 'Trailers'
                           }
                         }, (e, res, body) => {
                             if (e) {
@@ -84,15 +77,15 @@ exports.post = function post(data) {
                                 try {
                                   const json = JSON.parse(body);
                                   if (json.url) {
-                                    resolve({ data, res: json.url });
+                                    resolve({ data: null, res: json.url });
                                   } else {
-                                    reject({ data, err: body, msg: body });
+                                    reject({ data: null, err: body, msg: body });
                                   }
                                 } catch (err) {
-                                  reject({ data, err, msg: body });
+                                  reject({ data: null, err, msg: body });
                                 }
                               } else {
-                                reject({ data, err: body, msg: body });
+                                reject({ data: null, err: body, msg: body });
                               }
                             }
                         });
