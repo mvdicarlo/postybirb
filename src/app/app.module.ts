@@ -6,6 +6,10 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
+import {
+  MatToolbarModule
+} from '@angular/material';
+
 import { AppComponent } from './app.component';
 
 @NgModule({
@@ -17,12 +21,13 @@ import { AppComponent } from './app.component';
     BrowserAnimationsModule,
     HttpClientModule,
     TranslateModule.forRoot({
-            loader: {
-                provide: TranslateLoader,
-                useFactory: HttpLoaderFactory,
-                deps: [HttpClient]
-            }
-        })
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient]
+      }
+    }),
+    MatToolbarModule
   ],
   providers: [],
   bootstrap: [AppComponent]
