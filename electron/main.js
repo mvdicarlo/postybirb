@@ -87,7 +87,7 @@ function initialize(show = true) {
       devTools: process.env.DEVELOP ? true : false,
       allowRunningInsecureContent: false,
       nodeIntegration: false,
-      preload: `${__dirname}/dist/electron-src/index.js`,
+      preload: path.join(__dirname, 'dist', 'electron-src', 'index.js'),
       webviewTag: true
     }
   });
