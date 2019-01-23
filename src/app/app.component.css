@@ -71,3 +71,10 @@ mat-sidenav-container {
   width: 50px;
   outline: none;
 }
+
+.kofi-img {
+  height: 50px;
+  width: 35px;
+  margin: auto;
+  display: block;
+}

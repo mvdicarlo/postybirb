@@ -39,4 +39,12 @@ export class AppComponent {
     store.set('language', language);
   }
 
+  /**
+   * Opens a URL in user's native/default browser
+   * @param url URL to navigate to
+   */
+  public async openURL(url: string) {
+    openUrlInBrowser(url);
+  }
+
 }

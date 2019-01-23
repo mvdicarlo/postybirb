@@ -1,8 +1,9 @@
-const { remote } = require('electron');
-const { app } = remote;
+const { remote, shell } = require('electron');
 const path = require('path');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
+
+const { app } = remote;
 
 // Loads these behaviors into browser (unsure if this is required anymore)
 const _setImmediate = setImmediate;
@@ -20,3 +21,11 @@ window.appVersion = remote.app.getVersion();
 const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));
 const ldb = low(adapter);
 window.profilesDB = ldb;
+
+/**
+ * Opens a url in the user's native/default browser
+ * @param  {string} url URL being opened
+ */
+window.openUrlInBrowser = function openUrl(url) {
+    shell.openExternal(url);
+};
