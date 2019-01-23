@@ -9,9 +9,9 @@
   </div>
 </div>
 <div mat-dialog-content>
-  <form [formGroup]="inputForm">
+  <form [formGroup]="inputForm" (ngSubmit)="complete()">
     <mat-form-field color="accent" appearance="fill">
-      <input #field matInput formControlName="input" [maxLength]="data.maxLength || 255">
+      <input #field matInput formControlName="input" [maxlength]="data.maxLength || 255">
       <mat-hint align="end">{{ (field.value || '').length }} / {{ data.maxLength || 255 }}</mat-hint>
     </mat-form-field>
   </form>

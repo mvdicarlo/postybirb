@@ -52,7 +52,8 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
         minLength: 2
       }
     }).afterClosed().subscribe(result => {
-      if (result) {
+      result = result.trim();
+      if (result && result.length) {
         this._loginManager.createProfile(result);
       }
     });
@@ -67,7 +68,8 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
         startingValue: (this.profiles.find(p => p.id === this.selectedProfileId) || <any>{}).name
       }
     }).afterClosed().subscribe(result => {
-      if (result) {
+      result = result.trim();
+      if (result && result.length) {
         this._loginManager.renameProfile(this.selectedProfileId, result);
       }
     });

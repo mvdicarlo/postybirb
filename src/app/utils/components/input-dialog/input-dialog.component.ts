@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA } from '@angular/material';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 
 export interface InputDialogOptions {
   title: string;
@@ -18,13 +18,19 @@ export class InputDialog {
   public inputForm: FormGroup;
   public title: string;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: InputDialogOptions, fb: FormBuilder) {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: InputDialogOptions, public dialogRef: MatDialogRef<InputDialog>, fb: FormBuilder) {
     this.title = data.title;
 
     // Could probably do this  with a simple FormControl instead of a FormGroup
     this.inputForm = fb.group({
-      input: [data.startingValue || null, [Validators.minLength(data.minLength || 1), Validators.maxLength(data.maxLength || 255)]]
+      input: [data.startingValue || null, [Validators.required, Validators.minLength(data.minLength || 1), Validators.maxLength(data.maxLength || 255)]]
     });
+  }
+
+  public complete(): void {
+    if (this.inputForm.valid) {
+      this.dialogRef.close(this.inputForm.value.input);
+    }
   }
 
 }
