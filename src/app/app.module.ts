@@ -3,6 +3,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 
+import { WebsitesModule } from './websites/websites.module';
+import { LoginModule } from './login/login.module';
+import { UtilsModule } from './utils/utils.module';
+
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
@@ -31,6 +35,9 @@ import { AppComponent } from './app.component';
         deps: [HttpClient]
       }
     }),
+    LoginModule,
+    WebsitesModule,
+    UtilsModule,
     MatToolbarModule,
     MatSidenavModule,
     MatIconModule,

@@ -1,0 +1,14 @@
+.login-profile-container {
+  height: 60px;
+}
+
+.login-profile-container:first-child {
+  flex: 10;
+}
+
+.login-profile-container button {
+  height: 59.5px;
+  /* should roughly match the height of the select element */
+  border-radius: 0 !important;
+  background-color: rgba(255, 255, 255, 0.1);
+}

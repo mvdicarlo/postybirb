@@ -1,0 +1,21 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ title | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <form [formGroup]="inputForm">
+    <mat-form-field color="accent" appearance="fill">
+      <input matInput formControlName="input">
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="inputForm.value.input" color="primary" class="yes-button" [disabled]="inputForm.invalid">{{ 'Yes' | translate }}</button>
+</div>

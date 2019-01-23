@@ -15,6 +15,10 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   src: url("./vendors/fonts/material-icons.woff2") format('woff2');
 }
 
+.warn-text {
+  color: mat-color($warn);
+}
+
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
@@ -29,4 +33,10 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+}
+
+/* Customize Material CSS */
+
+.mat-form-field-appearance-fill .mat-form-field-flex {
+  border-radius: 0 !important;
 }

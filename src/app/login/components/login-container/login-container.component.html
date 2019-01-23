@@ -1,0 +1,20 @@
+<div class="login-profile-container w-100 d-flex">
+  <mat-form-field color="accent" appearance="fill">
+    <mat-select [placeholder]="'Login Profile' | translate" [value]="selectedProfileId" (selectionChange)="updateProfileSelection($event)">
+      <mat-option *ngFor="let profile of profiles" [value]="profile.id">{{ profile.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-button [matMenuTriggerFor]="profileMenuActions" color="accent">
+    <i class="fas fa-ellipsis-h"></i>
+  </button>
+  <mat-menu #profileMenuActions>
+    <button mat-menu-item (click)="createNewLoginProfile()">{{ 'New' | translate }}</button>
+    <button mat-menu-item (click)="renameLoginProfile()" [disabled]="!selectedProfileId">{{ 'Rename' | translate }}</button>
+    <button mat-menu-item (click)="deleteLoginProfile()" [disabled]="!selectedProfileId" class="warn-text">{{ 'Delete' | translate }}</button>
+  </mat-menu>
+</div>
+
+<div *ngIf="selectedProfileId">
+
+</div>

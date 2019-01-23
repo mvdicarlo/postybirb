@@ -1,4 +1,8 @@
 const { remote } = require('electron');
+const { app } = remote;
+const path = require('path');
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
 
 // Loads these behaviors into browser (unsure if this is required anymore)
 const _setImmediate = setImmediate;
@@ -11,3 +15,8 @@ process.once('loaded', () => {
 });
 
 window.appVersion = remote.app.getVersion();
+
+// Set up profiles DB
+const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));
+const ldb = low(adapter);
+window.profilesDB = ldb;

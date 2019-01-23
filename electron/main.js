@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs-extra');
 const {
   app,
   BrowserWindow,
@@ -20,6 +21,8 @@ log.info('Starting PostyBirb...');
 let win = null; // Primary App BrowserWindow
 let updateInterval = null; // Interval for checking for updates
 let clearCacheInterval = null; // Interval for manually clearing cache
+const userDataPath = app.getPath('userData');
+const dataPath = path.join(userDataPath, 'data');
 
 const hasLock = app.requestSingleInstanceLock();
 if (!hasLock) {
@@ -37,6 +40,9 @@ app.on('second-instance', () => {
 });
 
 app.disableHardwareAcceleration(); // Currently not supporting this
+
+// Create/check for profile file
+fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 
 app.on('ready', () => {
   log.info('PostyBirb Ready...');
