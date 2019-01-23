@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSelectChange } from '@angular/material';
+import { Weasyl } from './websites/website-services/weasyl.service';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +14,7 @@ export class AppComponent {
   public knownLanguages: string[] = ['en', 'es'];
   private readonly BASE_LANGUAGE: string = 'en';
 
-  constructor(private _translate: TranslateService) {
+  constructor(private _translate: TranslateService, weasyl: Weasyl) {
     this.version = appVersion;
     _translate.setDefaultLang(this.BASE_LANGUAGE); // set default language pack to english
     this._initializeLanguage();

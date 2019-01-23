@@ -40,7 +40,8 @@ app.on('second-instance', () => {
 });
 
 app.disableHardwareAcceleration(); // Currently not supporting this
-
+// app.commandLine.appendSwitch('proxy-bypass-list', '*')
+// app.commandLine.appendSwitch('proxy-server', 'direct://')
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 
@@ -113,13 +114,11 @@ function initialize(show = true) {
     win = null;
   });
 
-  win.webContents.on('did-fail-load', () => win.loadURL(`file://${__dirname}/dist/index.html`)); // Reload correct file when angular routing messes with Reload
-
   win.webContents.once('did-frame-finish-load', () => {
     this.cacheClearInterval = setInterval(() => {
       win.webContents.session.clearCache(() => {});
-    });
-  }, 30000);
+    }, 30000);
+  });
 }
 
 /**
