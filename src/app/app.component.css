@@ -1,5 +1,6 @@
 .app-icon {
   height: 100%;
+  flex: 10;
 }
 
 .app-icon img {
@@ -14,6 +15,16 @@
 
 .app-icon .version-number {
   font-size: 0.55em;
+}
+
+.language-select {
+  flex: 1;
+  font-size: 15px;
+  align-self: stretch;
+}
+
+.language-select mat-form-field {
+  height: 100%;
 }
 
 mat-toolbar {

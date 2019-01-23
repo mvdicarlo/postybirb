@@ -23,8 +23,11 @@ body {
   }
 }
 
-/* Scrollbar CSS Customization */
+.fill-background {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 
+/* Scrollbar CSS Customization */
 *::-webkit-scrollbar {
   width: 6px;
   height: 8px;

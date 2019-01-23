@@ -4,9 +4,7 @@ $primary: mat-palette($mat-blue, 800);
 $accent: mat-palette($mat-light-blue, 600, 100, 800);
 $warn: mat-palette($mat-red, 600);
 $theme: mat-dark-theme($primary, $accent, $warn);
-@include angular-material-theme($theme);
-
-// Material Icons
+@include angular-material-theme($theme); // Material Icons
 /* fallback */
 @font-face {
   font-family: 'Material Icons';
@@ -34,9 +32,11 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
-
 /* Customize Material CSS */
-
 .mat-form-field-appearance-fill .mat-form-field-flex {
   border-radius: 0 !important;
+}
+
+.mat-form-field-appearance-fill .mat-select-arrow-wrapper {
+  vertical-align: bottom;
 }

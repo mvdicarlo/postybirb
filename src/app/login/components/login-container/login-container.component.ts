@@ -64,7 +64,7 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
         title: 'Rename',
         maxLength: 30,
         minLength: 2,
-        startingValue: (this.profiles.find(p => p.id === this.selectedProfileId) || <any> {}).name
+        startingValue: (this.profiles.find(p => p.id === this.selectedProfileId) || <any>{}).name
       }
     }).afterClosed().subscribe(result => {
       if (result) {

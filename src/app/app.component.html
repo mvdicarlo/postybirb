@@ -1,7 +1,7 @@
 <div class="app-layout">
-  <mat-toolbar color="primary" class="mat-elevation-z6 pl-0">
+  <mat-toolbar color="primary" class="mat-elevation-z6 p-0">
     <div class="drawer-control">
-      <button mat-icon-button (click)="drawer.toggle()" [matTooltip]="'Menu' | translate" matTooltipPosition="right">
+      <button mat-icon-button (click)="drawer.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
     </div>
@@ -9,6 +9,14 @@
       <img src="./assets/icon/minnowicon.png" alt="PostyBirb Icon">
       <h3>PostyBirb</h3>
       <span class="version-number">{{version}}</span>
+    </div>
+    <div class="language-select">
+      <mat-form-field color="accent" class="pl-2 w-100 fill-background">
+        <mat-select [(value)]="userLanguage" (selectionChange)="changeLanguage($event)">
+          <mat-option value="en">EN - English</mat-option>
+          <mat-option value="es">ES - Spanish</mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
   </mat-toolbar>
 
@@ -20,7 +28,7 @@
       <a [matTooltip]="'Changelog' | translate" matTooltipPosition="right">
         <i class="fas fa-hammer"></i>
       </a>
-      <a [matTooltip]="'Help translate' | translate" matTooltipPosition="right">
+      <a [matTooltip]="'Help Translate' | translate" matTooltipPosition="right">
         <i class="fas fa-language"></i>
       </a>
       <a [matTooltip]="'License' | translate" matTooltipPosition="right">

@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { MatSelectChange } from '@angular/material';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   public version: string;
   public userLanguage: string = 'en';
-  private knownLanguages: any = ['en', 'es'];
+  public knownLanguages: string[] = ['en', 'es'];
   private readonly BASE_LANGUAGE: string = 'en';
 
   constructor(private _translate: TranslateService) {
@@ -18,21 +19,24 @@ export class AppComponent implements OnInit {
     this._initializeLanguage();
   }
 
-  ngOnInit(): void {
-  }
-
   /**
    * Set initial language pack depending on computer settings
    */
   private _initializeLanguage(): void {
-    let userLanguage = window.navigator.language.split('-')[0];
+    let userLanguage: string = window.navigator.language.split('-')[0];
     if (!this.knownLanguages.includes(userLanguage)) {
       userLanguage = this.BASE_LANGUAGE;
     }
 
-    const storeLanguage = store.get('language');
+    const storeLanguage: string = store.get('language');
     this.userLanguage = storeLanguage || userLanguage;
     this._translate.use(this.userLanguage);
+  }
+
+  public changeLanguage(event: MatSelectChange): void {
+    const language: string = event.value;
+    this._translate.use(language);
+    store.set('language', language);
   }
 
 }

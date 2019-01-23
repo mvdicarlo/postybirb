@@ -15,7 +15,9 @@ import {
   MatSidenavModule,
   MatIconModule,
   MatTooltipModule,
-  MatButtonModule
+  MatButtonModule,
+  MatSelectModule,
+  MatInputModule
 } from '@angular/material';
 
 import { AppComponent } from './app.component';
@@ -42,7 +44,9 @@ import { AppComponent } from './app.component';
     MatSidenavModule,
     MatIconModule,
     MatTooltipModule,
-    MatButtonModule
+    MatButtonModule,
+    MatSelectModule,
+    MatInputModule
   ],
   providers: [],
   bootstrap: [AppComponent]
