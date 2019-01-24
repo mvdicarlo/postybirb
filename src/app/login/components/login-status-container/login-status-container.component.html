@@ -1,0 +1,9 @@
+<table class="table table-dark m-0">
+  <tbody>
+    <tr *ngFor="let registry of registeredWebsites | keyvalue">
+      <td>
+        <login-status-view [config]="registry.value"></login-status-view>
+      </td>
+    </tr>
+  </tbody>
+</table>

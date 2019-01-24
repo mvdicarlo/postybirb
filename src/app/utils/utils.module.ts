@@ -13,11 +13,13 @@ import {
 
 import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog.component';
 import { InputDialog } from './components/input-dialog/input-dialog.component';
+import { ProfileNamePipe } from './pipes/profile-name.pipe';
 
 @NgModule({
   declarations: [
     ConfirmDialog,
-    InputDialog
+    InputDialog,
+    ProfileNamePipe
   ],
   imports: [
     CommonModule,
@@ -30,7 +32,8 @@ import { InputDialog } from './components/input-dialog/input-dialog.component';
   ],
   exports: [
     ConfirmDialog,
-    InputDialog
+    InputDialog,
+    ProfileNamePipe
   ],
   entryComponents: [
     ConfirmDialog,

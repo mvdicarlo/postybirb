@@ -1,5 +1,5 @@
 <div class="login-profile-container w-100 d-flex">
-  <mat-form-field color="accent" appearance="fill">
+  <mat-form-field color="accent" appearance="fill" class="w-100">
     <mat-label>{{ 'Login Profile' | translate }}</mat-label>
     <mat-select [placeholder]="'Login Profile' | translate" [value]="selectedProfileId" (selectionChange)="updateProfileSelection($event)">
       <mat-option *ngFor="let profile of profiles" [value]="profile.id">{{ profile.name }}</mat-option>
@@ -16,6 +16,6 @@
   </mat-menu>
 </div>
 
-<div *ngIf="selectedProfileId">
-
+<div class="login-status-section">
+  <login-status-container></login-status-container>
 </div>

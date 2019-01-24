@@ -1,0 +1,9 @@
+.logo {
+  flex: 10;
+  font-weight: bold;
+  margin: auto;
+}
+
+tr {
+  cursor: pointer;
+}

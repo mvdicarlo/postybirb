@@ -92,4 +92,15 @@ export class LoginProfileManagerService {
     }
   }
 
+  /**
+   * Returns name of a given profile id
+   * @param  id Profile reference Id
+   * @return    Profile Name
+   */
+  public getProfileName(id: string): string {
+    return this.db.get(this.PROFILE_FIELD)
+      .find({ id })
+      .value().name;
+  }
+
 }

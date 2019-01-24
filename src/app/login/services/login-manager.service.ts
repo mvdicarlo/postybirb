@@ -2,7 +2,7 @@ import { Injectable, Injector } from '@angular/core';
 import { LoginProfileManagerService } from './login-profile-manager.service';
 import { LoginProfile } from '../interfaces/login-profile';
 import { WebsiteService, WebsiteStatus } from 'src/app/websites/interfaces/website-service.interface';
-import { WebsiteRegistry, RegistryConfig } from 'src/app/websites/registries/website.registry';
+import { WebsiteRegistry, WebsiteRegistryConfig } from 'src/app/websites/registries/website.registry';
 import { WebsiteConfig } from 'src/app/websites/decorators/website-decorator';
 import { interval, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { debounceTime, share } from 'rxjs/operators';
@@ -26,7 +26,7 @@ export class LoginManagerService {
   constructor(private _profileManager: LoginProfileManagerService, private injector: Injector) {
     const registeredWebsites = WebsiteRegistry.getRegistered();
     Object.keys(registeredWebsites).forEach(key => {
-      this._registerInterval(registeredWebsites[key].class, registeredWebsites[key].config);
+      this._registerInterval(registeredWebsites[key].class, registeredWebsites[key].websiteConfig);
     });
 
     _profileManager.profileChanges.subscribe(profiles => this._checkAndTrim(profiles));

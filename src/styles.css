@@ -27,6 +27,11 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Override default bootstrap coloring for nested tables */
+.table .table {
+  background-color: #444 !important;
+}
+
 /* Scrollbar CSS Customization */
 *::-webkit-scrollbar {
   width: 6px;

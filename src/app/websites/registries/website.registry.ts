@@ -1,15 +1,19 @@
 import { WebsiteConfig } from '../decorators/website-decorator';
 
-export interface RegistryConfig {
-  config: WebsiteConfig;
+export interface WebsiteRegistryConfig {
+  websiteConfig: WebsiteConfig;
   name: string;
   class: Function;
 }
 
-export class WebsiteRegistry {
-  private static readonly registeredWebsites: Map<string, RegistryConfig> = new Map();
+export interface WebsiteRegistryEntry {
+  [key: string]: WebsiteRegistryConfig
+}
 
-  public static getRegistered(): {[key: string]: RegistryConfig} {
+export class WebsiteRegistry {
+  private static readonly registeredWebsites: Map<string, WebsiteRegistryConfig> = new Map();
+
+  public static getRegistered(): WebsiteRegistryEntry {
     const objMap: {[key: string]: any} = {};
     WebsiteRegistry.registeredWebsites.forEach((value, key) => objMap[key] = value);
     return objMap;
@@ -19,7 +23,7 @@ export class WebsiteRegistry {
     console.info('Registered', service.name, config);
     Object.freeze(config)
     WebsiteRegistry.registeredWebsites.set(service.name, {
-      config,
+      websiteConfig: config,
       name: service.name,
       class: service
     });
