@@ -117,7 +117,7 @@ function initialize(show = true) {
   win.webContents.once('did-frame-finish-load', () => {
     this.cacheClearInterval = setInterval(() => {
       win.webContents.session.clearCache(() => {});
-    }, 30000);
+    }, 60000);
   });
 }
 

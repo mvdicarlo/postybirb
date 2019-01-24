@@ -93,6 +93,13 @@ export class LoginProfileManagerService {
   }
 
   /**
+   * @return Returns a list of all login profiles
+   */
+  public getAllProfiles(): LoginProfile[] {
+    return this.db.get(this.PROFILE_FIELD).sortBy('name').value();
+  }
+
+  /**
    * Returns name of a given profile id
    * @param  id Profile reference Id
    * @return    Profile Name

@@ -5,6 +5,10 @@ import { Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { WebsiteStatus, LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { MatDialog } from '@angular/material';
+import { WebsiteConfig } from 'src/app/websites/decorators/website-decorator';
+import { LoginProfileSelectDialog } from '../../login-profile-select-dialog/login-profile-select-dialog.component';
+import { LoginProfile } from 'src/app/login/interfaces/login-profile';
 
 interface Status {
   profileId: string;
@@ -28,6 +32,7 @@ export class LoginStatusViewComponent implements OnInit, OnDestroy {
   constructor(
     private _loginManager: LoginManagerService,
     private _loginProfileManager: LoginProfileManagerService,
+    private dialog: MatDialog,
     private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
@@ -66,11 +71,35 @@ export class LoginStatusViewComponent implements OnInit, OnDestroy {
 
   public login(profileId?: string): void {
     if (profileId) {
-      // TODO open profile using provided profile id
-      // TODO allow a generic type of dialog
+      this._openLoginDialog(profileId);
     } else {
-      // TODO open profile selector
+      this.dialog.open(LoginProfileSelectDialog)
+      .afterClosed()
+      .subscribe((result: LoginProfile) => {
+        if (result) {
+          this._openLoginDialog(result.id)
+        }
+      });
     }
+  }
+
+  private _openLoginDialog(profileId: string): void {
+    const { displayedName, login }: WebsiteConfig = this.config.websiteConfig;
+    this.dialog.open(login.dialog, {
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '100%',
+      width: '100%',
+      data: {
+        title: displayedName,
+        url: login.url,
+        persist: profileId
+      }
+    })
+    .afterClosed()
+    .subscribe(() => {
+      this._loginManager.updateProfiles([profileId], { websites: [this.config.name] });
+    });
   }
 
 }

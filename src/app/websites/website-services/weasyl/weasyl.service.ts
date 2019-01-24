@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Website } from '../decorators/website-decorator';
-import { WebsiteService, WebsiteStatus, LoginStatus } from '../interfaces/website-service.interface';
+import { Website } from '../../decorators/website-decorator';
+import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 
 @Injectable({
   providedIn: 'root'
 })
-@Website({})
+@Website({
+  login: {
+    url: 'https://www.weasyl.com/signin'
+  }
+})
 export class Weasyl implements WebsiteService {
 
   constructor() { }

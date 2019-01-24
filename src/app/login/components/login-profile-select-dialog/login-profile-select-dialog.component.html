@@ -1,0 +1,22 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ 'Login Profile' | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <mat-form-field color="accent" appearance="fill" class="w-100">
+    <mat-label>{{ 'Login Profile' | translate }}</mat-label>
+    <mat-select [formControl]="selectControl">
+      <mat-option *ngFor="let profile of profiles" [value]="profile">{{ profile.name }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'No' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="selectControl.value" color="primary" class="yes-button" [disabled]="selectControl.invalid">{{ 'Yes' | translate }}</button>
+</div>

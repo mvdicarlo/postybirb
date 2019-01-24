@@ -103,7 +103,7 @@ export class LoginManagerService {
    * @param ids       profile ids to check
    * @param options   filters
    */
-  public updateProfiles(ids: string[], options?: { websites: string[], intervals: number[] }): void {
+  public updateProfiles(ids: string[], options?: { websites?: string[], intervals?: number[] }): void {
     let services: WebsiteService[] = [];
     Object.keys(this.intervalMap).forEach(key => {
       if (options && options.intervals && options.intervals.length) {

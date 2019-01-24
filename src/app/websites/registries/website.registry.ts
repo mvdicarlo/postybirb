@@ -14,7 +14,7 @@ export class WebsiteRegistry {
   private static readonly registeredWebsites: Map<string, WebsiteRegistryConfig> = new Map();
 
   public static getRegistered(): WebsiteRegistryEntry {
-    const objMap: {[key: string]: any} = {};
+    const objMap: WebsiteRegistryEntry = {};
     WebsiteRegistry.registeredWebsites.forEach((value, key) => objMap[key] = value);
     return objMap;
   }
