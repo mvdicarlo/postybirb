@@ -9,5 +9,6 @@ export interface WebsiteStatus {
 }
 
 export interface WebsiteService {
+  readonly BASE_URL: string
   checkStatus(profileId: string): Promise<WebsiteStatus>;
 }

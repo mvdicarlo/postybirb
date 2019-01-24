@@ -11,15 +11,26 @@ import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/web
   }
 })
 export class Weasyl implements WebsiteService {
+  readonly BASE_URL: string = 'https://www.weasyl.com';
 
   constructor() { }
 
-  public checkStatus(ids: string): Promise<WebsiteStatus> {
-    return new Promise((resolve, reject) => {
-      resolve({
-        username: 'test',
-        status: LoginStatus.LOGGED_IN
-      })
-    });
+  public async checkStatus(profileId: string): Promise<WebsiteStatus> {
+    const returnValue: WebsiteStatus = {
+      username: null,
+      status: LoginStatus.LOGGED_OUT
+    };
+
+    const cookies = await getCookies(profileId, this.BASE_URL);
+    const response = await got.get(`${this.BASE_URL}/api/whoami`, this.BASE_URL, cookies);
+    try {
+      const body = JSON.parse(response.body);
+      if (body.login) {
+        returnValue.status = LoginStatus.LOGGED_IN;
+        returnValue.username = body.login;
+      }
+    } catch (e) { /* No important error handling */ }
+
+    return returnValue;
   }
 }

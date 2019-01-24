@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "clean": "rm -rf PBA/; rm -rf electron-dist/",
-    "start": "DEVELOP=true SFW=true electron main.js",
+    "start": "set DEVELOP=true SFW=true&&electron main.js",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
     "eb-windows": "electron-builder -w"
@@ -103,6 +103,7 @@
     "fs-extra": "^7.0.1",
     "got": "^9.6.0",
     "lowdb": "^1.0.0",
-    "mastodon-api": "^1.3.0"
+    "mastodon-api": "^1.3.0",
+    "tough-cookie": "^3.0.0"
   }
 }
