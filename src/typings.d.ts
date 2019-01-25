@@ -1,4 +1,5 @@
 declare var appVersion: string;
+declare var nativeImage: any; // electron nativeImage object
 declare var store: any; //storejs
 declare var profilesDB: any; //lowDB instance
 declare var got: {

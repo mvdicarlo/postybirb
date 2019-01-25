@@ -1,4 +1,4 @@
-const { remote, shell } = require('electron');
+const { remote, nativeImage, shell } = require('electron');
 const path = require('path');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -16,6 +16,7 @@ process.once('loaded', () => {
 });
 
 window.appVersion = remote.app.getVersion();
+window.nativeImage = nativeImage;
 
 // Set up profiles DB
 const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));

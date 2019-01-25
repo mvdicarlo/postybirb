@@ -2,6 +2,13 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
+import { CollectSubmissionInfoDialog } from '../../components/collect-submission-info-dialog/collect-submission-info-dialog.component';
+
+export interface ModifiedReadFile extends ReadFile {
+  title?: string;
+  rating?: string;
+  schedule?: Date;
+}
 
 @Component({
   selector: 'postybirb-layout',
@@ -17,8 +24,18 @@ export class PostybirbLayout implements OnInit {
   ngOnInit() {
   }
 
-  public createNewSubmission(): void {
-
+  public createNewSubmission(submissionFiles: ReadFile[] = []): void {
+    if (submissionFiles && submissionFiles.length) {
+      this.dialog.open(CollectSubmissionInfoDialog, {
+        data: submissionFiles,
+        minWidth: '50vw'
+      }).afterClosed()
+      .subscribe((results: ModifiedReadFile[]) => {
+        if (results && results.length) {
+          console.log(results);
+        }
+      });
+    }
   }
 
   public createNewJournal(): void {
@@ -46,6 +63,7 @@ export class PostybirbLayout implements OnInit {
       Promise.all(loadPromises)
       .then(results => {
         this.loading = false;
+        this.createNewSubmission(results);
       });
     }
 

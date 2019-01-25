@@ -14,12 +14,16 @@ import {
 import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog.component';
 import { InputDialog } from './components/input-dialog/input-dialog.component';
 import { ProfileNamePipe } from './pipes/profile-name.pipe';
+import { ToBase64Pipe } from './pipes/to-base64.pipe';
+import { SafePipe } from './pipes/safe.pipe';
 
 @NgModule({
   declarations: [
     ConfirmDialog,
     InputDialog,
-    ProfileNamePipe
+    ProfileNamePipe,
+    ToBase64Pipe,
+    SafePipe
   ],
   imports: [
     CommonModule,
@@ -33,7 +37,9 @@ import { ProfileNamePipe } from './pipes/profile-name.pipe';
   exports: [
     ConfirmDialog,
     InputDialog,
-    ProfileNamePipe
+    ProfileNamePipe,
+    ToBase64Pipe,
+    SafePipe
   ],
   entryComponents: [
     ConfirmDialog,

@@ -1,0 +1,37 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10"></h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <form class="row no-gutters my-2">
+    <div class="col-md-12 col-lg-12 col-xl-12 col-sm-12" *ngFor="let d of data">
+      <div class="d-inline-block mr-1" style="vertical-align: top">
+        <img *ngIf="d.file.type.includes('image')" [src]="d.buffer | toBase64: '75' | safe" [alt]="d.file.name" [title]="d.file.name">
+        <img *ngIf="!d.file.type.includes('image')" [alt]="d.file.name" [title]="d.file.name">
+      </div>
+      <div class="d-inline-block data-section">
+        <div>
+          <mat-form-field color="accent" class="d-block">
+            <input matInput name="title" [(ngModel)]="d.title" maxlength="50" [placeholder]="'Title' | translate">
+          </mat-form-field>
+          <mat-radio-group color="accent" (change)="d.rating = $event.value" class="d-block">
+            <mat-radio-button value="General">{{ 'General' | translate }}</mat-radio-button>
+            <mat-radio-button value="Mature">{{ 'Mature' | translate }}</mat-radio-button>
+            <mat-radio-button value="Adult">{{ 'Adult' | translate }}</mat-radio-button>
+            <mat-radio-button value="Extreme">{{ 'Extreme' | translate }}</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="data" color="primary" class="yes-button">{{ 'Yes' | translate }}</button>
+</div>
