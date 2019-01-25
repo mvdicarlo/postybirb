@@ -7,25 +7,26 @@ import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { WebsitesModule } from './websites/websites.module';
 import { LoginModule } from './login/login.module';
 import { UtilsModule } from './utils/utils.module';
+import { PostybirbModule } from './postybirb/postybirb.module';
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import {
-  MatToolbarModule,
-  MatSidenavModule,
-  MatIconModule,
-  MatTooltipModule,
   MatButtonModule,
+  MatIconModule,
+  MatInputModule,
   MatSelectModule,
-  MatInputModule
+  MatSidenavModule,
+  MatToolbarModule,
+  MatTooltipModule,
 } from '@angular/material';
 
 import { AppComponent } from './app.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
@@ -39,15 +40,16 @@ import { AppComponent } from './app.component';
       }
     }),
     LoginModule,
-    WebsitesModule,
+    PostybirbModule,
     UtilsModule,
-    MatToolbarModule,
-    MatSidenavModule,
-    MatIconModule,
-    MatTooltipModule,
+    WebsitesModule,
     MatButtonModule,
+    MatIconModule,
+    MatInputModule,
     MatSelectModule,
-    MatInputModule
+    MatSidenavModule,
+    MatToolbarModule,
+    MatTooltipModule,
   ],
   providers: [
     { provide: LocationStrategy, useClass: HashLocationStrategy } // try to avoid refresh issues with electron

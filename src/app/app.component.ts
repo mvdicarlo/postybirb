@@ -1,23 +1,40 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSelectChange } from '@angular/material';
 import { LoginManagerService } from './login/services/login-manager.service';
+import { Router, NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   public version: string;
   public userLanguage: string = 'en';
   public knownLanguages: string[] = ['en', 'es'];
   private readonly BASE_LANGUAGE: string = 'en';
 
-  constructor(private _translate: TranslateService, _loginManager: LoginManagerService) {
+  constructor(private _translate: TranslateService,
+    _loginManager: LoginManagerService,
+    private _router: Router) {
     this.version = appVersion;
     _translate.setDefaultLang(this.BASE_LANGUAGE); // set default language pack to english
     this._initializeLanguage();
+  }
+
+  ngOnInit() {
+    // restore last known route
+    if (store.get('lastRoute')) {
+      this._router.navigateByUrl(store.get('lastRoute'));
+    }
+
+    // store most recent app route for app restarts
+    this._router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        store.set('lastRoute', event.urlAfterRedirects);
+      }
+    });
   }
 
   /**

@@ -1,0 +1,35 @@
+<div class="pb-container row no-gutters">
+  <div class="pb-sidebar mat-elevation-z4">
+    <div class="actions">
+      <button color="accent" class="add-button w-100" mat-flat-button [matMenuTriggerFor]="addMenu">
+        <mat-icon>add</mat-icon>
+        <span>{{ 'New' | translate }}</span>
+      </button>
+      <mat-menu #addMenu="matMenu" xPosition="after">
+        <button mat-menu-item>{{ 'Submission' | translate }}</button>
+        <button mat-menu-item>{{ 'Journal/Status' | translate }}</button>
+        <button mat-menu-item>{{ 'Template' | translate }}</button>
+      </mat-menu>
+    </div>
+
+    <div class="submission-nav">
+      <table class="table table-dark">
+        <tbody>
+          <!-- Submissions go here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-sm col-md col-lg col-xl">
+    <nav mat-tab-nav-bar backgroundColor="accent">
+      <a mat-tab-link routerLink="bulk" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+        <mat-icon>view_list</mat-icon>
+        <span>{{ 'Bulk' | translate }}</span>
+      </a>
+    </nav>
+    <div class="container">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

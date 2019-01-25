@@ -1,0 +1,26 @@
+.pb-container {
+  height: 100%;
+}
+
+.pb-sidebar {
+  display: grid;
+  grid-template-rows: auto auto;
+  width: 200px;
+  background-color: #222;
+}
+
+.pb-sidebar .actions {
+
+}
+
+.actions .add-button {
+  height: 48px; /* to match tab bar */
+}
+
+.pb-sidebar .actions button {
+  border-radius: 0 !important;
+}
+
+.pb-sidebar .submission-nav {
+
+}

@@ -4,8 +4,8 @@
   "description": "postybirb crossposter nodejs angular electronjs electron",
   "main": "main.js",
   "scripts": {
-    "clean": "rm -rf PBA/; rm -rf electron-dist/",
-    "start": "set DEVELOP=true SFW=true&&electron main.js",
+    "clean": "rm -rf electron-dist/",
+    "start": "DEVELOP=true SFW=true electron main.js",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
     "eb-windows": "electron-builder -w"
