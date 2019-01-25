@@ -16,17 +16,20 @@ import {
   MatIconModule,
   MatInputModule,
   MatMenuModule,
+  MatProgressBarModule,
   MatTabsModule,
   MatTooltipModule,
 } from '@angular/material';
 
 import { PostybirbLayout } from './layouts/postybirb-layout/postybirb-layout.component';
 import { BulkUpdateForm } from './forms/bulk-update-form/bulk-update-form.component';
+import { TemplateForm } from './forms/template-form/template-form.component';
 
 @NgModule({
   declarations: [
     PostybirbLayout,
-    BulkUpdateForm
+    BulkUpdateForm,
+    TemplateForm
   ],
   imports: [
     CommonModule,
@@ -40,6 +43,7 @@ import { BulkUpdateForm } from './forms/bulk-update-form/bulk-update-form.compon
     MatIconModule,
     MatInputModule,
     MatMenuModule,
+    MatProgressBarModule,
     MatTabsModule,
     MatTooltipModule,
   ],

@@ -32,6 +32,12 @@ body {
   background-color: #2c2c2c !important;
 }
 
+/* Used to size postybirb add menu */
+.width-200 {
+  min-width: 200px !important;
+  border-radius: 0 !important;
+}
+
 /* Scrollbar CSS Customization */
 *::-webkit-scrollbar {
   width: 6px;

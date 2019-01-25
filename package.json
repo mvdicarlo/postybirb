@@ -28,6 +28,7 @@
     "bootstrap-css-only": "^4.2.1",
     "core-js": "^2.5.4",
     "hammerjs": "^2.0.8",
+    "jsstore": "^2.9.5",
     "nanoid": "^2.0.1",
     "roboto-fontface": "^0.10.0",
     "rxjs": "~6.3.3",
