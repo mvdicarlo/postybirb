@@ -18,6 +18,7 @@ import {
   MatMenuModule,
   MatProgressBarModule,
   MatRadioModule,
+  MatSelectModule,
   MatTabsModule,
   MatTooltipModule,
 } from '@angular/material';
@@ -49,6 +50,7 @@ import { CollectSubmissionInfoDialog } from './components/collect-submission-inf
     MatMenuModule,
     MatProgressBarModule,
     MatRadioModule,
+    MatSelectModule,
     MatTabsModule,
     MatTooltipModule,
   ],

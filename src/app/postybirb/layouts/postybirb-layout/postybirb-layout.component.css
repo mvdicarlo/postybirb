@@ -20,17 +20,16 @@
 
 .pb-sidebar {
   display: grid;
-  grid-template-rows: auto auto;
+  grid-template-rows: auto 1fr;
   width: 200px;
   background-color: #222;
 }
 
-.pb-sidebar .actions {
-
-}
+.pb-sidebar .actions {}
 
 .actions .add-button {
-  height: 48px; /* to match tab bar */
+  height: 48px;
+  /* to match tab bar */
 }
 
 .pb-sidebar .actions button {
@@ -38,5 +37,32 @@
 }
 
 .pb-sidebar .submission-nav {
+  z-index: 100;
+}
 
+.submission-info-container {
+  font-size: 10px;
+}
+
+.submission-info-container .submission-controls {
+  vertical-align: top;
+  width: calc(100% - 50px - .25rem);
+}
+
+.submission-input {
+  outline: none;
+  border: none;
+  background-color: transparent;
+  border-bottom: 1px solid #039be5;
+  color: white;
+}
+
+.submission-input:focus {
+  border-bottom-width: 2px;
+}
+
+.search-input {
+  max-width: 200px;
+  font-size: 12px;
+  margin-bottom: -15px;
 }

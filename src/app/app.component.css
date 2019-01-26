@@ -21,10 +21,13 @@
   flex: 1;
   font-size: 15px;
   align-self: stretch;
+  width: 150px;
 }
 
 .language-select mat-form-field {
   height: 100%;
+  width: 150px !important;
+  float: right;
 }
 
 mat-toolbar {

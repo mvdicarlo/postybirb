@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { Weasyl } from './website-services/weasyl/weasyl.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
+import { E621 } from './website-services/e621/e621.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -38,6 +39,7 @@ export function INIT_WEBSITE_REGISTRY(...args) {
       provide: APP_INITIALIZER,
       useFactory: INIT_WEBSITE_REGISTRY,
       deps: [
+        E621,
         FurAffinity,
         Weasyl
       ],
