@@ -1,22 +1,24 @@
 import { ITable, DATA_TYPE } from 'jsstore';
 
 export interface IGeneratedThumbnail {
-  id: string;
-  submissionfileId: string; // fk to original file
+  id: number;
+  submissionFileId: number; // fk to original file
   buffer: Uint8Array;
   type: string; // mime
 }
 
+const GeneratedThumbnailTableName: string = 'GeneratedThumbnail';
+
 const GeneratedThumbnailTable: ITable = {
-  name: 'SubmissionFile',
+  name: GeneratedThumbnailTableName,
   columns: [{
     name: 'id',
     primaryKey: true,
     autoIncrement: true
   }, {
-    name: 'submissionfileId',
+    name: 'submissionFileId',
     notNull: true,
-    dataType: DATA_TYPE.String
+    dataType: DATA_TYPE.Number
   }, {
     name: 'type',
     notNull: true,
@@ -24,8 +26,8 @@ const GeneratedThumbnailTable: ITable = {
   }, {
     name: 'buffer',
     notNull: true,
-    dataType: DATA_TYPE.Array
+    dataType: DATA_TYPE.Object
   }]
 }
 
-export { GeneratedThumbnailTable }
+export { GeneratedThumbnailTable, GeneratedThumbnailTableName }

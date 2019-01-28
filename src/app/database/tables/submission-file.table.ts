@@ -1,12 +1,13 @@
 import { ITable, DATA_TYPE } from 'jsstore';
 
 export interface ISubmissionFile {
-  id: string;
-  submissionId: string; // fk to submission
+  id: number;
+  submissionId: number; // fk to submission
   buffer: Uint8Array;
   type: string; // mime
   size: number;
   name: string;
+  path: string;
   fileType: SubmissionFileType;
 }
 
@@ -16,8 +17,10 @@ export enum SubmissionFileType {
   THUMBNAIL = 'THUMBNAIL'
 }
 
+const SubmissionFileTableName: string = 'SubmissionFile';
+
 const SubmissionFileTable: ITable = {
-  name: 'SubmissionFile',
+  name: SubmissionFileTableName,
   columns: [{
     name: 'id',
     primaryKey: true,
@@ -25,13 +28,17 @@ const SubmissionFileTable: ITable = {
   }, {
     name: 'submissionId',
     notNull: true,
-    dataType: DATA_TYPE.String
+    dataType: DATA_TYPE.Number
   }, {
     name: 'name',
     notNull: true,
     dataType: DATA_TYPE.String
   }, {
     name: 'type',
+    notNull: true,
+    dataType: DATA_TYPE.String
+  }, {
+    name: 'path',
     notNull: true,
     dataType: DATA_TYPE.String
   }, {
@@ -45,8 +52,8 @@ const SubmissionFileTable: ITable = {
   }, {
     name: 'buffer',
     notNull: true,
-    dataType: DATA_TYPE.Array
+    dataType: DATA_TYPE.Object
   }]
 }
 
-export { SubmissionFileTable }
+export { SubmissionFileTable, SubmissionFileTableName }

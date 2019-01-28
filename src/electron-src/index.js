@@ -17,6 +17,7 @@ process.once('loaded', () => {
 
 window.appVersion = remote.app.getVersion();
 window.nativeImage = nativeImage;
+window.getFileIcon = app.getFileIcon;
 
 // Set up profiles DB
 const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));

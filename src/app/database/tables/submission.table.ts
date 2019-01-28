@@ -3,7 +3,7 @@ import { ITable, DATA_TYPE } from 'jsstore';
 // TODO need to complete this when I have a better idea of the data structure provided by the form
 
 export interface ISubmission {
-  id: string;
+  id: number;
   title: string;
   rating: SubmissionRating;
   schedule?: number;
@@ -29,8 +29,10 @@ export enum SubmissionType {
   JOURNAL = 'JOURNAL'
 }
 
+const SubmissionTableName: string = 'Submission';
+
 const SubmissionTable: ITable = {
-  name: 'Submission',
+  name: SubmissionTableName,
   columns: [{
     name: 'id',
     notNull: true,
@@ -52,4 +54,4 @@ const SubmissionTable: ITable = {
   }]
 }
 
-export { SubmissionTable }
+export { SubmissionTable, SubmissionTableName }
