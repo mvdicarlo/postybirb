@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
@@ -18,7 +18,8 @@ export interface ModifiedReadFile extends ReadFile {
 @Component({
   selector: 'postybirb-layout',
   templateUrl: './postybirb-layout.component.html',
-  styleUrls: ['./postybirb-layout.component.css']
+  styleUrls: ['./postybirb-layout.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PostybirbLayout implements OnInit {
   @ViewChild('fileInput') fileInput: ElementRef;
@@ -29,11 +30,15 @@ export class PostybirbLayout implements OnInit {
     private _route: Router,
     private dialog: MatDialog,
     private _submissionDB: SubmissionDBService,
-    private _submissionFileDBService: SubmissionFileDBService) { }
+    private _submissionFileDBService: SubmissionFileDBService,
+    private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this._submissionDB.getSubmissions()
-    .then(submissions => this.submissions = submissions);
+      .then(submissions => {
+        this.submissions = submissions;
+        this._changeDetector.detectChanges();
+      });
   }
 
   public createNewSubmission(submissionFiles: ReadFile[] = []): void {
@@ -59,14 +64,18 @@ export class PostybirbLayout implements OnInit {
               // I assume insertResults comes down in orderBy id
               const promises: Promise<any>[] = [];
               for (let i = 0; i < insertResults.length; i++) {
-                  promises.push(this._submissionFileDBService.createSubmissionFiles(insertResults[i].id, SubmissionFileType.PRIMARY_FILE, [results[i]]));
+                promises.push(this._submissionFileDBService.createSubmissionFiles(insertResults[i].id, SubmissionFileType.PRIMARY_FILE, [results[i]]));
               }
 
               Promise.all(promises)
-              .then(() => {
-                this.loading = false;
-              })
+                .then(() => {
+                  this.loading = false;
+                  this.ngOnInit();
+                });
             });
+          } else {
+            this.loading = false;
+            this._changeDetector.markForCheck();
           }
         });
     }
@@ -85,6 +94,7 @@ export class PostybirbLayout implements OnInit {
     event.stopPropagation()
     event.preventDefault();
     this.loading = true;
+    this._changeDetector.markForCheck();
 
     const files: File[] = event.target['files'];
 
@@ -97,8 +107,12 @@ export class PostybirbLayout implements OnInit {
       Promise.all(loadPromises)
         .then(results => {
           this.loading = false;
+          this._changeDetector.markForCheck();
           this.createNewSubmission(results);
         });
+    } else {
+      this.loading = false;
+      this._changeDetector.markForCheck();
     }
 
     this.fileInput.nativeElement.value = '';

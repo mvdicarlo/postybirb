@@ -40,29 +40,12 @@
   z-index: 100;
 }
 
-.submission-info-container {
-  font-size: 10px;
-}
-
-.submission-info-container .submission-controls {
-  vertical-align: top;
-  width: calc(100% - 50px - .25rem);
-}
-
-.submission-input {
-  outline: none;
-  border: none;
-  background-color: transparent;
-  border-bottom: 1px solid #039be5;
-  color: white;
-}
-
-.submission-input:focus {
-  border-bottom-width: 2px;
-}
-
 .search-input {
   max-width: 200px;
   font-size: 12px;
   margin-bottom: -15px;
+}
+
+cdk-virtual-scroll-viewport {
+  height: 100%;
 }

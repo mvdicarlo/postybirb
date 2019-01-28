@@ -1,0 +1,15 @@
+<div class="submission-info-container">
+  <div style="width: 50px; height: 50px; background-color: red;" class="mr-1 d-inline-block">
+
+  </div>
+  <form [formGroup]="form" class="d-inline-block submission-controls">
+    <input formControlName="title" maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">
+    <input formControlName="schedule" [placeholder]="'Schedule' | translate" class="w-100 submission-input">
+    <mat-select formControlName="rating" [placeholder]="'Rating' | translate" required>
+      <mat-option value="General">{{ 'General' | translate }}</mat-option>
+      <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
+      <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
+      <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
+    </mat-select>
+  </form>
+</div>

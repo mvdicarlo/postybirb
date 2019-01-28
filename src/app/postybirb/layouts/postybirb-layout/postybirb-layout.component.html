@@ -24,32 +24,15 @@
         </mat-menu>
         <input #fileInput type="file" class="d-none" (change)="filesSelected($event)" multiple>
         <mat-form-field class="w-100 search-input" color="accent" appearance="fill">
-            <input matInput>
-            <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
-          </mat-form-field>
+          <input matInput>
+          <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
+        </mat-form-field>
       </div>
 
       <div class="submission-nav">
-        <table class="table table-dark">
-          <tbody>
-            <!-- Submissions go here -->
-            <tr class="submission-info-container">
-              <div style="width: 50px; height: 50px; background-color: red;" class="mr-1 d-inline-block">
-
-              </div>
-              <div class="d-inline-block submission-controls">
-                <input maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">
-                <input [placeholder]="'Schedule' | translate" class="w-100 submission-input">
-                <mat-select [placeholder]="'Rating' | translate" required>
-                  <mat-option value="General">{{ 'General' | translate }}</mat-option>
-                  <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
-                  <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
-                  <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
-                </mat-select>
-              </div>
-            </tr>
-          </tbody>
-        </table>
+        <cdk-virtual-scroll-viewport itemSize="60" class="example-viewport">
+          <submission-record-view *cdkVirtualFor="let record of submissions; templateCacheSize: 0" [submission]="record"></submission-record-view>
+        </cdk-virtual-scroll-viewport>
       </div>
     </div>
 

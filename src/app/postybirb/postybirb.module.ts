@@ -10,6 +10,7 @@ import { LoginModule } from '../login/login.module';
 
 import { TranslateModule } from '@ngx-translate/core';
 
+import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import {
   MatButtonModule,
   MatDialogModule,
@@ -27,13 +28,15 @@ import { PostybirbLayout } from './layouts/postybirb-layout/postybirb-layout.com
 import { BulkUpdateForm } from './forms/bulk-update-form/bulk-update-form.component';
 import { TemplateForm } from './forms/template-form/template-form.component';
 import { CollectSubmissionInfoDialog } from './components/collect-submission-info-dialog/collect-submission-info-dialog.component';
+import { SubmissionRecordViewComponent } from './components/submission-record-view/submission-record-view.component';
 
 @NgModule({
   declarations: [
     PostybirbLayout,
     BulkUpdateForm,
     TemplateForm,
-    CollectSubmissionInfoDialog
+    CollectSubmissionInfoDialog,
+    SubmissionRecordViewComponent
   ],
   imports: [
     CommonModule,
@@ -53,6 +56,7 @@ import { CollectSubmissionInfoDialog } from './components/collect-submission-inf
     MatSelectModule,
     MatTabsModule,
     MatTooltipModule,
+    ScrollDispatchModule
   ],
   exports: [
     PostybirbLayout
