@@ -4,11 +4,14 @@ import { SubmissionTableName, ISubmission } from '../tables/submission.table';
 import { Submission } from '../models/submission.model';
 import { SubmissionFileDBService } from './submission-file.service';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubmissionDBService extends DatabaseService {
+  private notifySubject: Subject<void> = new Subject();
+  public changes: Observable<void> = this.notifySubject.asObservable();
 
   constructor(private _submissionFileDB: SubmissionFileDBService, private _generatedThumbnailDB: GeneratedThumbnailDBService) {
     super();
@@ -33,16 +36,18 @@ export class SubmissionDBService extends DatabaseService {
     return inserts.map(i => new Submission(i));
   }
 
-  public delete(id: number): void {
+  public delete(ids: number[]): void {
     this.connection.remove({
       from: SubmissionTableName,
       where: {
-        id: id
+        id: {
+          in: ids
+        }
       }
-    });
+    }).then(() => this.notifySubject.next());
 
-    this._submissionFileDB.deleteBySubmissionId(id);
-    this._generatedThumbnailDB.deleteBySubmissionId(id);
+    this._submissionFileDB.deleteBySubmissionId(ids);
+    this._generatedThumbnailDB.deleteBySubmissionId(ids);
   }
 
   public update(id: number, fieldName: string, value: any): void {

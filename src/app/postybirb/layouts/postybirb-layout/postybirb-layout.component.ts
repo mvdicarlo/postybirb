@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
@@ -8,6 +8,7 @@ import { SubmissionFileDBService } from 'src/app/database/model-services/submiss
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
 import { SubmissionFileType, asFileObject } from 'src/app/database/tables/submission-file.table';
 import { Submission } from 'src/app/database/models/submission.model';
+import { Subscription } from 'rxjs';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -21,10 +22,11 @@ export interface ModifiedReadFile extends ReadFile {
   styleUrls: ['./postybirb-layout.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PostybirbLayout implements OnInit {
+export class PostybirbLayout implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
   public loading: boolean = false;
   public submissions: Submission[] = [];
+  private submissionUpdatesSubscription: Subscription = Subscription.EMPTY;
 
   constructor(
     private _route: Router,
@@ -39,6 +41,18 @@ export class PostybirbLayout implements OnInit {
         this.submissions = submissions;
         this._changeDetector.detectChanges();
       });
+
+      this.submissionUpdatesSubscription = this._submissionDB.changes.subscribe(() => {
+        this._submissionDB.getSubmissions()
+          .then(submissions => {
+            this.submissions = submissions;
+            this._changeDetector.detectChanges();
+          });
+      });
+  }
+
+  ngOnDestroy() {
+    this.submissionUpdatesSubscription.unsubscribe();
   }
 
   public createNewSubmission(submissionFiles: ReadFile[] = []): void {
@@ -71,7 +85,8 @@ export class PostybirbLayout implements OnInit {
               Promise.all(promises)
                 .then(() => {
                   this.loading = false;
-                  this.ngOnInit();
+                  this.submissions = [...this.submissions, ...insertResults];
+                  this._changeDetector.markForCheck();
                 });
             });
           } else {

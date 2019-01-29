@@ -1,4 +1,5 @@
 import { WebsiteConfig } from '../decorators/website-decorator';
+import { isDevMode } from '@angular/core';
 
 export interface WebsiteRegistryConfig {
   websiteConfig: WebsiteConfig;
@@ -20,7 +21,7 @@ export class WebsiteRegistry {
   }
 
   public static set(service: Function, config: WebsiteConfig): void {
-    console.info('Registered', service.name, config);
+    if (isDevMode()) console.info('Registered', service.name, config);
     Object.freeze(config)
     WebsiteRegistry.registeredWebsites.set(service.name, {
       websiteConfig: config,

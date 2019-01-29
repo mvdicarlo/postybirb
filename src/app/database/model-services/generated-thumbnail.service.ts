@@ -30,11 +30,13 @@ export class GeneratedThumbnailDBService extends DatabaseService {
     });
   }
 
-  public deleteBySubmissionId(submissionId: number): void {
+  public deleteBySubmissionId(submissionIds: number[]): void {
     this.connection.remove({
       from: GeneratedThumbnailTableName,
       where: {
-        submissionId
+        submissionId: {
+          in: submissionIds
+        }
       }
     });
   }

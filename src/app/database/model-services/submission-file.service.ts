@@ -38,13 +38,15 @@ export class SubmissionFileDBService extends DatabaseService {
     })
   }
 
-  public deleteBySubmissionId(submissionId: number): void {
+  public deleteBySubmissionId(submissionIds: number[]): void {
     this.connection.remove({
       from: SubmissionFileTableName,
       where: {
-        submissionId
+        submissionId: {
+          in: submissionIds
+        }
       }
-    })
+    });
   }
 
   private _convertToModel(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): ISubmissionFile[] {

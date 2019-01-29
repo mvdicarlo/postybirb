@@ -6,7 +6,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class ToBase64Pipe implements PipeTransform {
 
   transform(buffer: Uint8Array, size: number = 100): any {
-    if (!buffer) return null;
+    if (!buffer) return '#';
 
     const nib: any = nativeImage.createFromBuffer(Buffer.from(buffer));
     const resizedImg = nib.resize({

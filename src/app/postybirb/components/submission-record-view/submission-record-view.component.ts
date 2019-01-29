@@ -72,7 +72,7 @@ export class SubmissionRecordViewComponent implements OnInit {
       .subscribe(result => {
         if (result) {
           this._submissionCache.remove(this.submission);
-          this._submissionDB.delete(this.submission.id);
+          this._submissionDB.delete([this.submission.id]);
         }
       });
   }
