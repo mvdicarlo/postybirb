@@ -1,6 +1,7 @@
 <div class="submission-info-container d-flex">
   <div class="img mr-1">
-    <img [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name">
+    <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name">
+    <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
   </div>
   <form [formGroup]="form" class="submission-controls">
     <input formControlName="title" maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">

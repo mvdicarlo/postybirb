@@ -8,8 +8,8 @@ export interface ISubmission {
   title: string;
   rating: SubmissionRating;
   schedule?: number;
-  submissionType?: SubmissionType;
-  fileInfo: FileObject
+  submissionType: SubmissionType;
+  fileInfo?: FileObject // not required in journal types
 }
 
 export enum SubmissionRating {
@@ -49,14 +49,14 @@ const SubmissionTable: ITable = {
     dataType: DATA_TYPE.String
   }, {
     name: 'submissionType',
-    dataType: DATA_TYPE.String
+    dataType: DATA_TYPE.String,
+    notNull: true
   }, {
     name: 'schedule',
     dataType: DATA_TYPE.Number
   }, {
     name: 'fileInfo',
-    dataType: DATA_TYPE.Object,
-    notNull: true
+    dataType: DATA_TYPE.Object
   }]
 }
 

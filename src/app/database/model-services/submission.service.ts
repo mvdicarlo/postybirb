@@ -36,8 +36,13 @@ export class SubmissionDBService extends DatabaseService {
     return inserts.map(i => new Submission(i));
   }
 
-  public delete(ids: number[]): void {
-    this.connection.remove({
+  public delete(ids: number[], deleteFiles: boolean = true): Promise<any> {
+    if (deleteFiles) {
+      this._submissionFileDB.deleteBySubmissionId(ids);
+      this._generatedThumbnailDB.deleteBySubmissionId(ids);
+    }
+    
+    return this.connection.remove({
       from: SubmissionTableName,
       where: {
         id: {
@@ -45,9 +50,6 @@ export class SubmissionDBService extends DatabaseService {
         }
       }
     }).then(() => this.notifySubject.next());
-
-    this._submissionFileDB.deleteBySubmissionId(ids);
-    this._generatedThumbnailDB.deleteBySubmissionId(ids);
   }
 
   public update(id: number, fieldName: string, value: any): void {

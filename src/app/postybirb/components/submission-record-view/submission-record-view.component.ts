@@ -5,6 +5,7 @@ import { SubmissionCache } from 'src/app/database/services/submission-cache.serv
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 @Component({
   selector: 'submission-record-view',
@@ -71,8 +72,8 @@ export class SubmissionRecordViewComponent implements OnInit {
     }).afterClosed()
       .subscribe(result => {
         if (result) {
-          this._submissionCache.remove(this.submission);
-          this._submissionDB.delete([this.submission.id]);
+          this.submission.cleanUp();
+          this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
         }
       });
   }

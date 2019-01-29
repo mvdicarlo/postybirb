@@ -5,10 +5,11 @@ import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 import { CollectSubmissionInfoDialog } from '../../components/collect-submission-info-dialog/collect-submission-info-dialog.component';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
-import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
+import { SubmissionType, ISubmission, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { SubmissionFileType, asFileObject } from 'src/app/database/tables/submission-file.table';
 import { Submission } from 'src/app/database/models/submission.model';
 import { Subscription } from 'rxjs';
+import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -64,6 +65,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
         .subscribe((results: ModifiedReadFile[]) => {
           if (results && results.length) {
             this.loading = true;
+            this._changeDetector.markForCheck();
             this._submissionDB.createSubmissions(
               <ISubmission[]>results.map(result => {
                 return <ISubmission>{
@@ -98,7 +100,34 @@ export class PostybirbLayout implements OnInit, OnDestroy {
   }
 
   public createNewJournal(): void {
+    this.loading = true;
+    this._changeDetector.markForCheck();
 
+    this.dialog.open(InputDialog, {
+      data: {
+        title: 'Title',
+        minLength: 1,
+        maxLength: 50
+      }
+    })
+    .afterClosed()
+    .subscribe(title => {
+      if (title && title.trim().length) {
+        this._submissionDB.createSubmissions([{
+          id: undefined,
+          title: title.trim(),
+          rating: SubmissionRating.GENERAL,
+          submissionType: SubmissionType.JOURNAL
+        }]).then(insertResults => {
+          this.loading = false;
+          this.submissions = [...this.submissions, ...insertResults];
+          this._changeDetector.markForCheck();
+        })
+      } else {
+        this.loading = false;
+        this._changeDetector.markForCheck();
+      }
+    });
   }
 
   public createNewTemplate(): void {
