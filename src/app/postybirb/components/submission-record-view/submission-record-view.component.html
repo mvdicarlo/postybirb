@@ -1,5 +1,5 @@
 <div class="submission-info-container d-flex">
-  <div class="img mr-1">
+  <div class="img mr-1" *ngIf="!hideForReload">
     <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name">
     <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
   </div>
@@ -29,6 +29,7 @@
 </div>
 
 <mat-menu #additionalMenu="matMenu">
-  <button mat-menu-item>{{ 'Change file' | translate }}</button>
+  <button mat-menu-item (click)="fileChange.click()" *ngIf="submission.submissionType === 'SUBMISSION'">{{ 'Change file' | translate }}</button>
   <button mat-menu-item class="warn-text" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
 </mat-menu>
+<input #fileChange type="file" class="d-none" (change)="changeFile($event)" single>

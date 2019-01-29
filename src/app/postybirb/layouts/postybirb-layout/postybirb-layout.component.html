@@ -24,7 +24,7 @@
         </mat-menu>
         <input #fileInput type="file" class="d-none" (change)="filesSelected($event)" multiple>
         <mat-form-field class="w-100 search-input" color="accent" appearance="fill">
-          <input matInput>
+          <input matInput [formControl]="searchControl">
           <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
         </mat-form-field>
       </div>

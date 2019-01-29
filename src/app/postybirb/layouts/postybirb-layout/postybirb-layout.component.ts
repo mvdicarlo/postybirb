@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
@@ -6,10 +7,11 @@ import { CollectSubmissionInfoDialog } from '../../components/collect-submission
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionType, ISubmission, SubmissionRating } from 'src/app/database/tables/submission.table';
-import { SubmissionFileType, asFileObject } from 'src/app/database/tables/submission-file.table';
+import { SubmissionFileType, asFileObject, ISubmissionFile } from 'src/app/database/tables/submission-file.table';
 import { Submission } from 'src/app/database/models/submission.model';
 import { Subscription } from 'rxjs';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
+import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -25,13 +27,26 @@ export interface ModifiedReadFile extends ReadFile {
 })
 export class PostybirbLayout implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
+
+  get submissions(): Submission[] {
+    if (this.searchControl.value) {
+      const filter: string = this.searchControl.value.toLowerCase();
+      return this._submissions.filter(s => (s.title || '').toLowerCase().includes(filter));
+    }
+
+    return this._submissions;
+  }
+  set submissions(submissions: Submission[]) { this._submissions = submissions || [] }
+  private _submissions: Submission[] = [];
+
   public loading: boolean = false;
-  public submissions: Submission[] = [];
+  public searchControl: FormControl = new FormControl();
   private submissionUpdatesSubscription: Subscription = Subscription.EMPTY;
 
   constructor(
     private _route: Router,
     private dialog: MatDialog,
+    private _submissionCache: SubmissionCache,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDBService: SubmissionFileDBService,
     private _changeDetector: ChangeDetectorRef) { }
@@ -85,8 +100,20 @@ export class PostybirbLayout implements OnInit, OnDestroy {
               }
 
               Promise.all(promises)
-                .then(() => {
+                .then((submissionFiles: ISubmissionFile[][]) => {
                   this.loading = false;
+
+                  let flat = [];
+                  submissionFiles.forEach(f => { flat = [...flat, ...f] });
+
+                  // cache and build file mapping
+                  insertResults.forEach(r => this._submissionCache.store(r));
+                  for (let i = 0; i < flat.length; i++) {
+                      insertResults[i].fileMap = {
+                        [SubmissionFileType.PRIMARY_FILE]: flat[i].id
+                      }
+                  }
+
                   this.submissions = [...this.submissions, ...insertResults];
                   this._changeDetector.markForCheck();
                 });

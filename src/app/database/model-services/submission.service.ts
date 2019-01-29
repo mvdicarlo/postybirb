@@ -41,7 +41,7 @@ export class SubmissionDBService extends DatabaseService {
       this._submissionFileDB.deleteBySubmissionId(ids);
       this._generatedThumbnailDB.deleteBySubmissionId(ids);
     }
-    
+
     return this.connection.remove({
       from: SubmissionTableName,
       where: {
@@ -64,7 +64,7 @@ export class SubmissionDBService extends DatabaseService {
         }
       }).then(() => {
         if (isDevMode()) {
-          console.info(`Updated submission (${id}) [${fieldName.toUpperCase()}]=${value}`);
+          console.info(`Updated submission (${id}) [${fieldName.toUpperCase()}]=`, value);
         }
       }).catch(err => {
         if (isDevMode()) {

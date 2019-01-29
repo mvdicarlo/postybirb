@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
 import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 import { GeneratedThumbnailTableName, IGeneratedThumbnail } from '../tables/generated-thumbnail.table';
+import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,21 @@ export class GeneratedThumbnailDBService extends DatabaseService {
       into: GeneratedThumbnailTableName,
       values: modelObjs
     });
+  }
+
+  public async regenerateThumbnails(submissionFiles: ISubmissionFile[]): Promise<any> {
+    const newThumbnails = await this._generateThumbnails(submissionFiles);
+    for (let i = 0; i < newThumbnails.length; i++) {
+      await this.connection.update({
+        in: GeneratedThumbnailTableName,
+        set: {
+          buffer: newThumbnails[i].buffer,
+        },
+        where: {
+          submissionFileId: newThumbnails[i].submissionFileId
+        }
+      });
+    }
   }
 
   public deleteBySubmissionId(submissionIds: number[]): void {
@@ -71,7 +87,6 @@ export class GeneratedThumbnailDBService extends DatabaseService {
       id: undefined,
       submissionId: file.submissionId,
       submissionFileId: file.id,
-      type: file.fileInfo.type,
       fileType: file.fileType,
       buffer: new Uint8Array(fileBuffer.buffer)
     }

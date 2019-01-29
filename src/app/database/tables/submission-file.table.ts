@@ -27,7 +27,7 @@ export interface ISubmissionFile {
 export enum SubmissionFileType {
   ADDITIONAL_FILE = 'ADDITIONAL',
   PRIMARY_FILE = 'PRIMARY',
-  THUMBNAIL = 'THUMBNAIL'
+  THUMBNAIL_FILE = 'THUMBNAIL'
 }
 
 const SubmissionFileTableName: string = 'SubmissionFile';

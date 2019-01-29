@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Submission } from 'src/app/database/models/submission.model';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
@@ -6,6 +6,8 @@ import { SubmissionDBService } from 'src/app/database/model-services/submission.
 import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
+import { readFile } from 'src/app/utils/helpers/file-reader.helper';
+import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 
 @Component({
   selector: 'submission-record-view',
@@ -15,12 +17,15 @@ import { SubmissionType } from 'src/app/database/tables/submission.table';
 })
 export class SubmissionRecordViewComponent implements OnInit {
   @Input() submission: Submission;
+  @ViewChild('fileChange') fileChange: ElementRef;
   public form: FormGroup;
   public editing: boolean = false;
+  public hideForReload: boolean = false; // need this to trick the pipe to refresh
 
   constructor(private _changeDetector: ChangeDetectorRef,
     private _submissionCache: SubmissionCache,
     private _submissionDB: SubmissionDBService,
+    private _submissionFileDB: SubmissionFileDBService,
     private dialog: MatDialog,
     fb: FormBuilder) {
     this.form = fb.group({
@@ -76,6 +81,29 @@ export class SubmissionRecordViewComponent implements OnInit {
           this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
         }
       });
+  }
+
+  public changeFile(event: Event): void {
+    this.hideForReload = true;
+    this._changeDetector.markForCheck();
+
+    event.stopPropagation()
+    event.preventDefault();
+
+    const files: File[] = event.target['files'];
+
+    if (files && files.length) {
+      readFile(files[0])
+        .then(data => {
+          this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.PRIMARY, data)
+            .then(() => {
+              this.hide = false;
+              this._changeDetector.markForCheck();
+            });
+        });
+    }
+
+    this.fileChange.nativeElement.value = '';
   }
 
 }

@@ -10,6 +10,13 @@ export interface ISubmission {
   schedule?: number;
   submissionType: SubmissionType;
   fileInfo?: FileObject // not required in journal types
+  fileMap?: FileMap
+}
+
+export interface FileMap {
+  PRIMARY?: number;
+  THUMBNAIL?: number;
+  ADDITIONAL?: string[];
 }
 
 export enum SubmissionRating {
@@ -18,13 +25,6 @@ export enum SubmissionRating {
   ADULT = 'Adult',
   EXTREME = 'Extreme'
 }
-
-// export enum SubmissionType {
-//   IMAGE = 'IMAGE',
-//   TEXT = 'TEXT',
-//   ANIMATION = 'ANIMATION',
-//   AUDIO = 'AUDIO'
-// }
 
 export enum SubmissionType {
   SUBMISSION = 'SUBMISSION',
@@ -56,6 +56,9 @@ const SubmissionTable: ITable = {
     dataType: DATA_TYPE.Number
   }, {
     name: 'fileInfo',
+    dataType: DATA_TYPE.Object
+  }, {
+    name: 'fileMap',
     dataType: DATA_TYPE.Object
   }]
 }

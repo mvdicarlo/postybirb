@@ -3,6 +3,7 @@ import { DatabaseService } from '../services/database.service';
 import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType, asFileObject } from '../tables/submission-file.table';
 import { ModifiedReadFile } from 'src/app/postybirb/layouts/postybirb-layout/postybirb-layout.component';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
+import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class SubmissionFileDBService extends DatabaseService {
     super();
   }
 
-  public getFilesBySubmissionId(submissionId: string): Promise<ISubmissionFile[]> {
+  public getFilesBySubmissionId(submissionId: number): Promise<ISubmissionFile[]> {
     return this.connection.select({
       from: SubmissionFileTableName,
       where: {
@@ -22,7 +23,16 @@ export class SubmissionFileDBService extends DatabaseService {
     });
   }
 
-  public createSubmissionFiles(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): Promise<any> {
+  public getSubmissionFilesById(id: number): Promise<ISubmissionFile[]> {
+    return this.connection.select({
+      from: SubmissionFileTableName,
+      where: {
+        id
+      }
+    });
+  }
+
+  public createSubmissionFiles(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): Promise<ISubmissionFile[]> {
     return new Promise((resolve, reject) => {
       const models = this._convertToModel(submissionId, fileType, files);
       this.connection.insert({
@@ -31,11 +41,26 @@ export class SubmissionFileDBService extends DatabaseService {
         return: true
       }).then((results: ISubmissionFile[]) => {
         this._generatedThumbnailDB.createThumbnails(results)
-        .then(() => {
-          resolve();
-        });
+          .then(() => {
+            resolve(results);
+          });
       });
-    })
+    });
+  }
+
+  public async updateSubmissionFileById(submissionFileId: number, file: ReadFile): Promise<any> {
+    await this.connection.update({
+      in: SubmissionFileTableName,
+      set: {
+        buffer: file.buffer,
+        fileInfo: asFileObject(file.file)
+      },
+      where: {
+        id: submissionFileId
+      }
+    });
+
+    return this._generatedThumbnailDB.regenerateThumbnails(await this.getSubmissionFilesById(submissionFileId));
   }
 
   public deleteBySubmissionId(submissionIds: number[]): void {
@@ -53,7 +78,7 @@ export class SubmissionFileDBService extends DatabaseService {
     const modelObjs: ISubmissionFile[] = [];
     for (let i = 0; i < files.length; i++) {
       const file: ModifiedReadFile = files[i];
-      modelObjs.push ({
+      modelObjs.push({
         id: undefined,
         submissionId,
         buffer: file.buffer,

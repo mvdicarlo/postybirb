@@ -1,4 +1,4 @@
-import { ISubmission, SubmissionRating, SubmissionType } from '../tables/submission.table';
+import { ISubmission, SubmissionRating, SubmissionType, FileMap } from '../tables/submission.table';
 import { Subject, Observable } from 'rxjs';
 import { FileObject } from '../tables/submission-file.table';
 
@@ -46,6 +46,14 @@ export class Submission implements ISubmission {
   }
   private _rating: SubmissionRating;
 
+  // Need to be careful about setting these - have to pass back in the whole object
+  get fileMap(): FileMap { return this._fileMap }
+  set fileMap(fileMap: FileMap) {
+    this._emitChange('fileMap', this._fileMap, fileMap);
+    this._fileMap = fileMap;
+  }
+  private _fileMap: FileMap;
+
   constructor(submission: ISubmission) {
     this.id = submission.id;
     this.title = submission.title;
@@ -53,6 +61,7 @@ export class Submission implements ISubmission {
     this.submissionType = submission.submissionType;
     this.rating = submission.rating;
     this.fileInfo = submission.fileInfo;
+    this.fileMap = submission.fileMap;
 
     this.changes = this.changeSubject.asObservable();
   }
