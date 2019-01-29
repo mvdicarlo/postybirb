@@ -1,15 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
 import { SubmissionTableName, ISubmission } from '../tables/submission.table';
 import { Submission } from '../models/submission.model';
-import { CacheService } from '../services/cache.service';
+import { SubmissionFileDBService } from './submission-file.service';
+import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubmissionDBService extends DatabaseService {
 
-  constructor(private _cache: CacheService) {
+  constructor(private _submissionFileDB: SubmissionFileDBService, private _generatedThumbnailDB: GeneratedThumbnailDBService) {
     super();
   }
 
@@ -32,14 +33,37 @@ export class SubmissionDBService extends DatabaseService {
     return inserts.map(i => new Submission(i));
   }
 
-  public delete(id: string): void {
+  public delete(id: number): void {
     this.connection.remove({
       from: SubmissionTableName,
       where: {
         id: id
       }
-    }).then(() => {
-      this._cache.remove(`${SubmissionTableName}:${id}`);
     });
+
+    this._submissionFileDB.deleteBySubmissionId(id);
+    this._generatedThumbnailDB.deleteBySubmissionId(id);
+  }
+
+  public update(id: number, fieldName: string, value: any): void {
+    if (id && fieldName) {
+      this.connection.update({
+        in: SubmissionTableName,
+        set: {
+          [fieldName]: value
+        },
+        where: {
+          id
+        }
+      }).then(() => {
+        if (isDevMode()) {
+          console.info(`Updated submission (${id}) [${fieldName.toUpperCase()}]=${value}`);
+        }
+      }).catch(err => {
+        if (isDevMode()) {
+          console.error(`Unable to update ${id}`, err);
+        }
+      });
+    }
   }
 }

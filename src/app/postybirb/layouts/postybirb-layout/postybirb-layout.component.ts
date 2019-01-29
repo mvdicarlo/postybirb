@@ -6,7 +6,7 @@ import { CollectSubmissionInfoDialog } from '../../components/collect-submission
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
+import { SubmissionFileType, asFileObject } from 'src/app/database/tables/submission-file.table';
 import { Submission } from 'src/app/database/models/submission.model';
 
 export interface ModifiedReadFile extends ReadFile {
@@ -52,12 +52,13 @@ export class PostybirbLayout implements OnInit {
             this.loading = true;
             this._submissionDB.createSubmissions(
               <ISubmission[]>results.map(result => {
-                return {
+                return <ISubmission>{
                   id: undefined,
                   title: result.title,
                   rating: result.rating,
                   schedule: null,
-                  submissionType: SubmissionType.SUBMISSION
+                  submissionType: SubmissionType.SUBMISSION,
+                  fileInfo: asFileObject(result.file)
                 }
               })
             ).then(insertResults => {

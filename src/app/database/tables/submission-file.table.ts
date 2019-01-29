@@ -1,13 +1,26 @@
 import { ITable, DATA_TYPE } from 'jsstore';
 
+export interface FileObject {
+  name: string;
+  size: number;
+  path: string;
+  type: string; //mime
+}
+
+export function asFileObject(file: File): FileObject {
+  return {
+    name: file.name,
+    size: file.size,
+    type: file.type,
+    path: file['path']
+  };
+}
+
 export interface ISubmissionFile {
   id: number;
   submissionId: number; // fk to submission
   buffer: Uint8Array;
-  type: string; // mime
-  size: number;
-  name: string;
-  path: string;
+  fileInfo: FileObject;
   fileType: SubmissionFileType;
 }
 
@@ -30,21 +43,9 @@ const SubmissionFileTable: ITable = {
     notNull: true,
     dataType: DATA_TYPE.Number
   }, {
-    name: 'name',
+    name: 'fileInfo',
     notNull: true,
-    dataType: DATA_TYPE.String
-  }, {
-    name: 'type',
-    notNull: true,
-    dataType: DATA_TYPE.String
-  }, {
-    name: 'path',
-    notNull: true,
-    dataType: DATA_TYPE.String
-  }, {
-    name: 'size',
-    notNull: true,
-    dataType: DATA_TYPE.Number
+    dataType: DATA_TYPE.Object
   }, {
     name: 'fileType',
     notNull: true,

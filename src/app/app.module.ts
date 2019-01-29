@@ -8,6 +8,7 @@ import { WebsitesModule } from './websites/websites.module';
 import { LoginModule } from './login/login.module';
 import { UtilsModule } from './utils/utils.module';
 import { PostybirbModule } from './postybirb/postybirb.module';
+import { DatabaseModule } from './database/database.module';
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -42,6 +43,7 @@ import { AppComponent } from './app.component';
     LoginModule,
     PostybirbModule,
     UtilsModule,
+    DatabaseModule,
     WebsitesModule,
     MatButtonModule,
     MatIconModule,

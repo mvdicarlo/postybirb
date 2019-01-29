@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
-import { ISubmissionFile } from '../tables/submission-file.table';
+import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 import { GeneratedThumbnailTableName, IGeneratedThumbnail } from '../tables/generated-thumbnail.table';
 
 @Injectable({
@@ -12,11 +12,30 @@ export class GeneratedThumbnailDBService extends DatabaseService {
     super();
   }
 
+  public getThumbnail(submissionId: number, type: SubmissionFileType): Promise<IGeneratedThumbnail[]> {
+    return this.connection.select({
+      from: GeneratedThumbnailTableName,
+      where: {
+        fileType: type,
+        submissionId
+      }
+    });
+  }
+
   public async createThumbnails(files: ISubmissionFile[]): Promise<any> {
     const modelObjs = await this._generateThumbnails(files);
     return await this.connection.insert({
       into: GeneratedThumbnailTableName,
       values: modelObjs
+    });
+  }
+
+  public deleteBySubmissionId(submissionId: number): void {
+    this.connection.remove({
+      from: GeneratedThumbnailTableName,
+      where: {
+        submissionId
+      }
     });
   }
 
@@ -27,11 +46,11 @@ export class GeneratedThumbnailDBService extends DatabaseService {
   private async _generate(file: ISubmissionFile): Promise<IGeneratedThumbnail> {
     let ni = null;
 
-    if (file.type.includes('image')) {
+    if (file.fileInfo.type.includes('image')) {
       ni = nativeImage.createFromBuffer(Buffer.from(file.buffer));
     } else { // other file types that don't have an image thumbnail
       ni = await new Promise((resolve) => {
-        getFileIcon(file.path, {
+        getFileIcon(file.fileInfo.path, {
           size: 'normal'
         }, (err, n) => {
           resolve(n);
@@ -45,11 +64,13 @@ export class GeneratedThumbnailDBService extends DatabaseService {
       quality: 'better'
     });
 
-    const fileBuffer: Buffer = resized.toJPEG(90);
+    const fileBuffer: Buffer = resized.toJPEG(100);
     return {
       id: undefined,
+      submissionId: file.submissionId,
       submissionFileId: file.id,
-      type: file.type,
+      type: file.fileInfo.type,
+      fileType: file.fileType,
       buffer: new Uint8Array(fileBuffer.buffer)
     }
   }

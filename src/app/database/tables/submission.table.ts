@@ -1,4 +1,5 @@
 import { ITable, DATA_TYPE } from 'jsstore';
+import { FileObject } from './submission-file.table';
 
 // TODO need to complete this when I have a better idea of the data structure provided by the form
 
@@ -8,6 +9,7 @@ export interface ISubmission {
   rating: SubmissionRating;
   schedule?: number;
   submissionType?: SubmissionType;
+  fileInfo: FileObject
 }
 
 export enum SubmissionRating {
@@ -51,6 +53,10 @@ const SubmissionTable: ITable = {
   }, {
     name: 'schedule',
     dataType: DATA_TYPE.Number
+  }, {
+    name: 'fileInfo',
+    dataType: DATA_TYPE.Object,
+    notNull: true
   }]
 }
 

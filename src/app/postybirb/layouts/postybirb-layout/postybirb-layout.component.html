@@ -30,9 +30,15 @@
       </div>
 
       <div class="submission-nav">
-        <cdk-virtual-scroll-viewport itemSize="60" class="example-viewport">
-          <submission-record-view *cdkVirtualFor="let record of submissions; templateCacheSize: 0" [submission]="record"></submission-record-view>
-        </cdk-virtual-scroll-viewport>
+        <table class="table table-dark m-0" style="height: 100%">
+          <cdk-virtual-scroll-viewport itemSize="105" class="example-viewport">
+            <tr *cdkVirtualFor="let record of submissions; templateCacheSize: 0">
+              <td>
+                <submission-record-view [submission]="record"></submission-record-view>
+              </td>
+            </tr>
+          </cdk-virtual-scroll-viewport>
+        </table>
       </div>
     </div>
 

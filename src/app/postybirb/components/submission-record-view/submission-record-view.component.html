@@ -1,10 +1,11 @@
-<div class="submission-info-container">
-  <div style="width: 50px; height: 50px; background-color: red;" class="mr-1 d-inline-block">
-
+<div class="submission-info-container d-flex">
+  <div class="img mr-1">
+    <img [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name">
   </div>
-  <form [formGroup]="form" class="d-inline-block submission-controls">
+  <form [formGroup]="form" class="submission-controls">
     <input formControlName="title" maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">
-    <input formControlName="schedule" [placeholder]="'Schedule' | translate" class="w-100 submission-input">
+    <input formControlName="schedule" [placeholder]="'Schedule' | translate" class="w-100 submission-input" [owlDateTime]="dtPicker" [owlDateTimeTrigger]="dtPicker">
+    <owl-date-time #dtPicker></owl-date-time>
     <mat-select formControlName="rating" [placeholder]="'Rating' | translate" required>
       <mat-option value="General">{{ 'General' | translate }}</mat-option>
       <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
@@ -12,4 +13,21 @@
       <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
     </mat-select>
   </form>
+
 </div>
+<div class="control-btns">
+  <button class="btn btn-info" [matTooltip]="'Edit' | translate">
+    <mat-icon>edit</mat-icon>
+  </button>
+  <button class="btn btn-primary" [matTooltip]="'Post' | translate">
+    <mat-icon>send</mat-icon>
+  </button>
+  <button class="btn btn-secondary" [matMenuTriggerFor]="additionalMenu" [matTooltip]="'More' | translate">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+</div>
+
+<mat-menu #additionalMenu="matMenu">
+  <button mat-menu-item>{{ 'Change file' | translate }}</button>
+  <button mat-menu-item class="warn-text" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
+</mat-menu>

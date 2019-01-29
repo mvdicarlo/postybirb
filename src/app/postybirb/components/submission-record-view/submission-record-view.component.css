@@ -4,7 +4,6 @@
 
 .submission-info-container .submission-controls {
   vertical-align: top;
-  width: calc(100% - 50px - .25rem);
 }
 
 .submission-input {
@@ -17,4 +16,28 @@
 
 .submission-input:focus {
   border-bottom-width: 2px;
+}
+
+.img {
+  height: 50px;
+  width: 50px;
+}
+
+.img img {
+  height: 50px;
+  width: 50px;
+}
+
+.control-btns {
+}
+
+.control-btns button {
+  border-radius: 0 !important;
+  height: 26px;
+}
+
+button mat-icon {
+  font-size: 16px;
+  vertical-align: top;
+  height: 16px;
 }

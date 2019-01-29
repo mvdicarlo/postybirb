@@ -7,8 +7,11 @@ import { PostybirbRoutes } from './postybirb.routes';
 
 import { UtilsModule } from '../utils/utils.module';
 import { LoginModule } from '../login/login.module';
+import { DatabaseModule } from '../database/database.module';
 
 import { TranslateModule } from '@ngx-translate/core';
+
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import {
@@ -45,6 +48,7 @@ import { SubmissionRecordViewComponent } from './components/submission-record-vi
     FormsModule,
     LoginModule,
     UtilsModule,
+    DatabaseModule,
     TranslateModule,
     MatButtonModule,
     MatDialogModule,
@@ -56,7 +60,9 @@ import { SubmissionRecordViewComponent } from './components/submission-record-vi
     MatSelectModule,
     MatTabsModule,
     MatTooltipModule,
-    ScrollDispatchModule
+    ScrollDispatchModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule
   ],
   exports: [
     PostybirbLayout

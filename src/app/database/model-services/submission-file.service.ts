@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
-import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
+import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType, asFileObject } from '../tables/submission-file.table';
 import { ModifiedReadFile } from 'src/app/postybirb/layouts/postybirb-layout/postybirb-layout.component';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 
@@ -38,6 +38,15 @@ export class SubmissionFileDBService extends DatabaseService {
     })
   }
 
+  public deleteBySubmissionId(submissionId: number): void {
+    this.connection.remove({
+      from: SubmissionFileTableName,
+      where: {
+        submissionId
+      }
+    })
+  }
+
   private _convertToModel(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): ISubmissionFile[] {
     const modelObjs: ISubmissionFile[] = [];
     for (let i = 0; i < files.length; i++) {
@@ -46,11 +55,8 @@ export class SubmissionFileDBService extends DatabaseService {
         id: undefined,
         submissionId,
         buffer: file.buffer,
-        type: file.file.type,
-        name: file.file.name,
-        size: file.file.size,
-        path: file.file['path'],
-        fileType,
+        fileInfo: asFileObject(file.file),
+        fileType
       });
     }
 

@@ -49,3 +49,7 @@
 cdk-virtual-scroll-viewport {
   height: 100%;
 }
+
+td {
+  padding: 0.25em !important;
+}
