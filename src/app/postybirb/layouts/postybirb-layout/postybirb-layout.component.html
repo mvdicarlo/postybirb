@@ -39,7 +39,7 @@
       </div>
     </div>
 
-    <div class="col-sm col-md col-lg col-xl">
+    <div class="col-sm col-md col-lg col-xl pb-content-grid">
       <nav mat-tab-nav-bar backgroundColor="accent">
         <a mat-tab-link routerLink="/bulk" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
           <mat-icon>view_list</mat-icon>
@@ -55,8 +55,10 @@
           <submission-tab [tab]="tab"></submission-tab>
         </a>
       </nav>
-      <div class="container">
-        <router-outlet></router-outlet>
+      <div style="overflow: auto">
+        <div class="container mat-elevation-z4">
+          <router-outlet></router-outlet>
+        </div>
       </div>
     </div>
   </div>

@@ -25,8 +25,6 @@
   background-color: #222;
 }
 
-.pb-sidebar .actions {}
-
 .actions .add-button {
   height: 48px;
   /* to match tab bar */
@@ -38,6 +36,16 @@
 
 .pb-sidebar .submission-nav {
   z-index: 100;
+}
+
+.pb-content-grid {
+  display: grid;
+  grid-template-rows: 48px calc(100% - 48px);
+  /* 48px is height of tab bar */
+}
+
+.container {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .search-input {
