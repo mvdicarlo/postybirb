@@ -1,0 +1,19 @@
+.close-tab {
+  cursor: pointer;
+}
+
+.close-tab:hover {
+  color: red;
+}
+
+.thumbnail {
+  flex: 1;
+  width: 30px;
+  height: 0;
+}
+
+.thumbnail img {
+  height: 30px;
+  width: 30px;
+  margin-top: -6px;
+}

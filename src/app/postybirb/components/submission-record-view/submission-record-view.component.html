@@ -16,16 +16,22 @@
   </form>
 
 </div>
-<div class="control-btns">
-  <button class="btn btn-info" [matTooltip]="'Edit' | translate">
-    <mat-icon>edit</mat-icon>
-  </button>
-  <button class="btn btn-primary" [matTooltip]="'Post' | translate">
-    <mat-icon>send</mat-icon>
-  </button>
-  <button class="btn btn-secondary" [matMenuTriggerFor]="additionalMenu" [matTooltip]="'More' | translate">
-    <mat-icon>more_vert</mat-icon>
-  </button>
+<div class="control-btns row no-gutters">
+  <div class="col">
+    <button class="btn btn-sm" [class.btn-link]="!editing" [class.btn-info]="editing" [matTooltip]="'Edit' | translate" (click)="toggleEditing()">
+      <mat-icon>edit</mat-icon>
+    </button>
+  </div>
+  <div class="col">
+    <button class="btn btn-sm btn-link" [matTooltip]="'Post' | translate">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
+  <div class="col">
+    <button class="btn btn-sm btn-link" [matMenuTriggerFor]="additionalMenu" [matTooltip]="'More' | translate">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  </div>
 </div>
 
 <mat-menu #additionalMenu="matMenu">

@@ -12,6 +12,7 @@ import { Submission } from 'src/app/database/models/submission.model';
 import { Subscription } from 'rxjs';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
+import { TabManager } from '../../services/tab-manager.service';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -49,6 +50,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     private _submissionCache: SubmissionCache,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDBService: SubmissionFileDBService,
+    public _tabManager: TabManager,
     private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
@@ -155,11 +157,6 @@ export class PostybirbLayout implements OnInit, OnDestroy {
         this._changeDetector.markForCheck();
       }
     });
-  }
-
-  public createNewTemplate(): void {
-    this._route.navigateByUrl('/template');
-    // TODO implement actual template stuff
   }
 
   public filesSelected(event: Event): void {

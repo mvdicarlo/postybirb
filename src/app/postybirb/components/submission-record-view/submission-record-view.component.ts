@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ChangeDetectorRef, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef, ChangeDetectionStrategy, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Submission } from 'src/app/database/models/submission.model';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
@@ -8,6 +8,8 @@ import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-d
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import { readFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
+import { TabManager } from '../../services/tab-manager.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'submission-record-view',
@@ -15,17 +17,19 @@ import { SubmissionFileDBService } from 'src/app/database/model-services/submiss
   styleUrls: ['./submission-record-view.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubmissionRecordViewComponent implements OnInit {
+export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   @Input() submission: Submission;
   @ViewChild('fileChange') fileChange: ElementRef;
   public form: FormGroup;
   public editing: boolean = false;
   public hideForReload: boolean = false; // need this to trick the pipe to refresh
+  private tabSubscriber: Subscription = Subscription.EMPTY;
 
   constructor(private _changeDetector: ChangeDetectorRef,
     private _submissionCache: SubmissionCache,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDB: SubmissionFileDBService,
+    private _tabManager: TabManager,
     private dialog: MatDialog,
     fb: FormBuilder) {
     this.form = fb.group({
@@ -36,6 +40,8 @@ export class SubmissionRecordViewComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.submission = this._submissionCache.store(this.submission); // ensure we have cached submission
+
     this.form.patchValue({
       title: this.submission.title,
       rating: this.submission.rating,
@@ -61,12 +67,22 @@ export class SubmissionRecordViewComponent implements OnInit {
       if (change.fileInfo) this._changeDetector.markForCheck();
     });
 
-    this._submissionCache.store(this.submission);
+    this.tabSubscriber = this._tabManager.tabChanges.subscribe(tabs => {
+      this.editing = tabs.findIndex(t => t.id === this.submission.id) !== -1;
+      this._changeDetector.markForCheck();
+    });
+  }
+
+  ngOnDestroy() {
+    this.tabSubscriber.unsubscribe();
   }
 
   public toggleEditing(): void {
-    this.editing = !this.editing;
-    this._changeDetector.markForCheck();
+    if (this.editing) {
+      this._tabManager.removeTab(this.submission.id);
+    } else {
+      this._tabManager.addTab(this.submission);
+    }
   }
 
   public deleteSubmission(): void {
@@ -78,6 +94,7 @@ export class SubmissionRecordViewComponent implements OnInit {
       .subscribe(result => {
         if (result) {
           this.submission.cleanUp();
+          this._tabManager.removeTab(this.submission.id);
           this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
         }
       });
@@ -97,7 +114,8 @@ export class SubmissionRecordViewComponent implements OnInit {
         .then(data => {
           this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.PRIMARY, data)
             .then(() => {
-              this.hide = false;
+              this.hideForReload = false;
+              this.submission.flagUpdate('file');
               this._changeDetector.markForCheck();
             });
         });

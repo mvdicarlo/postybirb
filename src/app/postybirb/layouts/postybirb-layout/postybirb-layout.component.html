@@ -18,9 +18,6 @@
           <button mat-menu-item (click)="createNewJournal()">
             <mat-icon>message</mat-icon>{{ 'Journal/Status' | translate }}
           </button>
-          <button mat-menu-item (click)="createNewTemplate()">
-            <mat-icon>folder</mat-icon>{{ 'Template' | translate }}
-          </button>
         </mat-menu>
         <input #fileInput type="file" class="d-none" (change)="filesSelected($event)" multiple>
         <mat-form-field class="w-100 search-input" color="accent" appearance="fill">
@@ -44,9 +41,18 @@
 
     <div class="col-sm col-md col-lg col-xl">
       <nav mat-tab-nav-bar backgroundColor="accent">
-        <a mat-tab-link routerLink="bulk" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+        <a mat-tab-link routerLink="/bulk" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
           <mat-icon>view_list</mat-icon>
           <span>{{ 'Bulk' | translate }}</span>
+        </a>
+
+        <a mat-tab-link routerLink="/template" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+          <mat-icon>folder</mat-icon>
+          <span>{{ 'Template' | translate }}</span>
+        </a>
+
+        <a *ngFor="let tab of _tabManager.tabChanges | async" mat-tab-link [routerLink]="tab.type + '/' + tab.id" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+          <submission-tab [tab]="tab"></submission-tab>
         </a>
       </nav>
       <div class="container">

@@ -40,3 +40,8 @@ $theme: mat-dark-theme($primary, $accent, $warn);
 .mat-form-field-appearance-fill .mat-select-arrow-wrapper {
   vertical-align: bottom;
 }
+
+.mat-tab-link {
+  min-width: 50px !important;
+  padding: 0 12px !important;
+}

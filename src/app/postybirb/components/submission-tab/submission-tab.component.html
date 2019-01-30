@@ -1,0 +1,10 @@
+<div class="d-flex" *ngIf="submission" [title]="submission.title">
+  <div class="thumbnail" *ngIf="!hideForRefresh">
+    <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '30' | safe">
+    <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
+  </div>
+  <div style="flex: 10; max-width: 140px" class="mx-1 text-truncate">{{ submission.title }}</div>
+  <div>
+    <i class="close-tab fas fa-times" (click)="close($event)"></i>
+  </div>
+</div>

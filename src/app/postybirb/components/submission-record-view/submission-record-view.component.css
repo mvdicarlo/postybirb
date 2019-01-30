@@ -28,12 +28,14 @@
   width: 50px;
 }
 
-.control-btns {
+.control-btns div:first-child {
+  max-width: 50px !important;
 }
 
 .control-btns button {
   border-radius: 0 !important;
   height: 26px;
+  width: 100%;
 }
 
 button mat-icon {

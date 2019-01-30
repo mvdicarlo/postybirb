@@ -32,6 +32,9 @@ import { BulkUpdateForm } from './forms/bulk-update-form/bulk-update-form.compon
 import { TemplateForm } from './forms/template-form/template-form.component';
 import { CollectSubmissionInfoDialog } from './components/collect-submission-info-dialog/collect-submission-info-dialog.component';
 import { SubmissionRecordViewComponent } from './components/submission-record-view/submission-record-view.component';
+import { SubmissionForm } from './forms/submission-form/submission-form.component';
+import { JournalForm } from './forms/journal-form/journal-form.component';
+import { SubmissionTabComponent } from './components/submission-tab/submission-tab.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +42,10 @@ import { SubmissionRecordViewComponent } from './components/submission-record-vi
     BulkUpdateForm,
     TemplateForm,
     CollectSubmissionInfoDialog,
-    SubmissionRecordViewComponent
+    SubmissionRecordViewComponent,
+    SubmissionForm,
+    JournalForm,
+    SubmissionTabComponent
   ],
   imports: [
     CommonModule,

@@ -7,6 +7,7 @@ export interface SubmissionChange {
     old: any;
     current: any;
     validate?: boolean;
+    noUpdate?: boolean;
   };
 }
 
@@ -71,6 +72,12 @@ export class Submission implements ISubmission {
    */
   public cleanUp(): void {
     this.changeSubject.complete();
+  }
+
+  public flagUpdate(fieldName: string): void {
+    this.changeSubject.next({
+      [fieldName]: { noUpdate: true, old: null, current: null, validate: false }
+    });
   }
 
   private _emitChange(fieldName: string, old: any, current: any, validate: boolean = false): void {
