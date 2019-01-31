@@ -3,6 +3,14 @@ import { FormControl, Validators } from '@angular/forms';
 import { LoginProfileManagerService } from '../../services/login-profile-manager.service';
 import { LoginProfile } from '../../interfaces/login-profile';
 
+export function getDefaultProfile(profiles: LoginProfile[]): LoginProfile {
+  if (profiles && profiles.length) {
+    return profiles.find(p => p.defaultProfile) || profiles[0];
+  }
+
+  return null;
+}
+
 @Component({
   selector: 'login-profile-select-dialog',
   templateUrl: './login-profile-select-dialog.component.html',
@@ -16,7 +24,7 @@ export class LoginProfileSelectDialog implements OnInit {
 
   ngOnInit() {
     this.profiles = this._loginProfileManager.getAllProfiles();
-    this.selectControl = new FormControl(this.profiles ? this.profiles[0] : null, Validators.required);
+    this.selectControl = new FormControl(getDefaultProfile(this.profiles), Validators.required);
   }
 
 }

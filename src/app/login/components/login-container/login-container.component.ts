@@ -5,6 +5,7 @@ import { LoginProfile } from '../../interfaces/login-profile';
 import { MatSelectChange, MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
+import { getDefaultProfile } from '../login-profile-select-dialog/login-profile-select-dialog.component';
 
 @Component({
   selector: 'login-container',
@@ -31,7 +32,7 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
 
       // Select a default if none is selected yet
       if (!this.selectedProfileId) {
-        this.selectedProfileId = profiles.length ? profiles[0].id : null;
+        this.selectedProfileId = (getDefaultProfile(this.profiles) || <any>{}).id;
       }
     });
   }
@@ -55,7 +56,7 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
       if (result) {
         result = result.trim();
         if (result && result.length) {
-          this._loginManager.createProfile(result);
+          this._loginManager.createProfile(result, false);
         }
       }
     });
@@ -77,6 +78,10 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  public makeDefaultProfile(): void {
+    this._loginManager.makeDefaultProfile(this.selectedProfileId);
   }
 
   public deleteLoginProfile(): void {

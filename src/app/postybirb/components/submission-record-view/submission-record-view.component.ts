@@ -113,7 +113,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     if (files && files.length) {
       this.loading = true;
       this.hideForReload = true;
-      
+
       this._changeDetector.markForCheck();
       readFile(files[0])
         .then(data => {

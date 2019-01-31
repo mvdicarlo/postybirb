@@ -2,6 +2,7 @@ declare var appVersion: string;
 declare var nativeImage: any; // electron nativeImage object
 declare var store: any; //storejs
 declare var profilesDB: any; //lowDB instance
+declare var loginPanel: any; // login panel hook inserted into window
 declare var got: {
   get(url: string, cookieUrl: string, cookies: any[]): Promise<any>
 }

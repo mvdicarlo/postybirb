@@ -4,7 +4,12 @@
 
 .form-actions {
   position: sticky;
-  top: 0;
+  bottom: 0;
   background-color: rgba(0,0,0,0.1);
   padding: 1em 0;
+}
+
+.basic-form mat-form-field {
+  display: block;
+  margin: -.45em 0;
 }

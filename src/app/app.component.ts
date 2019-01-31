@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { MatSelectChange } from '@angular/material';
 import { LoginManagerService } from './login/services/login-manager.service';
@@ -10,6 +10,8 @@ import { Router, NavigationEnd } from '@angular/router';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  @ViewChild('loginPanel') loginPanel: any;
+
   public version: string;
   public userLanguage: string = 'en';
   public knownLanguages: string[] = ['en', 'es'];
@@ -35,6 +37,10 @@ export class AppComponent implements OnInit {
         store.set('lastRoute', event.urlAfterRedirects);
       }
     });
+  }
+
+  ngAfterViewInit() {
+    window['loginPanel'] = this.loginPanel;
   }
 
   /**

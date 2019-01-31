@@ -34,7 +34,7 @@ export class LoginProfileManagerService {
 
     // No profiles found (assume first initialize ever)
     if (!profiles.length) {
-      this.createProfile('Default');
+      this.createProfile('Default', true);
     } else {
       this._notifyAll();
     }
@@ -47,8 +47,15 @@ export class LoginProfileManagerService {
     this.subject.next(this.db.get(this.PROFILE_FIELD).sortBy('name').value());
   }
 
+  private _unsetDefault(): void {
+    this.db.get(this.PROFILE_FIELD)
+    .find(({ defaultProfile: true }))
+    .assign({ defaultProfile: false })
+    .write();
+  }
+
   /**
-   * Renames a login profiles
+   * Updates a login profile
    * @param id   Id reference to the profile
    * @param name New name for the profile
    */
@@ -59,6 +66,16 @@ export class LoginProfileManagerService {
       .write();
 
     this._notifyAll();
+  }
+
+  public makeDefaultProfile(id: string): void {
+    this._unsetDefault();
+    this.db.get(this.PROFILE_FIELD)
+      .find({ id })
+      .assign({ defaultProfile: true })
+      .write();
+
+      this._notifyAll();
   }
 
   /**
@@ -76,14 +93,20 @@ export class LoginProfileManagerService {
   /**
    * Inserts a new profile into the Profile DB if it doesn't exist already
    * @param name Name of the profile that will be displayed to the user
+   * @param defaultProfile Whether or not the profile is to be the default one
    */
-  public createProfile(name: string): void {
+  public createProfile(name: string, defaultProfile: boolean): void {
     const existing: LoginProfile = this.db.get(this.PROFILE_FIELD).find({ name }).value();
     if (!existing) {
+      if (defaultProfile) {
+        this._unsetDefault();
+      }
+
       this.db.get(this.PROFILE_FIELD)
         .push({
           id: nanoid(),
           name,
+          defaultProfile,
           data: {}
         })
         .write();

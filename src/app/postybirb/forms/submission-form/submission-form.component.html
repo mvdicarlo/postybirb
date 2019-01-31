@@ -1,15 +1,56 @@
-<div class="editing-form">
-  <div>
-    <form [formGroup]="basicInfoForm">
+<loading-overlay [loading]="loading">
+  <div class="editing-form" *ngIf="submission">
+    <div>
+      <form [formGroup]="basicInfoForm" class="basic-form">
+        <div class="w-50">
+          <mat-form-field color="accent">
+            <input #titleInput matInput [placeholder]="'Title' | translate" formControlName="title" maxlength="50">
+            <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
+          </mat-form-field>
 
-    </form>
+          <mat-form-field color="accent">
+            <mat-select formControlName="rating" [placeholder]="'Rating' | translate" required>
+              <mat-option value="General">{{ 'General' | translate }}</mat-option>
+              <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
+              <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
+              <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field color="accent">
+            <input matInput formControlName="schedule" [placeholder]="'Schedule' | translate" [owlDateTime]="dtPicker" [owlDateTimeTrigger]="dtPicker">
+            <mat-icon matSuffix style="font-size: 1.2em; vertical-align: top">schedule</mat-icon>
+            <owl-date-time #dtPicker></owl-date-time>
+          </mat-form-field>
+        </div>
+      </form>
+    </div>
+
+    <div>
+      <form [formGroup]="formDataForm">
+        <div class="w-100 d-flex">
+          <button mat-button color="accent" (click)="openProfileSelect()">
+            <span *ngIf="formDataForm.value.loginProfile">{{ formDataForm.value.loginProfile | profileName }}</span>
+            <span *ngIf="!formDataForm.value.loginProfile">{{ 'Select a Login Profile' | translate }}</span>
+          </button>
+          <mat-form-field color="accent" style="flex: 10">
+            <mat-select formControlName="websites" [placeholder]="'Websites' | translate" required>
+              <mat-option value="General">{{ 'General' | translate }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button mat-button (click)="toggleLogin()" color="accent">{{ 'Login' | translate }}</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="form-actions d-flex">
+      <div style="flex: 10">
+        <button mat-button color="warn" (click)="delete()">{{ 'Delete' | translate }}</button>
+        <button mat-button color="warn" (click)="clear()">{{ 'Clear' | translate }}</button>
+      </div>
+      <div>
+        <button mat-button color="primary">{{ 'Post' | translate }}</button>
+      </div>
+    </div>
   </div>
-
-  <div>
-    <!-- ??? -->
-  </div>
-
-  <div class="form-actions d-flex">
-
-  </div>
-</div>
+</loading-overlay>
