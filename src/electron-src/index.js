@@ -1,4 +1,4 @@
-const { remote, nativeImage, shell } = require('electron');
+const { remote, nativeImage, shell, clipboard } = require('electron');
 const path = require('path');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -41,10 +41,15 @@ window.openUrlInBrowser = function openUrl(url) {
  * @return {Promise<Cookie[]>}     Cookies
  */
 window.getCookies = function getCookies(persistId, url) {
-  const cookies = session.fromPartition(`persist:${persistId}`).cookies;
-  return new Promise((resolve, reject) => {
-    cookies.get({ url }, (error, cookies) => {
-      error ? reject(error) : resolve(cookies);
+    const cookies = session.fromPartition(`persist:${persistId}`).cookies;
+    return new Promise((resolve, reject) => {
+        cookies.get({ url }, (error, cookies) => {
+            error ? reject(error) : resolve(cookies);
+        });
     });
-  });
-}
+};
+
+window.getClipboardFormats = clipboard.availableFormats;
+window.readClipboard = function readClipboard() {
+    return { availableFormats: clipboard.availableFormats(), content: clipboard.readImage() };
+};
