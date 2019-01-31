@@ -88,3 +88,8 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   min-width: 50px !important;
   padding: 0 12px !important;
 }
+
+.mat-pseudo-checkbox-checked::after {
+  left: 2px !important;
+  padding-top: 3px !important;
+}
