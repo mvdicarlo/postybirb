@@ -17,6 +17,49 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   color: mat-color($warn);
 }
 
+.btn-link {
+  color: mat-color($accent) !important;
+}
+
+.btn-link:hover {
+  color: mat-color($accent, 800) !important;
+}
+
+.btn-secondary {
+  background-color: mat-color($accent) !important;
+  border-color: mat-color($accent) !important;
+}
+
+.bordered:not(.clear-border) {
+  background:
+    linear-gradient(to right, mat-color($accent) 1px, transparent 1px) 0 0,
+    linear-gradient(to right, mat-color($accent) 1px, transparent 1px) 0 100%,
+    linear-gradient(to left, mat-color($accent) 1px, transparent 1px) 100% 0,
+    linear-gradient(to left, mat-color($accent) 1px, transparent 1px) 100% 100%,
+    linear-gradient(to bottom, mat-color($accent) 1px, transparent 1px) 0 0,
+    linear-gradient(to bottom, mat-color($accent) 1px, transparent 1px) 100% 0,
+    linear-gradient(to top, mat-color($accent) 1px, transparent 1px) 0 100%,
+    linear-gradient(to top, mat-color($accent) 1px, transparent 1px) 100% 100%;
+  background-repeat: no-repeat;
+  background-size: 8px 10px;
+  border-radius: 0 !important;
+}
+
+.bordered:hover:not(.clear-border) {
+  background:
+    linear-gradient(to right, mat-color($accent, 800) 1px, transparent 1px) 0 0,
+    linear-gradient(to right, mat-color($accent, 800) 1px, transparent 1px) 0 100%,
+    linear-gradient(to left, mat-color($accent, 800) 1px, transparent 1px) 100% 0,
+    linear-gradient(to left, mat-color($accent, 800) 1px, transparent 1px) 100% 100%,
+    linear-gradient(to bottom, mat-color($accent, 800) 1px, transparent 1px) 0 0,
+    linear-gradient(to bottom, mat-color($accent, 800) 1px, transparent 1px) 100% 0,
+    linear-gradient(to top, mat-color($accent, 800) 1px, transparent 1px) 0 100%,
+    linear-gradient(to top, mat-color($accent, 800) 1px, transparent 1px) 100% 100%;
+  background-repeat: no-repeat;
+  background-size: 8px 10px;
+  border-radius: 0 !important;
+}
+
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;

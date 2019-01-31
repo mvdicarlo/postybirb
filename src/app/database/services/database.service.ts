@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { IdbService } from './idb.service';
 import { IDataBase } from 'jsstore';
 import { PostyBirbTables } from '../tables';
@@ -12,6 +12,10 @@ export class DatabaseService {
   constructor() {
     this.connection.setLogStatus(false);
     this._initJsStore();
+
+    if (isDevMode() && !window['connection']) {
+      window['connection'] = this.connection;
+    }
   }
 
   get connection() {

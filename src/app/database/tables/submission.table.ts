@@ -9,8 +9,9 @@ export interface ISubmission {
   rating: SubmissionRating;
   schedule?: number;
   submissionType: SubmissionType;
-  fileInfo?: FileObject // not required in journal types
-  fileMap?: FileMap
+  fileInfo?: FileObject; // not required in journal types
+  fileMap?: FileMap;
+  formData?: any;
 }
 
 export interface FileMap {
@@ -59,6 +60,9 @@ const SubmissionTable: ITable = {
     dataType: DATA_TYPE.Object
   }, {
     name: 'fileMap',
+    dataType: DATA_TYPE.Object
+  }, {
+    name: 'formData',
     dataType: DATA_TYPE.Object
   }]
 }

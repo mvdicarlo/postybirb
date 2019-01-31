@@ -1,5 +1,8 @@
-import { Component} from '@angular/core';
-import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
+import { Component } from '@angular/core';
+import { WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
+import { MatDialog } from '@angular/material';
+import { WebsiteFilterDialog } from '../website-filter-dialog/website-filter-dialog.component';
+import { getUnfilteredWebsites } from '../../helpers/displayable-websites.helper';
 
 @Component({
   selector: 'login-status-container',
@@ -9,8 +12,20 @@ import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registri
 export class LoginStatusContainerComponent {
   public registeredWebsites: WebsiteRegistryEntry = {};
 
-  constructor() {
-    this.registeredWebsites = WebsiteRegistry.getRegistered();
+  constructor(private dialog: MatDialog) {
+    this._getDisplayableWebsites();
+  }
+
+  public openFilterDialog(): void {
+    this.dialog.open(WebsiteFilterDialog)
+      .afterClosed()
+      .subscribe(() => {
+        this._getDisplayableWebsites();
+      });
+  }
+
+  private _getDisplayableWebsites(): void {
+    this.registeredWebsites = getUnfilteredWebsites();
   }
 
 }

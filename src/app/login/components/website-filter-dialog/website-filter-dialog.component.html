@@ -1,0 +1,15 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <i class="fas fa-filter"></i>
+  </div>
+</div>
+<div mat-dialog-content>
+  <mat-form-field color="accent" appearance="fill" class="w-100">
+    <mat-select [formControl]="selectControl" multiple>
+      <mat-option *ngFor="let registry of registeredWebsites | keyvalue" [value]="registry.value.name">{{ registry.value.websiteConfig.displayedName }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" class="w-100 no-button">{{ 'close' | translate }}</button>
+</div>

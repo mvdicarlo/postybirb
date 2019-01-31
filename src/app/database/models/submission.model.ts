@@ -55,6 +55,13 @@ export class Submission implements ISubmission {
   }
   private _fileMap: FileMap;
 
+  get formData(): any { return this._formData }
+  set formData(formData: any) {
+    this._emitChange('formData', this._formData, formData, true);
+    this._formData = formData;
+  }
+  private _formData: any; // TODO interface when I have a good understanding of the structure
+
   constructor(submission: ISubmission) {
     this.id = submission.id;
     this.title = submission.title;
@@ -63,6 +70,7 @@ export class Submission implements ISubmission {
     this.rating = submission.rating;
     this.fileInfo = submission.fileInfo;
     this.fileMap = submission.fileMap;
+    this.formData = submission.formData;
 
     this.changes = this.changeSubject.asObservable();
   }

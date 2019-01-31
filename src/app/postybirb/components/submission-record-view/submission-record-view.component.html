@@ -18,17 +18,17 @@
 </div>
 <div class="control-btns row no-gutters">
   <div class="col">
-    <button class="btn btn-sm" [class.btn-link]="!editing" [class.btn-info]="editing" [matTooltip]="'Edit' | translate" (click)="toggleEditing()">
+    <button class="btn btn-sm bordered" [class.btn-link]="!editing" [class.btn-secondary]="editing" [class.clear-border]="editing" [matTooltip]="'Edit' | translate" (click)="toggleEditing()">
       <mat-icon>edit</mat-icon>
     </button>
   </div>
   <div class="col">
-    <button class="btn btn-sm btn-link" [matTooltip]="'Post' | translate">
+    <button class="btn btn-sm btn-link bordered" [matTooltip]="'Post' | translate">
       <mat-icon>send</mat-icon>
     </button>
   </div>
   <div class="col">
-    <button class="btn btn-sm btn-link" [matMenuTriggerFor]="additionalMenu" [matTooltip]="'More' | translate">
+    <button class="btn btn-sm btn-link bordered" [matMenuTriggerFor]="additionalMenu" [matTooltip]="'More' | translate">
       <mat-icon>expand_more</mat-icon>
     </button>
   </div>

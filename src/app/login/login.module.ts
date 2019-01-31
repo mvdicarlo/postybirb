@@ -17,13 +17,15 @@ import { LoginContainerComponent } from './components/login-container/login-cont
 import { LoginStatusContainerComponent } from './components/login-status-container/login-status-container.component';
 import { LoginStatusViewComponent } from './components/login-status-container/login-status-view/login-status-view.component';
 import { LoginProfileSelectDialog } from './components/login-profile-select-dialog/login-profile-select-dialog.component';
+import { WebsiteFilterDialog } from './components/website-filter-dialog/website-filter-dialog.component';
 
 @NgModule({
   declarations: [
     LoginContainerComponent,
     LoginStatusContainerComponent,
     LoginStatusViewComponent,
-    LoginProfileSelectDialog
+    LoginProfileSelectDialog,
+    WebsiteFilterDialog
   ],
   imports: [
     CommonModule,
@@ -40,7 +42,8 @@ import { LoginProfileSelectDialog } from './components/login-profile-select-dial
     LoginContainerComponent
   ],
   entryComponents: [
-    LoginProfileSelectDialog
+    LoginProfileSelectDialog,
+    WebsiteFilterDialog
   ]
 })
 export class LoginModule { }

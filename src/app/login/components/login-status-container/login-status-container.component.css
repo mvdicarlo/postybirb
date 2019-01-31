@@ -5,3 +5,7 @@ table {
 td {
   padding: .4em !important;
 }
+
+.filter-btn {
+  border-radius: 0 !important;
+}
