@@ -1,0 +1,8 @@
+<div class="overlay-container">
+  <!-- Blocks UI when loading large data -->
+  <div class="blocking-overlay" *ngIf="loading">
+    <mat-progress-bar mode="buffer"></mat-progress-bar>
+  </div>
+
+  <ng-content></ng-content>
+</div>

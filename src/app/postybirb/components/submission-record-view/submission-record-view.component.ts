@@ -23,6 +23,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   public form: FormGroup;
   public editing: boolean = false;
   public hideForReload: boolean = false; // need this to trick the pipe to refresh
+  public loading: boolean = false;
   private tabSubscriber: Subscription = Subscription.EMPTY;
 
   constructor(private _changeDetector: ChangeDetectorRef,
@@ -93,6 +94,8 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     }).afterClosed()
       .subscribe(result => {
         if (result) {
+          this.loading = true;
+          this._changeDetector.markForCheck();
           this.submission.cleanUp();
           this._tabManager.removeTab(this.submission.id);
           this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
@@ -101,8 +104,6 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   public changeFile(event: Event): void {
-    this.hideForReload = true;
-    this._changeDetector.markForCheck();
 
     event.stopPropagation()
     event.preventDefault();
@@ -110,11 +111,16 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
+      this.loading = true;
+      this.hideForReload = true;
+      
+      this._changeDetector.markForCheck();
       readFile(files[0])
         .then(data => {
           this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.PRIMARY, data)
             .then(() => {
               this.hideForReload = false;
+              this.loading = false;
               this.submission.flagUpdate('file');
               this._changeDetector.markForCheck();
             });

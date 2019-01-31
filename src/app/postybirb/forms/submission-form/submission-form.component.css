@@ -1,0 +1,10 @@
+.editing-form {
+  padding: .5em;
+}
+
+.form-actions {
+  position: sticky;
+  top: 0;
+  background-color: rgba(0,0,0,0.1);
+  padding: 1em 0;
+}

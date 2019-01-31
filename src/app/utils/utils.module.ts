@@ -8,7 +8,8 @@ import {
   MatDialogModule,
   MatButtonModule,
   MatIconModule,
-  MatInputModule
+  MatInputModule,
+  MatProgressBarModule
 } from '@angular/material';
 
 import { ConfirmDialog } from './components/confirm-dialog/confirm-dialog.component';
@@ -16,6 +17,7 @@ import { InputDialog } from './components/input-dialog/input-dialog.component';
 import { ProfileNamePipe } from './pipes/profile-name.pipe';
 import { ToBase64Pipe } from './pipes/to-base64.pipe';
 import { SafePipe } from './pipes/safe.pipe';
+import { LoadingOverlay } from './components/loading-overlay/loading-overlay.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +25,8 @@ import { SafePipe } from './pipes/safe.pipe';
     InputDialog,
     ProfileNamePipe,
     ToBase64Pipe,
-    SafePipe
+    SafePipe,
+    LoadingOverlay
   ],
   imports: [
     CommonModule,
@@ -32,14 +35,16 @@ import { SafePipe } from './pipes/safe.pipe';
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
-    MatInputModule
+    MatInputModule,
+    MatProgressBarModule
   ],
   exports: [
     ConfirmDialog,
     InputDialog,
     ProfileNamePipe,
     ToBase64Pipe,
-    SafePipe
+    SafePipe,
+    LoadingOverlay
   ],
   entryComponents: [
     ConfirmDialog,
