@@ -29,17 +29,22 @@
     <div>
       <form [formGroup]="formDataForm">
         <div class="w-100 d-flex">
-          <button mat-button color="accent" (click)="openProfileSelect()">
+          <button mat-button color="accent" (click)="openProfileSelect()" class="pl-0">
             <span *ngIf="formDataForm.value.loginProfile">{{ formDataForm.value.loginProfile | profileName }}</span>
             <span *ngIf="!formDataForm.value.loginProfile">{{ 'Select a Login Profile' | translate }}</span>
+            <mat-icon>arrow_drop_down</mat-icon>
           </button>
           <mat-form-field color="accent" style="flex: 10">
-            <mat-select formControlName="websites" [placeholder]="'Websites' | translate" required>
-              <mat-option value="General">{{ 'General' | translate }}</mat-option>
+            <mat-select formControlName="websites" [placeholder]="'Websites' | translate" required multiple>
+              <mat-option [value]="registry.value.name" *ngFor="let registry of availableWebsites | keyvalue">{{ registry.value.websiteConfig.displayedName }}</mat-option>
             </mat-select>
           </mat-form-field>
           <button mat-button (click)="toggleLogin()" color="accent">{{ 'Login' | translate }}</button>
         </div>
+
+        <!-- Defaults Section -->
+
+        <!-- Selected Websites Section -->
       </form>
     </div>
 

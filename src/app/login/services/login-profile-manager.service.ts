@@ -49,9 +49,9 @@ export class LoginProfileManagerService {
 
   private _unsetDefault(): void {
     this.db.get(this.PROFILE_FIELD)
-    .find(({ defaultProfile: true }))
-    .assign({ defaultProfile: false })
-    .write();
+      .find(({ defaultProfile: true }))
+      .assign({ defaultProfile: false })
+      .write();
   }
 
   /**
@@ -75,7 +75,7 @@ export class LoginProfileManagerService {
       .assign({ defaultProfile: true })
       .write();
 
-      this._notifyAll();
+    this._notifyAll();
   }
 
   /**
@@ -120,6 +120,15 @@ export class LoginProfileManagerService {
    */
   public getAllProfiles(): LoginProfile[] {
     return this.db.get(this.PROFILE_FIELD).sortBy('name').value();
+  }
+
+  /**
+   * Returns the user set default profile
+   */
+  public getDefaultProfile(): LoginProfile {
+    return this.db.get(this.PROFILE_FIELD)
+      .find({ defaultProfile: true })
+      .value();
   }
 
   /**

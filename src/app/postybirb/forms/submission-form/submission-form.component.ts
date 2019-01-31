@@ -9,6 +9,9 @@ import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile-select-dialog/login-profile-select-dialog.component';
+import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { debounceTime } from 'rxjs/operators';
+import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
 
 @Component({
   selector: 'submission-form',
@@ -19,6 +22,7 @@ import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile
 export class SubmissionForm implements OnInit {
   public submission: Submission;
   public loading: boolean = false;
+  public availableWebsites: WebsiteRegistryEntry = {};
 
   public basicInfoForm: FormGroup;
   public formDataForm: FormGroup;
@@ -30,11 +34,13 @@ export class SubmissionForm implements OnInit {
     private _submissionCache: SubmissionCache,
     private _tabManager: TabManager,
     private _submissionDB: SubmissionDBService,
+    private _loginProfileManager: LoginProfileManagerService,
     private dialog: MatDialog
-  ) { }
+  ) {}
 
   async ngOnInit() {
     this.loading = true;
+    this.availableWebsites = WebsiteRegistry.getRegistered() || {};
     this.submission = await this._submissionCache.getOrInitialize(Number(this._route.snapshot.paramMap.get('id')));
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
@@ -71,8 +77,14 @@ export class SubmissionForm implements OnInit {
 
   private _initializeFormDataForm(): void {
     this.formDataForm = this.fb.group({
-      loginProfile: [null, Validators.required],
+      loginProfile: [this._loginProfileManager.getDefaultProfile().id, Validators.required],
       websites: [null, Validators.required]
+    });
+
+    this.formDataForm.valueChanges
+    .pipe(debounceTime(1000))
+    .subscribe(changes => {
+      this.submission.formData = changes;
     });
   }
 
