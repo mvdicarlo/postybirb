@@ -10,16 +10,26 @@
 </div>
 <div mat-dialog-content>
   <form class="row no-gutters my-2">
-    <div class="col-md-12 col-lg-12 col-xl-12 col-sm-12" *ngFor="let d of data">
+    <div class="col-8 col-md-12 col-lg-12 col-xl-12 col-sm-12" *ngFor="let d of data">
       <div class="d-inline-block mr-1" style="vertical-align: top">
         <img *ngIf="d.file.type.includes('image')" [src]="d.buffer | toBase64: '75' | safe" [alt]="d.file.name" [title]="d.file.name">
         <img *ngIf="!d.file.type.includes('image')" [alt]="d.file.name" [title]="d.file.name">
       </div>
       <div class="d-inline-block data-section">
-        <div>
-          <mat-form-field color="accent" class="d-block">
-            <input matInput name="title" [(ngModel)]="d.title" maxlength="50" [placeholder]="'Title' | translate">
-          </mat-form-field>
+        <div class="row no-gutters">
+          <div class="col-md-8 col-lg-8 col-xl-8">
+            <mat-form-field color="accent" class="d-block">
+              <input matInput name="title" [(ngModel)]="d.title" maxlength="50" [placeholder]="'Title' | translate">
+            </mat-form-field>
+          </div>
+          <div class="col resize" *ngIf="d.file.type.includes('image')">
+            <mat-form-field color="accent">
+              <input #width matInput type="number" name="width" placeholder="W" [(ngModel)]="d.width" min="25">
+            </mat-form-field>
+            <mat-form-field color="accent">
+              <input #height matInput type="number" name="height" placeholder="H" [(ngModel)]="d.height" min="25">
+            </mat-form-field>
+          </div>
           <mat-radio-group color="accent" (change)="d.rating = $event.value" class="d-block">
             <mat-radio-button value="General">{{ 'General' | translate }}</mat-radio-button>
             <mat-radio-button value="Mature">{{ 'Mature' | translate }}</mat-radio-button>

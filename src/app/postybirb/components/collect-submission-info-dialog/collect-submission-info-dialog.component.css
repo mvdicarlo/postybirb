@@ -30,3 +30,7 @@ mat-radio-button + mat-radio-button {
   font-size: 12px;
   width: calc(100% - 90px);
 }
+
+.resize mat-form-field {
+  width: 75px;
+}

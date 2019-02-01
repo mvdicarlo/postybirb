@@ -78,6 +78,22 @@ export class SubmissionFileDBService extends DatabaseService {
     const modelObjs: ISubmissionFile[] = [];
     for (let i = 0; i < files.length; i++) {
       const file: ModifiedReadFile = files[i];
+
+      if (file.width && file.height) {
+        const ni = nativeImage.createFromBuffer(Buffer.from(file.buffer))
+        const resizedNi = ni.resize({
+          width: Number(file.width),
+          height: Number(file.height),
+          quality: 'best'
+        });
+
+        if (file.file.type.includes('png')) {
+          file.buffer = new Uint8Array(resizedNi.toPNG());
+        } else {
+          file.buffer = new Uint8Array(resizedNi.toJPEG(100));
+        }
+      }
+
       modelObjs.push({
         id: undefined,
         submissionId,
