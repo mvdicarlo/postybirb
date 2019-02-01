@@ -16,7 +16,10 @@ export class CollectSubmissionInfoDialog implements OnInit {
       const ni = nativeImage.createFromBuffer(Buffer.from(rf.buffer));
       const sizes: any = ni.getSize();
       rf.width = sizes.width;
-      rf.height = sizes.height
+      rf.height = sizes.height;
+
+      rf.originalWidth = sizes.width;
+      rf.originalHeight = sizes.height;
     });
   }
 

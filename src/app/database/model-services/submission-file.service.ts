@@ -79,11 +79,11 @@ export class SubmissionFileDBService extends DatabaseService {
     for (let i = 0; i < files.length; i++) {
       const file: ModifiedReadFile = files[i];
 
-      if (file.width && file.height) {
+      if (file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
         const ni = nativeImage.createFromBuffer(Buffer.from(file.buffer))
         const resizedNi = ni.resize({
-          width: Number(file.width),
-          height: Number(file.height),
+          width: Math.min(Number(file.width), Number(file.originalWidth)),
+          height: Math.min(Number(file.height), Number(file.originalHeight)),
           quality: 'best'
         });
 

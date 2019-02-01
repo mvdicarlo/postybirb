@@ -20,6 +20,8 @@ export interface ModifiedReadFile extends ReadFile {
   schedule?: Date;
   height?: number;
   width?: number;
+  originalWidth?: number;
+  originalHeight?: number;
 }
 
 @Component({
