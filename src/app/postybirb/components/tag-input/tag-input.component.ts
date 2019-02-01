@@ -26,7 +26,10 @@ export interface TagConfig {
     provide: NG_VALUE_ACCESSOR,
     useExisting: TagInput,
     multi: true
-  }]
+  }],
+  host: {
+    'class': 'd-block bordered'
+  }
 })
 export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() canExtend: boolean = true;
