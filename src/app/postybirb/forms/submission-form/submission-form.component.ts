@@ -36,7 +36,7 @@ export class SubmissionForm implements OnInit {
     private _submissionDB: SubmissionDBService,
     private _loginProfileManager: LoginProfileManagerService,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   async ngOnInit() {
     this.loading = true;
@@ -78,14 +78,19 @@ export class SubmissionForm implements OnInit {
   private _initializeFormDataForm(): void {
     this.formDataForm = this.fb.group({
       loginProfile: [this._loginProfileManager.getDefaultProfile().id, Validators.required],
-      websites: [null, Validators.required]
+      websites: [null, Validators.required],
+      defaults: this.fb.group({
+        tags: [null]
+      })
     });
 
+    this.formDataForm.patchValue(this.submission.formData);
+
     this.formDataForm.valueChanges
-    .pipe(debounceTime(1000))
-    .subscribe(changes => {
-      this.submission.formData = changes;
-    });
+      .pipe(debounceTime(1000))
+      .subscribe(changes => {
+        this.submission.formData = changes;
+      });
   }
 
   public clear(): void {

@@ -1,0 +1,13 @@
+.tag-actions {
+  padding-top: 22px;
+  font-size: 24px;
+}
+
+.tag-actions i,
+.tag-actions mat-icon {
+  cursor: pointer;
+}
+
+mat-checkbox {
+  font-size: .8rem;
+}

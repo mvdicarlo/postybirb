@@ -43,6 +43,12 @@
         </div>
 
         <!-- Defaults Section -->
+        <div formGroupName="defaults">
+          <h5>{{'Default Tags' | translate}}
+            <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
+          </h5>
+          <tag-input #defaultTags formControlName="tags" class="w-100" [canExtend]="false"></tag-input>
+        </div>
 
         <!-- Selected Websites Section -->
       </form>
@@ -56,6 +62,16 @@
       <div>
         <button mat-button color="primary">{{ 'Post' | translate }}</button>
       </div>
+    </div>
+
+    <div class="menu">
+      <button mat-icon-button [matMenuTriggerFor]="formMenu">
+        <mat-icon>more_horiz</mat-icon>
+      </button>
+      <mat-menu #formMenu="matMenu">
+        <button mat-menu-item>{{ 'Copy Submission' | translate }}</button>
+        <button mat-menu-item>{{ 'Apply Submission' | translate }}</button>
+      </mat-menu>
     </div>
   </div>
 </loading-overlay>

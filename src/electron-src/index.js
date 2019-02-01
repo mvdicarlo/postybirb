@@ -50,6 +50,7 @@ window.getCookies = function getCookies(persistId, url) {
 };
 
 window.getClipboardFormats = clipboard.availableFormats;
+window.writeToClipboard = clipboard.write;
 window.readClipboard = function readClipboard() {
     return { availableFormats: clipboard.availableFormats(), content: clipboard.readImage() };
 };

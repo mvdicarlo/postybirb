@@ -17,6 +17,8 @@ import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import {
   MatButtonModule,
   MatDialogModule,
+  MatCheckboxModule,
+  MatChipsModule,
   MatIconModule,
   MatInputModule,
   MatMenuModule,
@@ -35,6 +37,7 @@ import { SubmissionRecordViewComponent } from './components/submission-record-vi
 import { SubmissionForm } from './forms/submission-form/submission-form.component';
 import { JournalForm } from './forms/journal-form/journal-form.component';
 import { SubmissionTabComponent } from './components/submission-tab/submission-tab.component';
+import { TagInput } from './components/tag-input/tag-input.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +48,8 @@ import { SubmissionTabComponent } from './components/submission-tab/submission-t
     SubmissionRecordViewComponent,
     SubmissionForm,
     JournalForm,
-    SubmissionTabComponent
+    SubmissionTabComponent,
+    TagInput
   ],
   imports: [
     CommonModule,
@@ -57,6 +61,8 @@ import { SubmissionTabComponent } from './components/submission-tab/submission-t
     DatabaseModule,
     TranslateModule,
     MatButtonModule,
+    MatCheckboxModule,
+    MatChipsModule,
     MatDialogModule,
     MatIconModule,
     MatInputModule,
