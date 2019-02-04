@@ -80,6 +80,7 @@ export class SubmissionForm implements OnInit {
       loginProfile: [this._loginProfileManager.getDefaultProfile().id, Validators.required],
       websites: [null, Validators.required],
       defaults: this.fb.group({
+        description: [null],
         tags: [null]
       })
     });

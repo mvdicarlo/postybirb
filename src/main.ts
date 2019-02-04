@@ -7,6 +7,8 @@ import { environment } from './environments/environment';
 import 'hammerjs';
 import * as store from 'store';
 window['store'] = store;
+window['tinymce'].baseURL = './vendors/tinymce';
+window['tinymce'].suffix = '.min';
 
 if (environment.production) {
   enableProdMode();

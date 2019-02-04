@@ -1,0 +1,27 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10"></h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <form [formGroup]="form">
+    <mat-form-field color="accent" class="w-100">
+      <input matInput maxlength="50" required formControlName="title" [placeholder]="'Title' | translate">
+    </mat-form-field>
+    <mat-form-field color="accent" class="w-100">
+      <input matInput maxlength="100" required formControlName="description" [placeholder]="'Description' | translate">
+    </mat-form-field>
+    <mat-form-field color="accent" class="w-100">
+      <textarea matInput cdkTextareaAutosize #autosize="cdkTextareaAutosize" cdkAutosizeMinRows="2" cdkAutosizeMaxRows="5" formControlName="content" [placeholder]="'Content' | translate"></textarea>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'No' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="form.value" color="primary" class="yes-button" [disabled]="form.invalid">{{ 'Yes' | translate }}</button>
+</div>

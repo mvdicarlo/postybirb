@@ -24,6 +24,11 @@ const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profile
 const ldb = low(adapter);
 window.profilesDB = ldb;
 
+// Set up description templates DB
+const descriptionAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'description-templates.json'));
+const dldb = low(descriptionAdapter);
+window.descriptionTemplateDB = dldb;
+
 window.got = require('./src/got-request.js');
 
 /**

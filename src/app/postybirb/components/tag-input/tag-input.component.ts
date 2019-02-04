@@ -117,6 +117,8 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
       this._updateTagCount();
     } else if (!data) {
       this.value = { tags: [], extend: true };
+      this.extendControl.setValue(true, { emitEvent: false });
+      this.tagControl.setValue([], { emitEvent: false });
       this._updateTagCount();
       this.onChange();
     }

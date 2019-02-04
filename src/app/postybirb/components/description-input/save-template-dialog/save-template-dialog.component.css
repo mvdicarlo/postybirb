@@ -1,0 +1,18 @@
+mat-icon {
+  cursor: pointer;
+}
+
+.close-button {
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+button {
+  border-radius: 0 !important;
+}
+
+.no-button,
+.yes-button {
+  width: 50%;
+}

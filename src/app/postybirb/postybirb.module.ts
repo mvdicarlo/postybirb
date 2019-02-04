@@ -12,6 +12,7 @@ import { DatabaseModule } from '../database/database.module';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { EditorModule } from '@tinymce/tinymce-angular';
 
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import {
@@ -38,6 +39,9 @@ import { SubmissionForm } from './forms/submission-form/submission-form.componen
 import { JournalForm } from './forms/journal-form/journal-form.component';
 import { SubmissionTabComponent } from './components/submission-tab/submission-tab.component';
 import { TagInput } from './components/tag-input/tag-input.component';
+import { DescriptionInput } from './components/description-input/description-input.component';
+import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
+import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +53,10 @@ import { TagInput } from './components/tag-input/tag-input.component';
     SubmissionForm,
     JournalForm,
     SubmissionTabComponent,
-    TagInput
+    TagInput,
+    DescriptionInput,
+    SaveTemplateDialog,
+    WebsiteShortcutsComponent
   ],
   imports: [
     CommonModule,
@@ -74,13 +81,15 @@ import { TagInput } from './components/tag-input/tag-input.component';
     MatTooltipModule,
     ScrollDispatchModule,
     OwlDateTimeModule,
-    OwlNativeDateTimeModule
+    OwlNativeDateTimeModule,
+    EditorModule
   ],
   exports: [
     PostybirbLayout
   ],
   entryComponents: [
-    CollectSubmissionInfoDialog
+    CollectSubmissionInfoDialog,
+    SaveTemplateDialog
   ]
 })
 export class PostybirbModule { }

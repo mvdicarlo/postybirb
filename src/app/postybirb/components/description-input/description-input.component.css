@@ -1,0 +1,8 @@
+mat-checkbox {
+  font-size: .8rem;
+}
+
+.description-buttons button {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}

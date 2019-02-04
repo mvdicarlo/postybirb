@@ -44,7 +44,14 @@
 
         <!-- Defaults Section -->
         <div formGroupName="defaults">
-          <h5>{{'Default Tags' | translate}}
+          <h5>{{ 'Default Description' | translate }}
+            <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
+          </h5>
+          <description-input #defaultDescription formControlName="description" class="w-100" [canOverwrite]="false"></description-input>
+
+          <div class="py-2"></div>
+
+          <h5>{{ 'Default Tags' | translate }}
             <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
           </h5>
           <tag-input #defaultTags formControlName="tags" class="w-100" [canExtend]="false"></tag-input>

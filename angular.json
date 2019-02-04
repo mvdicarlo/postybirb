@@ -20,6 +20,7 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/assets",
+              "src/vendors",
               "src/electron-src"
             ],
             "styles": [
@@ -29,7 +30,10 @@
               "node_modules/bootstrap-css-only/css/bootstrap.min.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
             ],
-            "scripts": []
+            "scripts": [
+              "src/vendors/tinymce/tinymce.min.js",
+              "src/vendors/tinymce/themes/modern/theme.min.js"
+            ]
           },
           "configurations": {
             "production": {

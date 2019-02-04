@@ -44,6 +44,7 @@ app.disableHardwareAcceleration(); // Currently not supporting this
 // app.commandLine.appendSwitch('proxy-server', 'direct://')
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
+fs.ensureFileSync(path.join(dataPath, 'description-templates.json'));
 
 app.on('ready', () => {
   log.info('PostyBirb Ready...');
