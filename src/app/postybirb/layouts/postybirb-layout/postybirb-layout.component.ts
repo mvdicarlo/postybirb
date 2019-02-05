@@ -64,13 +64,13 @@ export class PostybirbLayout implements OnInit, OnDestroy {
         this._changeDetector.detectChanges();
       });
 
-      this.submissionUpdatesSubscription = this._submissionDB.changes.subscribe(() => {
-        this._submissionDB.getSubmissions()
-          .then(submissions => {
-            this.submissions = submissions;
-            this._changeDetector.detectChanges();
-          });
-      });
+    this.submissionUpdatesSubscription = this._submissionDB.changes.subscribe(() => {
+      this._submissionDB.getSubmissions()
+        .then(submissions => {
+          this.submissions = submissions;
+          this._changeDetector.detectChanges();
+        });
+    });
   }
 
   ngOnDestroy() {
@@ -115,13 +115,13 @@ export class PostybirbLayout implements OnInit, OnDestroy {
                   // cache and build file mapping
                   insertResults.forEach(r => this._submissionCache.store(r));
                   for (let i = 0; i < flat.length; i++) {
-                      insertResults[i].fileMap = {
-                        [SubmissionFileType.PRIMARY_FILE]: flat[i].id
-                      }
+                    insertResults[i].fileMap = {
+                      [SubmissionFileType.PRIMARY_FILE]: flat[i].id
+                    }
 
-                      if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
-                        insertResults[i].fileInfo = flat[i].fileInfo;
-                      }
+                    if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
+                      insertResults[i].fileInfo = flat[i].fileInfo;
+                    }
                   }
 
                   this.submissions = [...this.submissions, ...insertResults];
@@ -147,24 +147,44 @@ export class PostybirbLayout implements OnInit, OnDestroy {
         maxLength: 50
       }
     })
-    .afterClosed()
-    .subscribe(title => {
-      if (title && title.trim().length) {
-        this._submissionDB.createSubmissions([{
-          id: undefined,
-          title: title.trim(),
-          rating: SubmissionRating.GENERAL,
-          submissionType: SubmissionType.JOURNAL
-        }]).then(insertResults => {
+      .afterClosed()
+      .subscribe(title => {
+        if (title && title.trim().length) {
+          this._submissionDB.createSubmissions([{
+            id: undefined,
+            title: title.trim(),
+            rating: SubmissionRating.GENERAL,
+            submissionType: SubmissionType.JOURNAL
+          }]).then(insertResults => {
+            this.loading = false;
+            this.submissions = [...this.submissions, ...insertResults];
+            this._changeDetector.markForCheck();
+          })
+        } else {
           this.loading = false;
-          this.submissions = [...this.submissions, ...insertResults];
           this._changeDetector.markForCheck();
-        })
-      } else {
-        this.loading = false;
-        this._changeDetector.markForCheck();
-      }
-    });
+        }
+      });
+  }
+
+  public clipboardIsEligible(): boolean {
+    return getClipboardFormats().includes('image/png');
+  }
+
+  public createSubmissionFromClipboard(): void {
+    const { availableFormats, content } = readClipboard();
+
+    if (availableFormats.includes('image/png')) {
+      const buffer: Uint8Array = new Uint8Array(content.toJPEG(100));
+      this.createNewSubmission([{
+        buffer,
+        file: <any>{
+          size: buffer.length,
+          name: 'unknown.jpeg',
+          type: 'image/jpeg'
+        }
+      }]);
+    }
   }
 
   public filesSelected(event: Event): void {

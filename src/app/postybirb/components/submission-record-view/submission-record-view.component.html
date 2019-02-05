@@ -1,6 +1,6 @@
 <loading-overlay [loading]="loading">
   <div class="submission-info-container d-flex">
-    <div class="img mr-1" *ngIf="!hideForReload">
+    <div class="img mr-1" *ngIf="!hideForReload" [title]="submission.fileInfo.name" (click)="fileChange.click()">
       <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name">
       <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
     </div>

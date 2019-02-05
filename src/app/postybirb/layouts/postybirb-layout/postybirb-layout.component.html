@@ -10,6 +10,9 @@
           <button mat-menu-item (click)="fileInput.click()">
             <mat-icon>attach_file</mat-icon>{{ 'Submission' | translate }}
           </button>
+          <button mat-menu-item (click)="createSubmissionFromClipboard()" [disabled]="!clipboardIsEligible()">
+            <mat-icon>insert_photo</mat-icon>{{ 'From Clipboard' | translate }}
+          </button>
           <button mat-menu-item (click)="createNewJournal()">
             <mat-icon>message</mat-icon>{{ 'Journal/Status' | translate }}
           </button>

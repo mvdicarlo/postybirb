@@ -27,6 +27,7 @@ mat-select {
   width: 50px;
   min-width: 50px;
   margin: auto;
+  cursor: pointer;
 }
 
 .img img {
