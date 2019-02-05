@@ -15,7 +15,7 @@ export class ToBase64Pipe implements PipeTransform {
       quality: 'better'
     });
 
-    return `data:image/jpeg;charset=utf-8;base64,${Buffer.from(resizedImg.toJPEG(80)).toString('base64')}`;
+    return resizedImg.toDataURL();
   }
 
 }

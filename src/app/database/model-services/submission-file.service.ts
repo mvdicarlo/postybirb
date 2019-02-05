@@ -4,6 +4,7 @@ import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType, asFileObj
 import { ModifiedReadFile } from 'src/app/postybirb/layouts/postybirb-layout/postybirb-layout.component';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
+import { isImage, isType, isGIF } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -79,7 +80,7 @@ export class SubmissionFileDBService extends DatabaseService {
     for (let i = 0; i < files.length; i++) {
       const file: ModifiedReadFile = files[i];
 
-      if (file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
+      if (isImage(file.file) && file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
         const ni = nativeImage.createFromBuffer(Buffer.from(file.buffer))
         const resizedNi = ni.resize({
           width: Math.min(Number(file.width), Number(file.originalWidth)),
@@ -87,9 +88,9 @@ export class SubmissionFileDBService extends DatabaseService {
           quality: 'best'
         });
 
-        if (file.file.type.includes('png')) {
+        if (isType(file.file, 'png')) {
           file.buffer = new Uint8Array(resizedNi.toPNG());
-        } else {
+        } else if (!isGIF(file.file)) {
           file.buffer = new Uint8Array(resizedNi.toJPEG(100));
         }
       }

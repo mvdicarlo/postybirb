@@ -118,6 +118,10 @@ export class PostybirbLayout implements OnInit, OnDestroy {
                       insertResults[i].fileMap = {
                         [SubmissionFileType.PRIMARY_FILE]: flat[i].id
                       }
+
+                      if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
+                        insertResults[i].fileInfo = flat[i].fileInfo;
+                      }
                   }
 
                   this.submissions = [...this.submissions, ...insertResults];

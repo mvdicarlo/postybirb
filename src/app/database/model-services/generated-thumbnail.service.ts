@@ -3,6 +3,7 @@ import { DatabaseService } from '../services/database.service';
 import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 import { GeneratedThumbnailTableName, IGeneratedThumbnail } from '../tables/generated-thumbnail.table';
 import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
+import { isImage, isGIF } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -64,7 +65,7 @@ export class GeneratedThumbnailDBService extends DatabaseService {
   private async _generate(file: ISubmissionFile): Promise<IGeneratedThumbnail> {
     let ni = null;
 
-    if (file.fileInfo.type.includes('image')) {
+    if (isImage(file.fileInfo) && !isGIF(file.fileInfo)) { // may need a better way to handle GIF thumbnails
       ni = nativeImage.createFromBuffer(Buffer.from(file.buffer));
     } else { // other file types that don't have an image thumbnail
       ni = await new Promise((resolve) => {

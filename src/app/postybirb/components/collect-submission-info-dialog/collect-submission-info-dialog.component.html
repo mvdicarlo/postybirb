@@ -22,7 +22,7 @@
               <input matInput name="title" [(ngModel)]="d.title" maxlength="50" [placeholder]="'Title' | translate">
             </mat-form-field>
           </div>
-          <div class="col resize" *ngIf="d.file.type.includes('image')">
+          <div class="col resize" *ngIf="d.file.type.includes('image') && !d.file.type.includes('gif')">
             <mat-form-field color="accent">
               <input #width matInput type="number" name="width" placeholder="W" [(ngModel)]="d.width" min="25">
             </mat-form-field>
