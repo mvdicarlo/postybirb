@@ -75,6 +75,17 @@ export class SubmissionFileDBService extends DatabaseService {
     });
   }
 
+  public async deleteSubmissionFileById(id: number): Promise<any> {
+    await this.connection.remove({
+      from: SubmissionFileTableName,
+      where: {
+        id
+      }
+    });
+
+    return await this._generatedThumbnailDB.deleteBySubmissionFileIds([id]);
+  }
+
   private _convertToModel(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): ISubmissionFile[] {
     const modelObjs: ISubmissionFile[] = [];
     for (let i = 0; i < files.length; i++) {

@@ -24,3 +24,45 @@
   top: 0;
   right: 0;
 }
+
+img {
+  height: 100px;
+  width: 100px;
+  cursor: pointer;
+}
+
+.thumbnail-block {
+  vertical-align: bottom;
+  font-size: 12px;
+  padding-bottom: 12px;
+}
+
+.thumbnail {
+  position: relative;
+  height: 100px;
+  width: 100px;
+}
+
+.thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.8;
+}
+
+.thumbnail div {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: #222;
+  width: 100%;
+}
+
+.thumbnail i {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  font-size: 20px;
+  cursor: pointer;
+}

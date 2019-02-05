@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Submission } from 'src/app/database/models/submission.model';
@@ -12,6 +12,11 @@ import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { debounceTime } from 'rxjs/operators';
 import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
+import { readFile } from 'src/app/utils/helpers/file-reader.helper';
+import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
+import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
+import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layout.component';
+import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
 @Component({
   selector: 'submission-form',
@@ -20,8 +25,11 @@ import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registri
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionForm implements OnInit {
+  @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
+
   public submission: Submission;
   public loading: boolean = false;
+  public hideForReload: boolean = false;
   public availableWebsites: WebsiteRegistryEntry = {};
 
   public basicInfoForm: FormGroup;
@@ -34,6 +42,7 @@ export class SubmissionForm implements OnInit {
     private _submissionCache: SubmissionCache,
     private _tabManager: TabManager,
     private _submissionDB: SubmissionDBService,
+    private _submissionFileDB: SubmissionFileDBService,
     private _loginProfileManager: LoginProfileManagerService,
     private dialog: MatDialog
   ) { }
@@ -85,7 +94,7 @@ export class SubmissionForm implements OnInit {
       })
     });
 
-    this.formDataForm.patchValue(this.submission.formData);
+    this.formDataForm.patchValue(this.submission.formData || {});
 
     this.formDataForm.valueChanges
       .pipe(debounceTime(1000))
@@ -136,6 +145,71 @@ export class SubmissionForm implements OnInit {
           this._changeDetector.markForCheck();
         }
       });
+  }
+
+  public removeThumbnail(): void {
+    this.loading = true;
+    this.hideForReload = true;
+
+    this._changeDetector.markForCheck();
+    this._submissionFileDB.deleteSubmissionFileById(this.submission.fileMap.THUMBNAIL)
+    .finally(() => {
+      const fileMap = this.submission.fileMap;
+      delete fileMap.THUMBNAIL;
+      this.submission.fileMap = fileMap;
+
+      this.hideForReload = false;
+      this.loading = false;
+      this._changeDetector.markForCheck();
+    });
+  }
+
+  public updateThumbnail(event: Event): void {
+    event.stopPropagation()
+    event.preventDefault();
+
+    const files: File[] = event.target['files'];
+
+    if (files && files.length) {
+      if (files[0].size > MBtoBytes(2)) {
+        this.thumbnailInput.nativeElement.value = '';
+        return;
+      }
+
+      this.loading = true;
+      this.hideForReload = true;
+
+      this._changeDetector.markForCheck();
+      readFile(files[0])
+        .then((data: ModifiedReadFile) => {
+          if (this.submission.fileMap.THUMBNAIL) { // Update file
+            this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data)
+              .then(() => {
+                this.hideForReload = false;
+                this.loading = false;
+                this._changeDetector.markForCheck();
+              });
+          } else { // Create first time db record
+
+            this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.THUMBNAIL_FILE, [data])
+            .then(info => {
+              const newMap = Object.assign({}, this.submission.fileMap);
+              newMap.THUMBNAIL = info[0].id;
+              this.submission.fileMap = newMap;
+            })
+            .catch(err => {
+              console.error(err);
+            })
+            .finally(() => {
+              this.hideForReload = false;
+              this.loading = false;
+              this._changeDetector.markForCheck();
+            });
+          }
+        });
+    }
+
+    this.thumbnailInput.nativeElement.value = '';
   }
 
 }

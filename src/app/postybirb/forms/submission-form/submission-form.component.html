@@ -2,7 +2,7 @@
   <div class="editing-form" *ngIf="submission">
     <div>
       <form [formGroup]="basicInfoForm" class="basic-form">
-        <div class="w-50">
+        <div class="w-50 d-inline-block">
           <mat-form-field color="accent">
             <input #titleInput matInput [placeholder]="'Title' | translate" formControlName="title" maxlength="50">
             <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
@@ -22,6 +22,15 @@
             <mat-icon matSuffix style="font-size: 1.2em; vertical-align: top">schedule</mat-icon>
             <owl-date-time #dtPicker></owl-date-time>
           </mat-form-field>
+        </div>
+
+        <div class="pl-4 w-50 d-inline-block thumbnail-block" *ngIf="!hideForReload">
+          <div class="thumbnail">
+            <img (click)="thumbnailChange.click()" [src]="submission.id | thumbnail: 'THUMBNAIL' | async | toBase64: '100' | safe">
+            <div>{{ 'Thumbnail' | translate }} &lt;= 2MB</div>
+            <i class="fas fa-times warn-text" (click)="removeThumbnail()" *ngIf="submission.fileMap.THUMBNAIL"></i>
+            <input #thumbnailChange type="file" class="d-none" accept="image/jpeg,image/png" single (change)="updateThumbnail($event)">
+          </div>
         </div>
       </form>
     </div>

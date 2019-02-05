@@ -58,6 +58,17 @@ export class GeneratedThumbnailDBService extends DatabaseService {
     });
   }
 
+  public deleteBySubmissionFileIds(ids: number[]): Promise<any> {
+    return this.connection.remove({
+      from: GeneratedThumbnailTableName,
+      where: {
+        submissionFileId: {
+          in: ids
+        }
+      }
+    });
+  }
+
   private _generateThumbnails(files: ISubmissionFile[]): Promise<IGeneratedThumbnail[]> {
     return Promise.all(files.map(f => this._generate(f)));
   }

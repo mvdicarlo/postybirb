@@ -9,3 +9,7 @@ export function isImage(file: { type: string }): boolean {
 export function isType(file: { type: string }, type: string): boolean {
   return file.type.includes(type);
 }
+
+export function MBtoBytes(size: any): number {
+  return Number(size) * Math.pow(1024, 2);
+}

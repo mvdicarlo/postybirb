@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material';
 import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 import { CollectSubmissionInfoDialog } from '../../components/collect-submission-info-dialog/collect-submission-info-dialog.component';
@@ -49,7 +48,6 @@ export class PostybirbLayout implements OnInit, OnDestroy {
   private submissionUpdatesSubscription: Subscription = Subscription.EMPTY;
 
   constructor(
-    private _route: Router,
     private dialog: MatDialog,
     private _submissionCache: SubmissionCache,
     private _submissionDB: SubmissionDBService,
