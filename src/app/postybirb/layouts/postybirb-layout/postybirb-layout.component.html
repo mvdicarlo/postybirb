@@ -54,7 +54,7 @@
         </a>
       </nav>
       <div style="overflow: auto">
-        <div class="container mat-elevation-z4">
+        <div class="container mat-elevation-z4" *ngIf="!hideRoute">
           <router-outlet></router-outlet>
         </div>
       </div>

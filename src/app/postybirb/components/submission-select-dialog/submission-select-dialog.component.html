@@ -1,0 +1,24 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ data.title | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <mat-form-field color="accent">
+    <mat-select [placeholder]="'Select'" [formControl]="selectControl" [multiple]="data.multiple || false">
+      <mat-option *ngFor="let opt of options" [value]="opt">
+        <span *ngIf="opt.fileInfo">{{ opt.title + ' - ' + opt.fileInfo.name }}</span>
+        <span *ngIf="!opt.fileInfo">{{ opt.title }}</span>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="selectControl.value" color="primary" class="yes-button" [disabled]="selectControl.invalid">{{ 'Yes' | translate }}</button>
+</div>

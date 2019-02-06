@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
 import { TabManager } from '../../services/tab-manager.service';
+import { Router, NavigationEnd } from '@angular/router';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -44,16 +45,30 @@ export class PostybirbLayout implements OnInit, OnDestroy {
   private _submissions: Submission[] = [];
 
   public loading: boolean = false;
+  public hideRoute: boolean = false;
   public searchControl: FormControl = new FormControl();
   private submissionUpdatesSubscription: Subscription = Subscription.EMPTY;
 
   constructor(
+    private _router: Router,
     private dialog: MatDialog,
     private _submissionCache: SubmissionCache,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDBService: SubmissionFileDBService,
     public _tabManager: TabManager,
-    private _changeDetector: ChangeDetectorRef) { }
+    private _changeDetector: ChangeDetectorRef
+  ) {
+    this._router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.hideRoute = true;
+        this._changeDetector.detectChanges();
+        this._changeDetector.markForCheck();
+        this.hideRoute = false;
+        this._changeDetector.detectChanges();
+        this._changeDetector.markForCheck();
+      }
+    })
+  }
 
   ngOnInit() {
     this._submissionDB.getSubmissions()

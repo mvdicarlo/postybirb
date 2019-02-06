@@ -7,7 +7,7 @@ import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
-import { SubmissionType } from 'src/app/database/tables/submission.table';
+import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
 import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile-select-dialog/login-profile-select-dialog.component';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { debounceTime } from 'rxjs/operators';
@@ -17,6 +17,7 @@ import { SubmissionFileDBService } from 'src/app/database/model-services/submiss
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
 import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layout.component';
 import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 
 @Component({
   selector: 'submission-form',
@@ -210,6 +211,27 @@ export class SubmissionForm implements OnInit {
     }
 
     this.thumbnailInput.nativeElement.value = '';
+  }
+
+  public openCopySubmission(): void {
+    this.dialog.open(SubmissionSelectDialog, {
+      data: {
+        title: 'Copy',
+        type: SubmissionType.SUBMISSION
+      }
+    })
+    .afterClosed()
+    .subscribe((toCopy: ISubmission) => {
+      if (toCopy) {
+        this._copySubmission(toCopy);
+      }
+    });
+  }
+
+  private _copySubmission(submission: ISubmission): void {
+    if (submission.formData) this.formDataForm.patchValue(submission.formData || {});
+    if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
+    this._changeDetector.markForCheck();
   }
 
 }

@@ -85,8 +85,7 @@
         <mat-icon>more_horiz</mat-icon>
       </button>
       <mat-menu #formMenu="matMenu">
-        <button mat-menu-item>{{ 'Copy Submission' | translate }}</button>
-        <button mat-menu-item>{{ 'Apply Submission' | translate }}</button>
+        <button mat-menu-item (click)="openCopySubmission()">{{ 'Copy Submission' | translate }}</button>
       </mat-menu>
     </div>
   </div>

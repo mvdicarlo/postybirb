@@ -19,7 +19,8 @@ export class AppComponent implements OnInit {
 
   constructor(private _translate: TranslateService,
     _loginManager: LoginManagerService,
-    private _router: Router) {
+    private _router: Router
+  ) {
     this.version = appVersion;
     _translate.setDefaultLang(this.BASE_LANGUAGE); // set default language pack to english
     this._initializeLanguage();

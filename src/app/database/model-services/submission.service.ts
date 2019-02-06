@@ -25,6 +25,10 @@ export class SubmissionDBService extends DatabaseService {
     return results.map(r => new Submission(r));
   }
 
+  public getISubmissions(): Promise<ISubmission[]> {
+    return this.connection.select({ from: SubmissionTableName });
+  }
+
   public getSubmissionById(id: number): Promise<Submission> {
     return this.connection.select({
       from: SubmissionTableName,

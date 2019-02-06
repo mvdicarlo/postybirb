@@ -42,6 +42,7 @@ import { TagInput } from './components/tag-input/tag-input.component';
 import { DescriptionInput } from './components/description-input/description-input.component';
 import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
 import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
+import { SubmissionSelectDialog } from './components/submission-select-dialog/submission-select-dialog.component';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     TagInput,
     DescriptionInput,
     SaveTemplateDialog,
-    WebsiteShortcutsComponent
+    WebsiteShortcutsComponent,
+    SubmissionSelectDialog
   ],
   imports: [
     CommonModule,
@@ -89,7 +91,8 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
   ],
   entryComponents: [
     CollectSubmissionInfoDialog,
-    SaveTemplateDialog
+    SaveTemplateDialog,
+    SubmissionSelectDialog
   ]
 })
 export class PostybirbModule { }

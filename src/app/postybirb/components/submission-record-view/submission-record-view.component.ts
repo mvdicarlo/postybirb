@@ -10,6 +10,7 @@ import { readFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { TabManager } from '../../services/tab-manager.service';
 import { Subscription } from 'rxjs';
+import { asFileObject } from 'src/app/database/tables/submission-file.table';
 
 @Component({
   selector: 'submission-record-view',
@@ -121,6 +122,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
             .then(() => {
               this.hideForReload = false;
               this.loading = false;
+              this.submission.fileInfo = asFileObject(data.file);
               this.submission.flagUpdate('file');
               this._changeDetector.markForCheck();
             });
