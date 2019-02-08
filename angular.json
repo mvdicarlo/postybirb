@@ -26,6 +26,7 @@
             "styles": [
               "src/styles.css",
               "src/material-theme.scss",
+              "src/app/websites/styles.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/bootstrap-css-only/css/bootstrap.min.css",
               "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"

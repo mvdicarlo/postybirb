@@ -1,0 +1,60 @@
+<div class="header">
+  <span class="title text-warning">
+    {{ config.websiteConfig.displayedName }}
+  </span>
+</div>
+
+<form [formGroup]="formGroup">
+  <div>
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div>
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="critique">{{'Critique' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="friendsOnly">{{'Friends Only' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="notify">{{'Notify' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-4 col-lg-4 col-xl-4">
+      <mat-form-field color="accent" class="w-100">
+        <mat-select formControlName="category" [placeholder]="'Category' | translate">
+          <ng-template [ngIf]="type === typeOfSubmission.ART">
+            <mat-option value="1010">Sketch</mat-option>
+            <mat-option value="1020">Traditional</mat-option>
+            <mat-option value="1030">Digital</mat-option>
+            <mat-option value="1040">Animation</mat-option>
+            <mat-option value="1050">Photography</mat-option>
+            <mat-option value="1060">Design / Interface</mat-option>
+            <mat-option value="1070">Modeling / Sculpture</mat-option>
+            <mat-option value="1075">Crafts / Jewelry</mat-option>
+            <mat-option value="1080">Desktop / Wallpaper</mat-option>
+            <mat-option value="1999">Other</mat-option>
+          </ng-template>
+
+          <ng-template [ngIf]="type === typeOfSubmission.STORY">
+            <mat-option value="2010">Story</mat-option>
+            <mat-option value="2020">Poetry / Lyrics</mat-option>
+            <mat-option value="2030">Script / Screenplay</mat-option>
+            <mat-option value="2999">Other</mat-option>
+          </ng-template>
+
+          <ng-template [ngIf]="type === typeOfSubmission.AUDIO || type === typeOfSubmission.ANIMATION">
+            <mat-option value="3010">Original Music</mat-option>
+            <mat-option value="3020">Cover Version</mat-option>
+            <mat-option value="3030">Remix / Mashup</mat-option>
+            <mat-option value="3040">Speech / Reading</mat-option>
+            <mat-option value="3500">Embedded Video</mat-option>
+            <mat-option value="3999">Other</mat-option>
+          </ng-template>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</form>

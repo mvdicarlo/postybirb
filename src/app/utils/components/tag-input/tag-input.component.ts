@@ -33,7 +33,7 @@ export interface TagConfig {
 })
 export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() canExtend: boolean = true;
-  @Input() defaultTagProvider: BehaviorSubject<TagData>;
+  @Input() defaultTagProvider: Observable<TagData>;
   private providerSubscriber: Subscription = Subscription.EMPTY;
   private providerData: TagData;
 

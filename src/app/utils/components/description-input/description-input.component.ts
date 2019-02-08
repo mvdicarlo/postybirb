@@ -24,7 +24,7 @@ export interface DescriptionData {
 })
 export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDestroy {
   @Input() canOverwrite: boolean = true;
-  @Input() defaultDescriptionProvider: BehaviorSubject<DescriptionData>;
+  @Input() defaultDescriptionProvider: Observable<DescriptionData>;
   private providerSubscriber: Subscription = Subscription.EMPTY;
   private providerData: DescriptionData;
 

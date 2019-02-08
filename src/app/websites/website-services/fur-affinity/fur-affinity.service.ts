@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
+import { WeasylSubmissionForm } from '../weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,9 @@ import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
   displayedName: 'Fur Affinity',
   login: {
     url: 'https://www.furaffinity.net/login'
+  },
+  components: {
+    submissionForm: WeasylSubmissionForm
   }
 })
 export class FurAffinity implements WebsiteService {

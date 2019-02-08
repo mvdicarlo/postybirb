@@ -6,13 +6,27 @@ import { FurAffinity } from './website-services/fur-affinity/fur-affinity.servic
 import { E621 } from './website-services/e621/e621.service';
 
 import { TranslateModule } from '@ngx-translate/core';
+import { UtilsModule } from '../utils/utils.module';
 
 import {
   MatIconModule,
-  MatDialogModule
+  MatDialogModule,
+  MatButtonModule,
+  MatCheckboxModule,
+  MatChipsModule,
+  MatInputModule,
+  MatMenuModule,
+  MatProgressBarModule,
+  MatRadioModule,
+  MatSelectModule,
+  MatTabsModule,
+  MatTooltipModule,
 } from '@angular/material';
 
 import { GenericLoginDialog } from './components/generic-login-dialog/generic-login-dialog.component';
+import { BaseWebsiteSubmissionForm } from './components/base-website-submission-form/base-website-submission-form.component';
+import { WeasylSubmissionForm } from './website-services/weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
+import { WebsiteSubmissionFormDisplayDirective } from './directives/website-submission-form-display.directive';
 
 export function INIT_WEBSITE_REGISTRY(...args) {
   return () => {};
@@ -20,19 +34,35 @@ export function INIT_WEBSITE_REGISTRY(...args) {
 
 @NgModule({
   declarations: [
-    GenericLoginDialog
+    GenericLoginDialog,
+    BaseWebsiteSubmissionForm,
+    WeasylSubmissionForm,
+    WebsiteSubmissionFormDisplayDirective
   ],
   imports: [
     CommonModule,
     TranslateModule,
+    UtilsModule,
     MatIconModule,
-    MatDialogModule
+    MatDialogModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatChipsModule,
+    MatInputModule,
+    MatMenuModule,
+    MatProgressBarModule,
+    MatRadioModule,
+    MatSelectModule,
+    MatTabsModule,
+    MatTooltipModule,
   ],
   exports: [
-    GenericLoginDialog
+    GenericLoginDialog,
+    WebsiteSubmissionFormDisplayDirective
   ],
   entryComponents: [
-    GenericLoginDialog
+    GenericLoginDialog,
+    WeasylSubmissionForm
   ],
   providers: [
     {

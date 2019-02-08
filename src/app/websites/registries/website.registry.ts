@@ -20,6 +20,10 @@ export class WebsiteRegistry {
     return objMap;
   }
 
+  public static getConfigForRegistry(name: string): WebsiteRegistryConfig {
+    return this.registeredWebsites.get(name);
+  }
+
   public static set(service: Function, config: WebsiteConfig): void {
     if (isDevMode()) console.info('Registered', service.name, config);
     Object.freeze(config)

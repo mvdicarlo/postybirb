@@ -1,3 +1,4 @@
+
 export function isGIF(file: { type: string }): boolean {
   return isImage(file) && isType(file, 'gif');
 }

@@ -62,7 +62,6 @@ export class PostybirbLayout implements OnInit, OnDestroy {
       if (event instanceof NavigationEnd) {
         this.hideRoute = true;
         this._changeDetector.detectChanges();
-        this._changeDetector.markForCheck();
         this.hideRoute = false;
         this._changeDetector.detectChanges();
         this._changeDetector.markForCheck();

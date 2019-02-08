@@ -8,11 +8,11 @@ import { PostybirbRoutes } from './postybirb.routes';
 import { UtilsModule } from '../utils/utils.module';
 import { LoginModule } from '../login/login.module';
 import { DatabaseModule } from '../database/database.module';
+import { WebsitesModule } from '../websites/websites.module';
 
 import { TranslateModule } from '@ngx-translate/core';
 
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
-import { EditorModule } from '@tinymce/tinymce-angular';
 
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import {
@@ -38,10 +38,6 @@ import { SubmissionRecordViewComponent } from './components/submission-record-vi
 import { SubmissionForm } from './forms/submission-form/submission-form.component';
 import { JournalForm } from './forms/journal-form/journal-form.component';
 import { SubmissionTabComponent } from './components/submission-tab/submission-tab.component';
-import { TagInput } from './components/tag-input/tag-input.component';
-import { DescriptionInput } from './components/description-input/description-input.component';
-import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
-import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
 import { SubmissionSelectDialog } from './components/submission-select-dialog/submission-select-dialog.component';
 
 @NgModule({
@@ -54,10 +50,6 @@ import { SubmissionSelectDialog } from './components/submission-select-dialog/su
     SubmissionForm,
     JournalForm,
     SubmissionTabComponent,
-    TagInput,
-    DescriptionInput,
-    SaveTemplateDialog,
-    WebsiteShortcutsComponent,
     SubmissionSelectDialog
   ],
   imports: [
@@ -67,6 +59,7 @@ import { SubmissionSelectDialog } from './components/submission-select-dialog/su
     FormsModule,
     LoginModule,
     UtilsModule,
+    WebsitesModule,
     DatabaseModule,
     TranslateModule,
     MatButtonModule,
@@ -84,14 +77,12 @@ import { SubmissionSelectDialog } from './components/submission-select-dialog/su
     ScrollDispatchModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
-    EditorModule
   ],
   exports: [
-    PostybirbLayout
+    PostybirbLayout,
   ],
   entryComponents: [
     CollectSubmissionInfoDialog,
-    SaveTemplateDialog,
     SubmissionSelectDialog
   ]
 })

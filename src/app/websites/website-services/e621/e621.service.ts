@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Website } from '../../decorators/website-decorator';
+import { WeasylSubmissionForm } from '../weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,9 @@ import { Website } from '../../decorators/website-decorator';
   displayedName: 'e621',
   login: {
     url: 'https://e621.net/user/login'
+  },
+  components: {
+    submissionForm: WeasylSubmissionForm
   }
 })
 export class E621 implements WebsiteService {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, AfterContentInit, AfterViewInit, ViewChildren, QueryList } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Submission } from 'src/app/database/models/submission.model';
@@ -18,6 +18,10 @@ import { SubmissionFileType } from 'src/app/database/tables/submission-file.tabl
 import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layout.component';
 import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
+import { TypeOfSubmission, getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
+import { Subject, Observable } from 'rxjs';
+import { DescriptionInput } from 'src/app/utils/components/description-input/description-input.component';
+import { TagInput } from 'src/app/utils/components/tag-input/tag-input.component';
 
 @Component({
   selector: 'submission-form',
@@ -25,16 +29,23 @@ import { SubmissionSelectDialog } from '../../components/submission-select-dialo
   styleUrls: ['./submission-form.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubmissionForm implements OnInit {
+export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
+  @ViewChild('defaultTags') defaultTags: TagInput;
+  @ViewChild('defaultDescription') defaultDescription: DescriptionInput;
+  @ViewChildren(TagInput) tags: QueryList<TagInput>;
 
   public submission: Submission;
   public loading: boolean = false;
   public hideForReload: boolean = false;
+  public triggerWebsiteReload: boolean = true;
   public availableWebsites: WebsiteRegistryEntry = {};
 
   public basicInfoForm: FormGroup;
   public formDataForm: FormGroup;
+  public typeOfSubmission: TypeOfSubmission;
+  public resetSubject: Subject<void> = new Subject();
+  public onReset: Observable<void> = this.resetSubject.asObservable();
 
   constructor(
     private _route: ActivatedRoute,
@@ -52,11 +63,26 @@ export class SubmissionForm implements OnInit {
     this.loading = true;
     this.availableWebsites = WebsiteRegistry.getRegistered() || {};
     this.submission = await this._submissionCache.getOrInitialize(Number(this._route.snapshot.paramMap.get('id')));
+    this.typeOfSubmission = getTypeOfSubmission(this.submission.fileInfo);
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
 
     this.loading = false;
     this._changeDetector.markForCheck();
+  }
+
+  ngAfterViewInit() {
+    // NOTE: We need this to happen here because we need ViewChildren set first
+    this.tags.changes.subscribe(tags => {
+      if (tags) {
+        this.triggerWebsiteReload = false;
+        this._changeDetector.markForCheck();
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.resetSubject.complete();
   }
 
   private _initializeBasicInfoForm(): void {
@@ -82,20 +108,39 @@ export class SubmissionForm implements OnInit {
       if (change.title) this.basicInfoForm.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.basicInfoForm.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.basicInfoForm.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
+      if (change.file) {
+        this.typeOfSubmission = getTypeOfSubmission(change.file.current);
+        this._changeDetector.markForCheck();
+      }
     });
   }
 
   private _initializeFormDataForm(): void {
     this.formDataForm = this.fb.group({
       loginProfile: [this._loginProfileManager.getDefaultProfile().id, Validators.required],
-      websites: [null, Validators.required],
+      websites: [[], Validators.required],
       defaults: this.fb.group({
         description: [null],
         tags: [null]
       })
     });
 
+    Object.keys(this.availableWebsites).forEach(website => {
+      this.formDataForm.addControl(website, this.fb.group({
+        // fields will be added by lower components
+      }));
+    });
+
     this.formDataForm.patchValue(this.submission.formData || {});
+
+    this.formDataForm.controls.loginProfile.valueChanges
+      .subscribe(() => {
+        this.triggerWebsiteReload = true;
+        this._changeDetector.detectChanges();
+        this.triggerWebsiteReload = false;
+        this._changeDetector.detectChanges();
+        this._changeDetector.markForCheck();
+      });
 
     this.formDataForm.valueChanges
       .pipe(debounceTime(1000))
@@ -113,6 +158,8 @@ export class SubmissionForm implements OnInit {
       .subscribe(doClear => {
         if (doClear) {
           this.basicInfoForm.reset();
+          this.formDataForm.reset();
+          this.resetSubject.next();
         }
       });
   }
@@ -154,15 +201,15 @@ export class SubmissionForm implements OnInit {
 
     this._changeDetector.markForCheck();
     this._submissionFileDB.deleteSubmissionFileById(this.submission.fileMap.THUMBNAIL)
-    .finally(() => {
-      const fileMap = this.submission.fileMap;
-      delete fileMap.THUMBNAIL;
-      this.submission.fileMap = fileMap;
+      .finally(() => {
+        const fileMap = this.submission.fileMap;
+        delete fileMap.THUMBNAIL;
+        this.submission.fileMap = fileMap;
 
-      this.hideForReload = false;
-      this.loading = false;
-      this._changeDetector.markForCheck();
-    });
+        this.hideForReload = false;
+        this.loading = false;
+        this._changeDetector.markForCheck();
+      });
   }
 
   public updateThumbnail(event: Event): void {
@@ -193,19 +240,19 @@ export class SubmissionForm implements OnInit {
           } else { // Create first time db record
 
             this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.THUMBNAIL_FILE, [data])
-            .then(info => {
-              const newMap = Object.assign({}, this.submission.fileMap);
-              newMap.THUMBNAIL = info[0].id;
-              this.submission.fileMap = newMap;
-            })
-            .catch(err => {
-              console.error(err);
-            })
-            .finally(() => {
-              this.hideForReload = false;
-              this.loading = false;
-              this._changeDetector.markForCheck();
-            });
+              .then(info => {
+                const newMap = Object.assign({}, this.submission.fileMap);
+                newMap.THUMBNAIL = info[0].id;
+                this.submission.fileMap = newMap;
+              })
+              .catch(err => {
+                console.error(err);
+              })
+              .finally(() => {
+                this.hideForReload = false;
+                this.loading = false;
+                this._changeDetector.markForCheck();
+              });
           }
         });
     }
@@ -220,12 +267,12 @@ export class SubmissionForm implements OnInit {
         type: SubmissionType.SUBMISSION
       }
     })
-    .afterClosed()
-    .subscribe((toCopy: ISubmission) => {
-      if (toCopy) {
-        this._copySubmission(toCopy);
-      }
-    });
+      .afterClosed()
+      .subscribe((toCopy: ISubmission) => {
+        if (toCopy) {
+          this._copySubmission(toCopy);
+        }
+      });
   }
 
   private _copySubmission(submission: ISubmission): void {

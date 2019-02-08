@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
+import { WeasylSubmissionForm } from './components/weasyl-submission-form/weasyl-submission-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +9,9 @@ import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/web
 @Website({
   login: {
     url: 'https://www.weasyl.com/signin'
+  },
+  components: {
+    submissionForm: WeasylSubmissionForm
   }
 })
 export class Weasyl implements WebsiteService {

@@ -1,0 +1,21 @@
+.submission-form {
+  display: block;
+  width: 100%;
+  margin-top: 1em;
+}
+
+/* .submission-form form div+div {
+  margin-top: 1.5em;
+} */
+
+.submission-form mat-checkbox {
+  display: block;
+}
+
+.submission-form .header {
+
+}
+
+.submission-form .header .title {
+  font-weight: bold;
+}
