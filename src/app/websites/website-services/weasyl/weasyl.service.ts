@@ -2,6 +2,15 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 import { WeasylSubmissionForm } from './components/weasyl-submission-form/weasyl-submission-form.component';
+import { Submission } from 'src/app/database/models/submission.model';
+import { getTags } from '../../helpers/website-validator.helper';
+
+function validate(submission: Submission, formData: any): string[] {
+  const problems: string[] = [];
+  const tags = getTags(submission, Weasyl.name);
+  if (tags.length < 2) problems.push('Weasyl is incomplete');
+  return problems;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +21,8 @@ import { WeasylSubmissionForm } from './components/weasyl-submission-form/weasyl
   },
   components: {
     submissionForm: WeasylSubmissionForm
-  }
+  },
+  validator: validate
 })
 export class Weasyl implements WebsiteService {
   readonly BASE_URL: string = 'https://www.weasyl.com';

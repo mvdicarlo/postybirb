@@ -36,7 +36,7 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('defaultTags') defaultTags: TagInput;
   @ViewChild('defaultDescription') defaultDescription: DescriptionInput;
 
-  private loginStatuses: ProfileStatuses;
+  private loginStatuses: ProfileStatuses = {};
   private loginListener: Subscription = Subscription.EMPTY;
 
   public submission: Submission;
@@ -152,7 +152,7 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
       });
 
     this.formDataForm.valueChanges
-      .pipe(debounceTime(1000))
+      .pipe(debounceTime(500))
       .subscribe(changes => {
         this.submission.formData = changes;
       });
@@ -285,10 +285,14 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public isLoggedIn(website: string): boolean {
-    if (this.loginStatuses && this.formDataForm && this.formDataForm.value.loginProfile) {
-      if (this.loginStatuses[this.formDataForm.value.loginProfile][website]) {
-        return this.loginStatuses[this.formDataForm.value.loginProfile][website].status === LoginStatus.LOGGED_IN;
+    try {
+      if (this.loginStatuses && this.formDataForm && this.formDataForm.value.loginProfile) {
+        if (this.loginStatuses[this.formDataForm.value.loginProfile][website]) {
+          return this.loginStatuses[this.formDataForm.value.loginProfile][website].status === LoginStatus.LOGGED_IN;
+        }
       }
+    } catch (e) {
+      // Catching because electron has a weird issue here
     }
 
     return false;

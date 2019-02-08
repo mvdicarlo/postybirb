@@ -27,7 +27,7 @@
         <div class="pl-4 w-50 d-inline-block thumbnail-block" *ngIf="!hideForReload">
           <div class="thumbnail">
             <img (click)="thumbnailChange.click()" [src]="submission.id | thumbnail: 'THUMBNAIL' | async | toBase64: '100' | safe">
-            <div>{{ 'Thumbnail' | translate }} &lt;= 2MB</div>
+            <div>{{ 'Thumbnail' | translate }} (2MB)</div>
             <i class="fas fa-times warn-text" (click)="removeThumbnail()" *ngIf="submission.fileMap.THUMBNAIL"></i>
             <input #thumbnailChange type="file" class="d-none" accept="image/jpeg,image/png" single (change)="updateThumbnail($event)">
           </div>
@@ -84,8 +84,8 @@
       </form>
     </div>
 
-    <div class="form-actions d-flex">
-      <div class="alert alert-danger" role="alert" *ngIf="submission.problems && submission.problems.length">
+    <div class="form-actions d-flex flex-wrap">
+      <div class="alert alert-danger w-100" role="alert" *ngIf="submission.problems.length">
         <div *ngFor="let problem of submission.problems">
           {{ problem | translate }}
         </div>
@@ -95,7 +95,7 @@
         <button mat-button color="warn" (click)="clear()">{{ 'Clear' | translate }}</button>
       </div>
       <div>
-        <button mat-button color="primary">{{ 'Post' | translate }}</button>
+        <button mat-button color="primary" [disabled]="submission.problems.length > 0">{{ 'Post' | translate }}</button>
       </div>
     </div>
 

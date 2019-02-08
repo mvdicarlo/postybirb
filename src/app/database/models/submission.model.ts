@@ -20,51 +20,57 @@ export class Submission implements ISubmission {
 
   get fileInfo(): FileObject { return this._fileInfo }
   set fileInfo(file: FileObject) {
-    this._emitChange('fileInfo', this._fileInfo, file);
+    const old = this._fileInfo;
     this._fileInfo = file;
+    this._emitChange('fileInfo', old, file);
   }
   private _fileInfo: FileObject;
 
   get schedule(): any { return this._schedule }
   set schedule(schedule: any) {
-    this._emitChange('schedule', this._schedule, schedule);
+    const old = this._schedule;
     this._schedule = schedule;
+    this._emitChange('schedule', old, schedule);
   }
   private _schedule: any;
 
   get title(): string { return this._title }
   set title(title: string) {
     title = (title || '').trim();
-    this._emitChange('title', this._title, title);
+    const old = this._title;
     this._title = title;
+    this._emitChange('title', old, title);
   }
   private _title: string;
 
   get rating(): SubmissionRating { return this._rating }
   set rating(rating: SubmissionRating) {
-    this._emitChange('rating', this._rating, rating, true);
+    const old = this._rating;
     this._rating = rating;
+    this._emitChange('rating', old, rating, true);
   }
   private _rating: SubmissionRating;
 
   // Need to be careful about setting these - have to pass back in the whole object
   get fileMap(): FileMap { return this._fileMap }
   set fileMap(fileMap: FileMap) {
-    this._emitChange('fileMap', this._fileMap, fileMap);
+    const old = this._fileMap;
     this._fileMap = fileMap;
+    this._emitChange('fileMap', old, fileMap);
   }
   private _fileMap: FileMap;
 
   get formData(): any { return this._formData }
   set formData(formData: any) {
-    this._emitChange('formData', this._formData, formData, true);
+    const old = this._formData;
     this._formData = formData;
+    this._emitChange('formData', old, formData, true);
   }
   private _formData: any; // TODO interface when I have a good understanding of the structure
 
   get problems(): string[] { return this._problems }
   set problems(problems: string[]) {
-    this._problems = problems;
+    this._problems = problems || [];
     this.flagUpdate('problems');
   }
   private _problems: string[] = [];

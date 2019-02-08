@@ -24,7 +24,7 @@
       </button>
     </div>
     <div class="col">
-      <button class="btn btn-sm btn-link bordered" [matTooltip]="'Post' | translate">
+      <button class="btn btn-sm btn-link bordered" [matTooltip]="'Post' | translate" [disabled]="submission.problems.length > 0">
         <mat-icon>send</mat-icon>
       </button>
     </div>

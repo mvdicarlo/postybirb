@@ -2,6 +2,7 @@ import { WebsiteRegistry } from '../registries/website.registry';
 import { GenericLoginDialog } from '../components/generic-login-dialog/generic-login-dialog.component';
 import { BaseWebsiteSubmissionForm } from '../components/base-website-submission-form/base-website-submission-form.component';
 import { Type } from '@angular/core';
+import { Submission } from 'src/app/database/models/submission.model';
 
 export interface WebsiteConfig {
   refreshInterval?: number;     // interval at which the app will check status [default=30 minutes]
@@ -13,6 +14,7 @@ export interface WebsiteConfig {
   components: {
     submissionForm: Type<BaseWebsiteSubmissionForm>
   };
+  validator?: (submission: Submission, formData: any) => string[];
 }
 
 export function Website(websiteConfig: WebsiteConfig) {

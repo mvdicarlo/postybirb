@@ -8,7 +8,6 @@
   position: sticky;
   bottom: 0;
   background-color: #242424;
-  padding: 1em 0;
   margin-left: -23px;
   margin-right: -23px;
   margin-top: 1em;
@@ -75,4 +74,13 @@ img {
 mat-panel-title {
   width: 150px;
   flex-grow: unset;
+}
+
+.alert {
+  width: 100%;
+  border-radius: 0;
+  font-size: 12px;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
 }

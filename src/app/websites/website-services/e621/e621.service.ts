@@ -3,6 +3,22 @@ import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/web
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Website } from '../../decorators/website-decorator';
 import { E621SubmissionForm } from './components/e621-submission-form/e621-submission-form.component';
+import { getTags } from '../../helpers/website-validator.helper';
+import { Submission } from 'src/app/database/models/submission.model';
+import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
+
+function validate(submission: Submission, formData: any): string[] {
+  const problems: string[] = [];
+  if (submission.submissionType === SubmissionType.SUBMISSION) {
+    const tags = getTags(submission, E621.name);
+    if (tags.length < 4) problems.push('e621 is incomplete');
+    const type = getTypeOfSubmission(submission.fileInfo)
+    if (type === TypeOfSubmission.STORY || !type) problems.push(`e621 does not support file format: ${submission.fileInfo.type.split('/')[1] || 'unknown'}`);
+  }
+
+  return problems;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +30,8 @@ import { E621SubmissionForm } from './components/e621-submission-form/e621-submi
   },
   components: {
     submissionForm: E621SubmissionForm
-  }
+  },
+  validator: validate
 })
 export class E621 implements WebsiteService {
   readonly BASE_URL: string = 'https://e621.net';
