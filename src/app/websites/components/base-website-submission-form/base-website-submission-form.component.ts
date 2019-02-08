@@ -37,13 +37,13 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
     this.formGroup = <FormGroup>this.controlContainer.control.get(this.website);
     this.resetListener = this.parentForm.onReset.subscribe(() => {
       if (this.optionDefaults) {
-        this.formGroup.reset(this.optionDefaults);
+        this.formGroup.controls.options.reset(this.optionDefaults);
       }
     });
   }
 
   ngAfterViewInit() {
-    this.formGroup.patchValue(this.parentForm.submission.formData[this.website], { emitEvent: false });
+    this.formGroup.patchValue(this.parentForm.submission.formData[this.website] || {}, { emitEvent: false });
   }
 
   ngOnDestroy() {

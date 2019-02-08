@@ -4,9 +4,9 @@
   margin-top: 1em;
 }
 
-/* .submission-form form div+div {
+.submission-form form .section+.section {
   margin-top: 1.5em;
-} */
+}
 
 .submission-form mat-checkbox {
   display: block;

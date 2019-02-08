@@ -1,5 +1,6 @@
 import { NgModule, APP_INITIALIZER, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 import { Weasyl } from './website-services/weasyl/weasyl.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
@@ -55,6 +56,8 @@ export function INIT_WEBSITE_REGISTRY(...args) {
     MatSelectModule,
     MatTabsModule,
     MatTooltipModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
   exports: [
     GenericLoginDialog,

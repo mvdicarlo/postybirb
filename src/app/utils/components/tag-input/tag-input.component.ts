@@ -28,7 +28,7 @@ export interface TagConfig {
     multi: true
   }],
   host: {
-    'class': 'd-block bordered'
+    'class': 'd-block'
   }
 })
 export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, ControlValueAccessor {

@@ -14,9 +14,9 @@ const TypeMapping: any = {
   [TypeOfSubmission.ANIMATION]: ['swf', 'flv', 'webm', 'mp4']
 }
 
-export function getTypeOfSubmission(file: File|FileObject): TypeOfSubmission {
+export function getTypeOfSubmission(file: File|FileObject): any {
   const type: string[] = file.type.split('/');
-  for (let key of TypeMapping) {
+  for (let key of Object.keys(TypeMapping)) {
       const accepted = TypeMapping[key];
       if (accepted.includes(type[0]) || accepted.includes(type[1])) {
         return key;
