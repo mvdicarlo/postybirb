@@ -68,3 +68,8 @@ img {
   font-size: 20px;
   cursor: pointer;
 }
+
+mat-panel-title {
+  width: 150px;
+  flex-grow: unset;
+}

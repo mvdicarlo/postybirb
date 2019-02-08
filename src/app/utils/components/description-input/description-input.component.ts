@@ -98,6 +98,8 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
       this.tinymce.setValue('', { emitEvent: false });
       this.overwriteControl.setValue(false, { emitEvent: false });
     }
+
+    this._internalProvider.next(this.value);
   }
 
   onChange() {

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Website } from '../../decorators/website-decorator';
-import { WeasylSubmissionForm } from '../weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
+import { E621SubmissionForm } from './components/e621-submission-form/e621-submission-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +13,7 @@ import { WeasylSubmissionForm } from '../weasyl/components/weasyl-submission-for
     url: 'https://e621.net/user/login'
   },
   components: {
-    submissionForm: WeasylSubmissionForm
+    submissionForm: E621SubmissionForm
   }
 })
 export class E621 implements WebsiteService {

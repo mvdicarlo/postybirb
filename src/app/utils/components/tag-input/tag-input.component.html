@@ -2,7 +2,7 @@
   <mat-checkbox [formControl]="extendControl">{{ 'Combine With Default' | translate }}</mat-checkbox>
 </div>
 <div class="d-flex">
-  <mat-form-field color="accent" style="flex: 10" (click)="tagInput.focus()">
+  <mat-form-field color="accent" style="flex: 10" [class.warn-text]="!isPassing()" (click)="tagInput.focus()">
     <mat-chip-list #chipList>
       <mat-chip *ngFor="let tag of this.value.tags" [selectable]="true" [removable]="true" (removed)="removeTag(tag)">
         {{ tag }}
@@ -15,12 +15,12 @@
 
     <span matPrefix><i class="fas fa-tags"></i></span>
 
-    <mat-hint *ngIf="config.minTags">
+    <mat-hint *ngIf="config.minTags" [class.text-danger]="!isPassing()">
       {{ 'Requires' | translate }} {{ config.minTags }}+
     </mat-hint>
 
     <mat-hint align="end">
-      <span *ngIf="config.maxTags">
+      <span *ngIf="!config.maxStringLength">
         {{ tagCount }} / {{ config.maxTags }}
       </span>
 

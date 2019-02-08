@@ -1,29 +1,25 @@
-import { Component, OnInit, forwardRef, Injector } from '@angular/core';
+import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 
 @Component({
-  selector: 'weasyl-submission-form',
-  templateUrl: './weasyl-submission-form.component.html',
-  styleUrls: ['./weasyl-submission-form.component.css'],
-  providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => WeasylSubmissionForm) }],
+  selector: 'e621-submission-form',
+  templateUrl: './e621-submission-form.component.html',
+  styleUrls: ['./e621-submission-form.component.css'],
+  providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => E621SubmissionForm) }],
   host: {
     'class': 'submission-form'
   }
 })
-export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class E621SubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 
   public optionDefaults: any = {
-    critique: [false],
-    friendsOnly: [false],
-    notify: [true],
-    folder: [''],
-    category: []
+    sourceURL: ['']
   };
 
   public tagConfig: TagConfig = {
-    minTags: 2
+    minTags: 4
   };
 
   constructor(injector: Injector) {

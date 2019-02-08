@@ -19,9 +19,11 @@ import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layou
 import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { TypeOfSubmission, getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, Subscription } from 'rxjs';
 import { DescriptionInput } from 'src/app/utils/components/description-input/description-input.component';
 import { TagInput } from 'src/app/utils/components/tag-input/tag-input.component';
+import { LoginManagerService, ProfileStatuses } from 'src/app/login/services/login-manager.service';
+import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
 
 @Component({
   selector: 'submission-form',
@@ -34,6 +36,9 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('defaultTags') defaultTags: TagInput;
   @ViewChild('defaultDescription') defaultDescription: DescriptionInput;
   @ViewChildren(TagInput) tags: QueryList<TagInput>;
+
+  private loginStatuses: ProfileStatuses;
+  private loginListener: Subscription = Subscription.EMPTY;
 
   public submission: Submission;
   public loading: boolean = false;
@@ -56,8 +61,14 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
     private _submissionDB: SubmissionDBService,
     private _submissionFileDB: SubmissionFileDBService,
     private _loginProfileManager: LoginProfileManagerService,
+    private _loginManager: LoginManagerService,
     private dialog: MatDialog
-  ) { }
+  ) {
+    this.loginListener = _loginManager.statusChanges.subscribe(statuses => {
+      this.loginStatuses = statuses;
+      this._changeDetector.markForCheck();
+    });
+  }
 
   async ngOnInit() {
     this.loading = true;
@@ -83,6 +94,7 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.resetSubject.complete();
+    this.loginListener.unsubscribe();
   }
 
   private _initializeBasicInfoForm(): void {
@@ -273,6 +285,16 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
           this._copySubmission(toCopy);
         }
       });
+  }
+
+  public isLoggedIn(website: string): boolean {
+    if (this.formDataForm && this.formDataForm.value.loginProfile) {
+      if (this.loginStatuses[this.formDataForm.value.loginProfile][website]) {
+        return this.loginStatuses[this.formDataForm.value.loginProfile][website].status === LoginStatus.LOGGED_IN;
+      }
+    }
+
+    return false;
   }
 
   private _copySubmission(submission: ISubmission): void {

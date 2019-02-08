@@ -14,7 +14,6 @@ import {
   MatDialogModule,
   MatButtonModule,
   MatCheckboxModule,
-  MatChipsModule,
   MatInputModule,
   MatMenuModule,
   MatProgressBarModule,
@@ -28,6 +27,8 @@ import { GenericLoginDialog } from './components/generic-login-dialog/generic-lo
 import { BaseWebsiteSubmissionForm } from './components/base-website-submission-form/base-website-submission-form.component';
 import { WeasylSubmissionForm } from './website-services/weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
 import { WebsiteSubmissionFormDisplayDirective } from './directives/website-submission-form-display.directive';
+import { E621SubmissionForm } from './website-services/e621/components/e621-submission-form/e621-submission-form.component';
+import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 
 export function INIT_WEBSITE_REGISTRY(...args) {
   return () => {};
@@ -38,7 +39,9 @@ export function INIT_WEBSITE_REGISTRY(...args) {
     GenericLoginDialog,
     BaseWebsiteSubmissionForm,
     WeasylSubmissionForm,
-    WebsiteSubmissionFormDisplayDirective
+    WebsiteSubmissionFormDisplayDirective,
+    E621SubmissionForm,
+    WebsiteDisplaynamePipe,
   ],
   imports: [
     CommonModule,
@@ -48,7 +51,6 @@ export function INIT_WEBSITE_REGISTRY(...args) {
     MatDialogModule,
     MatButtonModule,
     MatCheckboxModule,
-    MatChipsModule,
     MatInputModule,
     MatMenuModule,
     MatProgressBarModule,
@@ -61,11 +63,13 @@ export function INIT_WEBSITE_REGISTRY(...args) {
   ],
   exports: [
     GenericLoginDialog,
-    WebsiteSubmissionFormDisplayDirective
+    WebsiteSubmissionFormDisplayDirective,
+    WebsiteDisplaynamePipe
   ],
   entryComponents: [
     GenericLoginDialog,
-    WeasylSubmissionForm
+    WeasylSubmissionForm,
+    E621SubmissionForm
   ],
   providers: [
     {

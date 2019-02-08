@@ -64,6 +64,9 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   ngOnInit() {
+    if (!this.config.maxTags) this.config.maxTags = 200;
+    if (!this.config.minTagLength) this.config.minTagLength = 1;
+
     if (this.defaultTagProvider) {
       this.providerSubscriber = this.defaultTagProvider
         .subscribe(defaultTagData => {
@@ -115,6 +118,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
       this.extendControl.setValue(data.extend, { emitEvent: false });
       this._removeDuplicates();
       this._updateTagCount();
+      this._internalProvider.next(this.value);
     } else if (!data) {
       this.value = { tags: [], extend: true };
       this.extendControl.setValue(true, { emitEvent: false });
@@ -190,7 +194,6 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
     }
 
     tags.forEach(t => this._addTag(t));
-
   }
 
   private _addTag(addTag: string): void {
@@ -223,6 +226,14 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
     writeToClipboard({
       text: this.value.tags.join(', ')
     });
+  }
+
+  public isPassing(): boolean {
+    if (this.config && this.config.minTags > 0) {
+      return this.getTags().length >= this.config.minTags;
+    }
+
+    return true;
   }
 
 }

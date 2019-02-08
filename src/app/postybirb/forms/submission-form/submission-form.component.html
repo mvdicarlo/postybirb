@@ -67,9 +67,20 @@
         </div>
 
         <!-- Selected Websites Section -->
-        <div *ngIf="!triggerWebsiteReload" class="mt-3">
-          <div website-submission-form-display [type]="typeOfSubmission" [rating]="basicInfoForm.value.rating" [website]="website" *ngFor="let website of formDataForm.value.websites"></div>
-        </div>
+        <mat-accordion *ngIf="!triggerWebsiteReload" class="mt-3">
+          <mat-expansion-panel #panel *ngFor="let website of formDataForm.value.websites" [disabled]="!isLoggedIn(website)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span class="text-warning">{{ website | websiteDisplayname }}</span>
+              </mat-panel-title>
+              <mat-panel-description>
+                <span *ngIf="!panel.disabled" class="text-success">{{ 'Logged In' | translate }}</span>
+                <span *ngIf="panel.disabled" class="warn-text">{{ 'Not Logged In' | translate }}</span>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div *ngIf="!panel.disabled" website-submission-form-display [type]="typeOfSubmission" [rating]="basicInfoForm.value.rating" [website]="website" ></div>
+          </mat-expansion-panel>
+        </mat-accordion>
       </form>
     </div>
 

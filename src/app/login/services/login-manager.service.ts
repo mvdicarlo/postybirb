@@ -1,11 +1,11 @@
 import { Injectable, Injector } from '@angular/core';
 import { LoginProfileManagerService } from './login-profile-manager.service';
 import { LoginProfile } from '../interfaces/login-profile';
-import { WebsiteService, WebsiteStatus } from 'src/app/websites/interfaces/website-service.interface';
-import { WebsiteRegistry, WebsiteRegistryConfig } from 'src/app/websites/registries/website.registry';
+import { WebsiteService, WebsiteStatus, LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
+import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { WebsiteConfig } from 'src/app/websites/decorators/website-decorator';
 import { interval, Subscription, BehaviorSubject, Observable } from 'rxjs';
-import { debounceTime, share } from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 
 export interface ProfileStatuses {
   [key: string /* profile id */]: { [key: string /* website service constructor name */]: WebsiteStatus };
@@ -23,7 +23,7 @@ export class LoginManagerService {
   private profileIds: string[] = [];
   private profileStatuses: ProfileStatuses = {};
 
-  constructor(private _profileManager: LoginProfileManagerService, private injector: Injector) {
+  constructor(_profileManager: LoginProfileManagerService, private injector: Injector) {
     const registeredWebsites = WebsiteRegistry.getRegistered();
     Object.keys(registeredWebsites).forEach(key => {
       this._registerInterval(registeredWebsites[key].class, registeredWebsites[key].websiteConfig);
@@ -34,7 +34,7 @@ export class LoginManagerService {
 
   /**
    * Registers profiles for intervals. Removes deleted profiles.
-   * @param profiles list of profiles that exist in the app
+   * @param Profiles list of profiles that exist in the app
    */
   private _checkAndTrim(profiles: LoginProfile[]): void {
     const profileKeys: string[] = profiles.map(p => p.id);
@@ -52,8 +52,8 @@ export class LoginManagerService {
 
   /**
    * Registers a website for a refresh interval. Creates a new interval if it is the first time seeing the refresh timer.
-   * @param service injection token name
-   * @param config  website configuration - only uses refreshInterval
+   * @param service Injection token name
+   * @param config  Website configuration - only uses refreshInterval
    */
   private _registerInterval(service: Function, config: WebsiteConfig): void {
     const token: WebsiteService = this.injector.get(service);
@@ -68,7 +68,7 @@ export class LoginManagerService {
 
   /**
    * Checks the website statuses for all registered websites on the given interval.
-   * @param  interval interval to check statuses of
+   * @param  interval Interval to check statuses of
    */
   private _checkForStatusUpdates(interval: number): void {
     this._update(this.profileIds, this.intervalMap[interval]);
@@ -76,8 +76,8 @@ export class LoginManagerService {
 
   /**
    * Calls checkStatus functions and updates subscribers for the given services
-   * @param ids      profile ids to check
-   * @param services services/websites being checked
+   * @param ids      Profile ids to check
+   * @param services Services/websites being checked
    */
   private _update(ids: string[], services: WebsiteService[]): void {
     for (let s of services) {
@@ -100,8 +100,8 @@ export class LoginManagerService {
 
   /**
    * Initiate a status check for all websites and intervals (unless filters are provided).
-   * @param ids       profile ids to check
-   * @param options   filters
+   * @param ids       Profile ids to check
+   * @param options   Filters
    */
   public updateProfiles(ids: string[], options?: { websites?: string[], intervals?: number[] }): void {
     let services: WebsiteService[] = [];
@@ -121,5 +121,15 @@ export class LoginManagerService {
     }
 
     this._update(ids, services);
+  }
+
+  /**
+   * Returns the login status given a profile id and a website to check
+   * @param  profileId Profile Ids to check
+   * @param  website   Website to check
+   * @return           WebsiteStatus
+   */
+  public getLoginStatus(profileId: string, website: string): LoginStatus {
+    return this.profileStatuses[profileId][website].status;
   }
 }
