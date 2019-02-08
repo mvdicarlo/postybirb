@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CacheService } from './cache.service';
 import { Subscription } from 'rxjs';
 import { Submission } from '../models/submission.model';
+import { validate } from 'src/app/websites/helpers/default-submission-validator.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,8 @@ export class SubmissionCache extends CacheService {
       super.store(`${submission.id}`, submission);
       this._subscriptionCache[submission.id] = submission.changes.subscribe(change => {
         if (change.validate) {
-          // TODO
+          const problems = validate(submission);
+          submission.problems = problems;
         }
 
         Object.keys(change).filter(key => !change[key].noUpdate).forEach(key => this._updateCallback(submission.id, key, change[key].current));

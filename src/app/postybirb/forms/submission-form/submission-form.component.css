@@ -1,5 +1,6 @@
 .editing-form {
   padding: .5em;
+  padding-bottom: 0;
   position: relative;
 }
 
@@ -8,8 +9,9 @@
   bottom: 0;
   background-color: #242424;
   padding: 1em 0;
-  margin-left: -.5em;
-  margin-right: -.5em;
+  margin-left: -23px;
+  margin-right: -23px;
+  margin-top: 1em;
 }
 
 .basic-form mat-form-field {

@@ -78,13 +78,18 @@
                 <span *ngIf="panel.disabled" class="warn-text">{{ 'Not Logged In' | translate }}</span>
               </mat-panel-description>
             </mat-expansion-panel-header>
-            <div *ngIf="!panel.disabled" website-submission-form-display [type]="typeOfSubmission" [rating]="basicInfoForm.value.rating" [website]="website" ></div>
+            <div *ngIf="!panel.disabled" website-submission-form-display [type]="typeOfSubmission" [rating]="basicInfoForm.value.rating" [website]="website"></div>
           </mat-expansion-panel>
         </mat-accordion>
       </form>
     </div>
 
     <div class="form-actions d-flex">
+      <div class="alert alert-danger" role="alert" *ngIf="submission.problems && submission.problems.length">
+        <div *ngFor="let problem of submission.problems">
+          {{ problem | translate }}
+        </div>
+      </div>
       <div style="flex: 10">
         <button mat-button color="warn" (click)="delete()">{{ 'Delete' | translate }}</button>
         <button mat-button color="warn" (click)="clear()">{{ 'Clear' | translate }}</button>

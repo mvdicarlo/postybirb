@@ -118,6 +118,9 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
         this.typeOfSubmission = getTypeOfSubmission(change.file.current);
         this._changeDetector.markForCheck();
       }
+      if (change.problems) {
+        this._changeDetector.markForCheck();
+      }
     });
   }
 

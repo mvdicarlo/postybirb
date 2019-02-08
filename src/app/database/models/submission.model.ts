@@ -62,6 +62,13 @@ export class Submission implements ISubmission {
   }
   private _formData: any; // TODO interface when I have a good understanding of the structure
 
+  get problems(): string[] { return this._problems }
+  set problems(problems: string[]) {
+    this._problems = problems;
+    this.flagUpdate('problems');
+  }
+  private _problems: string[] = [];
+
   constructor(submission: ISubmission) {
     this.id = submission.id;
     this.title = submission.title;
