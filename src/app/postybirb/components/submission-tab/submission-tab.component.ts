@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef, ChangeDetection
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
 import { TabInfo, TabManager } from '../../services/tab-manager.service';
 import { Submission } from 'src/app/database/models/submission.model';
-import { Subscription, Subject, BehaviorSubject } from 'rxjs';
+import { Subscription  } from 'rxjs';
 
 @Component({
   selector: 'submission-tab',
@@ -30,7 +30,7 @@ export class SubmissionTabComponent implements OnInit, OnDestroy {
   }
 
   private async _initialize(): Promise<void> {
-    this.submission = await this._cache.getOrInitialize(this.tab.id);
+    this.submission = await this._cache.get(this.tab.id);
     if (this.submission) {
       this.submissionChangeSubscription = this.submission.changes.subscribe(changes => {
         if (changes.title) {

@@ -45,7 +45,8 @@ export class PostybirbLayout implements OnInit, OnDestroy {
   private _submissions: Submission[] = [];
 
   public loading: boolean = false;
-  public hideRoute: boolean = false;
+  public hideRoute: boolean = true;
+  public cacheCompleted: boolean = false;
   public searchControl: FormControl = new FormControl();
   private submissionUpdatesSubscription: Subscription = Subscription.EMPTY;
 
@@ -58,22 +59,28 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     public _tabManager: TabManager,
     private _changeDetector: ChangeDetectorRef
   ) {
-    this._router.events.subscribe(event => {
-      if (event instanceof NavigationEnd) {
-        this.hideRoute = true;
-        this._changeDetector.detectChanges();
-        this.hideRoute = false;
-        this._changeDetector.detectChanges();
-        this._changeDetector.markForCheck();
-      }
-    })
+
   }
 
   ngOnInit() {
+    this.loading = true;
     this._submissionDB.getSubmissions()
       .then(submissions => {
         this.submissions = submissions;
+        this.cacheCompleted = true;
+        this.loading = false;
+        this.hideRoute = false;
         this._changeDetector.detectChanges();
+
+        this._router.events.subscribe(event => {
+          if (event instanceof NavigationEnd) {
+            this.hideRoute = true;
+            this._changeDetector.detectChanges();
+            this.hideRoute = false;
+            this._changeDetector.detectChanges();
+            this._changeDetector.markForCheck();
+          }
+        });
       });
 
     this.submissionUpdatesSubscription = this._submissionDB.changes.subscribe(() => {

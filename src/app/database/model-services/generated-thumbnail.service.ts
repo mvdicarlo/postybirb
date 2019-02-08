@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
 import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 import { GeneratedThumbnailTableName, IGeneratedThumbnail } from '../tables/generated-thumbnail.table';
-import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 import { isImage, isGIF } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({

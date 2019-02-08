@@ -1,5 +1,5 @@
 <loading-overlay [loading]="loading">
-  <div class="pb-container row no-gutters">
+  <div class="pb-container row no-gutters" *ngIf="cacheCompleted">
     <div class="pb-sidebar mat-elevation-z4">
       <div class="actions">
         <button color="accent" class="add-button w-100" mat-flat-button [matMenuTriggerFor]="addMenu">

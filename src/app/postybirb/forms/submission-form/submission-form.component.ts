@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, AfterContentInit, AfterViewInit, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Submission } from 'src/app/database/models/submission.model';
@@ -35,7 +35,6 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
   @ViewChild('defaultTags') defaultTags: TagInput;
   @ViewChild('defaultDescription') defaultDescription: DescriptionInput;
-  @ViewChildren(TagInput) tags: QueryList<TagInput>;
 
   private loginStatuses: ProfileStatuses;
   private loginListener: Subscription = Subscription.EMPTY;
@@ -70,10 +69,10 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  async ngOnInit() {
+  ngOnInit() {
     this.loading = true;
     this.availableWebsites = WebsiteRegistry.getRegistered() || {};
-    this.submission = await this._submissionCache.getOrInitialize(Number(this._route.snapshot.paramMap.get('id')));
+    this.submission = this._submissionCache.get(Number(this._route.snapshot.paramMap.get('id')));
     this.typeOfSubmission = getTypeOfSubmission(this.submission.fileInfo);
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
@@ -83,13 +82,8 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    // NOTE: We need this to happen here because we need ViewChildren set first
-    this.tags.changes.subscribe(tags => {
-      if (tags) {
-        this.triggerWebsiteReload = false;
-        this._changeDetector.markForCheck();
-      }
-    });
+    this.triggerWebsiteReload = false;
+    this._changeDetector.markForCheck();
   }
 
   ngOnDestroy() {
@@ -288,7 +282,7 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public isLoggedIn(website: string): boolean {
-    if (this.formDataForm && this.formDataForm.value.loginProfile) {
+    if (this.loginStatuses && this.formDataForm && this.formDataForm.value.loginProfile) {
       if (this.loginStatuses[this.formDataForm.value.loginProfile][website]) {
         return this.loginStatuses[this.formDataForm.value.loginProfile][website].status === LoginStatus.LOGGED_IN;
       }

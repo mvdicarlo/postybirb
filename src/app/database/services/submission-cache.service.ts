@@ -2,16 +2,20 @@ import { Injectable } from '@angular/core';
 import { CacheService } from './cache.service';
 import { Subscription } from 'rxjs';
 import { Submission } from '../models/submission.model';
-import { SubmissionDBService } from '../model-services/submission.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubmissionCache extends CacheService {
   private _subscriptionCache: { [key: string]: Subscription } = {};
+  private _updateCallback: any;
 
-  constructor(private _submissionDB: SubmissionDBService) {
+  constructor() {
     super();
+  }
+
+  public setUpdateCallback(fn: () => void): void {
+    this._updateCallback = fn;
   }
 
   public store(submission: Submission): Submission {
@@ -22,7 +26,7 @@ export class SubmissionCache extends CacheService {
           // TODO
         }
 
-        Object.keys(change).filter(key => !change[key].noUpdate).forEach(key => this._submissionDB.update(submission.id, key, change[key].current));
+        Object.keys(change).filter(key => !change[key].noUpdate).forEach(key => this._updateCallback(submission.id, key, change[key].current));
       }, (err) => console.error(err), () => {
         this.remove(submission);
       });
@@ -31,24 +35,13 @@ export class SubmissionCache extends CacheService {
     return this.get(`${submission.id}`);
   }
 
-  public remove(submission: Submission): void {
-    super.remove(`${submission.id}`);
-    this._subscriptionCache[submission.id].unsubscribe();
-    delete this._subscriptionCache[submission.id];
-  }
-
-  public async getOrInitialize(id: number): Promise<Submission> {
-    if (super.exists(`${id}`)) {
-      return this.get(`${id}`);
-    } else {
-      const submission = await this._submissionDB.getSubmissionById(id);
-      if (submission) {
-        return this.store(submission);
-      } else {
-        console.error('Unable to find submission', id);
-      }
-
-      return null;
+  public remove(submission: Submission|number): void {
+    const id: any = typeof submission === 'number' ? submission : submission.id
+    super.remove(`${id}`);
+    if (this._subscriptionCache[id]) {
+      this._subscriptionCache[id].unsubscribe();
+      delete this._subscriptionCache[id];
     }
   }
+
 }

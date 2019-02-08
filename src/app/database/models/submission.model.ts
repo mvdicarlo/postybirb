@@ -70,7 +70,7 @@ export class Submission implements ISubmission {
     this.rating = submission.rating;
     this.fileInfo = submission.fileInfo;
     this.fileMap = submission.fileMap;
-    this.formData = submission.formData;
+    this.formData = submission.formData || {};
 
     this.changes = this.changeSubject.asObservable();
   }

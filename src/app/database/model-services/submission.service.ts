@@ -5,6 +5,7 @@ import { Submission } from '../models/submission.model';
 import { SubmissionFileDBService } from './submission-file.service';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { Observable, Subject } from 'rxjs';
+import { SubmissionCache } from '../services/submission-cache.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,13 @@ export class SubmissionDBService extends DatabaseService {
   private notifySubject: Subject<void> = new Subject();
   public changes: Observable<void> = this.notifySubject.asObservable();
 
-  constructor(private _submissionFileDB: SubmissionFileDBService, private _generatedThumbnailDB: GeneratedThumbnailDBService) {
+  constructor(
+    private _submissionFileDB: SubmissionFileDBService,
+    private _generatedThumbnailDB: GeneratedThumbnailDBService,
+    private _cache: SubmissionCache
+  ) {
     super();
+    _cache.setUpdateCallback(this.update.bind(this));
   }
 
   public async getSubmissions(): Promise<Submission[]> {
@@ -22,7 +28,12 @@ export class SubmissionDBService extends DatabaseService {
       from: SubmissionTableName
     });
 
-    return results.map(r => new Submission(r));
+    const submissions: Submission[] = results.map(r => {
+      if (this._cache.exists(r.id)) return this._cache.get(r.id);
+      else return this._cache.store(new Submission(r));
+    });
+
+    return submissions;
   }
 
   public getISubmissions(): Promise<ISubmission[]> {
@@ -30,13 +41,17 @@ export class SubmissionDBService extends DatabaseService {
   }
 
   public getSubmissionById(id: number): Promise<Submission> {
+    if (this._cache.exists(id)) {
+      return Promise.resolve(this._cache.get(id));
+    }
+
     return this.connection.select({
       from: SubmissionTableName,
       where: {
         id
       }
     }).then((results: ISubmission[]) => {
-      return results[0] ? new Submission(results[0]) : null;
+      return results[0] ? this._cache.store(new Submission(results[0])) : null;
     });
   }
 
@@ -48,7 +63,7 @@ export class SubmissionDBService extends DatabaseService {
       return: true
     });
 
-    return inserts.map(i => new Submission(i));
+    return inserts.map(i => this._cache.store(new Submission(i)));
   }
 
   public delete(ids: number[], deleteFiles: boolean = true): Promise<any> {
@@ -64,7 +79,9 @@ export class SubmissionDBService extends DatabaseService {
           in: ids
         }
       }
-    }).then(() => this.notifySubject.next());
+    })
+    .then(() => ids.forEach(id => this._cache.remove(id)))
+    .then(() => this.notifySubject.next());
   }
 
   public update(id: number, fieldName: string, value: any): void {

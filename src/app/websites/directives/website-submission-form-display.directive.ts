@@ -1,4 +1,4 @@
-import { Directive, ComponentFactoryResolver, ViewContainerRef, Input, OnInit, Type } from '@angular/core';
+import { Directive, ComponentFactoryResolver, ViewContainerRef, Input, OnInit } from '@angular/core';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { BaseWebsiteSubmissionForm } from '../components/base-website-submission-form/base-website-submission-form.component';
 import { WebsiteRegistry } from '../registries/website.registry';

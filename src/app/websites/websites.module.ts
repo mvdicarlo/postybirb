@@ -30,7 +30,7 @@ import { WebsiteSubmissionFormDisplayDirective } from './directives/website-subm
 import { E621SubmissionForm } from './website-services/e621/components/e621-submission-form/e621-submission-form.component';
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 
-export function INIT_WEBSITE_REGISTRY(...args) {
+export function INIT_WEBSITE_REGISTRY() {
   return () => {};
 }
 

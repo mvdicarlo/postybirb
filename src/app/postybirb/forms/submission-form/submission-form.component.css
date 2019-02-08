@@ -58,6 +58,7 @@ img {
   left: 0;
   background: #222;
   width: 100%;
+  opacity: 0.75;
 }
 
 .thumbnail i {
