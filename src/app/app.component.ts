@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { MatSelectChange } from '@angular/material';
+import { MatSelectChange, MatDialog } from '@angular/material';
 import { LoginManagerService } from './login/services/login-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
+import { SettingsDialog } from './miscellaneous/dialogs/settings-dialog/settings-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -17,9 +18,11 @@ export class AppComponent implements OnInit {
   public knownLanguages: string[] = ['en', 'es'];
   private readonly BASE_LANGUAGE: string = 'en';
 
-  constructor(private _translate: TranslateService,
+  constructor(
+    private _translate: TranslateService,
     _loginManager: LoginManagerService,
-    private _router: Router
+    private _router: Router,
+    private dialog: MatDialog
   ) {
     this.version = appVersion;
     _translate.setDefaultLang(this.BASE_LANGUAGE); // set default language pack to english
@@ -70,6 +73,15 @@ export class AppComponent implements OnInit {
    */
   public async openURL(url: string) {
     openUrlInBrowser(url);
+  }
+
+  public openSettings(): void {
+    this.dialog.open(SettingsDialog, {
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '100%',
+      width: '100%',
+    });
   }
 
 }

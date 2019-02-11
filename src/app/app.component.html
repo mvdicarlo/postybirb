@@ -45,7 +45,7 @@
           <img class="kofi-img" src="https://ko-fi.com/img/cuplogo.svg">
         </div>
       </a>
-      <a [matTooltip]="'Settings' | translate" matTooltipPosition="right">
+      <a [matTooltip]="'Settings' | translate" matTooltipPosition="right" (click)="openSettings()">
         <i class="fas fa-cog"></i>
       </a>
     </mat-drawer>

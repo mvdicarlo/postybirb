@@ -1,0 +1,23 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ 'Settings' | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-content>
+  <form [formGroup]="settingsForm">
+    <mat-accordion [multi]="true">
+      <mat-expansion-panel expanded>
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ 'Performance' | translate }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-slide-toggle formControlName="hardwareAcceleration">Hardware Acceleration</mat-slide-toggle>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </form>
+</div>

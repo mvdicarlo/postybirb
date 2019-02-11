@@ -9,12 +9,14 @@ import { LoginModule } from './login/login.module';
 import { UtilsModule } from './utils/utils.module';
 import { PostybirbModule } from './postybirb/postybirb.module';
 import { DatabaseModule } from './database/database.module';
+import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import {
   MatButtonModule,
+  MatDialogModule,
   MatIconModule,
   MatInputModule,
   MatSelectModule,
@@ -44,8 +46,10 @@ import { AppComponent } from './app.component';
     PostybirbModule,
     UtilsModule,
     DatabaseModule,
+    MiscellaneousModule,
     WebsitesModule,
     MatButtonModule,
+    MatDialogModule,
     MatIconModule,
     MatInputModule,
     MatSelectModule,

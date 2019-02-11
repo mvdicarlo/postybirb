@@ -29,6 +29,11 @@ const descriptionAdapter = new FileSync(path.join(app.getPath('userData'), 'data
 const dldb = low(descriptionAdapter);
 window.descriptionTemplateDB = dldb;
 
+// Set up settings DB
+const settingsAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'settings.json'));
+const sldb = low(settingsAdapter);
+window.settingsDB = sldb;
+
 window.got = require('./src/got-request.js');
 
 /**
@@ -58,4 +63,10 @@ window.getClipboardFormats = clipboard.availableFormats;
 window.writeToClipboard = clipboard.write;
 window.readClipboard = function readClipboard() {
     return { availableFormats: clipboard.availableFormats(), content: clipboard.readImage() };
+};
+
+// Relaunch application (mostly used for toggling hardware acceleration)
+window.relaunch = function relaunch() {
+    app.relaunch();
+    app.exit();
 };
