@@ -1,0 +1,343 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="row no-gutters">
+      <div class="col-md-5 col-lg-4 col-xl-3">
+        <mat-checkbox formControlName="disableComments">{{'Disable Comments' | translate}}</mat-checkbox>
+        <mat-checkbox formControlName="reupload">{{'Reupload better quality image' | translate}}</mat-checkbox>
+        <mat-checkbox formControlName="scraps">{{'Scraps' | translate}}</mat-checkbox>
+      </div>
+
+      <div class="col-md col-lg col-xl">
+        <div class="row no-gutters">
+          <div class="col-md col-lg col-xl">
+            <mat-form-field color="accent" class="w-100">
+              <mat-select formControlName="category" [placeholder]="'Category' | translate">
+                <mat-optgroup label="Visual Art">
+                  <mat-option value="1">All</mat-option>
+                  <mat-option value="2">Artwork (Digital)</mat-option>
+                  <mat-option value="3">Artwork (Traditional)</mat-option>
+                  <mat-option value="4">Cellshading</mat-option>
+                  <mat-option value="5">Crafting</mat-option>
+                  <mat-option value="6">Designs</mat-option>
+                  <mat-option value="7">Flash</mat-option>
+                  <mat-option value="8">Fursuiting</mat-option>
+                  <mat-option value="9">Icons</mat-option>
+                  <mat-option value="10">Mosaics</mat-option>
+                  <mat-option value="11">Photography</mat-option>
+                  <mat-option value="12">Sculpting</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Readable Art">
+                  <mat-option value="13">Story</mat-option>
+                  <mat-option value="14">Poetry</mat-option>
+                  <mat-option value="15">Prose</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Audio Art">
+                  <mat-option value="16">Music</mat-option>
+                  <mat-option value="17">Podcasts</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Downloadable">
+                  <mat-option value="18">Skins</mat-option>
+                  <mat-option value="19">Handhelds</mat-option>
+                  <mat-option value="20">Resources</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Other Stuff">
+                  <mat-option value="21">Adoptables</mat-option>
+                  <mat-option value="22">Auctions</mat-option>
+                  <mat-option value="23">Contests</mat-option>
+                  <mat-option value="24">Current Events</mat-option>
+                  <mat-option value="26">Stockart</mat-option>
+                  <mat-option value="27">Screenshots</mat-option>
+                  <mat-option value="28">Scraps</mat-option>
+                  <mat-option value="29">Wallpaper</mat-option>
+                  <mat-option value="30">YCH / Sale</mat-option>
+                  <mat-option value="31">Other</mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="col-md col-lg col-xl">
+            <mat-form-field color="accent" class="w-100">
+              <mat-select formControlName="theme" [placeholder]="'Theme' | translate">
+                <mat-optgroup label="General Things">
+                  <mat-option value="1" selected="true">All</mat-option>
+                  <mat-option value="2">Abstract</mat-option>
+                  <mat-option value="3">Animal related (non-anthro)</mat-option>
+                  <mat-option value="4">Anime</mat-option>
+                  <mat-option value="5">Comics</mat-option>
+                  <mat-option value="6">Doodle</mat-option>
+                  <mat-option value="7">Fanart</mat-option>
+                  <mat-option value="8">Fantasy</mat-option>
+                  <mat-option value="9">Human</mat-option>
+                  <mat-option value="10">Portraits</mat-option>
+                  <mat-option value="11">Scenery</mat-option>
+                  <mat-option value="12">Still Life</mat-option>
+                  <mat-option value="13">Tutorials</mat-option>
+                  <mat-option value="14">Miscellaneous</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Fetish / Furry specialty">
+                  <mat-option value="101">Baby fur</mat-option>
+                  <mat-option value="102">Bondage</mat-option>
+                  <mat-option value="103">Digimon</mat-option>
+                  <mat-option value="104">Fat Furs</mat-option>
+                  <mat-option value="105">Fetish Other</mat-option>
+                  <mat-option value="106">Fursuit</mat-option>
+                  <mat-option value="119">Gore / Macabre Art</mat-option>
+                  <mat-option value="107">Hyper</mat-option>
+                  <mat-option value="108">Inflation</mat-option>
+                  <mat-option value="109">Macro / Micro</mat-option>
+                  <mat-option value="110">Muscle</mat-option>
+                  <mat-option value="111">My Little Pony / Brony</mat-option>
+                  <mat-option value="112">Paw</mat-option>
+                  <mat-option value="113">Pokemon</mat-option>
+                  <mat-option value="114">Pregnancy</mat-option>
+                  <mat-option value="115">Sonic</mat-option>
+                  <mat-option value="116">Transformation</mat-option>
+                  <mat-option value="120">TF / TG</mat-option>
+                  <mat-option value="117">Vore</mat-option>
+                  <mat-option value="118">Water Sports</mat-option>
+                  <mat-option value="100">General Furry Art</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Music">
+                  <mat-option value="201">Techno</mat-option>
+                  <mat-option value="202">Trance</mat-option>
+                  <mat-option value="203">House</mat-option>
+                  <mat-option value="204">90s</mat-option>
+                  <mat-option value="205">80s</mat-option>
+                  <mat-option value="206">70s</mat-option>
+                  <mat-option value="207">60s</mat-option>
+                  <mat-option value="208">Pre-60s</mat-option>
+                  <mat-option value="209">Classical</mat-option>
+                  <mat-option value="210">Game Music</mat-option>
+                  <mat-option value="211">Rock</mat-option>
+                  <mat-option value="212">Pop</mat-option>
+                  <mat-option value="213">Rap</mat-option>
+                  <mat-option value="214">Industrial</mat-option>
+                  <mat-option value="200">Other Music</mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="col-md col-lg col-xl">
+            <mat-form-field color="accent" class="w-100">
+              <mat-select formControlName="species" [placeholder]="'Species' | translate">
+                <mat-option value="1" selected>Unspecified / Any</mat-option>
+                <mat-optgroup label="Amphibian">
+                  <mat-option value="1001">Frog</mat-option>
+                  <mat-option value="1002">Newt</mat-option>
+                  <mat-option value="1003">Salamander</mat-option>
+                  <mat-option value="1000">Amphibian (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Aquatic">
+                  <mat-option value="2001">Cephalopod</mat-option>
+                  <mat-option value="2002">Dolphin</mat-option>
+                  <mat-option value="2005">Fish</mat-option>
+                  <mat-option value="2004">Porpoise</mat-option>
+                  <mat-option value="6068">Seal</mat-option>
+                  <mat-option value="2006">Shark</mat-option>
+                  <mat-option value="2003">Whale</mat-option>
+                  <mat-option value="2000">Aquatic (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Avian">
+                  <mat-option value="3001">Corvid</mat-option>
+                  <mat-option value="3002">Crow</mat-option>
+                  <mat-option value="3003">Duck</mat-option>
+                  <mat-option value="3004">Eagle</mat-option>
+                  <mat-option value="3005">Falcon</mat-option>
+                  <mat-option value="3006">Goose</mat-option>
+                  <mat-option value="3007">Gryphon</mat-option>
+                  <mat-option value="3008">Hawk</mat-option>
+                  <mat-option value="3009">Owl</mat-option>
+                  <mat-option value="3010">Phoenix</mat-option>
+                  <mat-option value="3011">Swan</mat-option>
+                  <mat-option value="3000">Avian (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Bears &amp; Ursines">
+                  <mat-option value="6002">Bear</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Camelids">
+                  <mat-option value="6074">Camel</mat-option>
+                  <mat-option value="6036">Llama</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Canines &amp; Lupines">
+                  <mat-option value="6008">Coyote</mat-option>
+                  <mat-option value="6009">Doberman</mat-option>
+                  <mat-option value="6010">Dog</mat-option>
+                  <mat-option value="6011">Dingo</mat-option>
+                  <mat-option value="6012">German Shepherd</mat-option>
+                  <mat-option value="6013">Jackal</mat-option>
+                  <mat-option value="6014">Husky</mat-option>
+                  <mat-option value="6016">Wolf</mat-option>
+                  <mat-option value="6017">Canine (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Cervines">
+                  <mat-option value="6018">Cervine (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Cows &amp; Bovines">
+                  <mat-option value="6004">Antelope</mat-option>
+                  <mat-option value="6003">Cows</mat-option>
+                  <mat-option value="6005">Gazelle</mat-option>
+                  <mat-option value="6006">Goat</mat-option>
+                  <mat-option value="6007">Bovines (General)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Dragons">
+                  <mat-option value="4001">Eastern Dragon</mat-option>
+                  <mat-option value="4002">Hydra</mat-option>
+                  <mat-option value="4003">Serpent</mat-option>
+                  <mat-option value="4004">Western Dragon</mat-option>
+                  <mat-option value="4005">Wyvern</mat-option>
+                  <mat-option value="4000">Dragon (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Equestrians">
+                  <mat-option value="6019">Donkey</mat-option>
+                  <mat-option value="6034">Horse</mat-option>
+                  <mat-option value="6073">Pony</mat-option>
+                  <mat-option value="6071">Zebra</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Exotic &amp; Mythicals">
+                  <mat-option value="5002">Argonian</mat-option>
+                  <mat-option value="5003">Chakat</mat-option>
+                  <mat-option value="5004">Chocobo</mat-option>
+                  <mat-option value="5005">Citra</mat-option>
+                  <mat-option value="5006">Crux</mat-option>
+                  <mat-option value="5007">Daemon</mat-option>
+                  <mat-option value="5008">Digimon</mat-option>
+                  <mat-option value="5009">Dracat</mat-option>
+                  <mat-option value="5010">Draenei</mat-option>
+                  <mat-option value="5011">Elf</mat-option>
+                  <mat-option value="5012">Gargoyle</mat-option>
+                  <mat-option value="5013">Iksar</mat-option>
+                  <mat-option value="5015">Kaiju/Monster</mat-option>
+                  <mat-option value="5014">Langurhali</mat-option>
+                  <mat-option value="5017">Moogle</mat-option>
+                  <mat-option value="5016">Naga</mat-option>
+                  <mat-option value="5018">Orc</mat-option>
+                  <mat-option value="5019">Pokemon</mat-option>
+                  <mat-option value="5020">Satyr</mat-option>
+                  <mat-option value="5021">Sergal</mat-option>
+                  <mat-option value="5022">Tanuki</mat-option>
+                  <mat-option value="5023">Unicorn</mat-option>
+                  <mat-option value="5024">Xenomorph</mat-option>
+                  <mat-option value="5001">Alien (Other)</mat-option>
+                  <mat-option value="5000">Exotic (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Felines">
+                  <mat-option value="6020">Domestic Cat</mat-option>
+                  <mat-option value="6021">Cheetah</mat-option>
+                  <mat-option value="6022">Cougar</mat-option>
+                  <mat-option value="6023">Jaguar</mat-option>
+                  <mat-option value="6024">Leopard</mat-option>
+                  <mat-option value="6025">Lion</mat-option>
+                  <mat-option value="6026">Lynx</mat-option>
+                  <mat-option value="6027">Ocelot</mat-option>
+                  <mat-option value="6028">Panther</mat-option>
+                  <mat-option value="6029">Tiger</mat-option>
+                  <mat-option value="6030">Feline (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Insects">
+                  <mat-option value="8000">Arachnid</mat-option>
+                  <mat-option value="8004">Mantid</mat-option>
+                  <mat-option value="8005">Scorpion</mat-option>
+                  <mat-option value="8003">Insect (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Mammals (Other)">
+                  <mat-option value="6001">Bat</mat-option>
+                  <mat-option value="6031">Giraffe</mat-option>
+                  <mat-option value="6032">Hedgehog</mat-option>
+                  <mat-option value="6033">Hippopotamus</mat-option>
+                  <mat-option value="6035">Hyena</mat-option>
+                  <mat-option value="6052">Panda</mat-option>
+                  <mat-option value="6053">Pig/Swine</mat-option>
+                  <mat-option value="6059">Rabbit/Hare</mat-option>
+                  <mat-option value="6060">Raccoon</mat-option>
+                  <mat-option value="6062">Red Panda</mat-option>
+                  <mat-option value="6043">Meerkat</mat-option>
+                  <mat-option value="6044">Mongoose</mat-option>
+                  <mat-option value="6063">Rhinoceros</mat-option>
+                  <mat-option value="6000">Mammals (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Marsupials">
+                  <mat-option value="6037">Opossum</mat-option>
+                  <mat-option value="6038">Kangaroo</mat-option>
+                  <mat-option value="6039">Koala</mat-option>
+                  <mat-option value="6040">Quoll</mat-option>
+                  <mat-option value="6041">Wallaby</mat-option>
+                  <mat-option value="6042">Marsupial (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Mustelids">
+                  <mat-option value="6045">Badger</mat-option>
+                  <mat-option value="6046">Ferret</mat-option>
+                  <mat-option value="6048">Mink</mat-option>
+                  <mat-option value="6047">Otter</mat-option>
+                  <mat-option value="6069">Skunk</mat-option>
+                  <mat-option value="6049">Weasel</mat-option>
+                  <mat-option value="6051">Mustelid (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Primates">
+                  <mat-option value="6054">Gorilla</mat-option>
+                  <mat-option value="6055">Human</mat-option>
+                  <mat-option value="6056">Lemur</mat-option>
+                  <mat-option value="6057">Monkey</mat-option>
+                  <mat-option value="6058">Primate (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Reptillian">
+                  <mat-option value="7001">Alligator &amp; Crocodile</mat-option>
+                  <mat-option value="7003">Gecko</mat-option>
+                  <mat-option value="7004">Iguana</mat-option>
+                  <mat-option value="7005">Lizard</mat-option>
+                  <mat-option value="7006">Snakes &amp; Serpents</mat-option>
+                  <mat-option value="7007">Turtle</mat-option>
+                  <mat-option value="7000">Reptilian (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Rodents">
+                  <mat-option value="6064">Beaver</mat-option>
+                  <mat-option value="6065">Mouse</mat-option>
+                  <mat-option value="6061">Rat</mat-option>
+                  <mat-option value="6070">Squirrel</mat-option>
+                  <mat-option value="6067">Rodent (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Vulpines">
+                  <mat-option value="6072">Fennec</mat-option>
+                  <mat-option value="6075">Fox</mat-option>
+                  <mat-option value="6015">Vulpine (Other)</mat-option>
+                </mat-optgroup>
+                <mat-optgroup label="Other">
+                  <mat-option value="8001">Dinosaur</mat-option>
+                  <mat-option value="6050">Wolverine</mat-option>
+                </mat-optgroup>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="col-md col-lg col-xl">
+            <mat-form-field color="accent" class="w-100">
+              <mat-select formControlName="gender" [placeholder]="'Gender' | translate">
+                <mat-option value="0">Any</mat-option>
+                <mat-option value="2">Male</mat-option>
+                <mat-option value="3">Female</mat-option>
+                <mat-option value="4">Herm</mat-option>
+                <mat-option value="11">Intersex</mat-option>
+                <mat-option value="8">Trans (Male)</mat-option>
+                <mat-option value="9">Trans (Female)</mat-option>
+                <mat-option value="10">Non-Binary</mat-option>
+                <mat-option value="6">Multiple characters</mat-option>
+                <mat-option value="7">Other / Not Specified</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="col-md col-lg col-xl">
+            <folder-select formControlName="folders" [folderCategories]="folders" [multiple]="true"></folder-select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

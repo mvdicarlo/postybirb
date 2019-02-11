@@ -1,3 +1,4 @@
+
 export enum LoginStatus {
   LOGGED_IN = 1,
   LOGGED_OUT = 0

@@ -1,30 +1,33 @@
-import { Component, OnInit, forwardRef, Injector } from '@angular/core';
+import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
-import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
+import { FormControl } from '@angular/forms';
 
 @Component({
-  selector: 'weasyl-submission-form',
-  templateUrl: './weasyl-submission-form.component.html',
-  styleUrls: ['./weasyl-submission-form.component.css'],
-  providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => WeasylSubmissionForm) }],
+  selector: 'fur-affinity-submission-form',
+  templateUrl: './fur-affinity-submission-form.component.html',
+  styleUrls: ['./fur-affinity-submission-form.component.css'],
+  providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => FurAffinitySubmissionForm) }],
   host: {
     'class': 'submission-form'
   }
 })
-export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class FurAffinitySubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 
   public optionDefaults: any = {
-    critique: [false],
-    friendsOnly: [false],
-    notify: [true],
-    folder: [''],
-    category: []
+    category: ['1'],
+    species: ['1'],
+    theme: ['1'],
+    gender: ['0'],
+    scraps: [false],
+    disableComments: [false],
+    folders: [[]],
+    reupload: [true]
   };
 
   public tagConfig: TagConfig = {
-    minTags: 2
+    maxStringLength: 250
   };
 
   public folders: FolderCategory[] = [];
@@ -40,5 +43,4 @@ export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements O
     if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
-
 }

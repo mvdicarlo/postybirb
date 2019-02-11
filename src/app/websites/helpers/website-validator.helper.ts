@@ -2,6 +2,7 @@ import { Submission } from 'src/app/database/models/submission.model';
 import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { WebsiteRegistry } from '../registries/website.registry';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 export function validate(submission: Submission): string[] {
   const problems = [];
@@ -54,10 +55,15 @@ export function getDescription(submission: Submission, website: string): string 
   return description;
 }
 
-export function getAllWebsiteValidatorsForWebsites(websites: string[]): ((submission: Submission, formData: any) => string[])[] {
+export function getAllWebsiteValidatorsForWebsites(websites: string[], submissionType: SubmissionType): ((submission: Submission, formData: any) => string[])[] {
   const validatorFns = [];
   for (let i = 0; i < websites.length; i++) {
-    validatorFns.push(WebsiteRegistry.getConfigForRegistry(websites[i]).websiteConfig.validator);
+    const config = WebsiteRegistry.getConfigForRegistry(websites[i]).websiteConfig;
+    if (submissionType === SubmissionType.SUBMISSION) {
+      validatorFns.push(config.validators.submission)
+    } else {
+      validatorFns.push(config.validators.journal)
+    }
   }
 
   return validatorFns;

@@ -5,6 +5,7 @@ import { ControlContainer, FormGroup, FormBuilder } from '@angular/forms';
 import { SubmissionForm } from 'src/app/postybirb/forms/submission-form/submission-form.component';
 import { WebsiteRegistryConfig, WebsiteRegistry } from '../../registries/website.registry';
 import { Subscription } from 'rxjs';
+import { BaseWebsiteService } from '../../website-services/base-website-service';
 
 @Component({
   selector: 'base-website-submission-form',
@@ -15,6 +16,7 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   @Input() rating: SubmissionRating;
   @Input() type: TypeOfSubmission;
   @Input() website: string;
+  @Input() websiteService: BaseWebsiteService;
 
   public typeOfSubmission = TypeOfSubmission;
 
@@ -26,7 +28,7 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   public optionDefaults: any;
   public resetListener: Subscription = Subscription.EMPTY;
 
-  constructor(injector: Injector) {
+  constructor(private injector: Injector) {
     this.parentForm = injector.get(SubmissionForm);
     this.controlContainer = injector.get(ControlContainer);
     this.formBuilder = injector.get(FormBuilder);
@@ -34,6 +36,7 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
 
   ngOnInit() {
     this.config = WebsiteRegistry.getConfigForRegistry(this.website);
+    this.websiteService = this.injector.get(this.config.class);
     this.formGroup = <FormGroup>this.controlContainer.control.get(this.website);
     this.resetListener = this.parentForm.onReset.subscribe(() => {
       if (this.optionDefaults) {

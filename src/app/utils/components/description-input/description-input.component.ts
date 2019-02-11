@@ -103,7 +103,6 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
   }
 
   onChange() {
-    console.log('Description Data Update', this.value);
     if (this.value.overwrite || !this.canOverwrite) {
       this._onChange(this.value);
     } else {

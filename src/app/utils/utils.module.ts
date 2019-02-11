@@ -11,7 +11,8 @@ import {
   MatInputModule,
   MatProgressBarModule,
   MatCheckboxModule,
-  MatChipsModule
+  MatChipsModule,
+  MatSelectModule
 } from '@angular/material';
 import { EditorModule } from '@tinymce/tinymce-angular';
 
@@ -25,6 +26,7 @@ import { TagInput } from './components/tag-input/tag-input.component';
 import { DescriptionInput } from './components/description-input/description-input.component';
 import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
 import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
+import { FolderSelect } from './components/folder-select/folder-select.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +40,7 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     DescriptionInput,
     SaveTemplateDialog,
     WebsiteShortcutsComponent,
+    FolderSelect,
   ],
   imports: [
     CommonModule,
@@ -50,6 +53,7 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     MatProgressBarModule,
     MatCheckboxModule,
     MatChipsModule,
+    MatSelectModule,
     EditorModule
   ],
   exports: [
@@ -60,7 +64,8 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     SafePipe,
     LoadingOverlay,
     TagInput,
-    DescriptionInput
+    DescriptionInput,
+    FolderSelect
   ],
   entryComponents: [
     ConfirmDialog,

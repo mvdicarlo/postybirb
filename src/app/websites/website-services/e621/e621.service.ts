@@ -10,12 +10,10 @@ import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 function validate(submission: Submission, formData: any): string[] {
   const problems: string[] = [];
-  if (submission.submissionType === SubmissionType.SUBMISSION) {
-    const tags = getTags(submission, E621.name);
-    if (tags.length < 4) problems.push('e621 is incomplete');
-    const type = getTypeOfSubmission(submission.fileInfo)
-    if (type === TypeOfSubmission.STORY || !type) problems.push(`e621 does not support file format: ${submission.fileInfo.type.split('/')[1] || 'unknown'}`);
-  }
+  const tags = getTags(submission, E621.name);
+  if (tags.length < 4) problems.push('e621 is incomplete');
+  const type = getTypeOfSubmission(submission.fileInfo)
+  if (type === TypeOfSubmission.STORY || !type) problems.push(`e621 does not support file format: ${submission.fileInfo.type.split('/')[1] || 'unknown'}`);
 
   return problems;
 }
@@ -31,7 +29,9 @@ function validate(submission: Submission, formData: any): string[] {
   components: {
     submissionForm: E621SubmissionForm
   },
-  validator: validate
+  validators: {
+    submission: validate
+  }
 })
 export class E621 implements WebsiteService {
   readonly BASE_URL: string = 'https://e621.net';

@@ -30,7 +30,7 @@ export class Submission implements ISubmission {
   set schedule(schedule: any) {
     const old = this._schedule;
     this._schedule = schedule;
-    this._emitChange('schedule', old, schedule);
+    this._emitChange('schedule', old, schedule, true);
   }
   private _schedule: any;
 

@@ -2,7 +2,10 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
-import { WeasylSubmissionForm } from '../weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
+import { BaseWebsiteService, UserInformation } from '../base-website-service';
+import $ from 'jquery';
+import { FolderCategory } from '../../interfaces/folder.interface';
+import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -13,13 +16,18 @@ import { WeasylSubmissionForm } from '../weasyl/components/weasyl-submission-for
     url: 'https://www.furaffinity.net/login'
   },
   components: {
-    submissionForm: WeasylSubmissionForm
+    submissionForm: FurAffinitySubmissionForm
+  },
+  validators: {
+
   }
 })
-export class FurAffinity implements WebsiteService {
+export class FurAffinity extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://www.furaffinity.net';
 
-  constructor() { }
+  constructor() {
+    super();
+  }
 
   public async checkStatus(profileId: string): Promise<WebsiteStatus> {
     const returnValue: WebsiteStatus = {
@@ -46,9 +54,62 @@ export class FurAffinity implements WebsiteService {
             }
           }
         }
+
+        this._getFolders(profileId, body);
+      } else {
+        this.userInformation.delete(profileId);
       }
     } catch (e) { /* No important error handling */ }
 
     return returnValue;
+  }
+
+  private async _getFolders(profileId: string, html: string): Promise<void> {
+    const info: UserInformation = {
+      folders: []
+    };
+
+    try {
+      const furAffinityFolders: { [key: string]: FolderCategory } = { Ungrouped: { title: 'Ungrouped', folders: [] } };
+      const select = html.match(/<select(.|\s)*?(?=\/select)/g)[0] + '/select>';
+      const element = $.parseHTML(select);
+      let options = $(element).find('option') || [];
+
+      for (let i = 0; i < options.length; i++) {
+        const opt = options[i];
+
+        if (opt.value === '0') continue;
+
+        if (opt.parentElement.tagName === 'OPTGROUP') {
+          if (!furAffinityFolders[opt.parentElement.label]) {
+            furAffinityFolders[opt.parentElement.label] = {
+              title: opt.parentElement.label,
+              folders: []
+            };
+          }
+
+          furAffinityFolders[opt.parentElement.label].folders.push({
+            title: opt.innerHTML.replace(/\[.*\]/, '').trim(),
+            id: opt.value
+          });
+        } else {
+          furAffinityFolders.Ungrouped.folders.push({
+            title: opt.innerHTML.replace(/\[.*\]/, '').trim(),
+            id: opt.value
+          });
+        }
+      }
+
+      info.folders = Object.keys(furAffinityFolders).map(key => {
+        return { title: key, folders: furAffinityFolders[key].folders };
+      }) || [];
+    } catch (e) { /* */ }
+
+    this.userInformation.set(profileId, info);
+    return;
+  }
+
+  public getFolders(profileId: string): FolderCategory[] {
+    return this.userInformation.get(profileId).folders;
   }
 }

@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Submission } from 'src/app/database/models/submission.model';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
@@ -127,12 +127,13 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   private _initializeFormDataForm(): void {
     this.formDataForm = this.fb.group({
       loginProfile: [this._loginProfileManager.getDefaultProfile().id, Validators.required],
-      websites: [[], Validators.required],
       defaults: this.fb.group({
         description: [null],
         tags: [null]
       })
     });
+
+    this.formDataForm.addControl('websites', new FormControl([], { updateOn: 'blur', validators: [Validators.required] }));
 
     Object.keys(this.availableWebsites).forEach(website => {
       this.formDataForm.addControl(website, this.fb.group({
@@ -296,6 +297,10 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return false;
+  }
+
+  public getLoginProfileId(): string {
+    return this.formDataForm.value.loginProfile;
   }
 
   private _copySubmission(submission: ISubmission): void {

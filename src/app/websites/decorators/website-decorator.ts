@@ -14,7 +14,10 @@ export interface WebsiteConfig {
   components: {
     submissionForm: Type<BaseWebsiteSubmissionForm>
   };
-  validator?: (submission: Submission, formData: any) => string[];
+  validators: {
+    submission?: (submission: Submission, formData: any) => string[];
+    journal?: (submission: Submission, formData: any) => string[];
+  }
 }
 
 export function Website(websiteConfig: WebsiteConfig) {

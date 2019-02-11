@@ -22,7 +22,7 @@ export class SubmissionCache extends CacheService {
   private _validateSubmission(submission: Submission): void {
     let problems = validate(submission);
     if (submission.formData && submission.formData.websites) {
-      getAllWebsiteValidatorsForWebsites(submission.formData.websites)
+      getAllWebsiteValidatorsForWebsites(submission.formData.websites, submission.submissionType)
         .filter(fn => fn !== undefined)
         .forEach(validatorFn => problems = [...problems, ...validatorFn(submission, submission.formData)]);
     }
