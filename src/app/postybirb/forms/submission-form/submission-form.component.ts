@@ -1,13 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, forwardRef, OnDestroy, Injector } from '@angular/core';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
-import { debounceTime } from 'rxjs/operators';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { readFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
@@ -31,12 +29,10 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
   constructor(
     injector: Injector,
     private _route: ActivatedRoute,
-    private fb: FormBuilder,
     private _submissionCache: SubmissionCache,
     private _tabManager: TabManager,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDB: SubmissionFileDBService,
-    private _loginProfileManager: LoginProfileManagerService,
   ) {
     super(injector);
   }
@@ -53,13 +49,8 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     this._changeDetector.markForCheck();
   }
 
-  ngAfterViewInit() {
-    this.triggerWebsiteReload = false;
-    this._changeDetector.markForCheck();
-  }
-
   private _initializeBasicInfoForm(): void {
-    this.basicInfoForm = this.fb.group({
+    this.basicInfoForm = this._fb.group({
       title: [this.submission.title, Validators.maxLength(50)],
       rating: [this.submission.rating, Validators.required],
       schedule: [this.submission.schedule ? new Date(this.submission.schedule) : null]
@@ -89,41 +80,6 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
         this._changeDetector.markForCheck();
       }
     });
-  }
-
-  private _initializeFormDataForm(): void {
-    this.formDataForm = this.fb.group({
-      loginProfile: [this._loginProfileManager.getDefaultProfile().id, Validators.required],
-      defaults: this.fb.group({
-        description: [null],
-        tags: [null]
-      })
-    });
-
-    this.formDataForm.addControl('websites', new FormControl([], { updateOn: 'blur', validators: [Validators.required] }));
-
-    Object.keys(this.availableWebsites).forEach(website => {
-      this.formDataForm.addControl(website, this.fb.group({
-        // fields will be added by lower components
-      }));
-    });
-
-    this.formDataForm.patchValue(this.submission.formData || {});
-
-    this.formDataForm.controls.loginProfile.valueChanges
-      .subscribe(() => {
-        this.triggerWebsiteReload = true;
-        this._changeDetector.detectChanges();
-        this.triggerWebsiteReload = false;
-        this._changeDetector.detectChanges();
-        this._changeDetector.markForCheck();
-      });
-
-    this.formDataForm.valueChanges
-      .pipe(debounceTime(500))
-      .subscribe(changes => {
-        this.submission.formData = changes;
-      });
   }
 
   public clear(): void {

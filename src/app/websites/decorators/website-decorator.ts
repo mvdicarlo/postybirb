@@ -12,7 +12,8 @@ export interface WebsiteConfig {
     url: string;
   };
   components: {
-    submissionForm: Type<BaseWebsiteSubmissionForm>
+    submissionForm: Type<BaseWebsiteSubmissionForm>,
+    journalForm?: Type<BaseWebsiteSubmissionForm>
   };
   validators: {
     submission?: (submission: Submission, formData: any) => string[];

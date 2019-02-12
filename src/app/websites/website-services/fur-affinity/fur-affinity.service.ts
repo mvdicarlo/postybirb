@@ -1,11 +1,13 @@
+import $ from 'jquery';
+
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { BaseWebsiteService, UserInformation } from '../base-website-service';
-import $ from 'jquery';
 import { FolderCategory } from '../../interfaces/folder.interface';
 import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-form/fur-affinity-submission-form.component';
+import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +18,8 @@ import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-
     url: 'https://www.furaffinity.net/login'
   },
   components: {
-    submissionForm: FurAffinitySubmissionForm
+    submissionForm: FurAffinitySubmissionForm,
+    journalForm: GenericJournalSubmissionForm
   },
   validators: {
 

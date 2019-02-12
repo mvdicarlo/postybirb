@@ -12,8 +12,8 @@
   <mat-form-field color="accent">
     <mat-select [placeholder]="'Select'" [formControl]="selectControl" [multiple]="data.multiple || false">
       <mat-option *ngFor="let opt of options" [value]="opt">
-        <span *ngIf="opt.fileInfo">{{ opt.title + ' - ' + opt.fileInfo.name }}</span>
-        <span *ngIf="!opt.fileInfo">{{ opt.title }}</span>
+        <span *ngIf="opt.fileInfo">{{ (opt.title || 'Untitled') + ' - ' + opt.fileInfo.name }}</span>
+        <span *ngIf="!opt.fileInfo">{{ opt.title || 'Untitled' }}</span>
       </mat-option>
     </mat-select>
   </mat-form-field>

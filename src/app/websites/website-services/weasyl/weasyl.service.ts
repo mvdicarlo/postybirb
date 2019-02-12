@@ -6,6 +6,7 @@ import { Submission } from 'src/app/database/models/submission.model';
 import { getTags } from '../../helpers/website-validator.helper';
 import { Folder, FolderCategory } from '../../interfaces/folder.interface';
 import { BaseWebsiteService } from '../base-website-service';
+import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 
 function submissionValidate(submission: Submission, formData: any): string[] {
   const problems: string[] = [];
@@ -22,7 +23,8 @@ function submissionValidate(submission: Submission, formData: any): string[] {
     url: 'https://www.weasyl.com/signin'
   },
   components: {
-    submissionForm: WeasylSubmissionForm
+    submissionForm: WeasylSubmissionForm,
+    journalForm: GenericJournalSubmissionForm
   },
   validators: {
     submission: submissionValidate

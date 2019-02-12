@@ -30,6 +30,7 @@ import { WebsiteSubmissionFormDisplayDirective } from './directives/website-subm
 import { E621SubmissionForm } from './website-services/e621/components/e621-submission-form/e621-submission-form.component';
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { FurAffinitySubmissionForm } from './website-services/fur-affinity/components/fur-affinity-submission-form/fur-affinity-submission-form.component';
+import { GenericJournalSubmissionForm } from './components/generic-journal-submission-form/generic-journal-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -44,6 +45,7 @@ export function INIT_WEBSITE_REGISTRY() {
     E621SubmissionForm,
     WebsiteDisplaynamePipe,
     FurAffinitySubmissionForm,
+    GenericJournalSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -73,6 +75,7 @@ export function INIT_WEBSITE_REGISTRY() {
     WeasylSubmissionForm,
     E621SubmissionForm,
     FurAffinitySubmissionForm,
+    GenericJournalSubmissionForm
   ],
   providers: [
     {

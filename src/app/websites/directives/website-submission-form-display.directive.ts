@@ -1,5 +1,5 @@
 import { Directive, ComponentFactoryResolver, ViewContainerRef, Input, OnInit } from '@angular/core';
-import { SubmissionRating } from 'src/app/database/tables/submission.table';
+import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submission.table';
 import { BaseWebsiteSubmissionForm } from '../components/base-website-submission-form/base-website-submission-form.component';
 import { WebsiteRegistry } from '../registries/website.registry';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
@@ -10,6 +10,7 @@ import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 export class WebsiteSubmissionFormDisplayDirective implements OnInit {
   @Input() website: string;
   @Input() type: TypeOfSubmission;
+  @Input() submissionType: SubmissionType = SubmissionType.SUBMISSION;
 
   @Input()
   get rating(): SubmissionRating { return this._rating }
@@ -28,7 +29,13 @@ export class WebsiteSubmissionFormDisplayDirective implements OnInit {
 
   ngOnInit(): void {
     const config = WebsiteRegistry.getConfigForRegistry(this.website);
-    this.component = (<BaseWebsiteSubmissionForm>this.viewContainerRef.createComponent(this.cfr.resolveComponentFactory(<any>config.websiteConfig.components.submissionForm)).instance);
+
+    if (this.submissionType === SubmissionType.SUBMISSION) {
+      this.component = (<BaseWebsiteSubmissionForm>this.viewContainerRef.createComponent(this.cfr.resolveComponentFactory(<any>config.websiteConfig.components.submissionForm)).instance);
+    } else if (this.submissionType === SubmissionType.JOURNAL) {
+      this.component = (<BaseWebsiteSubmissionForm>this.viewContainerRef.createComponent(this.cfr.resolveComponentFactory(<any>config.websiteConfig.components.journalForm)).instance);
+    }
+
     this.component.rating = this.rating;
     this.component.type = this.type;
     this.component.website = this.website;

@@ -6,7 +6,6 @@ import { E621SubmissionForm } from './components/e621-submission-form/e621-submi
 import { getTags } from '../../helpers/website-validator.helper';
 import { Submission } from 'src/app/database/models/submission.model';
 import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
-import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 function validate(submission: Submission, formData: any): string[] {
   const problems: string[] = [];
