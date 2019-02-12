@@ -3,6 +3,7 @@
     <div class="img mr-1" *ngIf="!hideForReload" [title]="submission.fileInfo.name" (click)="fileChange.click()">
       <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name">
       <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
+      <i *ngIf="submission.problems && submission.problems.length" class="fas fa-exclamation-triangle problem-icon warn-text"></i>
     </div>
     <form [formGroup]="form" class="submission-controls">
       <input formControlName="title" maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">

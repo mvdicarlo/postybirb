@@ -28,6 +28,7 @@ mat-select {
   min-width: 50px;
   margin: auto;
   cursor: pointer;
+  position: relative;
 }
 
 .img img {
@@ -37,6 +38,12 @@ mat-select {
 
 .img mat-icon {
   font-size: 50px;
+}
+
+.img .problem-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .control-btns {
