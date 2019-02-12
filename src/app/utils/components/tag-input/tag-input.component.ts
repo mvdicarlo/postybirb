@@ -129,7 +129,6 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   onChange() {
-    console.log('Tag Data Update', this.value);
     this._onChange(this.value);
     this._internalProvider.next(this.value);
   }

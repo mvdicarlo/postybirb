@@ -1,72 +1,44 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, AfterViewInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { Component, OnInit, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, forwardRef, OnDestroy, Injector } from '@angular/core';
+import { FormBuilder, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Submission } from 'src/app/database/models/submission.model';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
-import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile-select-dialog/login-profile-select-dialog.component';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { debounceTime } from 'rxjs/operators';
-import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
+import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { readFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
 import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layout.component';
 import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
-import { TypeOfSubmission, getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
-import { Subject, Observable, Subscription } from 'rxjs';
-import { DescriptionInput } from 'src/app/utils/components/description-input/description-input.component';
-import { TagInput } from 'src/app/utils/components/tag-input/tag-input.component';
-import { LoginManagerService, ProfileStatuses } from 'src/app/login/services/login-manager.service';
-import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
+import { getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
+import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 
 @Component({
   selector: 'submission-form',
   templateUrl: './submission-form.component.html',
   styleUrls: ['./submission-form.component.css'],
+  providers: [{ provide: BaseSubmissionForm, useExisting: forwardRef(() => SubmissionForm) }],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
+export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
-  @ViewChild('defaultTags') defaultTags: TagInput;
-  @ViewChild('defaultDescription') defaultDescription: DescriptionInput;
-
-  private loginStatuses: ProfileStatuses = {};
-  private loginListener: Subscription = Subscription.EMPTY;
-
-  public submission: Submission;
-  public loading: boolean = false;
-  public hideForReload: boolean = false;
-  public triggerWebsiteReload: boolean = true;
-  public availableWebsites: WebsiteRegistryEntry = {};
-
-  public basicInfoForm: FormGroup;
-  public formDataForm: FormGroup;
-  public typeOfSubmission: TypeOfSubmission;
-  public resetSubject: Subject<void> = new Subject();
-  public onReset: Observable<void> = this.resetSubject.asObservable();
 
   constructor(
+    injector: Injector,
     private _route: ActivatedRoute,
-    private _changeDetector: ChangeDetectorRef,
     private fb: FormBuilder,
     private _submissionCache: SubmissionCache,
     private _tabManager: TabManager,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDB: SubmissionFileDBService,
     private _loginProfileManager: LoginProfileManagerService,
-    private _loginManager: LoginManagerService,
-    private dialog: MatDialog
   ) {
-    this.loginListener = _loginManager.statusChanges.subscribe(statuses => {
-      this.loginStatuses = statuses;
-      this._changeDetector.markForCheck();
-    });
+    super(injector);
   }
 
   ngOnInit() {
@@ -84,11 +56,6 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.triggerWebsiteReload = false;
     this._changeDetector.markForCheck();
-  }
-
-  ngOnDestroy() {
-    this.resetSubject.complete();
-    this.loginListener.unsubscribe();
   }
 
   private _initializeBasicInfoForm(): void {
@@ -190,21 +157,6 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  public toggleLogin(): void {
-    loginPanel.toggle();
-  }
-
-  public openProfileSelect(): void {
-    this.dialog.open(LoginProfileSelectDialog)
-      .afterClosed()
-      .subscribe(profile => {
-        if (profile) {
-          this.formDataForm.controls.loginProfile.setValue(profile.id);
-          this._changeDetector.markForCheck();
-        }
-      });
-  }
-
   public removeThumbnail(): void {
     this.loading = true;
     this.hideForReload = true;
@@ -283,30 +235,6 @@ export class SubmissionForm implements OnInit, AfterViewInit, OnDestroy {
           this._copySubmission(toCopy);
         }
       });
-  }
-
-  public isLoggedIn(website: string): boolean {
-    try {
-      if (this.loginStatuses && this.formDataForm && this.formDataForm.value.loginProfile) {
-        if (this.loginStatuses[this.formDataForm.value.loginProfile][website]) {
-          return this.loginStatuses[this.formDataForm.value.loginProfile][website].status === LoginStatus.LOGGED_IN;
-        }
-      }
-    } catch (e) {
-      // Catching because electron has a weird issue here
-    }
-
-    return false;
-  }
-
-  public getLoginProfileId(): string {
-    return this.formDataForm.value.loginProfile;
-  }
-
-  private _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.formDataForm.patchValue(submission.formData || {});
-    if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
-    this._changeDetector.markForCheck();
   }
 
 }
