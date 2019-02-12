@@ -10,14 +10,17 @@ import {
   MatDialogModule,
   MatExpansionModule,
   MatIconModule,
-  MatSlideToggleModule
+  MatSlideToggleModule,
+  MatTabsModule,
 } from '@angular/material';
 
 import { SettingsDialog } from './dialogs/settings-dialog/settings-dialog.component';
+import { AgreementDialog } from './dialogs/agreement-dialog/agreement-dialog.component';
 
 @NgModule({
   declarations: [
-    SettingsDialog
+    SettingsDialog,
+    AgreementDialog
   ],
   imports: [
     CommonModule,
@@ -28,13 +31,15 @@ import { SettingsDialog } from './dialogs/settings-dialog/settings-dialog.compon
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatTabsModule
   ],
   exports: [
     SettingsDialog
   ],
   entryComponents: [
-    SettingsDialog
+    SettingsDialog,
+    AgreementDialog
   ]
 })
 export class MiscellaneousModule { }

@@ -1,0 +1,8 @@
+.no-button,
+.yes-button {
+  width: 45%;
+}
+
+button {
+  border-radius: 0 !important;
+}

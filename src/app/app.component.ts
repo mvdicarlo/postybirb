@@ -4,6 +4,7 @@ import { MatSelectChange, MatDialog } from '@angular/material';
 import { LoginManagerService } from './login/services/login-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { SettingsDialog } from './miscellaneous/dialogs/settings-dialog/settings-dialog.component';
+import { AgreementDialog } from './miscellaneous/dialogs/agreement-dialog/agreement-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +31,21 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    if (!store.get('LicenseAgreement')) {
+      this.dialog.open(AgreementDialog, {
+        closeOnNavigation: false,
+        disableClose: true
+      })
+        .afterClosed()
+        .subscribe(result => {
+          if (result === true) {
+            store.set('LicenseAgreement', true);
+          } else {
+            window.close();
+          }
+        });
+    }
+
     // restore last known route
     if (store.get('lastRoute')) {
       this._router.navigateByUrl(store.get('lastRoute'));
