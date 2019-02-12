@@ -44,7 +44,11 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
     plugins: 'autoresize autolink link preview paste hr textcolor template help code',
     menu: {},
     toolbar: 'newdocument undo redo | formatselect removeformat | link unlink hr | bold italic underline strikethrough forecolor | alignleft aligncenter alignright | code template help',
-    templates: []
+    templates: [],
+    formats: {
+      underline: { inline: 'u', exact: true },
+      strikethrough: { inline: 's', exact: true }
+    }
   }
 
   constructor(private _descriptionTemplates: DescriptionTemplatesService, private dialog: MatDialog) {

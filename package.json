@@ -37,6 +37,7 @@
     "rxjs": "~6.3.3",
     "store": "^2.0.12",
     "tslib": "^1.9.0",
+    "turndown": "^5.0.3",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
