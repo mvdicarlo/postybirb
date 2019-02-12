@@ -6,6 +6,7 @@ import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
+import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
 
 @Component({
   selector: 'bulk-update-form',
@@ -26,7 +27,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
 
   ngOnInit() {
     this.loading = true;
-    this.availableWebsites = WebsiteRegistry.getRegistered() || {};
+    this.availableWebsites = getUnfilteredWebsites() || {};
     this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
     this.submission.formData = store.get(this.BULK_STORE) || {};
     this._initializeFormDataForm();

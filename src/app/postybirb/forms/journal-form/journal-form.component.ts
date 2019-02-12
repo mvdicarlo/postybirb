@@ -6,9 +6,9 @@ import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-d
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
+import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
 
 @Component({
   selector: 'journal-form',
@@ -31,7 +31,7 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
 
   ngOnInit() {
     this.loading = true;
-    const availableWebsites = WebsiteRegistry.getRegistered() || {};
+    const availableWebsites = getUnfilteredWebsites() || {};
     const filteredWebsites: any = {};
     Object.keys(availableWebsites).forEach(key => {
       if (availableWebsites[key].websiteConfig.components.journalForm) {

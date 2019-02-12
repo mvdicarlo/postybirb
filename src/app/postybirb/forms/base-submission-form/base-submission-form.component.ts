@@ -2,7 +2,7 @@ import { Component, OnDestroy, Injector, ChangeDetectorRef, AfterViewInit, ViewC
 import { ProfileStatuses, LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { Subscription, Subject, Observable } from 'rxjs';
 import { Submission } from 'src/app/database/models/submission.model';
-import { WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
+import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
@@ -77,6 +77,13 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
     this.formDataForm.addControl('websites', new FormControl([], { updateOn: 'blur', validators: [Validators.required] }));
 
+    // We want to keep all added websites through the filter so users can remove filtered ones
+    if (this.submission.formData && this.submission.formData.websites) {
+      this.submission.formData.websites.forEach(website => {
+        this.availableWebsites[website] = WebsiteRegistry.getConfigForRegistry(website);
+      });
+    }
+
     Object.keys(this.availableWebsites).forEach(website => {
       this.formDataForm.addControl(website, this._fb.group({
         // fields will be added by lower components
@@ -84,9 +91,6 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     });
 
     this.formDataForm.patchValue(this.submission.formData || {});
-    if (!this.submission.formData) {
-      this.submission.formData = this.formDataForm.value;
-    }
 
     this.formDataForm.controls.loginProfile.valueChanges
       .subscribe(() => {

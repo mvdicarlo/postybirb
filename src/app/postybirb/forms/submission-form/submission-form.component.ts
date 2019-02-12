@@ -6,7 +6,6 @@ import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-d
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { readFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
@@ -15,6 +14,7 @@ import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
+import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
 
 @Component({
   selector: 'submission-form',
@@ -39,8 +39,9 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
 
   ngOnInit() {
     this.loading = true;
-    this.availableWebsites = WebsiteRegistry.getRegistered() || {};
+    this.availableWebsites = getUnfilteredWebsites() || {};
     this.submission = this._submissionCache.get(Number(this._route.snapshot.paramMap.get('id')));
+
     this.typeOfSubmission = getTypeOfSubmission(this.submission.fileInfo);
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
