@@ -28,6 +28,13 @@ function submissionValidate(submission: Submission, formData: any): string[] {
   },
   validators: {
     submission: submissionValidate
+  },
+  parsers: {
+    description: [/* unknown right now - probably needs a custom one */],
+    usernameShortcut: {
+      code: 'ws',
+      url: 'https://weasyl.com/~$1'
+    }
   }
 })
 export class Weasyl extends BaseWebsiteService implements WebsiteService {

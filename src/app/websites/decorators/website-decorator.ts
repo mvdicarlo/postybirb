@@ -18,7 +18,14 @@ export interface WebsiteConfig {
   validators: {
     submission?: (submission: Submission, formData: any) => string[];
     journal?: (submission: Submission, formData: any) => string[];
-  }
+  };
+  parsers: {
+    description: ((html: string) => string)[]; // A list of parsers
+    usernameShortcut?: {
+      code: string; // e.g. fa -> would parse :falemonynade:
+      url: string; // e.g. https://www.furaffinity.net/user/$1
+    };
+  };
 }
 
 export function Website(websiteConfig: WebsiteConfig) {

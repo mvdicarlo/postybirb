@@ -8,6 +8,7 @@ import { BaseWebsiteService, UserInformation } from '../base-website-service';
 import { FolderCategory } from '../../interfaces/folder.interface';
 import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
+import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.parser';
 
 @Injectable({
   providedIn: 'root'
@@ -21,8 +22,13 @@ import { GenericJournalSubmissionForm } from '../../components/generic-journal-s
     submissionForm: FurAffinitySubmissionForm,
     journalForm: GenericJournalSubmissionForm
   },
-  validators: {
-
+  validators: {},
+  parsers: {
+    description: [BBCodeParser.parse],
+    usernameShortcut: {
+      code: 'fa',
+      url: 'https://www.furaffinity.net/user/$1'
+    }
   }
 })
 export class FurAffinity extends BaseWebsiteService implements WebsiteService {

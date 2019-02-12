@@ -6,6 +6,7 @@ import { E621SubmissionForm } from './components/e621-submission-form/e621-submi
 import { getTags } from '../../helpers/website-validator.helper';
 import { Submission } from 'src/app/database/models/submission.model';
 import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
+import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 
 function validate(submission: Submission, formData: any): string[] {
   const problems: string[] = [];
@@ -30,6 +31,9 @@ function validate(submission: Submission, formData: any): string[] {
   },
   validators: {
     submission: validate
+  },
+  parsers: {
+    description: [PlaintextParser.parse]
   }
 })
 export class E621 implements WebsiteService {

@@ -1,6 +1,6 @@
 export class UsernameParser {
   /**
-   * Converts username shortscuts such as :falemonynade: -> href="https://www.furaffinity.net/user/lemonynade"
+   * Converts username shortcuts such as :falemonynade: -> href="https://www.furaffinity.net/user/lemonynade"
    * @param  html        Text to be parsed
    * @param  code        Website code e.g. fa
    * @param  replacement Regex replacement string e.g. https://www.furaffinity.net/user/$1
