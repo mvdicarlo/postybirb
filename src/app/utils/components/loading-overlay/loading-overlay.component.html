@@ -4,5 +4,9 @@
     <mat-progress-bar mode="buffer"></mat-progress-bar>
   </div>
 
+  <div class="stop" *ngIf="loading && allowStop">
+    <mat-icon [matTooltip]="'Cancel' | translate" matTooltipPosition="right" (click)="emitStop()">close</mat-icon>
+  </div>
+
   <ng-content></ng-content>
 </div>

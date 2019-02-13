@@ -5,14 +5,15 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
 import {
-  MatDialogModule,
   MatButtonModule,
+  MatCheckboxModule,
+  MatChipsModule,
+  MatDialogModule,
   MatIconModule,
   MatInputModule,
   MatProgressBarModule,
-  MatCheckboxModule,
-  MatChipsModule,
-  MatSelectModule
+  MatSelectModule,
+  MatTooltipModule,
 } from '@angular/material';
 import { EditorModule } from '@tinymce/tinymce-angular';
 
@@ -46,14 +47,15 @@ import { FolderSelect } from './components/folder-select/folder-select.component
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
-    MatDialogModule,
     MatButtonModule,
+    MatCheckboxModule,
+    MatChipsModule,
+    MatDialogModule,
     MatIconModule,
     MatInputModule,
     MatProgressBarModule,
-    MatCheckboxModule,
-    MatChipsModule,
     MatSelectModule,
+    MatTooltipModule,
     EditorModule
   ],
   exports: [

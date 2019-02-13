@@ -70,9 +70,7 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
       if (change.title) this.basicInfoForm.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.basicInfoForm.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.basicInfoForm.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
-      if (change.problems) {
-        this._changeDetector.markForCheck();
-      }
+      this._changeDetector.markForCheck();
     });
   }
 

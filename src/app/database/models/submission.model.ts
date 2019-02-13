@@ -31,8 +31,19 @@ export class Submission implements ISubmission {
     const old = this._schedule;
     this._schedule = schedule;
     this._emitChange('schedule', old, schedule, true);
+    if (!schedule && this.isScheduled) {
+      this.isScheduled = false;
+    }
   }
   private _schedule: any;
+
+  get isScheduled(): boolean { return this._isScheduled }
+  set isScheduled(isScheduled: boolean) {
+    const old = this._isScheduled;
+    this._isScheduled = isScheduled;
+    this._emitChange('isScheduled', old, isScheduled);
+  }
+  private _isScheduled: boolean = false;
 
   get title(): string { return this._title }
   set title(title: string) {
@@ -75,9 +86,18 @@ export class Submission implements ISubmission {
   }
   private _problems: string[] = [];
 
+  get post(): boolean { return this._post }
+  set post(post: boolean) {
+    const old = this._post;
+    this._post = post;
+    this._emitChange('post', old, post);
+  }
+  private _post: boolean = false; // variable that tracks whether or not the submissions is queued/posting
+
   constructor(submission: ISubmission) {
     this.id = submission.id;
     this.title = submission.title;
+    this.isScheduled = submission.isScheduled;
     this.schedule = submission.schedule;
     this.submissionType = submission.submissionType;
     this.rating = submission.rating;

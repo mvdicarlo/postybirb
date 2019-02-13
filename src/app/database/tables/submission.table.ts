@@ -8,6 +8,7 @@ export interface ISubmission {
   title: string;
   rating: SubmissionRating;
   schedule?: number;
+  isScheduled?: boolean; // whether or not the schedule is active
   submissionType: SubmissionType;
   fileInfo?: FileObject; // not required in journal types
   fileMap?: FileMap;
@@ -55,6 +56,10 @@ const SubmissionTable: ITable = {
   }, {
     name: 'schedule',
     dataType: DATA_TYPE.Number
+  }, {
+    name: 'isScheduled',
+    dataType: DATA_TYPE.Boolean,
+    default: false
   }, {
     name: 'fileInfo',
     dataType: DATA_TYPE.Object

@@ -148,6 +148,19 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     this.fileChange.nativeElement.value = '';
   }
 
+  public enablePosting(): void {
+    if (this.submission.schedule) {
+      this.submission.isScheduled = true;
+    } else {
+      this.submission.post = true;
+    }
+  }
+
+  public stopPosting(): void {
+    this.submission.post = false;
+    this.submission.isScheduled = false;
+  }
+
   public toggleEditing(): void {
     if (this.editing) {
       this._tabManager.removeTab(this.submission.id);

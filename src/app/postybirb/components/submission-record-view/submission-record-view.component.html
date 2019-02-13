@@ -1,4 +1,4 @@
-<loading-overlay [loading]="loading">
+<loading-overlay [loading]="loading || (submission && (submission.post || submission.isScheduled))" [allowStop]="submission && (submission.post || submission.isScheduled)" (stop)="stopPosting()">
   <div class="submission-info-container d-flex">
     <div class="img mr-1" *ngIf="!hideForReload" (click)="fileChange.click()">
       <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
@@ -25,8 +25,9 @@
       </button>
     </div>
     <div class="col">
-      <button class="btn btn-sm btn-link bordered" [matTooltip]="'Post' | translate" [disabled]="submission.problems.length > 0">
-        <mat-icon>send</mat-icon>
+      <button class="btn btn-sm btn-link bordered" [matTooltip]="submission.schedule ? 'Schedule' : 'Post' | translate" [disabled]="submission.problems.length > 0" (click)="enablePosting()">
+        <mat-icon *ngIf="!submission.schedule">send</mat-icon>
+        <mat-icon *ngIf="submission.schedule">timer</mat-icon>
       </button>
     </div>
     <div class="col">

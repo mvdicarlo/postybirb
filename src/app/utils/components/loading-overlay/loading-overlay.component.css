@@ -13,3 +13,25 @@
   z-index: 1000;
   background: rgba(0, 0, 0, 0.5);
 }
+
+.overlay-container .stop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  text-align: center;
+  width: 100%;
+  margin-top: 1em;
+  height: 100%;
+}
+
+mat-icon {
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  font-size: 40px;
+}
+
+mat-icon:hover {
+  color: red;
+}
