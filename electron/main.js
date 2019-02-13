@@ -18,6 +18,7 @@ require('electron-context-menu')({
 
 log.info('Starting PostyBirb...');
 
+let tray = null;
 let win = null; // Primary App BrowserWindow
 let updateInterval = null; // Interval for checking for updates
 const clearCacheInterval = null; // Interval for manually clearing cache
