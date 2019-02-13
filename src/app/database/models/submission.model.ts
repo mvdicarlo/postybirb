@@ -88,6 +88,20 @@ export class Submission implements ISubmission {
     this.changes = this.changeSubject.asObservable();
   }
 
+  public asISubmission(): ISubmission {
+    const { id, rating, title, schedule, submissionType, fileInfo, fileMap, formData } = this;
+    return {
+      id,
+      rating,
+      title,
+      schedule,
+      submissionType,
+      fileInfo,
+      fileMap,
+      formData
+    };
+  }
+
   /**
    * Cleans up subscription/subject when object is being destroyed
    */
@@ -95,6 +109,10 @@ export class Submission implements ISubmission {
     this.changeSubject.complete();
   }
 
+  /**
+   * Emits an update event for a field that does not trigger any validation or updates naturally
+   * @param fieldName Fieldname provided in the event
+   */
   public flagUpdate(fieldName: string): void {
     this.changeSubject.next({
       [fieldName]: { noUpdate: true, old: null, current: null, validate: false }

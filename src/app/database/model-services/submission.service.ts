@@ -1,11 +1,12 @@
 import { Injectable, isDevMode } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
-import { SubmissionTableName, ISubmission } from '../tables/submission.table';
+import { SubmissionTableName, ISubmission, FileMap, SubmissionType } from '../tables/submission.table';
 import { Submission } from '../models/submission.model';
 import { SubmissionFileDBService } from './submission-file.service';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { Observable, Subject } from 'rxjs';
 import { SubmissionCache } from '../services/submission-cache.service';
+import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 
 @Injectable({
   providedIn: 'root'
@@ -84,6 +85,37 @@ export class SubmissionDBService extends DatabaseService {
     .then(() => this.notifySubject.next());
   }
 
+  public async duplicate(id: number, title?: string): Promise<void> {
+    const submission: Submission = this._cache.get(id);
+    if (submission) {
+      const copy = Object.assign({}, submission.asISubmission());
+      copy.title = title;
+      delete copy.id;
+      const inserts = await this.createSubmissions([copy]);
+      const duplicateSubmission = inserts[0];
+      if (duplicateSubmission && duplicateSubmission.submissionType === SubmissionType.SUBMISSION) {
+        const files: ISubmissionFile[] = await this._submissionFileDB.duplicateWithSubmissionId(id, duplicateSubmission.id);
+        const fileMap: FileMap = {
+          ADDITIONAL: []
+        };
+
+        files.forEach(file => {
+          if (file.fileType === SubmissionFileType.PRIMARY_FILE) {
+            fileMap.PRIMARY = file.id;
+          } else if (file.fileType === SubmissionFileType.THUMBNAIL_FILE) {
+            fileMap.THUMBNAIL = file.id;
+          } else if (file.fileType === SubmissionFileType.ADDITIONAL_FILE) {
+            fileMap.ADDITIONAL.push(file.id);
+          }
+        });
+
+        duplicateSubmission.fileMap = fileMap;
+      }
+    }
+
+    this.notifySubject.next();
+  }
+
   public update(id: number, fieldName: string, value: any): void {
     if (id && fieldName) {
       this.connection.update({
@@ -105,4 +137,5 @@ export class SubmissionDBService extends DatabaseService {
       });
     }
   }
+
 }

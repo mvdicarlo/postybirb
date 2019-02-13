@@ -17,6 +17,6 @@
   </form>
 </div>
 <div mat-dialog-actions class="confirm-actions">
-  <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="false" color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
   <button mat-flat-button [mat-dialog-close]="inputForm.value.input" color="primary" class="yes-button" [disabled]="inputForm.invalid">{{ 'Yes' | translate }}</button>
 </div>

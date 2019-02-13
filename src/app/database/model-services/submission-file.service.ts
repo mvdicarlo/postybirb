@@ -15,24 +15,6 @@ export class SubmissionFileDBService extends DatabaseService {
     super();
   }
 
-  public getFilesBySubmissionId(submissionId: number): Promise<ISubmissionFile[]> {
-    return this.connection.select({
-      from: SubmissionFileTableName,
-      where: {
-        submissionId
-      }
-    });
-  }
-
-  public getSubmissionFilesById(id: number): Promise<ISubmissionFile[]> {
-    return this.connection.select({
-      from: SubmissionFileTableName,
-      where: {
-        id
-      }
-    });
-  }
-
   public createSubmissionFiles(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): Promise<ISubmissionFile[]> {
     return new Promise((resolve, reject) => {
       const models = this._convertToModel(submissionId, fileType, files);
@@ -47,21 +29,6 @@ export class SubmissionFileDBService extends DatabaseService {
           });
       });
     });
-  }
-
-  public async updateSubmissionFileById(submissionFileId: number, file: ReadFile): Promise<any> {
-    await this.connection.update({
-      in: SubmissionFileTableName,
-      set: {
-        buffer: file.buffer,
-        fileInfo: asFileObject(file.file)
-      },
-      where: {
-        id: submissionFileId
-      }
-    });
-
-    return this._generatedThumbnailDB.regenerateThumbnails(await this.getSubmissionFilesById(submissionFileId));
   }
 
   public deleteBySubmissionId(submissionIds: number[]): void {
@@ -84,6 +51,64 @@ export class SubmissionFileDBService extends DatabaseService {
     });
 
     return await this._generatedThumbnailDB.deleteBySubmissionFileIds([id]);
+  }
+
+  public async duplicateWithSubmissionId(originalId: number, newId: number): Promise<ISubmissionFile[]> {
+    const files: ISubmissionFile[] = await this.getFilesBySubmissionId(originalId);
+    if (files.length) {
+      const fileCopies: ISubmissionFile[] = files.map(f => {
+        delete f.id;
+        f.submissionId = newId;
+        return f;
+      });
+
+      const rowsInserted: ISubmissionFile[] = await <Promise<ISubmissionFile[]>>this.connection.insert({
+        into: SubmissionFileTableName,
+        values: fileCopies,
+        return: true
+      });
+
+      if (rowsInserted.length > 0) {
+        await this._generatedThumbnailDB.createThumbnails(rowsInserted);
+        return rowsInserted;
+      }
+
+    }
+
+    return [];
+  }
+
+  public getFilesBySubmissionId(submissionId: number): Promise<ISubmissionFile[]> {
+    return this.connection.select({
+      from: SubmissionFileTableName,
+      where: {
+        submissionId
+      }
+    });
+  }
+
+  public getSubmissionFilesById(id: number): Promise<ISubmissionFile[]> {
+    return this.connection.select({
+      from: SubmissionFileTableName,
+      where: {
+        id
+      }
+    });
+  }
+
+  public async updateSubmissionFileById(submissionFileId: number, file: ReadFile): Promise<any> {
+    await this.connection.update({
+      in: SubmissionFileTableName,
+      set: {
+        buffer: file.buffer,
+        fileInfo: asFileObject(file.file)
+      },
+      where: {
+        id: submissionFileId
+      }
+    });
+
+    return this._generatedThumbnailDB.regenerateThumbnails(await this.getSubmissionFilesById(submissionFileId));
   }
 
   private _convertToModel(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): ISubmissionFile[] {

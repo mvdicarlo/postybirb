@@ -11,6 +11,7 @@ import { SubmissionFileDBService } from 'src/app/database/model-services/submiss
 import { TabManager } from '../../services/tab-manager.service';
 import { Subscription } from 'rxjs';
 import { asFileObject } from 'src/app/database/tables/submission-file.table';
+import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 
 @Component({
   selector: 'submission-record-view',
@@ -79,14 +80,6 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     this.tabSubscriber.unsubscribe();
   }
 
-  public toggleEditing(): void {
-    if (this.editing) {
-      this._tabManager.removeTab(this.submission.id);
-    } else {
-      this._tabManager.addTab(this.submission);
-    }
-  }
-
   public deleteSubmission(): void {
     this.dialog.open(ConfirmDialog, {
       data: {
@@ -104,8 +97,31 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       });
   }
 
-  public changeFile(event: Event): void {
+  public duplicateSubmission(): void {
+    this.dialog.open(InputDialog, {
+      data: {
+        title: 'Title',
+        maxLength: 50,
+        minLength: 0,
+        startingValue: this.submission.title || ''
+      }
+    }).afterClosed()
+      .subscribe(title => {
+        if (title !== false) {
+          this.loading = true;
+          this._changeDetector.markForCheck();
+          this._submissionDB.duplicate(this.submission.id, title)
+            .then(() => { })
+            .catch((err) => { console.error(err) })
+            .finally(() => {
+              this.loading = false;
+              this._changeDetector.markForCheck();
+            });
+        }
+      });
+  }
 
+  public changeFile(event: Event): void {
     event.stopPropagation()
     event.preventDefault();
 
@@ -130,6 +146,14 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     }
 
     this.fileChange.nativeElement.value = '';
+  }
+
+  public toggleEditing(): void {
+    if (this.editing) {
+      this._tabManager.removeTab(this.submission.id);
+    } else {
+      this._tabManager.addTab(this.submission);
+    }
   }
 
 }

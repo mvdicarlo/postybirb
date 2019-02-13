@@ -17,7 +17,7 @@ export interface ISubmission {
 export interface FileMap {
   PRIMARY?: number;
   THUMBNAIL?: number;
-  ADDITIONAL?: string[];
+  ADDITIONAL?: number[];
 }
 
 export enum SubmissionRating {
