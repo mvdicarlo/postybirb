@@ -59,3 +59,20 @@ body {
 *::-webkit-scrollbar-thumb:active {
   background: linear-gradient(to left, #22ADD4, #1E98BA);
 }
+
+/* Overwrite ng-snotify styiles */
+.snotifyToast {
+  background-color: #212529 !important;
+}
+
+.snotifyToast .snotifyToast__body {
+  color: #fff !important;
+}
+
+.snotifyToast .snotifyToast__buttons {
+  border-top: 1px solid #95999c !important;
+}
+
+.snotifyToast .snotifyToast__buttons button {
+  color: #fff !important;
+}

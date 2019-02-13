@@ -14,6 +14,8 @@ import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
+import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
+
 import {
   MatButtonModule,
   MatDialogModule,
@@ -56,9 +58,12 @@ import { AppComponent } from './app.component';
     MatSidenavModule,
     MatToolbarModule,
     MatTooltipModule,
+    SnotifyModule
   ],
   providers: [
-    { provide: LocationStrategy, useClass: HashLocationStrategy } // try to avoid refresh issues with electron
+    { provide: LocationStrategy, useClass: HashLocationStrategy }, // try to avoid refresh issues with electron
+    { provide: 'SnotifyToastConfig', useValue: ToastDefaults },
+    SnotifyService
   ],
   bootstrap: [AppComponent]
 })

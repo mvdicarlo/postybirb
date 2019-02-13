@@ -33,6 +33,7 @@
     "jsstore": "^2.9.5",
     "nanoid": "^2.0.1",
     "ng-pick-datetime": "^7.0.0",
+    "ng-snotify": "^4.3.1",
     "roboto-fontface": "^0.10.0",
     "rxjs": "~6.3.3",
     "store": "^2.0.12",

@@ -29,7 +29,8 @@
               "src/app/websites/styles.css",
               "node_modules/@fortawesome/fontawesome-free/css/all.min.css",
               "node_modules/bootstrap-css-only/css/bootstrap.min.css",
-              "node_modules/roboto-fontface/css/roboto/roboto-fontface.css"
+              "node_modules/roboto-fontface/css/roboto/roboto-fontface.css",
+              "node_modules/ng-snotify/styles/simple.css"
             ],
             "scripts": [
               "src/vendors/tinymce/tinymce.min.js",

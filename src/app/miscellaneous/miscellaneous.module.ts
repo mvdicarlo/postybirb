@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -26,6 +27,7 @@ import { AgreementDialog } from './dialogs/agreement-dialog/agreement-dialog.com
     CommonModule,
     ReactiveFormsModule,
     TranslateModule,
+    HttpClientModule,
     UtilsModule,
     MatButtonModule,
     MatDialogModule,

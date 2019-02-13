@@ -5,6 +5,8 @@ import { LoginManagerService } from './login/services/login-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { SettingsDialog } from './miscellaneous/dialogs/settings-dialog/settings-dialog.component';
 import { AgreementDialog } from './miscellaneous/dialogs/agreement-dialog/agreement-dialog.component';
+import { SnotifyService } from 'ng-snotify';
+import { UpdatesAndNotificationsService } from './miscellaneous/services/updates-and-notifications.service';
 
 @Component({
   selector: 'app-root',
@@ -23,11 +25,25 @@ export class AppComponent implements OnInit {
     private _translate: TranslateService,
     _loginManager: LoginManagerService,
     private _router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    snotify: SnotifyService,
+    updatesAndNotifications: UpdatesAndNotificationsService // instantiated just to initialize it
   ) {
     this.version = appVersion;
     _translate.setDefaultLang(this.BASE_LANGUAGE); // set default language pack to english
     this._initializeLanguage();
+
+    snotify.setDefaults({
+      global: {
+        maxOnScreen: 5
+      },
+      toast: {
+        timeout: 7500,
+        showProgressBar: true,
+        pauseOnHover: true,
+        closeOnClick: true
+      }
+    });
   }
 
   ngOnInit() {

@@ -67,22 +67,23 @@ export class SubmissionDBService extends DatabaseService {
     return inserts.map(i => this._cache.store(new Submission(i)));
   }
 
-  public delete(ids: number[], deleteFiles: boolean = true): Promise<any> {
+  public async delete(ids: number[], deleteFiles: boolean = true): Promise<void> {
     if (deleteFiles) {
       this._submissionFileDB.deleteBySubmissionId(ids);
       this._generatedThumbnailDB.deleteBySubmissionId(ids);
     }
 
-    return this.connection.remove({
+    await this.connection.remove({
       from: SubmissionTableName,
       where: {
         id: {
           in: ids
         }
       }
-    })
-    .then(() => ids.forEach(id => this._cache.remove(id)))
-    .then(() => this.notifySubject.next());
+    });
+
+    ids.forEach(id => this._cache.remove(id));
+    this.notifySubject.next();
   }
 
   public async duplicate(id: number, title?: string): Promise<void> {
