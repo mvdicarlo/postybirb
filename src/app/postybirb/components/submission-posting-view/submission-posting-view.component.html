@@ -13,10 +13,10 @@
     </div>
     <div class="row no-gutters">
       <div *ngIf="submission.posting" class="posting-website"></div>
+      <div class="w-100 status text-info" *ngIf="status">
+        <span *ngIf="status.getTime">@ {{ status | date:'mediumTime' }}</span>
+        <span *ngIf="!status">{{ submission.posting ? 'Posting' : 'Waiting' | translate }}...</span>
+      </div>
     </div>
   </div>
-</div>
-<div class="w-100 status text-info" *ngIf="status">
-  <span *ngIf="status.getTime">{{ 'Paused until' | translate }}: {{ status | date:'mediumTime' }}</span>
-  <span *ngIf="!status">{{ submission.posting ? 'Posting' : 'Waiting' | translate }}...</span>
 </div>

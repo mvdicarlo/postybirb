@@ -14,6 +14,7 @@ import { SubmissionCache } from 'src/app/database/services/submission-cache.serv
 import { TabManager } from '../../services/tab-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { PostQueueService } from '../../services/post-queue.service';
+import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -216,6 +217,35 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     }
   }
 
+  public deleteMany(): void {
+    this.dialog.open(SubmissionSelectDialog, {
+      data: {
+        title: 'Delete',
+        multiple: true
+      }
+    }).afterClosed()
+      .subscribe(deletes => {
+        if (deletes.length) {
+          this.loading = true;
+          this._changeDetector.markForCheck();
+          deletes.forEach(d => {
+            const deletedSubmission = this._submissionCache.get(d.id);
+            deletedSubmission.queued = false;
+            deletedSubmission.cleanUp();
+            this._tabManager.removeTab(d.id);
+          });
+
+          this._submissionDB.delete(deletes.map(d => d.id))
+            .then()
+            .catch()
+            .finally(() => {
+              this.loading = false;
+              this._changeDetector.markForCheck();
+            });
+        }
+      });
+  }
+
   public filesSelected(event: Event): void {
     event.stopPropagation()
     event.preventDefault();
@@ -242,6 +272,16 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     }
 
     this.fileInput.nativeElement.value = '';
+  }
+
+  public hasPostableSubmissions(): boolean {
+    for (let i = 0; i < this.submissions.length; i++) {
+      if (this.submissions[i].problems.length === 0) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }

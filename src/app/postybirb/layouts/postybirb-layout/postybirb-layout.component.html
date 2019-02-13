@@ -2,6 +2,7 @@
   <div class="pb-container row no-gutters" *ngIf="cacheCompleted">
     <div class="pb-sidebar mat-elevation-z4">
       <div class="actions">
+
         <button color="accent" class="add-button w-100" mat-flat-button [matMenuTriggerFor]="addMenu">
           <mat-icon>add</mat-icon>
           <span>{{ 'New' | translate }}</span>
@@ -18,10 +19,20 @@
           </button>
         </mat-menu>
         <input #fileInput type="file" class="d-none" (change)="filesSelected($event)" multiple>
+
         <mat-form-field class="w-100 search-input" color="accent" appearance="fill">
           <input matInput [formControl]="searchControl">
           <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
         </mat-form-field>
+
+        <div class="submission-actions" *ngIf="submissions.length">
+          <button mat-flat-button color="warn" (click)="deleteMany()">
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()">
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
       </div>
 
       <div class="submission-nav">

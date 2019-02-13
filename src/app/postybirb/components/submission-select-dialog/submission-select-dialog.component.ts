@@ -3,11 +3,13 @@ import { Validators, FormControl } from '@angular/forms';
 import { MAT_DIALOG_DATA } from '@angular/material';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { ISubmission, SubmissionType } from 'src/app/database/tables/submission.table';
+import { Submission } from 'src/app/database/models/submission.model';
 
 interface DialogOptions {
   title?: string;
   multiple?: boolean;
   type?: SubmissionType;
+  submissions?: Submission[]; // provided submissions to pick from - when empty this will get all submissions
 }
 
 @Component({
@@ -22,14 +24,21 @@ export class SubmissionSelectDialog implements OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: DialogOptions, private _submissionDB: SubmissionDBService) { }
 
   ngOnInit() {
-    this._submissionDB.getISubmissions()
-    .then(submissions => {
-      this.options = submissions;
-
+    if (this.data.submissions) {
+      this.options = this.data.submissions.map(s => s.asISubmission());
       if (this.data.type) {
         this.options = this.options.filter(s => s.submissionType === this.data.type);
       }
-    });
+    } else {
+      this._submissionDB.getISubmissions()
+      .then(submissions => {
+        this.options = submissions;
+
+        if (this.data.type) {
+          this.options = this.options.filter(s => s.submissionType === this.data.type);
+        }
+      });
+    }
   }
 
 }

@@ -14,6 +14,10 @@
   /* to match tab bar */
 }
 
+.actions .submission-actions button {
+  width: 50%;
+}
+
 .pb-sidebar .actions button {
   border-radius: 0 !important;
 }

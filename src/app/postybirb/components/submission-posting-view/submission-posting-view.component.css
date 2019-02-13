@@ -22,10 +22,6 @@
   font-size: 50px;
 }
 
-mat-progress-bar {
-  width: 100%;
-}
-
 .title-bar {
   border-bottom: 1px solid #039be5 !important;
   position: relative;
@@ -49,5 +45,5 @@ mat-progress-bar {
 }
 
 .posting-website {
-  font-size: 20px;
+  font-size: 16px;
 }
