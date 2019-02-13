@@ -1,0 +1,22 @@
+<!-- Not 100% sure why but styling these to be size flexible has been a pain. Might be due to viewport. Assuming for now this will be 200px wide - .25em of padding -->
+<div class="submission-posting-info-container d-flex">
+  <div class="img mr-1">
+    <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
+    <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
+  </div>
+  <div class="w-100">
+    <div class="w-100 title-bar">
+      <div class="text-truncate title" [title]="submission.title || 'Untitled'">{{ submission.title || 'Untitled' }}</div>
+      <div class="close-btn" (click)="cancel()">
+        <mat-icon class="warn-text">close</mat-icon>
+      </div>
+    </div>
+    <div class="row no-gutters">
+      <div *ngIf="submission.posting" class="posting-website"></div>
+    </div>
+  </div>
+</div>
+<div class="w-100 status text-info" *ngIf="status">
+  <span *ngIf="status.getTime">{{ 'Paused until' | translate }}: {{ status | date:'mediumTime' }}</span>
+  <span *ngIf="!status">{{ submission.posting ? 'Posting' : 'Waiting' | translate }}...</span>
+</div>

@@ -86,13 +86,21 @@ export class Submission implements ISubmission {
   }
   private _problems: string[] = [];
 
-  get post(): boolean { return this._post }
-  set post(post: boolean) {
-    const old = this._post;
-    this._post = post;
-    this._emitChange('post', old, post);
+  get queued(): boolean { return this._queued }
+  set queued(queued: boolean) {
+    const old = this._queued;
+    this._queued = queued;
+    this._emitChange('queued', old, queued);
   }
-  private _post: boolean = false; // variable that tracks whether or not the submissions is queued/posting
+  private _queued: boolean = false; // variable that tracks whether or not the submissions is queued
+
+  get posting(): boolean { return this._posting }
+  set posting(posting: boolean) {
+    const old = this._posting;
+    this._posting = posting;
+    this._emitChange('posting', old, posting);
+  }
+  private _posting: boolean = false; // variable that tracks whether or not the submissions is posting
 
   constructor(submission: ISubmission) {
     this.id = submission.id;

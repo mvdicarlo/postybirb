@@ -4,9 +4,9 @@
 
 .pb-sidebar {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr 1fr;
   width: 200px;
-  background-color: #222;
+  background-color: #212529;
 }
 
 .actions .add-button {
@@ -44,4 +44,11 @@ cdk-virtual-scroll-viewport {
 
 td {
   padding: 0.25em !important;
+  width: 200px;
+}
+
+thead tr {
+  font-size: 12px;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.4);
 }

@@ -40,6 +40,7 @@ import { JournalForm } from './forms/journal-form/journal-form.component';
 import { SubmissionTabComponent } from './components/submission-tab/submission-tab.component';
 import { SubmissionSelectDialog } from './components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from './forms/base-submission-form/base-submission-form.component';
+import { SubmissionPostingViewComponent } from './components/submission-posting-view/submission-posting-view.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { BaseSubmissionForm } from './forms/base-submission-form/base-submission
     JournalForm,
     SubmissionTabComponent,
     SubmissionSelectDialog,
-    BaseSubmissionForm
+    BaseSubmissionForm,
+    SubmissionPostingViewComponent,
   ],
   imports: [
     CommonModule,

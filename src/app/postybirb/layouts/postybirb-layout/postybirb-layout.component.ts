@@ -13,6 +13,7 @@ import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
 import { TabManager } from '../../services/tab-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
+import { PostQueueService } from '../../services/post-queue.service';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -43,12 +44,14 @@ export class PostybirbLayout implements OnInit, OnDestroy {
   }
   set submissions(submissions: Submission[]) { this._submissions = submissions || [] }
   private _submissions: Submission[] = [];
+  public queuedSubmissions: Submission[] = [];
 
   public loading: boolean = false;
   public hideRoute: boolean = true;
   public cacheCompleted: boolean = false;
   public searchControl: FormControl = new FormControl();
-  private submissionUpdatesSubscription: Subscription = Subscription.EMPTY;
+  private submissionUpdatesListener: Subscription = Subscription.EMPTY;
+  private queueListener: Subscription = Subscription.EMPTY;
 
   constructor(
     private _router: Router,
@@ -57,6 +60,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     private _submissionDB: SubmissionDBService,
     private _submissionFileDBService: SubmissionFileDBService,
     public _tabManager: TabManager,
+    public _postQueue: PostQueueService,
     private _changeDetector: ChangeDetectorRef
   ) {
 
@@ -83,17 +87,23 @@ export class PostybirbLayout implements OnInit, OnDestroy {
         });
       });
 
-    this.submissionUpdatesSubscription = this._submissionDB.changes.subscribe(() => {
+    this.submissionUpdatesListener = this._submissionDB.changes.subscribe(() => {
       this._submissionDB.getSubmissions()
         .then(submissions => {
           this.submissions = submissions;
           this._changeDetector.detectChanges();
         });
     });
+
+    this.queueListener = this._postQueue.changes.subscribe(queued => {
+      this.queuedSubmissions = [...queued];
+      this._changeDetector.detectChanges();
+    });
   }
 
   ngOnDestroy() {
-    this.submissionUpdatesSubscription.unsubscribe();
+    this.submissionUpdatesListener.unsubscribe();
+    this.queueListener.unsubscribe();
   }
 
   public createNewSubmission(submissionFiles: ReadFile[] = []): void {

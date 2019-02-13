@@ -1,0 +1,53 @@
+.submission-posting-info-container {
+  font-size: 12px;
+}
+
+.status {
+  font-size: 12px;
+}
+
+.img {
+  height: 50px;
+  width: 50px;
+  min-width: 50px;
+  position: relative;
+}
+
+.img img {
+  height: 50px;
+  width: 50px;
+}
+
+.img mat-icon {
+  font-size: 50px;
+}
+
+mat-progress-bar {
+  width: 100%;
+}
+
+.title-bar {
+  border-bottom: 1px solid #039be5 !important;
+  position: relative;
+}
+
+.title-bar mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.title-bar .close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.title {
+  width: 115px;
+}
+
+.posting-website {
+  font-size: 20px;
+}

@@ -12,6 +12,7 @@ import { TabManager } from '../../services/tab-manager.service';
 import { Subscription } from 'rxjs';
 import { asFileObject } from 'src/app/database/tables/submission-file.table';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
+import { PostQueueService } from '../../services/post-queue.service';
 
 @Component({
   selector: 'submission-record-view',
@@ -34,6 +35,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     private _submissionFileDB: SubmissionFileDBService,
     private _tabManager: TabManager,
     private dialog: MatDialog,
+    private _postQueue: PostQueueService,
     fb: FormBuilder) {
     this.form = fb.group({
       title: [null],
@@ -149,15 +151,25 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   public enablePosting(): void {
-    if (this.submission.schedule) {
-      this.submission.isScheduled = true;
-    } else {
-      this.submission.post = true;
-    }
+    this.dialog.open(ConfirmDialog, {
+      data: {
+        title: this.submission.schedule ? 'Schedule' : 'Post'
+      }
+    }).afterClosed()
+      .subscribe(result => {
+        if (result) {
+          if (this.submission.schedule) {
+            this.submission.isScheduled = true;
+          } else {
+            this.submission.queued = true;
+            this._postQueue.enqueue(this.submission);
+          }
+        }
+      });
   }
 
   public stopPosting(): void {
-    this.submission.post = false;
+    this.submission.queued = false;
     this.submission.isScheduled = false;
   }
 
