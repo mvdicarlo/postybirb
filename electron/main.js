@@ -51,16 +51,16 @@ if (settings) {
     if (process.platform == 'win32' || process.platform == 'darwin') {
         if (!settings.hardwareAcceleration) {
             app.disableHardwareAcceleration();
-            log.info(`Hardware Acceleration is off`);
+            log.info('Hardware Acceleration is off');
         }
     } else { // Always disable on Linux or other unknown OS
         app.disableHardwareAcceleration();
-        log.info(`Hardware Acceleration is off`);
+        log.info('Hardware Acceleration is off');
     }
 } else {
     // No settings, just assume to turn off acceleration
     app.disableHardwareAcceleration();
-    log.info(`Hardware Acceleration is off`);
+    log.info('Hardware Acceleration is off');
 }
 
 app.on('ready', () => {
@@ -80,7 +80,44 @@ app.on('ready', () => {
     }
     image.setTemplateImage(true);
 
-  // TODO tray items
+    const trayItems = [
+        {
+            label: 'Open',
+            click() {
+                createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
+            },
+        }, {
+            label: 'Quit',
+            click() {
+                try { // Potential to throw error if not initialized intervals
+                    clearInterval(clearCacheInterval);
+                    clearInterval(updateInterval);
+                } catch (e) {
+                  // Don't Care
+                } finally {
+                    app.quit();
+                }
+            },
+        },
+    ];
+
+    tray = new Tray(image);
+    const trayMenu = Menu.buildFromTemplate(trayItems);
+
+    tray.setContextMenu(trayMenu);
+    tray.setToolTip('PostyBirb');
+    tray.on('click', () => {
+        if (!hasWindows()) {
+            initialize();
+        } else {
+            if (win.isMinimized()) {
+                win.restore();
+            } else {
+                win.show();
+            }
+            win.focus();
+        }
+    });
 
     if (!process.env.DEVELOP) {
         updateInterval = setInterval(() => {
@@ -156,6 +193,10 @@ process.on('uncaughtException', (err) => {
 app.on('window-all-closed', () => {
     attemptToClose();
 });
+
+function hasWindows() {
+    return BrowserWindow.getAllWindows().filter(b => b.isVisible()).length > 0;
+}
 
 /**
  * Stub function for later use with schedule checking
