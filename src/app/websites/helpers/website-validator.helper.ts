@@ -51,8 +51,17 @@ export function getDescription(submission: Submission, website: string): string 
     }
   }
 
-
   return description;
+}
+
+export function getOptions(submission: Submission, website: string): any {
+  let options = {};
+
+  if (submission.formData && submission.formData[website]) {
+    options = submission.formData[website];
+  }
+
+  return options;
 }
 
 export function getAllWebsiteValidatorsForWebsites(websites: string[], submissionType: SubmissionType): ((submission: Submission, formData: any) => string[])[] {
