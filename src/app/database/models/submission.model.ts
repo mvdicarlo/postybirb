@@ -11,6 +11,14 @@ export interface SubmissionChange {
   };
 }
 
+export interface PostStats {
+  success: string[];
+  fail: string[];
+  originalCount: number;
+  errors: string[];
+  sourceURLs: string[];
+}
+
 export class Submission implements ISubmission {
   private changeSubject: Subject<SubmissionChange> = new Subject();
   public readonly changes: Observable<SubmissionChange>;
@@ -88,19 +96,18 @@ export class Submission implements ISubmission {
 
   get queued(): boolean { return this._queued }
   set queued(queued: boolean) {
-    const old = this._queued;
     this._queued = queued;
-    this._emitChange('queued', old, queued);
+    this.flagUpdate('queued');
   }
   private _queued: boolean = false; // variable that tracks whether or not the submissions is queued
 
-  get posting(): boolean { return this._posting }
-  set posting(posting: boolean) {
-    const old = this._posting;
-    this._posting = posting;
-    this._emitChange('posting', old, posting);
+  public postStats: PostStats = {
+    success: [],
+    fail: [],
+    originalCount: 0,
+    sourceURLs: [],
+    errors: []
   }
-  private _posting: boolean = false; // variable that tracks whether or not the submissions is posting
 
   constructor(submission: ISubmission) {
     this.id = submission.id;
@@ -112,6 +119,10 @@ export class Submission implements ISubmission {
     this.fileInfo = submission.fileInfo;
     this.fileMap = submission.fileMap;
     this.formData = submission.formData || {};
+
+    if (this.formData.websites) {
+      this.postStats.originalCount = this.formData.websites.length;
+    }
 
     this.changes = this.changeSubject.asObservable();
   }
@@ -153,7 +164,8 @@ export class Submission implements ISubmission {
         [fieldName]: {
           old,
           current,
-          validate
+          validate,
+          noUpdate: false
         }
       });
     }

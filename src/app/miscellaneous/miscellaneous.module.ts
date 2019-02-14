@@ -11,6 +11,7 @@ import {
   MatDialogModule,
   MatExpansionModule,
   MatIconModule,
+  MatInputModule,
   MatSlideToggleModule,
   MatTabsModule,
 } from '@angular/material';
@@ -33,6 +34,7 @@ import { AgreementDialog } from './dialogs/agreement-dialog/agreement-dialog.com
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,
+    MatInputModule,
     MatSlideToggleModule,
     MatTabsModule
   ],

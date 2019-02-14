@@ -45,5 +45,10 @@
 }
 
 .posting-website {
-  font-size: 16px;
+  font-size: 12px;
+}
+
+mat-progress-spinner {
+  height: 30px !important;
+  width: 30px !important;
 }

@@ -14,6 +14,7 @@ import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.p
   providedIn: 'root'
 })
 @Website({
+  postWaitInterval: 30000 * 4,
   displayedName: 'Fur Affinity',
   login: {
     url: 'https://www.furaffinity.net/login'

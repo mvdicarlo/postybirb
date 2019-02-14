@@ -15,6 +15,7 @@ import { TabManager } from '../../services/tab-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
 import { PostQueueService } from '../../services/post-queue.service';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
+import { ScheduledSubmissionManagerService } from '../../services/scheduled-submission-manager.service';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -62,7 +63,8 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     private _submissionFileDBService: SubmissionFileDBService,
     public _tabManager: TabManager,
     public _postQueue: PostQueueService,
-    private _changeDetector: ChangeDetectorRef
+    private _changeDetector: ChangeDetectorRef,
+    _scheduler: ScheduledSubmissionManagerService // only called so it will be instantiated
   ) {
 
   }

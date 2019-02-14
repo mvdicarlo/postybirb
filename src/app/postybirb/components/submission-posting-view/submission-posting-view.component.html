@@ -12,11 +12,11 @@
       </div>
     </div>
     <div class="row no-gutters">
-      <div *ngIf="submission.posting" class="posting-website"></div>
-      <div class="w-100 status text-info" *ngIf="status">
-        <span *ngIf="status.getTime">@ {{ status | date:'mediumTime' }}</span>
-        <span *ngIf="!status">{{ submission.posting ? 'Posting' : 'Waiting' | translate }}...</span>
+      <div *ngIf="postingWebsite" class="posting-website">{{ postingWebsite | websiteDisplayname }}</div>
+      <div class="w-100 status text-info" *ngIf="wait">
+        <span *ngIf="wait">@ {{ wait | date:'mediumTime' }}</span>
       </div>
+      <mat-progress-bar class="w-100" *ngIf="postingWebsite" color="accent" mode="determinate" [value]="getProgress()"></mat-progress-bar>
     </div>
   </div>
 </div>

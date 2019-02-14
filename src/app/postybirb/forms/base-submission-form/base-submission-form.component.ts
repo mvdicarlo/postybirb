@@ -13,6 +13,8 @@ import { TagInput } from 'src/app/utils/components/tag-input/tag-input.component
 import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile-select-dialog/login-profile-select-dialog.component';
 import { debounceTime } from 'rxjs/operators';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
+import { PostQueueService } from '../../services/post-queue.service';
 
 @Component({
   selector: 'base-submission-form',
@@ -42,6 +44,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   protected _loginManager: LoginManagerService;
   protected _fb: FormBuilder;
   protected _loginProfileManager: LoginProfileManagerService;
+  protected _postQueue: PostQueueService;
 
   constructor(injector: Injector) {
     this._changeDetector = injector.get(ChangeDetectorRef);
@@ -49,6 +52,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this._loginManager = injector.get(LoginManagerService);
     this._fb = injector.get(FormBuilder);
     this._loginProfileManager = injector.get(LoginProfileManagerService);
+    this._postQueue = injector.get(PostQueueService);
 
     this.loginListener = this._loginManager.statusChanges.subscribe(statuses => {
       this.loginStatuses = statuses;
@@ -102,25 +106,20 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       });
 
     this.formDataForm.valueChanges
-      .pipe(debounceTime(500))
+      .pipe(debounceTime(300))
       .subscribe(changes => {
         this.submission.formData = changes;
       });
   }
 
-  public toggleLogin(): void {
-    loginPanel.toggle();
+  protected _copySubmission(submission: ISubmission): void {
+    if (submission.formData) this.formDataForm.patchValue(submission.formData || {});
+    if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
+    this._changeDetector.markForCheck();
   }
 
-  public openProfileSelect(): void {
-    this.dialog.open(LoginProfileSelectDialog)
-      .afterClosed()
-      .subscribe(profile => {
-        if (profile) {
-          this.formDataForm.controls.loginProfile.setValue(profile.id);
-          this._changeDetector.markForCheck();
-        }
-      });
+  public getLoginProfileId(): string {
+    return this.formDataForm.value.loginProfile;
   }
 
   public isLoggedIn(website: string): boolean {
@@ -137,14 +136,38 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     return false;
   }
 
-  public getLoginProfileId(): string {
-    return this.formDataForm.value.loginProfile;
+  public openProfileSelect(): void {
+    this.dialog.open(LoginProfileSelectDialog)
+      .afterClosed()
+      .subscribe(profile => {
+        if (profile) {
+          this.formDataForm.controls.loginProfile.setValue(profile.id);
+          this._changeDetector.markForCheck();
+        }
+      });
   }
 
-  protected _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.formDataForm.patchValue(submission.formData || {});
-    if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
-    this._changeDetector.markForCheck();
+  public post(): void {
+    if (this.submission.problems.length === 0) {
+      this.dialog.open(ConfirmDialog, {
+        data: {
+          title: this.submission.schedule ? 'Schedule' : 'Post'
+        }
+      }).afterClosed()
+        .subscribe(result => {
+          if (result) {
+            if (this.submission.schedule) {
+              this.submission.isScheduled = true;
+            } else {
+              this._postQueue.enqueue(this.submission);
+            }
+          }
+        });
+    }
+  }
+
+  public toggleLogin(): void {
+    loginPanel.toggle();
   }
 
 }

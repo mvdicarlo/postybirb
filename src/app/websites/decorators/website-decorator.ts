@@ -6,6 +6,7 @@ import { Submission } from 'src/app/database/models/submission.model';
 
 export interface WebsiteConfig {
   refreshInterval?: number;     // interval at which the app will check status [default=30 minutes]
+  postWaitInterval?: number; // interval to wait (in ms) between posts to this website
   displayedName?: string;        // name value that is displayed in the UI to the user [default=constructor name]
   login: { // login dialog information
     dialog?: any; // dialog component

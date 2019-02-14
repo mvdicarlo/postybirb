@@ -12,11 +12,26 @@
 <div mat-dialog-content>
   <form [formGroup]="settingsForm">
     <mat-accordion [multi]="true">
-      <mat-expansion-panel expanded>
+      <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>{{ 'Performance' | translate }}</mat-panel-title>
         </mat-expansion-panel-header>
         <mat-slide-toggle formControlName="hardwareAcceleration">Hardware Acceleration</mat-slide-toggle>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel expanded>
+        <mat-expansion-panel-header>
+          <mat-panel-title>PostyBirb</mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <mat-slide-toggle formControlName="advertise">{{ 'Help Advertise PostyBirb' | translate }}</mat-slide-toggle>
+        <mat-slide-toggle formControlName="clearQueueOnFailure">{{ 'Empty Queue When A Post Fails' | translate }}</mat-slide-toggle>
+
+        <mat-form-field appearance="fill" color="accent">
+          <mat-label>{{ 'Time Between Posts' | translate }}</mat-label>
+          <input type="number" matInput formControlName="postInterval" min="0">
+          <mat-hint>{{ 'In minutes' | translate }}</mat-hint>
+        </mat-form-field>
       </mat-expansion-panel>
     </mat-accordion>
   </form>

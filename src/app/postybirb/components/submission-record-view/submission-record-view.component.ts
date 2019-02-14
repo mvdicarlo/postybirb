@@ -5,7 +5,7 @@ import { SubmissionCache } from 'src/app/database/services/submission-cache.serv
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
-import { SubmissionType } from 'src/app/database/tables/submission.table';
+import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
 import { readFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { TabManager } from '../../services/tab-manager.service';
@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 import { asFileObject } from 'src/app/database/tables/submission-file.table';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { PostQueueService } from '../../services/post-queue.service';
+import { SubmissionSelectDialog } from '../submission-select-dialog/submission-select-dialog.component';
 
 @Component({
   selector: 'submission-record-view',
@@ -99,6 +100,12 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       });
   }
 
+  private _copySubmission(submission: ISubmission): void {
+    if (submission.formData) this.submission.formData = submission.formData || {};
+    if (submission.rating) this.submission.rating = submission.rating;
+    this._changeDetector.markForCheck();
+  }
+
   public duplicateSubmission(): void {
     this.dialog.open(InputDialog, {
       data: {
@@ -161,9 +168,23 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
           if (this.submission.schedule) {
             this.submission.isScheduled = true;
           } else {
-            this.submission.queued = true;
             this._postQueue.enqueue(this.submission);
           }
+        }
+      });
+  }
+
+  public openCopySubmission(): void {
+    this.dialog.open(SubmissionSelectDialog, {
+      data: {
+        title: 'Copy',
+        type: this.submission.submissionType
+      }
+    })
+      .afterClosed()
+      .subscribe((toCopy: ISubmission) => {
+        if (toCopy) {
+          this._copySubmission(toCopy);
         }
       });
   }

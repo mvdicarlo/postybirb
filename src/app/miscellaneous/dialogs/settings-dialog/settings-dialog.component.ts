@@ -15,10 +15,16 @@ export class SettingsDialog implements OnInit {
   constructor(fb: FormBuilder, private dialog: MatDialog) {
     settingsDB.defaults({
       hardwareAcceleration: true,
+      postInterval: 0,
+      clearQueueOnFailure: true,
+      advertise: true
     });
 
     this.settingsForm = fb.group({
-      hardwareAcceleration: [true]
+      hardwareAcceleration: [true],
+      postInterval: [0],
+      clearQueueOnFailure: [true],
+      advertise: [true]
     });
 
     this.settingsForm.patchValue(settingsDB.getState(), { emitEvent: false });
@@ -39,6 +45,18 @@ export class SettingsDialog implements OnInit {
             this.settingsForm.controls.hardwareAcceleration.patchValue(!hardwareAcceleration, { emitEvent: false }); // set back to what it was
           }
         });
+    });
+
+    this.settingsForm.controls.postInterval.valueChanges.subscribe(postInterval => {
+      settingsDB.set('postInterval', Math.max(postInterval, 0)).write();
+    });
+
+    this.settingsForm.controls.clearQueueOnFailure.valueChanges.subscribe(clearQueueOnFailure => {
+      settingsDB.set('clearQueueOnFailure', clearQueueOnFailure).write();
+    });
+
+    this.settingsForm.controls.advertise.valueChanges.subscribe(advertise => {
+      settingsDB.set('advertise', advertise).write();
     });
   }
 
