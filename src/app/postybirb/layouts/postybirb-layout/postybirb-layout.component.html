@@ -29,7 +29,7 @@
           <button mat-flat-button color="warn" (click)="deleteMany()">
             <mat-icon>delete</mat-icon>
           </button>
-          <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()">
+          <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()" (click)="postMany()">
             <mat-icon>send</mat-icon>
           </button>
         </div>

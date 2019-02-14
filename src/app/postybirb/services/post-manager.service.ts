@@ -19,7 +19,7 @@ export class PostManagerService {
 
   public post(website: string, submissionToPost: Submission): Promise<any> {
     return new Promise((resolve, reject) => {
-      setTimeout(resolve , 2000)
+      setTimeout(reject, 10000, { msg: 'Test msg', error: 'This was the error!' })
     });
   }
 }

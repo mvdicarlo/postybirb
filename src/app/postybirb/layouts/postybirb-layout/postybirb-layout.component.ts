@@ -286,4 +286,32 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     return false;
   }
 
+  public postMany(): void {
+    this.loading = true;
+    this._changeDetector.markForCheck();
+    this.dialog.open(SubmissionSelectDialog, {
+      data: {
+        title: 'Post',
+        multiple: true,
+        allowReorder: true,
+        submissions: this._postableSubmissions()
+      }
+    }).afterClosed()
+    .subscribe(results => {
+      if (results && results.length) {
+        results.forEach((submission: ISubmission) => this._postQueue.enqueue(this._submissionCache.get(submission.id)));
+      }
+
+      this.loading = false;
+      this._changeDetector.markForCheck();
+    });
+  }
+
+  private _postableSubmissions(): Submission[] {
+    return this.submissions
+    .filter(s => !s.queued)
+    .filter(s => !s.isScheduled)
+    .filter(s => s.problems.length === 0);
+  }
+
 }

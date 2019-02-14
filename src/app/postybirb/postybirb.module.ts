@@ -15,6 +15,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
   MatButtonModule,
   MatDialogModule,
@@ -79,6 +80,7 @@ import { SubmissionPostingViewComponent } from './components/submission-posting-
     MatTabsModule,
     MatTooltipModule,
     ScrollDispatchModule,
+    DragDropModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
   ],

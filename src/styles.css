@@ -69,6 +69,11 @@ body {
   color: #fff !important;
 }
 
+.snotifyToast .snotifyToast__title {
+  font-size: 1.2em !important;
+  color: #fff;
+}
+
 .snotifyToast .snotifyToast__buttons {
   border-top: 1px solid #95999c !important;
 }

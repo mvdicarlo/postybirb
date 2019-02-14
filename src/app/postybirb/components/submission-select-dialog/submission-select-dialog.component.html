@@ -17,8 +17,19 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
+
+  <div *ngIf="data.allowReorder && data.multiple">
+    <mat-checkbox [formControl]="reorderControl">{{ 'Reorder' | translate }}</mat-checkbox>
+
+    <div *ngIf="reorderControl.value && selected.length" cdkDropList (cdkDropListDropped)="drop($event)" class="mr-3">
+      <div *ngFor="let record of selected" class="bordered p-3 mt-1" style="cursor: -webkit-grab" cdkDrag cdkDragLockAxis="y">
+        <span *ngIf="record.fileInfo">{{ (record.title || 'Untitled') + ' - ' + record.fileInfo.name }}</span>
+        <span *ngIf="!record.fileInfo">{{ record.title || 'Untitled' }}</span>
+      </div>
+    </div>
+  </div>
 </div>
 <div mat-dialog-actions class="confirm-actions">
   <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
-  <button mat-flat-button [mat-dialog-close]="selectControl.value" color="primary" class="yes-button" [disabled]="selectControl.invalid">{{ 'Yes' | translate }}</button>
+  <button mat-flat-button [mat-dialog-close]="getReturn()" color="primary" class="yes-button" [disabled]="selectControl.invalid">{{ 'Yes' | translate }}</button>
 </div>
