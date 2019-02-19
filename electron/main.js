@@ -44,6 +44,7 @@ app.on('second-instance', () => {
 // app.commandLine.appendSwitch('proxy-server', 'direct://')
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
+fs.ensureFileSync(path.join(dataPath, 'templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'description-templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'settings.json'));
 

@@ -23,7 +23,7 @@ const PostybirbRoutes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/bulk'
+    redirectTo: 'bulk'
   },
 ];
 
