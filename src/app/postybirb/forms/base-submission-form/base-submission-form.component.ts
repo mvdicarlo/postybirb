@@ -15,6 +15,7 @@ import { debounceTime } from 'rxjs/operators';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { PostQueueService } from '../../services/post-queue.service';
+import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
 
 @Component({
   selector: 'base-submission-form',
@@ -134,6 +135,16 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     }
 
     return false;
+  }
+
+  public loadTemplate(): void {
+    this.dialog.open(TemplateSelectDialog)
+      .afterClosed()
+      .subscribe(template => {
+        if (template) {
+          this.formDataForm.patchValue(template.data);
+        }
+      });
   }
 
   public openProfileSelect(): void {

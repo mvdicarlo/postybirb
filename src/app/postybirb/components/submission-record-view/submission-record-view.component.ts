@@ -14,6 +14,7 @@ import { asFileObject } from 'src/app/database/tables/submission-file.table';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { PostQueueService } from '../../services/post-queue.service';
 import { SubmissionSelectDialog } from '../submission-select-dialog/submission-select-dialog.component';
+import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
 
 @Component({
   selector: 'submission-record-view',
@@ -83,51 +84,10 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     this.tabSubscriber.unsubscribe();
   }
 
-  public deleteSubmission(): void {
-    this.dialog.open(ConfirmDialog, {
-      data: {
-        title: 'Delete'
-      }
-    }).afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.loading = true;
-          this._changeDetector.markForCheck();
-          this.submission.cleanUp();
-          this._tabManager.removeTab(this.submission.id);
-          this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
-        }
-      });
-  }
-
   private _copySubmission(submission: ISubmission): void {
     if (submission.formData) this.submission.formData = submission.formData || <any>{};
     if (submission.rating) this.submission.rating = submission.rating;
     this._changeDetector.markForCheck();
-  }
-
-  public duplicateSubmission(): void {
-    this.dialog.open(InputDialog, {
-      data: {
-        title: 'Title',
-        maxLength: 50,
-        minLength: 0,
-        startingValue: this.submission.title || ''
-      }
-    }).afterClosed()
-      .subscribe(title => {
-        if (title !== false) {
-          this.loading = true;
-          this._changeDetector.markForCheck();
-          this._submissionDB.duplicate(this.submission.id, title)
-            .then(() => { })
-            .catch((err) => { console.error(err) })
-            .finally(() => {
-              this.loading = false;
-              this._changeDetector.markForCheck();
-            });
-        }
-      });
   }
 
   public changeFile(event: Event): void {
@@ -157,6 +117,47 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     this.fileChange.nativeElement.value = '';
   }
 
+  public deleteSubmission(): void {
+    this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Delete'
+      }
+    }).afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.loading = true;
+          this._changeDetector.markForCheck();
+          this.submission.cleanUp();
+          this._tabManager.removeTab(this.submission.id);
+          this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
+        }
+      });
+  }
+
+  public duplicateSubmission(): void {
+    this.dialog.open(InputDialog, {
+      data: {
+        title: 'Title',
+        maxLength: 50,
+        minLength: 0,
+        startingValue: this.submission.title || ''
+      }
+    }).afterClosed()
+      .subscribe(title => {
+        if (title !== false) {
+          this.loading = true;
+          this._changeDetector.markForCheck();
+          this._submissionDB.duplicate(this.submission.id, title)
+            .then(() => { })
+            .catch((err) => { console.error(err) })
+            .finally(() => {
+              this.loading = false;
+              this._changeDetector.markForCheck();
+            });
+        }
+      });
+  }
+
   public enablePosting(): void {
     this.dialog.open(ConfirmDialog, {
       data: {
@@ -170,6 +171,17 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
           } else {
             this._postQueue.enqueue(this.submission);
           }
+        }
+      });
+  }
+
+  public loadTemplate(): void {
+    this.dialog.open(TemplateSelectDialog)
+      .afterClosed()
+      .subscribe(template => {
+        if (template) {
+          if (template.data) this.submission.formData = template.data;
+          this._changeDetector.markForCheck();
         }
       });
   }

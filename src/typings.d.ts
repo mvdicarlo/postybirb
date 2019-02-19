@@ -2,6 +2,7 @@ declare var appVersion: string;
 declare var nativeImage: any; // electron nativeImage object
 declare var store: any; //storejs
 declare var descriptionTemplateDB: any; //lowDB instance
+declare var templateDB: any; //lowDB instance
 declare var profilesDB: any; //lowDB instance
 declare var settingsDB: any; //lowDB instance
 declare var loginPanel: any; // login panel hook inserted into window

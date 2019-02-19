@@ -25,8 +25,8 @@ export function validate(submission: Submission): string[] {
 
 export function getTags(submission: Submission, website: string): string[] {
   let tags: string[] = dotProp.get(submission.formData, 'defaults.tags.tags', []);
-  const customTags: TagData = dotProp.get(submission.formData, `${website}.tags`, { extend: true });
-  if (!customTags || customTags.extend) {
+  const customTags: TagData = dotProp.get(submission.formData, `${website}.tags`, { extend: true }) || { extend: true };
+  if (customTags.extend) {
     tags = [...tags, ...(customTags.tags || [])];
   } else {
     tags = (customTags.tags || []);

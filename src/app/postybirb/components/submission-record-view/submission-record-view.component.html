@@ -41,6 +41,7 @@
     <ng-template matMenuContent>
       <button mat-menu-item (click)="fileChange.click()" *ngIf="submission.submissionType === 'SUBMISSION'">{{ 'Change File' | translate }}</button>
       <button mat-menu-item (click)="openCopySubmission()">{{ 'Copy Submission' | translate }}</button>
+      <button mat-menu-item (click)="loadTemplate()">{{ 'Load Template' | translate }}</button>
       <button mat-menu-item (click)="duplicateSubmission()">{{ 'Duplicate' | translate }}</button>
       <button mat-menu-item class="warn-text" (click)="deleteSubmission()">{{ 'Delete' | translate }}</button>
     </ng-template>

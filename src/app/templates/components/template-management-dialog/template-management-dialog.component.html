@@ -1,0 +1,28 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ 'Templates' | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-content>
+  <div class="row no-gutters">
+    <div class="w-100" *ngFor="let template of templates">
+      <mat-form-field color="accent">
+        <input matInput [(ngModel)]="template.name">
+      </mat-form-field>
+      <div class="d-inline-block">
+        <button mat-icon-button color="accent" (click)="saveTemplate(template)" [disabled]="!canSaveTemplate(template)">
+          <mat-icon>save</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteTemplate(template)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

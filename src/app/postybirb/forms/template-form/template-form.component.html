@@ -1,3 +1,72 @@
-<p>
-  template-form works!
-</p>
+<loading-overlay [loading]="loading">
+  <div class="editing-form" *ngIf="submission">
+    <div class="mt-4">
+      <form [formGroup]="formDataForm">
+        <div class="w-100 d-flex">
+          <button mat-button color="accent" (click)="openProfileSelect()" class="pl-0">
+            <span *ngIf="formDataForm.value.loginProfile">{{ formDataForm.value.loginProfile | profileName }}</span>
+            <span *ngIf="!formDataForm.value.loginProfile">{{ 'Select a Login Profile' | translate }}</span>
+            <mat-icon>arrow_drop_down</mat-icon>
+          </button>
+          <mat-form-field color="accent" style="flex: 10">
+            <mat-select formControlName="websites" [placeholder]="'Websites' | translate" required multiple>
+              <mat-option [value]="registry.value.name" *ngFor="let registry of availableWebsites | keyvalue">{{ registry.value.websiteConfig.displayedName }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button mat-button (click)="toggleLogin()" color="accent">{{ 'Login' | translate }}</button>
+        </div>
+
+        <!-- Defaults Section -->
+        <div formGroupName="defaults">
+          <h5>{{ 'Default Description' | translate }}
+            <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
+          </h5>
+          <description-input #defaultDescription formControlName="description" class="w-100" [canOverwrite]="false"></description-input>
+
+          <div class="py-2"></div>
+
+          <h5>{{ 'Default Tags' | translate }}
+            <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
+          </h5>
+          <tag-input #defaultTags formControlName="tags" class="w-100" [canExtend]="false"></tag-input>
+        </div>
+
+        <!-- Selected Websites Section -->
+        <mat-accordion *ngIf="!triggerWebsiteReload" class="mt-3">
+          <mat-expansion-panel #panel *ngFor="let website of formDataForm.value.websites" [disabled]="!isLoggedIn(website)">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <span class="text-warning">{{ website | websiteDisplayname }}</span>
+              </mat-panel-title>
+              <mat-panel-description>
+                <span *ngIf="!panel.disabled" class="text-success">{{ 'Logged In' | translate }}</span>
+                <span *ngIf="panel.disabled" class="warn-text">{{ 'Not Logged In' | translate }}</span>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div *ngIf="!panel.disabled" website-submission-form-display [website]="website"></div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </form>
+    </div>
+
+    <div class="form-actions d-flex">
+      <div style="flex: 10">
+        <button mat-button color="warn" (click)="clear()">{{ 'Clear' | translate }}</button>
+        <button mat-button color="accent" (click)="loadTemplate()">{{ 'Load Template' | translate }}</button>
+        <button mat-button color="accent" (click)="openManageTemplates()">{{ 'Manage Templates' | translate }}</button>
+      </div>
+      <div>
+        <button mat-button color="primary" (click)="saveTemplate()">{{ 'Save' | translate }}</button>
+      </div>
+    </div>
+
+    <div class="menu">
+      <button mat-icon-button [matMenuTriggerFor]="formMenu">
+        <mat-icon>more_horiz</mat-icon>
+      </button>
+      <mat-menu #formMenu="matMenu">
+        <button mat-menu-item (click)="openCopySubmission()">{{ 'Copy Submission' | translate }}</button>
+      </mat-menu>
+    </div>
+  </div>
+</loading-overlay>

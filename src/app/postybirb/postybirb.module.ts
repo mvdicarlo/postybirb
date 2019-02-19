@@ -9,6 +9,7 @@ import { UtilsModule } from '../utils/utils.module';
 import { LoginModule } from '../login/login.module';
 import { DatabaseModule } from '../database/database.module';
 import { WebsitesModule } from '../websites/websites.module';
+import { TemplatesModule } from '../templates/templates.module';
 
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -64,6 +65,7 @@ import { SubmissionPostingViewComponent } from './components/submission-posting-
     FormsModule,
     LoginModule,
     UtilsModule,
+    TemplatesModule,
     WebsitesModule,
     DatabaseModule,
     TranslateModule,

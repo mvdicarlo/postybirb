@@ -2,7 +2,6 @@ import { Component, OnInit, ChangeDetectionStrategy, AfterViewInit, forwardRef, 
 import { Submission } from 'src/app/database/models/submission.model';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
@@ -78,8 +77,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
         title: 'Copy',
         type: SubmissionType.SUBMISSION
       }
-    })
-      .afterClosed()
+    }).afterClosed()
       .subscribe((toCopy: ISubmission) => {
         if (toCopy) {
           this._copySubmission(toCopy);
