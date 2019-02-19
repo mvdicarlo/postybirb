@@ -1,5 +1,6 @@
 import { ITable, DATA_TYPE } from 'jsstore';
 import { FileObject } from './submission-file.table';
+import { SubmissionFormData } from '../models/submission.model';
 
 // TODO need to complete this when I have a better idea of the data structure provided by the form
 
@@ -12,7 +13,7 @@ export interface ISubmission {
   submissionType: SubmissionType;
   fileInfo?: FileObject; // not required in journal types
   fileMap?: FileMap;
-  formData?: any;
+  formData?: SubmissionFormData;
 }
 
 export interface FileMap {

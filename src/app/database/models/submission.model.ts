@@ -1,6 +1,24 @@
 import { ISubmission, SubmissionRating, SubmissionType, FileMap } from '../tables/submission.table';
 import { Subject, Observable } from 'rxjs';
 import { FileObject } from '../tables/submission-file.table';
+import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
+import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
+
+export interface SubmissionFormData {
+  websites: string[];
+  loginProfile: string;
+  defaults: {
+    description: DescriptionData;
+    tags: TagData;
+  };
+  [state: string]: any; // WebsiteData
+}
+
+interface WebsiteData {
+  description: DescriptionData;
+  tags: TagData;
+  options: any;
+}
 
 export interface SubmissionChange {
   [key: string]: {
@@ -79,13 +97,13 @@ export class Submission implements ISubmission {
   }
   private _fileMap: FileMap;
 
-  get formData(): any { return this._formData }
-  set formData(formData: any) {
+  get formData(): SubmissionFormData { return this._formData }
+  set formData(formData: SubmissionFormData) {
     const old = this._formData;
     this._formData = formData;
     this._emitChange('formData', old, formData, true);
   }
-  private _formData: any; // TODO interface when I have a good understanding of the structure
+  private _formData: SubmissionFormData;
 
   get problems(): string[] { return this._problems }
   set problems(problems: string[]) {
@@ -118,7 +136,7 @@ export class Submission implements ISubmission {
     this.rating = submission.rating;
     this.fileInfo = submission.fileInfo;
     this.fileMap = submission.fileMap;
-    this.formData = submission.formData || {};
+    this.formData = submission.formData || <any>{};
 
     if (this.formData.websites) {
       this.postStats.originalCount = this.formData.websites.length;

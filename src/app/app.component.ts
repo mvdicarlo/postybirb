@@ -1,12 +1,16 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { MatSelectChange, MatDialog } from '@angular/material';
-import { LoginManagerService } from './login/services/login-manager.service';
 import { Router, NavigationEnd } from '@angular/router';
+
+import { SnotifyService } from 'ng-snotify';
+import { TranslateService } from '@ngx-translate/core';
+
+import { LoginManagerService } from './login/services/login-manager.service';
+import { UpdatesAndNotificationsService } from './miscellaneous/services/updates-and-notifications.service';
+
+import { MatSelectChange, MatDialog } from '@angular/material';
+
 import { SettingsDialog } from './miscellaneous/dialogs/settings-dialog/settings-dialog.component';
 import { AgreementDialog } from './miscellaneous/dialogs/agreement-dialog/agreement-dialog.component';
-import { SnotifyService } from 'ng-snotify';
-import { UpdatesAndNotificationsService } from './miscellaneous/services/updates-and-notifications.service';
 
 @Component({
   selector: 'app-root',

@@ -3,6 +3,7 @@ import { TagData } from 'src/app/utils/components/tag-input/tag-input.component'
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { WebsiteRegistry } from '../registries/website.registry';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
+import * as dotProp from 'dot-prop';
 
 export function validate(submission: Submission): string[] {
   const problems = [];
@@ -23,45 +24,29 @@ export function validate(submission: Submission): string[] {
 }
 
 export function getTags(submission: Submission, website: string): string[] {
-  let tags = [];
-  if (submission.formData && submission.formData.defaults && submission.formData.defaults.tags) {
-    tags = submission.formData.defaults.tags.tags || [];
-    if (submission.formData[website] && submission.formData[website].tags) {
-      const customTags: TagData = submission.formData[website].tags;
-      if (customTags.extend) {
-        tags = [...tags, ...(customTags.tags || [])];
-      } else {
-        tags = (customTags.tags || []);
-      }
-    }
+  let tags: string[] = dotProp.get(submission.formData, 'defaults.tags.tags', []);
+  const customTags: TagData = dotProp.get(submission.formData, `${website}.tags`, { extend: true });
+  if (!customTags || customTags.extend) {
+    tags = [...tags, ...(customTags.tags || [])];
+  } else {
+    tags = (customTags.tags || []);
   }
 
   return tags;
 }
 
 export function getDescription(submission: Submission, website: string): string {
-  let description = '';
-  if (submission.formData && submission.formData.defaults && submission.formData.defaults.description) {
-    description = (<DescriptionData>submission.formData.defaults.description).description;
-    if (submission.formData[website] && submission.formData[website].description) {
-      const customDescription: DescriptionData = submission.formData[website].description;
-      if (customDescription.overwrite) {
-        return customDescription.description;
-      }
-    }
+  let description: string = dotProp.get(submission.formData, 'defaults.description.description', '');
+  const customDescription: DescriptionData = dotProp.get(submission.formData, `${website}.description`, {}) || {};
+  if (customDescription.overwrite) {
+    return customDescription.description;
   }
 
   return description;
 }
 
 export function getOptions(submission: Submission, website: string): any {
-  let options = {};
-
-  if (submission.formData && submission.formData[website]) {
-    options = submission.formData[website];
-  }
-
-  return options;
+  return dotProp.get(submission.formData, `${website}.options`, {});
 }
 
 export function getAllWebsiteValidatorsForWebsites(websites: string[], submissionType: SubmissionType): ((submission: Submission, formData: any) => string[])[] {

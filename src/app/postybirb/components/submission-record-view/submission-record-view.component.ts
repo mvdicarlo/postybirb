@@ -101,7 +101,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   private _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.submission.formData = submission.formData || {};
+    if (submission.formData) this.submission.formData = submission.formData || <any>{};
     if (submission.rating) this.submission.rating = submission.rating;
     this._changeDetector.markForCheck();
   }
