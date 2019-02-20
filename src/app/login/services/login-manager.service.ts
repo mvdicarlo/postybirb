@@ -127,9 +127,19 @@ export class LoginManagerService {
    * Returns the login status given a profile id and a website to check
    * @param  profileId Profile Ids to check
    * @param  website   Website to check
-   * @return           WebsiteStatus
+   * @return           LoginStatus
    */
   public getLoginStatus(profileId: string, website: string): LoginStatus {
-    return this.profileStatuses[profileId][website].status;
+    return this.getWebsiteStatus(profileId, website).status;
+  }
+
+  /**
+   * Returns the website status given a profile id and a website to check
+   * @param  profileId Profile Ids to check
+   * @param  website   Website to check
+   * @return           WebsiteStatus
+   */
+  public getWebsiteStatus(profileId: string, website: string): WebsiteStatus {
+    return this.profileStatuses[profileId][website];
   }
 }

@@ -195,6 +195,7 @@ export class PostQueueService {
               });
             }
           }).finally(() => {
+            postingSubmission.postStats = Object.assign({}, postingSubmission.postStats); // force update db model
             // Check to see if the queued post still belongs in the queue
             if (!postingSubmission.formData.websites.length) {
               this.posting = null;

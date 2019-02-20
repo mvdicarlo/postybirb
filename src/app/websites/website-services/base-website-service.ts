@@ -17,4 +17,13 @@ export class BaseWebsiteService implements WebsiteService {
     throw new Error("Method not implemented.");
   }
 
+  protected formatTags(defaultTags: string[] = [], other: string[] = [], spaceReplacer: string = '_'): any {
+    const tags = [...defaultTags, ...other];
+    return tags.map((tag) => {
+      return tag.trim()
+        .replace(/\s/gm, spaceReplacer)
+        .replace(/(\/|\\)/gm, spaceReplacer);
+    });
+  }
+
 }

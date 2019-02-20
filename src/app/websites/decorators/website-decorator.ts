@@ -22,6 +22,7 @@ export interface WebsiteConfig {
   };
   parsers: {
     description: ((html: string) => string)[]; // A list of parsers
+    disableAdvertise?: boolean; // Setting this to true will disallow Ad string to be added
     usernameShortcut?: {
       code: string; // e.g. fa -> would parse :falemonynade:
       url: string; // e.g. https://www.furaffinity.net/user/$1

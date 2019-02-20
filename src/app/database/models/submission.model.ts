@@ -119,7 +119,13 @@ export class Submission implements ISubmission {
   }
   private _queued: boolean = false; // variable that tracks whether or not the submissions is queued
 
-  public postStats: PostStats = {
+  get postStats(): PostStats { return this._postStats }
+  set postStats(stats: PostStats) {
+    const old = this._postStats;
+    this._postStats = stats;
+    this._emitChange('postStats', old, stats, true);
+  }
+  private _postStats: PostStats = {
     success: [],
     fail: [],
     originalCount: 0,
@@ -137,6 +143,20 @@ export class Submission implements ISubmission {
     this.fileInfo = submission.fileInfo;
     this.fileMap = submission.fileMap;
     this.formData = submission.formData || <any>{};
+
+    // Try to rejuvinate websites in case of a hard reset
+    if (submission.postStats) {
+      if (submission.postStats.fail.length) {
+        submission.postStats.fail.forEach(website => {
+          if (!this.formData.websites.includes(website)) {
+            this.formData.websites.push(website);
+          }
+        });
+        this.formData.websites = this.formData.websites.sort();
+      }
+
+      this.postStats.sourceURLs = submission.postStats.sourceURLs || [];
+    }
 
     if (this.formData.websites) {
       this.postStats.originalCount = this.formData.websites.length;
