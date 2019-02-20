@@ -1,5 +1,10 @@
 @import '~@angular/material/theming';
-@include mat-core();
+
+$custom-typography: mat-typography-config(
+  $font-family: 'Electrolize, Roboto, "Helvetica Neue", sans-serif;'
+);
+
+@include mat-core($custom-typography);
 $primary: mat-palette($mat-blue, 800);
 $accent: mat-palette($mat-light-blue, 600, 100, 800);
 $warn: mat-palette($mat-red, 600);
@@ -11,6 +16,15 @@ $theme: mat-dark-theme($primary, $accent, $warn);
   font-style: normal;
   font-weight: 400;
   src: url("./vendors/fonts/material-icons.woff2") format('woff2');
+}
+
+// Need to overwrite bootstrap _reboot.scss
+body {
+  font-family: Electrolize, Roboto, "Helvetica Neue", sans-serif !important;
+}
+
+code {
+  font-family: Roboto !important;
 }
 
 .warn-text {
