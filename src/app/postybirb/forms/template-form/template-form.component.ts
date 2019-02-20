@@ -9,6 +9,7 @@ import { TemplateManagerService } from 'src/app/templates/services/template-mana
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { TemplateManagementDialog } from 'src/app/templates/components/template-management-dialog/template-management-dialog.component';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
+import * as dotProp from 'dot-prop';
 
 @Component({
   selector: 'template-form',
@@ -18,7 +19,7 @@ import { TemplateSelectDialog } from 'src/app/templates/components/template-sele
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  private readonly TEMP_TEMPLATE_STORE: string = 'bulk-form-store';
+  private readonly TEMP_TEMPLATE_STORE: string = 'template-form-store';
   private loadedTemplateName: string;
 
   constructor(
@@ -51,6 +52,26 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
           this.resetSubject.next();
           store.remove(this.TEMP_TEMPLATE_STORE);
           this.loadedTemplateName = null;
+        }
+      });
+  }
+
+  public importTemplateField(paths: string[], event: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    
+    this.dialog.open(TemplateSelectDialog)
+      .afterClosed()
+      .subscribe(template => {
+        if (template) {
+          for (let i = 0; i < paths.length; i++) {
+            const path = paths[i];
+            dotProp.set(this.submission.formData, path, dotProp.get(template.data, path));
+          }
+          this.formDataForm.patchValue(this.submission.formData);
+          this._changeDetector.markForCheck();
         }
       });
   }
