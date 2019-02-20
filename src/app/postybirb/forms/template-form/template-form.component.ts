@@ -23,8 +23,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
   private loadedTemplateName: string;
 
   constructor(
-    injector: Injector,
-    private _templateManager: TemplateManagerService
+    injector: Injector
   ) {
     super(injector);
   }
@@ -61,7 +60,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
       event.preventDefault();
       event.stopPropagation();
     }
-    
+
     this.dialog.open(TemplateSelectDialog)
       .afterClosed()
       .subscribe(template => {

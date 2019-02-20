@@ -16,6 +16,8 @@ import { LoginProfileManagerService } from 'src/app/login/services/login-profile
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { PostQueueService } from '../../services/post-queue.service';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
+import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
+import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
 
 @Component({
   selector: 'base-submission-form',
@@ -42,10 +44,11 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
   protected _changeDetector: ChangeDetectorRef;
   protected dialog: MatDialog;
-  protected _loginManager: LoginManagerService;
   protected _fb: FormBuilder;
-  protected _loginProfileManager: LoginProfileManagerService;
   protected _postQueue: PostQueueService;
+  protected _loginManager: LoginManagerService;
+  protected _loginProfileManager: LoginProfileManagerService;
+  protected _templateManager: TemplateManagerService;
 
   constructor(injector: Injector) {
     this._changeDetector = injector.get(ChangeDetectorRef);
@@ -54,6 +57,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this._fb = injector.get(FormBuilder);
     this._loginProfileManager = injector.get(LoginProfileManagerService);
     this._postQueue = injector.get(PostQueueService);
+    this._templateManager = injector.get(TemplateManagerService);
 
     this.loginListener = this._loginManager.statusChanges.subscribe(statuses => {
       this.loginStatuses = statuses;
@@ -175,6 +179,21 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
           }
         });
     }
+  }
+
+  public saveTemplate(): void {
+    this.dialog.open(InputDialog, {
+      data: {
+        title: 'Save',
+        minLength: 1,
+        maxLength: 50
+      }
+    }).afterClosed()
+      .subscribe(templateName => {
+        if (templateName) {
+          this._templateManager.createTemplate(templateName.trim(), this.formDataForm.value);
+        }
+      });
   }
 
   public toggleLogin(): void {
