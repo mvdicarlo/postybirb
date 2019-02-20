@@ -5,7 +5,6 @@ import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
-import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { TemplateManagementDialog } from 'src/app/templates/components/template-management-dialog/template-management-dialog.component';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';

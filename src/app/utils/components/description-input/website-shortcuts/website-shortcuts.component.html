@@ -1,10 +1,9 @@
-<div class="row no-gutters">
-  <div name="help_button" class="col-md-3 col-lg-3 col-xl-2">
+<div class="d-flex">
+  <div name="help_button" style="flex: 1" class="mr-1">
     <button type="button" class="help-btn" matInput mat-flat-button color="accent" (click)="toggleHelp()">{{'Shortcuts' | translate}}</button>
   </div>
-  <div *ngIf="!toggle" class="col-md col-xl col-lg">
-    <div class="col-md-2"></div>
-    <div class="col-md-10">
+  <div *ngIf="!toggle" style="flex: 10">
+    <div>
       <div>
         <strong>Linking Usernames</strong>
         <br>
@@ -19,21 +18,7 @@
           <strong>Website Codes</strong>
           <code>
             <ul style="column-count: 3; list-style: none;">
-              <li>DeviantArt - <span class="text-info">da</span></li>
-              <li>Derpibooru - <span class="text-info">db</span></li>
-              <li>Fur Affinity - <span class="text-info">fa</span></li>
-              <li>FurryNetwork - <span class="text-info">fn</span></li>
-              <li>Furiffic - <span class="text-info">fr</span></li>
-              <li>HentaiFoundry - <span class="text-info">hf</span></li>
-              <li>InkBunny - <span class="text-info">ib</span></li>
-              <li>Mastodon - <span class="text-info">ma</span></li>
-              <li>Patreon - <span class="text-info">pa</span></li>
-              <li>Picarto - <span class="text-info">pic</span></li>
-              <li>PaigeeWorld - <span class="text-info">pw</span></li>
-              <li>SoFurry - <span class="text-info">sf</span></li>
-              <li>Tumblr - <span class="text-info">tu</span></li>
-              <li>Twitter - <span class="text-info">tw</span></li>
-              <li>Weasyl - <span class="text-info">ws</span></li>
+              <li *ngFor="let obj of codes">{{obj.name}}<span class="text-info">[{{obj.code}}]</span></li>
             </ul>
           </code>
         </div>

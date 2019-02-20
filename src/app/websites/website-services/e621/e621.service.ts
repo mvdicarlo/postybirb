@@ -33,7 +33,11 @@ function validate(submission: Submission, formData: any): string[] {
     submission: validate
   },
   parsers: {
-    description: [PlaintextParser.parse]
+    description: [PlaintextParser.parse],
+    usernameShortcut: {
+      code: 'e6',
+      url: 'https://e621.net/user/show/$1'
+    }
   }
 })
 export class E621 implements WebsiteService {
