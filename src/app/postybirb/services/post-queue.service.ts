@@ -9,6 +9,7 @@ import { SubmissionDBService } from 'src/app/database/model-services/submission.
 import { GeneratedThumbnailDBService } from 'src/app/database/model-services/generated-thumbnail.service';
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
 import { TranslateService } from '@ngx-translate/core';
+import { PostResult } from 'src/app/websites/interfaces/website-service.interface';
 
 export interface PostQueueStatus {
   currentId: number;
@@ -46,6 +47,28 @@ export class PostQueueService {
     if (index === -1) {
       this._tabManager.removeTab(submission.id);
       this.queue.push(submission);
+
+      // Sort website post order
+      submission.formData.websites = submission.formData.websites.sort((a, b) => {
+        const aUsesSrc = WebsiteRegistry.getConfigForRegistry(a).websiteConfig.acceptsSrcURL ? true : false;
+        const bUsesSrc = WebsiteRegistry.getConfigForRegistry(b).websiteConfig.acceptsSrcURL ? true : false;
+
+        if (!aUsesSrc && !bUsesSrc) {
+          // Name based sort
+          if (a < b) return -1;
+          if (a > b) return 1;
+          return 0;
+        } else if (bUsesSrc && aUsesSrc) {
+          // Name based sort
+          if (a < b) return -1;
+          if (a > b) return 1;
+          return 0;
+        } else {
+          if (aUsesSrc && !bUsesSrc) return 1;
+          else return -1;
+        }
+      });
+
       submission.queued = true;
       submission.postStats.originalCount = submission.formData.websites.length;
       submission.postStats.fail = [];
@@ -172,14 +195,14 @@ export class PostQueueService {
 
         // Once all checks have passed, actually attempt the post
         this._postManager.post(website, postingSubmission)
-          .then((data) => {
+          .then((data: PostResult) => {
             if (data) {
               if (data.srcURL) {
                 postingSubmission.postStats.sourceURLs.push(data.srcURL);
               }
             }
             postingSubmission.postStats.success.push(website);
-          }).catch((err) => {
+          }).catch((err: PostResult) => { // could this every return something that isn't a PostResult?
             postingSubmission.postStats.fail.push(website);
             postingSubmission.postStats.errors.push(err.error);
 

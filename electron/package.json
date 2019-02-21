@@ -100,10 +100,12 @@
     "electron-updater": "^4.0.6",
     "electron-window-state": "^5.0.3",
     "express": "^4.16.4",
+    "form-data": "^2.3.3",
     "fs-extra": "^7.0.1",
     "got": "^9.6.0",
     "lowdb": "^1.0.0",
     "mastodon-api": "^1.3.0",
+    "request": "^2.88.0",
     "tough-cookie": "^3.0.0"
   }
 }

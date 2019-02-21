@@ -159,7 +159,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       title: submission.title,
       rating: this.getRating(submission.rating),
       content: postData.description,
-      tags: this.formatTags(postData.tags)
+      tags: this.formatTags(postData.tags, [])
     }
 
     const postResponse = await got.requestPost(`${this.BASE_URL}/submit/journal`, data, this.BASE_URL, cookies);
@@ -183,7 +183,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       title: submission.title,
       rating: this.getRating(submission.rating),
       content: postData.description,
-      tags: this.formatTags(postData.tags),
+      tags: this.formatTags(postData.tags, []),
       submitfile: asFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
       redirect: url
     }
@@ -214,7 +214,9 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     } else {
       const body = postResponse.success.body || '';
       if (body.includes('Submission Information')) {
-        return this.createPostResponse(null);
+        const res = this.createPostResponse(null);
+        res.srcURL = postResponse.success.response.request.uri.href;
+        return res;
       } else if (postResponse.success.body.includes('Choose Thumbnail')) {
         const thumbnailData: any = {
           token: HTMLParser.getInputValue(body, 'token'),
@@ -230,10 +232,14 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
         if (thumbnailResponse.error) {
           return Promise.reject(this.createPostResponse('Unknown error creating thumbnail', thumbnailResponse.error));
         } else {
-          return this.createPostResponse(null);
+          const res = this.createPostResponse(null);
+          res.srcURL = postResponse.success.response.request.uri.href;
+          return res;
         }
       } else if (body.includes('This page contains content that you cannot view according to your current allowed ratings')){
-        return this.createPostResponse(null);
+        const res = this.createPostResponse(null);
+        res.srcURL = postResponse.success.response.request.uri.href;
+        return res;
       } else {
         return Promise.reject(this.createPostResponse('Unknown response from Weasyl', body));
       }

@@ -5,6 +5,7 @@ import { Type } from '@angular/core';
 import { Submission } from 'src/app/database/models/submission.model';
 
 export interface WebsiteConfig {
+  acceptsSrcURL?: boolean; // Whether or not this website uses Source Url options. This will stall a website from posting so that other websites may post and provide src urls
   additionalImages?: boolean; // Whether or not additional images are allowed to be added to the submission form [default=false]
   displayedName?: string;        // name value that is displayed in the UI to the user [default=constructor name]
   postWaitInterval?: number; // interval to wait (in ms) between posts to this website

@@ -17,6 +17,7 @@ export interface PostResult {
   error?: any;
   msg?: string;
   time: string;
+  srcURL?: string;
 }
 
 export interface SubmissionPostData {
