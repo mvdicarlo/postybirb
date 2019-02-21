@@ -25,6 +25,7 @@ export interface ModifiedReadFile extends ReadFile {
   width?: number;
   originalWidth?: number;
   originalHeight?: number;
+  formData?: any;
 }
 
 @Component({
@@ -127,7 +128,8 @@ export class PostybirbLayout implements OnInit, OnDestroy {
                   rating: result.rating,
                   schedule: null,
                   submissionType: SubmissionType.SUBMISSION,
-                  fileInfo: asFileObject(result.file)
+                  fileInfo: asFileObject(result.file),
+                  formData: result.formData || {}
                 }
               })
             ).then(insertResults => {

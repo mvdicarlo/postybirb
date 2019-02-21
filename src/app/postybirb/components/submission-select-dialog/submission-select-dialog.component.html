@@ -12,7 +12,10 @@
   <mat-form-field color="accent">
     <mat-select [placeholder]="'Select'" [formControl]="selectControl" [multiple]="data.multiple || false">
       <mat-option *ngFor="let opt of options" [value]="opt">
-        <span *ngIf="opt.fileInfo">{{ (opt.title || 'Untitled') + ' - ' + opt.fileInfo.name }}</span>
+        <span *ngIf="opt.fileInfo">
+          <img [src]="opt.id | thumbnail: 'PRIMARY' | async | objectURL: '40' | safe" [alt]="opt.fileInfo.name">
+          {{ (opt.title || 'Untitled') + ' - ' + opt.fileInfo.name }}
+        </span>
         <span *ngIf="!opt.fileInfo">{{ opt.title || 'Untitled' }}</span>
       </mat-option>
     </mat-select>
@@ -23,7 +26,10 @@
 
     <div *ngIf="reorderControl.value && selected.length" cdkDropList (cdkDropListDropped)="drop($event)" class="mr-3">
       <div *ngFor="let record of selected" class="bordered p-3 mt-1" style="cursor: -webkit-grab" cdkDrag cdkDragLockAxis="y">
-        <span *ngIf="record.fileInfo">{{ (record.title || 'Untitled') + ' - ' + record.fileInfo.name }}</span>
+        <span *ngIf="record.fileInfo">
+          <img [src]="record.id | thumbnail: 'PRIMARY' | async | objectURL: '40' | safe" [alt]="record.fileInfo.name">
+          {{ (record.title || 'Untitled') + ' - ' + record.fileInfo.name }}
+        </span>
         <span *ngIf="!record.fileInfo">{{ record.title || 'Untitled' }}</span>
       </div>
     </div>

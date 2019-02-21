@@ -1,7 +1,7 @@
 <loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [allowStop]="submission && (submission.queued || submission.isScheduled)" (stop)="stopPosting()">
   <div class="submission-info-container d-flex">
     <div class="img mr-1" *ngIf="!hideForReload" (click)="fileChange.click()">
-      <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | toBase64: '50' | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
+      <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL: '50' | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
       <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
       <i *ngIf="submission.problems && submission.problems.length" class="fas fa-exclamation-triangle problem-icon warn-text"></i>
     </div>

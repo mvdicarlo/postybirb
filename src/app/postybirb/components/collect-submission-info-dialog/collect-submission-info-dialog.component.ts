@@ -2,6 +2,7 @@ import { Component, OnInit, Inject, ChangeDetectionStrategy } from '@angular/cor
 import { MAT_DIALOG_DATA } from '@angular/material';
 import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 import { isImage, isGIF } from 'src/app/utils/helpers/file.helper';
+import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
 
 @Component({
   selector: 'collect-submission-info-dialog',
@@ -11,8 +12,11 @@ import { isImage, isGIF } from 'src/app/utils/helpers/file.helper';
 })
 export class CollectSubmissionInfoDialog implements OnInit {
   public sizeMap: any = {};
+  public templates: any = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: ReadFile[]) {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: ReadFile[], _templateManager: TemplateManagerService) {
+    this.templates = _templateManager.getTemplates();
+    
     data.filter(rf => isImage(rf.file) && !isGIF(rf.file))
       .forEach((rf: any) => {
         const ni = nativeImage.createFromBuffer(Buffer.from(rf.buffer));

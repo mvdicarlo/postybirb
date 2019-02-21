@@ -26,7 +26,7 @@
 
         <div class="pl-4 w-50 d-inline-block thumbnail-block" *ngIf="!hideForReload">
           <div class="thumbnail">
-            <img (click)="thumbnailChange.click()" [src]="submission.id | thumbnail: 'THUMBNAIL' | async | toBase64: '100' | safe">
+            <img (click)="thumbnailChange.click()" [src]="submission.id | thumbnail: 'THUMBNAIL' | async | objectURL: '100' | safe">
             <div class="text-center">{{ 'Thumbnail' | translate }} (2MB)</div>
             <i class="fas fa-times warn-text" (click)="removeThumbnail()" *ngIf="submission.fileMap.THUMBNAIL"></i>
             <input #thumbnailChange type="file" class="d-none" accept="image/jpeg,image/png" single (change)="updateThumbnail($event)">

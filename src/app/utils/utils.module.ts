@@ -28,6 +28,7 @@ import { DescriptionInput } from './components/description-input/description-inp
 import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
 import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
 import { FolderSelect } from './components/folder-select/folder-select.component';
+import { ObjectURLPipe } from './pipes/object-url.pipe';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { FolderSelect } from './components/folder-select/folder-select.component
     SaveTemplateDialog,
     WebsiteShortcutsComponent,
     FolderSelect,
+    ObjectURLPipe,
   ],
   imports: [
     CommonModule,
@@ -64,6 +66,7 @@ import { FolderSelect } from './components/folder-select/folder-select.component
     ProfileNamePipe,
     ToBase64Pipe,
     SafePipe,
+    ObjectURLPipe,
     LoadingOverlay,
     TagInput,
     DescriptionInput,
