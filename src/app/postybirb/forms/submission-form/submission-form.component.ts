@@ -6,15 +6,17 @@ import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-d
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { readFile } from 'src/app/utils/helpers/file-reader.helper';
+import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
 import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layout.component';
-import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, isImage } from 'src/app/utils/helpers/file.helper';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 
 @Component({
   selector: 'submission-form',
@@ -25,6 +27,7 @@ import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-website
 })
 export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
+  @ViewChild('additionalImageInput') additionalImageInput: ElementRef;
 
   constructor(
     injector: Injector,
@@ -80,6 +83,51 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     });
   }
 
+  public addAdditionalImages(event: Event): void {
+    event.stopPropagation()
+    event.preventDefault();
+
+    this.loading = true;
+    this._changeDetector.markForCheck();
+
+    const files: File[] = event.target['files'];
+
+    if (files && files.length) {
+      const loadPromises: Promise<ReadFile>[] = [];
+      for (let i = 0; i < files.length; i++) {
+        if (isImage(files[i])) {
+          loadPromises.push(readFile(files[i]));
+        }
+      }
+
+      Promise.all(loadPromises)
+        .then(results => {
+          this.loading = false;
+          this._changeDetector.markForCheck();
+          this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.ADDITIONAL_FILE, results)
+            .then(info => {
+              const newMap = Object.assign({}, this.submission.fileMap);
+              if (!newMap.ADDITIONAL) newMap.ADDITIONAL = [];
+              info.forEach(i => newMap.ADDITIONAL.push(i.id));
+              this.submission.fileMap = newMap;
+            })
+            .catch(err => {
+              console.error(err);
+            })
+            .finally(() => {
+              this.hideForReload = false;
+              this.loading = false;
+              this._changeDetector.markForCheck();
+            });
+        });
+    } else {
+      this.loading = false;
+      this._changeDetector.markForCheck();
+    }
+
+    this.additionalImageInput.nativeElement.value = '';
+  }
+
   public clear(): void {
     this.dialog.open(ConfirmDialog, {
       data: {
@@ -93,6 +141,16 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
           this.resetSubject.next();
         }
       });
+  }
+
+  public canHaveAdditionalImages(): boolean {
+    const websites: string[] = this.formDataForm.value.websites || [];
+    for (let i = 0; i < websites.length; i++) {
+      const config = WebsiteRegistry.getConfigForRegistry(websites[i]).websiteConfig;
+      if (config.additionalImages) return true;
+    }
+
+    return false;
   }
 
   public delete(): void {
@@ -111,6 +169,18 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       });
   }
 
+  public removeAdditionalImage(id: number): void {
+    this._submissionFileDB.deleteSubmissionFileById(id)
+      .finally(() => {
+        const index: number = this.submission.fileMap.ADDITIONAL.indexOf(id);
+        if (index !== -1) {
+          this.submission.fileMap.ADDITIONAL.splice(index, 1);
+          this.submission.fileMap = Object.assign({}, this.submission.fileMap);
+          this._changeDetector.markForCheck();
+        }
+      });
+  }
+
   public removeThumbnail(): void {
     this.loading = true;
     this.hideForReload = true;
@@ -120,7 +190,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       .finally(() => {
         const fileMap = this.submission.fileMap;
         delete fileMap.THUMBNAIL;
-        this.submission.fileMap = fileMap;
+        this.submission.fileMap = Object.assign({}, fileMap);
 
         this.hideForReload = false;
         this.loading = false;
@@ -135,7 +205,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
-      if (files[0].size > MBtoBytes(2)) {
+      if (files[0].size > MBtoBytes(2) || !isImage(files[0])) {
         this.thumbnailInput.nativeElement.value = '';
         return;
       }
@@ -154,7 +224,6 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
                 this._changeDetector.markForCheck();
               });
           } else { // Create first time db record
-
             this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.THUMBNAIL_FILE, [data])
               .then(info => {
                 const newMap = Object.assign({}, this.submission.fileMap);
@@ -189,6 +258,12 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
           this._copySubmission(toCopy);
         }
       });
+  }
+
+  public swapAdditionalImages(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.submission.fileMap.ADDITIONAL, event.previousIndex, event.currentIndex);
+    this.submission.fileMap = Object.assign({}, this.submission.fileMap);
+    this._changeDetector.markForCheck();
   }
 
 }

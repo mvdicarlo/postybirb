@@ -66,6 +66,27 @@
           <tag-input #defaultTags formControlName="tags" class="w-100" [canExtend]="false"></tag-input>
         </div>
 
+        <mat-accordion *ngIf="canHaveAdditionalImages()" class="d-block my-3">
+          <mat-expansion-panel #additionalImagesPanel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                {{ 'Additional Images' | translate }}
+                <mat-icon class="help-icon" color="accent" [matTooltip]="'Additional Images Help' | translate">info</mat-icon>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div *ngIf="additionalImagesPanel.expanded" class="text-center">
+              <button mat-flat-button color="accent" (click)="additionalImageInput.click()" class="w-100 mt-2"><mat-icon>add</mat-icon></button>
+              <input #additionalImageInput type="file" class="d-none" accept="image/jpeg,image/png" multiple (change)="addAdditionalImages($event)">
+              <div cdkDropList (cdkDropListDropped)="swapAdditionalImages($event)">
+                <div *ngFor="let imgId of submission.fileMap.ADDITIONAL" class="additional-img-container mt-1" cdkDrag cdkDragLockAxis="y">
+                  <img [src]="imgId | thumbnailFromFileId | async | objectURL: '100' | safe">
+                  <button mat-icon-button color="warn" (click)="removeAdditionalImage(imgId)"><mat-icon>delete</mat-icon></button>
+                </div>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+
         <!-- Selected Websites Section -->
         <mat-accordion *ngIf="!triggerWebsiteReload" class="mt-3">
           <mat-expansion-panel #panel *ngFor="let website of formDataForm.value.websites" [disabled]="!isLoggedIn(website)">

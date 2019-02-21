@@ -5,20 +5,17 @@ import { Type } from '@angular/core';
 import { Submission } from 'src/app/database/models/submission.model';
 
 export interface WebsiteConfig {
-  refreshInterval?: number;     // interval at which the app will check status [default=30 minutes]
-  postWaitInterval?: number; // interval to wait (in ms) between posts to this website
+  additionalImages?: boolean; // Whether or not additional images are allowed to be added to the submission form [default=false]
   displayedName?: string;        // name value that is displayed in the UI to the user [default=constructor name]
-  login: { // login dialog information
-    dialog?: any; // dialog component
-    url: string;
-  };
+  postWaitInterval?: number; // interval to wait (in ms) between posts to this website
+  refreshInterval?: number;     // interval at which the app will check status [default=30 minutes]
   components: {
     submissionForm: Type<BaseWebsiteSubmissionForm>,
     journalForm?: Type<BaseWebsiteSubmissionForm>
   };
-  validators: {
-    submission?: (submission: Submission, formData: any) => string[];
-    journal?: (submission: Submission, formData: any) => string[];
+  login: { // login dialog information
+    dialog?: any; // dialog component
+    url: string;
   };
   parsers: {
     description: ((html: string) => string)[]; // A list of parsers
@@ -27,6 +24,10 @@ export interface WebsiteConfig {
       code: string; // e.g. fa -> would parse :falemonynade:
       url: string; // e.g. https://www.furaffinity.net/user/$1
     };
+  };
+  validators: {
+    submission?: (submission: Submission, formData: any) => string[];
+    journal?: (submission: Submission, formData: any) => string[];
   };
 }
 

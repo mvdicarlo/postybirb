@@ -84,3 +84,7 @@ mat-panel-title {
   padding-bottom: 0;
   margin: 0;
 }
+
+.additional-img-container {
+  cursor: grab;
+}

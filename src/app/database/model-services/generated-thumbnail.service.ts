@@ -23,6 +23,15 @@ export class GeneratedThumbnailDBService extends DatabaseService {
     });
   }
 
+  public getThumbnailBySubmissionFileId(submissionFileId: number): Promise<IGeneratedThumbnail[]> {
+    return this.connection.select({
+      from: GeneratedThumbnailTableName,
+      where: {
+        submissionFileId
+      }
+    });
+  }
+
   public async createThumbnails(files: ISubmissionFile[]): Promise<any> {
     const modelObjs = await this._generateThumbnails(files);
     return await this.connection.insert({
