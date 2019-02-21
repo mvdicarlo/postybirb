@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
-import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
+import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { WeasylSubmissionForm } from './components/weasyl-submission-form/weasyl-submission-form.component';
 import { Submission } from 'src/app/database/models/submission.model';
 import { getTags } from '../../helpers/website-validator.helper';
 import { Folder, FolderCategory } from '../../interfaces/folder.interface';
 import { BaseWebsiteService } from '../base-website-service';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
+import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
+import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
+import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
+import { asFormDataObject } from 'src/app/utils/helpers/file.helper';
 
 function submissionValidate(submission: Submission, formData: any): string[] {
   const problems: string[] = [];
@@ -115,5 +119,124 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       title: 'Folders',
       folders
     }];
+  }
+
+  formatTags(defaultTags: string[] = [], other: string[] = []): any {
+    return super.formatTags(defaultTags, other).join(' ');
+  }
+
+  getRating(rating: SubmissionRating): any {
+    if (rating === SubmissionRating.GENERAL) return 10;
+    else if (rating === SubmissionRating.MATURE) return 30;
+    else if (rating === SubmissionRating.ADULT || rating === SubmissionRating.EXTREME) return 40;
+    else return 10;
+  }
+
+  getContentType(type: TypeOfSubmission): any {
+    if (type === TypeOfSubmission.ART) return 'visual';
+    if (type === TypeOfSubmission.STORY) return 'literary';
+    if (type === TypeOfSubmission.ANIMATION || type === TypeOfSubmission.AUDIO) return 'multimedia'
+    return 'visual';
+  }
+
+  public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    if (submission.submissionType === SubmissionType.SUBMISSION) {
+      return this.postSubmission(submission, postData);
+    } else if (submission.submissionType === SubmissionType.JOURNAL) {
+      return this.postJournal(submission, postData);
+    } else {
+      throw new Error('Unknown submission type.');
+    }
+  }
+
+  private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const response = await got.get(`${this.BASE_URL}/submit/journal`, this.BASE_URL, cookies);
+    const journalPage: string = response.body;
+
+    const data = {
+      token: HTMLParser.getInputValue(journalPage, 'token'),
+      title: submission.title,
+      rating: this.getRating(submission.rating),
+      content: postData.description,
+      tags: this.formatTags(postData.tags)
+    }
+
+    const postResponse = await got.requestPost(`${this.BASE_URL}/submit/journal`, data, this.BASE_URL, cookies);
+    if (postResponse.error) {
+      return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
+    } else {
+      return this.createPostResponse(null);
+    }
+  }
+
+  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const type = this.getContentType(postData.typeOfSubmission);
+    const url = `${this.BASE_URL}/submit/${type}`;
+
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const response = await got.get(url, this.BASE_URL, cookies);
+    const journalPage: string = response.body;
+
+    const data: any = {
+      token: HTMLParser.getInputValue(journalPage, 'token'),
+      title: submission.title,
+      rating: this.getRating(submission.rating),
+      content: postData.description,
+      tags: this.formatTags(postData.tags),
+      submitfile: asFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      redirect: url
+    }
+
+    if (postData.thumbnail) {
+      data.thumbfile = asFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+    }
+
+    if (type === 'literary' || type === 'multimedia') {
+      if (postData.thumbnail) {
+        data.coverfile = asFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+      } else {
+        data.coverfile = '';
+      }
+    }
+
+    // Options
+    const options = postData.options;
+    if (!options.notify) data.nonotification = 'on';
+    if (options.friendsOnly) data.friends = 'on';
+    if (options.critique) data.critique = 'on';
+    data.folderid = options.folder || '';
+    data.subtype = options.category || '';
+
+    const postResponse = await got.requestPost(url, data, this.BASE_URL, cookies);
+    if (postResponse.error) {
+      return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
+    } else {
+      const body = postResponse.success.body || '';
+      if (body.includes('Submission Information')) {
+        return this.createPostResponse(null);
+      } else if (postResponse.success.body.includes('Choose Thumbnail')) {
+        const thumbnailData: any = {
+          token: HTMLParser.getInputValue(body, 'token'),
+          submitid: HTMLParser.getInputValue(body, 'submitid'),
+          x1: 0,
+          y1: 0,
+          x2: 0,
+          y2: 0,
+          thumbfile: ''
+        }
+
+        const thumbnailResponse = await got.requestPost(`${this.BASE_URL}/manage/thumbnail`, thumbnailData, this.BASE_URL, cookies);
+        if (thumbnailResponse.error) {
+          return Promise.reject(this.createPostResponse('Unknown error creating thumbnail', thumbnailResponse.error));
+        } else {
+          return this.createPostResponse(null);
+        }
+      } else if (body.includes('This page contains content that you cannot view according to your current allowed ratings')){
+        return this.createPostResponse(null);
+      } else {
+        return Promise.reject(this.createPostResponse('Unknown response from Weasyl', body));
+      }
+    }
   }
 }

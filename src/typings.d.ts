@@ -7,7 +7,9 @@ declare var profilesDB: any; //lowDB instance
 declare var settingsDB: any; //lowDB instance
 declare var loginPanel: any; // login panel hook inserted into window
 declare var got: {
-  get(url: string, cookieUrl: string, cookies: any[]): Promise<any>
+  get(url: string, cookieUrl: string, cookies: any[]): Promise<any>;
+  post(url: string, formData: any, cookieUrl: string, cookies: any[]): Promise<{ error?: any, success?: any }>;
+  requestPost(url: string, formData: any, cookieUrl: string, cookies: any[]): Promise<{ error?: any, success?: any }>;
 }
 
 declare function openUrlInBrowser(url: string): void;

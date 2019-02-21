@@ -7,6 +7,7 @@ import { getTags } from '../../helpers/website-validator.helper';
 import { Submission } from 'src/app/database/models/submission.model';
 import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
+import { BaseWebsiteService } from '../base-website-service';
 
 function validate(submission: Submission, formData: any): string[] {
   const problems: string[] = [];
@@ -41,10 +42,12 @@ function validate(submission: Submission, formData: any): string[] {
     }
   }
 })
-export class E621 implements WebsiteService {
+export class E621 extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://e621.net';
 
-  constructor() { }
+  constructor() {
+    super();
+  }
 
   public async checkStatus(profileId: string): Promise<WebsiteStatus> {
     const returnValue: WebsiteStatus = {

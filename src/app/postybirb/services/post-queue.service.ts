@@ -243,7 +243,7 @@ export class PostQueueService {
           this._translate.get(failed ? 'Failed' : 'Success', ).subscribe((msg) => {
             new Notification(msg, {
               body: submission.title,
-              icon: 'data:image/jpeg;base64,' + Buffer.from((thumbnail[0] || <any>{}).buffer).toString('base64')
+              icon: thumbnail && thumbnail.length ? 'data:image/jpeg;base64,' + Buffer.from((thumbnail[0] || <any>{}).buffer).toString('base64') : null
             });
 
             failed ? this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true })

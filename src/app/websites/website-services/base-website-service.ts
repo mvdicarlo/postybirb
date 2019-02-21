@@ -1,5 +1,6 @@
-import { WebsiteService, WebsiteStatus } from '../interfaces/website-service.interface';
+import { WebsiteService, WebsiteStatus, SubmissionPostData, PostResult } from '../interfaces/website-service.interface';
 import { FolderCategory } from '../interfaces/folder.interface';
+import { Submission } from 'src/app/database/models/submission.model';
 
 export interface UserInformation {
   folders?: FolderCategory[];
@@ -8,6 +9,10 @@ export interface UserInformation {
 export class BaseWebsiteService implements WebsiteService {
   BASE_URL: string;
   protected userInformation: Map<string, UserInformation> = new Map();
+
+  protected createPostResponse(msg: string, error?: any): PostResult {
+    return { msg, error, success: error === undefined, time: (new Date()).toLocaleString() };
+  }
 
   checkStatus(profileId: string): Promise<WebsiteStatus> {
     throw new Error("Method not implemented.");
@@ -24,6 +29,10 @@ export class BaseWebsiteService implements WebsiteService {
         .replace(/\s/gm, spaceReplacer)
         .replace(/(\/|\\)/gm, spaceReplacer);
     });
+  }
+
+  post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    throw new Error("Method not implemented.");
   }
 
 }
