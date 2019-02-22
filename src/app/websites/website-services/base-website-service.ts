@@ -1,4 +1,4 @@
-import { WebsiteService, WebsiteStatus, SubmissionPostData, PostResult } from '../interfaces/website-service.interface';
+import { WebsiteService, WebsiteStatus, SubmissionPostData, PostResult, LoginStatus } from '../interfaces/website-service.interface';
 import { FolderCategory } from '../interfaces/folder.interface';
 import { Submission } from 'src/app/database/models/submission.model';
 
@@ -15,7 +15,10 @@ export class BaseWebsiteService implements WebsiteService {
   }
 
   checkStatus(profileId: string): Promise<WebsiteStatus> {
-    throw new Error("Method not implemented.");
+    return Promise.reject({
+      username: null,
+      status: LoginStatus.LOGGED_OUT
+    });
   }
 
   getFolders(profileId: string): FolderCategory[] {
