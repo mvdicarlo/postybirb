@@ -2,7 +2,7 @@ import $ from 'jquery';
 
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
-import { WebsiteService, WebsiteStatus, LoginStatus } from '../../interfaces/website-service.interface';
+import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { BaseWebsiteService, UserInformation } from '../base-website-service';
 import { FolderCategory } from '../../interfaces/folder.interface';
@@ -11,7 +11,9 @@ import { GenericJournalSubmissionForm } from '../../components/generic-journal-s
 import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.parser';
 import { supportsFileType, getTags } from '../../helpers/website-validator.helper';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
-import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
+import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -31,7 +33,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
-  postWaitInterval: 30000 * 4,
+  postWaitInterval: 30000,
   displayedName: 'Fur Affinity',
   login: {
     url: 'https://www.furaffinity.net/login'
@@ -141,4 +143,157 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
   public getFolders(profileId: string): FolderCategory[] {
     return this.userInformation.get(profileId).folders;
   }
+
+  private getContentType(type: TypeOfSubmission): string {
+    if (type === TypeOfSubmission.ART) return 'submission';
+    if (type === TypeOfSubmission.AUDIO) return 'music';
+    if (type === TypeOfSubmission.STORY) return 'story';
+    if (type === TypeOfSubmission.ANIMATION) return 'flash';
+    return 'submission';
+  }
+
+  private getRating(rating: SubmissionRating): any {
+    if (rating === SubmissionRating.GENERAL) return 0;
+    if (rating === SubmissionRating.MATURE) return 2;
+    if (rating === SubmissionRating.EXTREME || rating === SubmissionRating.ADULT) return 1;
+    return 0;
+  }
+
+  public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    if (submission.submissionType === SubmissionType.SUBMISSION) {
+      return this.postSubmission(submission, postData);
+    } else if (submission.submissionType === SubmissionType.JOURNAL) {
+      return this.postJournal(submission, postData);
+    } else {
+      throw new Error('Unknown submission type.');
+    }
+  }
+
+  private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies);
+    const data: any = {
+      key: HTMLParser.getInputValue(page.body, 'key'),
+      message: postData.description,
+      subject: submission.title,
+      submit: 'Create / Update Journal',
+      id: '',
+      do: 'update'
+    };
+
+    const response = await got.requestPost(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
+    if (response.error) {
+      return Promise.reject(this.createPostResponse('Unknown error occurred', response.error));
+    } else {
+      return this.createPostResponse(null);
+    }
+  }
+
+  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const initData = {
+      part: '2',
+      submission_type: this.getContentType(postData.typeOfSubmission)
+    };
+
+    const part1Response = await got.requestPost(`${this.BASE_URL}/submit/`, initData, this.BASE_URL, cookies);
+    if (part1Response.error) {
+      return Promise.reject(this.createPostResponse('Unknown error', part1Response.error));
+    } else {
+      const part1Body = part1Response.success.body;
+      if (part1Body.includes('Flood protection')) {
+        return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+      }
+
+      const part2Data = {
+        key: HTMLParser.getInputValue(part1Body, 'key'),
+        part: '3',
+        submission: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+        thumbnail: postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
+        submission_type: this.getContentType(postData.typeOfSubmission)
+      };
+
+      const uploadResponse = await got.requestPost(`${this.BASE_URL}/submit/`, part2Data, this.BASE_URL, cookies);
+      if (uploadResponse.error) {
+        return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
+      } else {
+        const uploadBody = uploadResponse.success.body;
+        if (uploadBody.includes('Flood protection')) {
+          return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+        }
+
+        if (uploadBody.includes('pageid-error') || uploadBody.includes('pageid-submit-finalize')) {
+          return Promise.reject(this.createPostResponse('Unknown error', uploadBody));
+        }
+
+        const options = postData.options || {};
+        const finalizeData: any = {
+          part: '5',
+          key: HTMLParser.getInputValue(uploadBody, 'key'),
+          title: submission.title,
+          keywords: this.formatTags(postData.tags, []),
+          message: postData.description,
+          submission_type: this.getContentType(postData.typeOfSubmission),
+          rating: this.getRating(submission.rating),
+          cat_duplicate: '',
+          create_folder_name: '',
+          cat: options.category,
+          atype: options.theme,
+          species: options.species,
+          gender: options.gender
+        };
+
+        if (options.disableComments) finalizeData.lock_comments = 'on';
+        if (options.scraps) finalizeData.scrap = '1';
+
+        if (options.folders) {
+          finalizeData['folder_ids[]'] = options.folders;
+        }
+
+        const postResponse = await got.requestPost(`${this.BASE_URL}/submit/`, finalizeData, this.BASE_URL, cookies, {
+          qsStringifyOptions: { arrayFormat: 'repeat' },
+        });
+
+        if (postResponse.error) {
+          return Promise.reject(this.createPostResponse(null, postResponse.error));
+        } else {
+          const body = postResponse.success.body;
+
+          if (body.includes('CAPTCHA verification error')) {
+            return Promise.reject(this.createPostResponse('You must have 5+ posts on your account first', body));
+          }
+
+          if (!body.includes('pageid-submit-finalize')) {
+            return Promise.reject(this.createPostResponse('Unknown error', body));
+          }
+
+          try {
+            if (options.reupload) {
+              const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
+              const reuploadData: any = {
+                update: 'yes',
+                newsubmission: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+              };
+
+              await got.requestPost(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
+            }
+          } catch (e) { }
+          finally {
+            const res = this.createPostResponse(null);
+            res.srcURL = postResponse.success.response.request.uri.href;
+            return res;
+          }
+        }
+      }
+    }
+  }
+
+  formatTags(defaultTags: string[] = [], other: string[] = []): any {
+    const maxLength = 250;
+    const tags = super.formatTags(defaultTags, other);
+    let tagString = tags.join(' ').trim();
+
+    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(' ').filter(tag => tag.length >= 3).join(' ') : tagString;
+  }
+
 }

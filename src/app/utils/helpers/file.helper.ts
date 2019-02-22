@@ -23,5 +23,5 @@ export function fileAsFormDataObject(buffer: Uint8Array, fileInfo: FileObject): 
           contentType: fileInfo.type,
           filename: (fileInfo || <any>{}).name || 'upload.jpg'
         }
-      } : null
+      } : '';
 }

@@ -102,6 +102,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this.formDataForm.patchValue(this.submission.formData || {});
 
     this.formDataForm.controls.loginProfile.valueChanges
+      .pipe(debounceTime(100))
       .subscribe(() => {
         this.triggerWebsiteReload = true;
         this._changeDetector.detectChanges();

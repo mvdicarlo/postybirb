@@ -40,6 +40,9 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
     statusbar: false,
     paste_data_images: false,
     browser_spellcheck: false,
+    entity_encoding: 'raw',
+    block_formats: 'Paragraph=p;Header 1=h1;Header 2=h2;Header 3=h3;Header 4=h4;Header 5=h5;Header 6=h6',
+    content_style: 'p {margin: 0}',
     height: 200,
     plugins: 'autoresize autolink link preview paste hr textcolor template help code',
     menu: {},
@@ -47,7 +50,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
     templates: [],
     formats: {
       underline: { inline: 'u', exact: true },
-      strikethrough: { inline: 's', exact: true }
+      strikethrough: { inline: 's', exact: true },
     }
   }
 

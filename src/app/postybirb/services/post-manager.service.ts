@@ -9,6 +9,7 @@ import { AdInsertParser } from 'src/app/utils/helpers/description-parsers/ad-ins
 import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 @Injectable({
   providedIn: 'root'
@@ -49,7 +50,7 @@ export class PostManagerService {
                 srcURLs: submissionToPost.postStats.sourceURLs,
                 tags: getTags(submissionToPost, website),
                 thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
-                typeOfSubmission: getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo)
+                typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
               };
 
               this.serviceMap.get(website).post(submissionToPost, postObject)

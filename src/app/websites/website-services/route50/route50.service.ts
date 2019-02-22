@@ -120,7 +120,7 @@ export class Route50 extends BaseWebsiteService {
     const data: any = {
       title: submission.title,
       file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
-      thumbnail: postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : null,
+      thumbnail: postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
       category: this.getCategoryCode(postData.typeOfSubmission),
       type: this.getContentType(postData.typeOfSubmission),
       tags: this.formatTags(postData.tags, []),
@@ -135,12 +135,12 @@ export class Route50 extends BaseWebsiteService {
 
     const response = await got.requestPost(`${this.BASE_URL}/galleries/submit`, data, this.BASE_URL, cookies)
     if (response.error) {
-      return this.createPostResponse('Unknown error posting to Route 50', response.error);
+      return Promise.reject(this.createPostResponse('Unknown error posting to Route 50', response.error));
     } else {
       if (response.success.body.includes(submission.title)) {
         return this.createPostResponse(null);
       } else {
-        return this.createPostResponse(null, response.error);
+        return Promise.reject(this.createPostResponse(null, response.error));
       }
     }
   }

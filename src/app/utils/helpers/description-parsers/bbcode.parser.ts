@@ -21,22 +21,26 @@ export class BBCodeParser {
     html = html.replace(/<strong>/gi, '[b]');
     html = html.replace(/<\/strong>/gi, '[/b]');
 
-    html = html.replace(/<p(.*?)style="text-align: center;"(.*?)>(.*?)<\/p>/gi, '\n[center]$3[/center]\n');
-    html = html.replace(/<p(.*?)style="text-align: left;"(.*?)>(.*?)<\/p>/gi, '\n[left]$3[/left]\n');
-    html = html.replace(/<p(.*?)style="text-align: right;"(.*?)>(.*?)<\/p>/gi, '\n[right]$3[/right]\n');
-    html = html.replace(/<span style="color: (.*?);">(.*?)<\/span>/gmi, '[color=$1]$2[/color]');
+    const blocks = ['p', 'div', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+    blocks.forEach(block => {
+      const regex = new RegExp(`<${block}(.*?)style="text-align: ((left|right|center)?);"(.*?)>((.|\n)*?)<\/${block}>`, 'gmi');
+      html = html.replace(regex, '[$3]$5[/$3]\n');
+    });
 
+    html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
+
+    // opting to use \r for now
     html = html.replace(/<li(.*?)>(.*?)<\/li>/gi, '[*]$2');
     html = html.replace(/<ul(.*?)>/gi, '[list]');
     html = html.replace(/<\/ul>/gi, '[/list]');
     html = html.replace(/<div>/gi, '');
-    html = html.replace(/<\/div>/gi, '\n');
+    html = html.replace(/<\/div>/gi, '\r');
     html = html.replace(/<p>/gi, '');
-    html = html.replace(/<\/p>/gi, '\n');
+    html = html.replace(/<\/p>/gi, '\r');
     html = html.replace(/<pre>/gi, '');
-    html = html.replace(/<\/pre>/gi, '\n');
+    html = html.replace(/<\/pre>/gi, '\r');
     html = html.replace(/<td(.*?)>/gi, ' ');
-    html = html.replace(/<tr(.*?)>/gi, '\n');
+    html = html.replace(/<tr(.*?)>/gi, '\r');
     html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '[url=$2]$4[/url]');
 
     html = html.replace(/<head>(.*?)<\/head>/gmi, '');

@@ -43,7 +43,7 @@ exports.post = function post(url, formData, cookieUrl, cookies) {
     });
 };
 
-exports.requestPost = function requestPost(url, formData, cookieUrl, cookies) {
+exports.requestPost = function requestPost(url, formData, cookieUrl, cookies, options) {
     return new Promise((resolve, reject) => {
         const cookieJar = request.jar();
         if (cookies && cookies.length) {
@@ -53,7 +53,8 @@ exports.requestPost = function requestPost(url, formData, cookieUrl, cookies) {
             }
         }
 
-        request.post(url, { formData, jar: cookieJar, followAllRedirects: true }, (err, response, body) => {
+        const opts = Object.assign({ formData, jar: cookieJar, followAllRedirects: true }, options || {});
+        request.post(url, opts, (err, response, body) => {
             if (err) {
                 resolve({ error: err });
             } else {
