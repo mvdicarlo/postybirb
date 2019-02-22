@@ -7,6 +7,7 @@ import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { Observable, Subject } from 'rxjs';
 import { SubmissionCache } from '../services/submission-cache.service';
 import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
+import { ScheduleWriterService } from '../services/schedule-writer.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,8 @@ export class SubmissionDBService extends DatabaseService {
   constructor(
     private _submissionFileDB: SubmissionFileDBService,
     private _generatedThumbnailDB: GeneratedThumbnailDBService,
-    private _cache: SubmissionCache
+    private _cache: SubmissionCache,
+    private _scheduleWriter: ScheduleWriterService
   ) {
     super();
     _cache.setUpdateCallback(this.update.bind(this));
@@ -84,6 +86,7 @@ export class SubmissionDBService extends DatabaseService {
 
     ids.forEach(id => this._cache.remove(id));
     this.notifySubject.next();
+    this._updateScheduleWriter();
   }
 
   public async duplicate(id: number, title?: string): Promise<void> {
@@ -135,8 +138,16 @@ export class SubmissionDBService extends DatabaseService {
         if (isDevMode()) {
           console.error(`Unable to update ${id}`, err);
         }
+      }).finally(() => {
+        if (fieldName === 'isScheduled' || fieldName === 'schedule') {
+          this._updateScheduleWriter();
+        }
       });
     }
+  }
+
+  private _updateScheduleWriter(): void {
+    this._scheduleWriter.update(this._cache.getAll());
   }
 
 }

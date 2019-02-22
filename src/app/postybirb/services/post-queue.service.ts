@@ -230,11 +230,30 @@ export class PostQueueService {
                 if (settingsDB.get('clearQueueOnFailure').value()) {
                   [...this.queue].forEach((queuedItem: Submission) => this.dequeue(queuedItem.id));
                 }
+
+                this._outputNotification(postingSubmission)
+                  .finally(() => {
+                    if (!this.queue.length && closeAfterPost() /* global var*/) {
+                      setTimeout(() => {
+                        if (closeAfterPost()) {
+                          window.close();
+                        }
+                      }, 15000); // allow enough time for db to be updated and any writers hopefully
+                    }
+                  });
               } else {
                 postingSubmission.cleanUp();
                 this._outputNotification(postingSubmission)
                   .finally(() => {
                     // this._submissionDB.delete([this.submission.id]);
+                    // TODO make sure this only calls after delete runs
+                    if (!this.queue.length && closeAfterPost() /* global var*/) {
+                      setTimeout(() => {
+                        if (closeAfterPost()) {
+                          window.close();
+                        }
+                      }, 15000); // allow enough time for db to be updated and any writers hopefully
+                    }
                   });
               }
             }

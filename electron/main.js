@@ -21,6 +21,7 @@ log.info('Starting PostyBirb...');
 let tray = null;
 let win = null; // Primary App BrowserWindow
 let updateInterval = null; // Interval for checking for updates
+let scheduleCheckInterval = null; // Interval for checking for scheduled posts when app is in a closed state
 const clearCacheInterval = null; // Interval for manually clearing cache
 const userDataPath = app.getPath('userData');
 const dataPath = path.join(userDataPath, 'data');
@@ -33,7 +34,12 @@ if (!hasLock) {
 
 app.on('second-instance', () => {
     if (win) {
-        if (win.isMinimized()) win.restore();
+        win.closeAfterPost = false;
+        if (win.isMinimized()) {
+            win.restore();
+        } else {
+            win.show();
+        }
         win.focus();
     } else {
         initialize();
@@ -112,6 +118,7 @@ app.on('ready', () => {
         if (!hasWindows()) {
             initialize();
         } else {
+            win.closeAfterPost = false;
             if (win.isMinimized()) {
                 win.restore();
             } else {
@@ -158,11 +165,9 @@ function initialize(show = true) {
         },
     });
 
-    if (!process.env.DEVELOP) mainWindowState.manage(win);
+    win.closeAfterPost = !show;
 
-    win.on('ready-to-show', () => {
-    // TODO stub for schedule
-    });
+    if (!process.env.DEVELOP) mainWindowState.manage(win);
 
     win.loadURL(`file://${__dirname}/dist/index.html`);
 
@@ -200,9 +205,33 @@ function hasWindows() {
     return BrowserWindow.getAllWindows().filter(b => b.isVisible()).length > 0;
 }
 
+function hasScheduled() {
+    const data = fs.readJsonSync(path.join(dataPath, 'scheduled-submissions.json'));
+    if (data && data.scheduled && data.scheduled.length) {
+        scheduleCheckInterval = setInterval(() => {
+            log.info('Checking for scheduled submissions...');
+            const now = Date.now();
+            for (let i = 0; i < data.scheduled.length; i++) {
+                if (data.scheduled[i] <= now) {
+                    log.info('Opening window to perform post');
+                    initialize(false);
+                    clearInterval(scheduleCheckInterval);
+                    break;
+                }
+            }
+        }, 60000);
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Stub function for later use with schedule checking
  */
 function attemptToClose() {
-    app.quit();
+    if (!hasScheduled()) {
+        clearInterval(scheduleCheckInterval);
+        app.quit();
+    }
 }

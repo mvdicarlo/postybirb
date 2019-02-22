@@ -9,7 +9,7 @@ import { interval } from 'rxjs';
 export class ScheduledSubmissionManagerService {
 
   constructor(_submissionDB: SubmissionDBService, _postQueue: PostQueueService) {
-    interval(100000).subscribe(() => {
+    interval(60000).subscribe(() => {
       _submissionDB.getSubmissions()
         .then(submissions => {
           const now = Date.now();

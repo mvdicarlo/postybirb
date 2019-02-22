@@ -1,5 +1,6 @@
 const { remote, nativeImage, shell, clipboard } = require('electron');
 const path = require('path');
+const fs = require('fs-extra');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 
@@ -16,6 +17,7 @@ process.once('loaded', () => {
 });
 
 window.appVersion = remote.app.getVersion();
+window.closeAfterPost = () => remote.getCurrentWindow().closeAfterPost;
 window.nativeImage = nativeImage;
 window.getFileIcon = app.getFileIcon;
 
@@ -41,6 +43,18 @@ window.settingsDB = sldb;
 
 window.got = require('./src/got-request.js');
 
+/**
+ * Writes object data to a specified JSON file
+ * @param  {string} fileName Name of the file to write to
+ * @param  {object} data     Data to be written
+ */
+window.writeJsonToFile = function writeJsonToFile(fileName, data) {
+    fs.writeJson(path.join(app.getPath('userData'), 'data', `${fileName}.json`), data, (err) => {
+        if (err) {
+            console.error(err);
+        }
+    });
+};
 /**
  * Opens a url in the user's native/default browser
  * @param  {string} url URL being opened

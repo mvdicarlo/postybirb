@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class CacheService {
-  private _cache: { [key: string]: any } = {};
+  protected _cache: { [key: string]: any } = {};
 
   constructor() { }
 

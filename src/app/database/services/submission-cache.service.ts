@@ -30,6 +30,10 @@ export class SubmissionCache extends CacheService {
     submission.problems = problems;
   }
 
+  public getAll(): Submission[] {
+    return Object.keys(this._cache).map(key => this._cache[key]);
+  }
+
   public store(submission: Submission): Submission {
     if (!super.exists(`${submission.id}`)) {
       super.store(`${submission.id}`, submission);
@@ -65,5 +69,6 @@ export class SubmissionCache extends CacheService {
       delete this._subscriptionCache[id];
     }
   }
+
 
 }
