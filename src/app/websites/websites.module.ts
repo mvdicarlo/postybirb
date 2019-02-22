@@ -88,7 +88,7 @@ export function INIT_WEBSITE_REGISTRY() {
       deps: [
         E621,
         FurAffinity,
-        // Route50,
+        Route50,
         Weasyl
       ],
       multi: true

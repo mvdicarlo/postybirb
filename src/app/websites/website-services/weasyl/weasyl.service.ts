@@ -10,7 +10,7 @@ import { GenericJournalSubmissionForm } from '../../components/generic-journal-s
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
-import { asFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -204,17 +204,17 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       rating: this.getRating(submission.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, []),
-      submitfile: asFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      submitfile: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
       redirect: url
     }
 
     if (postData.thumbnail) {
-      data.thumbfile = asFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+      data.thumbfile = fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
     }
 
     if (type === 'literary' || type === 'multimedia') {
       if (postData.thumbnail) {
-        data.coverfile = asFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+        data.coverfile = fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
       } else {
         data.coverfile = '';
       }

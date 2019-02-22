@@ -9,7 +9,7 @@ import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { BaseWebsiteService } from '../base-website-service';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
-import { asFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -109,7 +109,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
 
     const data: any = {
       'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]),
-      'post[file]': asFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      'post[file]': fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
       'post[rating]': this.getRating(submission.rating),
       'authenticity_token': HTMLParser.getInputValue(formPage.body, 'authenticity_token'),
       'post[description]': postData.description,

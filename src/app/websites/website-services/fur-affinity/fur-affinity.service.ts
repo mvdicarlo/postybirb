@@ -9,6 +9,23 @@ import { FolderCategory } from '../../interfaces/folder.interface';
 import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.parser';
+import { supportsFileType, getTags } from '../../helpers/website-validator.helper';
+import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
+import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+
+function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
+  const tags = getTags(submission, FurAffinity.name);
+  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'])) {
+    problems.push(['Does not support file format', { website: 'Fur Affinity', value: submission.fileInfo.type }]);
+  }
+
+  if (MBtoBytes(10) < submission.fileInfo.size) {
+    problems.push(['Max file size', { website: `Fur Affinity`, value: '10MB' }]);
+  }
+
+  return problems;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +40,9 @@ import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.p
     submissionForm: FurAffinitySubmissionForm,
     journalForm: GenericJournalSubmissionForm
   },
-  validators: {},
+  validators: {
+    submission: submissionValidate
+  },
   parsers: {
     description: [BBCodeParser.parse],
     usernameShortcut: {

@@ -16,7 +16,7 @@ export function MBtoBytes(size: any): number {
   return Number(size) * Math.pow(1024, 2);
 }
 
-export function asFormDataObject(buffer: Uint8Array, fileInfo: FileObject): any {
+export function fileAsFormDataObject(buffer: Uint8Array, fileInfo: FileObject): any {
   return buffer ? {
         value: Buffer.from(buffer),
         options: {
