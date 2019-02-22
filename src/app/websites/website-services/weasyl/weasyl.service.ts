@@ -2,20 +2,40 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { WeasylSubmissionForm } from './components/weasyl-submission-form/weasyl-submission-form.component';
-import { Submission } from 'src/app/database/models/submission.model';
-import { getTags } from '../../helpers/website-validator.helper';
+import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
+import { getTags, supportsFileType } from '../../helpers/website-validator.helper';
 import { Folder, FolderCategory } from '../../interfaces/folder.interface';
 import { BaseWebsiteService } from '../base-website-service';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
-import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
-import { asFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
+import { asFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
-function submissionValidate(submission: Submission, formData: any): string[] {
-  const problems: string[] = [];
+function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
   const tags = getTags(submission, Weasyl.name);
-  if (tags.length < 2) problems.push('Weasyl is incomplete');
+  if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'Weasyl', value: 2 }]);
+  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'])) {
+    problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
+  }
+
+  let maxMB = 10;
+  const type: TypeOfSubmission = getTypeOfSubmission(submission.fileInfo);
+  if (type === TypeOfSubmission.ANIMATION || type === TypeOfSubmission.AUDIO) {
+    maxMB = 15;
+  } else if (type === TypeOfSubmission.STORY) {
+    if (submission.fileInfo.name.includes('.md') || submission.fileInfo.name.includes('.md')) {
+      maxMB = 2;
+    } else {
+      maxMB = 10; // assume pdf
+    }
+  }
+
+  if (MBtoBytes(maxMB) < submission.fileInfo.size) {
+    problems.push(['Max file size', { website: `Weasyl (${type})`, value: `${maxMB}MB` }]);
+  }
+
   return problems;
 }
 

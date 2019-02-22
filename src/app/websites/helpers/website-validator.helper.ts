@@ -8,16 +8,16 @@ import * as dotProp from 'dot-prop';
 export function validate(submission: Submission): string[] {
   const problems = [];
 
-  if (!submission.rating) problems.push('Rating missing');
+  if (!submission.rating) problems.push(['Rating missing']);
   if (submission.formData) {
     if (!(submission.formData.websites && submission.formData.websites.length)) {
-      problems.push('No websites selected');
+      problems.push(['No websites selected']);
     }
     if (!submission.formData.loginProfile) {
-      problems.push('Must select a login profile');
+      problems.push(['Must select a login profile']);
     }
   } else {
-    problems.push('Incomplete submission');
+    problems.push(['Incomplete submission']);
   }
 
   return problems.sort();
@@ -61,4 +61,15 @@ export function getAllWebsiteValidatorsForWebsites(websites: string[], submissio
   }
 
   return validatorFns;
+}
+
+export function supportsFileType(fileType: string, supportedFileTypes: string[]): boolean {
+  const split = fileType.split('/')[1];
+  for (let i = 0; i < supportedFileTypes.length; i++) {
+      if (supportedFileTypes[i].includes(fileType) || supportedFileTypes[i].includes(split)) {
+        return true;
+      }
+  }
+
+  return false;
 }

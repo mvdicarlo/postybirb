@@ -48,7 +48,7 @@ export class Submission implements ISubmission {
   set fileInfo(file: FileObject) {
     const old = this._fileInfo;
     this._fileInfo = file;
-    this._emitChange('fileInfo', old, file);
+    this._emitChange('fileInfo', old, file, true);
   }
   private _fileInfo: FileObject;
 

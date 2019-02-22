@@ -3,20 +3,30 @@ import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostRes
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Website } from '../../decorators/website-decorator';
 import { E621SubmissionForm } from './components/e621-submission-form/e621-submission-form.component';
-import { getTags } from '../../helpers/website-validator.helper';
-import { Submission } from 'src/app/database/models/submission.model';
+import { getTags, supportsFileType } from '../../helpers/website-validator.helper';
+import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { BaseWebsiteService } from '../base-website-service';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
-import { asFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { asFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
-function validate(submission: Submission, formData: any): string[] {
-  const problems: string[] = [];
+function validate(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
   const tags = getTags(submission, E621.name);
-  if (tags.length < 4) problems.push('e621 is incomplete');
+  if (tags.length < 4) problems.push(['Requires minimum tags', { website: 'e621', value: 4 }]);
+  if (!supportsFileType(submission.fileInfo.type, ['jpeg', 'jpg', 'png', 'gif', 'webm'])) {
+    problems.push(['Does not support file format', { website: 'e621', value: submission.fileInfo.type }]);
+  }
+
   const type = getTypeOfSubmission(submission.fileInfo)
-  if (type === TypeOfSubmission.STORY || !type) problems.push(`e621 does not support file format: ${submission.fileInfo.type || 'unknown'}`);
+  if (type === TypeOfSubmission.STORY || !type) {
+    problems.push(['Does not support file format', { website: 'e621', value: submission.fileInfo.type }]);
+  }
+
+  if (MBtoBytes(100) < submission.fileInfo.size) {
+    problems.push(['Max file size', { website: 'e621', value: '100MB' }]);
+  }
 
   return problems;
 }

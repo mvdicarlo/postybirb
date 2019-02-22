@@ -2,5 +2,9 @@
   "Additional Images Help": "Upload additional images with this submission.",
   "Default Description Tooltip": "This description will be used for all websites unless overwritten",
   "Default Tag Tooltip": "Tags that will be sent to all websites unless overwritten",
+  "Requires minimum tags": "{{website}} requires at least {{value}} tags",
+  "Does not support rating": "{{website}} does not support rating: {{value}}",
+  "Does not support file format": "{{website}} does not support file format: {{value}}",
+  "Max file size": "{{website}} does not support files larger than {{value}}",
   "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post."
 }

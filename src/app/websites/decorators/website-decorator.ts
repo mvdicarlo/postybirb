@@ -2,7 +2,7 @@ import { WebsiteRegistry } from '../registries/website.registry';
 import { GenericLoginDialog } from '../components/generic-login-dialog/generic-login-dialog.component';
 import { BaseWebsiteSubmissionForm } from '../components/base-website-submission-form/base-website-submission-form.component';
 import { Type } from '@angular/core';
-import { Submission } from 'src/app/database/models/submission.model';
+import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 
 export interface WebsiteConfig {
   acceptsSrcURL?: boolean; // Whether or not this website uses Source Url options. This will stall a website from posting so that other websites may post and provide src urls
@@ -27,8 +27,8 @@ export interface WebsiteConfig {
     };
   };
   validators: {
-    submission?: (submission: Submission, formData: any) => string[];
-    journal?: (submission: Submission, formData: any) => string[];
+    submission?: (submission: Submission, formData: SubmissionFormData) => any[]; // in format [[string, ValidationProblem], ...]
+    journal?: (submission: Submission, formData: SubmissionFormData) => any[];
   };
 }
 

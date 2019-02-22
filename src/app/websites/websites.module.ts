@@ -2,9 +2,10 @@ import { NgModule, APP_INITIALIZER, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
-import { Weasyl } from './website-services/weasyl/weasyl.service';
-import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
 import { E621 } from './website-services/e621/e621.service';
+import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
+import { Route50 } from './website-services/route50/route50.service';
+import { Weasyl } from './website-services/weasyl/weasyl.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -31,6 +32,7 @@ import { E621SubmissionForm } from './website-services/e621/components/e621-subm
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { FurAffinitySubmissionForm } from './website-services/fur-affinity/components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 import { GenericJournalSubmissionForm } from './components/generic-journal-submission-form/generic-journal-submission-form.component';
+import { GenericSubmissionForm } from './components/generic-submission-form/generic-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -46,6 +48,7 @@ export function INIT_WEBSITE_REGISTRY() {
     WebsiteDisplaynamePipe,
     FurAffinitySubmissionForm,
     GenericJournalSubmissionForm,
+    GenericSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -75,7 +78,8 @@ export function INIT_WEBSITE_REGISTRY() {
     WeasylSubmissionForm,
     E621SubmissionForm,
     FurAffinitySubmissionForm,
-    GenericJournalSubmissionForm
+    GenericJournalSubmissionForm,
+    GenericSubmissionForm
   ],
   providers: [
     {
@@ -84,6 +88,7 @@ export function INIT_WEBSITE_REGISTRY() {
       deps: [
         E621,
         FurAffinity,
+        // Route50,
         Weasyl
       ],
       multi: true

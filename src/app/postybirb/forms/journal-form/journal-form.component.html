@@ -77,9 +77,7 @@
 
     <div class="form-actions d-flex flex-wrap">
       <div class="alert alert-danger w-100" role="alert" *ngIf="submission.problems.length">
-        <div *ngFor="let problem of submission.problems">
-          {{ problem | translate }}
-        </div>
+        <div *ngFor="let problem of submission.problems" [translate]="problem[0]" [translateParams]="problem[1]"></div>
       </div>
       <div style="flex: 10">
         <button mat-button color="warn" (click)="delete()">{{ 'Delete' | translate }}</button>

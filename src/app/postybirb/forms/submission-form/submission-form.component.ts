@@ -76,8 +76,8 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       if (change.title) this.basicInfoForm.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.basicInfoForm.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.basicInfoForm.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
-      if (change.file) {
-        this.typeOfSubmission = getTypeOfSubmission(change.file.current);
+      if (change.fileInfo) {
+        this.typeOfSubmission = getTypeOfSubmission(change.fileInfo.current);
       }
       this._changeDetector.markForCheck();
     });
