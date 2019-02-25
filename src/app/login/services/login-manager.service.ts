@@ -6,6 +6,7 @@ import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { WebsiteConfig } from 'src/app/websites/decorators/website-decorator';
 import { interval, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { CookieSolutionsService } from './cookie-solutions.service';
 
 export interface ProfileStatuses {
   [key: string /* profile id */]: { [key: string /* website service constructor name */]: WebsiteStatus };
@@ -23,7 +24,7 @@ export class LoginManagerService {
   private profileIds: string[] = [];
   private profileStatuses: ProfileStatuses = {};
 
-  constructor(_profileManager: LoginProfileManagerService, private injector: Injector) {
+  constructor(_profileManager: LoginProfileManagerService, _cookieSolution: CookieSolutionsService, private injector: Injector) {
     const registeredWebsites = WebsiteRegistry.getRegistered();
     Object.keys(registeredWebsites).forEach(key => {
       this._registerInterval(registeredWebsites[key].class, registeredWebsites[key].websiteConfig);

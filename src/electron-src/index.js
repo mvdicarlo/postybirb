@@ -78,6 +78,14 @@ window.getCookies = function getCookies(persistId, url) {
     });
 };
 
+/**
+ * Gets the API to the cookie container
+ * @param  {string} persistId
+ */
+window.getCookieAPI = function getCookieAPI(persistId) {
+  return session.fromPartition(`persist:${persistId}`).cookies;
+}
+
 window.getClipboardFormats = clipboard.availableFormats;
 window.writeToClipboard = clipboard.write;
 window.readClipboard = function readClipboard() {
