@@ -45,7 +45,7 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   }
 
   ngAfterViewInit() {
-    this.formGroup.patchValue(this.parentForm.submission.formData[this.website] || {}, { emitEvent: false });
+    this.formGroup.patchValue(this.parentForm.submission.formData[this.website] || {}, { emitEvent: true });
   }
 
   ngOnDestroy() {

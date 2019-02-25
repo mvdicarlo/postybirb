@@ -1,0 +1,74 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="sketch">{{'Sketch' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="creativeCommons">{{'Use a Creative Commons license?' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="commercial" *ngIf="formGroup.controls.options.value.creativeCommons">{{'Allow Commercial Uses' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="modification" *ngIf="formGroup.controls.options.value.creativeCommons">{{'Allow Modifications?' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-8 col-lg-8 col-xl-8">
+      <table>
+        <thead>
+          <th></th>
+          <th></th>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ 'Nudity' | translate}}<span class="warn">*</span></td>
+            <td>
+              <mat-radio-group formControlName="nudity" required>
+                <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+              </mat-radio-group>
+            </td>
+          </tr>
+
+          <tr>
+            <td>{{ 'Violence' | translate}}<span class="warn">*</span></td>
+            <td>
+              <mat-radio-group formControlName="violence" required>
+                <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+              </mat-radio-group>
+            </td>
+          </tr>
+
+          <tr>
+            <td>{{ 'Explicit Text' | translate}}<span class="warn">*</span></td>
+            <td>
+              <mat-radio-group formControlName="text" required>
+                <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+              </mat-radio-group>
+            </td>
+          </tr>
+
+          <tr>
+            <td>{{ 'Adult Themes' | translate}}<span class="warn">*</span></td>
+            <td>
+              <mat-radio-group formControlName="adult" required>
+                <mat-radio-button value="c">{{ 'None' | translate }}</mat-radio-button>
+                <mat-radio-button value="b">{{ 'Some' | translate }}</mat-radio-button>
+                <mat-radio-button value="a">{{ 'Lots' | translate }}</mat-radio-button>
+              </mat-radio-group>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>

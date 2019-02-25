@@ -114,7 +114,9 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this.formDataForm.valueChanges
       .pipe(debounceTime(300))
       .subscribe(changes => {
-        this.submission.formData = changes;
+        if (JSON.stringify(changes) !== JSON.stringify(this.submission.formData)) {
+          this.submission.formData = changes;
+        }
       });
   }
 

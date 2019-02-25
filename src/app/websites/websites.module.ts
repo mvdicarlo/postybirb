@@ -6,6 +6,7 @@ import { E621 } from './website-services/e621/e621.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
 import { Route50 } from './website-services/route50/route50.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
+import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -33,6 +34,7 @@ import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { FurAffinitySubmissionForm } from './website-services/fur-affinity/components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 import { GenericJournalSubmissionForm } from './components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { GenericSubmissionForm } from './components/generic-submission-form/generic-submission-form.component';
+import { NewgroundsSubmissionForm } from './website-services/newgrounds/components/newgrounds-submission-form/newgrounds-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -49,6 +51,7 @@ export function INIT_WEBSITE_REGISTRY() {
     FurAffinitySubmissionForm,
     GenericJournalSubmissionForm,
     GenericSubmissionForm,
+    NewgroundsSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -79,7 +82,8 @@ export function INIT_WEBSITE_REGISTRY() {
     E621SubmissionForm,
     FurAffinitySubmissionForm,
     GenericJournalSubmissionForm,
-    GenericSubmissionForm
+    GenericSubmissionForm,
+    NewgroundsSubmissionForm
   ],
   providers: [
     {
@@ -88,6 +92,7 @@ export function INIT_WEBSITE_REGISTRY() {
       deps: [
         E621,
         FurAffinity,
+        Newgrounds,
         Route50,
         Weasyl
       ],

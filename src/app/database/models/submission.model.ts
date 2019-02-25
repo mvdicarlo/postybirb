@@ -101,6 +101,11 @@ export class Submission implements ISubmission {
   set formData(formData: SubmissionFormData) {
     const old = this._formData;
     this._formData = formData;
+
+    if (JSON.stringify(formData.websites) !== JSON.stringify(old)) {
+      this.postStats = Object.assign({}, this.postStats);
+    }
+
     this._emitChange('formData', old, formData, true);
   }
   private _formData: SubmissionFormData;

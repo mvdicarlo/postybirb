@@ -6,5 +6,6 @@
   "Does not support rating": "{{website}} does not support rating: {{value}}",
   "Does not support file format": "{{website}} does not support file format: {{value}}",
   "Max file size": "{{website}} does not support files larger than {{value}}",
+  "Options are incomplete": "{{website}} options are incomplete",
   "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post."
 }
