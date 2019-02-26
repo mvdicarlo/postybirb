@@ -8,6 +8,7 @@ import { Route50 } from './website-services/route50/route50.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
+import { Furiffic } from './website-services/furiffic/furiffic.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -99,7 +100,8 @@ export function INIT_WEBSITE_REGISTRY() {
         Newgrounds,
         Route50,
         Weasyl,
-        Derpibooru
+        Derpibooru,
+        Furiffic
       ],
       multi: true
     }

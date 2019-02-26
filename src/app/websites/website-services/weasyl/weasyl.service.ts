@@ -39,6 +39,12 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function descriptionParse(html: string): string {
+  return html
+    .replace(/style="text-align: center;"/g, 'class="align-center"')
+    .replace(/style="text-align: right;"/g, 'class="align-right"');
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -54,7 +60,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     submission: submissionValidate
   },
   parsers: {
-    description: [/* unknown right now - probably needs a custom one */],
+    description: [descriptionParse],
     usernameShortcut: {
       code: 'ws',
       url: 'https://weasyl.com/~$1'
@@ -256,7 +262,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
           res.srcURL = postResponse.success.response.request.uri.href;
           return res;
         }
-      } else if (body.includes('This page contains content that you cannot view according to your current allowed ratings')){
+      } else if (body.includes('This page contains content that you cannot view according to your current allowed ratings')) {
         const res = this.createPostResponse(null);
         res.srcURL = postResponse.success.response.request.uri.href;
         return res;

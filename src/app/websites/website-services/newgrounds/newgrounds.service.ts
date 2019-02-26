@@ -32,7 +32,6 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
-  postWaitInterval: 30000,
   displayedName: 'Newgrounds',
   login: {
     url: 'https://www.newgrounds.com/login'
