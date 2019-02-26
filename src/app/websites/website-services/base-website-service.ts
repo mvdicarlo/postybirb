@@ -8,7 +8,7 @@ export interface UserInformation {
 
 export class BaseWebsiteService implements WebsiteService {
   BASE_URL: string;
-  protected userInformation: Map<string, UserInformation> = new Map();
+  protected userInformation: Map<string, UserInformation|any> = new Map();
 
   protected createPostResponse(msg: string, error?: any): PostResult {
     return { msg, error, success: error === undefined, time: (new Date()).toLocaleString() };

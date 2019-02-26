@@ -9,6 +9,7 @@ import { Weasyl } from './website-services/weasyl/weasyl.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
 import { Furiffic } from './website-services/furiffic/furiffic.service';
+import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -38,6 +39,7 @@ import { GenericJournalSubmissionForm } from './components/generic-journal-submi
 import { GenericSubmissionForm } from './components/generic-submission-form/generic-submission-form.component';
 import { NewgroundsSubmissionForm } from './website-services/newgrounds/components/newgrounds-submission-form/newgrounds-submission-form.component';
 import { DerpibooruSubmissionForm } from './website-services/derpibooru/components/derpibooru-submission-form/derpibooru-submission-form.component';
+import { FurryAminoSubmissionForm } from './website-services/furry-amino/components/furry-amino-submission-form/furry-amino-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -56,6 +58,7 @@ export function INIT_WEBSITE_REGISTRY() {
     GenericSubmissionForm,
     NewgroundsSubmissionForm,
     DerpibooruSubmissionForm,
+    FurryAminoSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -88,7 +91,8 @@ export function INIT_WEBSITE_REGISTRY() {
     GenericJournalSubmissionForm,
     GenericSubmissionForm,
     NewgroundsSubmissionForm,
-    DerpibooruSubmissionForm
+    DerpibooruSubmissionForm,
+    FurryAminoSubmissionForm
   ],
   providers: [
     {
@@ -101,7 +105,8 @@ export function INIT_WEBSITE_REGISTRY() {
         Route50,
         Weasyl,
         Derpibooru,
-        Furiffic
+        Furiffic,
+        FurryAmino
       ],
       multi: true
     }
