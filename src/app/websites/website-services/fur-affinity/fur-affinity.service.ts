@@ -222,7 +222,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
         }
 
-        if (uploadBody.includes('pageid-error') || uploadBody.includes('pageid-submit-finalize')) {
+        if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
           return Promise.reject(this.createPostResponse('Unknown error', uploadBody));
         }
 
