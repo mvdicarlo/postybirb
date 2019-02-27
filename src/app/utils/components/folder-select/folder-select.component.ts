@@ -20,6 +20,7 @@ export class FolderSelect extends BaseValueAccessor implements OnInit, ControlVa
   @Input() multiple: boolean = false;
   @Input() placeholder: string = 'Folder';
   @Input() folderCategories: FolderCategory[] = [];
+  @Input() required: boolean = false;
 
   public selectControl: FormControl = new FormControl(null);
 

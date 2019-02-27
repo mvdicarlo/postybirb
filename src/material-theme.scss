@@ -107,3 +107,7 @@ code {
   left: 2px !important;
   padding-top: 3px !important;
 }
+
+mat-radio-button + mat-radio-button {
+  margin-left: 4px;
+}

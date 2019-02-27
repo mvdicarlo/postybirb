@@ -1,0 +1,57 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-radio-group formControlName="reqtag" required [class.warn-text]="formGroup.controls.options.controls.reqtag.invalid">
+        <mat-radio-button [value]="0">Vore</mat-radio-button>
+        <mat-radio-button [value]="1">Non-Vore</mat-radio-button>
+      </mat-radio-group>
+      <mat-checkbox formControlName="scraps">{{'Scraps' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-8 col-lg-8 col-xl-8">
+      <div class="row no-gutters">
+        <folder-select formControlName="folderId" class="col-md-6 col-lg-6 col-xl-6" [folderCategories]="folders" [required]="true"></folder-select>
+        <div class="col-md-6 col-lg-6 col-xl-6">
+          <mat-form-field class="w-100" color="accent">
+            <mat-select formControlName="viewPerm" [placeholder]="'Viewing Permissions' | translate">
+              <mat-option value="ALL">Everyone</mat-option>
+              <mat-option value="USER">Registered Users</mat-option>
+              <mat-option value="SELF">Self Only</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-6 col-lg-6 col-xl-6">
+          <mat-form-field class="w-100" color="accent">
+            <mat-select formControlName="commentPerm" [placeholder]="'Comment Permissions' | translate">
+              <mat-option value="USER">Registered Users</mat-option>
+              <mat-option value="BLACK">All But Blocked</mat-option>
+              <mat-option value="WHITE">Friends Only</mat-option>
+              <mat-option value="SELF">Self Only</mat-option>
+              <mat-option value="NONE">Nobody</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-6 col-lg-6 col-xl-6">
+          <mat-form-field class="w-100" color="accent">
+            <mat-select formControlName="tagPerm" [placeholder]="'Tagging Permissions' | translate">
+              <mat-option value="USER">Registered Users</mat-option>
+              <mat-option value="BLACK">All But Blocked</mat-option>
+              <mat-option value="WHITE">Friends Only</mat-option>
+              <mat-option value="SELF">Self Only</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

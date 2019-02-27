@@ -1,5 +1,5 @@
 <mat-form-field color="accent" class="w-100">
-  <mat-select [formControl]="selectControl" [placeholder]="placeholder | translate" [multiple]="multiple">
+  <mat-select [formControl]="selectControl" [placeholder]="placeholder | translate" [multiple]="multiple" [required]="required">
     <mat-optgroup *ngFor="let category of folderCategories" [label]="category.title">
       <mat-option *ngFor="let folder of category.folders" [value]="folder.id">{{ folder.title }}</mat-option>
     </mat-optgroup>
