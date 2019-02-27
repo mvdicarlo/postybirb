@@ -20,6 +20,7 @@ window.appVersion = remote.app.getVersion();
 window.closeAfterPost = () => remote.getCurrentWindow().closeAfterPost;
 window.nativeImage = nativeImage;
 window.getFileIcon = app.getFileIcon;
+window.BrowserWindow = remote.BrowserWindow; // Pretty much only used for PaigeeWorld right now
 
 // Set up profiles DB
 const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));

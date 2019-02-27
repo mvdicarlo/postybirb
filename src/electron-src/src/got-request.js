@@ -3,7 +3,7 @@ const request = require('request');
 const FormData = require('form-data');
 const { CookieJar } = require('tough-cookie');
 
-exports.get = function get(url, cookieUrl, cookies) {
+exports.get = function get(url, cookieUrl, cookies, options) {
     return new Promise((resolve, reject) => {
         const cookieJar = new CookieJar();
         if (cookies && cookies.length) {
@@ -13,15 +13,18 @@ exports.get = function get(url, cookieUrl, cookies) {
             }
         }
 
-        got(url, { cookieJar })
-    .then((res) => {
-        resolve(res);
-    }).catch((err) => {
-        reject(err);
-    });
+        const opts = Object.assign({ cookieJar }, options);
+
+        got(url, opts)
+          .then((res) => {
+              resolve(res);
+          }).catch((err) => {
+              reject(err);
+          });
     });
 };
 
+// best not to use right now since it sorta doesnt work with electron
 exports.post = function post(url, formData, cookieUrl, cookies) {
     return new Promise((resolve, reject) => {
         const cookieJar = new CookieJar();
@@ -38,8 +41,8 @@ exports.post = function post(url, formData, cookieUrl, cookies) {
         });
 
         got.post(url, { cookieJar, body: form })
-        .then(success => resolve({ success }))
-        .catch(error => resolve({ error }));
+          .then(success => resolve({ success }))
+          .catch(error => resolve({ error }));
     });
 };
 

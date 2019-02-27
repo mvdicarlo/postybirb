@@ -11,7 +11,7 @@
 
   <div formGroupName="options" class="row no-gutters section">
     <div class="col-md col-lg col-xl">
-      <mat-radio-group formControlName="reqtag" required [class.warn-text]="formGroup.controls.options.controls.reqtag.invalid">
+      <mat-radio-group formControlName="reqtag" required [class.warn-text]="!reqTagIsValid()">
         <mat-radio-button [value]="0">Vore</mat-radio-button>
         <mat-radio-button [value]="1">Non-Vore</mat-radio-button>
       </mat-radio-group>

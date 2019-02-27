@@ -1,0 +1,44 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <div class="row no-gutters">
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="category" [placeholder]="'Category' | translate">
+              <mat-option value="welcomenewpwusers">Welcome</mat-option>
+              <mat-option value="paigeeworldocs">Paigeeworld OC</mat-option>
+              <mat-option value="ocs">OC</mat-option>
+              <mat-option value="fanart">Fan Art</mat-option>
+              <mat-option value="pwgallery">Gallery</mat-option>
+              <mat-option value="wip">WIP</mat-option>
+              <mat-option value="feedback">Feedback</mat-option>
+              <mat-option value="cosplay">Cosplay</mat-option>
+              <mat-option value="abstract">Abstract</mat-option>
+              <mat-option value="realism">Realism</mat-option>
+              <mat-option value="semirealism">SemiRealism</mat-option>
+              <mat-option value="painting">Painting</mat-option>
+              <mat-option value="photography">Photography</mat-option>
+              <mat-option value="anthro">Anthro</mat-option>
+              <mat-option value="cartoon">Cartoon</mat-option>
+              <mat-option value="craft">Crafts</mat-option>
+              <mat-option value="contest">User Contests</mat-option>
+              <mat-option value="roleplay">Roleplay</mat-option>
+              <mat-option value="pwmanga">Manga</mat-option>
+              <mat-option value="otherpw">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

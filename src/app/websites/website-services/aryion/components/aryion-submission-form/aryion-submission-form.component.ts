@@ -40,4 +40,8 @@ export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements O
     }
   }
 
+  public reqTagIsValid(): boolean {
+    return this.formGroup.controls.options.get('reqtag').valid;
+  }
+
 }
