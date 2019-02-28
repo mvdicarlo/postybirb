@@ -12,6 +12,7 @@ import { Furiffic } from './website-services/furiffic/furiffic.service';
 import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
 import { Aryion } from './website-services/aryion/aryion.service';
 import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
+import { SoFurry } from './website-services/sofurry/sofurry.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -44,6 +45,7 @@ import { DerpibooruSubmissionForm } from './website-services/derpibooru/componen
 import { FurryAminoSubmissionForm } from './website-services/furry-amino/components/furry-amino-submission-form/furry-amino-submission-form.component';
 import { AryionSubmissionForm } from './website-services/aryion/components/aryion-submission-form/aryion-submission-form.component';
 import { PaigeeWorldSubmissionForm } from './website-services/paigee-world/components/paigee-world-submission-form/paigee-world-submission-form.component';
+import { SofurrySubmissionForm } from './website-services/sofurry/components/sofurry-submission-form/sofurry-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -65,6 +67,7 @@ export function INIT_WEBSITE_REGISTRY() {
     FurryAminoSubmissionForm,
     AryionSubmissionForm,
     PaigeeWorldSubmissionForm,
+    SofurrySubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -100,7 +103,8 @@ export function INIT_WEBSITE_REGISTRY() {
     DerpibooruSubmissionForm,
     FurryAminoSubmissionForm,
     AryionSubmissionForm,
-    PaigeeWorldSubmissionForm
+    PaigeeWorldSubmissionForm,
+    SofurrySubmissionForm
   ],
   providers: [
     {
@@ -116,7 +120,8 @@ export function INIT_WEBSITE_REGISTRY() {
         Furiffic,
         FurryAmino,
         Aryion,
-        PaigeeWorld
+        PaigeeWorld,
+        SoFurry
       ],
       multi: true
     }

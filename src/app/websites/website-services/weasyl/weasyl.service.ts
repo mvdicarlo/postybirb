@@ -151,14 +151,14 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     return super.formatTags(defaultTags, other).join(' ');
   }
 
-  getRating(rating: SubmissionRating): any {
+  private getRating(rating: SubmissionRating): any {
     if (rating === SubmissionRating.GENERAL) return 10;
     else if (rating === SubmissionRating.MATURE) return 30;
     else if (rating === SubmissionRating.ADULT || rating === SubmissionRating.EXTREME) return 40;
     else return 10;
   }
 
-  getContentType(type: TypeOfSubmission): any {
+  private getContentType(type: TypeOfSubmission): any {
     if (type === TypeOfSubmission.ART) return 'visual';
     if (type === TypeOfSubmission.STORY) return 'literary';
     if (type === TypeOfSubmission.ANIMATION || type === TypeOfSubmission.AUDIO) return 'multimedia'

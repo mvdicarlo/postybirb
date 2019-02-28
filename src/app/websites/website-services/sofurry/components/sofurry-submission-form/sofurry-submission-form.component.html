@@ -1,0 +1,23 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <folder-select formControlName="folder" class="col col-md-21 col-lg-12 col-xl-12" [folderCategories]="folders"></folder-select>
+    <div class="col col-md col-lg col-xl">
+      <mat-radio-group formControlName="viewOptions">
+        <mat-radio-button value="0">{{'Public' | translate}}</mat-radio-button>
+        <mat-radio-button value="1">{{'Group Only' | translate}}</mat-radio-button>
+        <mat-radio-button value="2">{{'Friends Only' | translate}}</mat-radio-button>
+        <mat-radio-button value="3">{{'Hidden' | translate}}</mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </div>
+</form>

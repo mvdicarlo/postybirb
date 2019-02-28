@@ -107,7 +107,7 @@ export class Aryion extends BaseWebsiteService {
   public getFolders(profileId: string): FolderCategory[] {
     const options: any = this.userInformation.get(profileId) || {};
     return [{
-      title: '',
+      title: 'Folders',
       folders: <Folder[]>dotProp.get(options, 'folders', [])
     }];
   }
