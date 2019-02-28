@@ -10,6 +10,7 @@ import { UsernameParser } from 'src/app/utils/helpers/description-parsers/userna
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
+import * as dotProp from 'dot-prop';
 
 @Injectable({
   providedIn: 'root'
@@ -72,8 +73,14 @@ export class PostManagerService {
   }
 
   private _parseDescription(description: string, website: string): string {
-    const parsers: any[] = WebsiteRegistry.getConfigForRegistry(website).websiteConfig.parsers.description || [];
+    const config = WebsiteRegistry.getConfigForRegistry(website).websiteConfig
+    const preparsers: any[] = dotProp.get(config, 'preparsers.description', []);
+    const parsers: any[] = dotProp.get(config, 'parsers.description', []);
     let parsed = AdInsertParser.parse((description || '').trim(), website);
+
+    preparsers.forEach(parser => {
+      parsed = parser(parsed);
+    });
 
     this.usernameCodes.forEach(obj => {
       parsed = UsernameParser.parse(parsed, obj.code, obj.url);

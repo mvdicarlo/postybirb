@@ -29,6 +29,20 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function preparser(html: string): string {
+  if (!html) return '';
+
+  const regex = new RegExp(`:fa(.*?):`, 'gi');
+  html = html.replace(regex, `:icon$1:`);
+
+  return html;
+}
+
+function descriptionParser(bbcode: string): string {
+  if (!bbcode) return '';
+  return bbcode.replace(/\[hr\]/g, '-----');
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -45,8 +59,11 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   validators: {
     submission: submissionValidate
   },
+  preparsers: {
+    description: [preparser]
+  },
   parsers: {
-    description: [BBCodeParser.parse],
+    description: [BBCodeParser.parse, descriptionParser],
     usernameShortcut: {
       code: 'fa',
       url: 'https://www.furaffinity.net/user/$1'

@@ -45,6 +45,15 @@ function descriptionParse(html: string): string {
     .replace(/style="text-align: right;"/g, 'class="align-right"');
 }
 
+function preparser(html: string): string {
+  if (!html) return '';
+
+  const regex = new RegExp(`:ws(.*?):`, 'gi');
+  html = html.replace(regex, '<!~$1>');
+
+  return html;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -58,6 +67,9 @@ function descriptionParse(html: string): string {
   },
   validators: {
     submission: submissionValidate
+  },
+  preparsers: {
+    description: [preparser]
   },
   parsers: {
     description: [descriptionParse],

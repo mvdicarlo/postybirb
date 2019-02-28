@@ -9,7 +9,6 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import * as dotProp from 'dot-prop';
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, PostResult, SubmissionPostData } from '../../interfaces/website-service.interface';
-import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Folder, FolderCategory } from '../../interfaces/folder.interface';
 import { AryionSubmissionForm } from './components/aryion-submission-form/aryion-submission-form.component';
 
@@ -32,6 +31,15 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function preparser(html: string): string {
+  if (!html) return '';
+
+  const regex = new RegExp(`:ar(.*?):`, 'gi');
+  html = html.replace(regex, `:icon$1:`);
+
+  return html;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,6 +52,9 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   },
   validators: {
     submission: submissionValidate
+  },
+  preparsers: {
+    description: [preparser]
   },
   parsers: {
     description: [PlaintextParser.parse],

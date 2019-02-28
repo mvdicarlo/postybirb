@@ -18,12 +18,16 @@ export interface WebsiteConfig {
     dialog?: any; // dialog component
     url: string;
   };
-  parsers: {
+  preparsers?: {
+    description?: ((html: string) => string)[]; // A list of parsers that occur before any other parsing
+  };
+  parsers?: {
     description: ((html: string) => string)[]; // A list of parsers
     disableAdvertise?: boolean; // Setting this to true will disallow Ad string to be added
     usernameShortcut?: {
       code: string; // e.g. fa -> would parse :falemonynade:
       url: string; // e.g. https://www.furaffinity.net/user/$1
+      convertCodeTo?: string; // This will convert codes that go to the same website. e.g. Fur Affinity :fa: -> :icon: if convertCodeTo = icon (only applies to direct map so only triggers when sending to same website)
     };
   };
   validators: {
