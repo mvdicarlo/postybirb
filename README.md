@@ -1,27 +1,27 @@
-# Postybirb
+# PostyBirb
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.2.2.
-
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+**Written in JavaScript and TypeScript using Angular7+ and Electron**
 
 ## Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
 ## Build
+**You will need NPM and Node installed**
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+### Development
+1. Navigate to postybirb
+2. Install NPM *npm i*
+3. Build Angular dist *npm run compile* | *npm run build* (AoT)
+4. Navigate to electron
+5. Install NPM *npm i*
+6. Start electron *npm start*
+7. Open command console for debugging *ctrl + shift + i*
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+### Production
+1. Navigate to postybirb
+2. Install NPM *npm i*
+3. Build Angular dist *npm run prod*
+4. Navigate to electron
+5. Install NPM *npm i*
+6. Start electron *npm run eb-{windows|linux|mac}*
