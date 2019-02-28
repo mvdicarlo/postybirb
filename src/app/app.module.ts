@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule } from '@angular/core';
+import { NgModule, ErrorHandler } from '@angular/core';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
@@ -11,6 +11,8 @@ import { PostybirbModule } from './postybirb/postybirb.module';
 import { DatabaseModule } from './database/database.module';
 import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
 import { TemplatesModule } from './templates/templates.module';
+
+import { ErrorLoggerHandler } from './app.error.logger';
 
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -64,6 +66,7 @@ import { AppComponent } from './app.component';
   ],
   providers: [
     { provide: LocationStrategy, useClass: HashLocationStrategy }, // try to avoid refresh issues with electron
+    { provide: ErrorHandler, useClass: ErrorLoggerHandler },
     { provide: 'SnotifyToastConfig', useValue: ToastDefaults },
     SnotifyService
   ],
