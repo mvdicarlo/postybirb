@@ -201,7 +201,7 @@ export class SoFurry extends BaseWebsiteService {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(body, 'YII_CSRF_TOKEN'),
       'UploadForm[binarycontent_5]': postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
       'UploadForm[P_title]': submission.title,
-      'UploadForm[description]': postData.description,
+      'UploadForm[description]': postData.description.replace(/<\/div>(\n|\r)/g, '</div>'),
       'UploadForm[formtags]': this.formatTags(postData.tags, []),
       'UploadForm[contentLevel]': this.getContentRating(submission.rating),
       'UploadForm[P_hidePublic]': options.viewOptions,
