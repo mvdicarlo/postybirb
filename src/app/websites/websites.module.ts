@@ -2,29 +2,32 @@ import { NgModule, APP_INITIALIZER, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
+import { Aryion } from './website-services/aryion/aryion.service';
+import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
 import { E621 } from './website-services/e621/e621.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
-import { Route50 } from './website-services/route50/route50.service';
-import { Weasyl } from './website-services/weasyl/weasyl.service';
-import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
-import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
 import { Furiffic } from './website-services/furiffic/furiffic.service';
 import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
-import { Aryion } from './website-services/aryion/aryion.service';
-import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
-import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
+import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
+import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
+import { Patreon } from './website-services/patreon/patreon.service';
 import { Pixiv } from './website-services/pixiv/pixiv.service';
+import { Route50 } from './website-services/route50/route50.service';
+import { SoFurry } from './website-services/sofurry/sofurry.service';
+import { Weasyl } from './website-services/weasyl/weasyl.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
 
+import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+
 import {
   MatAutocompleteModule,
-  MatIconModule,
-  MatDialogModule,
   MatButtonModule,
   MatCheckboxModule,
+  MatDialogModule,
+  MatIconModule,
   MatInputModule,
   MatMenuModule,
   MatProgressBarModule,
@@ -52,6 +55,7 @@ import { SofurrySubmissionForm } from './website-services/sofurry/components/sof
 import { HentaiFoundrySubmissionForm } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-submission-form.component';
 import { HentaiFoundryCategorySelectComponent } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
 import { PixivSubmissionForm } from './website-services/pixiv/components/pixiv-submission-form/pixiv-submission-form.component';
+import { PatreonSubmissionForm } from './website-services/patreon/components/patreon-submission-form/patreon-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -77,6 +81,7 @@ export function INIT_WEBSITE_REGISTRY() {
     HentaiFoundrySubmissionForm,
     HentaiFoundryCategorySelectComponent,
     PixivSubmissionForm,
+    PatreonSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -95,7 +100,9 @@ export function INIT_WEBSITE_REGISTRY() {
     MatTabsModule,
     MatTooltipModule,
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    OwlDateTimeModule,
+    OwlNativeDateTimeModule
   ],
   exports: [
     GenericLoginDialog,
@@ -103,39 +110,41 @@ export function INIT_WEBSITE_REGISTRY() {
     WebsiteDisplaynamePipe
   ],
   entryComponents: [
-    GenericLoginDialog,
-    WeasylSubmissionForm,
+    AryionSubmissionForm,
+    DerpibooruSubmissionForm,
     E621SubmissionForm,
     FurAffinitySubmissionForm,
-    GenericJournalSubmissionForm,
-    GenericSubmissionForm,
-    NewgroundsSubmissionForm,
-    DerpibooruSubmissionForm,
     FurryAminoSubmissionForm,
-    AryionSubmissionForm,
-    PaigeeWorldSubmissionForm,
-    SofurrySubmissionForm,
+    GenericJournalSubmissionForm,
+    GenericLoginDialog,
+    GenericSubmissionForm,
     HentaiFoundrySubmissionForm,
-    PixivSubmissionForm
+    NewgroundsSubmissionForm,
+    PaigeeWorldSubmissionForm,
+    PatreonSubmissionForm,
+    PixivSubmissionForm,
+    SofurrySubmissionForm,
+    WeasylSubmissionForm,
   ],
   providers: [
     {
       provide: APP_INITIALIZER,
       useFactory: INIT_WEBSITE_REGISTRY,
       deps: [
+        Aryion,
+        Derpibooru,
         E621,
         FurAffinity,
-        Newgrounds,
-        Route50,
-        Weasyl,
-        Derpibooru,
         Furiffic,
         FurryAmino,
-        Aryion,
-        PaigeeWorld,
-        SoFurry,
         HentaiFoundry,
-        Pixiv
+        Newgrounds,
+        PaigeeWorld,
+        Patreon,
+        Pixiv,
+        Route50,
+        SoFurry,
+        Weasyl,
       ],
       multi: true
     }
