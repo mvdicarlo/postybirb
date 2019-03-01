@@ -14,6 +14,7 @@ import { Aryion } from './website-services/aryion/aryion.service';
 import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
 import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
+import { Pixiv } from './website-services/pixiv/pixiv.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -50,6 +51,7 @@ import { PaigeeWorldSubmissionForm } from './website-services/paigee-world/compo
 import { SofurrySubmissionForm } from './website-services/sofurry/components/sofurry-submission-form/sofurry-submission-form.component';
 import { HentaiFoundrySubmissionForm } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-submission-form.component';
 import { HentaiFoundryCategorySelectComponent } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
+import { PixivSubmissionForm } from './website-services/pixiv/components/pixiv-submission-form/pixiv-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -74,6 +76,7 @@ export function INIT_WEBSITE_REGISTRY() {
     SofurrySubmissionForm,
     HentaiFoundrySubmissionForm,
     HentaiFoundryCategorySelectComponent,
+    PixivSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -112,7 +115,8 @@ export function INIT_WEBSITE_REGISTRY() {
     AryionSubmissionForm,
     PaigeeWorldSubmissionForm,
     SofurrySubmissionForm,
-    HentaiFoundrySubmissionForm
+    HentaiFoundrySubmissionForm,
+    PixivSubmissionForm
   ],
   providers: [
     {
@@ -130,7 +134,8 @@ export function INIT_WEBSITE_REGISTRY() {
         Aryion,
         PaigeeWorld,
         SoFurry,
-        HentaiFoundry
+        HentaiFoundry,
+        Pixiv
       ],
       multi: true
     }
