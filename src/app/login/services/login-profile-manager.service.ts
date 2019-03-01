@@ -83,6 +83,12 @@ export class LoginProfileManagerService {
    * @param id Id reference to the profile
    */
   public deleteProfile(id: string): void {
+    const profile: LoginProfile = this.db.get(this.PROFILE_FIELD)
+      .find({ id })
+      .value();
+
+    if (profile.defaultProfile) return;
+
     this.db.get(this.PROFILE_FIELD)
       .remove({ id })
       .write();
@@ -104,7 +110,7 @@ export class LoginProfileManagerService {
 
       this.db.get(this.PROFILE_FIELD)
         .push({
-          id: nanoid(),
+          id: nanoid(16),
           name,
           defaultProfile,
           data: {}
@@ -137,9 +143,11 @@ export class LoginProfileManagerService {
    * @return    Profile Name
    */
   public getProfileName(id: string): string {
-    return this.db.get(this.PROFILE_FIELD)
+    const profile = this.db.get(this.PROFILE_FIELD)
       .find({ id })
-      .value().name;
+      .value();
+
+    return profile ? profile.name : 'Does not exist';
   }
 
 }

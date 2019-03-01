@@ -25,6 +25,7 @@ let scheduleCheckInterval = null; // Interval for checking for scheduled posts w
 const clearCacheInterval = null; // Interval for manually clearing cache
 const userDataPath = app.getPath('userData');
 const dataPath = path.join(userDataPath, 'data');
+console.log('DataPath', dataPath);
 
 const hasLock = app.requestSingleInstanceLock();
 if (!hasLock) {

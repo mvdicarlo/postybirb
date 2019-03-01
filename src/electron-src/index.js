@@ -22,6 +22,8 @@ window.nativeImage = nativeImage;
 window.getFileIcon = app.getFileIcon;
 window.BrowserWindow = remote.BrowserWindow; // Pretty much only used for PaigeeWorld right now
 
+const Encrypt = require('./src/encrypt.js');
+
 // Set up profiles DB
 const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));
 const ldb = low(adapter);

@@ -57,7 +57,15 @@ export class LoginStatusViewComponent implements OnInit, OnDestroy {
     });
 
     // only listened to for profile name changes
-    this.profileSubscription = this._loginProfileManager.profileChanges.subscribe(() => {
+    this.profileSubscription = this._loginProfileManager.profileChanges.subscribe(profiles => {
+      const existingKeys = profiles.map(p => p.id); // check for any removed statuses/profiles
+      const statuses = this.statuses;
+      for (let i = 0; i < statuses.length; i++) {
+        const status = statuses[i];
+        if (!existingKeys.includes(status.profileId)) {
+          this.statuses.splice(i, 1);
+        }
+      }
       this._changeDetector.markForCheck()
     });
 
@@ -74,12 +82,12 @@ export class LoginStatusViewComponent implements OnInit, OnDestroy {
       this._openLoginDialog(profileId);
     } else {
       this.dialog.open(LoginProfileSelectDialog)
-      .afterClosed()
-      .subscribe((result: LoginProfile) => {
-        if (result) {
-          this._openLoginDialog(result.id)
-        }
-      });
+        .afterClosed()
+        .subscribe((result: LoginProfile) => {
+          if (result) {
+            this._openLoginDialog(result.id)
+          }
+        });
     }
   }
 
@@ -96,10 +104,10 @@ export class LoginStatusViewComponent implements OnInit, OnDestroy {
         persist: profileId
       }
     })
-    .afterClosed()
-    .subscribe(() => {
-      this._loginManager.updateProfiles([profileId], { websites: [this.config.name] });
-    });
+      .afterClosed()
+      .subscribe(() => {
+        this._loginManager.updateProfiles([profileId], { websites: [this.config.name] });
+      });
   }
 
 }

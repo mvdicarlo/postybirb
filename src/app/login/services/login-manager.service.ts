@@ -48,6 +48,13 @@ export class LoginManagerService {
     }
 
     this.profileIds = profileKeys || [];
+
+    Object.keys(this.profileStatuses).forEach(key => {
+      if (!this.profileIds.includes(key)) {
+        delete this.profileStatuses[key];
+      }
+    });
+
     this.updateProfiles(newIds);
   }
 
