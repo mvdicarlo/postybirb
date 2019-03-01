@@ -74,7 +74,7 @@ exports.patch = function patch(url, formData, cookieUrl, cookies, options) {
     });
 };
 
-exports.requestPost = function requestPost(url, formData, cookieUrl, cookies, options) {
+exports.post = function post(url, formData, cookieUrl, cookies, options) {
     return new Promise((resolve, reject) => {
         const cookieJar = request.jar();
         if (cookies && cookies.length) {

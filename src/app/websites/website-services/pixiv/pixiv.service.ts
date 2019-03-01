@@ -128,7 +128,7 @@ export class Pixiv extends BaseWebsiteService {
       });
     }
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/upload.php`, data, this.BASE_URL, cookies, {
+    const postResponse = await got.post(`${this.BASE_URL}/upload.php`, data, this.BASE_URL, cookies, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
     });
 

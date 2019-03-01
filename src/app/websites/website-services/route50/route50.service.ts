@@ -133,7 +133,7 @@ export class Route50 extends BaseWebsiteService {
       coc: '1'
     }
 
-    const response = await got.requestPost(`${this.BASE_URL}/galleries/submit`, data, this.BASE_URL, cookies)
+    const response = await got.post(`${this.BASE_URL}/galleries/submit`, data, this.BASE_URL, cookies)
     if (response.error) {
       return Promise.reject(this.createPostResponse('Unknown error posting to Route 50', response.error));
     } else {

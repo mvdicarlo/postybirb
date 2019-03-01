@@ -136,7 +136,7 @@ export class FurryAmino extends BaseWebsiteService {
       }
     };
 
-    const postRequest = await got.requestPost('https://aminoapps.com/api/blog', null, this.COOKIES_URL, cookies, {
+    const postRequest = await got.post('https://aminoapps.com/api/blog', null, this.COOKIES_URL, cookies, {
       encoding: null,
       gzip: true,
       json: data,
@@ -195,7 +195,7 @@ export class FurryAmino extends BaseWebsiteService {
       }
     };
 
-    const postRequest = await got.requestPost('https://aminoapps.com/api/blog', null, this.COOKIES_URL, cookies, {
+    const postRequest = await got.post('https://aminoapps.com/api/blog', null, this.COOKIES_URL, cookies, {
       encoding: null,
       gzip: true,
       json: data,
@@ -237,7 +237,7 @@ export class FurryAmino extends BaseWebsiteService {
         avatar: fileAsFormDataObject(file.buffer, file.fileInfo)
       };
 
-      got.requestPost('https://aminoapps.com/api/upload-image', data, this.COOKIES_URL, cookies)
+      got.post('https://aminoapps.com/api/upload-image', data, this.COOKIES_URL, cookies)
       .then(res => {
         const json = JSON.parse(res.success.body);
         if (json.code === 200) {

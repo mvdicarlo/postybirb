@@ -176,7 +176,7 @@ export class SoFurry extends BaseWebsiteService {
       'save': 'Publish'
     };
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/upload/details?contentType=3`, data, this.BASE_URL, cookies, {
+    const postResponse = await got.post(`${this.BASE_URL}/upload/details?contentType=3`, data, this.BASE_URL, cookies, {
       headers: {
         referer: `${this.BASE_URL}/upload/details?contentType=3`
       }
@@ -214,7 +214,7 @@ export class SoFurry extends BaseWebsiteService {
       data['UploadForm[binarycontent]'] = fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo);
     }
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/upload/details?contentType=${type}`, data, this.BASE_URL, cookies, {
+    const postResponse = await got.post(`${this.BASE_URL}/upload/details?contentType=${type}`, data, this.BASE_URL, cookies, {
       headers: {
         referer: `${this.BASE_URL}/upload/details?contentType=${type}`
       }

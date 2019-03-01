@@ -111,7 +111,7 @@ export class Patreon extends BaseWebsiteService {
       }
     };
 
-    const create = await got.requestPost(`${this.BASE_URL}/api/posts?json-api-version=1.0`, null, this.BASE_URL, cookies, {
+    const create = await got.post(`${this.BASE_URL}/api/posts?json-api-version=1.0`, null, this.BASE_URL, cookies, {
       json: createData,
       headers: {
         'X-CSRF-Signature': csrf
@@ -195,7 +195,7 @@ export class Patreon extends BaseWebsiteService {
       file: fileAsFormDataObject(file.buffer, file.fileInfo)
     };
 
-    const upload = await got.requestPost(`${link}/${attachment ? 'attachments' : 'post_file'}?json-api-version=1.0`, fileData, this.BASE_URL, cookies, {
+    const upload = await got.post(`${link}/${attachment ? 'attachments' : 'post_file'}?json-api-version=1.0`, fileData, this.BASE_URL, cookies, {
       headers: {
         'X-CSRF-Signature': csrf,
         'X-Requested-With': 'XMLHttpRequest'
@@ -222,7 +222,7 @@ export class Patreon extends BaseWebsiteService {
       }
     };
 
-    const create = await got.requestPost(`${this.BASE_URL}/api/posts?json-api-version=1.0`, null, this.BASE_URL, cookies, {
+    const create = await got.post(`${this.BASE_URL}/api/posts?json-api-version=1.0`, null, this.BASE_URL, cookies, {
       json: createData,
       headers: {
         'X-CSRF-Signature': csrf

@@ -92,7 +92,7 @@ export class Newgrounds extends BaseWebsiteService {
       qqfile: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo)
     };
 
-    const park = await got.requestPost(`${this.BASE_URL}/parkfile`, fileData, this.BASE_URL, cookies, {
+    const park = await got.post(`${this.BASE_URL}/parkfile`, fileData, this.BASE_URL, cookies, {
       headers: {
         'Origin': 'https://www.newgrounds.com',
         'Referer': `https://www.newgrounds.com/art/submit/create`,
@@ -158,7 +158,7 @@ export class Newgrounds extends BaseWebsiteService {
       data2.public = '1';
     }
 
-    const optionsPost = await got.requestPost(`${this.BASE_URL}/art/submit/create`, data2, this.BASE_URL, cookies2, {
+    const optionsPost = await got.post(`${this.BASE_URL}/art/submit/create`, data2, this.BASE_URL, cookies2, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
       headers: {
         'X-Requested-With': 'XMLHttpRequest',

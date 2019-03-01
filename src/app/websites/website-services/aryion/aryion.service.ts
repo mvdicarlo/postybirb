@@ -142,7 +142,7 @@ export class Aryion extends BaseWebsiteService {
       scrap: postData.options.scraps ? 'on' : ''
     };
 
-    const postRequest = await got.requestPost(`${this.BASE_URL}/g4/itemaction.php`, data, this.BASE_URL, cookies);
+    const postRequest = await got.post(`${this.BASE_URL}/g4/itemaction.php`, data, this.BASE_URL, cookies);
     if (postRequest.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postRequest.error));
     }

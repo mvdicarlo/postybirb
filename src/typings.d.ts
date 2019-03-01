@@ -10,7 +10,7 @@ declare var loginPanel: any; // login panel hook inserted into window
 declare var got: {
   get(url: string, cookieUrl: string, cookies: any[], profileId: string, options?: any): Promise<any>;
   patch(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
-  requestPost(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
+  post(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
 }
 
 declare function openUrlInBrowser(url: string): void;

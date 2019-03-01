@@ -112,7 +112,7 @@ export class HentaiFoundry extends BaseWebsiteService {
       'Pictures[license_id]': '0'
     };
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/pictures/create`, data, this.BASE_URL, cookies);
+    const postResponse = await got.post(`${this.BASE_URL}/pictures/create`, data, this.BASE_URL, cookies);
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }

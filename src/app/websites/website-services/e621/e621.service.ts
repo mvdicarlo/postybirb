@@ -123,7 +123,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       data['post[source]'] = options.sourceURL[0] || '';
     }
 
-    const response = await got.requestPost(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies);
+    const response = await got.post(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies);
     if (response.error) {
       return Promise.reject(this.createPostResponse(null, response.error));
     } else {

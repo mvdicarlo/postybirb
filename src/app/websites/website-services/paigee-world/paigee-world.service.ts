@@ -118,7 +118,7 @@ export class PaigeeWorld extends BaseWebsiteService {
       category: postData.options.category || ''
     };
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/media`, data, this.BASE_URL, cookies, {
+    const postResponse = await got.post(`${this.BASE_URL}/media`, data, this.BASE_URL, cookies, {
       headers: {
         Authorization: bearer,
       }

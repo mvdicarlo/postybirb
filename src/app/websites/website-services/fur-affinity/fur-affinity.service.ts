@@ -198,7 +198,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       do: 'update'
     };
 
-    const response = await got.requestPost(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
+    const response = await got.post(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
     if (response.error) {
       return Promise.reject(this.createPostResponse('Unknown error occurred', response.error));
     } else {
@@ -213,7 +213,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       submission_type: this.getContentType(postData.typeOfSubmission)
     };
 
-    const part1Response = await got.requestPost(`${this.BASE_URL}/submit/`, initData, this.BASE_URL, cookies);
+    const part1Response = await got.post(`${this.BASE_URL}/submit/`, initData, this.BASE_URL, cookies);
     if (part1Response.error) {
       return Promise.reject(this.createPostResponse('Unknown error', part1Response.error));
     } else {
@@ -230,7 +230,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         submission_type: this.getContentType(postData.typeOfSubmission)
       };
 
-      const uploadResponse = await got.requestPost(`${this.BASE_URL}/submit/`, part2Data, this.BASE_URL, cookies);
+      const uploadResponse = await got.post(`${this.BASE_URL}/submit/`, part2Data, this.BASE_URL, cookies);
       if (uploadResponse.error) {
         return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
       } else {
@@ -267,7 +267,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           finalizeData['folder_ids[]'] = options.folders;
         }
 
-        const postResponse = await got.requestPost(`${this.BASE_URL}/submit/`, finalizeData, this.BASE_URL, cookies, {
+        const postResponse = await got.post(`${this.BASE_URL}/submit/`, finalizeData, this.BASE_URL, cookies, {
           qsStringifyOptions: { arrayFormat: 'repeat' },
         });
 
@@ -292,7 +292,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
                 newsubmission: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
               };
 
-              await got.requestPost(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
+              await got.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
             }
           } catch (e) { }
           finally {

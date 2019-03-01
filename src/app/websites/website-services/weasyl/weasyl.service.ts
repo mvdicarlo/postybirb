@@ -200,7 +200,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       tags: this.formatTags(postData.tags, [])
     }
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/submit/journal`, data, this.BASE_URL, cookies);
+    const postResponse = await got.post(`${this.BASE_URL}/submit/journal`, data, this.BASE_URL, cookies);
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
     } else {
@@ -246,7 +246,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     data.folderid = options.folder || '';
     data.subtype = options.category || '';
 
-    const postResponse = await got.requestPost(url, data, this.BASE_URL, cookies);
+    const postResponse = await got.post(url, data, this.BASE_URL, cookies);
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
     } else {
@@ -266,7 +266,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
           thumbfile: ''
         }
 
-        const thumbnailResponse = await got.requestPost(`${this.BASE_URL}/manage/thumbnail`, thumbnailData, this.BASE_URL, cookies);
+        const thumbnailResponse = await got.post(`${this.BASE_URL}/manage/thumbnail`, thumbnailData, this.BASE_URL, cookies);
         if (thumbnailResponse.error) {
           return Promise.reject(this.createPostResponse('Unknown error creating thumbnail', thumbnailResponse.error));
         } else {

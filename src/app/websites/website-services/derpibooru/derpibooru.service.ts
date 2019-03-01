@@ -118,7 +118,7 @@ export class Derpibooru extends BaseWebsiteService {
       'commit': 'Create Image'
     };
 
-    const postRequest = await got.requestPost(`${this.BASE_URL}/images`, data, this.BASE_URL, cookies);
+    const postRequest = await got.post(`${this.BASE_URL}/images`, data, this.BASE_URL, cookies);
     if (postRequest.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postRequest.error));
     }

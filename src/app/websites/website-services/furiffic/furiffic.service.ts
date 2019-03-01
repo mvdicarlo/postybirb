@@ -117,7 +117,7 @@ export class Furiffic extends BaseWebsiteService {
       __csrf: (((body.match(/csrfSeed = .*;/g) || [])[0] || '').split('=')[1] || '').replace(';', '').trim()
     };
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/${postData.loginInformation.username}/journals/create`, data, this.BASE_URL, cookies, {
+    const postResponse = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/journals/create`, data, this.BASE_URL, cookies, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
     });
 
@@ -137,7 +137,7 @@ export class Furiffic extends BaseWebsiteService {
       'items[0][clientId]': ''
     };
 
-    const preuploadResponse = await got.requestPost(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/preupload`, fileData, this.BASE_URL, cookies);
+    const preuploadResponse = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/preupload`, fileData, this.BASE_URL, cookies);
     if (preuploadResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', preuploadResponse.error));
     }
@@ -148,12 +148,12 @@ export class Furiffic extends BaseWebsiteService {
       file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
     }
 
-    const fileResponse = await got.requestPost(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/upload`, uploadData, this.BASE_URL, cookies);
+    const fileResponse = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/upload`, uploadData, this.BASE_URL, cookies);
     if (fileResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', fileResponse.error));
     }
 
-    const form = await got.requestPost(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/uploaddata`, { 'mediaIds[]': id }, this.BASE_URL, cookies);
+    const form = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/uploaddata`, { 'mediaIds[]': id }, this.BASE_URL, cookies);
     if (form.error) {
       return Promise.reject(this.createPostResponse('Unknown error', form.error));
     }
@@ -181,7 +181,7 @@ export class Furiffic extends BaseWebsiteService {
       infoData.thumbnailfile = '';
     }
 
-    const editResponse = await got.requestPost(`${this.BASE_URL}/${postData.loginInformation.username}/edit/${id}`, infoData, this.BASE_URL, cookies, {
+    const editResponse = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/edit/${id}`, infoData, this.BASE_URL, cookies, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
     });
 
@@ -193,7 +193,7 @@ export class Furiffic extends BaseWebsiteService {
       'ids[]': id
     };
 
-    const postResponse = await got.requestPost(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/publish`, publish, this.BASE_URL, cookies);
+    const postResponse = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/publish`, publish, this.BASE_URL, cookies);
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
