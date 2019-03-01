@@ -12,8 +12,8 @@
   <mat-menu #profileMenuActions>
     <button mat-menu-item (click)="createNewLoginProfile()">{{ 'New' | translate }}</button>
     <button mat-menu-item (click)="renameLoginProfile()" [disabled]="!selectedProfileId">{{ 'Rename' | translate }}</button>
-    <button mat-menu-item (click)="makeDefaultProfile()" [disabled]="!selectedProfileId">{{ 'Make Default' | translate }}</button>
-    <button mat-menu-item (click)="deleteLoginProfile()" [disabled]="!selectedProfileId" class="warn-text">{{ 'Delete' | translate }}</button>
+    <button mat-menu-item (click)="makeDefaultProfile()" [disabled]="!selectedProfileId || selectedProfileId == defaultId">{{ 'Make Default' | translate }}</button>
+    <button mat-menu-item (click)="deleteLoginProfile()" [disabled]="!selectedProfileId || selectedProfileId == defaultId" class="warn-text">{{ 'Delete' | translate }}</button>
   </mat-menu>
 </div>
 

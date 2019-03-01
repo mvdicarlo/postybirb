@@ -15,12 +15,11 @@ import { getDefaultProfile } from '../login-profile-select-dialog/login-profile-
 export class LoginContainerComponent implements OnInit, OnDestroy {
   private profileSubscription: Subscription = Subscription.EMPTY;
   public profiles: LoginProfile[] = [];
+  public defaultId: any;
 
   get selectedProfileId(): string { return this._selectedProfileId }
   set selectedProfileId(id: string) {
     this._selectedProfileId = id;
-
-    // TODO do something with the managers and switch state in panel section
   }
   private _selectedProfileId: string;
 
@@ -29,6 +28,7 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.profileSubscription = this._loginManager.profileChanges.subscribe(profiles => {
       this.profiles = profiles;
+      this.defaultId = profiles.filter(p => p.defaultProfile)[0].id;
 
       // Select a default if none is selected yet
       if (!this.selectedProfileId) {

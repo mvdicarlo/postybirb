@@ -3,6 +3,7 @@ import { CacheService } from './cache.service';
 import { Subscription } from 'rxjs';
 import { Submission } from '../models/submission.model';
 import { validate, getAllWebsiteValidatorsForWebsites } from 'src/app/websites/helpers/website-validator.helper';
+import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +12,19 @@ export class SubmissionCache extends CacheService {
   private _subscriptionCache: { [key: string]: Subscription } = {};
   private _updateCallback: any;
 
-  constructor() {
+  constructor(private _loginProfileManager: LoginProfileManagerService) {
     super();
+    _loginProfileManager.profileChanges.subscribe(profiles => {
+      const existingProfileIds = profiles.map(p => p.id);
+      // Remove deleted login profiles from any submission
+      this.getAll().forEach(submission => {
+        if (submission.formData && submission.formData.loginProfile && !existingProfileIds.includes(submission.formData.loginProfile)) {
+          const update = Object.assign({}, submission.formData);
+          update.loginProfile = null;
+          submission.formData = update;
+        }
+      });
+    });
   }
 
   public setUpdateCallback(fn: () => void): void {
