@@ -18,7 +18,7 @@ import * as dotProp from 'dot-prop';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  private readonly TEMP_TEMPLATE_STORE: string = 'template-form-store';
+  protected readonly LOCAL_STORE: string = 'template-form-store';
   private loadedTemplateName: string;
 
   constructor(
@@ -31,11 +31,15 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
     this.loading = true;
     this.availableWebsites = getUnfilteredWebsites() || {};
     this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
-    this.submission.formData = store.get(this.TEMP_TEMPLATE_STORE) || {};
+    this.submission.formData = store.get(this.LOCAL_STORE) || {};
     this._initializeFormDataForm();
 
     this.loading = false;
     this._changeDetector.markForCheck();
+  }
+
+  protected _formUpdated(changes: any): void {
+    store.set(this.LOCAL_STORE, changes);
   }
 
   public clear(): void {
@@ -48,7 +52,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
         if (doClear) {
           this.formDataForm.reset();
           this.resetSubject.next();
-          store.remove(this.TEMP_TEMPLATE_STORE);
+          store.remove(this.LOCAL_STORE);
           this.loadedTemplateName = null;
         }
       });

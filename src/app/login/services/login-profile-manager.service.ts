@@ -147,7 +147,7 @@ export class LoginProfileManagerService {
       .find({ id })
       .value();
 
-    return profile ? profile.name : 'Does not exist';
+    return profile ? profile.name : 'Profile does not exist';
   }
 
 }

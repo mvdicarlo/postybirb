@@ -29,6 +29,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
   protected loginStatuses: ProfileStatuses = {};
   protected loginListener: Subscription = Subscription.EMPTY;
+  protected profileListener: Subscription = Subscription.EMPTY;
 
   public submission: Submission;
   public loading: boolean = false;
@@ -67,12 +68,20 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.triggerWebsiteReload = false;
+    this.profileListener = this._loginProfileManager.profileChanges.subscribe(profiles => {
+      const existingProfiles = profiles.map(p => p.id);
+      if (!existingProfiles.includes(this.formDataForm.value.loginProfile)) {
+        this.formDataForm.patchValue({ loginProfile: null });
+        this._changeDetector.markForCheck();
+      }
+    });
     this._changeDetector.markForCheck();
   }
 
   ngOnDestroy() {
     this.resetSubject.complete();
     this.loginListener.unsubscribe();
+    this.profileListener.unsubscribe();
   }
 
   protected _initializeFormDataForm(): void {
@@ -114,8 +123,12 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this.formDataForm.valueChanges
       .pipe(debounceTime(300))
       .subscribe(changes => {
-          this.submission.formData = changes;
+        this._formUpdated(changes);
       });
+  }
+
+  protected _formUpdated(changes: any): void {
+    this.submission.formData = changes;
   }
 
   protected _copySubmission(submission: ISubmission): void {

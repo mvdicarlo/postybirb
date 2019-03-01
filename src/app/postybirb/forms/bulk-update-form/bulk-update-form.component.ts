@@ -15,7 +15,7 @@ import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-website
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  private readonly BULK_STORE: string = 'bulk-form-store';
+  protected readonly LOCAL_STORE: string = 'bulk-form-store';
 
   constructor(
     injector: Injector,
@@ -28,11 +28,15 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
     this.loading = true;
     this.availableWebsites = getUnfilteredWebsites() || {};
     this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
-    this.submission.formData = store.get(this.BULK_STORE) || {};
+    this.submission.formData = store.get(this.LOCAL_STORE) || {};
     this._initializeFormDataForm();
 
     this.loading = false;
     this._changeDetector.markForCheck();
+  }
+
+  protected _formUpdated(changes: any): void {
+    store.set(this.LOCAL_STORE, changes);
   }
 
   public clear(): void {
@@ -45,7 +49,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
         if (doClear) {
           this.formDataForm.reset();
           this.resetSubject.next();
-          store.remove(this.BULK_STORE);
+          store.remove(this.LOCAL_STORE);
         }
       });
   }
