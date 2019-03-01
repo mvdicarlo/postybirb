@@ -71,7 +71,7 @@ export class Furiffic extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies);
+    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
       if (body.includes('logout')) {
@@ -100,7 +100,7 @@ export class Furiffic extends BaseWebsiteService {
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/${postData.loginInformation.username}/journals/create`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/${postData.loginInformation.username}/journals/create`, this.BASE_URL, cookies, postData.profileId);
     const body = response.body;
 
     const data: any = {

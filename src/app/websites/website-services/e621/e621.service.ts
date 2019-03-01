@@ -69,7 +69,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/user/home`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/user/home`, this.BASE_URL, cookies, profileId);
     try { // Old legacy code that is marked for refactor
       const body = response.body;
       const matcher = /Logged in as.*"/g;
@@ -105,7 +105,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/post/upload`, this.BASE_URL, cookies);
+    const formPage = await got.get(`${this.BASE_URL}/post/upload`, this.BASE_URL, cookies, postData.profileId);
 
     const data: any = {
       'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]),

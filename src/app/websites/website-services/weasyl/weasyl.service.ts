@@ -93,7 +93,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/api/whoami`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/api/whoami`, this.BASE_URL, cookies, profileId);
     try {
       const body = JSON.parse(response.body);
       if (body.login) {
@@ -110,7 +110,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
 
   private async _updateUserInformation(profileId: string, loginName: string): Promise<void> {
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/api/users/${loginName}/view`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/api/users/${loginName}/view`, this.BASE_URL, cookies, profileId);
     try {
       const info = JSON.parse(response.body);
       if (info) {
@@ -189,7 +189,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/submit/journal`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/submit/journal`, this.BASE_URL, cookies, postData.profileId);
     const journalPage: string = response.body;
 
     const data = {
@@ -213,7 +213,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     const url = `${this.BASE_URL}/submit/${type}`;
 
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(url, this.BASE_URL, cookies);
+    const response = await got.get(url, this.BASE_URL, cookies, postData.profileId);
     const journalPage: string = response.body;
 
     const data: any = {

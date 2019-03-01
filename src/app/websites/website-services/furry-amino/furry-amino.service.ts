@@ -61,7 +61,7 @@ export class FurryAmino extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.COOKIES_URL);
-    const response = await got.get(`${this.BASE_URL}`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
       if (!body.includes('Sign In')) {
@@ -90,7 +90,7 @@ export class FurryAmino extends BaseWebsiteService {
     if (this.categories.length) return;
 
     const ndcId = this.userInformation.get(profileId).ndcId;
-    const categoryRequest = await got.get(`https://aminoapps.com/api/get-blog-category?ndcId=${ndcId}`, this.COOKIES_URL, cookies);
+    const categoryRequest = await got.get(`https://aminoapps.com/api/get-blog-category?ndcId=${ndcId}`, this.COOKIES_URL, cookies, profileId);
     const result: any[] = JSON.parse(categoryRequest.body).result;
     const categories: any[] = [];
     for (let i = 0; i < result.length; i++) {

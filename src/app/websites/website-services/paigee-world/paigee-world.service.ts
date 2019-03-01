@@ -58,7 +58,7 @@ export class PaigeeWorld extends BaseWebsiteService {
 
     const cookies = await getCookies(profileId, this.BASE_URL);
     const bearer = await this.getBearerToken(profileId);
-    const response = await got.get(`${this.BASE_URL}/currentuser`, this.BASE_URL, cookies, {
+    const response = await got.get(`${this.BASE_URL}/currentuser`, this.BASE_URL, cookies, profileId, {
       headers: {
         Authorization: bearer
       },

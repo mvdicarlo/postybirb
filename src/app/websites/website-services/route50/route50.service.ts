@@ -60,7 +60,7 @@ export class Route50 extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies);
+    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
     try {
       const body: string = response.body;
       if (body.includes('loggedin')) {

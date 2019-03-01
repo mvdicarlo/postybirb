@@ -78,7 +78,7 @@ export class Aryion extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/g4/`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/g4/`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
       if (!body.includes('Login')) {
@@ -88,7 +88,7 @@ export class Aryion extends BaseWebsiteService {
 
         await this._getFolders(profileId, cookies);
 
-        const canUploadCheck = await got.get(`${this.BASE_URL}/g4/gallery/${returnValue.username}`, this.BASE_URL, cookies);
+        const canUploadCheck = await got.get(`${this.BASE_URL}/g4/gallery/${returnValue.username}`, this.BASE_URL, cookies, profileId);
         const uploadBody = canUploadCheck.body;
         if (!uploadBody.includes('New Item')) {
           returnValue.username = 'No Upload Privileges';
@@ -100,7 +100,7 @@ export class Aryion extends BaseWebsiteService {
   }
 
   private async _getFolders(profileId: string, cookies: any[]): Promise<void> {
-    const folderPage = await got.get(`${this.BASE_URL}/g4/treeview.php`, this.BASE_URL, cookies);
+    const folderPage = await got.get(`${this.BASE_URL}/g4/treeview.php`, this.BASE_URL, cookies, profileId);
     const folders: Folder[] = [];
 
     const html$ = $.parseHTML(folderPage.body);

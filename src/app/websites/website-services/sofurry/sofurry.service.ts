@@ -17,9 +17,9 @@ import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, SoFurry.name);
-  if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'Weasyl', value: 2 }]);
+  if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'SoFurry', value: 2 }]);
   if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'])) {
-    problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
+    problems.push(['Does not support file format', { website: 'SoFurry', value: submission.fileInfo.type }]);
   }
 
   if (MBtoBytes(50) < submission.fileInfo.size) {
@@ -72,13 +72,13 @@ export class SoFurry extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/upload/details?contentType=1`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/upload/details?contentType=1`, this.BASE_URL, cookies, profileId);
 
     try {
       const body = response.body;
       if (body.includes('Logout')) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        returnValue.username = await this._getUsername(cookies);
+        returnValue.username = await this._getUsername(cookies, profileId);
         await this._getFolders(profileId, body /* we have the page we want so why not reuse it */);
       }
     } catch (e) { /* Nothing to do with this */ }
@@ -86,8 +86,8 @@ export class SoFurry extends BaseWebsiteService {
     return returnValue;
   }
 
-  private async _getUsername(cookies: any[]): Promise<string> {
-    const res = await got.get(this.BASE_URL, this.BASE_URL, cookies);
+  private async _getUsername(cookies: any[], profileId: string): Promise<string> {
+    const res = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
     const body = res.body;
     let username = null;
     try {
@@ -158,7 +158,7 @@ export class SoFurry extends BaseWebsiteService {
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/upload/details?contentType=3`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/upload/details?contentType=3`, this.BASE_URL, cookies, postData.profileId);
     const body = response.body;
 
     const data: any = {
@@ -192,7 +192,7 @@ export class SoFurry extends BaseWebsiteService {
     const submissionType = getTypeOfSubmission(postData.primary.fileInfo);
     const type = this.getContentType(submissionType);
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/upload/details?contentType=${type}`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/upload/details?contentType=${type}`, this.BASE_URL, cookies, postData.profileId);
     const body = response.body;
 
     const options = postData.options;

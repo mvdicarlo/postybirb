@@ -71,7 +71,7 @@ export class Derpibooru extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/users/edit`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/users/edit`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
       if (body.includes('Logout')) {
@@ -92,7 +92,7 @@ export class Derpibooru extends BaseWebsiteService {
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/images/new`, this.BASE_URL, cookies);
+    const formPage = await got.get(`${this.BASE_URL}/images/new`, this.BASE_URL, cookies, postData.profileId);
     const body = formPage.body;
 
     if (!body.includes('Upload an Image')) {

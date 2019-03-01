@@ -84,7 +84,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/controls/submissions`, this.BASE_URL, cookies);
+    const response = await got.get(`${this.BASE_URL}/controls/submissions`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
       if (body.includes('logout-link')) {
@@ -188,7 +188,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies);
+    const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies, postData.profileId);
     const data: any = {
       key: HTMLParser.getInputValue(page.body, 'key'),
       message: postData.description,
