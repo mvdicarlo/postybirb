@@ -1,0 +1,150 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="scraps">{{'Scraps' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="disableComments">{{'Disable Comments' | translate}}</mat-checkbox>
+      <br>
+      <mat-checkbox formControlName="yaoi">{{'Yaoi' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="yuri">{{'Yuri' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="teen">{{'Teen' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="guro">{{'Guro' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="furry">{{'Furry' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="beast">{{'Beast' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="male">{{'Male' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="female">{{'Female' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="futa">{{'Futa' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="other">{{'Other' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="scat">{{'Scat' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="incest">{{'Incest' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="rape">{{'Rape' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-9 col-lg-9 col-xl-9">
+      <div class="row no-gutters">
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <hentai-foundry-category-select formControlName="category"></hentai-foundry-category-select>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="nudityRating" [placeholder]="'Nudity' | translate" required>
+              <mat-option value="0">None</mat-option>
+              <mat-option value="1">Mild Nudity</mat-option>
+              <mat-option value="2">Moderate Nudity</mat-option>
+              <mat-option value="3">Explicit Nudity</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="violenceRating" [placeholder]="'Violence' | translate" required>
+              <mat-option value="0">None</mat-option>
+              <mat-option value="1">Comic or Mild Violence</mat-option>
+              <mat-option value="2">Moderate Violence</mat-option>
+              <mat-option value="3">Explicit or Graphic Violence</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="profanityRating" [placeholder]="'Profanity' | translate" required>
+              <mat-option value="0">None</mat-option>
+              <mat-option value="1">Mild Profanity</mat-option>
+              <mat-option value="2">Moderate Profanity</mat-option>
+              <mat-option value="3">Proliferous or Severe Profanity</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="racismRating" [placeholder]="'Racism' | translate" required>
+              <mat-option value="0">None</mat-option>
+              <mat-option value="1">Mild Racist themes or content</mat-option>
+              <mat-option value="2">Racist themes or content</mat-option>
+              <mat-option value="3">Strong racist themes or content</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="sexRating" [placeholder]="'Sexual Content' | translate" required>
+              <mat-option value="0">None</mat-option>
+              <mat-option value="1">Mild suggestive content</mat-option>
+              <mat-option value="2">Moderate suggestive or sexual content</mat-option>
+              <mat-option value="3">Explicit or adult sexual content</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="spoilersRating" [placeholder]="'Spoiler Warning' | translate" required>
+              <mat-option value="0">None</mat-option>
+              <mat-option value="1">Mild Spoiler Warning</mat-option>
+              <mat-option value="2">Moderate Spoiler Warning</mat-option>
+              <mat-option value="3">Major Spoiler Warning</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-12 col-xl-12 col-lg-12"></div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="media" [placeholder]="'Media' | translate" required>
+              <!-- <mat-option value="A">All</mat-option> commented out since it doesn't even work on their own website -->
+              <mat-optgroup label="Traditional media">
+              </mat-optgroup>
+              <mat-optgroup label=".. Drawings">
+                <mat-option value="1">Charcoal</mat-option>
+                <mat-option value="2">Colored Pencil / Crayon</mat-option>
+                <mat-option value="3">Ink or markers</mat-option>
+                <mat-option value="4">Oil pastels</mat-option>
+                <mat-option value="5">Graphite pencil</mat-option>
+                <mat-option value="6">Other drawing</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label=".. Paintings">
+                <mat-option value="11">Airbrush</mat-option>
+                <mat-option value="12">Acrylics</mat-option>
+                <mat-option value="13">Oils</mat-option>
+                <mat-option value="14">Watercolor</mat-option>
+                <mat-option value="15">Other painting</mat-option>
+              </mat-optgroup>
+              <mat-optgroup label=".. Crafts / Physical art">
+                <mat-option value="21">Plushies</mat-option>
+                <mat-option value="22">Sculpture</mat-option>
+                <mat-option value="23">Other crafts</mat-option>
+              </mat-optgroup>
+
+              <mat-optgroup label="Digital media (CG)">
+                <mat-option value="31">3D modelling</mat-option>
+                <mat-option value="33">Digital drawing or painting</mat-option>
+                <mat-option value="36">MS Paint</mat-option>
+                <mat-option value="32">Oekaki</mat-option>
+                <mat-option value="34">Pixel art</mat-option>
+                <mat-option value="35">Other digital art</mat-option>
+              </mat-optgroup>
+              <mat-option value="0">Unspecified</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent" class="w-100">
+            <input matInput maxlength="50" placeholder="{{'Time Taken' | translate}}" formControlName="timeTaken">
+          </mat-form-field>
+        </div>
+        <div class="col-md col-lg col-xl">
+          <mat-form-field color="accent" class="w-100">
+            <input matInput placeholder="{{'Reference' | translate}}" formControlName="reference">
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

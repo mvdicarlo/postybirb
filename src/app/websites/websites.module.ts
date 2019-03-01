@@ -13,11 +13,13 @@ import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
 import { Aryion } from './website-services/aryion/aryion.service';
 import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
 import { SoFurry } from './website-services/sofurry/sofurry.service';
+import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
 
 import {
+  MatAutocompleteModule,
   MatIconModule,
   MatDialogModule,
   MatButtonModule,
@@ -46,6 +48,8 @@ import { FurryAminoSubmissionForm } from './website-services/furry-amino/compone
 import { AryionSubmissionForm } from './website-services/aryion/components/aryion-submission-form/aryion-submission-form.component';
 import { PaigeeWorldSubmissionForm } from './website-services/paigee-world/components/paigee-world-submission-form/paigee-world-submission-form.component';
 import { SofurrySubmissionForm } from './website-services/sofurry/components/sofurry-submission-form/sofurry-submission-form.component';
+import { HentaiFoundrySubmissionForm } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-submission-form.component';
+import { HentaiFoundryCategorySelectComponent } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -68,11 +72,14 @@ export function INIT_WEBSITE_REGISTRY() {
     AryionSubmissionForm,
     PaigeeWorldSubmissionForm,
     SofurrySubmissionForm,
+    HentaiFoundrySubmissionForm,
+    HentaiFoundryCategorySelectComponent,
   ],
   imports: [
     CommonModule,
     TranslateModule,
     UtilsModule,
+    MatAutocompleteModule,
     MatIconModule,
     MatDialogModule,
     MatButtonModule,
@@ -104,7 +111,8 @@ export function INIT_WEBSITE_REGISTRY() {
     FurryAminoSubmissionForm,
     AryionSubmissionForm,
     PaigeeWorldSubmissionForm,
-    SofurrySubmissionForm
+    SofurrySubmissionForm,
+    HentaiFoundrySubmissionForm
   ],
   providers: [
     {
@@ -121,7 +129,8 @@ export function INIT_WEBSITE_REGISTRY() {
         FurryAmino,
         Aryion,
         PaigeeWorld,
-        SoFurry
+        SoFurry,
+        HentaiFoundry
       ],
       multi: true
     }

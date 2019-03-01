@@ -24,8 +24,8 @@
         {{ tagCount }} / {{ config.maxTags }}
       </span>
 
-      <span *ngIf="config.maxStringLength">
-        {{ value.tags.join(' ').length }} / {{ config.maxStringLength }}
+      <span *ngIf="config.maxStringLength" [class.warn-text]=" getTags().join(' ').length > config.maxStringLength">
+        {{ getTags().join(' ').length }} / {{ config.maxStringLength }}
       </span>
     </mat-hint>
   </mat-form-field>
