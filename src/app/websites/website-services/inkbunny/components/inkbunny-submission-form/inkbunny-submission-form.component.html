@@ -1,0 +1,31 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl col-sm">
+      <mat-checkbox formControlName="blockGuests">{{'Block Guests' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="friendsOnly">{{'Friends Only' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="notify">{{'Notify' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="scraps">{{'Scraps' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-8 col-lg-7 col-xl-8 col-sm">
+      <mat-form-field color="accent" class="w-100">
+        <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
+          <mat-option [value]="2">Nudity - Nonsexual</mat-option>
+          <mat-option [value]="3">Violence - Mild</mat-option>
+          <mat-option [value]="4">Sexual Themes - Erotic</mat-option>
+          <mat-option [value]="5">Strong Violence</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</form>

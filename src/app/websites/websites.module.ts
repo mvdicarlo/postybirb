@@ -16,6 +16,7 @@ import { Pixiv } from './website-services/pixiv/pixiv.service';
 import { Route50 } from './website-services/route50/route50.service';
 import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
+import { InkBunny } from './website-services/inkbunny/inkbunny.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -56,6 +57,8 @@ import { HentaiFoundrySubmissionForm } from './website-services/hentai-foundry/c
 import { HentaiFoundryCategorySelectComponent } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-category-select/hentai-foundry-category-select.component';
 import { PixivSubmissionForm } from './website-services/pixiv/components/pixiv-submission-form/pixiv-submission-form.component';
 import { PatreonSubmissionForm } from './website-services/patreon/components/patreon-submission-form/patreon-submission-form.component';
+import { InkbunnyLoginDialog } from './website-services/inkbunny/components/inkbunny-login-dialog/inkbunny-login-dialog.component';
+import { InkbunnySubmissionForm } from './website-services/inkbunny/components/inkbunny-submission-form/inkbunny-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -82,6 +85,8 @@ export function INIT_WEBSITE_REGISTRY() {
     HentaiFoundryCategorySelectComponent,
     PixivSubmissionForm,
     PatreonSubmissionForm,
+    InkbunnyLoginDialog,
+    InkbunnySubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -125,6 +130,8 @@ export function INIT_WEBSITE_REGISTRY() {
     PixivSubmissionForm,
     SofurrySubmissionForm,
     WeasylSubmissionForm,
+    InkbunnyLoginDialog,
+    InkbunnySubmissionForm
   ],
   providers: [
     {
@@ -145,6 +152,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Route50,
         SoFurry,
         Weasyl,
+        InkBunny
       ],
       multi: true
     }

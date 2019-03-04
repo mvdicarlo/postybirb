@@ -24,7 +24,7 @@ export class LoginManagerService {
   private profileIds: string[] = [];
   private profileStatuses: ProfileStatuses = {};
 
-  constructor(_profileManager: LoginProfileManagerService, _cookieSolution: CookieSolutionsService, private injector: Injector) {
+  constructor(private _profileManager: LoginProfileManagerService, _cookieSolution: CookieSolutionsService, private injector: Injector) {
     const registeredWebsites = WebsiteRegistry.getRegistered();
     Object.keys(registeredWebsites).forEach(key => {
       this._registerInterval(registeredWebsites[key].class, registeredWebsites[key].websiteConfig);
@@ -90,7 +90,7 @@ export class LoginManagerService {
   private _update(ids: string[], services: WebsiteService[]): void {
     for (let s of services) {
       for (let id of ids) {
-        s.checkStatus(id)
+        s.checkStatus(id, this._profileManager.getData(id, s.constructor.name))
           .then((status: WebsiteStatus) => {
             // ignore ids that have been removed since time of status check
             if (this.profileIds.includes(id)) {

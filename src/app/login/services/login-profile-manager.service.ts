@@ -150,4 +150,42 @@ export class LoginProfileManagerService {
     return profile ? profile.name : 'Profile does not exist';
   }
 
+  /**
+   * Gets miscellaneous data that is saved to a profile data variable
+   * @param  id        Profile reference Id
+   * @param  fieldName Field name to be retrieved
+   */
+  public getData(id: string, fieldName: string): any {
+    const profile = this.db.get(this.PROFILE_FIELD)
+    .find({ id })
+    .value();
+
+    if (profile) {
+      if (profile.data) {
+        return profile.data[fieldName];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Stores miscellaneous data that a website may require for login or other purposes.
+   * @param id        Profile reference Id
+   * @param fieldName Field name to be set in the data variable
+   * @param data      Data to be saved
+   */
+  public storeData(id: string, fieldName: string, data: any): void {
+    const profile = this.db.get(this.PROFILE_FIELD)
+    .find({ id })
+    .value();
+
+    if (!profile.data) {
+      profile.data = {};
+    }
+
+    profile.data[fieldName] = data;
+    this.db.find({ id }).assign({ data: profile.data }).write();
+  }
+
 }
