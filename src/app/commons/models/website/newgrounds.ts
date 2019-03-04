@@ -88,16 +88,12 @@ export class Newgrounds extends BaseWebsite implements Website {
             thumb_crop_height: sizes.height,
             thumb_top_x: 0,
             thumb_top_y: 0,
-            thumb_animation_frame: 0
+            thumb_animation_frame: 0,
+            'tags[]': this.formatTags(submission.defaultTags, submission.customTags)
           };
 
           if (options.creativeCommons) {
             data2.use_creative_commons = 1;
-          }
-
-          const tags = this.formatTags(submission.defaultTags, submission.customTags);
-          for (let i = 0; i < tags.length; i++) {
-            data2[`tag_${i}`] = tags[i];
           }
 
           if (!options.sketch) {

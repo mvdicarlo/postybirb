@@ -8,7 +8,7 @@ export interface PostReport {
   website: string;
   notify: any;
   msg: string;
-  submission: any;
+  submission?: any;
 }
 
 /**
@@ -123,7 +123,7 @@ export class BaseWebsite implements Website {
   }
 
   protected createError(err: any, submission: any, notify?: string): PostReport {
-    return { website: this.websiteName, err, msg: notify, submission, notify: notify ? true : false };
+    return { website: this.websiteName, err, msg: notify, /*submission don't need anymore really,*/ notify: notify ? true : false };
   }
 
   protected getMapping(type: string, value: string): any {

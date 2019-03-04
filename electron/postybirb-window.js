@@ -90,7 +90,7 @@ module.exports = class PostyBirbWindow {
                     win.webContents.session.clearCache(() => {});
                 }
             });
-        }, 10000);
+        }, 60000);
     });
 
     this.win = win;

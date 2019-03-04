@@ -52,7 +52,7 @@ export class BbCodeParse {
       url: 'https://derpibooru.org/profiles/'
     },
     fn: {
-      url: 'https://beta.furrynetwork.com/',
+      url: 'https://furrynetwork.com/',
     },
     fr: {
       url: 'https://furiffic.com/',

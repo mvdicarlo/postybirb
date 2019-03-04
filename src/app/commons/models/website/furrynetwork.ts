@@ -7,6 +7,8 @@ import { SupportedWebsites } from '../../enums/supported-websites';
 import { WebsiteStatus } from '../../enums/website-status.enum';
 import { PostyBirbSubmissionData } from '../../interfaces/posty-birb-submission-data.interface';
 import { Observable } from 'rxjs';
+import { FileObject } from '../../interfaces/file-obect.interface';
+import { FileInformation } from '../file-information';
 
 @Injectable()
 export class FurryNetwork extends BaseWebsite implements Website {
@@ -20,7 +22,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
   private userCollections: any = {};
 
   constructor(private http: HttpClient, protected coordinator: WebsiteCoordinatorService) {
-    super(SupportedWebsites.FurryNetwork, 'https://beta.furrynetwork.com');
+    super(SupportedWebsites.FurryNetwork, 'https://furrynetwork.com');
 
     this.userInformation = db.get(SupportedWebsites.FurryNetwork.toLowerCase()).value() || {
       name: null,
@@ -169,7 +171,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
     } else {
       uploadURL = `${this.baseURL}/api/submission/${userProfile}/${type}/upload?` +
         'resumableChunkNumber=1' +
-        '&resumableChunkSize=1048576' + `&resumableCurrentChunkSize=${file.size
+        `&resumableChunkSize=${file.size}` + `&resumableCurrentChunkSize=${file.size
         }&resumableTotalSize=${file.size
         }&resumableType=${file.type
         }&resumableIdentifier=${file.size}-${file.name.replace('.', '')
@@ -233,65 +235,111 @@ export class FurryNetwork extends BaseWebsite implements Website {
             observer.complete();
           }
         } else {
-          this.http.post(uploadURL, file, { headers: headers })
-            .subscribe((fileInfo: any) => {
-              if (!fileInfo) {
-                observer.error(this.createError('fileInfo is null for post', submission));
-                observer.complete();
-                return;
-              }
-              try {
-                this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
-                  .subscribe(res => {
-                    observer.next(res);
-                    observer.complete();
-
-                    if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {
-                      const thumbnailFile = submission.submissionData.thumbnailFile.getRealFile();
-                      const thumbnailURL = `${this.baseURL}/api/submission/${userProfile}/${type}/${fileInfo.id}/thumbnail?` +
-                        'resumableChunkNumber=1' +
-                        '&resumableChunkSize=1048576' + `&resumableCurrentChunkSize=${thumbnailFile.size}
-                        &resumableTotalSize=${thumbnailFile.size}
-                        &resumableType=${thumbnailFile.type}
-                        &resumableIdentifier=${thumbnailFile.size}-${thumbnailFile.name.replace('.', '')}
-                        &resumableFilename=${thumbnailFile.name}&resumableRelativePath=${thumbnailFile.name}
-                        &resumableTotalChunks=1`;
-
-                      this.http.post(thumbnailURL, thumbnailFile, { headers: headers })
-                        .subscribe(success => {
-                          //NOTHING TO DO
-                        }, err => {
-                          //NOTHING TO DO
-                        });
-                    }
-                  }, (err) => {
-                    let msg = '';
-                    try {
-                      if (err && err.error && err.error.errors) {
-                        const keys = Object.keys(err.error.errors);
-                        for (let i = 0; i < keys.length; i++) {
-                          msg += `${keys[i].toUpperCase()}: ${keys[i] + err.error.errors[keys[i]].toString()}\n`;
-                        }
-                      }
-                    } catch (e) { }
-
-                    observer.error(this.createError(err, submission, msg.trim()));
-                    observer.complete();
-                  });
-              } catch (e) {
-                observer.error(this.createError(e, submission));
-                observer.complete();
-              }
-            }, err => {
-              observer.error(this.createError(err, submission));
+          this.postChunks(userProfile, type, submission.submissionData.submissionFile, headers)
+          .then(fileInfo => {
+            if (!fileInfo) {
+              observer.error(this.createError('fileInfo is null for post', submission));
               observer.complete();
-            });
+              return;
+            }
+            try {
+              this.http.patch(`${this.baseURL}/api/${type}/${fileInfo.id}`, this.generatePostData(submission, type), { headers: headers })
+                .subscribe(res => {
+                  observer.next(res);
+                  observer.complete();
+
+                  if (type === 'multimedia' && submission.submissionData.thumbnailFile.isValid()) {
+                    const thumbnailFile = submission.submissionData.thumbnailFile.getRealFile();
+                    const thumbnailURL = `${this.baseURL}/api/submission/${userProfile}/${type}/${fileInfo.id}/thumbnail?` +
+                      'resumableChunkNumber=1' +
+                      `&resumableChunkSize=${thumbnailFile.size}` + `&resumableCurrentChunkSize=${thumbnailFile.size}
+                      &resumableTotalSize=${thumbnailFile.size}
+                      &resumableType=${thumbnailFile.type}
+                      &resumableIdentifier=${thumbnailFile.size}-${thumbnailFile.name.replace('.', '')}
+                      &resumableFilename=${thumbnailFile.name}&resumableRelativePath=${thumbnailFile.name}
+                      &resumableTotalChunks=1`;
+
+                    this.http.post(thumbnailURL, thumbnailFile, { headers: headers })
+                      .subscribe(success => {
+                        //NOTHING TO DO
+                      }, err => {
+                        //NOTHING TO DO
+                      });
+                  }
+                }, (err) => {
+                  let msg = '';
+                  try {
+                    if (err && err.error && err.error.errors) {
+                      const keys = Object.keys(err.error.errors);
+                      for (let i = 0; i < keys.length; i++) {
+                        msg += `${keys[i].toUpperCase()}: ${keys[i] + err.error.errors[keys[i]].toString()}\n`;
+                      }
+                    }
+                  } catch (e) { }
+
+                  observer.error(this.createError(err, submission, msg.trim()));
+                  observer.complete();
+                });
+            } catch (e) {
+              observer.error(this.createError(e, submission));
+              observer.complete();
+            }
+          })
+          .catch(err => {
+            observer.error(this.createError(err, submission));
+            observer.complete();
+          })
         }
       } catch (e) {
         observer.error(this.createError(e, submission));
         observer.complete();
       }
     });
+  }
+
+  chunkArray(myArray, chunk_size): Buffer[] {
+    var index = 0;
+    var arrayLength = myArray.length;
+    var tempArray = [];
+
+    for (index = 0; index < arrayLength; index += chunk_size) {
+        let myChunk = myArray.slice(index, index+chunk_size);
+        // Do something if you want with the group
+        tempArray.push(myChunk);
+    }
+
+    return tempArray;
+  }
+
+  async postChunks(userProfile: any, type: any, file: FileInformation, headers: any): Promise<any> {
+    const maxChunkSize = 524288;
+    const partitions = this.chunkArray(file.getFileBuffer(), maxChunkSize);
+    let fileInfo = null;
+
+    for (let i = 0; i < partitions.length; i++) {
+        fileInfo = await this.uploadChunk(headers, userProfile, type, i + 1, partitions.length, file.getFileInfo(), partitions[i], maxChunkSize);
+    }
+
+    return fileInfo;
+  }
+
+  uploadChunk(headers: any, userProfile: string, type: string, current: number, total: number, file: FileObject, buffer: any, chunkSize: number): Promise<any> {
+    const url = `${this.baseURL}/api/submission/${userProfile}/${type}/upload?` +
+      `resumableChunkNumber=${current}` +
+      `&resumableChunkSize=${chunkSize}` + `&resumableCurrentChunkSize=${buffer.length
+      }&resumableTotalSize=${file.size
+      }&resumableType=${file.type
+      }&resumableIdentifier=${file.size}-${file.name.replace('.', '')
+      }&resumableFilename=${file.name
+      }&resumableRelativePath=${file.name
+      }&resumableTotalChunks=${total}`;
+
+      return new Promise((resolve, reject) => {
+        this.http.post<any>(url, new Blob([new Uint8Array(buffer.subarray(0, buffer.length))], {}), { headers, responseType: 'json' })
+        .subscribe(res => {
+          resolve(res);
+        }, err => reject(err))
+      });
   }
 
   postJournal(data: any): Observable<any> {

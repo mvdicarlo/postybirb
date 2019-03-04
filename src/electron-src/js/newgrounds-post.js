@@ -56,6 +56,7 @@ exports.post = function post(data, optsData) {
                         request.post('https://www.newgrounds.com/art/submit/create', {
                           jar,
                           formData: optsData,
+                          qsStringifyOptions: { arrayFormat: 'repeat' },
                           headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Origin': 'https://www.newgrounds.com',
