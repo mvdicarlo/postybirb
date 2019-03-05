@@ -1,10 +1,10 @@
 import { Component, OnInit, Inject, ChangeDetectorRef, ChangeDetectionStrategy, Injector } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { InkBunny } from '../../inkbunny.service';
 import { GenericLoginDialogOptions } from 'src/app/websites/components/generic-login-dialog/generic-login-dialog.component';
 import { MAT_DIALOG_DATA } from '@angular/material';
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
+import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 
 @Component({
   selector: 'inkbunny-login-dialog',
@@ -19,7 +19,7 @@ export class InkbunnyLoginDialog implements OnInit {
 
   public loginForm: FormGroup;
 
-  private inkbunny: InkBunny;
+  private inkbunny: any;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: GenericLoginDialogOptions,
@@ -33,11 +33,11 @@ export class InkbunnyLoginDialog implements OnInit {
       password: [null, Validators.required]
     });
 
-    this.inkbunny = injector.get(InkBunny); // avoid circ dep constructor issue
+    this.inkbunny = injector.get(WebsiteRegistry.getConfigForRegistry('InkBunny').class); // avoid circ dep constructor issue
   }
 
   ngOnInit() {
-    this.loggedIn = this._loginManager.getLoginStatus(this.data.persist, InkBunny.name) === LoginStatus.LOGGED_IN;
+    this.loggedIn = this._loginManager.getLoginStatus(this.data.persist, 'InkBunny') === LoginStatus.LOGGED_IN;
     this._changeDetector.markForCheck();
   }
 

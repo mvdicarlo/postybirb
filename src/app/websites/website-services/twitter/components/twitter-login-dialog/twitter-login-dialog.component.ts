@@ -19,8 +19,6 @@ export class TwitterLoginDialog implements OnInit, OnDestroy {
 
   public loginForm: FormGroup;
 
-  private code: any;
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: GenericLoginDialogOptions,
     fb: FormBuilder,
@@ -59,7 +57,7 @@ export class TwitterLoginDialog implements OnInit, OnDestroy {
           username: oauths.results.screen_name,
         };
 
-        this._loginProfileManager.storeData(this.data.persist, Twitter.name, oauth);
+        this._loginProfileManager.storeData(this.data.persist, 'Twitter', oauth);
         this.loggedIn = true;
         this.attempting = false;
         this._changeDetector.markForCheck();
@@ -72,7 +70,7 @@ export class TwitterLoginDialog implements OnInit, OnDestroy {
 
   public unauthorize(): void {
     this.loggedIn = false;
-    this._loginProfileManager.storeData(this.data.persist, Twitter.name, null);
+    this._loginProfileManager.storeData(this.data.persist, 'Twitter', null);
     this.webview.nativeElement.src = auth.twitter.getAuthURL();
     this._changeDetector.markForCheck();
   }
