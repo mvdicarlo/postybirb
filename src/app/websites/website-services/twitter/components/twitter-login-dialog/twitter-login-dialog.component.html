@@ -1,0 +1,22 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ data.title | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content class="ignore-max-content-height">
+  <loading-overlay [loading]="attempting">
+    <form [formGroup]="loginForm" (ngSubmit)="authorize()" *ngIf="!loggedIn">
+      <mat-form-field color="accent" class="w-100">
+        <input matInput formControlName="pin" [placeholder]="'PIN' | translate">
+      </mat-form-field>
+      <button mat-flat-button type="submit" color="primary" [disabled]="loginForm.invalid">{{ 'Authorize' | translate }}</button>
+      <webview class="webview" #webview webpreferences="nativeWindowOpen=1" allowpopups></webview>
+    </form>
+  </loading-overlay>
+  <button mat-flat-button color="warn" *ngIf="loggedIn" (click)="unauthorize()">{{ 'Unauthorize' | translate}}</button>
+</div>

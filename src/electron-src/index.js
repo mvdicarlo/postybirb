@@ -46,6 +46,12 @@ window.settingsDB = sldb;
 
 window.got = require('./src/got-request.js');
 
+window.auth = {
+  twitter: require('./src/twitter-auth.js')
+};
+
+window.AUTH_URL = require('./src/auth-server.js').auth_server;
+
 /**
  * Writes object data to a specified JSON file
  * @param  {string} fileName Name of the file to write to

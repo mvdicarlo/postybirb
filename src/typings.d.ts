@@ -23,3 +23,9 @@ declare function writeToClipboard(data: any): void;
 declare function writeJsonToFile(fileName: string, data: any): void;
 declare function relaunch(): void;
 declare var BrowserWindow: any; // Electron BrowserWindow
+
+
+declare var auth: {
+  twitter: any;
+}
+declare var AUTH_URL: string;
