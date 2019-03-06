@@ -16,6 +16,7 @@ declare var got: {
 declare function openUrlInBrowser(url: string): void;
 declare function getCookies(persistId: string, url: string): Promise<any[]>;
 declare function getCookieAPI(persistId: string): any;
+declare function getSession(persistId: string): any;
 declare function getFileIcon(path: string, opts: any, callback: any): any;
 declare function getClipboardFormats(): any;
 declare function readClipboard(): any;

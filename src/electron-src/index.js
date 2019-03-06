@@ -96,6 +96,13 @@ window.getCookieAPI = function getCookieAPI(persistId) {
   return session.fromPartition(`persist:${persistId}`).cookies;
 }
 
+/**
+ * Gets the Session for the id
+ */
+window.getSession = function(persistId) {
+  return session.fromPartition(`persist:${persistId}`);
+}
+
 window.getClipboardFormats = clipboard.availableFormats;
 window.writeToClipboard = clipboard.write;
 window.readClipboard = function readClipboard() {

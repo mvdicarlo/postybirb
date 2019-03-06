@@ -93,6 +93,14 @@ export class LoginProfileManagerService {
       .remove({ id })
       .write();
 
+    const session = getSession(id);
+    if (session) {
+      session.clearCache(() => {
+        console.info('DELETE: Cache cleared');
+      });
+      session.clearStorageData();
+    }
+
     this._notifyAll();
   }
 
@@ -157,8 +165,8 @@ export class LoginProfileManagerService {
    */
   public getData(id: string, fieldName: string): any {
     const profile = this.db.get(this.PROFILE_FIELD)
-    .find({ id })
-    .value();
+      .find({ id })
+      .value();
 
     if (profile) {
       if (profile.data) {
@@ -177,8 +185,8 @@ export class LoginProfileManagerService {
    */
   public storeData(id: string, fieldName: string, data: any): void {
     const profile = this.db.get(this.PROFILE_FIELD)
-    .find({ id })
-    .value();
+      .find({ id })
+      .value();
 
     if (!profile.data) {
       profile.data = {};
