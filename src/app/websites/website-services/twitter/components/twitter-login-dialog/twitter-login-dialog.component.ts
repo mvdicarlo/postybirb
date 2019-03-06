@@ -1,17 +1,18 @@
-import { Component, OnInit, Inject, ChangeDetectorRef, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, Inject, ChangeDetectorRef, OnDestroy, ViewChild, ElementRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { GenericLoginDialogOptions } from 'src/app/websites/components/generic-login-dialog/generic-login-dialog.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
-import { Twitter } from '../../twitter.service';
+import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
 
 @Component({
   selector: 'twitter-login-dialog',
   templateUrl: './twitter-login-dialog.component.html',
-  styleUrls: ['./twitter-login-dialog.component.css']
+  styleUrls: ['./twitter-login-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TwitterLoginDialog implements OnInit, OnDestroy {
+export class TwitterLoginDialog implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('webview') webview: ElementRef;
 
   public loggedIn: boolean = false;
@@ -34,6 +35,7 @@ export class TwitterLoginDialog implements OnInit, OnDestroy {
 
   ngOnInit() {
     auth.twitter.start();
+    this.loggedIn = this._loginManager.getLoginStatus(this.data.persist, 'Twitter') === LoginStatus.LOGGED_IN;
   }
 
   ngAfterViewInit() {

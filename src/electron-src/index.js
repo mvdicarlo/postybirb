@@ -47,6 +47,7 @@ window.settingsDB = sldb;
 window.got = require('./src/got-request.js');
 
 window.auth = {
+  tumblr: require('./src/tumblr-auth.js'),
   twitter: require('./src/twitter-auth.js')
 };
 

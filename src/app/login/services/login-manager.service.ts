@@ -7,6 +7,7 @@ import { WebsiteConfig } from 'src/app/websites/decorators/website-decorator';
 import { interval, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { CookieSolutionsService } from './cookie-solutions.service';
+import * as dotProp from 'dot-prop';
 
 export interface ProfileStatuses {
   [key: string /* profile id */]: { [key: string /* website service constructor name */]: WebsiteStatus };
@@ -138,7 +139,7 @@ export class LoginManagerService {
    * @return           LoginStatus
    */
   public getLoginStatus(profileId: string, website: string): LoginStatus {
-    return this.getWebsiteStatus(profileId, website).status;
+    return dotProp.get(this.getWebsiteStatus(profileId, website), 'status', LoginStatus.LOGGED_OUT);
   }
 
   /**

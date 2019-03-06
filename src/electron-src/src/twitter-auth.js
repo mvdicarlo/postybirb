@@ -40,6 +40,14 @@ exports.start = function () {
     }
 };
 
+exports.stop = function () {
+    if (server) {
+        server.close();
+    }
+
+    server = null;
+};
+
 app.get('/auth/twitter', (req, res) => {
     request.get(auth.generateAuthUrl('/twitter/authorize'), (err, response, body) => {
         if (err) {
@@ -51,11 +59,3 @@ app.get('/auth/twitter', (req, res) => {
         }
     });
 });
-
-exports.stop = function () {
-    if (server) {
-        server.close();
-    }
-
-    server = null;
-};

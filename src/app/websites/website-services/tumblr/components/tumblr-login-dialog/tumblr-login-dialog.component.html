@@ -9,14 +9,8 @@
   </div>
 </div>
 <div mat-dialog-content class="ignore-max-content-height">
-  <loading-overlay [loading]="attempting">
-    <form [formGroup]="loginForm" (ngSubmit)="authorize()" *ngIf="!loggedIn">
-      <mat-form-field color="accent" class="w-100">
-        <input matInput formControlName="pin" [placeholder]="'PIN' | translate">
-      </mat-form-field>
-      <button mat-flat-button type="submit" color="primary" [disabled]="loginForm.invalid">{{ 'Authorize' | translate }}</button>
-    </form>
+  <div>
     <webview class="webview" #webview webpreferences="nativeWindowOpen=1" allowpopups></webview>
-  </loading-overlay>
+  </div>
   <button mat-flat-button color="warn" *ngIf="loggedIn" (click)="unauthorize()">{{ 'Unauthorize' | translate}}</button>
 </div>

@@ -25,3 +25,7 @@ export function fileAsFormDataObject(buffer: Uint8Array, fileInfo: FileObject): 
         }
       } : '';
 }
+
+export function fileAsBlob(buffer: Uint8Array, fileInfo: FileObject): Blob {
+  return new Blob([buffer], { type: fileInfo.type });
+}

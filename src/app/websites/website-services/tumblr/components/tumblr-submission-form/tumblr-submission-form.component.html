@@ -1,0 +1,25 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="useTitle">{{'Use Title' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-8 col-lg-8 col-xl-8">
+      <mat-form-field color="accent">
+        <mat-select formControlName="blog" [placeholder]="'Blog' | translate">
+          <mat-option *ngFor="let blog of blogs" [value]="blog">{{ blog }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</form>

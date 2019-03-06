@@ -43,7 +43,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   },
   components: {
     submissionForm: TwitterSubmissionForm,
-    journalForm: GenericJournalSubmissionForm
+    journalForm: TwitterSubmissionForm
   },
   validators: {
     submission: submissionValidate
@@ -111,7 +111,11 @@ export class Twitter extends BaseWebsiteService {
     if (postResponse.success.response.statusCode === 200) {
       return this.createPostResponse(null);
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
+      let message = 'Unknown error';
+      try {
+        message = JSON.parse(postResponse.success.body.e.data).errors.map(err => err.message).join('\n');
+      } catch (e) {/*Swallow*/}
+      return Promise.reject(this.createPostResponse(message, postResponse.success.body));
     }
   }
 }

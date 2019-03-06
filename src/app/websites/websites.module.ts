@@ -18,6 +18,7 @@ import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
 import { InkBunny } from './website-services/inkbunny/inkbunny.service';
 import { Twitter } from './website-services/twitter/twitter.service';
+import { Tumblr } from './website-services/tumblr/tumblr.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -62,6 +63,9 @@ import { InkbunnyLoginDialog } from './website-services/inkbunny/components/inkb
 import { InkbunnySubmissionForm } from './website-services/inkbunny/components/inkbunny-submission-form/inkbunny-submission-form.component';
 import { TwitterLoginDialog } from './website-services/twitter/components/twitter-login-dialog/twitter-login-dialog.component';
 import { TwitterSubmissionForm } from './website-services/twitter/components/twitter-submission-form/twitter-submission-form.component';
+import { TumblrLoginDialog } from './website-services/tumblr/components/tumblr-login-dialog/tumblr-login-dialog.component';
+import { TumblrSubmissionForm } from './website-services/tumblr/components/tumblr-submission-form/tumblr-submission-form.component';
+import { TumblrJournalForm } from './website-services/tumblr/components/tumblr-journal-form/tumblr-journal-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -92,6 +96,9 @@ export function INIT_WEBSITE_REGISTRY() {
     WeasylSubmissionForm,
     WebsiteDisplaynamePipe,
     WebsiteSubmissionFormDisplayDirective,
+    TumblrLoginDialog,
+    TumblrSubmissionForm,
+    TumblrJournalForm,
   ],
   imports: [
     CommonModule,
@@ -138,6 +145,9 @@ export function INIT_WEBSITE_REGISTRY() {
     TwitterLoginDialog,
     TwitterSubmissionForm,
     WeasylSubmissionForm,
+    TumblrLoginDialog,
+    TumblrSubmissionForm,
+    TumblrJournalForm,
   ],
   providers: [
     {
@@ -158,6 +168,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Pixiv,
         Route50,
         SoFurry,
+        Tumblr,
         Twitter,
         Weasyl,
       ],
