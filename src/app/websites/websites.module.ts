@@ -19,6 +19,7 @@ import { Weasyl } from './website-services/weasyl/weasyl.service';
 import { InkBunny } from './website-services/inkbunny/inkbunny.service';
 import { Twitter } from './website-services/twitter/twitter.service';
 import { Tumblr } from './website-services/tumblr/tumblr.service';
+import { DeviantArt } from './website-services/deviant-art/deviant-art.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -29,6 +30,7 @@ import {
   MatAutocompleteModule,
   MatButtonModule,
   MatCheckboxModule,
+  MatChipsModule,
   MatDialogModule,
   MatIconModule,
   MatInputModule,
@@ -66,6 +68,9 @@ import { TwitterSubmissionForm } from './website-services/twitter/components/twi
 import { TumblrLoginDialog } from './website-services/tumblr/components/tumblr-login-dialog/tumblr-login-dialog.component';
 import { TumblrSubmissionForm } from './website-services/tumblr/components/tumblr-submission-form/tumblr-submission-form.component';
 import { TumblrJournalForm } from './website-services/tumblr/components/tumblr-journal-form/tumblr-journal-form.component';
+import { DeviantArtLoginDialog } from './website-services/deviant-art/components/deviant-art-login-dialog/deviant-art-login-dialog.component';
+import { DeviantArtSubmissionForm } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-submission-form.component';
+import { DeviantArtCategorySelectComponent } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-category-select/deviant-art-category-select.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -99,6 +104,9 @@ export function INIT_WEBSITE_REGISTRY() {
     TumblrLoginDialog,
     TumblrSubmissionForm,
     TumblrJournalForm,
+    DeviantArtLoginDialog,
+    DeviantArtSubmissionForm,
+    DeviantArtCategorySelectComponent
   ],
   imports: [
     CommonModule,
@@ -109,6 +117,7 @@ export function INIT_WEBSITE_REGISTRY() {
     MatDialogModule,
     MatButtonModule,
     MatCheckboxModule,
+    MatChipsModule,
     MatInputModule,
     MatMenuModule,
     MatProgressBarModule,
@@ -148,6 +157,8 @@ export function INIT_WEBSITE_REGISTRY() {
     TumblrLoginDialog,
     TumblrSubmissionForm,
     TumblrJournalForm,
+    DeviantArtLoginDialog,
+    DeviantArtSubmissionForm,
   ],
   providers: [
     {
@@ -171,6 +182,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Tumblr,
         Twitter,
         Weasyl,
+        DeviantArt
       ],
       multi: true
     }

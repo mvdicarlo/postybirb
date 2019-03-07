@@ -26,7 +26,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   let maxSize: number = 10;
   if (type === TypeOfSubmission.ANIMATION) maxSize = 100;
   if (type === TypeOfSubmission.ART && isGIF(submission.fileInfo)) maxSize = 1;
-  if (MBtoBytes(200) < submission.fileInfo.size) {
+  if (MBtoBytes(maxSize) < submission.fileInfo.size) {
     problems.push(['Max file size', { website: `Tumblr [${type}${isGIF(submission.fileInfo) ? '/GIF' : ''}]`, value: `${maxSize}MB` }]);
   }
 

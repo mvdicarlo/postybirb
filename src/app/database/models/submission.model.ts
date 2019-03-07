@@ -1,5 +1,5 @@
 import { ISubmission, SubmissionRating, SubmissionType, FileMap } from '../tables/submission.table';
-import { Subject, Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { FileObject } from '../tables/submission-file.table';
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
@@ -38,7 +38,7 @@ export interface PostStats {
 }
 
 export class Submission implements ISubmission {
-  private changeSubject: Subject<SubmissionChange> = new Subject();
+  private changeSubject: BehaviorSubject<SubmissionChange> = new BehaviorSubject({ postStats: { noUpdate: true, validate: false, current: null, old: null } });
   public readonly changes: Observable<SubmissionChange>;
 
   public id: number;
@@ -102,10 +102,6 @@ export class Submission implements ISubmission {
     const old = this._formData;
     this._formData = formData;
 
-    if (JSON.stringify(formData.websites) !== JSON.stringify(old)) {
-      this.postStats = Object.assign({}, this.postStats);
-    }
-
     this._emitChange('formData', old, formData, true);
   }
   private _formData: SubmissionFormData;
@@ -150,6 +146,7 @@ export class Submission implements ISubmission {
     this.formData = submission.formData || <any>{};
 
     // Try to rejuvinate websites in case of a hard reset
+    let forceUpdate: boolean = false;
     if (submission.postStats) {
       if (submission.postStats.fail.length) {
         submission.postStats.fail.forEach(website => {
@@ -158,6 +155,7 @@ export class Submission implements ISubmission {
           }
         });
         this.formData.websites = this.formData.websites.sort();
+        forceUpdate = true;
       }
 
       this.postStats.sourceURLs = submission.postStats.sourceURLs || [];
@@ -168,6 +166,9 @@ export class Submission implements ISubmission {
     }
 
     this.changes = this.changeSubject.asObservable();
+    if (forceUpdate) {
+      this.postStats = Object.assign({}, this.postStats);
+    }
   }
 
   public asISubmission(): ISubmission {
@@ -202,7 +203,7 @@ export class Submission implements ISubmission {
   }
 
   private _emitChange(fieldName: string, old: any, current: any, validate: boolean = false): void {
-    if (old != current) {
+    if (old != current && this.changes) {
       this.changeSubject.next({
         [fieldName]: {
           old,

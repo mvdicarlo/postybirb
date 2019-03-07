@@ -1,9 +1,8 @@
 import { Component, OnInit, Inject, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { MAT_DIALOG_DATA } from '@angular/material';
 import { GenericLoginDialogOptions } from 'src/app/websites/components/generic-login-dialog/generic-login-dialog.component';
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
-import { TwitterLoginDialog } from '../../../twitter/components/twitter-login-dialog/twitter-login-dialog.component';
 import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
 
 @Component({
@@ -22,7 +21,6 @@ export class TumblrLoginDialog implements OnInit, AfterViewInit, OnDestroy {
     private _changeDetector: ChangeDetectorRef,
     private _loginManager: LoginManagerService,
     private _loginProfileManager: LoginProfileManagerService,
-    private dialogRef: MatDialogRef<TwitterLoginDialog>
   ) { }
 
   ngOnInit() {

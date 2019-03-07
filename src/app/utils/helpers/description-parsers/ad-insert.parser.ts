@@ -11,7 +11,7 @@ export class AdInsertParser {
         if (registryEntry.websiteConfig.parsers.description.includes(PlaintextParser.parse)) {
           html += '\n\n Posted using PostyBirb';
         } else {
-          html += '<br /><br /><a href="http://www.postybirb.com">Posted using PostyBirb</a>';
+          html += '<br /><p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>';
         }
       }
     }
