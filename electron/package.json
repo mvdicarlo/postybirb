@@ -95,6 +95,7 @@
     "eslint-plugin-react": "^7.1.0"
   },
   "dependencies": {
+    "cryptr": "^4.0.2",
     "electron-context-menu": "^0.10.1",
     "electron-log": "^2.2.17",
     "electron-updater": "^4.0.6",

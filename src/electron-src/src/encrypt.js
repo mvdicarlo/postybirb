@@ -1,10 +1,11 @@
-const crypto = require('crypto');
+const Cryptr = require('cryptr');
 
-exports.encryptProfile = function encryptProfile(data) {
-    if (!data) return '{}';
+exports.encryptProfile = function encryptProfile(_data) {
+    if (!_data) return {};
+    const data = JSON.parse(JSON.stringify(_data));
     const profiles = data.profiles || [];
     profiles.forEach((p) => {
-        p.data = encrypt(JSON.stringify(JSON.stringify(p.data)), p.id.substring(0, 16));
+        p.data = encrypt(p.data, p.id);
     });
 
     return JSON.stringify(data);
@@ -15,31 +16,22 @@ exports.decryptProfile = function decryptProfile(data) {
     const json = JSON.parse(data);
     const profiles = json.profiles || [];
     profiles.forEach((p) => {
-        p.data = JSON.parse(decrypt(p.data, p.id.substring(0, 16)));
+        p.data = decrypt(p.data, p.id);
     });
 
     return json;
 };
 
-function encrypt(text, key) {
-    const cipher = crypto.createCipheriv('aes128', key, key);
-
-    let result = cipher.update(text || '{}', 'utf8', 'binary');
-    result += cipher.final('binary');
-
-    return result;
+function encrypt(data, key) {
+    const cryptr = new Cryptr(key);
+    return cryptr.encrypt(JSON.stringify(data));
 }
 
 function decrypt(text, key) {
-    const decipher = crypto.createDecipheriv('aes128', key, key);
-    let result = null;
-
+    const cryptr = new Cryptr(key);
     try {
-        result = decipher.update(text, 'binary', 'utf8');
-        result += decipher.final('utf8');
+        return JSON.parse(cryptr.decrypt(text));
     } catch (err) {
-        return '{}';
+        return {};
     }
-
-    return result;
 }

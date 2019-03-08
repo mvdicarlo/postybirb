@@ -25,7 +25,10 @@ window.BrowserWindow = remote.BrowserWindow; // Pretty much only used for Paigee
 const Encrypt = require('./src/encrypt.js');
 
 // Set up profiles DB
-const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'));
+const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'), {
+  serialize: (data) => Encrypt.encryptProfile(data),
+  deserialize: (data) => Encrypt.decryptProfile(data)
+});
 const ldb = low(adapter);
 window.profilesDB = ldb;
 

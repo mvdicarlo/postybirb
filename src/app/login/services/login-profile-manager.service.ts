@@ -118,7 +118,7 @@ export class LoginProfileManagerService {
 
       this.db.get(this.PROFILE_FIELD)
         .push({
-          id: nanoid(16),
+          id: nanoid(),
           name,
           defaultProfile,
           data: {}
