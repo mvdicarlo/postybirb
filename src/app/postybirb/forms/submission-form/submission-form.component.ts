@@ -17,6 +17,7 @@ import { BaseSubmissionForm } from '../base-submission-form/base-submission-form
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
+import { ImageCropperDialog } from '../../components/image-cropper-dialog/image-cropper-dialog.component';
 
 @Component({
   selector: 'submission-form',
@@ -205,7 +206,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
-      if (files[0].size > MBtoBytes(2) || !isImage(files[0])) {
+      if (files[0].size > MBtoBytes(10) || !isImage(files[0])) {
         this.thumbnailInput.nativeElement.value = '';
         return;
       }
@@ -216,29 +217,41 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       this._changeDetector.markForCheck();
       readFile(files[0])
         .then((data: ModifiedReadFile) => {
-          if (this.submission.fileMap.THUMBNAIL) { // Update file
-            this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data)
-              .then(() => {
-                this.hideForReload = false;
-                this.loading = false;
-                this._changeDetector.markForCheck();
-              });
-          } else { // Create first time db record
-            this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.THUMBNAIL_FILE, [data])
-              .then(info => {
-                const newMap = Object.assign({}, this.submission.fileMap);
-                newMap.THUMBNAIL = info[0].id;
-                this.submission.fileMap = newMap;
-              })
-              .catch(err => {
-                console.error(err);
-              })
-              .finally(() => {
-                this.hideForReload = false;
-                this.loading = false;
-                this._changeDetector.markForCheck();
-              });
-          }
+          this.dialog.open(ImageCropperDialog, {
+            data: data.buffer,
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            height: '100%',
+            width: '100%',
+          }).afterClosed()
+            .subscribe(buffer => {
+              if (buffer) {
+                data.buffer = buffer;
+                if (this.submission.fileMap.THUMBNAIL) { // Update file
+                  this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data)
+                    .then(() => {
+                      this.hideForReload = false;
+                      this.loading = false;
+                      this._changeDetector.markForCheck();
+                    });
+                } else { // Create first time db record
+                  this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.THUMBNAIL_FILE, [data])
+                    .then(info => {
+                      const newMap = Object.assign({}, this.submission.fileMap);
+                      newMap.THUMBNAIL = info[0].id;
+                      this.submission.fileMap = newMap;
+                    })
+                    .catch(err => {
+                      console.error(err);
+                    })
+                    .finally(() => {
+                      this.hideForReload = false;
+                      this.loading = false;
+                      this._changeDetector.markForCheck();
+                    });
+                }
+              }
+            });
         });
     }
 

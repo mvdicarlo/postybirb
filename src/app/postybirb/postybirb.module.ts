@@ -15,6 +15,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
 
+import { ImageCropperModule } from 'ngx-image-cropper';
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
@@ -43,6 +44,7 @@ import { SubmissionTabComponent } from './components/submission-tab/submission-t
 import { SubmissionSelectDialog } from './components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from './forms/base-submission-form/base-submission-form.component';
 import { SubmissionPostingViewComponent } from './components/submission-posting-view/submission-posting-view.component';
+import { ImageCropperDialog } from './components/image-cropper-dialog/image-cropper-dialog.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +59,7 @@ import { SubmissionPostingViewComponent } from './components/submission-posting-
     SubmissionSelectDialog,
     BaseSubmissionForm,
     SubmissionPostingViewComponent,
+    ImageCropperDialog,
   ],
   imports: [
     CommonModule,
@@ -85,13 +88,15 @@ import { SubmissionPostingViewComponent } from './components/submission-posting-
     DragDropModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule,
+    ImageCropperModule
   ],
   exports: [
     PostybirbLayout,
   ],
   entryComponents: [
     CollectSubmissionInfoDialog,
-    SubmissionSelectDialog
+    SubmissionSelectDialog,
+    ImageCropperDialog
   ]
 })
 export class PostybirbModule { }
