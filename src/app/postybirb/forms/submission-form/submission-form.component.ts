@@ -250,6 +250,10 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
                       this._changeDetector.markForCheck();
                     });
                 }
+              } else {
+                this.hideForReload = false;
+                this.loading = false;
+                this._changeDetector.markForCheck();
               }
             });
         });

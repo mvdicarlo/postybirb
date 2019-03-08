@@ -1,6 +1,7 @@
 import { Component, OnInit, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
+import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
 @Component({
   selector: 'image-cropper-dialog',
@@ -13,13 +14,19 @@ export class ImageCropperDialog implements OnInit {
   public cropped64: Uint8Array;
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: Uint8Array, private _changeDetector: ChangeDetectorRef) {
-    this.base64 = nativeImage
-    .createFromBuffer(data)
-    .resize({
-      width: 840,
-      height: 840
-    })
-    .toDataURL();
+    let ni = nativeImage.createFromBuffer(data);
+    if (MBtoBytes(2) < data.length) {
+      const sizes = ni.getSize();
+
+      ni = ni
+      .resize({
+        width: Math.min(840, sizes.width),
+        height: Math.min(840, sizes.height)
+      });
+    }
+
+
+    this.base64 = ni.toDataURL();
     this.cropped64 = data;
   }
 
