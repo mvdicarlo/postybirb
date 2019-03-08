@@ -10,7 +10,10 @@ import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
   selector: 'inkbunny-login-dialog',
   templateUrl: './inkbunny-login-dialog.component.html',
   styleUrls: ['./inkbunny-login-dialog.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'login-dialog'
+  }
 })
 export class InkbunnyLoginDialog implements OnInit {
   public hide: boolean = true;

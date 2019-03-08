@@ -10,7 +10,10 @@ import { LoginStatus } from 'src/app/websites/interfaces/website-service.interfa
   selector: 'twitter-login-dialog',
   templateUrl: './twitter-login-dialog.component.html',
   styleUrls: ['./twitter-login-dialog.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'login-dialog'
+  }
 })
 export class TwitterLoginDialog implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('webview') webview: ElementRef;

@@ -9,7 +9,10 @@ import { LoginStatus } from 'src/app/websites/interfaces/website-service.interfa
   selector: 'tumblr-login-dialog',
   templateUrl: './tumblr-login-dialog.component.html',
   styleUrls: ['./tumblr-login-dialog.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'login-dialog'
+  }
 })
 export class TumblrLoginDialog implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('webview') webview: ElementRef;

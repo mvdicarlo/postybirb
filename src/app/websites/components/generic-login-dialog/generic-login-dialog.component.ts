@@ -10,7 +10,10 @@ export interface GenericLoginDialogOptions {
 @Component({
   selector: 'generic-login-dialog',
   templateUrl: './generic-login-dialog.component.html',
-  styleUrls: ['./generic-login-dialog.component.css']
+  styleUrls: ['./generic-login-dialog.component.css'],
+  host: {
+    'class': 'login-dialog'
+  }
 })
 export class GenericLoginDialog implements AfterViewInit {
   @ViewChild('webview') webview: ElementRef;

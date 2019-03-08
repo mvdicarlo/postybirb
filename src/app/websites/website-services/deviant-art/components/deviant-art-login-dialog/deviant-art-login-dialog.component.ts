@@ -9,7 +9,10 @@ import { LoginStatus } from 'src/app/websites/interfaces/website-service.interfa
   selector: 'deviant-art-login-dialog',
   templateUrl: './deviant-art-login-dialog.component.html',
   styleUrls: ['./deviant-art-login-dialog.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'login-dialog'
+  }
 })
 export class DeviantArtLoginDialog implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('webview') webview: ElementRef;
