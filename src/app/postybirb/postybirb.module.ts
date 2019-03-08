@@ -45,6 +45,7 @@ import { SubmissionSelectDialog } from './components/submission-select-dialog/su
 import { BaseSubmissionForm } from './forms/base-submission-form/base-submission-form.component';
 import { SubmissionPostingViewComponent } from './components/submission-posting-view/submission-posting-view.component';
 import { ImageCropperDialog } from './components/image-cropper-dialog/image-cropper-dialog.component';
+import { PostLogs } from './components/post-logs/post-logs.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import { ImageCropperDialog } from './components/image-cropper-dialog/image-crop
     BaseSubmissionForm,
     SubmissionPostingViewComponent,
     ImageCropperDialog,
+    PostLogs,
   ],
   imports: [
     CommonModule,

@@ -1,0 +1,16 @@
+td {
+  vertical-align: middle;
+}
+
+.src {
+  max-width: 240px;
+  word-wrap: break-word;
+  font-size: 0.7rem;
+  margin-bottom: 4px;
+}
+
+.src-container {
+  max-width: 250px;
+  max-height: 150px;
+  overflow: auto;
+}

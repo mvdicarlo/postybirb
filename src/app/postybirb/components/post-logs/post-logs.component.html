@@ -1,0 +1,28 @@
+<loading-overlay [loading]="loading">
+  <table class="table table-dark table-striped table-hover w-100">
+    <tbody *ngIf="logs.length">
+      <tr *ngFor="let log of logs; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ log.submission.title }}</td>
+        <td [class.warn-text]="!log.success" [class.text-success]>{{ log.success ? 'SUCCESS' : 'FAILED' }}</td>
+        <td>{{ log.created | date:'medium' }}</td>
+        <td>
+          <div class="src-container">
+            <div *ngFor="let src of log.post.sourceURLs" class="text-info src">{{ src }}</div>
+          </div>
+        </td>
+        <td>
+          <button mat-icon-button color="accent" (click)="save(log)">
+            <mat-icon>save</mat-icon>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+
+    <tbody *ngIf="!logs.length">
+      <tr>
+        No logs founds.
+      </tr>
+    </tbody>
+  </table>
+</loading-overlay>

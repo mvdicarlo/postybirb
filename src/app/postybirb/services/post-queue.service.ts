@@ -10,6 +10,7 @@ import { GeneratedThumbnailDBService } from 'src/app/database/model-services/gen
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
 import { TranslateService } from '@ngx-translate/core';
 import { PostResult } from 'src/app/websites/interfaces/website-service.interface';
+import { PostLoggerService } from './post-logger.service';
 
 export interface PostQueueStatus {
   currentId: number;
@@ -38,6 +39,7 @@ export class PostQueueService {
     private _postManager: PostManagerService,
     private _submissionDB: SubmissionDBService,
     private _generatedThumbnailDB: GeneratedThumbnailDBService,
+    private _postLogger: PostLoggerService,
     private _translate: TranslateService,
     private snotify: SnotifyService
   ) { }
@@ -226,6 +228,8 @@ export class PostQueueService {
               this.dequeue(postingSubmission.id);
               this.useWaitIntervalIfSet = true;
 
+              this._postLogger.addLog(postingSubmission);
+
               if (postingSubmission.postStats.fail.length) {
                 if (settingsDB.get('clearQueueOnFailure').value()) {
                   [...this.queue].forEach((queuedItem: Submission) => this.dequeue(queuedItem.id));
@@ -257,8 +261,6 @@ export class PostQueueService {
                   });
               }
             }
-
-            // TODO log errors
 
             this.posting = null;
             this._checkQueueForNextPost();

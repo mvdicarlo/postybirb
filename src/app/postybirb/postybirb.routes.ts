@@ -3,6 +3,7 @@ import { BulkUpdateForm } from './forms/bulk-update-form/bulk-update-form.compon
 import { TemplateForm } from './forms/template-form/template-form.component';
 import { SubmissionForm } from './forms/submission-form/submission-form.component';
 import { JournalForm } from './forms/journal-form/journal-form.component';
+import { PostLogs } from './components/post-logs/post-logs.component';
 
 const PostybirbRoutes: Routes = [
   {
@@ -12,6 +13,10 @@ const PostybirbRoutes: Routes = [
   {
     path: 'template',
     component: TemplateForm
+  },
+  {
+    path: 'logs',
+    component: PostLogs
   },
   {
     path: 'submission/:id',

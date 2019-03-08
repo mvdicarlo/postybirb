@@ -66,6 +66,19 @@ window.writeJsonToFile = function writeJsonToFile(fileName, data) {
         }
     });
 };
+
+/**
+ * Reads a JSON file and returns the data
+ * @param  {string} fileName The name of the file
+ */
+window.readJsonFile = function readJsonFile(fileName) {
+  return new Promise((resolve) => {
+    fs.readJson(path.join(app.getPath('userData'), 'data', `${fileName}.json`), (err, data) => {
+      resolve(data);
+    });
+  });
+};
+
 /**
  * Opens a url in the user's native/default browser
  * @param  {string} url URL being opened
