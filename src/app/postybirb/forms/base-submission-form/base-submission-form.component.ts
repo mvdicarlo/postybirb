@@ -18,6 +18,7 @@ import { PostQueueService } from '../../services/post-queue.service';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
+import * as dotProp from 'dot-prop';
 
 @Component({
   selector: 'base-submission-form',
@@ -139,6 +140,26 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
   public getLoginProfileId(): string {
     return this.formDataForm.value.loginProfile;
+  }
+
+  public importTemplateField(paths: string[], event: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    this.dialog.open(TemplateSelectDialog)
+      .afterClosed()
+      .subscribe(template => {
+        if (template) {
+          for (let i = 0; i < paths.length; i++) {
+            const path = paths[i];
+            dotProp.set(this.submission.formData, path, dotProp.get(template.data, path));
+          }
+          this.formDataForm.patchValue(this.submission.formData);
+          this._changeDetector.markForCheck();
+        }
+      });
   }
 
   public isLoggedIn(website: string): boolean {

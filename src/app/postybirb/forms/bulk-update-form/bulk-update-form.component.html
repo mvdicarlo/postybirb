@@ -14,12 +14,14 @@
             </mat-select>
           </mat-form-field>
           <button mat-button (click)="toggleLogin()" color="accent">{{ 'Login' | translate }}</button>
+          <button mat-button color="accent"><i (click)="importTemplateField(['websites', 'loginProfile'])" [matTooltip]="'Import from existing Template' | translate" class="fas fa-share-alt-square template-import accent-text"></i></button>
         </div>
 
         <!-- Defaults Section -->
         <div formGroupName="defaults">
           <h5>{{ 'Default Description' | translate }}
             <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Description Tooltip' | translate">info</mat-icon>
+            <i (click)="importTemplateField(['defaults.description'])" [matTooltip]="'Import from existing Template' | translate" class="fas fa-share-alt-square template-import accent-text"></i>
           </h5>
           <description-input #defaultDescription formControlName="description" class="w-100" [canOverwrite]="false"></description-input>
 
@@ -27,6 +29,7 @@
 
           <h5>{{ 'Default Tags' | translate }}
             <mat-icon class="help-icon" color="accent" [matTooltip]="'Default Tag Tooltip' | translate">info</mat-icon>
+            <i (click)="importTemplateField(['defaults.tags'])" [matTooltip]="'Import from existing Template' | translate" class="fas fa-share-alt-square template-import accent-text"></i>
           </h5>
           <tag-input #defaultTags formControlName="tags" class="w-100" [canExtend]="false"></tag-input>
         </div>
@@ -37,6 +40,7 @@
             <mat-expansion-panel-header>
               <mat-panel-title>
                 <span class="text-warning">{{ website | websiteDisplayname }}</span>
+                <i (click)="importTemplateField([website], $event)" [matTooltip]="'Import from existing Template' | translate" class="fas fa-share-alt-square template-import accent-text"></i>
               </mat-panel-title>
               <mat-panel-description>
                 <span *ngIf="!panel.disabled" class="text-success">{{ 'Logged In' | translate }}</span>

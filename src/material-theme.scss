@@ -31,6 +31,10 @@ code {
   color: mat-color($warn);
 }
 
+.accent-text {
+  color: mat-color($accent);
+}
+
 .btn-link {
   color: mat-color($accent) !important;
 }

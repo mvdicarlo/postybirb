@@ -27,3 +27,9 @@ mat-panel-title {
   width: 150px;
   flex-grow: unset;
 }
+
+.template-import {
+  font-size: 1rem;
+  cursor: pointer;
+  padding: .12em;
+}

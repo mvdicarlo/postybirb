@@ -88,3 +88,9 @@ mat-panel-title {
 .additional-img-container {
   cursor: grab;
 }
+
+.template-import {
+  font-size: 1rem;
+  cursor: pointer;
+  padding: .12em;
+}
