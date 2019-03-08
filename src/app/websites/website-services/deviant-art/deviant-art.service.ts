@@ -39,6 +39,9 @@ function descriptionParse(html: string): string {
     .replace(/style="text-align: center;"/g, 'align="center"')
     .replace(/style="text-align: right;"/g, 'align="right"');
 
+  const regex = new RegExp(`:da(.*?):`, 'gi');
+  html = html.replace(regex, `:icon$1:`);
+
   return html
     .replace(/<p>/gm, '<div>')
     .replace(/<\/p>/gm, '</div>');
@@ -164,7 +167,8 @@ export class DeviantArt extends BaseWebsiteService {
     if (postResponse.success.response.statusCode === 200) {
       return this.createPostResponse(null);
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
+      const body = JSON.parse(postResponse.success.body);
+      return Promise.reject(this.createPostResponse(body.error_description, postResponse.success.body));
     }
   }
 
@@ -195,7 +199,8 @@ export class DeviantArt extends BaseWebsiteService {
     }
 
     if (upload.success.response.statusCode !== 200) {
-      return Promise.reject(this.createPostResponse('Unknown error', upload.success.body));
+      const body = JSON.parse(upload.success.body);
+      return Promise.reject(this.createPostResponse(body.error_description || 'Unknown error', upload.success.body));
     }
 
     const res = JSON.parse(upload.success.body);
@@ -248,7 +253,7 @@ export class DeviantArt extends BaseWebsiteService {
       res.srcURL = json.url;
       return res;
     } else {
-      return Promise.reject(this.createPostResponse((json.error || <any>{}).error_description, postResponse.success.body));
+      return Promise.reject(this.createPostResponse(json.error_description || 'Unknown error', postResponse.success.body));
     }
   }
 }

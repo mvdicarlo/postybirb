@@ -9,7 +9,7 @@ export class AdInsertParser {
 
         // Don't want link conversion for plaintext only
         if (registryEntry.websiteConfig.parsers.description.includes(PlaintextParser.parse)) {
-          html += '\n\n Posted using PostyBirb';
+          html += '\n\nPosted using PostyBirb';
         } else {
           html += '<br /><p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>';
         }
