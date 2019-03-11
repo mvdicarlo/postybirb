@@ -29,6 +29,9 @@ export class PlaintextParser {
     html = html.replace(/\r\r/gi, '');
     html = html.replace(/(\S)\n/gi, '$1 ');
     html = html.replace(/&nbsp;/gi, '');
+    html = html.replace(/&gt;/gi, '>');
+    html = html.replace(/&lt;/gi, '<');
+    html = html.replace(/&amp;/gi, '&');
 
     return html.trim();
   }

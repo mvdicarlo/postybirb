@@ -26,6 +26,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 
 function descriptionParse(bbcode: string): string {
   bbcode = bbcode.replace(/\n/g, '[lb]\n');
+  bbcode = bbcode.replace(/\[hr\]/g, '\n----------\n');
   bbcode = bbcode.replace(/(\[size=\d+\]|\[\/size\])/g, ''); // does not support our size tag
   bbcode = bbcode
     .replace(/\[right\]/g, '[align=right]')

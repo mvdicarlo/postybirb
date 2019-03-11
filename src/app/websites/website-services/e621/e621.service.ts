@@ -31,6 +31,30 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   return problems;
 }
 
+function descriptionParser(html: string): string {
+    if (!html) return '';
+
+    html = html.replace(/<b>/gi, '[b]');
+    html = html.replace(/<i>/gi, '[i]');
+    html = html.replace(/<u>/gi, '[u]');
+    html = html.replace(/<s>/gi, '[s]');
+    html = html.replace(/<\/b>/gi, '[/b]');
+    html = html.replace(/<\/i>/gi, '[/i]');
+    html = html.replace(/<\/u>/gi, '[/u]');
+    html = html.replace(/<\/s>/gi, '[/s]');
+    html = html.replace(/<em>/gi, '[i]');
+    html = html.replace(/<\/em>/gi, '[/i]');
+    html = html.replace(/<strong>/gi, '[b]');
+    html = html.replace(/<\/strong>/gi, '[/b]');
+    html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
+
+    html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+
+    html = html.replace(/:e6(.*?):/gi, '@$1');
+
+    return html;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -45,6 +69,9 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   },
   validators: {
     submission: validate
+  },
+  preparsers: {
+    description: [descriptionParser]
   },
   parsers: {
     description: [PlaintextParser.parse],

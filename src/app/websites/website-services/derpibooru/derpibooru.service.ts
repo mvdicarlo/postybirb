@@ -33,6 +33,26 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   return problems;
 }
 
+function descriptionParser(html: string): string {
+    if (!html) return '';
+
+    html = html.replace(/<b>/gi, '*');
+    html = html.replace(/<i>/gi, '_');
+    html = html.replace(/<u>/gi, '+');
+    html = html.replace(/<s>/gi, '-');
+    html = html.replace(/<\/b>/gi, '*');
+    html = html.replace(/<\/i>/gi, '_');
+    html = html.replace(/<\/u>/gi, '+');
+    html = html.replace(/<\/s>/gi, '-');
+    html = html.replace(/<em>/gi, '_');
+    html = html.replace(/<\/em>/gi, '_');
+    html = html.replace(/<strong>/gi, '*');
+    html = html.replace(/<\/strong>/gi, '*');
+    html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+
+    return html;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -47,6 +67,9 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   },
   validators: {
     submission: validate
+  },
+  preparsers: {
+    description: [descriptionParser]
   },
   parsers: {
     description: [PlaintextParser.parse],
