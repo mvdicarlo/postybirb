@@ -206,7 +206,12 @@ export class PostQueueService {
             postingSubmission.postStats.success.push(website);
           }).catch((err: PostResult) => { // could this every return something that isn't a PostResult?
             postingSubmission.postStats.fail.push(website);
-            postingSubmission.postStats.errors.push(err.error);
+
+            let error = err.error;
+            if (error instanceof Error) {
+              error = `${error.toString()}\n${error.stack}`;
+            }
+            postingSubmission.postStats.errors.push(error);
 
             // Check to see if it was interrupted while posting
             if (!this.queue.includes(postingSubmission)) {

@@ -63,11 +63,21 @@ export function getAllWebsiteValidatorsForWebsites(websites: string[], submissio
   return validatorFns;
 }
 
-export function supportsFileType(fileType: string, supportedFileTypes: string[]): boolean {
+export function supportsFileType(fileType: string, supportedFileTypes: string[], name?: string): boolean {
   const split = fileType.split('/')[1];
+  let extension = null;
+  if (name) {
+    extension = name.split('.').pop();
+  }
   for (let i = 0; i < supportedFileTypes.length; i++) {
       if (supportedFileTypes[i].includes(fileType) || supportedFileTypes[i].includes(split)) {
         return true;
+      } else {
+        if (extension) {
+          if (supportedFileTypes[i].includes(extension)) {
+            return true;
+          }
+        }
       }
   }
 

@@ -1,0 +1,48 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="communityTags">{{'Allow Community Tags' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="notify">{{'Notify' | translate}}</mat-checkbox>
+    </div>
+
+    <div class="col-md-8 col-lg-8 col-xl-8">
+      <div class="row no-gutters">
+        <div class="col-md-6 col-lg-6 col-xl-6">
+          <mat-form-field color="accent">
+            <mat-select formControlName="profile" [placeholder]="'Profile' | translate">
+              <mat-option *ngFor="let profile of profiles" [value]="profile.name">{{ profile.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-6 col-lg-6 col-xl-6">
+          <mat-form-field color="accent">
+            <mat-select formControlName="folders" multiple [placeholder]="'Folder' | translate">
+              <mat-optgroup *ngFor="let collection of collections | keyvalue" [label]="collection.key | titlecase">
+                <mat-option [value]="folder.id" *ngFor="let folder of collection.value">{{ folder.name }}</mat-option>
+              </mat-optgroup>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col-md-3 col-lg-3 col-xl-2">
+          <mat-form-field class="w-100" color="accent">
+            <mat-select value="public" formControlName="status" [placeholder]="'Status' | translate">
+              <mat-option value="public">{{'Public' | translate}}</mat-option>
+              <mat-option value="unlisted">{{'Unlisted' | translate}}</mat-option>
+              <mat-option value="draft">{{'Draft' | translate}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

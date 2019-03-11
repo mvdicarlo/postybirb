@@ -1,0 +1,25 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ data.title | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content class="ignore-max-content-height">
+  <loading-overlay [loading]="attempting">
+    <form [formGroup]="loginForm" (ngSubmit)="login()" *ngIf="!loggedIn">
+      <mat-form-field color="accent" class="w-100">
+        <input matInput type="email" formControlName="username" [placeholder]="'Email' | translate">
+      </mat-form-field>
+      <mat-form-field color="accent" class="w-100">
+        <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" [placeholder]="'Password' | translate">
+        <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </mat-form-field>
+      <button mat-flat-button type="submit" color="primary" [disabled]="loginForm.invalid">{{ 'Login' | translate }}</button>
+    </form>
+  </loading-overlay>
+  <button mat-flat-button color="warn" *ngIf="loggedIn" (click)="logout()">{{ 'Logout' | translate}}</button>
+</div>

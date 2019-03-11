@@ -1,6 +1,7 @@
 import { NgModule, APP_INITIALIZER, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
 
 import { Aryion } from './website-services/aryion/aryion.service';
 import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
@@ -20,6 +21,7 @@ import { InkBunny } from './website-services/inkbunny/inkbunny.service';
 import { Twitter } from './website-services/twitter/twitter.service';
 import { Tumblr } from './website-services/tumblr/tumblr.service';
 import { DeviantArt } from './website-services/deviant-art/deviant-art.service';
+import { FurryNetwork } from './website-services/furry-network/furry-network.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -71,6 +73,9 @@ import { TumblrJournalForm } from './website-services/tumblr/components/tumblr-j
 import { DeviantArtLoginDialog } from './website-services/deviant-art/components/deviant-art-login-dialog/deviant-art-login-dialog.component';
 import { DeviantArtSubmissionForm } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-submission-form.component';
 import { DeviantArtCategorySelectComponent } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-category-select/deviant-art-category-select.component';
+import { FurryNetworkLoginDialog } from './website-services/furry-network/components/furry-network-login-dialog/furry-network-login-dialog.component';
+import { FurryNetworkSubmissionForm } from './website-services/furry-network/components/furry-network-submission-form/furry-network-submission-form.component';
+import { FurryNetworkJournalForm } from './website-services/furry-network/components/furry-network-journal-form/furry-network-journal-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -106,10 +111,14 @@ export function INIT_WEBSITE_REGISTRY() {
     TumblrJournalForm,
     DeviantArtLoginDialog,
     DeviantArtSubmissionForm,
-    DeviantArtCategorySelectComponent
+    DeviantArtCategorySelectComponent,
+    FurryNetworkLoginDialog,
+    FurryNetworkSubmissionForm,
+    FurryNetworkJournalForm
   ],
   imports: [
     CommonModule,
+    HttpClientModule,
     TranslateModule,
     UtilsModule,
     MatAutocompleteModule,
@@ -159,6 +168,9 @@ export function INIT_WEBSITE_REGISTRY() {
     TumblrJournalForm,
     DeviantArtLoginDialog,
     DeviantArtSubmissionForm,
+    FurryNetworkLoginDialog,
+    FurryNetworkSubmissionForm,
+    FurryNetworkJournalForm
   ],
   providers: [
     {
@@ -182,7 +194,8 @@ export function INIT_WEBSITE_REGISTRY() {
         Tumblr,
         Twitter,
         Weasyl,
-        DeviantArt
+        DeviantArt,
+        FurryNetwork
       ],
       multi: true
     }
