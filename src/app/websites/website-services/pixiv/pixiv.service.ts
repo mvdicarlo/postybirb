@@ -16,7 +16,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   const tags = getTags(submission, Pixiv.name);
   if (tags.length < 1) problems.push(['Requires minimum tags', { website: 'Pixiv', value: 1 }]);
 
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif'])) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif'])) {
     problems.push(['Does not support file format', { website: 'Pixiv', value: submission.fileInfo.type }]);
   }
 

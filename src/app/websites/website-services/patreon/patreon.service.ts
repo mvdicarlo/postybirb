@@ -13,7 +13,7 @@ import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'])) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'])) {
     problems.push(['Does not support file format', { website: 'Patreon', value: submission.fileInfo.type }]);
   }
 

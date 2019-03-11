@@ -16,7 +16,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   const problems: any[] = [];
   const tags = getTags(submission, Weasyl.name);
   if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'Weasyl', value: 2 }]);
-  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'])) {
     problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
   }
 

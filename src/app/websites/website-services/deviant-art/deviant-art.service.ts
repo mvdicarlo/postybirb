@@ -20,7 +20,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Does not support rating', { website: 'DeviantArt', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo.type, ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt', 'swf', 'tiff', 'tif'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt', 'swf', 'tiff', 'tif'])) {
     problems.push(['Does not support file format', { website: 'DeviantArt', value: submission.fileInfo.type }]);
   }
 

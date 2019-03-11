@@ -15,7 +15,7 @@ import { TwitterSubmissionForm } from './components/twitter-submission-form/twit
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo.type, ['jpeg', 'jpg', 'png', 'gif', 'webp'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'webp'])) {
     problems.push(['Does not support file format', { website: 'Twitter', value: submission.fileInfo.type }]);
   }
 

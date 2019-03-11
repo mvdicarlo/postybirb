@@ -17,7 +17,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Does not support rating', { website: 'Route 50', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'jpeg', 'png', 'gif', 'txt', 'mp3', 'midi', 'css', 'swf'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'txt', 'mp3', 'midi', 'css', 'swf'])) {
     problems.push(['Does not support file format', { website: 'Route 50', value: submission.fileInfo.type }]);
   }
 

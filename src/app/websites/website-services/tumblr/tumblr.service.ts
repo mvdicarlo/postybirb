@@ -18,7 +18,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Does not support rating', { website: 'Tumblr', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'])) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'])) {
     problems.push(['Does not support file format', { website: 'Tumblr', value: submission.fileInfo.type }]);
   }
 

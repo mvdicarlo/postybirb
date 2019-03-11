@@ -15,7 +15,7 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, E621.name);
   if (tags.length < 4) problems.push(['Requires minimum tags', { website: 'e621', value: 4 }]);
-  if (!supportsFileType(submission.fileInfo.type, ['jpeg', 'jpg', 'png', 'gif', 'webm'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'webm'])) {
     problems.push(['Does not support file format', { website: 'e621', value: submission.fileInfo.type }]);
   }
 

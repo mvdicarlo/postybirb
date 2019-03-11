@@ -14,8 +14,8 @@ import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'jpeg', 'png', 'gif'])) {
-    problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
+  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif'])) {
+    problems.push(['Does not support file format', { website: 'Furry Amino', value: submission.fileInfo.type }]);
   }
 
   if (MBtoBytes(10) < submission.fileInfo.size) {

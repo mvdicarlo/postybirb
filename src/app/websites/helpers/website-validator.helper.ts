@@ -4,6 +4,7 @@ import { DescriptionData } from 'src/app/utils/components/description-input/desc
 import { WebsiteRegistry } from '../registries/website.registry';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import * as dotProp from 'dot-prop';
+import { FileObject } from 'src/app/database/tables/submission-file.table';
 
 export function validate(submission: Submission): string[] {
   const problems = [];
@@ -63,14 +64,14 @@ export function getAllWebsiteValidatorsForWebsites(websites: string[], submissio
   return validatorFns;
 }
 
-export function supportsFileType(fileType: string, supportedFileTypes: string[], name?: string): boolean {
-  const split = fileType.split('/')[1];
+export function supportsFileType(fileInfo: FileObject, supportedFileTypes: string[]): boolean {
+  const split = fileInfo.type.split('/')[1];
   let extension = null;
-  if (name) {
-    extension = name.split('.').pop();
+  if (fileInfo.name) {
+    extension = fileInfo.name.split('.').pop();
   }
   for (let i = 0; i < supportedFileTypes.length; i++) {
-      if (supportedFileTypes[i].includes(fileType) || supportedFileTypes[i].includes(split)) {
+      if (supportedFileTypes[i].includes(fileInfo.type) || supportedFileTypes[i].includes(split)) {
         return true;
       } else {
         if (extension) {

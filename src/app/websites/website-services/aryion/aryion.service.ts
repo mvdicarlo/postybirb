@@ -20,7 +20,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Options are incomplete', { website: 'Aryion' }]);
   }
 
-  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'], )) {
+  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'], )) {
     problems.push(['Does not support file format', { website: 'Aryion', value: submission.fileInfo.type }]);
   }
 

@@ -10,7 +10,7 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif'])) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif'])) {
     problems.push(['Does not support file format', { website: 'Paigee World', value: submission.fileInfo.type }]);
   }
 

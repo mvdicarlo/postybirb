@@ -18,7 +18,7 @@ import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'mp3', 'mp4', 'webm', 'swf', 'gif', 'wav', 'txt', 'plain'], submission.fileInfo.name)) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'mp3', 'mp4', 'webm', 'swf', 'gif', 'wav', 'txt', 'plain'])) {
     problems.push(['Does not support file format', { website: 'Furry Network', value: submission.fileInfo.type }]);
   }
 

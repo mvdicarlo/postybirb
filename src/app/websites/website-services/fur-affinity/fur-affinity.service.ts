@@ -18,7 +18,7 @@ import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, FurAffinity.name);
-  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'])) {
     problems.push(['Does not support file format', { website: 'Fur Affinity', value: submission.fileInfo.type }]);
   }
 

@@ -18,7 +18,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   const problems: any[] = [];
   const tags = getTags(submission, SoFurry.name);
   if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'SoFurry', value: 2 }]);
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'], submission.fileInfo.name)) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'])) {
     problems.push(['Does not support file format', { website: 'SoFurry', value: submission.fileInfo.type }]);
   }
 

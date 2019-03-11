@@ -13,7 +13,7 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo.type, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'])) {
     problems.push(['Does not support file format', { website: 'Furiffic', value: submission.fileInfo.type }]);
   }
 

@@ -17,7 +17,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Options are incomplete', { website: 'Newgrounds' }]);
   }
 
-  if (!supportsFileType(submission.fileInfo.type, ['jpeg', 'jpg', 'png', 'gif', 'bmp'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'bmp'])) {
     problems.push(['Does not support file format', { website: 'Newgrounds', value: submission.fileInfo.type }]);
   }
 

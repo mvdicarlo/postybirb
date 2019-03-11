@@ -11,7 +11,7 @@ import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo.type, ['jpeg', 'jpg', 'png', 'svg', 'gif'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'svg', 'gif'])) {
     problems.push(['Does not support file format', { website: 'Hentai Foundry', value: submission.fileInfo.type }]);
   }
 

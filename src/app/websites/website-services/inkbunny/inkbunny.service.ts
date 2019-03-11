@@ -14,7 +14,7 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo.type, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'])) {
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'])) {
     problems.push(['Does not support file format', { website: 'InkBunny', value: submission.fileInfo.type }]);
   }
 
