@@ -50,6 +50,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   },
   parsers: {
     description: [PlaintextParser.parse],
+    disableAdvertise: true,
     usernameShortcut: {
       code: 'tw',
       url: 'https://twitter.com/$1'

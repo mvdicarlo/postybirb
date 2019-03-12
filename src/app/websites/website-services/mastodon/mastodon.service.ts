@@ -1,0 +1,98 @@
+import { Injectable } from '@angular/core';
+import { Website } from '../../decorators/website-decorator';
+import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
+import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
+import { supportsFileType } from '../../helpers/website-validator.helper';
+import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MastodonLoginDialog } from './components/mastodon-login-dialog/mastodon-login-dialog.component';
+import { BaseWebsiteService } from '../base-website-service';
+import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
+import { MastodonSubmissionForm } from './components/mastodon-submission-form/mastodon-submission-form.component';
+import { SubmissionRating } from 'src/app/database/tables/submission.table';
+
+function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
+  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'])) {
+    problems.push(['Does not support file format', { website: 'Mastodon', value: submission.fileInfo.type }]);
+  }
+
+  if (MBtoBytes(300) < submission.fileInfo.size) {
+    problems.push(['Max file size', { website: 'Mastodon', value: '300MB' }]);
+  }
+
+  return problems;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+@Website({
+  additionalImages: true,
+  login: {
+    dialog: MastodonLoginDialog,
+    url: ''
+  },
+  components: {
+    submissionForm: MastodonSubmissionForm,
+    journalForm: MastodonSubmissionForm
+  },
+  validators: {
+    submission: submissionValidate
+  },
+  parsers: {
+    description: [PlaintextParser.parse],
+    disableAdvertise: true,
+  }
+})
+export class Mastodon extends BaseWebsiteService {
+
+  constructor(private _profileManager: LoginProfileManagerService) {
+    super();
+  }
+
+  public async checkStatus(profileId: string, data?: any): Promise<WebsiteStatus> {
+    const returnValue: WebsiteStatus = {
+      username: null,
+      status: LoginStatus.LOGGED_OUT
+    };
+
+    if (data) {
+      const refresh = await auth.mastodon.refresh(data.website, data.token);
+      if (refresh) {
+        returnValue.status = LoginStatus.LOGGED_IN;
+        returnValue.username = data.username;
+      } else {
+        this.unauthorize(profileId);
+      }
+    } else {
+      this.unauthorize(profileId);
+    }
+
+    return returnValue;
+  }
+
+  public unauthorize(profileId: string): void {
+    this._profileManager.storeData(profileId, Mastodon.name, null);
+  }
+
+  public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const authData = this._profileManager.getData(postData.profileId, Mastodon.name);
+    const postResponse: any = await auth.mastodon.post(
+      authData.token,
+      authData.website,
+      [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => fileAsFormDataObject(f.buffer, f.fileInfo)),
+      submission.rating !== SubmissionRating.GENERAL,
+      `${postData.options.useTitle ? submission.title + '\n' : ''}${postData.description}`.substring(0, 490).trim(), // substr 500 seems to cause issue
+      postData.options.spoilerText
+    );
+
+    if (postResponse.error) {
+      return Promise.reject(this.createPostResponse(postResponse.error, postResponse.error))
+    }
+
+    const res = this.createPostResponse(null);
+    res.srcURL = postResponse.url;
+    return res;
+  }
+}

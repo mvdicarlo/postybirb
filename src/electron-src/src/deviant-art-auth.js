@@ -48,11 +48,15 @@ exports.refresh = function (authInfo) {
                         return;
                     }
 
-                    const json = JSON.parse(body.body);
-                    if (json.error) {
-                      resolve(false);
-                    } else {
-                      resolve(Object.assign(authInfo, json));
+                    try {
+                        const json = JSON.parse(body.body);
+                        if (json.error) {
+                            resolve(false);
+                        } else {
+                            resolve(Object.assign(authInfo, json));
+                        }
+                    } catch (e) {
+                        resolve(false);
                     }
                 });
             }

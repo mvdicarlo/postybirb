@@ -1,0 +1,34 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ data.title | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content class="ignore-max-content-height">
+  <div>
+    <form [formGroup]="loginForm" (ngSubmit)="changeURL()">
+      <mat-form-field color="accent">
+        <input type="text" matInput placeholder="Website (e.g. mastodon)" formControlName="url" required>
+        <span matPrefix>https://</span>
+      </mat-form-field>
+      <span class="d-inline-block period"> . </span>
+      <mat-form-field color="accent">
+        <input type="text" matInput placeholder="Domain (e.g. com, org, net)" formControlName="extension" required>
+      </mat-form-field>
+      <button mat-raised-button color="accent">{{ 'Submit' | translate }}</button>
+    </form>
+    <div>
+      <mat-form-field color="accent">
+        <input type="text" matInput #codeInput placeholder="{{'Code' | translate}}" maxLength="150" required>
+      </mat-form-field>
+      <button mat-raised-button color="primary" (click)="submitCode(codeInput.value)" [disabled]="codeInput.value.length === 0">{{'Authorize' | translate}}</button>
+      <div *ngIf="failed" class="mat-error">{{'Authentication Failed' | translate}}</div>
+    </div>
+    <div>{{ url }} <span *ngIf="loading">Loading...</span> <span *ngIf="authorized" class="text-success">{{ 'Authorized' | translate }}</span></div>
+    <webview class="webview" #webview webpreferences="nativeWindowOpen=1" allowpopups></webview>
+  </div>
+</div>

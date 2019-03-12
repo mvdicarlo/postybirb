@@ -51,6 +51,7 @@ window.got = require('./src/got-request.js');
 
 window.auth = {
   deviantart: require('./src/deviant-art-auth.js'),
+  mastodon: require('./src/mastodon-auth.js'),
   tumblr: require('./src/tumblr-auth.js'),
   twitter: require('./src/twitter-auth.js')
 };

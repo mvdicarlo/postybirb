@@ -29,6 +29,7 @@ declare var BrowserWindow: any; // Electron BrowserWindow
 
 declare var auth: {
   deviantart: any;
+  mastodon: any;
   tumblr: any;
   twitter: any;
 }

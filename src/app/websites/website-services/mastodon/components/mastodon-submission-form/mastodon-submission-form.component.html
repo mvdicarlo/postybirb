@@ -1,0 +1,17 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md-3 col-lg-3 col-xl-3">
+      <mat-checkbox formControlName="useTitle">{{'Use Title' | translate}}</mat-checkbox>
+    </div>
+    <div class="col-md col-lg col-xl">
+      <mat-form-field color="accent" class="w-100">
+        <input matInput placeholder="{{'Spoiler Text' | translate}}" formControlName="spoilerText">
+      </mat-form-field>
+    </div>
+  </div>
+</form>
