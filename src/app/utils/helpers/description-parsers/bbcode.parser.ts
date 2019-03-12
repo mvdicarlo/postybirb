@@ -27,6 +27,7 @@ export class BBCodeParser {
       html = html.replace(regex, '[$3]$5[/$3]\n');
     });
 
+    html = html.replace(/ data-mce-(style)="(.*?);"/gmi, '');
     html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
 
     // opting to use \r for now

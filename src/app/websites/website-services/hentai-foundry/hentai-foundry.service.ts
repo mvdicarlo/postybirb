@@ -8,9 +8,16 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import { supportsFileType } from '../../helpers/website-validator.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
+import * as dotProp from 'dot-prop';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+
+  const options = dotProp.get(formData, `${HentaiFoundry.name}.options`, {});
+  if (!options.category) {
+    problems.push(['Options are incomplete', { website: 'Hentai Foundry' }]);
+  }
+
   if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'svg', 'gif'])) {
     problems.push(['Does not support file format', { website: 'Hentai Foundry', value: submission.fileInfo.type }]);
   }
@@ -86,7 +93,7 @@ export class HentaiFoundry extends BaseWebsiteService {
       'Pictures[keywords]': this.formatTags(postData.tags, []),
       'Pictures[is_scrap]': options.scraps ? '1' : '0',
       'Pictures[comments_type]': options.disableComments ? '-1' : '0',
-      'Pictures[categoryHier]': options.category,
+      'Pictures[categoryHier]': options.category || '',
       'Pictures[rating_nudity]': options.nudityRating,
       'Pictures[rating_violence]': options.violenceRating,
       'Pictures[rating_profanity]': options.profanityRating,

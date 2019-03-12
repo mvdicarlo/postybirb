@@ -43,7 +43,7 @@ function descriptionParse(html: string): string {
   html = html.replace(regex, `:icon$1:`);
 
   return html
-    .replace(/<p>/gm, '<div>')
+    .replace(/<p/gm, '<div')
     .replace(/<\/p>/gm, '</div>');
 }
 

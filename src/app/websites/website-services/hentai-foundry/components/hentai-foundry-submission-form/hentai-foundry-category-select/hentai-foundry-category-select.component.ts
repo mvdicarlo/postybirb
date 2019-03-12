@@ -72,7 +72,7 @@ export class HentaiFoundryCategorySelectComponent extends BaseValueAccessor impl
       this.control.patchValue(null, { emitEvent: false });
     }
 
-    this._changeDetector.detectChanges();
+    this._changeDetector.markForCheck();
   }
 
   public onChange(value) {

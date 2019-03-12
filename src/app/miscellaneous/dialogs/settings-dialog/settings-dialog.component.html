@@ -12,6 +12,14 @@
 <div mat-dialog-content>
   <form [formGroup]="settingsForm">
     <mat-accordion [multi]="true">
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ 'Data' | translate }}</mat-panel-title>
+        </mat-expansion-panel-header>
+        <button mat-flat-button color="warn" (click)="clearAllData()">{{ 'Clear Submission Data' | translate }}</button>
+      </mat-expansion-panel>
+
       <mat-expansion-panel>
         <mat-expansion-panel-header>
           <mat-panel-title>{{ 'Performance' | translate }}</mat-panel-title>

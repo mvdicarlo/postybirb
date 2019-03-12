@@ -33,6 +33,13 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function descriptionParse(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/<p/gm, '<div')
+    .replace(/<\/p>/gm, '</div>');
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -49,6 +56,9 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   },
   validators: {
     submission: submissionValidate
+  },
+  preparsers: {
+    description: [descriptionParse]
   },
   parsers: {
     description: [],

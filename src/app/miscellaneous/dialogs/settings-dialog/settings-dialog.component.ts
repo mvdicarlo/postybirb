@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
+import { DatabaseService } from 'src/app/database/services/database.service';
 
 @Component({
   selector: 'settings-dialog',
@@ -12,7 +13,7 @@ export class SettingsDialog implements OnInit {
 
   public settingsForm: FormGroup;
 
-  constructor(fb: FormBuilder, private dialog: MatDialog) {
+  constructor(fb: FormBuilder, private dialog: MatDialog, private databaseService: DatabaseService) {
     settingsDB.defaults({
       hardwareAcceleration: true,
       postInterval: 0,
@@ -58,6 +59,21 @@ export class SettingsDialog implements OnInit {
     this.settingsForm.controls.advertise.valueChanges.subscribe(advertise => {
       settingsDB.set('advertise', advertise).write();
     });
+  }
+
+  public clearAllData(): void {
+    this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Clear Submission Data'
+      }
+    }).afterClosed()
+    .subscribe(result => {
+      if (result) {
+        this.databaseService.dropAll().then(() => {
+          location.reload();
+        });
+      }
+    })
   }
 
 }

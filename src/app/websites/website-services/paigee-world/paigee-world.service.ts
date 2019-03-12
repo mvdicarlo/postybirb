@@ -112,8 +112,9 @@ export class PaigeeWorld extends BaseWebsiteService {
 
     const data: any = {
       image: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
-      caption: (postData.description || '').substring(0, 1000),
-      extra_tags: this.formatTags(postData.tags, [postData.options.category]).join(','),
+      captions: (postData.description || '').substring(0, 1000),
+      extra_tags: this.formatTags(postData.tags, []).join(','),
+      tags: this.formatTags(postData.tags, ['', postData.options.category]).join(','),
       web: '1',
       category: postData.options.category || ''
     };

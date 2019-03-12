@@ -36,6 +36,11 @@ function usernameParser(html: string): string {
   return html;
 }
 
+function bbcodeParse(bbcode: string): string {
+  if (!bbcode) return '';
+  return bbcode.replace(/\[hr\]/g, '-----');
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -56,7 +61,7 @@ function usernameParser(html: string): string {
     description: [usernameParser]
   },
   parsers: {
-    description: [BBCodeParser.parse],
+    description: [BBCodeParser.parse, bbcodeParse],
     usernameShortcut: {
       code: 'ib',
       url: 'https://inkbunny.net/$1'

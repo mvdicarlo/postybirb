@@ -28,6 +28,9 @@ function descriptionParse(html: string): string {
   if (!html) return '';
   return html
     .replace(/\n/g, '')
+    .replace(/<p/gm, '<div')
+    .replace(/<\/p>/gm, '</div>')
+    .replace(/(<s>|<\/s>)/g, '')
     .replace(/<hr \/>/g, '');
 }
 
