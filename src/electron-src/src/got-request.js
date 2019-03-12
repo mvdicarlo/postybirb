@@ -23,17 +23,17 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
               if (res.headers['set-cookie']) {
                   const cookies = setCookie.parse(res);
                   const cookieSession = session.fromPartition(`persist:${profileId}`).cookies;
-                  cookies.filter(c => c.domain).forEach((c) => {
-                      c.secure = false;
+                  cookies.forEach((c) => {
+                      c.secure = c.secure || false;
                       c.session = false;
                       c.httpOnly = false;
                       c.hostOnly = false;
                       c.url = cookieUrl;
-                      if (c.expires) {
-                          delete c.expires;
-                      }
+                      delete c.expires;
+                      delete c.maxAge;
                       c.value = encodeURIComponent(c.value);
-                      c.expirationDate = 999999999999999;
+                      const now = new Date();
+                      c.expirationDate = now.setMonth(now.getMonth() + 4); // add 4 months
                       cookieSession.set(c, function (err) {
                           if (err) {
                               console.warn(err, this);

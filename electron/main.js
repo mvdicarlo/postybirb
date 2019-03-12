@@ -6,6 +6,7 @@ const {
   Menu,
   Tray,
   nativeImage,
+  powerSaveBlocker
 } = require('electron');
 const log = require('electron-log');
 const template = require('./src/electron-menu');
@@ -46,6 +47,8 @@ app.on('second-instance', () => {
         initialize();
     }
 });
+
+const blockerId = powerSaveBlocker.start('prevent-app-suspension');
 
 // app.commandLine.appendSwitch('proxy-bypass-list', '*')
 // app.commandLine.appendSwitch('proxy-server', 'direct://')
@@ -233,6 +236,7 @@ function hasScheduled() {
 function attemptToClose() {
     if (!hasScheduled()) {
         clearInterval(scheduleCheckInterval);
+        powerSaveBlocker.stop(blockerId);
         app.quit();
     }
 }
