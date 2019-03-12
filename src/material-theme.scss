@@ -107,10 +107,10 @@ code {
   padding: 0 12px !important;
 }
 
-.mat-pseudo-checkbox-checked::after {
-  left: 2px !important;
-  padding-top: 3px !important;
-}
+// .mat-pseudo-checkbox-checked::after {
+//   left: 2px !important;
+//   padding-top: 3px !important;
+// }
 
 mat-radio-button + mat-radio-button {
   margin-left: 4px;

@@ -9,6 +9,8 @@ import { supportsFileType } from '../../helpers/website-validator.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import * as dotProp from 'dot-prop';
+import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -39,6 +41,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   },
   components: {
     submissionForm: HentaiFoundrySubmissionForm,
+    journalForm: GenericJournalSubmissionForm
   },
   validators: {
     submission: submissionValidate
@@ -77,7 +80,35 @@ export class HentaiFoundry extends BaseWebsiteService {
     return returnValue;
   }
 
-  public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    if (submission.submissionType === SubmissionType.SUBMISSION) {
+      return this.postSubmission(submission, postData);
+    } else if (submission.submissionType === SubmissionType.JOURNAL) {
+      return this.postJournal(submission, postData);
+    } else {
+      throw new Error('Unknown submission type.');
+    }
+  }
+
+  private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const formPage = await got.get(`${this.BASE_URL}/UserBlogs/create`, this.BASE_URL, cookies, postData.profileId);
+
+    const data: any = {
+      YII_CSRF_TOKEN: HTMLParser.getInputValue(formPage.body, 'YII_CSRF_TOKEN'),
+      'UserBlogs[blog_title]': submission.title,
+      'UserBlogs[blog_body]': postData.description
+    };
+
+    const postResponse = await got.post(`${this.BASE_URL}/UserBlogs/create`, data, this.BASE_URL, cookies);
+    if (postResponse.error) {
+      return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
+    }
+
+    return this.createPostResponse(null);
+  }
+
+  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const formPage = await got.get(`${this.BASE_URL}/pictures/create`, this.BASE_URL, cookies, postData.profileId);
     const options = postData.options;
