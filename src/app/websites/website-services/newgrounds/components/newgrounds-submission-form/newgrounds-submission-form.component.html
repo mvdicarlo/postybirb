@@ -12,9 +12,9 @@
   <div formGroupName="options" class="row no-gutters section">
     <div class="col-md col-lg col-xl">
       <mat-checkbox formControlName="sketch">{{'Sketch' | translate}}</mat-checkbox>
-      <mat-checkbox formControlName="creativeCommons">{{'Use a Creative Commons license?' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="creativeCommons">{{'Use a Creative Commons license' | translate}}</mat-checkbox>
       <mat-checkbox formControlName="commercial" *ngIf="formGroup.controls.options.value.creativeCommons">{{'Allow Commercial Uses' | translate}}</mat-checkbox>
-      <mat-checkbox formControlName="modification" *ngIf="formGroup.controls.options.value.creativeCommons">{{'Allow Modifications?' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="modification" *ngIf="formGroup.controls.options.value.creativeCommons">{{'Allow Modifications' | translate}}</mat-checkbox>
     </div>
 
     <div class="col-md-8 col-lg-8 col-xl-8">
