@@ -254,15 +254,16 @@ export class PostQueueService {
                 postingSubmission.cleanUp();
                 this._outputNotification(postingSubmission)
                   .finally(() => {
-                    // this._submissionDB.delete([this.submission.id]);
-                    // TODO make sure this only calls after delete runs
-                    if (!this.queue.length && closeAfterPost() /* global var*/) {
-                      setTimeout(() => {
-                        if (closeAfterPost()) {
-                          window.close();
+                    this._submissionDB.delete([postingSubmission.id])
+                      .finally(() => {
+                        if (!this.queue.length && closeAfterPost() /* global var*/) {
+                          setTimeout(() => {
+                            if (closeAfterPost()) {
+                              window.close();
+                            }
+                          }, 15000); // allow enough time for db to be updated and any writers hopefully
                         }
-                      }, 15000); // allow enough time for db to be updated and any writers hopefully
-                    }
+                      });
                   });
               }
             }
