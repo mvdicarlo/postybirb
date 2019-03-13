@@ -1,0 +1,34 @@
+import { Component, OnInit, Injector, forwardRef } from '@angular/core';
+import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { FormControl } from '@angular/forms';
+
+@Component({
+  selector: 'ko-fi-submission-form',
+  templateUrl: './ko-fi-submission-form.component.html',
+  styleUrls: ['./ko-fi-submission-form.component.css'],
+  providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => KoFiSubmissionForm) }],
+  host: {
+    'class': 'submission-form'
+  }
+})
+export class KoFiSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+
+  public optionDefaults: any = {
+    audience: ['public']
+  };
+
+  public isGold: boolean = false;
+
+  constructor(injector: Injector) {
+    super(injector);
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+    this.isGold = (<any>this.websiteService).isGold(this.parentForm.getLoginProfileId());
+    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
+    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
+    if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
+  }
+
+}

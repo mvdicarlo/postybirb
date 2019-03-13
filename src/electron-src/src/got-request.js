@@ -48,6 +48,33 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
     });
 };
 
+// To be honest, Request is easier to use IMO since it has better option support than GOT.
+exports.requestGet = function requestGet(url, cookieUrl, cookies, options) {
+    return new Promise((resolve, reject) => {
+        const cookieJar = request.jar();
+        if (cookies && cookies.length) {
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i];
+                cookieJar.setCookie(request.cookie(`${cookie.name}=${cookie.value}`), cookieUrl);
+            }
+        }
+
+        const opts = Object.assign({ jar: cookieJar, followAllRedirects: true }, options || {});
+        request.get(url, opts, (err, response, body) => {
+            if (err) {
+                resolve({ error: err });
+            } else {
+                resolve({
+                    success: {
+                        response,
+                        body,
+                    },
+                });
+            }
+        });
+    });
+};
+
 exports.patch = function patch(url, formData, cookieUrl, cookies, options) {
     return new Promise((resolve, reject) => {
         const cookieJar = request.jar();

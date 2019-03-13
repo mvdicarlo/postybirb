@@ -13,6 +13,7 @@ import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
 import { FurryNetwork } from './website-services/furry-network/furry-network.service';
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
 import { InkBunny } from './website-services/inkbunny/inkbunny.service';
+import { KoFi } from './website-services/ko-fi/ko-fi.service';
 import { Mastodon } from './website-services/mastodon/mastodon.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
@@ -79,6 +80,7 @@ import { TwitterSubmissionForm } from './website-services/twitter/components/twi
 import { WeasylSubmissionForm } from './website-services/weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { WebsiteSubmissionFormDisplayDirective } from './directives/website-submission-form-display.directive';
+import { KoFiSubmissionForm } from './website-services/ko-fi/components/ko-fi-submission-form/ko-fi-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -120,6 +122,7 @@ export function INIT_WEBSITE_REGISTRY() {
     WeasylSubmissionForm,
     WebsiteDisplaynamePipe,
     WebsiteSubmissionFormDisplayDirective,
+    KoFiSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -178,6 +181,7 @@ export function INIT_WEBSITE_REGISTRY() {
     TwitterLoginDialog,
     TwitterSubmissionForm,
     WeasylSubmissionForm,
+    KoFiSubmissionForm,
   ],
   providers: [
     {
@@ -194,6 +198,7 @@ export function INIT_WEBSITE_REGISTRY() {
         FurryNetwork,
         HentaiFoundry,
         InkBunny,
+        KoFi,
         Mastodon,
         Newgrounds,
         PaigeeWorld,
