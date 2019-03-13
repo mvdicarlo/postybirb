@@ -1,7 +1,7 @@
 @import '~@angular/material/theming';
 
 $custom-typography: mat-typography-config(
-  $font-family: 'Electrolize, Roboto, "Helvetica Neue", sans-serif;'
+  $font-family: 'Electrolize, Jura, Roboto, "Helvetica Neue", sans-serif;'
 );
 
 @include mat-core($custom-typography);

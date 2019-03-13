@@ -5,7 +5,7 @@
     "ng": "ng",
     "compile": "ng build --vendor-chunk=false",
     "build": "ng build --vendor-chunk=false --aot",
-    "prod": "ng build --prod --output-hashing=none --aot",
+    "prod": "ng build --c=production",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -53,6 +53,7 @@
     "@types/jasmine": "~2.8.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
+    "angular-builder-custom-terser-options": "^1.0.1",
     "babel-eslint": "^7.2.3",
     "codelyzer": "~4.5.0",
     "eslint": "^3.19.0",
