@@ -18,6 +18,11 @@
       <div class="pl-2 w-100 fill-background" style="height: 100%">
         <mat-select style="height: 100%; padding-top: .25em" [(value)]="userLanguage" (selectionChange)="changeLanguage($event)">
           <mat-option value="en">English</mat-option>
+          <mat-option value="fi">Finnish</mat-option>
+          <mat-option value="fr">French</mat-option>
+          <mat-option value="de">German</mat-option>
+          <mat-option value="pt">Portuguese</mat-option>
+          <mat-option value="ru">Russian</mat-option>
           <mat-option value="es">Spanish</mat-option>
         </mat-select>
       </div>
@@ -28,9 +33,6 @@
     <mat-drawer mode="side" opened #drawer>
       <a [matTooltip]="'Login' | translate" matTooltipPosition="right" (click)="loginPanel.toggle()">
         <i class="fas fa-users"></i>
-      </a>
-      <a [matTooltip]="'Changelog' | translate" matTooltipPosition="right">
-        <i class="fas fa-hammer"></i>
       </a>
       <a [matTooltip]="'Help Translate' | translate" matTooltipPosition="right" (click)="openURL('http://www.postybirb.com/help-translate.html')">
         <i class="fas fa-language"></i>
