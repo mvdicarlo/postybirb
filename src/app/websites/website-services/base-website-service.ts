@@ -1,9 +1,9 @@
 import { WebsiteService, WebsiteStatus, SubmissionPostData, PostResult, LoginStatus } from '../interfaces/website-service.interface';
-import { FolderCategory } from '../interfaces/folder.interface';
+import { Folder } from '../interfaces/folder.interface';
 import { Submission } from 'src/app/database/models/submission.model';
 
 export interface UserInformation {
-  folders?: FolderCategory[];
+  folders?: Folder[];
 }
 
 export class BaseWebsiteService implements WebsiteService {
@@ -21,7 +21,7 @@ export class BaseWebsiteService implements WebsiteService {
     });
   }
 
-  getFolders(profileId: string): FolderCategory[] {
+  getFolders(profileId: string): Folder[] {
     throw new Error("Method not implemented.");
   }
 

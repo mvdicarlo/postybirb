@@ -119,8 +119,8 @@ export class Route50 extends BaseWebsiteService {
 
     const data: any = {
       title: submission.title,
-      file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
-      thumbnail: postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
+      file: fileAsFormDataObject(postData.primary),
+      thumbnail: fileAsFormDataObject(postData.thumbnail),
       category: this.getCategoryCode(postData.typeOfSubmission),
       type: this.getContentType(postData.typeOfSubmission),
       tags: this.formatTags(postData.tags, []),

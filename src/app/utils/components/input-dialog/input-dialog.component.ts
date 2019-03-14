@@ -21,7 +21,6 @@ export class InputDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public data: InputDialogOptions, public dialogRef: MatDialogRef<InputDialog>, fb: FormBuilder) {
     this.title = data.title;
 
-    // Could probably do this with a simple FormControl instead of a FormGroup
     this.inputForm = fb.group({
       input: [data.startingValue || null, [Validators.required, Validators.minLength(data.minLength || 1), Validators.maxLength(data.maxLength || 255)]]
     });

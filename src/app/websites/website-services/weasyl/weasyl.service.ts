@@ -4,7 +4,7 @@ import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostRes
 import { WeasylSubmissionForm } from './components/weasyl-submission-form/weasyl-submission-form.component';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { getTags, supportsFileType } from '../../helpers/website-validator.helper';
-import { Folder, FolderCategory } from '../../interfaces/folder.interface';
+import { Folder } from '../../interfaces/folder.interface';
 import { BaseWebsiteService } from '../base-website-service';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
@@ -123,7 +123,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     return;
   }
 
-  public getFolders(profileId: string): FolderCategory[] {
+  public getFolders(profileId: string): Folder[] {
     const folders: Folder[] = [];
     if (this.userInformation.has(profileId)) {
       const data: any = this.userInformation.get(profileId) || {};
@@ -132,8 +132,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
           const folder = data.folders[i];
           const _folder: Folder = {
             title: folder.title,
-            id: folder.folder_id,
-            subfolders: []
+            id: folder.folder_id
           };
 
           folders.push(_folder);
@@ -144,10 +143,8 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
               const _subfolder: Folder = {
                 title: `${_folder.title} / ${subfolder.title}`,
                 id: subfolder.folder_id,
-                subfolders: []
               }
 
-              _folder.subfolders.push(_subfolder);
               folders.push(_subfolder);
             }
           }
@@ -155,10 +152,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       }
     }
 
-    return [{
-      title: 'Folders',
-      folders
-    }];
+    return folders;
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
@@ -224,17 +218,17 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       rating: this.getRating(submission.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, []),
-      submitfile: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      submitfile: fileAsFormDataObject(postData.primary),
       redirect: url
     }
 
     if (postData.thumbnail) {
-      data.thumbfile = fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+      data.thumbfile = fileAsFormDataObject(postData.thumbnail);
     }
 
     if (type === 'literary' || type === 'multimedia') {
       if (postData.thumbnail) {
-        data.coverfile = fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+        data.coverfile = fileAsFormDataObject(postData.thumbnail);
       } else {
         data.coverfile = '';
       }

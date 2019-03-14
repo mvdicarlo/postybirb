@@ -1,6 +1,6 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
-import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
+import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { Validators, FormControl } from '@angular/forms';
 
 @Component({
@@ -23,7 +23,7 @@ export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements O
       scraps: [false]
     };
 
-  public folders: FolderCategory[] = [];
+  public folders: Folder[] = [];
 
   constructor(injector: Injector) {
     super(injector);
@@ -36,7 +36,7 @@ export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements O
     if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) {
       this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
-      this.formGroup.controls.options.patchValue({ folderId: (this.folders[0].folders[0] || <any>{}).id });
+      this.formGroup.controls.options.patchValue({ folderId: (this.folders[0].subfolders[0] || <any>{}).id });
     }
   }
 

@@ -336,7 +336,7 @@ export class FurryNetwork extends BaseWebsiteService {
             &resumableFilename=${postData.thumbnail.fileInfo.name}&resumableRelativePath=${postData.thumbnail.fileInfo.name}
             &resumableTotalChunks=1`;
 
-          this.http.post(thumbnailURL, fileAsBlob(postData.thumbnail.buffer, postData.thumbnail.fileInfo), { headers: headers })
+          this.http.post(thumbnailURL, fileAsBlob(postData.thumbnail), { headers: headers })
             .subscribe(success => {
               //NOTHING TO DO
             }, err => {

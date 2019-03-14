@@ -102,7 +102,7 @@ export class Pixiv extends BaseWebsiteService {
       'quality[]': '',
       quality_text: '',
       qropen: '',
-      'files[]': filesToPost.map(f => fileAsFormDataObject(f.buffer, f.fileInfo)),
+      'files[]': filesToPost.map(f => fileAsFormDataObject(f)),
       'file_info[]': filesToPost.map(f => JSON.stringify(f.fileInfo)),
     };
 

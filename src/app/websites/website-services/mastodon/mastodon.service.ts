@@ -81,7 +81,7 @@ export class Mastodon extends BaseWebsiteService {
     const postResponse: any = await auth.mastodon.post(
       authData.token,
       authData.website,
-      [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => fileAsFormDataObject(f.buffer, f.fileInfo)),
+      [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => fileAsFormDataObject(f)),
       submission.rating !== SubmissionRating.GENERAL,
       `${postData.options.useTitle ? submission.title + '\n' : ''}${postData.description}`.substring(0, 490).trim(), // substr 500 seems to cause issue
       postData.options.spoilerText

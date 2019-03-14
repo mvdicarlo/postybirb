@@ -1,7 +1,7 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
-import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
+import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { FormControl } from '@angular/forms';
 
 @Component({
@@ -30,7 +30,7 @@ export class FurAffinitySubmissionForm extends BaseWebsiteSubmissionForm impleme
     maxStringLength: 250
   };
 
-  public folders: FolderCategory[] = [];
+  public folders: Folder[] = [];
 
   constructor(injector: Injector) {
     super(injector);

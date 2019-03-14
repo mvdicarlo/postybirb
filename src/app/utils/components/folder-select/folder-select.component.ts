@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseValueAccessor } from '../base-value-accessor/base-value-accessor';
-import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
+import { Folder } from 'src/app/websites/interfaces/folder.interface';
 
 @Component({
   selector: 'folder-select',
@@ -19,7 +19,7 @@ import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
 export class FolderSelect extends BaseValueAccessor implements OnInit, ControlValueAccessor {
   @Input() multiple: boolean = false;
   @Input() placeholder: string = 'Folder';
-  @Input() folderCategories: FolderCategory[] = [];
+  @Input() folders: Folder[] = [];
   @Input() required: boolean = false;
 
   public selectControl: FormControl = new FormControl(null);

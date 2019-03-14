@@ -9,7 +9,7 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import * as dotProp from 'dot-prop';
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, PostResult, SubmissionPostData } from '../../interfaces/website-service.interface';
-import { Folder, FolderCategory } from '../../interfaces/folder.interface';
+import { Folder } from '../../interfaces/folder.interface';
 import { AryionSubmissionForm } from './components/aryion-submission-form/aryion-submission-form.component';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
@@ -115,12 +115,9 @@ export class Aryion extends BaseWebsiteService {
     this.userInformation.set(profileId, { folders });
   }
 
-  public getFolders(profileId: string): FolderCategory[] {
+  public getFolders(profileId: string): Folder[] {
     const options: any = this.userInformation.get(profileId) || {};
-    return [{
-      title: 'Folders',
-      folders: <Folder[]>dotProp.get(options, 'folders', [])
-    }];
+    return dotProp.get(options, 'folders', []);
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -131,8 +128,8 @@ export class Aryion extends BaseWebsiteService {
       parentid: postData.options.folderId,
       MAX_FILE_SIZE: '78643200',
       title: submission.title,
-      file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
-      thumb: postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
+      file: fileAsFormDataObject(postData.primary),
+      thumb: fileAsFormDataObject(postData.thumbnail),
       desc: postData.description,
       tags: this.formatTags(postData.tags, []).filter(f => !f.match(/(v|V)ore/)).filter(f => !f.match(/(n|N)on-vore/)).join('\n'),
       'reqtag[]': postData.options.reqtag === 1 ? 'Non-Vore' : '',

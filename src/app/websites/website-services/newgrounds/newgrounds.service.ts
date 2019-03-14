@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
-import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject, fileAsBlob } from 'src/app/utils/helpers/file.helper';
 import { supportsFileType } from '../../helpers/website-validator.helper';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { NewgroundsSubmissionForm } from './components/newgrounds-submission-form/newgrounds-submission-form.component';
@@ -82,14 +82,14 @@ export class Newgrounds extends BaseWebsiteService {
 
     const userkey: string = HTMLParser.getInputValue(uploadPage.body, 'userkey');
 
-    const uuid = URL.createObjectURL(new Blob([postData.primary.buffer], { type: postData.primary.fileInfo.type }));
+    const uuid = URL.createObjectURL(fileAsBlob(postData.primary));
 
     const fileData: any = {
       userkey,
       qquuid: uuid,
       qqfilename: postData.primary.fileInfo.name,
       qqtotalfilesize: postData.primary.fileInfo.size,
-      qqfile: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo)
+      qqfile: fileAsFormDataObject(postData.primary)
     };
 
     const park = await got.post(`${this.BASE_URL}/parkfile`, fileData, this.BASE_URL, cookies, {
@@ -131,7 +131,7 @@ export class Newgrounds extends BaseWebsiteService {
       userkey,
       title: submission.title,
       description: `<p>${postData.description}</p>`,
-      thumbnail: fileAsFormDataObject(thumbfile.buffer, thumbfile.fileInfo),
+      thumbnail: fileAsFormDataObject(thumbfile),
       cc_commercial: options.commercial ? 'yes' : 'no',
       cc_modification: options.modification ? 'yes' : 'no',
       category_id: options.category,

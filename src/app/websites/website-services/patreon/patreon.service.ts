@@ -3,7 +3,7 @@ import { Website } from '../../decorators/website-decorator';
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject, fileAsBlob } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { PatreonSubmissionForm } from './components/patreon-submission-form/patreon-submission-form.component';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
@@ -189,13 +189,13 @@ export class Patreon extends BaseWebsiteService {
   }
 
   private async _uploadFile(link: string, file: ISubmissionFile, attachment: boolean, cookies: any[], csrf: string): Promise<any> {
-    const uuid = URL.createObjectURL(new Blob([file.buffer], { type: file.fileInfo.type }));
+    const uuid = URL.createObjectURL(fileAsBlob(file));
 
     const fileData: any = {
       qquuid: uuid,
       qqfilename: file.fileInfo.name,
       qqtotalfilesize: file.fileInfo.size,
-      file: fileAsFormDataObject(file.buffer, file.fileInfo)
+      file: fileAsFormDataObject(file)
     };
 
     const upload = await got.post(`${link}/${attachment ? 'attachments' : 'post_file'}?json-api-version=1.0`, fileData, this.BASE_URL, cookies, {

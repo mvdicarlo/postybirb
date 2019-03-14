@@ -131,7 +131,7 @@ export class Derpibooru extends BaseWebsiteService {
     const data: any = {
       authenticity_token: HTMLParser.getInputValue(body, 'authenticity_token'),
       'image[tag_input]': tags.join(', ').trim(),
-      'image[image]': fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      'image[image]': fileAsFormDataObject(postData.primary),
       'image[description]': postData.description,
       'image[source_url]': options.sourceURL || (postData.srcURLs[0] || ''),
       'utf8': '✓',

@@ -1,15 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'agreement-dialog',
   templateUrl: './agreement-dialog.component.html',
   styleUrls: ['./agreement-dialog.component.css']
 })
-export class AgreementDialog implements OnInit {
-
-  constructor() { }
-
-  ngOnInit() {
-  }
+export class AgreementDialog {
 
 }

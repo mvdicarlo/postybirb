@@ -168,7 +168,7 @@ export class Tumblr extends BaseWebsiteService {
       type: this.getPostType(postData.typeOfSubmission),
       tags: this.formatTags(postData.tags, []),
       body: title + postData.description,
-      data: [postData.primary, ...postData.additionalFiles].map(file => fileAsFormDataObject(file.buffer, file.fileInfo))
+      data: [postData.primary, ...postData.additionalFiles].map(file => fileAsFormDataObject(file))
     };
 
     // TODO I should really just update the post server to not suck anymore. Could be done a lot better I think now

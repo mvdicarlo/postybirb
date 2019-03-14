@@ -111,7 +111,7 @@ export class PaigeeWorld extends BaseWebsiteService {
     const bearer = await this.getBearerToken(postData.profileId);
 
     const data: any = {
-      image: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      image: fileAsFormDataObject(postData.primary),
       captions: (postData.description || '').substring(0, 1000),
       extra_tags: this.formatTags(postData.tags, []).join(','),
       tags: this.formatTags(postData.tags, ['', postData.options.category]).join(','),

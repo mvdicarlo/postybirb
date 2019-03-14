@@ -118,7 +118,7 @@ export class HentaiFoundry extends BaseWebsiteService {
       'Pictures[user_id]': HTMLParser.getInputValue(formPage.body, 'Pictures[user_id]'),
       'Pictures[title]': submission.title,
       'Pictures[description]': postData.description,
-      'Pictures[fileupload]': fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      'Pictures[fileupload]': fileAsFormDataObject(postData.primary),
       'Pictures[submissionPolicyAgree]': '1',
       'yt0': 'Create',
       'Pictures[keywords]': this.formatTags(postData.tags, []),

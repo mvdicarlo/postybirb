@@ -10,7 +10,7 @@ import { LoginProfileManagerService } from 'src/app/login/services/login-profile
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
-import { Folder, FolderCategory } from '../../interfaces/folder.interface';
+import { Folder } from '../../interfaces/folder.interface';
 import { DeviantArtSubmissionForm } from './components/deviant-art-submission-form/deviant-art-submission-form.component';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
@@ -126,19 +126,15 @@ export class DeviantArt extends BaseWebsiteService {
       folders.push({
         id: folder.folderid,
         title: parent ? `${parent.name} / ${folder.name}` : folder.name,
-        subfolders: []
       });
     });
 
     this.userInformation.set(profileId, { folders });
   }
 
-  public getFolders(profileId: string): FolderCategory[] {
+  public getFolders(profileId: string): Folder[] {
     const info = this.userInformation.get(profileId) || {};
-    return info ? [{
-      title: 'Folders',
-      folders: info.folders || []
-    }] : [];
+    return info.folders || [];
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -184,7 +180,7 @@ export class DeviantArt extends BaseWebsiteService {
     const data: any = {
       title: submission.title,
       access_token: authData.access_token,
-      file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      file: fileAsFormDataObject(postData.primary),
       artist_comments: postData.description
     };
 

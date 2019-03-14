@@ -146,7 +146,7 @@ export class Furiffic extends BaseWebsiteService {
     const id = JSON.parse(preuploadResponse.success.body)[''].id;
     const uploadData: any = {
       id,
-      file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      file: fileAsFormDataObject(postData.primary),
     }
 
     const fileResponse = await got.post(`${this.BASE_URL}/${postData.loginInformation.username}/gallery/upload`, uploadData, this.BASE_URL, cookies);
@@ -172,7 +172,7 @@ export class Furiffic extends BaseWebsiteService {
     };
 
     if (postData.thumbnail) {
-      infoData.thumbnailFile = fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+      infoData.thumbnailFile = fileAsFormDataObject(postData.thumbnail);
       infoData['thumbnail[size][height]'] = '375';
       infoData['thumbnail[size][width]'] = '300';
       infoData['thumbnail[center][x]'] = '150';

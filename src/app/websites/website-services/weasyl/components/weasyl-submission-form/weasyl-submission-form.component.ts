@@ -2,7 +2,7 @@ import { Component, OnInit, forwardRef, Injector } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
-import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
+import { Folder } from 'src/app/websites/interfaces/folder.interface';
 
 @Component({
   selector: 'weasyl-submission-form',
@@ -27,7 +27,7 @@ export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements O
     minTags: 2
   };
 
-  public folders: FolderCategory[] = [];
+  public folders: Folder[] = [];
 
   constructor(injector: Injector) {
     super(injector);

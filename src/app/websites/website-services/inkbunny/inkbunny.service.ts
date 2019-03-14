@@ -153,16 +153,16 @@ export class InkBunny extends BaseWebsiteService {
     if (authData) {
       const data: any = {
         sid: authData.sid,
-        'uploadedfile[0]': fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+        'uploadedfile[0]': fileAsFormDataObject(postData.primary),
       };
 
       if (postData.thumbnail) {
-        data['uploadedthumbnail[]'] = fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo);
+        data['uploadedthumbnail[]'] = fileAsFormDataObject(postData.thumbnail);
       }
 
       for (let i = 0; i < postData.additionalFiles.length; i++) {
         const file = postData.additionalFiles[i];
-        data[`uploadedfile[${i + 1}]`] = fileAsFormDataObject(file.buffer, file.fileInfo);
+        data[`uploadedfile[${i + 1}]`] = fileAsFormDataObject(file);
       }
 
       const uploadResponse = await got.post(`${this.BASE_URL}/api_upload.php`, data, this.BASE_URL, []);

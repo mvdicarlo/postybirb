@@ -151,8 +151,8 @@ export class KoFi extends BaseWebsiteService {
 
     const uploadData: any = {
       uniqueFilename: '',
-      file: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo)
-    }
+      file: fileAsFormDataObject(postData.primary)
+    };
 
     const upload = await got.post(`${this.BASE_URL}/Buttons/SaveUploadedFile`, uploadData, this.BASE_URL, cookies, {
       gzip: true,

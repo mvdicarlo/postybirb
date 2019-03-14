@@ -12,7 +12,7 @@ export class DescriptionTemplatesService {
     this.db.defaults({ [this.FIELD]: [] }).write();
   }
 
-  public saveTemplate(title, description, content): any {
+  public saveTemplate(title: string, description: string, content: string): any {
     if (this.db.get(this.FIELD).find({ title }).value()) {
       this.db.get(this.FIELD)
       .find({ title })

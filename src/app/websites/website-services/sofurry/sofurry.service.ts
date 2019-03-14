@@ -10,7 +10,7 @@ import { getTags, supportsFileType } from '../../helpers/website-validator.helpe
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, PostResult, SubmissionPostData } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
-import { Folder, FolderCategory } from '../../interfaces/folder.interface';
+import { Folder } from '../../interfaces/folder.interface';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
@@ -122,13 +122,8 @@ export class SoFurry extends BaseWebsiteService {
     this.userInformation.set(profileId, { folders });
   }
 
-  public getFolders(profileId: string): FolderCategory[] {
-    return [
-      {
-        title: 'Folders',
-        folders: (this.userInformation.get(profileId) || <any>{}).folders || []
-      }
-    ];
+  public getFolders(profileId: string): Folder[] {
+    return (this.userInformation.get(profileId) || <any>{}).folders || [];
   }
 
   private getContentRating(rating: SubmissionRating): any {
@@ -199,7 +194,7 @@ export class SoFurry extends BaseWebsiteService {
 
     const data: any = {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(body, 'YII_CSRF_TOKEN'),
-      'UploadForm[binarycontent_5]': postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
+      'UploadForm[binarycontent_5]': fileAsFormDataObject(postData.thumbnail),
       'UploadForm[P_title]': submission.title,
       'UploadForm[description]': postData.description.replace(/<\/div>(\n|\r)/g, '</div>'),
       'UploadForm[formtags]': this.formatTags(postData.tags, []),
@@ -211,7 +206,7 @@ export class SoFurry extends BaseWebsiteService {
     if (submissionType === TypeOfSubmission.STORY) {
       data['UploadForm[textcontent]'] = Buffer.from(postData.primary.buffer).toString('utf-8');
     } else {
-      data['UploadForm[binarycontent]'] = fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo);
+      data['UploadForm[binarycontent]'] = fileAsFormDataObject(postData.primary);
     }
 
     const postResponse = await got.post(`${this.BASE_URL}/upload/details?contentType=${type}`, data, this.BASE_URL, cookies, {

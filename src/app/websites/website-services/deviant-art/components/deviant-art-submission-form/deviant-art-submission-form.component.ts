@@ -1,5 +1,5 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
-import { FolderCategory } from 'src/app/websites/interfaces/folder.interface';
+import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { FormControl } from '@angular/forms';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 
@@ -25,7 +25,7 @@ export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implemen
     matureLevel: ['']
   };
 
-  public folders: FolderCategory[] = [];
+  public folders: Folder[] = [];
 
   constructor(injector: Injector) {
     super(injector);

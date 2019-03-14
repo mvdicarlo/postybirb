@@ -73,7 +73,7 @@ export class SettingsDialog implements OnInit {
           location.reload();
         });
       }
-    })
+    });
   }
 
 }

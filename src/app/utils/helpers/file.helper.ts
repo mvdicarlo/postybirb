@@ -1,4 +1,4 @@
-import { FileObject } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
 
 export function isGIF(file: { type: string }): boolean {
   return isImage(file) && isType(file, 'gif');
@@ -13,19 +13,19 @@ export function isType(file: { type: string }, type: string): boolean {
 }
 
 export function MBtoBytes(size: any): number {
-  return Number(size) * Math.pow(1024, 2);
+  return Number(size) * (1024 ** 2);
 }
 
-export function fileAsFormDataObject(buffer: Uint8Array, fileInfo: FileObject): any {
-  return buffer ? {
-        value: Buffer.from(buffer),
+export function fileAsFormDataObject(file: ISubmissionFile): any {
+  return file ? {
+        value: Buffer.from(file.buffer),
         options: {
-          contentType: fileInfo.type,
-          filename: (fileInfo || <any>{}).name || 'upload.jpg'
+          contentType: file.fileInfo.type,
+          filename: (file.fileInfo || <any>{}).name || 'upload.jpg'
         }
       } : '';
 }
 
-export function fileAsBlob(buffer: Uint8Array, fileInfo: FileObject): Blob {
-  return new Blob([buffer], { type: fileInfo.type });
+export function fileAsBlob(file: ISubmissionFile): Blob {
+  return new Blob([file.buffer], { type: file.fileInfo.type });
 }

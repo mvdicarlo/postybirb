@@ -136,7 +136,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
 
     const data: any = {
       'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]),
-      'post[file]': fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+      'post[file]': fileAsFormDataObject(postData.primary),
       'post[rating]': this.getRating(submission.rating),
       'authenticity_token': HTMLParser.getInputValue(formPage.body, 'authenticity_token'),
       'post[description]': postData.description,

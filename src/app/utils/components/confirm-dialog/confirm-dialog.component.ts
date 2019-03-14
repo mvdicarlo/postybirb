@@ -1,5 +1,5 @@
 /**
- * Simple dialog used to conmfirm an action
+ * Simple dialog used to confirm an action
  */
 
 import { Component, Inject } from '@angular/core';

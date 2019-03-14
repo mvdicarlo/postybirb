@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { SubmissionFormData, Submission } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject, fileAsBlob } from 'src/app/utils/helpers/file.helper';
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
@@ -226,7 +226,7 @@ export class FurryAmino extends BaseWebsiteService {
 
   private _postImage(file: ISubmissionFile, cookies: any[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const uuid = URL.createObjectURL(new Blob([file.buffer], { type: file.fileInfo.type }));
+      const uuid = URL.createObjectURL(fileAsBlob(file));
 
       const data: any = {
         qqparentuuid: uuid.split('///')[1],
@@ -234,7 +234,7 @@ export class FurryAmino extends BaseWebsiteService {
         qqparentsize: file.fileInfo.size,
         qqtotalfilesize: file.fileInfo.size,
         qqfilename: file.fileInfo.name,
-        avatar: fileAsFormDataObject(file.buffer, file.fileInfo)
+        avatar: fileAsFormDataObject(file)
       };
 
       got.post('https://aminoapps.com/api/upload-image', data, this.COOKIES_URL, cookies)

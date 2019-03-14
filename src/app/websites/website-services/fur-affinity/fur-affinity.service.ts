@@ -5,11 +5,11 @@ import { Website } from '../../decorators/website-decorator';
 import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { BaseWebsiteService, UserInformation } from '../base-website-service';
-import { FolderCategory } from '../../interfaces/folder.interface';
+import { Folder } from '../../interfaces/folder.interface';
 import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.parser';
-import { supportsFileType, getTags } from '../../helpers/website-validator.helper';
+import { supportsFileType } from '../../helpers/website-validator.helper';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
@@ -17,7 +17,6 @@ import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const tags = getTags(submission, FurAffinity.name);
   if (!supportsFileType(submission.fileInfo, ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'])) {
     problems.push(['Does not support file format', { website: 'Fur Affinity', value: submission.fileInfo.type }]);
   }
@@ -118,7 +117,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     };
 
     try {
-      const furAffinityFolders: { [key: string]: FolderCategory } = { Ungrouped: { title: 'Ungrouped', folders: [] } };
+      const furAffinityFolders: { [key: string]: Folder } = { Ungrouped: { title: 'Ungrouped', subfolders: [] } };
       const select = html.match(/<select(.|\s)*?(?=\/select)/g)[0] + '/select>';
       const element = $.parseHTML(select);
       let options = $(element).find('option') || [];
@@ -132,16 +131,16 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           if (!furAffinityFolders[opt.parentElement.label]) {
             furAffinityFolders[opt.parentElement.label] = {
               title: opt.parentElement.label,
-              folders: []
+              subfolders: []
             };
           }
 
-          furAffinityFolders[opt.parentElement.label].folders.push({
+          furAffinityFolders[opt.parentElement.label].subfolders.push({
             title: opt.innerHTML.replace(/\[.*\]/, '').trim(),
             id: opt.value
           });
         } else {
-          furAffinityFolders.Ungrouped.folders.push({
+          furAffinityFolders.Ungrouped.subfolders.push({
             title: opt.innerHTML.replace(/\[.*\]/, '').trim(),
             id: opt.value
           });
@@ -149,15 +148,14 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       }
 
       info.folders = Object.keys(furAffinityFolders).map(key => {
-        return { title: key, folders: furAffinityFolders[key].folders };
+        return { title: key, subfolders: furAffinityFolders[key].subfolders };
       }) || [];
     } catch (e) { /* */ }
 
     this.userInformation.set(profileId, info);
-    return;
   }
 
-  public getFolders(profileId: string): FolderCategory[] {
+  public getFolders(profileId: string): Folder[] {
     return this.userInformation.get(profileId).folders;
   }
 
@@ -225,8 +223,8 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       const part2Data = {
         key: HTMLParser.getInputValue(part1Body, 'key'),
         part: '3',
-        submission: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
-        thumbnail: postData.thumbnail ? fileAsFormDataObject(postData.thumbnail.buffer, postData.thumbnail.fileInfo) : '',
+        submission: fileAsFormDataObject(postData.primary),
+        thumbnail: fileAsFormDataObject(postData.thumbnail),
         submission_type: this.getContentType(postData.typeOfSubmission)
       };
 
@@ -289,7 +287,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
               const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
               const reuploadData: any = {
                 update: 'yes',
-                newsubmission: fileAsFormDataObject(postData.primary.buffer, postData.primary.fileInfo),
+                newsubmission: fileAsFormDataObject(postData.primary),
               };
 
               await got.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
