@@ -54,12 +54,17 @@ export class PostManagerService {
                 typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
               };
 
-              this.serviceMap.get(website).post(submissionToPost, postObject)
-                .then(res => {
-                  resolve(res);
-                }).catch(err => {
-                  reject(err);
-                });
+              setTimeout(() => {
+                let rand = Math.floor(Math.random() * 100);
+                rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
+              });
+
+              // this.serviceMap.get(website).post(submissionToPost, postObject)
+              //   .then(res => {
+              //     resolve(res);
+              //   }).catch(err => {
+              //     reject(err);
+              //   });
             } catch (error) {
               reject({ msg: 'An internal error occurred', error });
             }

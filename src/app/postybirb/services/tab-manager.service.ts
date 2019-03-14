@@ -41,6 +41,12 @@ export class TabManager {
     return index !== -1;
   }
 
+  private _shouldNavigate(removedId: number): boolean {
+    const url: string = this._route.url;
+    if (Number(url.split('/').pop()) == removedId) return true;
+    return false;
+  }
+
   public addTab(submission: Submission): void {
     if (!this.hasTab(submission.id)) {
       const tab = {
@@ -60,14 +66,15 @@ export class TabManager {
     const index: number = this.tabs.findIndex(t => t.id === id);
     if (index !== -1) {
       this.tabs.splice(index, 1);
-    }
-
-    this.tabSubject.next(this.tabs);
-    if (this.tabs.length) {
-      const tab = this.tabs[this.tabs.length - 1];
-      this._route.navigateByUrl(`${tab.type}/${tab.id}`);
-    } else {
-      this._route.navigateByUrl(`**`);
+      this.tabSubject.next(this.tabs);
+      if (this.tabs.length) {
+        if (this._shouldNavigate(id)) {
+          const tab = this.tabs[this.tabs.length - 1];
+          this._route.navigateByUrl(`${tab.type}/${tab.id}`);
+        }
+      } else {
+        this._route.navigateByUrl(`**`);
+      }
     }
 
     this._save();

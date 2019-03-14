@@ -66,7 +66,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
       .subscribe((submissions: ISubmission[]) => {
         if (submissions && submissions.length) {
           submissions.forEach(submission => {
-            this._submissionCache.get(submission.id).formData = this.formDataForm.value;
+            this._submissionCache.get(submission.id).formData = JSON.parse(JSON.stringify(this.formDataForm.value));
           });
         }
 
