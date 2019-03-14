@@ -6,7 +6,7 @@ const {
   Menu,
   Tray,
   nativeImage,
-  powerSaveBlocker
+  powerSaveBlocker,
 } = require('electron');
 const log = require('electron-log');
 const template = require('./src/electron-menu');
@@ -57,8 +57,15 @@ fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 fs.ensureFileSync(path.join(dataPath, 'templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'description-templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'settings.json'));
+fs.ensureFileSync(path.join(dataPath, 'scheduled-submissions.json'));
 
-const settings = fs.readJsonSync(path.join(dataPath, 'settings.json'));
+const settings = {};
+try {
+    fs.readJsonSync(path.join(dataPath, 'settings.json'));
+} catch (e) {
+  // Ignorable - should only ever throw on empty settings file
+}
+
 if (settings) {
     if (process.platform == 'win32' || process.platform == 'darwin') {
         if (!settings.hardwareAcceleration) {
@@ -231,10 +238,14 @@ function hasScheduled() {
 }
 
 /**
- * Stub function for later use with schedule checking
+ * Close or send app to tray
  */
 function attemptToClose() {
-    if (!hasScheduled()) {
+    const scheduled = false;
+    try {
+        allowClose = hasScheduled();
+    } catch (e) {}
+    if (!scheduled) {
         clearInterval(scheduleCheckInterval);
         powerSaveBlocker.stop(blockerId);
         app.quit();
