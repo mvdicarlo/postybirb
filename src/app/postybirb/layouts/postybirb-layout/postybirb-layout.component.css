@@ -42,6 +42,19 @@
   margin-bottom: -15px;
 }
 
+.nav-bar {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+
+.submission-tab {
+  min-width: 120px !important;
+}
+
+.submission-tab submission-tab {
+  width: 120px;
+}
+
 cdk-virtual-scroll-viewport {
   height: 100%;
 }

@@ -59,7 +59,7 @@ body {
 /* Scrollbar CSS Customization */
 *::-webkit-scrollbar {
   width: 6px;
-  height: 8px;
+  height: 6px;
   background-color: #888;
 }
 
