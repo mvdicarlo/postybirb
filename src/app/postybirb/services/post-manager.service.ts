@@ -54,17 +54,18 @@ export class PostManagerService {
                 typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
               };
 
-              setTimeout(() => {
-                let rand = Math.floor(Math.random() * 100);
-                rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
-              });
+              // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
+              // setTimeout(() => {
+              //   let rand = Math.floor(Math.random() * 100);
+              //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
+              // });
 
-              // this.serviceMap.get(website).post(submissionToPost, postObject)
-              //   .then(res => {
-              //     resolve(res);
-              //   }).catch(err => {
-              //     reject(err);
-              //   });
+              this.serviceMap.get(website).post(submissionToPost, postObject)
+                .then(res => {
+                  resolve(res);
+                }).catch(err => {
+                  reject(err);
+                });
             } catch (error) {
               reject({ msg: 'An internal error occurred', error });
             }
