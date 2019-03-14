@@ -38,12 +38,9 @@ import {
   MatDialogModule,
   MatIconModule,
   MatInputModule,
-  MatMenuModule,
-  MatProgressBarModule,
   MatRadioModule,
   MatSelectModule,
   MatTabsModule,
-  MatTooltipModule,
 } from '@angular/material';
 
 import { AryionSubmissionForm } from './website-services/aryion/components/aryion-submission-form/aryion-submission-form.component';
@@ -65,6 +62,7 @@ import { HentaiFoundryCategorySelectComponent } from './website-services/hentai-
 import { HentaiFoundrySubmissionForm } from './website-services/hentai-foundry/components/hentai-foundry-submission-form/hentai-foundry-submission-form.component';
 import { InkbunnyLoginDialog } from './website-services/inkbunny/components/inkbunny-login-dialog/inkbunny-login-dialog.component';
 import { InkbunnySubmissionForm } from './website-services/inkbunny/components/inkbunny-submission-form/inkbunny-submission-form.component';
+import { KoFiSubmissionForm } from './website-services/ko-fi/components/ko-fi-submission-form/ko-fi-submission-form.component';
 import { MastodonLoginDialog } from './website-services/mastodon/components/mastodon-login-dialog/mastodon-login-dialog.component';
 import { MastodonSubmissionForm } from './website-services/mastodon/components/mastodon-submission-form/mastodon-submission-form.component';
 import { NewgroundsSubmissionForm } from './website-services/newgrounds/components/newgrounds-submission-form/newgrounds-submission-form.component';
@@ -80,7 +78,6 @@ import { TwitterSubmissionForm } from './website-services/twitter/components/twi
 import { WeasylSubmissionForm } from './website-services/weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { WebsiteSubmissionFormDisplayDirective } from './directives/website-submission-form-display.directive';
-import { KoFiSubmissionForm } from './website-services/ko-fi/components/ko-fi-submission-form/ko-fi-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -107,6 +104,7 @@ export function INIT_WEBSITE_REGISTRY() {
     HentaiFoundrySubmissionForm,
     InkbunnyLoginDialog,
     InkbunnySubmissionForm,
+    KoFiSubmissionForm,
     MastodonLoginDialog,
     MastodonSubmissionForm,
     NewgroundsSubmissionForm,
@@ -122,7 +120,6 @@ export function INIT_WEBSITE_REGISTRY() {
     WeasylSubmissionForm,
     WebsiteDisplaynamePipe,
     WebsiteSubmissionFormDisplayDirective,
-    KoFiSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -138,12 +135,9 @@ export function INIT_WEBSITE_REGISTRY() {
     MatDialogModule,
     MatIconModule,
     MatInputModule,
-    MatMenuModule,
-    MatProgressBarModule,
     MatRadioModule,
     MatSelectModule,
     MatTabsModule,
-    MatTooltipModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule
   ],
@@ -168,6 +162,7 @@ export function INIT_WEBSITE_REGISTRY() {
     HentaiFoundrySubmissionForm,
     InkbunnyLoginDialog,
     InkbunnySubmissionForm,
+    KoFiSubmissionForm,
     MastodonLoginDialog,
     MastodonSubmissionForm,
     NewgroundsSubmissionForm,
@@ -181,7 +176,6 @@ export function INIT_WEBSITE_REGISTRY() {
     TwitterLoginDialog,
     TwitterSubmissionForm,
     WeasylSubmissionForm,
-    KoFiSubmissionForm,
   ],
   providers: [
     {

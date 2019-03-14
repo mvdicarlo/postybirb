@@ -36,14 +36,13 @@ import { AgreementDialog } from './dialogs/agreement-dialog/agreement-dialog.com
     MatIconModule,
     MatInputModule,
     MatSlideToggleModule,
-    MatTabsModule
+    MatTabsModule,
   ],
   exports: [
-    SettingsDialog
   ],
   entryComponents: [
+    AgreementDialog,
     SettingsDialog,
-    AgreementDialog
   ]
 })
 export class MiscellaneousModule { }

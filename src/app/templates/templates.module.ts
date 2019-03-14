@@ -13,13 +13,13 @@ import {
   MatSelectModule
 } from '@angular/material';
 
-import { TemplateSelectDialog } from './components/template-select-dialog/template-select-dialog.component';
 import { TemplateManagementDialog } from './components/template-management-dialog/template-management-dialog.component';
+import { TemplateSelectDialog } from './components/template-select-dialog/template-select-dialog.component';
 
 @NgModule({
   declarations: [
+    TemplateManagementDialog,
     TemplateSelectDialog,
-    TemplateManagementDialog
   ],
   imports: [
     CommonModule,
@@ -34,12 +34,11 @@ import { TemplateManagementDialog } from './components/template-management-dialo
     MatSelectModule
   ],
   exports: [
-    TemplateSelectDialog,
-    TemplateManagementDialog
+
   ],
   entryComponents: [
+    TemplateManagementDialog,
     TemplateSelectDialog,
-    TemplateManagementDialog
   ]
 })
 export class TemplatesModule { }

@@ -6,25 +6,25 @@ import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
 
 import {
-  MatSelectModule,
   MatButtonModule,
+  MatDialogModule,
   MatIconModule,
   MatMenuModule,
-  MatDialogModule
+  MatSelectModule,
 } from '@angular/material';
 
 import { LoginContainerComponent } from './components/login-container/login-container.component';
+import { LoginProfileSelectDialog } from './components/login-profile-select-dialog/login-profile-select-dialog.component';
 import { LoginStatusContainerComponent } from './components/login-status-container/login-status-container.component';
 import { LoginStatusViewComponent } from './components/login-status-container/login-status-view/login-status-view.component';
-import { LoginProfileSelectDialog } from './components/login-profile-select-dialog/login-profile-select-dialog.component';
 import { WebsiteFilterDialog } from './components/website-filter-dialog/website-filter-dialog.component';
 
 @NgModule({
   declarations: [
     LoginContainerComponent,
+    LoginProfileSelectDialog,
     LoginStatusContainerComponent,
     LoginStatusViewComponent,
-    LoginProfileSelectDialog,
     WebsiteFilterDialog
   ],
   imports: [
@@ -32,11 +32,11 @@ import { WebsiteFilterDialog } from './components/website-filter-dialog/website-
     ReactiveFormsModule,
     UtilsModule,
     TranslateModule,
-    MatSelectModule,
     MatButtonModule,
+    MatDialogModule,
     MatIconModule,
     MatMenuModule,
-    MatDialogModule
+    MatSelectModule,
   ],
   exports: [
     LoginContainerComponent
