@@ -23,7 +23,7 @@ let tray = null;
 let win = null; // Primary App BrowserWindow
 let updateInterval = null; // Interval for checking for updates
 let scheduleCheckInterval = null; // Interval for checking for scheduled posts when app is in a closed state
-const clearCacheInterval = null; // Interval for manually clearing cache
+let cacheClearInterval = null; // Interval for manually clearing cache
 const userDataPath = app.getPath('userData');
 const dataPath = path.join(userDataPath, 'data');
 console.log('DataPath', dataPath);
@@ -109,7 +109,7 @@ app.on('ready', () => {
             label: 'Quit',
             click() {
                 try { // Potential to throw error if not initialized intervals
-                    clearInterval(clearCacheInterval);
+                    clearInterval(cacheClearInterval);
                     clearInterval(updateInterval);
                 } catch (e) {
                   // Don't Care
@@ -190,7 +190,7 @@ function initialize(show = true) {
     });
 
     win.webContents.once('did-frame-finish-load', () => {
-        this.cacheClearInterval = setInterval(() => {
+        cacheClearInterval = setInterval(() => {
             win.webContents.session.clearCache(() => {});
         }, 60000);
     });
@@ -230,7 +230,7 @@ function hasScheduled() {
                     break;
                 }
             }
-        }, 60000);
+        }, 10000);
         return true;
     }
 
@@ -241,10 +241,10 @@ function hasScheduled() {
  * Close or send app to tray
  */
 function attemptToClose() {
-    const scheduled = false;
+    let scheduled = false;
     try {
-        allowClose = hasScheduled();
-    } catch (e) {}
+        scheduled = hasScheduled();
+    } catch (e) { /* should be ignorable */}
     if (!scheduled) {
         clearInterval(scheduleCheckInterval);
         powerSaveBlocker.stop(blockerId);
