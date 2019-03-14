@@ -55,7 +55,7 @@ exports.refresh = function refresh(website, token) {
 function uploadMedia(media, token, website) {
     return new Promise((resolve, reject) => {
         const formData = {
-            file: media
+            file: media,
         };
 
         request.post({
@@ -90,6 +90,7 @@ exports.post = function post(token, website, files, sensitive, status, spoilerTe
         };
 
         if (spoilerText) {
+            data.sensitive = true;
             data.spoiler_text = spoilerText;
         }
 
