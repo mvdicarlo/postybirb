@@ -14,13 +14,6 @@ export class SettingsDialog implements OnInit {
   public settingsForm: FormGroup;
 
   constructor(fb: FormBuilder, private dialog: MatDialog, private databaseService: DatabaseService) {
-    settingsDB.defaults({
-      hardwareAcceleration: true,
-      postInterval: 0,
-      clearQueueOnFailure: true,
-      advertise: true
-    });
-
     this.settingsForm = fb.group({
       hardwareAcceleration: [true],
       postInterval: [0],

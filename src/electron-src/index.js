@@ -46,6 +46,12 @@ window.descriptionTemplateDB = dldb;
 const settingsAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'settings.json'));
 const sldb = low(settingsAdapter);
 window.settingsDB = sldb;
+settingsDB.defaults({
+  hardwareAcceleration: true,
+  postInterval: 0,
+  clearQueueOnFailure: true,
+  advertise: true
+});
 
 window.got = require('./src/got-request.js');
 
