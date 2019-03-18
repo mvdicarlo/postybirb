@@ -85,7 +85,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   private _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.submission.formData = submission.formData || <any>{};
+    if (submission.formData) this.submission.formData = JSON.parse(JSON.stringify(submission.formData || <any>{}));
     if (submission.rating) this.submission.rating = submission.rating;
     this._changeDetector.markForCheck();
   }

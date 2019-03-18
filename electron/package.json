@@ -8,7 +8,8 @@
     "start": "DEVELOP=true SFW=true electron main.js",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
-    "eb-windows": "electron-builder -w"
+    "eb-windows": "electron-builder -w",
+    "build": "electron-builder -mwl -p always"
   },
   "repository": {
     "type": "git",

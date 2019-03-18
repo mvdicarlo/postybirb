@@ -133,7 +133,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   }
 
   protected _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.formDataForm.patchValue(submission.formData || {});
+    if (submission.formData) JSON.parse(JSON.stringify(this.formDataForm.patchValue(submission.formData || {})));
     if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
     this._changeDetector.markForCheck();
   }
