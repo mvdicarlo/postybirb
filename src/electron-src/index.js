@@ -51,7 +51,7 @@ settingsDB.defaults({
   postInterval: 0,
   clearQueueOnFailure: true,
   advertise: true
-});
+}).write();
 
 window.got = require('./src/got-request.js');
 
