@@ -278,7 +278,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
             return Promise.reject(this.createPostResponse('You must have 5+ posts on your account first', body));
           }
 
-          if (!body.includes('pageid-submit-finalize')) {
+          if (body.includes('pageid-submit-finalize')) {
             return Promise.reject(this.createPostResponse('Unknown error', body));
           }
 
@@ -292,7 +292,9 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
               await got.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
             }
-          } catch (e) { }
+          } catch (e) {
+            console.log(e);
+          }
           finally {
             const res = this.createPostResponse(null);
             res.srcURL = postResponse.success.response.request.uri.href;

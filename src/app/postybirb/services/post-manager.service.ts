@@ -74,7 +74,7 @@ export class PostManagerService {
           });
       });
     } else {
-      return Promise.reject({ msg: 'Not logged in' });
+      return Promise.reject({ msg: 'Not logged in', error: 'Not logged in' });
     }
   }
 
