@@ -45,7 +45,7 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
               }
               resolve(res);
           }).catch((err) => {
-              reject(err);
+              resolve(err);
           });
     });
 };

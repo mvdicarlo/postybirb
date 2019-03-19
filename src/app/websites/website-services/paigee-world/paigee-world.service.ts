@@ -78,12 +78,6 @@ export class PaigeeWorld extends BaseWebsiteService {
 
   private getBearerToken(profileId: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      const bearer = (this.userInformation.get(profileId) || <any>{}).bearer;
-      if (bearer) {
-        resolve(bearer);
-        return bearer;
-      }
-
       const win = new BrowserWindow({
         show: false,
         webPreferences: {
