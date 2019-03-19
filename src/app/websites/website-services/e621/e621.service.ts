@@ -168,7 +168,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       value: 'view'
     });
 
-    const response:any = await got.gotPost(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies, {
+    const response = await got.gotPost(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies, {
       headers: {
         'Referer': 'https://e621.net/post/upload',
         'Origin': 'https://e621.net',

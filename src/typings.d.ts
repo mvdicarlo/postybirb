@@ -12,7 +12,7 @@ declare var got: {
   requestGet(url: string, cookieUrl: string, cookies: any[], options?: any): Promise<any>;
   patch(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
   post(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
-  gotPost(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
+  gotPost(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<any>;
 }
 
 declare function openUrlInBrowser(url: string): void;
