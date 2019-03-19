@@ -32,27 +32,31 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
 }
 
 function descriptionParser(html: string): string {
-    if (!html) return '';
+  if (!html) return '';
 
-    html = html.replace(/<b>/gi, '[b]');
-    html = html.replace(/<i>/gi, '[i]');
-    html = html.replace(/<u>/gi, '[u]');
-    html = html.replace(/<s>/gi, '[s]');
-    html = html.replace(/<\/b>/gi, '[/b]');
-    html = html.replace(/<\/i>/gi, '[/i]');
-    html = html.replace(/<\/u>/gi, '[/u]');
-    html = html.replace(/<\/s>/gi, '[/s]');
-    html = html.replace(/<em>/gi, '[i]');
-    html = html.replace(/<\/em>/gi, '[/i]');
-    html = html.replace(/<strong>/gi, '[b]');
-    html = html.replace(/<\/strong>/gi, '[/b]');
-    html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
+  html = html.replace(/<b>/gi, '[b]');
+  html = html.replace(/<i>/gi, '[i]');
+  html = html.replace(/<u>/gi, '[u]');
+  html = html.replace(/<s>/gi, '[s]');
+  html = html.replace(/<\/b>/gi, '[/b]');
+  html = html.replace(/<\/i>/gi, '[/i]');
+  html = html.replace(/<\/u>/gi, '[/u]');
+  html = html.replace(/<\/s>/gi, '[/s]');
+  html = html.replace(/<em>/gi, '[i]');
+  html = html.replace(/<\/em>/gi, '[/i]');
+  html = html.replace(/<strong>/gi, '[b]');
+  html = html.replace(/<\/strong>/gi, '[/b]');
+  html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
 
-    html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
 
-    html = html.replace(/:e6(.*?):/gi, '@$1');
+  html = html.replace(/:e6(.*?):/gi, '@$1');
 
-    return html;
+  return html;
+}
+
+function linkParser(html: string): string {
+  return html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
 }
 
 @Injectable({
@@ -74,7 +78,7 @@ function descriptionParser(html: string): string {
     description: [descriptionParser]
   },
   parsers: {
-    description: [PlaintextParser.parse],
+    description: [linkParser, PlaintextParser.parse],
     disableAdvertise: true,
     usernameShortcut: {
       code: 'e6',
@@ -96,7 +100,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/user/home`, this.BASE_URL, cookies, profileId);
+    const response = await got.get(`${this.BASE_URL}/user/home`, this.BASE_URL, cookies, null);
     try { // Old legacy code that is marked for refactor
       const body = response.body;
       const matcher = /Logged in as.*"/g;
@@ -131,16 +135,17 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/post/upload`, this.BASE_URL, cookies, postData.profileId);
+    let cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const formPage = await got.get(`${this.BASE_URL}/post/upload`, this.BASE_URL, cookies, null);
 
     const data: any = {
-      'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]),
+      'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]).join(' ').trim(),
       'post[file]': fileAsFormDataObject(postData.primary),
       'post[rating]': this.getRating(submission.rating),
       'authenticity_token': HTMLParser.getInputValue(formPage.body, 'authenticity_token'),
       'post[description]': postData.description,
-      'post[parent_id]': ''
+      'post[parent_id]': '',
+      'post[upload_url]': ''
     };
 
     const options = postData.options;
@@ -150,11 +155,32 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       data['post[source]'] = options.sourceURL[0] || '';
     }
 
-    const response = await got.post(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies);
-    if (response.error) {
-      return Promise.reject(this.createPostResponse(null, response.error));
-    } else {
+    formPage.headers['set-cookie'].forEach(c => {
+      const cParts = c.split(';')[0].split('=');
+      const exist = cookies.find(e => e.name === cParts[0]);
+      if (exist) {
+        exist.value = cParts[1]
+      }
+    });
+
+    cookies.push({
+      name: 'mode',
+      value: 'view'
+    });
+
+    const response:any = await got.gotPost(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies, {
+      headers: {
+        'Referer': 'https://e621.net/post/upload',
+        'Origin': 'https://e621.net',
+        'Host': 'e621.net',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;',
+      }
+    });
+
+    if (response.statusCode === 200 || response.statusCode === 302) { // got doesn't handle 302 well
       return this.createPostResponse(null);
+    } else {
+      return Promise.reject(this.createPostResponse('Unknown error', response.body));
     }
   }
 }

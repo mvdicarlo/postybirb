@@ -1,6 +1,6 @@
 {
   "name": "postybirb",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "postybirb crossposter nodejs angular electronjs electron",
   "main": "main.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
     "eb-windows": "electron-builder -w",
-    "build": "electron-builder -l -p always"
+    "build": "electron-builder -mwl -p always"
   },
   "repository": {
     "type": "git",

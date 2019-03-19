@@ -20,18 +20,20 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
 
         got(url, opts)
           .then((res) => {
-              if (res.headers['set-cookie']) {
-                  const cookies = setCookie.parse(res);
+              if (res.headers['set-cookie'] && profileId) { // TODO: I think I only implemented this because of SoFurry. Might be worth removing this logic.
+                  const _cookies = setCookie.parse(res);
                   const cookieSession = session.fromPartition(`persist:${profileId}`).cookies;
-                  cookies.forEach((c) => {
-                      c.secure = c.secure || false;
-                      c.session = false;
+                  _cookies.forEach((c) => {
                       c.httpOnly = false;
                       c.hostOnly = false;
-                      c.url = cookieUrl;
                       delete c.expires;
                       delete c.maxAge;
-                      c.value = encodeURIComponent(c.value);
+
+                      c.secure = c.secure || false;
+                      c.session = false;
+                      c.value = encodeURIComponent(c.value); // safe?
+                      c.url = cookieUrl;
+
                       const now = new Date();
                       c.expirationDate = now.setMonth(now.getMonth() + 4); // add 4 months
                       cookieSession.set(c, function (err) {
@@ -123,6 +125,38 @@ exports.post = function post(url, formData, cookieUrl, cookies, options) {
                     },
                 });
             }
+        });
+    });
+};
+
+// NOTE: This was created just to make e621 work since e621 doesn't like request for some reason.
+// Now that I know how to get files working it might be worthwhile looking into replacing the old stuff using request in the future
+exports.gotPost = function gotPost(url, formData, cookieUrl, cookies, options) {
+    return new Promise((resolve, reject) => {
+        const cookieJar = new CookieJar();
+        if (cookies && cookies.length) {
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i];
+                cookieJar.setCookie(`${cookie.name}=${cookie.value}`, cookieUrl, () => {});
+            }
+        }
+
+        const form = new FormData();
+        Object.keys(formData).forEach((key) => {
+            const val = formData[key];
+            if (val.options) { // assume file?
+                form.append(key, val.value, val.options);
+            } else {
+                form.append(key, formData[key]);
+            }
+        });
+
+        const opts = Object.assign({ body: form, cookieJar, followRedirect: true }, options);
+        got.post(url, opts)
+        .then((res) => {
+            resolve(res);
+        }).catch((err) => {
+            resolve(err); // got seems to throw a lot despite a successful post
         });
     });
 };
