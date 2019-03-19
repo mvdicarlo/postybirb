@@ -206,7 +206,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
-      if (files[0].size > MBtoBytes(10) || !isImage(files[0])) {
+      if (files[0].size > MBtoBytes(5) || !isImage(files[0])) {
         this.thumbnailInput.nativeElement.value = '';
         return;
       }

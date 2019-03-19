@@ -9,7 +9,7 @@
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
     "eb-windows": "electron-builder -w",
-    "build": "electron-builder -mwl -p always"
+    "build": "electron-builder -l -p always"
   },
   "repository": {
     "type": "git",

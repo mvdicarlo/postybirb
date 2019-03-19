@@ -118,11 +118,11 @@ export class DeviantArt extends BaseWebsiteService {
 
   private async _getFolders(profileId: string, accessToken: string): Promise<void> {
     const folderResponse = await got.get(`${this.BASE_URL}/api/v1/oauth2/gallery/folders?calculate_size=false&limit=50&access_token=${accessToken}`, this.BASE_URL, [], profileId);
-    const results = (JSON.parse(folderResponse.body).results || []).filter(folder => folder.name !== 'Featured');
+    const results = (JSON.parse(folderResponse.body).results || []);
     const folders: Folder[] = [];
 
     results.forEach(folder => {
-      const parent = folder.parent ? results.find(f => f.folderid === folder.parent) : undefined;
+      const parent = folder.parent ? results.find(f => f.folderid === folder.parent && f.name !== 'Featured') : undefined;
       folders.push({
         id: folder.folderid,
         title: parent ? `${parent.name} / ${folder.name}` : folder.name,
@@ -223,10 +223,10 @@ export class DeviantArt extends BaseWebsiteService {
 
     if (options.matureLevel) submitData.mature_level = options.matureLevel;
     if (options.category) submitData.catpath = options.category;
-    if (options.disableComments) submitData.allow_comments = 'false';
-    if (options.critique) submitData.request_critique = 'true';
-    if (options.freeDownload) submitData.allow_free_download = 'false';
-    if (options.feature) submitData.feature = 'true';
+    if (options.disableComments) submitData.allow_comments = 'no';
+    if (options.critique) submitData.request_critique = 'yes';
+    if (options.freeDownload) submitData.allow_free_download = 'no';
+    if (options.feature) submitData.feature = 'yes';
 
     if ((options.folders || []).length > 0) {
       if (options.category && options.category.includes('scraps')) {
