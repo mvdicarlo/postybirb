@@ -32,6 +32,7 @@ export class LoginManagerService {
     });
 
     _profileManager.profileChanges.subscribe(profiles => this._checkAndTrim(profiles));
+    _profileManager.triggerRefresh.subscribe(profiles => this.updateProfiles(profiles.map(p => p.id)));
   }
 
   /**

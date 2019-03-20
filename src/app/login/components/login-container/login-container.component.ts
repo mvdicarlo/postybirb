@@ -89,13 +89,28 @@ export class LoginContainerComponent implements OnInit, OnDestroy {
       data: {
         title: 'Delete'
       }
-    }).afterClosed().subscribe(result => {
-      if (result) {
-        const id: string = this.selectedProfileId;
-        this.selectedProfileId = null;
-        this._loginManager.deleteProfile(id);
+    }).afterClosed()
+      .subscribe(result => {
+        if (result) {
+          const id: string = this.selectedProfileId;
+          this.selectedProfileId = null;
+          this._loginManager.deleteProfile(id);
+        }
+      });
+  }
+
+  public resetLoginProfile(): void {
+    this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Reset'
       }
-    });
+    }).afterClosed()
+      .subscribe(result => {
+        if (result) {
+          const id: string = this.selectedProfileId;
+          this._loginManager.resetProfile(id);
+        }
+      });
   }
 
 }

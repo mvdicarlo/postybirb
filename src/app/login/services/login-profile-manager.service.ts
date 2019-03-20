@@ -5,7 +5,7 @@
 import { Injectable } from '@angular/core';
 import { LoginProfile } from '../interfaces/login-profile';
 import * as nanoid from 'nanoid';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -17,9 +17,15 @@ export class LoginProfileManagerService {
   private subject: BehaviorSubject<LoginProfile[]>;
   public readonly profileChanges: Observable<LoginProfile[]>; // Notifier for any profile changes
 
+  private refreshSubject: Subject<LoginProfile[]>;
+  public readonly triggerRefresh: Observable<LoginProfile[]>; // Notifier for any profile refresh request
+
   constructor() {
     this.subject = new BehaviorSubject([]);
     this.profileChanges = this.subject.asObservable();
+
+    this.refreshSubject = new Subject();
+    this.triggerRefresh = this.refreshSubject.asObservable();
 
     this.db = profilesDB;
     this.db.defaults({ [this.PROFILE_FIELD]: [] }).write();
@@ -178,6 +184,21 @@ export class LoginProfileManagerService {
   }
 
   /**
+   * Resets cookies and data tied to a login profile
+   * @param id Profile reference Id
+   */
+  public resetProfile(id: string): void {
+    const session = getSession(id);
+    if (session) {
+      session.clearCache(() => { });
+      session.clearStorageData();
+    }
+    this.db.get(this.PROFILE_FIELD).find({ id }).assign({ data: {} }).write();
+
+    this.refreshSubject.next([this.db.get(this.PROFILE_FIELD).find({ id }).value()]);
+  }
+
+  /**
    * Stores miscellaneous data that a website may require for login or other purposes.
    * @param id        Profile reference Id
    * @param fieldName Field name to be set in the data variable
@@ -193,7 +214,7 @@ export class LoginProfileManagerService {
     }
 
     profile.data[fieldName] = data;
-    this.db.find({ id }).assign({ data: profile.data }).write();
+    this.db.get(this.PROFILE_FIELD).find({ id }).assign({ data: profile.data }).write();
   }
 
 }
