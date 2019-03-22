@@ -10,6 +10,7 @@ import {
   MatDialogModule,
   MatIconModule,
   MatInputModule,
+  MatRadioModule,
   MatSelectModule
 } from '@angular/material';
 
@@ -31,6 +32,7 @@ import { TemplateSelectDialog } from './components/template-select-dialog/templa
     MatDialogModule,
     MatIconModule,
     MatInputModule,
+    MatRadioModule,
     MatSelectModule
   ],
   exports: [
