@@ -15,7 +15,7 @@ import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (submission.rating !== SubmissionRating.GENERAL) {
+  if (submission.rating && submission.rating !== SubmissionRating.GENERAL) {
     problems.push(['Does not support rating', { website: 'Ko-fi', value: submission.rating }]);
   }
 

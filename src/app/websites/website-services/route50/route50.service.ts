@@ -13,7 +13,7 @@ import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (submission.rating !== SubmissionRating.GENERAL) {
+  if (submission.rating && submission.rating !== SubmissionRating.GENERAL) {
     problems.push(['Does not support rating', { website: 'Route 50', value: submission.rating }]);
   }
 

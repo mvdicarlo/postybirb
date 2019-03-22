@@ -14,7 +14,7 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME) {
+  if (submission.rating && (submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME)) {
     problems.push(['Does not support rating', { website: 'Tumblr', value: submission.rating }]);
   }
 
