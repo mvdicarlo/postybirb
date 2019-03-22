@@ -76,7 +76,7 @@
   flex-grow: unset;
 }
 
-.editing-form mat-panel-title > span {
+.editing-form mat-panel-title>span {
   flex: 10;
 }
 
@@ -99,4 +99,8 @@
   font-size: 1rem;
   cursor: pointer;
   padding: .12em;
+}
+
+.mat-expansion-panel-header[aria-disabled='true'] {
+  cursor: not-allowed;
 }
