@@ -1,0 +1,102 @@
+.editing-form {
+  padding: .5em;
+  padding-bottom: 0;
+  position: relative;
+}
+
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  background-color: #242424;
+  margin-left: -23px;
+  margin-right: -23px;
+  margin-top: 1em;
+}
+
+.basic-form mat-form-field {
+  display: block;
+  margin: -.45em 0;
+}
+
+.help-icon {
+  font-size: 1rem;
+}
+
+.editing-form .menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.editing-form img {
+  height: 100px;
+  width: 100px;
+  cursor: pointer;
+}
+
+.editing-form .thumbnail-block {
+  vertical-align: bottom;
+  font-size: 12px;
+  padding-bottom: 12px;
+}
+
+.editing-form .thumbnail {
+  position: relative;
+  height: 100px;
+  width: 100px;
+}
+
+.editing-form .thumbnail img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.8;
+}
+
+.editing-form .thumbnail div {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: #222;
+  width: 100%;
+  opacity: 0.75;
+}
+
+.editing-form .thumbnail i {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.editing-form mat-panel-title {
+  width: 150px;
+  flex-grow: unset;
+}
+
+.editing-form mat-panel-title > span {
+  flex: 10;
+}
+
+.editing-form .alert {
+  width: 100%;
+  border-radius: 0;
+  font-size: 12px;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.editing-form .additional-img-container {
+  cursor: grab;
+}
+
+.editing-form .template-import {
+  font-size: 1rem;
+  cursor: pointer;
+  padding: .12em;
+}
