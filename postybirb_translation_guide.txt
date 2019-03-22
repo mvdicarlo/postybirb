@@ -661,6 +661,12 @@ TRANSLATOR: <Person to be credited>
 }
 
 {
+  "Internal": "Reset",
+  "Translate Me": "Reset",
+  "Translated": ""
+}
+
+{
   "Internal": "Reupload better quality image",
   "Translate Me": "Reupload better quality image",
   "Translated": ""
