@@ -11,6 +11,7 @@ export class UsernameParser {
     const regex = new RegExp(`:${code}(.*?):`, 'gi');
     html = html.replace(regex, `<a href="${replacement}">$1</a>`);
 
+    html = html.replace(new RegExp(`<a href="${replacement.replace('$1','')}"><\/a>`, 'gm'), `:${code}:`); // remove empty tags i.e. :fa:
     return html;
   }
 }
