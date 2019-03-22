@@ -1,6 +1,7 @@
-<div>
+<div class="description-container">
   <mat-checkbox [formControl]="overwriteControl" *ngIf="canOverwrite">{{ 'Overwrite Default' | translate }}</mat-checkbox>
   <editor [formControl]="tinymce" [init]="tinyMCESettings" *ngIf="this.value.overwrite || !canOverwrite"></editor>
+  <span class="text-muted">{{characterCount}}</span>
 </div>
 <div class="description-buttons" *ngIf="this.value.overwrite || !canOverwrite">
   <button mat-flat-button (click)="saveDescriptionTemplate()">

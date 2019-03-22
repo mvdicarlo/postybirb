@@ -3,7 +3,6 @@ export class PlaintextParser {
     if (!html) return '';
 
     html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '$4 ($2)');
-
     html = html.replace(/<h[1-7](.*?)>(.*?)<\/h[1-7]>/, '$2\n');
 
     html = html.replace(/<br(.*?)>/gi, '\n');
@@ -32,6 +31,16 @@ export class PlaintextParser {
     html = html.replace(/&gt;/gi, '>');
     html = html.replace(/&lt;/gi, '<');
     html = html.replace(/&amp;/gi, '&');
+
+    const duplicateCheck = html.match(/(\S*?) \((.*?)\)/g) || [];
+    duplicateCheck.forEach(potentialDuplicate => {
+      const parts = potentialDuplicate.split(' ');
+      const part1 = parts[0];
+      const part2 = parts[1].replace(/(\(|\))/g, '');
+      if (part1 === part2) {
+        html = html.replace(potentialDuplicate, part1);
+      }
+    });
 
     return html.trim();
   }

@@ -1,11 +1,14 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, AfterViewInit } from '@angular/core';
 import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/base-value-accessor';
-import { debounceTime } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { DescriptionTemplatesService } from '../../services/description-templates.service';
 import { MatDialog } from '@angular/material';
 import { SaveTemplateDialog } from './save-template-dialog/save-template-dialog.component';
+import { UsernameParser } from '../../helpers/description-parsers/username.parser';
+import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
+import { PlaintextParser } from '../../helpers/description-parsers/plaintext.parser';
 
 export interface DescriptionData {
   overwrite: boolean;
@@ -22,7 +25,7 @@ export interface DescriptionData {
     multi: true
   }],
 })
-export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDestroy {
+export class DescriptionInput extends BaseValueAccessor implements OnInit, AfterViewInit, OnDestroy {
   @Input() canOverwrite: boolean = true;
   @Input() defaultDescriptionProvider: Observable<DescriptionData>;
   private providerSubscriber: Subscription = Subscription.EMPTY;
@@ -54,6 +57,9 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
     }
   }
 
+  public characterCount: number = 0;
+  private usernameCodes: { code: string, url: string }[] = [];
+
   constructor(private _descriptionTemplates: DescriptionTemplatesService, private dialog: MatDialog) {
     super({
       overwrite: false,
@@ -64,6 +70,17 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
 
     this._internalProvider = new BehaviorSubject(this.value);
     this.changes = this._internalProvider.asObservable();
+
+    const registries: WebsiteRegistryEntry = WebsiteRegistry.getRegistered();
+    Object.keys(registries).forEach(key => {
+      const registry = registries[key];
+      if (registry.websiteConfig.parsers.usernameShortcut) {
+        this.usernameCodes.push({
+          code: registry.websiteConfig.parsers.usernameShortcut.code,
+          url: registry.websiteConfig.parsers.usernameShortcut.url
+        });
+      }
+    });
   }
 
   ngOnInit() {
@@ -77,7 +94,8 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
         });
     }
 
-    this.tinymce.valueChanges.pipe(debounceTime(250))
+    this.tinymce.valueChanges
+      .pipe(tap(val => this._updateCount(val)))
       .subscribe(description => {
         this.value.description = description;
         this.onChange();
@@ -87,6 +105,10 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
       this.value.overwrite = overwrite;
       this.onChange();
     });
+  }
+
+  ngAfterViewInit() {
+    this._updateCount(this.tinymce.value);
   }
 
   ngOnDestroy() {
@@ -117,6 +139,18 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, OnDes
     }
 
     this._internalProvider.next(this.value);
+  }
+
+  private _updateCount(description: string): void {
+    if (!description) this.characterCount = 0;
+    else {
+      this.usernameCodes.forEach(obj => {
+        description = UsernameParser.parse(description, obj.code, obj.url);
+      });
+
+      description = PlaintextParser.parse(description);
+      this.characterCount = description.length;
+    }
   }
 
   public saveDescriptionTemplate(): void {
