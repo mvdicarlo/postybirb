@@ -76,6 +76,13 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         this._changeDetector.markForCheck();
       }
     });
+
+    if (this.submission.formData && !this.submission.formData.loginProfile && this.formDataForm.value.loginProfile) {
+      const obj: any = Object.assign({}, this.submission.formData);
+      obj.loginProfile = this.formDataForm.value.loginProfile;
+      this.submission.formData = obj;
+    }
+
     this._changeDetector.markForCheck();
   }
 
