@@ -55,6 +55,10 @@
   width: 120px;
 }
 
+.cancel-all-btn {
+  cursor: pointer;
+}
+
 cdk-virtual-scroll-viewport {
   height: 100%;
 }

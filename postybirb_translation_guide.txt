@@ -101,6 +101,12 @@ TRANSLATOR: <Person to be credited>
 }
 
 {
+  "Internal": "Cancel All",
+  "Translate Me": "Cancel All",
+  "Translated": ""
+}
+
+{
   "Internal": "Category",
   "Translate Me": "Category",
   "Context": "Header for website options that can be put into categories (e.g. FurAffinity)",
@@ -247,6 +253,12 @@ TRANSLATOR: <Person to be credited>
 {
   "Internal": "Edit",
   "Translate Me": "Edit",
+  "Translated": ""
+}
+
+{
+  "Internal": "Empty",
+  "Translate Me": "Empty",
   "Translated": ""
 }
 

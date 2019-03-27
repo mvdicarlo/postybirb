@@ -51,6 +51,7 @@
           <thead>
             <tr>
               {{ 'Queue' | translate }}
+              <i class="fas fa-ban warn-text cancel-all-btn" *ngIf="queuedSubmissions.length" (click)="cancelAllQueued()"></i>
             </tr>
           </thead>
           <cdk-virtual-scroll-viewport itemSize="80" *ngIf="queuedSubmissions.length">
@@ -60,8 +61,8 @@
               </td>
             </tr>
           </cdk-virtual-scroll-viewport>
-          <tbody *ngIf="!queuedSubmissions.length">
-            <td class="text-center">{{ 'None' | translate }}</td>
+          <tbody *ngIf="!queuedSubmissions.length" style="font-size: 12px;">
+            <td class="text-center">{{ 'Empty' | translate }}</td>
           </tbody>
         </table>
       </div>

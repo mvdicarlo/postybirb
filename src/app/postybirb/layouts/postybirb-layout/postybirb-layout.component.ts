@@ -16,6 +16,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { PostQueueService } from '../../services/post-queue.service';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { ScheduledSubmissionManagerService } from '../../services/scheduled-submission-manager.service';
+import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 
 export interface ModifiedReadFile extends ReadFile {
   title?: string;
@@ -108,6 +109,19 @@ export class PostybirbLayout implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.submissionUpdatesListener.unsubscribe();
     this.queueListener.unsubscribe();
+  }
+
+  public cancelAllQueued(): void {
+    this.dialog.open(ConfirmDialog, {
+      data: {
+        title: 'Cancel All'
+      }
+    }).afterClosed()
+      .subscribe(result => {
+        if (result) {
+          this.queuedSubmissions.forEach(qs => qs.queued = false);
+        }
+      });
   }
 
   public createNewSubmission(submissionFiles: ReadFile[] = []): void {
@@ -299,21 +313,21 @@ export class PostybirbLayout implements OnInit, OnDestroy {
         submissions: this._postableSubmissions()
       }
     }).afterClosed()
-    .subscribe(results => {
-      if (results && results.length) {
-        results.forEach((submission: ISubmission) => this._postQueue.enqueue(this._submissionCache.get(submission.id)));
-      }
+      .subscribe(results => {
+        if (results && results.length) {
+          results.forEach((submission: ISubmission) => this._postQueue.enqueue(this._submissionCache.get(submission.id)));
+        }
 
-      this.loading = false;
-      this._changeDetector.markForCheck();
-    });
+        this.loading = false;
+        this._changeDetector.markForCheck();
+      });
   }
 
   private _postableSubmissions(): Submission[] {
     return this.submissions
-    .filter(s => !s.queued)
-    .filter(s => !s.isScheduled)
-    .filter(s => s.problems.length === 0);
+      .filter(s => !s.queued)
+      .filter(s => !s.isScheduled)
+      .filter(s => s.problems.length === 0);
   }
 
 }
