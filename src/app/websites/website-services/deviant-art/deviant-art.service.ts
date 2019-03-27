@@ -51,7 +51,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
-  refreshInterval: 4 * 60000,
+  refreshInterval: 5 * 60000,
   login: {
     dialog: DeviantArtLoginDialog,
     url: 'https://www.deviantart.com/users/login'

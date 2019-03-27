@@ -27,6 +27,17 @@ exports.getAuthURL = function () {
 };
 
 exports.refresh = function (authInfo) {
+    const created = new Date(authInfo.created || 0);
+    const expire = created.setHours(created.getHours() + 1); // this should be the expiration time
+
+    let shouldRenew = false;
+    const diff = expire - (Date.now() + (6 * 60000)); // should be negative if expiring in the next 6 minutes
+    if (diff <= 0) shouldRenew = true;
+
+    if (shouldRenew) {
+        return renew(authInfo);
+    }
+
     return new Promise((resolve, reject) => {
         request.get(`https://www.deviantart.com/api/v1/oauth2/placebo?access_token=${authInfo.access_token}`, (err, response, body) => {
             if (err) {
@@ -38,31 +49,43 @@ exports.refresh = function (authInfo) {
             if (placebo.status === 'success') {
                 resolve(authInfo);
             } else {
-                request.post(auth.generateAuthUrl('/deviantart/refresh'), {
-                    json: {
-                        refresh_token: authInfo.refresh_token,
-                    },
-                }, (err, response, body) => {
-                    if (err) {
-                        resolve(false);
-                        return;
-                    }
-
-                    try {
-                        const json = JSON.parse(body.body);
-                        if (json.error) {
-                            resolve(false);
-                        } else {
-                            resolve(Object.assign(authInfo, json));
-                        }
-                    } catch (e) {
-                        resolve(false);
-                    }
-                });
+                renew(authInfo)
+                  .then((info) => {
+                      resolve(info);
+                  }).catch(() => {
+                      resolve(false);
+                  });
             }
         });
     });
 };
+
+function renew(authInfo) {
+    return new Promise((resolve, reject) => {
+        request.post(auth.generateAuthUrl('/deviantart/refresh'), {
+            json: {
+                refresh_token: authInfo.refresh_token,
+            },
+        }, (err, response, body) => {
+            if (err) {
+                resolve(false);
+                return;
+            }
+
+            try {
+                const json = JSON.parse(body.body);
+                if (json.error) {
+                    resolve(false);
+                } else {
+                    authInfo.created = Date.now();
+                    resolve(Object.assign(authInfo, json));
+                }
+            } catch (e) {
+                resolve(false);
+            }
+        });
+    });
+}
 
 app.get('/deviantart', (req, res) => {
     res.redirect('https://www.deviantart.com');
@@ -79,7 +102,9 @@ function getAccessToken(code) {
                 if (err) {
                     cb(null);
                 } else {
-                    cb(Object.assign(json, JSON.parse(body)));
+                    const info = Object.assign(json, JSON.parse(body));
+                    info.created = Date.now();
+                    cb(info);
                 }
             });
         }
