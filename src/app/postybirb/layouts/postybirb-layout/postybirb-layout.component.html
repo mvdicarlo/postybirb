@@ -47,19 +47,22 @@
         </table>
 
         <!-- Queue List -->
-        <table class="table table-dark m-0" style="height: 100%" *ngIf="queuedSubmissions.length">
+        <table class="table table-dark m-0" style="height: 100%">
           <thead>
             <tr>
               {{ 'Queue' | translate }}
             </tr>
           </thead>
-          <cdk-virtual-scroll-viewport itemSize="80">
+          <cdk-virtual-scroll-viewport itemSize="80" *ngIf="queuedSubmissions.length">
             <tr *cdkVirtualFor="let record of queuedSubmissions; templateCacheSize: 0">
               <td>
                 <submission-posting-view [submission]="record"></submission-posting-view>
               </td>
             </tr>
           </cdk-virtual-scroll-viewport>
+          <tbody *ngIf="!queuedSubmissions.length">
+            <td class="text-center">{{ 'None' | translate }}</td>
+          </tbody>
         </table>
       </div>
     </div>
