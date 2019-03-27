@@ -180,6 +180,7 @@ function initialize(show = true) {
 
     if (!process.env.DEVELOP) mainWindowState.manage(win);
 
+    win.webContents.session.clearCache(() => { log.info('Cache cleared')});
     win.loadURL(`file://${__dirname}/dist/index.html`);
 
     win.on('page-title-updated', e => e.preventDefault()); // Do not allow title changes
