@@ -13,7 +13,7 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { FurryNetworkSubmissionForm } from './components/furry-network-submission-form/furry-network-submission-form.component';
 import { FurryNetworkJournalForm } from './components/furry-network-journal-form/furry-network-journal-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
-import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -367,7 +367,7 @@ export class FurryNetwork extends BaseWebsiteService {
     return tempArray;
   }
 
-  async postChunks(userProfile: any, type: any, file: ISubmissionFile, headers: any): Promise<any> {
+  async postChunks(userProfile: any, type: any, file: ISubmissionFileWithArray, headers: any): Promise<any> {
     const maxChunkSize = 524288;
     const partitions = this.chunkArray(file.buffer, maxChunkSize);
     let fileInfo = null;

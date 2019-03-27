@@ -11,6 +11,7 @@ import { SubmissionFileType } from 'src/app/database/tables/submission-file.tabl
 import { TranslateService } from '@ngx-translate/core';
 import { PostResult } from 'src/app/websites/interfaces/website-service.interface';
 import { PostLoggerService } from './post-logger.service';
+import { blobToUint8Array } from 'src/app/utils/helpers/file.helper';
 
 export interface PostQueueStatus {
   currentId: number;
@@ -284,22 +285,26 @@ export class PostQueueService {
     }
   }
 
-  private _outputNotification(submission: Submission): Promise<void> {
-    return new Promise((resolve) => {
+  private async _outputNotification(submission: Submission): Promise<void> {
       const failed = submission.postStats.fail.length > 0;
 
-      this._generatedThumbnailDB.getThumbnail(submission.id, SubmissionFileType.PRIMARY_FILE)
-        .then(thumbnail => {
-          this._translate.get(failed ? 'Failed' : 'Success', ).subscribe((msg) => {
-            new Notification(msg, {
-              body: submission.title,
-              icon: thumbnail && thumbnail.length ? 'data:image/jpeg;base64,' + Buffer.from((thumbnail[0] || <any>{}).buffer).toString('base64') : null
-            });
+      try {
+        const thumbnail = await this._generatedThumbnailDB.getThumbnail(submission.id, SubmissionFileType.PRIMARY_FILE);
+        let icon = null;
+        if (thumbnail && thumbnail.length) {
+          icon = 'data:image/jpeg;base64,' + Buffer.from(await blobToUint8Array(thumbnail[0].buffer)).toString('base64');
+        }
+        this._translate.get(failed ? 'Failed' : 'Success', ).subscribe((msg) => {
+          new Notification(msg, {
+            body: submission.title,
+            icon
+          });
 
-            failed ? this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true })
-              : this.snotify.success(submission.title, { timeout: 10000, showProgressBar: true });
-          })
-        }).finally(() => resolve())
-    });
+          failed ? this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true })
+            : this.snotify.success(submission.title, { timeout: 10000, showProgressBar: true });
+        });
+      } catch (e) { /* ignore */}
+
+      return;
   }
 }

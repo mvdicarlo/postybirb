@@ -9,7 +9,7 @@ import { PatreonSubmissionForm } from './components/patreon-submission-form/patr
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
-import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -188,7 +188,7 @@ export class Patreon extends BaseWebsiteService {
     return 'image_file';
   }
 
-  private async _uploadFile(link: string, file: ISubmissionFile, attachment: boolean, cookies: any[], csrf: string): Promise<any> {
+  private async _uploadFile(link: string, file: ISubmissionFileWithArray, attachment: boolean, cookies: any[], csrf: string): Promise<any> {
     const uuid = URL.createObjectURL(fileAsBlob(file));
 
     const fileData: any = {

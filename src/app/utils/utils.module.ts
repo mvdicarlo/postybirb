@@ -27,7 +27,6 @@ import { ProfileNamePipe } from './pipes/profile-name.pipe';
 import { SafePipe } from './pipes/safe.pipe';
 import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
 import { TagInput } from './components/tag-input/tag-input.component';
-import { ToBase64Pipe } from './pipes/to-base64.pipe';
 import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
 
 @NgModule({
@@ -42,7 +41,6 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     SafePipe,
     SaveTemplateDialog,
     TagInput,
-    ToBase64Pipe,
     WebsiteShortcutsComponent,
   ],
   imports: [
@@ -68,7 +66,6 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     ProfileNamePipe,
     SafePipe,
     TagInput,
-    ToBase64Pipe,
   ],
   entryComponents: [
     ConfirmDialog,

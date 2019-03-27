@@ -19,6 +19,14 @@ export function asFileObject(file: File): FileObject {
 export interface ISubmissionFile {
   id: number;
   submissionId: number; // fk to submission
+  buffer: Blob;
+  fileInfo: FileObject;
+  fileType: SubmissionFileType;
+}
+
+export interface ISubmissionFileWithArray {
+  id: number;
+  submissionId: number; // fk to submission
   buffer: Uint8Array;
   fileInfo: FileObject;
   fileType: SubmissionFileType;

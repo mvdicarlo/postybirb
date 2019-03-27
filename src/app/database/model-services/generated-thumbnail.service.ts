@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
 import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 import { GeneratedThumbnailTableName, IGeneratedThumbnail } from '../tables/generated-thumbnail.table';
-import { isImage, isGIF } from 'src/app/utils/helpers/file.helper';
+import { isImage, isGIF, arrayBufferAsBlob, blobToUint8Array } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -85,7 +85,7 @@ export class GeneratedThumbnailDBService extends DatabaseService {
     let ni = null;
 
     if (isImage(file.fileInfo) && !isGIF(file.fileInfo)) { // may need a better way to handle GIF thumbnails
-      ni = nativeImage.createFromBuffer(Buffer.from(file.buffer));
+      ni = nativeImage.createFromBuffer(Buffer.from(await blobToUint8Array(file.buffer)));
     } else { // other file types that don't have an image thumbnail
       ni = await new Promise((resolve) => {
         getFileIcon(file.fileInfo.path, {
@@ -108,7 +108,7 @@ export class GeneratedThumbnailDBService extends DatabaseService {
       submissionId: file.submissionId,
       submissionFileId: file.id,
       fileType: file.fileType,
-      buffer: new Uint8Array(fileBuffer.buffer)
+      buffer: arrayBufferAsBlob(new Uint8Array(fileBuffer.buffer), 'image/jpeg')
     }
   }
 }

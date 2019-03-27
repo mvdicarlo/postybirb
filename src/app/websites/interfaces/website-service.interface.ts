@@ -1,4 +1,4 @@
-import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFile, ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 import { Submission } from 'src/app/database/models/submission.model';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
@@ -21,15 +21,15 @@ export interface PostResult {
 }
 
 export interface SubmissionPostData {
-  additionalFiles: ISubmissionFile[];
+  additionalFiles: ISubmissionFileWithArray[];
   description: string;
   loginInformation: WebsiteStatus;
   options: any;
-  primary: ISubmissionFile;
+  primary: ISubmissionFileWithArray;
   profileId: string;
   srcURLs: string[];
   tags: string[];
-  thumbnail: ISubmissionFile;
+  thumbnail: ISubmissionFileWithArray;
   typeOfSubmission: TypeOfSubmission;
 }
 

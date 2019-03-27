@@ -4,7 +4,7 @@ import { WebsiteService, LoginStatus, WebsiteStatus, SubmissionPostData } from '
 import { WebsiteRegistry, WebsiteRegistryEntry } from 'src/app/websites/registries/website.registry';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { getTags, getDescription, getOptions } from 'src/app/websites/helpers/website-validator.helper';
-import { ISubmissionFile, SubmissionFileType } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFile, SubmissionFileType, ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 import { AdInsertParser } from 'src/app/utils/helpers/description-parsers/ad-insert.parser';
 import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
@@ -39,36 +39,42 @@ export class PostManagerService {
     if (loginInformation && loginInformation.status === LoginStatus.LOGGED_IN) {
       return new Promise((resolve, reject) => {
         this._submissionFileDB.getFilesBySubmissionId(submissionToPost.id)
-          .then(files => {
-            try {
-              const postObject: SubmissionPostData = {
-                additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
-                description: this._parseDescription(getDescription(submissionToPost, website), website),
-                loginInformation,
-                options: getOptions(submissionToPost, website),
-                primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
-                profileId: submissionToPost.formData.loginProfile,
-                srcURLs: submissionToPost.postStats.sourceURLs,
-                tags: getTags(submissionToPost, website),
-                thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
-                typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
-              };
+          .then(f => {
+            this._convertFilesToArrayType(f)
+            .then(files => {
+              try {
+                const postObject: SubmissionPostData = {
+                  additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
+                  description: this._parseDescription(getDescription(submissionToPost, website), website),
+                  loginInformation,
+                  options: getOptions(submissionToPost, website),
+                  primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
+                  profileId: submissionToPost.formData.loginProfile,
+                  srcURLs: submissionToPost.postStats.sourceURLs,
+                  tags: getTags(submissionToPost, website),
+                  thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
+                  typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
+                };
 
-              // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
-              // setTimeout(() => {
-              //   let rand = Math.floor(Math.random() * 100);
-              //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
-              // });
+                // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
+                // setTimeout(() => {
+                //   let rand = Math.floor(Math.random() * 100);
+                //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
+                // });
 
-              this.serviceMap.get(website).post(submissionToPost, postObject)
-                .then(res => {
-                  resolve(res);
-                }).catch(err => {
-                  reject(err);
-                });
-            } catch (error) {
+                this.serviceMap.get(website).post(submissionToPost, postObject)
+                  .then(res => {
+                    resolve(res);
+                  }).catch(err => {
+                    reject(err);
+                  });
+              } catch (error) {
+                reject({ msg: 'An internal error occurred', error });
+              }
+            })
+            .catch(error => {
               reject({ msg: 'An internal error occurred', error });
-            }
+            });
           }).catch(error => {
             reject({ msg: 'An internal error occurred', error });
           });
@@ -102,8 +108,8 @@ export class PostManagerService {
   /**
    * Returns an ordered list of additional files based on user ordering
    */
-  private _sortFiles(submission: Submission, files: ISubmissionFile[]): ISubmissionFile[] {
-    const orderedFiles: ISubmissionFile[] = files.map(f => undefined); // initialize array size
+  private _sortFiles(submission: Submission, files: ISubmissionFileWithArray[]): ISubmissionFileWithArray[] {
+    const orderedFiles: ISubmissionFileWithArray[] = files.map(f => undefined); // initialize array size
 
     if (files && files.length) {
       const map = submission.fileMap.ADDITIONAL || [];
@@ -114,5 +120,17 @@ export class PostManagerService {
     }
 
     return orderedFiles;
+  }
+
+  private async _convertFilesToArrayType(files: ISubmissionFile[]): Promise<ISubmissionFileWithArray[]> {
+    const modifiedFiles = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const modified: any = files[i];
+      modified.buffer = new Uint8Array(await new Response(modified.buffer).arrayBuffer());
+      modifiedFiles.push(modified);
+    }
+
+    return modifiedFiles;
   }
 }

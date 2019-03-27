@@ -1,21 +1,17 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { arrayBufferAsBlob } from '../helpers/file.helper';
 
 @Pipe({
   name: 'objectURL'
 })
 export class ObjectURLPipe implements PipeTransform {
 
-  transform(buffer: Uint8Array, size: number = 100): any {
-    if (!buffer) return '#';
+  transform(blob: Blob, size: number = 100): any {
+    if (!blob) return '#';
 
-    const nib: any = nativeImage.createFromBuffer(Buffer.from(buffer));
-    const resizedImg = nib.resize({
-      width: Number(size),
-      height: Number(size),
-      quality: 'better'
-    });
-
-    return URL.createObjectURL(new Blob([resizedImg.toJPEG(100)], { type: 'image/jpeg' }));
+    const b: Blob = blob instanceof Uint8Array ? arrayBufferAsBlob(<Uint8Array>blob, 'image/jpeg') : blob
+    // NOTE: size is deprecated for now since its only really used for blobs that have been resize
+    return URL.createObjectURL(b);
   }
 
 }

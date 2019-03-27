@@ -4,7 +4,7 @@ import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType, asFileObj
 import { ModifiedReadFile } from 'src/app/postybirb/layouts/postybirb-layout/postybirb-layout.component';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
-import { isImage, isType, isGIF } from 'src/app/utils/helpers/file.helper';
+import { isImage, isType, isGIF, arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -134,7 +134,7 @@ export class SubmissionFileDBService extends DatabaseService {
       modelObjs.push({
         id: undefined,
         submissionId,
-        buffer: file.buffer,
+        buffer: arrayBufferAsBlob(file.buffer, file.file.type),
         fileInfo: asFileObject(file.file),
         fileType
       });

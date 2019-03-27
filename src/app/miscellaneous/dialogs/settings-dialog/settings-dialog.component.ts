@@ -63,7 +63,7 @@ export class SettingsDialog implements OnInit {
     .subscribe(result => {
       if (result) {
         store.clearAll();
-        this.databaseService.dropAll().then(() => {
+        this.databaseService.dropAll().finally(() => {
           location.reload();
         });
       }

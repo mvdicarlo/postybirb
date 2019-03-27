@@ -5,7 +5,7 @@ export interface IGeneratedThumbnail {
   id: number;
   submissionId: number; // fk to submission
   submissionFileId: number; // fk to original file
-  buffer: Uint8Array;
+  buffer: Blob;
   fileType: SubmissionFileType;
 }
 

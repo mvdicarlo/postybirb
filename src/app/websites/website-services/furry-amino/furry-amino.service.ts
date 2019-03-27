@@ -10,7 +10,7 @@ import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plain
 import { FurryAminoSubmissionForm } from './components/furry-amino-submission-form/furry-amino-submission-form.component';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
-import { ISubmissionFile } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -224,7 +224,7 @@ export class FurryAmino extends BaseWebsiteService {
     }
   }
 
-  private _postImage(file: ISubmissionFile, cookies: any[]): Promise<string> {
+  private _postImage(file: ISubmissionFileWithArray, cookies: any[]): Promise<string> {
     return new Promise((resolve, reject) => {
       const uuid = URL.createObjectURL(fileAsBlob(file));
 

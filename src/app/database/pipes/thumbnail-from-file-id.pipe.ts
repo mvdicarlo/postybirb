@@ -9,7 +9,7 @@ export class ThumbnailFromFileIdPipe implements PipeTransform {
 
   constructor(private _generatedThumbnailDB: GeneratedThumbnailDBService) {}
 
-  async transform(submissionFileId: number): Promise<Uint8Array> {
+  async transform(submissionFileId: number): Promise<Blob> {
     const files: IGeneratedThumbnail[] = await this._generatedThumbnailDB.getThumbnailBySubmissionFileId(submissionFileId);
     if (files && files.length) {
       return files.shift().buffer;
