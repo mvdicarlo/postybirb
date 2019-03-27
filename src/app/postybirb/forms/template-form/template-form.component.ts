@@ -103,7 +103,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
       .subscribe(templateName => {
         if (templateName) {
           this.loadedTemplateName = templateName;
-          this._templateManager.createTemplate(templateName.trim(), this.formDataForm.value);
+          this._templateManager.createTemplate(templateName.trim(), JSON.parse(JSON.stringify(this.formDataForm.value)));
         }
       });
   }
