@@ -6,10 +6,9 @@ import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-d
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
+import { readFileMetadata, FileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
-import { ModifiedReadFile } from '../../layouts/postybirb-layout/postybirb-layout.component';
 import { MBtoBytes, isImage } from 'src/app/utils/helpers/file.helper';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
@@ -94,10 +93,10 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
-      const loadPromises: Promise<ReadFile>[] = [];
+      const loadPromises: Promise<FileMetadata>[] = [];
       for (let i = 0; i < files.length; i++) {
         if (isImage(files[i])) {
-          loadPromises.push(readFile(files[i]));
+          loadPromises.push(readFileMetadata(files[i]));
         }
       }
 
@@ -215,8 +214,8 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       this.hideForReload = true;
 
       this._changeDetector.markForCheck();
-      readFile(files[0])
-        .then((data: ModifiedReadFile) => {
+      readFileMetadata(files[0], false)
+        .then((data: FileMetadata) => {
           this.dialog.open(ImageCropperDialog, {
             data: data.buffer,
             maxWidth: '100vw',
@@ -228,7 +227,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
               if (buffer) {
                 data.buffer = buffer;
                 if (this.submission.fileMap.THUMBNAIL) { // Update file
-                  this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data)
+                  this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data, true)
                     .then(() => {
                       this.hideForReload = false;
                       this.loading = false;

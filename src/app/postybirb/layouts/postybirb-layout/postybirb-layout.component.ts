@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material';
-import { readFile, ReadFile } from 'src/app/utils/helpers/file-reader.helper';
+import { FileMetadata, readFileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { CollectSubmissionInfoDialog } from '../../components/collect-submission-info-dialog/collect-submission-info-dialog.component';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
@@ -17,17 +17,7 @@ import { PostQueueService } from '../../services/post-queue.service';
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { ScheduledSubmissionManagerService } from '../../services/scheduled-submission-manager.service';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
-
-export interface ModifiedReadFile extends ReadFile {
-  title?: string;
-  rating?: string;
-  schedule?: Date;
-  height?: number;
-  width?: number;
-  originalWidth?: number;
-  originalHeight?: number;
-  formData?: any;
-}
+import { arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 
 @Component({
   selector: 'postybirb-layout',
@@ -124,13 +114,13 @@ export class PostybirbLayout implements OnInit, OnDestroy {
       });
   }
 
-  public createNewSubmission(submissionFiles: ReadFile[] = []): void {
+  public createNewSubmission(submissionFiles: FileMetadata[] = []): void {
     if (submissionFiles && submissionFiles.length) {
       this.dialog.open(CollectSubmissionInfoDialog, {
         data: submissionFiles,
         minWidth: '50vw'
       }).afterClosed()
-        .subscribe((results: ModifiedReadFile[]) => {
+        .subscribe((results: FileMetadata[]) => {
           if (results && results.length) {
             this.loading = true;
             this._changeDetector.markForCheck();
@@ -224,13 +214,19 @@ export class PostybirbLayout implements OnInit, OnDestroy {
 
     if (availableFormats.includes('image/png')) {
       const buffer: Uint8Array = new Uint8Array(content.toJPEG(100));
+      const size = content.getSize();
+      const file: any = arrayBufferAsBlob(buffer, 'image/jpeg')
+      file.name = 'unknown.jpeg';
+      
       this.createNewSubmission([{
         buffer,
-        file: <any>{
-          size: buffer.length,
-          name: 'unknown.jpeg',
-          type: 'image/jpeg'
-        }
+        file,
+        originalWidth: size.width,
+        originalHeight: size.height,
+        width: size.width,
+        height: size.height,
+        isImage: true,
+        isGIF: false
       }]);
     }
   }
@@ -273,9 +269,9 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
-      const loadPromises: Promise<ReadFile>[] = [];
+      const loadPromises: Promise<FileMetadata>[] = [];
       for (let i = 0; i < files.length; i++) {
-        loadPromises.push(readFile(files[i]));
+        loadPromises.push(readFileMetadata(files[i]));
       }
 
       Promise.all(loadPromises)

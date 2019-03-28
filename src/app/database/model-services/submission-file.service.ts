@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { DatabaseService } from '../services/database.service';
 import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType, asFileObject } from '../tables/submission-file.table';
-import { ModifiedReadFile } from 'src/app/postybirb/layouts/postybirb-layout/postybirb-layout.component';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
-import { ReadFile } from 'src/app/utils/helpers/file-reader.helper';
+import { FileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { isImage, isType, isGIF, arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
@@ -15,8 +14,8 @@ export class SubmissionFileDBService extends DatabaseService {
     super();
   }
 
-  public createSubmissionFiles(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): Promise<ISubmissionFile[]> {
-    return new Promise((resolve, reject) => {
+  public createSubmissionFiles(submissionId: number, fileType: SubmissionFileType, files: FileMetadata[]): Promise<ISubmissionFile[]> {
+    return new Promise((resolve) => {
       const models = this._convertToModel(submissionId, fileType, files);
       this.connection.insert({
         into: SubmissionFileTableName,
@@ -96,11 +95,11 @@ export class SubmissionFileDBService extends DatabaseService {
     });
   }
 
-  public async updateSubmissionFileById(submissionFileId: number, file: ReadFile): Promise<any> {
+  public async updateSubmissionFileById(submissionFileId: number, file: FileMetadata, useBuffer: boolean = false): Promise<any> {
     await this.connection.update({
       in: SubmissionFileTableName,
       set: {
-        buffer: file.buffer,
+        buffer: !useBuffer ? file.file : arrayBufferAsBlob(file.buffer, file.file.type),
         fileInfo: asFileObject(file.file)
       },
       where: {
@@ -111,12 +110,14 @@ export class SubmissionFileDBService extends DatabaseService {
     return this._generatedThumbnailDB.regenerateThumbnails(await this.getSubmissionFilesById(submissionFileId));
   }
 
-  private _convertToModel(submissionId: number, fileType: SubmissionFileType, files: ModifiedReadFile[]): ISubmissionFile[] {
+  private _convertToModel(submissionId: number, fileType: SubmissionFileType, files: FileMetadata[]): ISubmissionFile[] {
     const modelObjs: ISubmissionFile[] = [];
     for (let i = 0; i < files.length; i++) {
-      const file: ModifiedReadFile = files[i];
+      const file: FileMetadata = files[i];
 
-      if (isImage(file.file) && file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
+      let altered: boolean = false;
+
+      if (file.isImage && !file.isGIF && file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
         const ni = nativeImage.createFromBuffer(Buffer.from(file.buffer))
         const resizedNi = ni.resize({
           width: Math.min(Number(file.width), Number(file.originalWidth)),
@@ -126,15 +127,17 @@ export class SubmissionFileDBService extends DatabaseService {
 
         if (isType(file.file, 'png')) {
           file.buffer = new Uint8Array(resizedNi.toPNG());
-        } else if (!isGIF(file.file)) {
+        } else if (!file.isGIF) {
           file.buffer = new Uint8Array(resizedNi.toJPEG(100));
         }
+
+        altered = true;
       }
 
       modelObjs.push({
         id: undefined,
         submissionId,
-        buffer: arrayBufferAsBlob(file.buffer, file.file.type),
+        buffer: altered || file.buffer instanceof Uint8Array ? arrayBufferAsBlob(file.buffer, file.file.type) : file.file,
         fileInfo: asFileObject(file.file),
         fileType
       });

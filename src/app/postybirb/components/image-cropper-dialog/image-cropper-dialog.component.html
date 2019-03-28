@@ -8,15 +8,16 @@
     </div>
   </div>
 </div>
-<div mat-dialog-content style="height: calc(100vh - 150px);">
-  <image-cropper format="jpeg" (imageCropped)="cropped($event)" outputType="base64" [imageBase64]="base64" [aspectRatio]="ratio" [maintainAspectRatio]="true"></image-cropper>
+<div mat-dialog-content style="height: calc(100vh - 150px); max-height: calc(100vh - 150px);">
   <div>
     <mat-radio-group (change)="changeRatio($event)">
-      <mat-radio-button [value]="1/1" selected>1:1</mat-radio-button>
+      <mat-radio-button [value]="originalRatio">Unset</mat-radio-button>
+      <mat-radio-button [value]="1/1">1:1</mat-radio-button>
       <mat-radio-button [value]="4/3">4:3</mat-radio-button>
       <mat-radio-button [value]="16/9">16:9</mat-radio-button>
     </mat-radio-group>
   </div>
+  <image-cropper [imageQuality]="100" format="jpeg" (imageCropped)="cropped($event)" outputType="base64" [imageBase64]="base64" [aspectRatio]="ratio" [maintainAspectRatio]="true"></image-cropper>
 </div>
 <div mat-dialog-actions class="confirm-actions">
   <button mat-flat-button [mat-dialog-close]="false" color="warn" class="no-button">{{ 'Cancel' | translate }}</button>

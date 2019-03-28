@@ -6,7 +6,7 @@ import { SubmissionDBService } from 'src/app/database/model-services/submission.
 import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.table';
-import { readFile } from 'src/app/utils/helpers/file-reader.helper';
+import { readFileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { TabManager } from '../../services/tab-manager.service';
 import { Subscription } from 'rxjs';
@@ -101,7 +101,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       this.hideForReload = true;
 
       this._changeDetector.markForCheck();
-      readFile(files[0])
+      readFileMetadata(files[0], false)
         .then(data => {
           this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.PRIMARY, data)
             .then(() => {
