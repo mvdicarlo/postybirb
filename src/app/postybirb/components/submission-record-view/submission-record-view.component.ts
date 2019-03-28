@@ -15,6 +15,7 @@ import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.
 import { PostQueueService } from '../../services/post-queue.service';
 import { SubmissionSelectDialog } from '../submission-select-dialog/submission-select-dialog.component';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'submission-record-view',
@@ -85,7 +86,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   private _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.submission.formData = JSON.parse(JSON.stringify(submission.formData || <any>{}));
+    if (submission.formData) this.submission.formData = copyObject(submission.formData || <any>{});
     if (submission.rating) this.submission.rating = submission.rating;
     this._changeDetector.markForCheck();
   }

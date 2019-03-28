@@ -173,16 +173,18 @@ export class Submission implements ISubmission {
 
   public asISubmission(): ISubmission {
     const { id, rating, title, schedule, submissionType, fileInfo, fileMap, formData } = this;
-    return {
-      id,
-      rating,
-      title,
-      schedule,
-      submissionType,
-      fileInfo,
-      fileMap,
-      formData
-    };
+    return JSON.parse(JSON.stringify(
+      {
+        id,
+        rating,
+        title,
+        schedule,
+        submissionType,
+        fileInfo,
+        fileMap,
+        formData
+      }
+    )); // using stringify/parse to ensure unique object
   }
 
   /**

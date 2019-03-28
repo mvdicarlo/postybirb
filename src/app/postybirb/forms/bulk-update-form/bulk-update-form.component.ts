@@ -6,6 +6,7 @@ import { SubmissionSelectDialog } from '../../components/submission-select-dialo
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'bulk-update-form',
@@ -66,7 +67,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
       .subscribe((submissions: ISubmission[]) => {
         if (submissions && submissions.length) {
           submissions.forEach(submission => {
-            this._submissionCache.get(submission.id).formData = JSON.parse(JSON.stringify(this.formDataForm.value));
+            this._submissionCache.get(submission.id).formData = copyObject(this.formDataForm.value);
           });
         }
 

@@ -19,6 +19,7 @@ import { TemplateSelectDialog } from 'src/app/templates/components/template-sele
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
 import * as dotProp from 'dot-prop';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'base-submission-form',
@@ -140,7 +141,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   }
 
   protected _copySubmission(submission: ISubmission): void {
-    if (submission.formData) JSON.parse(JSON.stringify(this.formDataForm.patchValue(submission.formData || {})));
+    if (submission.formData) this.formDataForm.patchValue(copyObject(submission.formData || {}));
     if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
     this._changeDetector.markForCheck();
   }

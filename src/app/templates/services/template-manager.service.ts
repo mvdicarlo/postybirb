@@ -6,6 +6,7 @@ import { Injectable } from '@angular/core';
 import * as nanoid from 'nanoid';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Template } from '../interfaces/template.interface';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -69,7 +70,7 @@ export class TemplateManagerService {
         .push({
           id: nanoid(),
           name,
-          data
+          data: copyObject(data)
         })
         .write();
 
@@ -87,7 +88,9 @@ export class TemplateManagerService {
   public updateTemplate(name: string, data: any): void {
     this.db.get(this.TEMPLATE_FIELD)
       .find({ name })
-      .assign({ data })
+      .assign({
+        data: copyObject(data)
+       })
       .write();
 
     this._notifyAll();
@@ -97,6 +100,6 @@ export class TemplateManagerService {
    * Returns all existing templates sorted by name
    */
   public getTemplates(): Template[] {
-    return JSON.parse(JSON.stringify(this.db.get(this.TEMPLATE_FIELD).sortBy('name').value() || []));
+    return copyObject(this.db.get(this.TEMPLATE_FIELD).sortBy('name').value() || []);
   }
 }

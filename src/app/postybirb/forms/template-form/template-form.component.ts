@@ -8,6 +8,7 @@ import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-website
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { TemplateManagementDialog } from 'src/app/templates/components/template-management-dialog/template-management-dialog.component';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'template-form',
@@ -103,7 +104,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
       .subscribe(templateName => {
         if (templateName) {
           this.loadedTemplateName = templateName;
-          this._templateManager.createTemplate(templateName.trim(), JSON.parse(JSON.stringify(this.formDataForm.value)));
+          this._templateManager.createTemplate(templateName.trim(), copyObject(this.formDataForm.value));
         }
       });
   }

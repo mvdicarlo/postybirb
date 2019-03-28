@@ -3,6 +3,7 @@ import { TemplateManagerService } from '../../services/template-manager.service'
 import { Template } from '../../interfaces/template.interface';
 import { FormControl, Validators } from '@angular/forms';
 import { SubmissionCache } from 'src/app/database/services/submission-cache.service';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'template-select-dialog',
@@ -18,7 +19,7 @@ export class TemplateSelectDialog {
     this.templates = templateManager.getTemplates();
     this.submissions = submissionCache.getAll().map(s => {
       return {
-        data: JSON.parse(JSON.stringify(s.formData)),
+        data: copyObject(s.formData),
         name: s.title,
         id: undefined
       }

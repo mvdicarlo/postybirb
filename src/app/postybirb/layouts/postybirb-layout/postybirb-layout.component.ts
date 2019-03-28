@@ -18,6 +18,7 @@ import { SubmissionSelectDialog } from '../../components/submission-select-dialo
 import { ScheduledSubmissionManagerService } from '../../services/scheduled-submission-manager.service';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'postybirb-layout',
@@ -133,7 +134,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
                   schedule: null,
                   submissionType: SubmissionType.SUBMISSION,
                   fileInfo: asFileObject(result.file),
-                  formData: result.formData || {}
+                  formData: copyObject(result.formData || {}) // ensure no shared reference
                 }
               })
             ).then(insertResults => {
@@ -217,7 +218,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
       const size = content.getSize();
       const file: any = arrayBufferAsBlob(buffer, 'image/jpeg')
       file.name = 'unknown.jpeg';
-      
+
       this.createNewSubmission([{
         buffer,
         file,
