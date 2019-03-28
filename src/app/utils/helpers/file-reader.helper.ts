@@ -19,7 +19,7 @@ export async function readFileMetadata(file: File, withMetadata: boolean = true)
   const data: any = {
     file,
     buffer: new Uint8Array(await new Response(file).arrayBuffer()),
-    title: (file['name'] || '').replace('_', '').split('.').shift(),
+    title: (file['name'] || '').replace('_', ' ').split('.').shift(),
     isImage: isImage(file),
     isGIF: isGIF(file)
   };

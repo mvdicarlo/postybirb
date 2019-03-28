@@ -27,7 +27,7 @@
               <mat-option *ngFor="let template of templates" [value]="template.data">{{ template.name }}</mat-option>
             </mat-select>
           </mat-form-field>
-          <div class="col resize" *ngIf="d.isImage && !d.isGIF">
+          <div class="col resize" *ngIf="d.isImage && !d.isGIF && d.width">
             <mat-form-field color="accent">
               <input #width matInput type="number" name="width" placeholder="W" [(ngModel)]="d.width" min="25">
             </mat-form-field>
