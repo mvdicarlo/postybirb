@@ -207,7 +207,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
           return;
         }
 
-        this.tagControl.patchValue([...this.value.tags, tag].sort());
+        this.tagControl.patchValue([...this.value.tags, tag]);
       }
     }
   }
