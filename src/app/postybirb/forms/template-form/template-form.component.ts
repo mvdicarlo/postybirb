@@ -50,6 +50,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
     }).afterClosed()
       .subscribe(doClear => {
         if (doClear) {
+          this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
           this.formDataForm.reset();
           this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
@@ -63,8 +64,11 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
       .afterClosed()
       .subscribe(template => {
         if (template) {
+          this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
+          this.formDataForm.reset();
+          this.resetSubject.next();
           this.loadedTemplateName = template.name;
-          this.formDataForm.patchValue(template.data);
+          this.formDataForm.patchValue(copyObject(template.data));
         }
       });
   }

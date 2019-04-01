@@ -117,7 +117,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       }));
     });
 
-    this.formDataForm.patchValue(this.submission.formData || {});
+    this.formDataForm.patchValue(copyObject(this.submission.formData) || {});
 
     this.formDataForm.controls.loginProfile.valueChanges
       .pipe(debounceTime(100))
@@ -132,7 +132,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this.formDataForm.valueChanges
       .pipe(debounceTime(300))
       .subscribe(changes => {
-        this._formUpdated(changes);
+        this._formUpdated(copyObject(changes));
       });
   }
 
@@ -162,9 +162,9 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         if (template) {
           for (let i = 0; i < paths.length; i++) {
             const path = paths[i];
-            dotProp.set(this.submission.formData, path, dotProp.get(template.data, path));
+            dotProp.set(this.submission.formData, path, dotProp.get(copyObject(template.data), path));
           }
-          this.formDataForm.patchValue(this.submission.formData);
+          this.formDataForm.patchValue(copyObject(this.submission.formData));
           this._changeDetector.markForCheck();
         }
       });
@@ -189,7 +189,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe(template => {
         if (template) {
-          this.formDataForm.patchValue(template.data);
+          this.formDataForm.patchValue(copyObject(template.data));
         }
       });
   }
@@ -234,7 +234,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     }).afterClosed()
       .subscribe(templateName => {
         if (templateName) {
-          this._templateManager.createTemplate(templateName.trim(), this.formDataForm.value);
+          this._templateManager.createTemplate(templateName.trim(), copyObject(this.formDataForm.value));
         }
       });
   }

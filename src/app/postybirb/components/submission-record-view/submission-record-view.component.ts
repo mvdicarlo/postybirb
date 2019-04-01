@@ -181,7 +181,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       .afterClosed()
       .subscribe(template => {
         if (template) {
-          if (template.data) this.submission.formData = template.data;
+          if (template.data) this.submission.formData = copyObject(template.data);
           this._changeDetector.markForCheck();
         }
       });

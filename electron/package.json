@@ -1,6 +1,6 @@
 {
   "name": "postybirb",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "postybirb crossposter nodejs angular electronjs electron",
   "main": "main.js",
   "scripts": {

@@ -48,6 +48,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
     }).afterClosed()
       .subscribe(doClear => {
         if (doClear) {
+          this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
           this.formDataForm.reset();
           this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
