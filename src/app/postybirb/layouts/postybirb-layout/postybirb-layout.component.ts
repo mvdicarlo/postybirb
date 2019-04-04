@@ -19,6 +19,7 @@ import { ScheduledSubmissionManagerService } from '../../services/scheduled-subm
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
+import { QueueInserterService } from '../../services/queue-inserter.service';
 
 @Component({
   selector: 'postybirb-layout',
@@ -56,6 +57,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     private _submissionFileDBService: SubmissionFileDBService,
     public _tabManager: TabManager,
     public _postQueue: PostQueueService,
+    public _queueInserter: QueueInserterService,
     private _changeDetector: ChangeDetectorRef,
     _scheduler: ScheduledSubmissionManagerService // only called so it will be instantiated
   ) {
@@ -110,7 +112,8 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     }).afterClosed()
       .subscribe(result => {
         if (result) {
-          this.queuedSubmissions.forEach(qs => qs.queued = false);
+          this.queuedSubmissions
+          .forEach(qs => this._queueInserter.dequeue(qs));
         }
       });
   }
@@ -245,7 +248,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
           this._changeDetector.markForCheck();
           deletes.forEach(d => {
             const deletedSubmission = this._submissionCache.get(d.id);
-            deletedSubmission.queued = false;
+            this._queueInserter.dequeue(deletedSubmission);
             deletedSubmission.cleanUp();
             this._tabManager.removeTab(d.id);
           });
@@ -312,7 +315,8 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     }).afterClosed()
       .subscribe(results => {
         if (results && results.length) {
-          results.forEach((submission: ISubmission) => this._postQueue.enqueue(this._submissionCache.get(submission.id)));
+          results
+          .forEach((submission: ISubmission) => this._queueInserter.queue(this._submissionCache.get(submission.id)));
         }
 
         this.loading = false;

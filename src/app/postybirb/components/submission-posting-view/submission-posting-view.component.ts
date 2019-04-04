@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Input, ChangeDetectorRef, ChangeDetection
 import { Submission } from 'src/app/database/models/submission.model';
 import { PostQueueService } from '../../services/post-queue.service';
 import { Subscription } from 'rxjs';
+import { QueueInserterService } from '../../services/queue-inserter.service';
 
 @Component({
   selector: 'submission-posting-view',
@@ -16,7 +17,7 @@ export class SubmissionPostingViewComponent implements OnInit, OnDestroy {
   public wait: Date;
   public postingWebsite: string;
 
-  constructor(private _postQueue: PostQueueService, private _changeDetector: ChangeDetectorRef) { }
+  constructor(private _postQueue: PostQueueService, private _queueInserter: QueueInserterService, private _changeDetector: ChangeDetectorRef) { }
 
   ngOnInit() {
     this.queueListener = this._postQueue.statusUpdates.subscribe(update => {
@@ -37,7 +38,7 @@ export class SubmissionPostingViewComponent implements OnInit, OnDestroy {
   }
 
   public cancel(): void {
-    this._postQueue.dequeue(this.submission.id);
+    this._queueInserter.dequeue(this.submission);
   }
 
   public getProgress(): number {

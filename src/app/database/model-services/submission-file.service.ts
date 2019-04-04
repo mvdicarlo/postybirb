@@ -77,6 +77,28 @@ export class SubmissionFileDBService extends DatabaseService {
     return [];
   }
 
+  public async duplicateById(id: number, type: SubmissionFileType, submissionId: number): Promise<ISubmissionFile> {
+    const files = <ISubmissionFile[]>await this.connection.select({
+      from: SubmissionFileTableName,
+      where: {
+        id
+      }
+    });
+
+    delete files[0].id;
+    files[0].fileType = type;
+    files[0].submissionId = submissionId;
+    const createdFiles = <ISubmissionFile[]>await this.connection.insert({
+      into: SubmissionFileTableName,
+      values: files,
+      return:  true
+    });
+
+    await this._generatedThumbnailDB.createThumbnails(createdFiles);
+
+    return createdFiles[0];
+  }
+
   public getFilesBySubmissionId(submissionId: number): Promise<ISubmissionFile[]> {
     return this.connection.select({
       from: SubmissionFileTableName,

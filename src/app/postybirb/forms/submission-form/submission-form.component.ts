@@ -143,14 +143,10 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       });
   }
 
-  public canHaveAdditionalImages(): boolean {
-    const websites: string[] = this.formDataForm.value.websites || [];
-    for (let i = 0; i < websites.length; i++) {
-      const config = WebsiteRegistry.getConfigForRegistry(websites[i]).websiteConfig;
-      if (config.additionalImages) return true;
-    }
-
-    return false;
+  public canHaveAdditionalImages(decision: boolean): string[] {
+    return WebsiteRegistry.getRegisteredAsArray().
+      filter(entry => !!entry.websiteConfig.additionalImages === decision)
+      .map(entry => entry.websiteConfig.displayedName);
   }
 
   public delete(): void {

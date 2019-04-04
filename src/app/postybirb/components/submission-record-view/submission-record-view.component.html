@@ -19,7 +19,7 @@
 
   </div>
   <div class="control-btns row no-gutters">
-    <div class="col">
+    <div class="col" style="min-width: 50px">
       <button class="btn btn-sm bordered" [class.btn-link]="!editing" [class.btn-secondary]="editing" [class.clear-border]="editing" [matTooltip]="'Edit' | translate" (click)="toggleEditing()">
         <mat-icon>edit</mat-icon>
       </button>
@@ -33,6 +33,11 @@
     <div class="col">
       <button class="btn btn-sm btn-link bordered" [matMenuTriggerFor]="additionalMenu" [matTooltip]="'More' | translate">
         <mat-icon>expand_more</mat-icon>
+      </button>
+    </div>
+    <div class="col" *ngIf="hasAdditionalFiles()">
+      <button class="btn btn-sm btn-link bordered" (click)="splitSubmission()" [matTooltip]="'Split Additional Images Into New Submissions' | translate">
+        <mat-icon>call_split</mat-icon>
       </button>
     </div>
   </div>

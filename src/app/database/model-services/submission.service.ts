@@ -146,6 +146,13 @@ export class SubmissionDBService extends DatabaseService {
     }
   }
 
+  /**
+  * Forcibly call the notify subject. Should only be used when new submissions are created outside of the normal flow.
+  **/
+  public notifyListeners(): void {
+    this.notifySubject.next();
+  }
+
   private _updateScheduleWriter(): void {
     this._scheduleWriter.update(this._cache.getAll());
   }

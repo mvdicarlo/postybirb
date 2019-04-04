@@ -24,7 +24,6 @@ export interface PostQueueStatus {
 })
 export class PostQueueService {
   private queue: Submission[] = [];
-  private queuedListeners: { [key: number]: Subscription } = {};
   private posting: Submission;
   private useWaitIntervalIfSet: boolean = false;
   private timeout: any;
@@ -77,20 +76,6 @@ export class PostQueueService {
       submission.postStats.fail = [];
       submission.postStats.success = [];
 
-      this.queuedListeners[submission.id] = submission.changes
-        .subscribe((change: SubmissionChange) => {
-          if (change.queued) {
-            if (!submission.queued) {
-              this.dequeue(submission.id);
-            }
-          }
-        }, () => { }, () => {
-          if (this.queuedListeners[submission.id]) {
-            this.queuedListeners[submission.id].unsubscribe();
-            delete this.queuedListeners[submission.id];
-          }
-        });
-
       this._checkQueueForNextPost();
     }
 
@@ -98,11 +83,6 @@ export class PostQueueService {
   }
 
   public dequeue(id: number): void {
-    if (this.queuedListeners[id]) {
-      this.queuedListeners[id].unsubscribe();
-      delete this.queuedListeners[id];
-    }
-
     const index: number = this.queue.findIndex(submission => submission.id === id);
     if (index !== -1) {
       this.queue[index].queued = false;

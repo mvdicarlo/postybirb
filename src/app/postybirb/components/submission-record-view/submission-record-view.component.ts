@@ -12,10 +12,10 @@ import { TabManager } from '../../services/tab-manager.service';
 import { Subscription } from 'rxjs';
 import { asFileObject } from 'src/app/database/tables/submission-file.table';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
-import { PostQueueService } from '../../services/post-queue.service';
 import { SubmissionSelectDialog } from '../submission-select-dialog/submission-select-dialog.component';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
+import { QueueInserterService } from '../../services/queue-inserter.service';
 
 @Component({
   selector: 'submission-record-view',
@@ -38,7 +38,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     private _submissionFileDB: SubmissionFileDBService,
     private _tabManager: TabManager,
     private dialog: MatDialog,
-    private _postQueue: PostQueueService,
+    private _queueInserter: QueueInserterService,
     fb: FormBuilder) {
     this.form = fb.group({
       title: [null],
@@ -128,6 +128,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
         if (result) {
           this.loading = true;
           this._changeDetector.markForCheck();
+          this._queueInserter.dequeue(this.submission);
           this.submission.cleanUp();
           this._tabManager.removeTab(this.submission.id);
           this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
@@ -167,13 +168,17 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
     }).afterClosed()
       .subscribe(result => {
         if (result) {
-          if (this.submission.schedule) {
-            this.submission.isScheduled = true;
-          } else {
-            this._postQueue.enqueue(this.submission);
-          }
+          this._queueInserter.queue(this.submission);
         }
       });
+  }
+
+  public hasAdditionalFiles(): boolean {
+    if (this.submission.fileMap.ADDITIONAL) {
+      if (this.submission.fileMap.ADDITIONAL.length) return true;
+    }
+
+    return false;
   }
 
   public loadTemplate(): void {
@@ -202,9 +207,20 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       });
   }
 
+  public splitSubmission(): void {
+    this.loading = true;
+    this._changeDetector.markForCheck();
+    this._queueInserter.splitSubmission(this.submission)
+      .then(() => { })
+      .catch((err) => { console.error(err) })
+      .finally(() => {
+        this.loading = false;
+        this._changeDetector.markForCheck();
+      });
+  }
+
   public stopPosting(): void {
-    this.submission.queued = false;
-    this.submission.isScheduled = false;
+    this._queueInserter.dequeue(this.submission);
   }
 
   public toggleEditing(): void {

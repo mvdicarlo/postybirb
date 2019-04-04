@@ -14,12 +14,12 @@ import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile
 import { debounceTime } from 'rxjs/operators';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
-import { PostQueueService } from '../../services/post-queue.service';
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
 import { InputDialog } from 'src/app/utils/components/input-dialog/input-dialog.component';
 import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
 import * as dotProp from 'dot-prop';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
+import { QueueInserterService } from '../../services/queue-inserter.service';
 
 @Component({
   selector: 'base-submission-form',
@@ -48,7 +48,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   protected _changeDetector: ChangeDetectorRef;
   protected dialog: MatDialog;
   protected _fb: FormBuilder;
-  protected _postQueue: PostQueueService;
+  protected _queueInserter: QueueInserterService;
   protected _loginManager: LoginManagerService;
   protected _loginProfileManager: LoginProfileManagerService;
   protected _templateManager: TemplateManagerService;
@@ -59,7 +59,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this._loginManager = injector.get(LoginManagerService);
     this._fb = injector.get(FormBuilder);
     this._loginProfileManager = injector.get(LoginProfileManagerService);
-    this._postQueue = injector.get(PostQueueService);
+    this._queueInserter = injector.get(QueueInserterService);
     this._templateManager = injector.get(TemplateManagerService);
 
     this.loginListener = this._loginManager.statusChanges.subscribe(statuses => {
@@ -214,11 +214,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       }).afterClosed()
         .subscribe(result => {
           if (result) {
-            if (this.submission.schedule) {
-              this.submission.isScheduled = true;
-            } else {
-              this._postQueue.enqueue(this.submission);
-            }
+            this._queueInserter.queue(this.submission);
           }
         });
     }

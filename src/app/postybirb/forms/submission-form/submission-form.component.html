@@ -69,7 +69,7 @@
           <tag-input #defaultTags formControlName="tags" class="w-100" [canExtend]="false"></tag-input>
         </div>
 
-        <mat-accordion *ngIf="canHaveAdditionalImages()" class="d-block my-3">
+        <mat-accordion *ngIf="formDataForm.value.websites && formDataForm.value.websites.length" class="d-block my-3">
           <mat-expansion-panel #additionalImagesPanel>
             <mat-expansion-panel-header>
               <mat-panel-title style="min-width: 400px">
@@ -78,6 +78,10 @@
               </mat-panel-title>
             </mat-expansion-panel-header>
             <div *ngIf="additionalImagesPanel.expanded" class="text-center">
+              <div class="text-left">
+                <div class="text-success"><strong class="mr-2">{{ 'Yes' | translate }}:</strong>{{ canHaveAdditionalImages(true).join(', ') }}</div>
+                <div class="text-danger"><strong class="mr-2">{{ 'No' | translate }}:</strong><s>{{ canHaveAdditionalImages(false).join(', ') }}</s></div>
+              </div>
               <button mat-flat-button color="accent" (click)="additionalImageInput.click()" class="w-100 mt-2">
                 <mat-icon>add</mat-icon>
               </button>

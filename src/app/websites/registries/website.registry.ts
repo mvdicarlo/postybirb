@@ -19,6 +19,12 @@ export class WebsiteRegistry {
     return objMap;
   }
 
+  public static getRegisteredAsArray(): WebsiteRegistryConfig[] {
+    const arr: WebsiteRegistryConfig[] = [];
+    WebsiteRegistry.registeredWebsites.forEach((value, key) => arr.push(value));
+    return arr;
+  }
+
   public static getConfigForRegistry(name: string): WebsiteRegistryConfig {
     return this.registeredWebsites.get(name);
   }

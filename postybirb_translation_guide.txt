@@ -553,6 +553,12 @@ TRANSLATOR: <Person to be credited>
 }
 
 {
+  "Internal": "Split Additional Image Info",
+  "Translate Me": "Not all websites support bulk images. This will split this submission into new submissions for the below websites.",
+  "Translated": ""
+}
+
+{
   "Internal": "Notify",
   "Translate Me": "Notify",
   "Context": "Common website option. Whether or not to notify watchers (DA, IB, Weasyl)",
@@ -765,6 +771,12 @@ TRANSLATOR: <Person to be credited>
   "Internal": "Species",
   "Translate Me": "Species",
   "Context": "FurAffinity species category option",
+  "Translated": ""
+}
+
+{
+  "Internal": "Split Additional Images Into New Submissions",
+  "Translate Me": "Split Additional Images Into New Submissions",
   "Translated": ""
 }
 
