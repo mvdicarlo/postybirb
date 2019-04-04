@@ -57,17 +57,17 @@ export class PostManagerService {
                 };
 
                 // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
-                setTimeout(() => {
-                  let rand = Math.floor(Math.random() * 100);
-                  rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
-                });
+                // setTimeout(() => {
+                //   let rand = Math.floor(Math.random() * 100);
+                //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
+                // });
 
-                // this.serviceMap.get(website).post(submissionToPost, postObject)
-                //   .then(res => {
-                //     resolve(res);
-                //   }).catch(err => {
-                //     reject(err);
-                //   });
+                this.serviceMap.get(website).post(submissionToPost, postObject)
+                  .then(res => {
+                    resolve(res);
+                  }).catch(err => {
+                    reject(err);
+                  });
               } catch (error) {
                 reject({ msg: 'An internal error occurred', error });
               }
