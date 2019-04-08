@@ -76,8 +76,9 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       if (change.title) this.basicInfoForm.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.basicInfoForm.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.basicInfoForm.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
-      if (change.fileInfo) {
-        this.typeOfSubmission = getTypeOfSubmission(change.fileInfo.current);
+      if (change.fileInfo) this.typeOfSubmission = getTypeOfSubmission(change.fileInfo.current);
+      if (change.copy) {
+        this.formDataForm.patchValue(this.submission.formData || {}, { emitEvent: false });
       }
       this._changeDetector.markForCheck();
     });
@@ -161,6 +162,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
           this.submission.cleanUp();
           this._tabManager.removeTab(this.submission.id);
           this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
+          this._queueInserter.dequeue(this.submission);
         }
       });
   }

@@ -141,9 +141,15 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   }
 
   protected _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.formDataForm.patchValue(copyObject(submission.formData || {}));
+    if (submission.formData) this._safeLoadFormData(submission.formData);
     if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
     this._changeDetector.markForCheck();
+  }
+
+  private _safeLoadFormData(formData: any): void {
+    const copy = copyObject(formData || {});
+    this.submission.formData = copy; // need to set this first due to how base-website-submission populate data
+    this.formDataForm.patchValue(copy);
   }
 
   public getLoginProfileId(): string {
@@ -189,7 +195,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe(template => {
         if (template) {
-          this.formDataForm.patchValue(copyObject(template.data));
+          this._safeLoadFormData(template.data)
         }
       });
   }

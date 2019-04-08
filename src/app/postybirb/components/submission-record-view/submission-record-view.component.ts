@@ -86,7 +86,10 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   private _copySubmission(submission: ISubmission): void {
-    if (submission.formData) this.submission.formData = copyObject(submission.formData || <any>{});
+    if (submission.formData) {
+      this.submission.formData = copyObject(submission.formData || <any>{});
+      this.submission.flagUpdate('copy');
+    }
     if (submission.rating) this.submission.rating = submission.rating;
     this._changeDetector.markForCheck();
   }
@@ -186,7 +189,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       .afterClosed()
       .subscribe(template => {
         if (template) {
-          if (template.data) this.submission.formData = copyObject(template.data);
+          if (template.data) this._copySubmission(template.data);
           this._changeDetector.markForCheck();
         }
       });

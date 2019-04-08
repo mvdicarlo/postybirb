@@ -68,7 +68,9 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
           this.formDataForm.reset();
           this.resetSubject.next();
           this.loadedTemplateName = template.name;
-          this.formDataForm.patchValue(copyObject(template.data));
+          const copy = copyObject(template.data);
+          this.submission.formData = copy;
+          this.formDataForm.patchValue(copy);
         }
       });
   }
