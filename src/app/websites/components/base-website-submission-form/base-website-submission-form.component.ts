@@ -38,8 +38,11 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
     this.websiteService = this.injector.get(this.config.class);
     this.formGroup = <FormGroup>this.controlContainer.control.get(this.website);
     this.resetListener = this.parentForm.onReset.subscribe(() => {
+      // Should I just remove the controls instead?
+      this.formGroup.removeControl('tags');
+      this.formGroup.removeControl('description');
       if (this.optionDefaults) {
-        this.formGroup.controls.options.reset(this.optionDefaults);
+        this.formGroup.removeControl('options');
       }
     });
   }
