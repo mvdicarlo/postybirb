@@ -16,7 +16,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   const problems: any[] = [];
 
   const options = dotProp.get(formData, `${Aryion.name}.options`, {});
-  if (!options.reqtag || !options.folderId) {
+  if (!(options.reqtag === 0 || options.reqtag === 1) || !options.folderId) {
     problems.push(['Options are incomplete', { website: 'Aryion' }]);
   }
 

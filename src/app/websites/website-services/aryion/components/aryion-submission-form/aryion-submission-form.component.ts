@@ -37,7 +37,7 @@ export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements O
     if (!this.formGroup.get('options')) {
       this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
       if (this.folders.length) {
-        this.formGroup.controls.options.patchValue({ folderId: (this.folders[0].subfolders[0] || <any>{}).id });
+        this.formGroup.controls.options.patchValue({ folderId: (this.folders[0] || <any>{}).id });
       }
     }
   }
