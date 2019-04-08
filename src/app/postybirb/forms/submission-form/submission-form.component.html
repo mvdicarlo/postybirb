@@ -37,6 +37,11 @@
 
     <div>
       <form [formGroup]="formDataForm">
+        <mat-form-field class="w-50" style="margin-left: 50%" color="accent" *ngIf="submission.fileMap.THUMBNAIL">
+          <mat-select formControlName="excludeThumbnailWebsites" [placeholder]="'Ignore Thumbnail For Websites' | translate" multiple>
+            <mat-option [value]="registry.value.name" *ngFor="let registry of availableWebsites | keyvalue">{{ registry.value.websiteConfig.displayedName }}</mat-option>
+          </mat-select>
+        </mat-form-field>
         <div class="w-100 d-flex">
           <button mat-button color="accent" (click)="openProfileSelect()" class="pl-0">
             <span *ngIf="formDataForm.value.loginProfile">{{ formDataForm.value.loginProfile | profileName }}</span>

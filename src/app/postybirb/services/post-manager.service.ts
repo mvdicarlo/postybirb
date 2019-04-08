@@ -56,6 +56,12 @@ export class PostManagerService {
                   typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
                 };
 
+                // Filter thumbnails on specified excluded websites
+                const excludedThubmanails: string[] = submissionToPost.formData.excludeThumbnailWebsites || [];
+                if (excludedThubmanails.length && excludedThubmanails.includes(website)) {
+                  postObject.thumbnail = undefined;
+                }
+
                 // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
                 // setTimeout(() => {
                 //   let rand = Math.floor(Math.random() * 100);

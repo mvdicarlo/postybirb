@@ -367,6 +367,12 @@ TRANSLATOR: <Person to be credited>
 }
 
 {
+  "Internal": "Ignore Thumbnail For Websites",
+  "Translate Me": "Ignore Thumbnail For Websites",
+  "Translated": ""
+}
+
+{
   "Internal": "Import from existing Template",
   "Translate Me": "Import from existing Template",
   "Translated": ""

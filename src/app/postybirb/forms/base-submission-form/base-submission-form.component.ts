@@ -103,6 +103,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     });
 
     this.formDataForm.addControl('websites', new FormControl([], { updateOn: 'blur', validators: [Validators.required] }));
+    this.formDataForm.addControl('excludeThumbnailWebsites', new FormControl([], { updateOn: 'blur', validators: [] }));
 
     // We want to keep all added websites through the filter so users can remove filtered ones
     if (this.submission.formData && this.submission.formData.websites) {
