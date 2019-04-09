@@ -20,7 +20,7 @@ export class TemplateSelectDialog {
     this.submissions = submissionCache.getAll().map(s => {
       return {
         data: copyObject(s.formData),
-        name: s.title,
+        name: s.title || s.fileInfo.name,
         id: undefined
       }
     });
