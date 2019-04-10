@@ -177,7 +177,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   public hasAdditionalFiles(): boolean {
-    if (this.submission.fileMap.ADDITIONAL) {
+    if (this.submission.fileMap && this.submission.fileMap.ADDITIONAL) {
       if (this.submission.fileMap.ADDITIONAL.length) return true;
     }
 

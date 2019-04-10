@@ -90,7 +90,7 @@ export class Twitter extends BaseWebsiteService {
     const authData = this._profileManager.getData(postData.profileId, Twitter.name);
     const data: any = {
       status: `${options.useTitle ? submission.title + '\n\n' : ''}${postData.description}`.substring(0, 280),
-      medias: [postData.primary, ...postData.additionalFiles].map(f => {
+      medias: [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => {
         return {
           buffer: Buffer.from(f.buffer).toString('base64'),
           type: f.fileInfo.type
