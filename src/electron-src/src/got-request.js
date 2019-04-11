@@ -1,10 +1,23 @@
-const got = require('got');
-const request = require('request');
+const { remote } = require('electron');
+const Got = require('got');
+const Request = require('request');
 const FormData = require('form-data');
 const { CookieJar } = require('tough-cookie');
 const setCookie = require('set-cookie-parser');
 
 const { session } = require('electron').remote;
+
+const got = Got.extend({
+  headers: {
+    'User-Agent': `PostyBirb/${remote.app.getVersion()}`
+  }
+});
+
+const request = Request.defaults({
+  headers: {
+    'User-Agent': `PostyBirb/${remote.app.getVersion()}`
+  }
+});
 
 exports.get = function get(url, cookieUrl, cookies, profileId, options) {
     return new Promise((resolve, reject) => {
