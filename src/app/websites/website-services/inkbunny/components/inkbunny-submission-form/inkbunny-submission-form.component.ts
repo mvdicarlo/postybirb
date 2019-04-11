@@ -1,5 +1,4 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
-import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 

@@ -18,6 +18,7 @@ import { Mastodon } from './website-services/mastodon/mastodon.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
 import { Patreon } from './website-services/patreon/patreon.service';
+import { Piczel } from './website-services/piczel/piczel.service';
 import { Pixiv } from './website-services/pixiv/pixiv.service';
 import { Route50 } from './website-services/route50/route50.service';
 import { SoFurry } from './website-services/sofurry/sofurry.service';
@@ -78,6 +79,7 @@ import { TwitterSubmissionForm } from './website-services/twitter/components/twi
 import { WeasylSubmissionForm } from './website-services/weasyl/components/weasyl-submission-form/weasyl-submission-form.component';
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { WebsiteSubmissionFormDisplayDirective } from './directives/website-submission-form-display.directive';
+import { PiczelSubmissionForm } from './website-services/piczel/components/piczel-submission-form/piczel-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -120,6 +122,7 @@ export function INIT_WEBSITE_REGISTRY() {
     WeasylSubmissionForm,
     WebsiteDisplaynamePipe,
     WebsiteSubmissionFormDisplayDirective,
+    PiczelSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -168,6 +171,7 @@ export function INIT_WEBSITE_REGISTRY() {
     NewgroundsSubmissionForm,
     PaigeeWorldSubmissionForm,
     PatreonSubmissionForm,
+    PiczelSubmissionForm,
     PixivSubmissionForm,
     SofurrySubmissionForm,
     TumblrJournalForm,
@@ -197,6 +201,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Newgrounds,
         PaigeeWorld,
         Patreon,
+        Piczel,
         Pixiv,
         Route50,
         SoFurry,
