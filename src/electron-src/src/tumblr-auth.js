@@ -29,11 +29,11 @@ exports.getAuthURL = function () {
 
 exports.refresh = function (token, secret) {
     return new Promise((resolve, reject) => {
-        request.post({ url: auth.generateAuthUrl('/tumblr/refresh'), form: { token, secret } }, (error, response, body) => {
+        request.post({ url: auth.generateAuthUrl('/tumblr/v1/refresh'), form: { token, secret } }, (error, response, body) => {
             if (error) {
                 resolve(null);
             } else {
-                if (response.statusCode === 500) {
+                if (response.statusCode === 500 || response.statusCode === 400) {
                     resolve(null);
                     return;
                 }
@@ -50,7 +50,7 @@ exports.refresh = function (token, secret) {
 
 
 app.get('/tumblr/auth', (req, res) => {
-    request.get(auth.generateAuthUrl('/tumblr/authorize'), (err, response, body) => {
+    request.get(auth.generateAuthUrl('/tumblr/v1/authorize'), (err, response, body) => {
         if (err) {
             res.redirect(`http://localhost:${expressPort}/tumblr`);
         } else {
@@ -63,10 +63,10 @@ app.get('/tumblr/auth', (req, res) => {
 
 app.get('/tumblr', (req, res) => {
     // Authorize
-    request.post(auth.generateAuthUrl('/tumblr/authorize'), {
+    request.post(auth.generateAuthUrl('/tumblr/v1/authorize'), {
         json: { oauth_token: req.query.oauth_token, secret: tempInfo.secret, oauth_verifier: req.query.oauth_verifier },
     }, (err, response, body) => {
-        if (err) {
+        if (err || response.statusCode === 500) {
             res.send('Error occured while trying to authenticate.');
         } else {
             if (cb) {

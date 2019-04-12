@@ -23,7 +23,7 @@ exports.stop = function () {
 };
 
 exports.getAuthURL = function () {
-    return auth.generateAuthUrl('/deviantart/authorize');
+    return auth.generateAuthUrl('/deviant-art/v1/authorize');
 };
 
 exports.refresh = function (authInfo) {
@@ -62,7 +62,7 @@ exports.refresh = function (authInfo) {
 
 function renew(authInfo) {
     return new Promise((resolve, reject) => {
-        request.post(auth.generateAuthUrl('/deviantart/refresh'), {
+        request.post(auth.generateAuthUrl('/deviant-art/v1/refresh'), {
             json: {
                 refresh_token: authInfo.refresh_token,
             },
@@ -73,8 +73,8 @@ function renew(authInfo) {
             }
 
             try {
-                const json = JSON.parse(body.body);
-                if (json.error) {
+                const json = body;
+                if (json.errors || json.error) {
                     resolve(false);
                 } else {
                     authInfo.created = Date.now();
@@ -93,11 +93,11 @@ app.get('/deviantart', (req, res) => {
 });
 
 function getAccessToken(code) {
-    request.post(auth.generateAuthUrl('/deviantart/accesstoken'), { json: { code } }, (err, response, body) => {
+    request.post(auth.generateAuthUrl('/deviant-art/v1/authorize'), { json: { code } }, (err, response, body) => {
         if (err) {
             cb(null);
         } else {
-            const json = JSON.parse(body.body);
+            const json = body;
             request.get(`https://www.deviantart.com/api/v1/oauth2/user/whoami?mature_content=true&access_token=${json.access_token}`, (err, response, body) => {
                 if (err) {
                     cb(null);

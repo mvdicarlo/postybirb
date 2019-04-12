@@ -10,6 +10,10 @@
 </div>
 <div mat-dialog-content class="ignore-max-content-height">
   <div>
+    <div>
+      <span class="text-danger" *ngIf="!loggedIn">{{ 'Not Logged In' | translate }}</span>
+      <span class="text-success" *ngIf="loggedIn">{{ 'Logged In' | translate }}</span>
+    </div>
     <webview class="webview" #webview webpreferences="nativeWindowOpen=1" allowpopups></webview>
     <button mat-flat-button color="warn" *ngIf="loggedIn" (click)="unauthorize()">{{ 'Unauthorize' | translate}}</button>
   </div>

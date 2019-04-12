@@ -92,7 +92,7 @@ export class Twitter extends BaseWebsiteService {
       status: `${options.useTitle ? submission.title + '\n\n' : ''}${postData.description}`.substring(0, 280),
       medias: [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => {
         return {
-          buffer: Buffer.from(f.buffer).toString('base64'),
+          base64: Buffer.from(f.buffer).toString('base64'),
           type: f.fileInfo.type
         };
       }).slice(0, 4),
@@ -100,22 +100,21 @@ export class Twitter extends BaseWebsiteService {
       secret: authData.secret
     };
 
-    const postResponse = await got.post(`${AUTH_URL}/twitter/post`, null, this.BASE_URL, [], {
-      json: {
-        data: Buffer.from(JSON.stringify(data)).toString('base64')
-      }
+    const postResponse = await got.post(`${AUTH_URL}/twitter/v1/post`, null, this.BASE_URL, [], {
+      json: data
     });
+
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
 
-    if (postResponse.success.response.statusCode === 200) {
+    if (!postResponse.success.body.errors) {
       return this.createPostResponse(null);
     } else {
       let message = 'Unknown error';
-      try {
-        message = JSON.parse(postResponse.success.body.e.data).errors.map(err => err.message).join('\n');
-      } catch (e) {/*Swallow*/}
+      if (postResponse.success.body.errors) {
+        message = postResponse.success.body.errors.join('\n') || 'Unknown error';
+      }
       return Promise.reject(this.createPostResponse(message, postResponse.success.body));
     }
   }

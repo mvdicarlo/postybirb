@@ -41,7 +41,7 @@ export class TumblrLoginDialog implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private authorize(data: any): void {
-    if (data && data.data) {
+    if (data) {
       this._loginProfileManager.storeData(this.data.persist, 'Tumblr', data);
       this.loggedIn = true;
       this._changeDetector.markForCheck();

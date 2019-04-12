@@ -10,7 +10,7 @@ let server = null;
 
 exports.authorizePIN = function (pin) {
     return new Promise((resolve, reject) => {
-        request.post(auth.generateAuthUrl('/twitter/authorize'), {
+        request.post(auth.generateAuthUrl('/twitter/v1/authorize'), {
             json: {
                 token: oauth.token,
                 secret: oauth.secret,
@@ -19,12 +19,10 @@ exports.authorizePIN = function (pin) {
         }, (err, res, body) => {
             if (err) {
                 reject(err);
+            }  else if (body && body.errors) {
+              reject(body);
             } else {
-              if (typeof body === 'string') {
-                reject(body);
-              } else {
-                resolve(body);
-              }
+              resolve(body);
             }
         });
     });
@@ -49,7 +47,7 @@ exports.stop = function () {
 };
 
 app.get('/auth/twitter', (req, res) => {
-    request.get(auth.generateAuthUrl('/twitter/authorize'), (err, response, body) => {
+    request.get(auth.generateAuthUrl('/twitter/v1/authorize'), (err, response, body) => {
         if (err) {
             res.send('Error occured while trying to authenticate.');
         } else {

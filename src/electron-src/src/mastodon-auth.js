@@ -4,8 +4,8 @@ const Mastodon = require('mastodon-api');
 
 function getAccessTokens(website, code) {
     return new Promise((resolve, reject) => {
-        request.post({ url: auth.generateAuthUrl(`/mastodon/authorize/instance/${encodeURIComponent(website)}`), form: { code } }, (error, response, body) => {
-            if (error || response.status === 500) {
+        request.post({ url: auth.generateAuthUrl(`/mastodon/v1/authorize/${encodeURIComponent(website)}`), form: { code } }, (error, response, body) => {
+            if (error || response.statusCode === 500 || response.statusCode === 400) {
                 reject(false);
             } else {
                 const M = new Mastodon({
@@ -38,7 +38,7 @@ function getUsernameFromAPI(mastodonInstance, token) {
 }
 
 exports.getAuthorizationURL = function getURL(website) {
-    return auth.generateAuthUrl(`/mastodon/authorize/instance/${encodeURIComponent(website)}`);
+    return auth.generateAuthUrl(`/mastodon/v1/authorize/${encodeURIComponent(website)}`);
 };
 
 exports.refresh = function refresh(website, token) {

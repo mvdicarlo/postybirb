@@ -81,7 +81,7 @@ export class Tumblr extends BaseWebsiteService {
       status: LoginStatus.LOGGED_OUT
     };
 
-    if (data && data.data) {
+    if (data && data.user) {
       const refresh = await auth.tumblr.refresh(data.accessToken, data.accessSecret);
       if (refresh) {
         returnValue.status = LoginStatus.LOGGED_IN;
@@ -138,16 +138,19 @@ export class Tumblr extends BaseWebsiteService {
       blog: options.blog || this.userInformation.get(postData.profileId).blogs.find(blog => blog.primary).name,
       type: 'text',
       tags: this.formatTags(postData.tags, []),
-      body: title + postData.description
+      description: title + postData.description
     };
 
     // TODO I should really just update the post server to not suck anymore. Could be done a lot better I think now
-    const postResponse = await got.post(`${AUTH_URL}/tumblr/post`, data, this.BASE_URL, []);
+    const postResponse = await got.post(`${AUTH_URL}/tumblr/v1/post`, null, this.BASE_URL, [], {
+      json: data
+    });
+
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
 
-    if (postResponse.success.response.statusCode === 200) {
+    if (!postResponse.success.body) {
       return this.createPostResponse(null);
     } else {
       // I don't know what a failed response looks like off the top of my head
@@ -167,19 +170,24 @@ export class Tumblr extends BaseWebsiteService {
       blog: options.blog || this.userInformation.get(postData.profileId).blogs.find(blog => blog.primary).name,
       type: this.getPostType(postData.typeOfSubmission),
       tags: this.formatTags(postData.tags, []),
-      body: title + postData.description,
-      data: [postData.primary, ...postData.additionalFiles].map(file => fileAsFormDataObject(file))
+      description: title + postData.description,
+      medias: [postData.primary, ...postData.additionalFiles].map(file => {
+        return {
+          base64: Buffer.from(file.buffer).toString('base64'),
+          fileInfo: file.fileInfo
+        };
+      })
     };
 
-    // TODO I should really just update the post server to not suck anymore. Could be done a lot better I think now
-    const postResponse = await got.post(`${AUTH_URL}/tumblr/post`, data, this.BASE_URL, [], {
-      qsStringifyOptions: { arrayFormat: 'repeat' },
+    const postResponse = await got.post(`${AUTH_URL}/tumblr/v1/post`, null, this.BASE_URL, [], {
+      json: data
     });
+
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
 
-    if (postResponse.success.response.statusCode === 200) {
+    if (!postResponse.success.body) {
       return this.createPostResponse(null);
     } else {
       // I don't know what a failed response looks like off the top of my head
