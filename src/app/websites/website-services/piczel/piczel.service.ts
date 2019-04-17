@@ -7,6 +7,7 @@ import { Submission, SubmissionFormData } from 'src/app/database/models/submissi
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { Folder } from '../../interfaces/folder.interface';
 import { PiczelSubmissionForm } from './components/piczel-submission-form/piczel-submission-form.component';
+import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -104,8 +105,9 @@ export class Piczel extends BaseWebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     const options = postData.options;
+    const forceNSFWRating: boolean = submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME ? true : false;
     const data: any = {
-      nsfw: options.nsfw,
+      nsfw: forceNSFWRating || options.nsfw,
       description: postData.description,
       title: submission.title || 'New Submission',
       tags: this.formatTags(postData.tags || [], []),
