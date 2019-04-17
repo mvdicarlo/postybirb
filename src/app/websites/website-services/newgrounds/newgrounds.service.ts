@@ -64,7 +64,7 @@ export class Newgrounds extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
+    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, null);
     try {
       const body = response.body;
       if (!body.includes('passport_login')) {
@@ -78,7 +78,7 @@ export class Newgrounds extends BaseWebsiteService {
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const uploadPage = await got.get(`${this.BASE_URL}/art/submit/create`, this.BASE_URL, cookies, postData.profileId);
+    const uploadPage = await got.get(`${this.BASE_URL}/art/submit/create`, this.BASE_URL, cookies, null);
 
     const userkey: string = HTMLParser.getInputValue(uploadPage.body, 'userkey');
 
