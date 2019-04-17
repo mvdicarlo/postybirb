@@ -70,10 +70,29 @@ export class KoFi extends BaseWebsiteService {
           gold: response.body.includes('Upgrade to Gold'),
           id: $(html$).find('#dash-profile-link').attr('href').replace('/', '')
         });
+
+        this._hardenCookies(profileId, cookies);
       }
     } catch (e) { /* No important error handling */ }
 
     return returnValue;
+  }
+
+  private _hardenCookies(profileId: string, cookies: any[]): void {
+    const api = getCookieAPI(profileId);
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        if (cookie.session) {
+          const c = got.convertCookie(cookie);
+          const now = new Date();
+          c.expirationDate = now.setMonth(now.getMonth() + 4);
+          api.set(c, function(err) {
+            if (err) {
+              console.warn('Failed to persist ko-fi', err, this);
+            }
+          }.bind(c));
+        }
+    }
   }
 
   public isGold(profileId: string): boolean {
