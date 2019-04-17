@@ -34,26 +34,18 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
         got(url, opts)
           .then((res) => {
               if (res.headers['set-cookie'] && profileId) { // TODO: I think I only implemented this because of SoFurry. Might be worth removing this logic.
-                  const _cookies = setCookie.parse(res);
+                  const _cookies = setCookie.parse(res, { decodeValues: false });
                   const cookieSession = session.fromPartition(`persist:${profileId}`).cookies;
                   _cookies.forEach((c) => {
-                      c.httpOnly = false;
-                      c.hostOnly = false;
-                      delete c.expires;
-                      delete c.maxAge;
-
-                      c.secure = c.secure || false;
-                      c.session = false;
-                      c.value = encodeURIComponent(c.value); // safe?
-                      c.url = cookieUrl;
-
+                      c.domain = c.domain || res.request.gotOptions.host;
+                      const converted = _convertCookie(c);
                       const now = new Date();
-                      c.expirationDate = now.setMonth(now.getMonth() + 4); // add 4 months
-                      cookieSession.set(c, function (err) {
+                      converted.expirationDate = now.setMonth(now.getMonth() + 4); // add 4 months
+                      cookieSession.set(converted, function (err) {
                           if (err) {
                               console.warn(err, this);
                           }
-                      }.bind(c));
+                      }.bind(converted));
                   });
               }
               resolve(res);
@@ -173,3 +165,19 @@ exports.gotPost = function gotPost(url, formData, cookieUrl, cookies, options) {
         });
     });
 };
+
+function _convertCookie(cookie) {
+  const url = `${(cookie.secure) ? 'https' : 'http'}://${cookie.domain}${cookie.path}`;
+  const { name, value, domain, path, secure, httpOnly } = cookie;
+  return {
+    url,
+    name,
+    value: value,
+    domain,
+    path,
+    secure: secure || false,
+    httpOnly: httpOnly || false
+  };
+}
+
+exports.convertCookie = _convertCookie;
