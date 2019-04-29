@@ -40,6 +40,12 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
     });
     this.availableWebsites = filteredWebsites;
     this.submission = this._submissionCache.get(Number(this._route.snapshot.paramMap.get('id')));
+
+    if (!this.submission) {
+      this._tabManager.removeTab(Number(this._route.snapshot.paramMap.get('id')));
+      return;
+    }
+
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
 

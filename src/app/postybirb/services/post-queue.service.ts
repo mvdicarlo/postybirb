@@ -235,6 +235,7 @@ export class PostQueueService {
                 postingSubmission.cleanUp();
                 this._outputNotification(postingSubmission)
                   .finally(() => {
+                    this._tabManager.removeTab(postingSubmission.id);
                     this._submissionDB.delete([postingSubmission.id])
                       .finally(() => {
                         if (!this.queue.length && closeAfterPost() /* global var*/) {

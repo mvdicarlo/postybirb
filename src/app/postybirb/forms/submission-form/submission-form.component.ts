@@ -45,6 +45,11 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     this.availableWebsites = getUnfilteredWebsites() || {};
     this.submission = this._submissionCache.get(Number(this._route.snapshot.paramMap.get('id')));
 
+    if (!this.submission) {
+      this._tabManager.removeTab(Number(this._route.snapshot.paramMap.get('id')));
+      return;
+    }
+
     this.typeOfSubmission = getTypeOfSubmission(this.submission.fileInfo);
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
