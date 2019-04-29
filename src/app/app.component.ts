@@ -7,6 +7,7 @@ import { SchedulerService } from './postybirb/services/scheduler/scheduler.servi
 import { MatDialog } from '@angular/material';
 import { AgreementDialogComponent } from './miscellaneous/components/agreement-dialog/agreement-dialog.component';
 import { HotkeysService, Hotkey } from 'angular2-hotkeys';
+import { RemakeAlertDialogComponent } from './miscellaneous/components/remake-alert-dialog/remake-alert-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -48,10 +49,13 @@ export class AppComponent implements AfterViewInit {
       .subscribe(result => {
         if (result === true) {
           store.set('licenseAgreement', true);
+          this.dialog.open(RemakeAlertDialogComponent);
         } else {
           window.close();
         }
       });
+    } else {
+      this.dialog.open(RemakeAlertDialogComponent);
     }
 
     this._hotKeysService.add(new Hotkey('ctrl+l', (event: KeyboardEvent): boolean => {

@@ -13,7 +13,8 @@ import {
   MatButtonToggleModule,
   MatDialogModule,
   MatTabsModule
-} from '@angular/material'
+} from '@angular/material';
+import { RemakeAlertDialogComponent } from './components/remake-alert-dialog/remake-alert-dialog.component'
 
 @NgModule({
   imports: [
@@ -29,14 +30,16 @@ import {
     ContactDialogComponent,
     DonateDialogComponent,
     LicenseDialogComponent,
-    AgreementDialogComponent
+    AgreementDialogComponent,
+    RemakeAlertDialogComponent
   ],
   entryComponents: [
     ChangelogDialogComponent,
     ContactDialogComponent,
     DonateDialogComponent,
     LicenseDialogComponent,
-    AgreementDialogComponent
+    AgreementDialogComponent,
+    RemakeAlertDialogComponent
   ]
 })
 export class MiscellaneousModule { }

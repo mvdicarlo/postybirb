@@ -86,8 +86,6 @@ export class Derpibooru extends BaseWebsite implements Website {
           uploadForm.set('image[anonymous]', '0');
           uploadForm.set('image[image_cache]', '');
           uploadForm.set('commit', 'Create Image');
-          observer.next({})
-          observer.complete();
 
           this.http.post(`${this.baseURL}/images`, uploadForm, { responseType: 'text'})
           .subscribe(res => {
