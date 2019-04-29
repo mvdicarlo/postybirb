@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "clean": "rm -rf electron-dist/",
-    "start": "DEVELOP=true SFW=true electron main.js",
+    "start": "electron main.js --develop",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
     "eb-windows": "electron-builder -w",
@@ -96,6 +96,7 @@
     "eslint-plugin-react": "^7.1.0"
   },
   "dependencies": {
+    "commander": "^2.20.0",
     "cryptr": "^4.0.2",
     "electron-context-menu": "^0.10.1",
     "electron-log": "^2.2.17",
