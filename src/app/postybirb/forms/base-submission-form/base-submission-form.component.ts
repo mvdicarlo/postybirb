@@ -5,7 +5,7 @@ import { Submission } from 'src/app/database/models/submission.model';
 import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
-import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
+import { LoginStatus, WebsiteStatus } from 'src/app/websites/interfaces/website-service.interface';
 import { MatDialog } from '@angular/material';
 import { ISubmission } from 'src/app/database/tables/submission.table';
 import { DescriptionInput } from 'src/app/utils/components/description-input/description-input.component';
@@ -45,6 +45,9 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   public resetSubject: Subject<void> = new Subject();
   public onReset: Observable<void> = this.resetSubject.asObservable();
 
+  public loginChangeSubject: Subject<string[]> = new Subject();
+  public loginChange: Observable<string[]> = this.loginChangeSubject.asObservable();
+
   protected _changeDetector: ChangeDetectorRef;
   protected dialog: MatDialog;
   protected _fb: FormBuilder;
@@ -63,7 +66,30 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this._templateManager = injector.get(TemplateManagerService);
 
     this.loginListener = this._loginManager.statusChanges.subscribe(statuses => {
+      const oldStatuses = this.loginStatuses || {};
+      let updatedWebsites: string[] = [];
+
+      if (this.submission.formData.loginProfile && oldStatuses[this.submission.formData.loginProfile]) {
+        const profile = this.submission.formData.loginProfile;
+        Object.keys(oldStatuses[profile]).forEach(key => {
+          if (statuses[profile] && statuses[profile][key]) {
+            const status: WebsiteStatus = statuses[profile][key];
+            if (status.status !== oldStatuses[profile][key].status || status.username !== oldStatuses[profile][key].username) {
+              updatedWebsites.push(key);
+            }
+          }
+        });
+      }
+
       this.loginStatuses = statuses;
+
+      if (updatedWebsites.length) {
+        this.triggerWebsiteReload = true;
+        this._changeDetector.detectChanges();
+        this.triggerWebsiteReload = false;
+        this._changeDetector.markForCheck();
+      }
+
       this._changeDetector.markForCheck();
     });
   }

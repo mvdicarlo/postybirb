@@ -6,6 +6,8 @@ import { WebsiteRegistryConfig, WebsiteRegistry } from '../../registries/website
 import { Subscription } from 'rxjs';
 import { BaseWebsiteService } from '../../website-services/base-website-service';
 import { BaseSubmissionForm } from 'src/app/postybirb/forms/base-submission-form/base-submission-form.component';
+import { SnotifyService } from 'ng-snotify';
+import { Folder } from '../../interfaces/folder.interface';
 
 @Component({
   selector: 'base-website-submission-form',
@@ -19,6 +21,7 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
 
   public typeOfSubmission = TypeOfSubmission;
 
+  public snotify: SnotifyService;
   public controlContainer: ControlContainer;
   public formBuilder: FormBuilder;
   public parentForm: BaseSubmissionForm;
@@ -26,11 +29,13 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   public config: WebsiteRegistryConfig;
   public optionDefaults: any;
   public resetListener: Subscription = Subscription.EMPTY;
+  public loginChangeListener: Subscription = Subscription.EMPTY;
 
   constructor(private injector: Injector) {
     this.parentForm = injector.get(BaseSubmissionForm);
     this.controlContainer = injector.get(ControlContainer);
     this.formBuilder = injector.get(FormBuilder);
+    this.snotify = injector.get(SnotifyService);
   }
 
   ngOnInit() {
@@ -45,6 +50,12 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
         this.formGroup.removeControl('options');
       }
     });
+
+    this.loginChangeListener = this.parentForm.loginChange.subscribe(loginChange => {
+      if (loginChange.includes(this.website)) {
+        this.onLoginChange();
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -55,6 +66,49 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
 
   ngOnDestroy() {
     this.resetListener.unsubscribe();
+    this.loginChangeListener.unsubscribe();
+  }
+
+  protected onLoginChange() {
+    // implement
+  }
+
+  protected resetOnConflict(optionName: string, compareItem: any): void {
+    const val = this.formGroup.get('options').value[optionName];
+
+    if (val) {
+      let failedComparison: boolean = false;
+      if (compareItem instanceof Array) {
+        (val || []).forEach(v => {
+          if (!compareItem.includes(v)) {
+            failedComparison = true;
+          }
+        });
+      } else {
+        failedComparison = val === compareItem;
+      }
+
+      if (failedComparison) {
+        (<FormGroup>this.formGroup.get('options')).controls[optionName].reset(this.optionDefaults[optionName][0]);
+        this.snotify.warning(`${optionName.toUpperCase()} reset due to conflict!`, this.config.websiteConfig.displayedName);
+      }
+    }
+  }
+
+  protected getIdsFromFolders(folders: Folder[]): string[] {
+    const ids: string[] = [];
+
+    for (let i = 0; i < folders.length; i++) {
+        const f = folders[i];
+        ids.push(f.id);
+        if (f.subfolders) {
+          f.subfolders.forEach(s => {
+            ids.push(...this.getIdsFromFolders([s]));
+          });
+        }
+    }
+
+    return ids.filter(id => !!id);
   }
 
 }

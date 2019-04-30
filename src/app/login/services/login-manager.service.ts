@@ -8,6 +8,7 @@ import { interval, Subscription, BehaviorSubject, Observable } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { CookieSolutionsService } from './cookie-solutions.service';
 import * as dotProp from 'dot-prop';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 export interface ProfileStatuses {
   [key: string /* profile id */]: { [key: string /* website service constructor name */]: WebsiteStatus };
@@ -102,7 +103,7 @@ export class LoginManagerService {
           }).catch(err => {
             console.error('Unable to refresh id', id, s.constructor.name, err);
           }).finally(() => {
-            this.statusSubject.next(this.profileStatuses);
+            this.statusSubject.next(copyObject(this.profileStatuses));
           });
       }
     }
