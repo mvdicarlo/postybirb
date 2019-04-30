@@ -77,22 +77,25 @@ fs.ensureFileSync(path.join(dataPath, 'description-templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'settings.json'));
 fs.ensureFileSync(path.join(dataPath, 'scheduled-submissions.json'));
 
-const settings = {};
+let settings = {
+  hardwareAcceleration: true
+};
+
 try {
-  fs.readJsonSync(path.join(dataPath, 'settings.json'));
+  settings = fs.readJsonSync(path.join(dataPath, 'settings.json'));
 } catch (e) {
   // Ignorable - should only ever throw on empty settings file
 }
 
 if (settings) {
-  if (process.platform == 'win32' || process.platform == 'darwin') {
-    if (!settings.hardwareAcceleration) {
+  if (process.platform === 'win32' || process.platform === 'darwin') {
+    if (settings.hardwareAcceleration === false) {
       app.disableHardwareAcceleration();
       log.info('Hardware Acceleration is off');
     }
   } else { // Always disable on Linux or other unknown OS
     app.disableHardwareAcceleration();
-    log.info('Hardware Acceleration is off');
+    log.info('Hardware Acceleration is off - Disabled on Linux');
   }
 } else {
   // No settings, just assume to turn off acceleration
@@ -245,6 +248,7 @@ function clearScheduleCheck() {
 }
 
 function hasScheduled() {
+  // NOTE: There is a small chance this could become stale in a relaunch + scheduled case
   const data = fs.readJsonSync(path.join(dataPath, 'scheduled-submissions.json'));
   if (data && data.scheduled && data.scheduled.length) {
     scheduleCheckInterval = setInterval(() => {
