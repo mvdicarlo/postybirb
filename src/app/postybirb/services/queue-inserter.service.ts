@@ -7,6 +7,7 @@ import { SubmissionDBService } from 'src/app/database/model-services/submission.
 import { SubmissionFileDBService } from 'src/app/database/model-services/submission-file.service';
 import { SubmissionFileType } from 'src/app/database/tables/submission-file.table';
 import { AdditionalImageSplitDialog } from '../components/additional-image-split-dialog/additional-image-split-dialog.component';
+import { TabManager } from './tab-manager.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class QueueInserterService {
     private _postQueue: PostQueueService,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDB: SubmissionFileDBService,
+    private _tabManager: TabManager,
     private dialog: MatDialog
   ) {
     this.websitesSupportingAdditional = WebsiteRegistry.getRegisteredAsArray()
@@ -26,10 +28,13 @@ export class QueueInserterService {
   }
 
   public queue(submission: Submission): void {
-    if (submission.schedule) {
-      submission.isScheduled = true;
-    } else {
-      this._postQueue.enqueue(submission);
+    if (submission) {
+      if (submission.schedule) {
+        submission.isScheduled = true;
+        this._tabManager.removeTab(submission.id);
+      } else {
+        this._postQueue.enqueue(submission);
+      }
     }
   }
 

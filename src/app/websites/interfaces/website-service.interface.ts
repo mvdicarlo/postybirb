@@ -1,4 +1,4 @@
-import { ISubmissionFile, ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
+import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 import { Submission } from 'src/app/database/models/submission.model';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
