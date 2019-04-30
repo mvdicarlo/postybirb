@@ -62,6 +62,8 @@ app.on('second-instance', () => {
   } else {
     initialize();
   }
+
+  clearScheduleCheck();
 });
 
 const blockerId = powerSaveBlocker.start('prevent-app-suspension');
@@ -118,6 +120,7 @@ app.on('ready', () => {
   const trayItems = [{
     label: 'Open',
     click() {
+      clearScheduleCheck();
       createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
     },
   }, {
@@ -126,6 +129,7 @@ app.on('ready', () => {
       try { // Potential to throw error if not initialized intervals
         clearInterval(cacheClearInterval);
         clearInterval(updateInterval);
+        clearScheduleCheck();
       } catch (e) {
         // Don't Care
       } finally {
@@ -151,6 +155,8 @@ app.on('ready', () => {
       }
       win.focus();
     }
+
+    clearScheduleCheck();
   });
 
   if (!devMode) {
@@ -233,11 +239,23 @@ function hasWindows() {
   return BrowserWindow.getAllWindows().filter(b => b.isVisible()).length > 0;
 }
 
+function clearScheduleCheck() {
+  log.info('Cancelling schedule check...');
+  clearInterval(scheduleCheckInterval);
+}
+
 function hasScheduled() {
   const data = fs.readJsonSync(path.join(dataPath, 'scheduled-submissions.json'));
   if (data && data.scheduled && data.scheduled.length) {
     scheduleCheckInterval = setInterval(() => {
       log.info('Checking for scheduled submissions...');
+      // Guard against any race behavior
+      if (hasWindows()) {
+        log.info('Window detected as open: Ceasing...')
+        clearInterval(scheduleCheckInterval);
+        return;
+      }
+
       const now = Date.now();
       for (let i = 0; i < data.scheduled.length; i++) {
         if (data.scheduled[i] <= now) {
@@ -247,7 +265,7 @@ function hasScheduled() {
           break;
         }
       }
-    }, 10000);
+    }, 15000);
     return true;
   }
 
