@@ -156,11 +156,16 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         this._changeDetector.markForCheck();
       });
 
-    this.formDataForm.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(changes => {
-        this._formUpdated(copyObject(changes));
-      });
+    Object.keys(this.formDataForm.controls).forEach(key => {
+      let keyField = key;
+      this.formDataForm.get(key).valueChanges
+        .pipe(debounceTime(300))
+        .subscribe((value) => {
+          const copy = copyObject(this.submission.formData);
+          copy[keyField] = value;
+          this._formUpdated(copy);
+        });
+    });
   }
 
   protected _formUpdated(changes: any): void {
