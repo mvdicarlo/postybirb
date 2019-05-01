@@ -9,8 +9,8 @@
   </div>
 </div>
 <div mat-dialog-content>
-  <form class="row no-gutters my-2">
-    <div class="col-8 col-md-12 col-lg-12 col-xl-12 col-sm-12" *ngFor="let d of data">
+  <div class="row no-gutters my-2">
+    <form class="col-8 col-md-12 col-lg-12 col-xl-12 col-sm-12" *ngFor="let d of data">
       <div class="d-inline-block mr-1" style="vertical-align: top">
         <img *ngIf="d.isImage" [src]="d.buffer | objectURL: '75' | safe" [alt]="d.file.name" [title]="d.file.name">
         <img *ngIf="!d.isImage" [alt]="d.file.name" [title]="d.file.name">
@@ -43,8 +43,9 @@
           </mat-radio-group>
         </div>
       </div>
-    </div>
-  </form>
+    </form>
+  </div>
+
 </div>
 <div mat-dialog-actions class="confirm-actions">
   <button mat-flat-button mat-dialog-close color="warn" class="no-button">{{ 'Cancel' | translate }}</button>
