@@ -19,3 +19,6 @@ Lemonynade + Mixed
 
 RU
 Sledyn
+
+JA
+AlphaKodi

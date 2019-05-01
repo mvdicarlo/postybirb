@@ -22,7 +22,7 @@ export class AppComponent implements OnInit {
 
   public version: string;
   public userLanguage: string = 'en';
-  public knownLanguages: string[] = ['de', 'en', 'es', 'fi', 'fr', 'pt', 'ru'];
+  public knownLanguages: string[] = ['de', 'en', 'es', 'fi', 'fr', 'ja', 'pt', 'ru'];
   private readonly BASE_LANGUAGE: string = 'en';
 
   constructor(
