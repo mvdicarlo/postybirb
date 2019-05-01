@@ -1,5 +1,5 @@
 import { Component, OnInit, forwardRef, Injector, AfterViewInit } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
@@ -9,9 +9,7 @@ import { Folder } from 'src/app/websites/interfaces/folder.interface';
   templateUrl: './sofurry-submission-form.component.html',
   styleUrls: ['./sofurry-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => SofurrySubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class SofurrySubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 

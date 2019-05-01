@@ -1,5 +1,5 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 
 @Component({
@@ -7,9 +7,7 @@ import { FormControl } from '@angular/forms';
   templateUrl: './inkbunny-submission-form.component.html',
   styleUrls: ['./inkbunny-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => InkbunnySubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class InkbunnySubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 

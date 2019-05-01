@@ -1,6 +1,6 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FurryAmino } from '../../furry-amino.service';
 
 @Component({
@@ -8,9 +8,7 @@ import { FurryAmino } from '../../furry-amino.service';
   templateUrl: './furry-amino-submission-form.component.html',
   styleUrls: ['./furry-amino-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => FurryAminoSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class FurryAminoSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
   public categories: any[] = [];

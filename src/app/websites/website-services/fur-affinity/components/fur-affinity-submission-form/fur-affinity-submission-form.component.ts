@@ -1,5 +1,5 @@
 import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -9,9 +9,7 @@ import { FormControl, FormGroup } from '@angular/forms';
   templateUrl: './fur-affinity-submission-form.component.html',
   styleUrls: ['./fur-affinity-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => FurAffinitySubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class FurAffinitySubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 

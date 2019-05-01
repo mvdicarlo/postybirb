@@ -1,6 +1,6 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 
 @Component({
@@ -8,9 +8,7 @@ import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.componen
   templateUrl: './derpibooru-submission-form.component.html',
   styleUrls: ['./derpibooru-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => DerpibooruSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class DerpibooruSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
   public optionDefaults: any = {

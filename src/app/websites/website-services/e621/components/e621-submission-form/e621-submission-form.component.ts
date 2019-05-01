@@ -1,5 +1,5 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 
@@ -8,9 +8,7 @@ import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.componen
   templateUrl: './e621-submission-form.component.html',
   styleUrls: ['./e621-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => E621SubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class E621SubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 

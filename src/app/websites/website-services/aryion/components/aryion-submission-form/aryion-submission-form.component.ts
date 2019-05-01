@@ -1,5 +1,5 @@
 import { Component, OnInit, forwardRef, Injector, AfterViewInit } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { Validators, FormControl } from '@angular/forms';
 
@@ -8,9 +8,7 @@ import { Validators, FormControl } from '@angular/forms';
   templateUrl: './aryion-submission-form.component.html',
   styleUrls: ['./aryion-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => AryionSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 

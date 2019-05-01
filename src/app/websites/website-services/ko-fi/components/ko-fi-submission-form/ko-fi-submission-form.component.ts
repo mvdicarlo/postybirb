@@ -1,5 +1,5 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 
 @Component({
@@ -7,9 +7,7 @@ import { FormControl } from '@angular/forms';
   templateUrl: './ko-fi-submission-form.component.html',
   styleUrls: ['./ko-fi-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => KoFiSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class KoFiSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 

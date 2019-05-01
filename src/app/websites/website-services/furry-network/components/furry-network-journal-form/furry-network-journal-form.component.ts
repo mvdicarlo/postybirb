@@ -1,5 +1,5 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { FormControl } from '@angular/forms';
 
@@ -8,9 +8,7 @@ import { FormControl } from '@angular/forms';
   templateUrl: './furry-network-journal-form.component.html',
   styleUrls: ['./furry-network-journal-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => FurryNetworkJournalForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class FurryNetworkJournalForm extends BaseWebsiteSubmissionForm implements OnInit {
 

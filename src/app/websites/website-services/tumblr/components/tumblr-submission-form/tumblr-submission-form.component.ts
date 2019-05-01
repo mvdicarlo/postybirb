@@ -1,5 +1,5 @@
 import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { Tumblr } from '../../tumblr.service';
 
@@ -8,9 +8,7 @@ import { Tumblr } from '../../tumblr.service';
   templateUrl: './tumblr-submission-form.component.html',
   styleUrls: ['./tumblr-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => TumblrSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class TumblrSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 

@@ -9,6 +9,10 @@ import { BaseSubmissionForm } from 'src/app/postybirb/forms/base-submission-form
 import { SnotifyService } from 'ng-snotify';
 import { Folder } from '../../interfaces/folder.interface';
 
+export const HOST_DATA = {
+  'class': 'submission-form'
+};
+
 @Component({
   selector: 'base-website-submission-form',
   template: '<div></div>'

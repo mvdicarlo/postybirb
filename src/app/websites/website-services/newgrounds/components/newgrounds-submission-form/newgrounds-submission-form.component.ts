@@ -1,5 +1,5 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl, Validators } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 
@@ -8,9 +8,7 @@ import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.componen
   templateUrl: './newgrounds-submission-form.component.html',
   styleUrls: ['./newgrounds-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => NewgroundsSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class NewgroundsSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 

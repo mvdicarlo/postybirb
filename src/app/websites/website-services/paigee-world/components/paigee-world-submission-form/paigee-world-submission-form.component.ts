@@ -1,5 +1,5 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 
 @Component({
@@ -7,9 +7,7 @@ import { FormControl } from '@angular/forms';
   templateUrl: './paigee-world-submission-form.component.html',
   styleUrls: ['./paigee-world-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => PaigeeWorldSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class PaigeeWorldSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 

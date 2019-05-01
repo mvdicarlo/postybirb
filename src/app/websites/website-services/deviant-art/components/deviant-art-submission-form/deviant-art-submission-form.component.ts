@@ -1,16 +1,14 @@
 import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { FormControl } from '@angular/forms';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 
 @Component({
   selector: 'deviant-art-submission-form',
   templateUrl: './deviant-art-submission-form.component.html',
   styleUrls: ['./deviant-art-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => DeviantArtSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 

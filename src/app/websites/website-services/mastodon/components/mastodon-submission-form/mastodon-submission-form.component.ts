@@ -1,15 +1,13 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 
 @Component({
   selector: 'mastodon-submission-form',
   templateUrl: './mastodon-submission-form.component.html',
   styleUrls: ['./mastodon-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => MastodonSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class MastodonSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 

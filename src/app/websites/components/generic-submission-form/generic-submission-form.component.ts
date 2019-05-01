@@ -1,5 +1,5 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
-import { BaseWebsiteSubmissionForm } from '../base-website-submission-form/base-website-submission-form.component';
+import { BaseWebsiteSubmissionForm, HOST_DATA } from '../base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 
 @Component({
@@ -7,9 +7,7 @@ import { FormControl } from '@angular/forms';
   templateUrl: './generic-submission-form.component.html',
   styleUrls: ['./generic-submission-form.component.css'],
   providers: [{ provide: BaseWebsiteSubmissionForm, useExisting: forwardRef(() => GenericSubmissionForm) }],
-  host: {
-    'class': 'submission-form'
-  }
+  host: HOST_DATA
 })
 export class GenericSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 
