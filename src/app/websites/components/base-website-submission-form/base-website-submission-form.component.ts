@@ -29,7 +29,6 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   public config: WebsiteRegistryConfig;
   public optionDefaults: any;
   public resetListener: Subscription = Subscription.EMPTY;
-  public loginChangeListener: Subscription = Subscription.EMPTY;
 
   constructor(private injector: Injector) {
     this.parentForm = injector.get(BaseSubmissionForm);
@@ -50,12 +49,6 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
         this.formGroup.removeControl('options');
       }
     });
-
-    this.loginChangeListener = this.parentForm.loginChange.subscribe(loginChange => {
-      if (loginChange.includes(this.website)) {
-        this.onLoginChange();
-      }
-    });
   }
 
   ngAfterViewInit() {
@@ -66,11 +59,6 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
 
   ngOnDestroy() {
     this.resetListener.unsubscribe();
-    this.loginChangeListener.unsubscribe();
-  }
-
-  protected onLoginChange() {
-    // implement
   }
 
   protected resetOnConflict(optionName: string, compareItem: any): void {

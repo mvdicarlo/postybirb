@@ -45,9 +45,6 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   public resetSubject: Subject<void> = new Subject();
   public onReset: Observable<void> = this.resetSubject.asObservable();
 
-  public loginChangeSubject: Subject<string[]> = new Subject();
-  public loginChange: Observable<string[]> = this.loginChangeSubject.asObservable();
-
   protected _changeDetector: ChangeDetectorRef;
   protected dialog: MatDialog;
   protected _fb: FormBuilder;
