@@ -1,4 +1,4 @@
-import { Component, OnInit, Injector, forwardRef } from '@angular/core';
+import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { Tumblr } from '../../tumblr.service';
@@ -12,7 +12,7 @@ import { Tumblr } from '../../tumblr.service';
     'class': 'submission-form'
   }
 })
-export class TumblrSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class TumblrSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
       blog: [],
@@ -31,6 +31,13 @@ export class TumblrSubmissionForm extends BaseWebsiteSubmissionForm implements O
     if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
     if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    if (this.blogs) {
+      this.resetOnConflict('blog', this.blogs);
+    }
   }
 
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, forwardRef, Injector } from '@angular/core';
+import { Component, OnInit, forwardRef, Injector, AfterViewInit } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { Validators, FormControl } from '@angular/forms';
@@ -12,7 +12,7 @@ import { Validators, FormControl } from '@angular/forms';
     'class': 'submission-form'
   }
 })
-export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
       folderId: [null, Validators.required],
@@ -39,6 +39,13 @@ export class AryionSubmissionForm extends BaseWebsiteSubmissionForm implements O
       if (this.folders.length) {
         this.formGroup.controls.options.patchValue({ folderId: (this.folders[0] || <any>{}).id });
       }
+    }
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    if (this.folders && this.folders.length) {
+      this.resetOnConflict('folderId', this.getIdsFromFolders(this.folders));
     }
   }
 

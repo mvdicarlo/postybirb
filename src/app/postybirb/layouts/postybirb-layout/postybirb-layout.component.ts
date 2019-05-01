@@ -243,7 +243,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
       }
     }).afterClosed()
       .subscribe(deletes => {
-        if (deletes.length) {
+        if (deletes && deletes.length) {
           this.loading = true;
           this._changeDetector.markForCheck();
           deletes.forEach(d => {

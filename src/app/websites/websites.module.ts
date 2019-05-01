@@ -71,7 +71,6 @@ import { PaigeeWorldSubmissionForm } from './website-services/paigee-world/compo
 import { PatreonSubmissionForm } from './website-services/patreon/components/patreon-submission-form/patreon-submission-form.component';
 import { PixivSubmissionForm } from './website-services/pixiv/components/pixiv-submission-form/pixiv-submission-form.component';
 import { SofurrySubmissionForm } from './website-services/sofurry/components/sofurry-submission-form/sofurry-submission-form.component';
-import { TumblrJournalForm } from './website-services/tumblr/components/tumblr-journal-form/tumblr-journal-form.component';
 import { TumblrLoginDialog } from './website-services/tumblr/components/tumblr-login-dialog/tumblr-login-dialog.component';
 import { TumblrSubmissionForm } from './website-services/tumblr/components/tumblr-submission-form/tumblr-submission-form.component';
 import { TwitterLoginDialog } from './website-services/twitter/components/twitter-login-dialog/twitter-login-dialog.component';
@@ -114,7 +113,6 @@ export function INIT_WEBSITE_REGISTRY() {
     PatreonSubmissionForm,
     PixivSubmissionForm,
     SofurrySubmissionForm,
-    TumblrJournalForm,
     TumblrLoginDialog,
     TumblrSubmissionForm,
     TwitterLoginDialog,
@@ -174,7 +172,6 @@ export function INIT_WEBSITE_REGISTRY() {
     PiczelSubmissionForm,
     PixivSubmissionForm,
     SofurrySubmissionForm,
-    TumblrJournalForm,
     TumblrLoginDialog,
     TumblrSubmissionForm,
     TwitterLoginDialog,

@@ -1,4 +1,4 @@
-import { Component, OnInit, Injector, forwardRef } from '@angular/core';
+import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { FormControl } from '@angular/forms';
@@ -12,7 +12,7 @@ import { FormControl } from '@angular/forms';
     'class': 'submission-form'
   }
 })
-export class FurryNetworkSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class FurryNetworkSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
       notify: [true],
@@ -49,6 +49,13 @@ export class FurryNetworkSubmissionForm extends BaseWebsiteSubmissionForm implem
       this.collections = (<any>this.websiteService).getCollections(this.parentForm.getLoginProfileId(), profile);
       this.formGroup.get('options').get('folders').reset();
     });
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    if (this.profiles) {
+      this.resetOnConflict('profile', this.profiles.map(p => p.name));
+    }
   }
 
 }

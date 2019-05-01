@@ -1,4 +1,4 @@
-import { Component, OnInit, forwardRef, Injector } from '@angular/core';
+import { Component, OnInit, forwardRef, Injector, AfterViewInit } from '@angular/core';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
@@ -13,7 +13,7 @@ import { Folder } from 'src/app/websites/interfaces/folder.interface';
     'class': 'submission-form'
   }
 })
-export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
     critique: [false],
@@ -39,6 +39,13 @@ export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements O
     if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
     if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    if (this.folders) {
+      this.resetOnConflict('folder', this.getIdsFromFolders(this.folders));
+    }
   }
 
 }

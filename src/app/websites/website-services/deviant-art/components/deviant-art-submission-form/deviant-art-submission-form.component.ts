@@ -1,4 +1,4 @@
-import { Component, OnInit, Injector, forwardRef } from '@angular/core';
+import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
 import { FormControl } from '@angular/forms';
 import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
@@ -12,7 +12,7 @@ import { BaseWebsiteSubmissionForm } from 'src/app/websites/components/base-webs
     'class': 'submission-form'
   }
 })
-export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
+export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
     feature: [false],
@@ -37,5 +37,12 @@ export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implemen
     if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
     if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
+  }
+
+  ngAfterViewInit() {
+    super.ngAfterViewInit();
+    if (this.folders) {
+      this.resetOnConflict('folders', this.getIdsFromFolders(this.folders));
+    }
   }
 }

@@ -74,11 +74,14 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   }
 
   protected resetOnConflict(optionName: string, compareItem: any): void {
-    const val = this.formGroup.get('options').value[optionName];
+    let val: any = this.formGroup.get('options').value[optionName];
 
     if (val) {
       let failedComparison: boolean = false;
       if (compareItem instanceof Array) {
+        if (!(val instanceof Array)) {
+          val = [val];
+        }
         (val || []).forEach(v => {
           if (!compareItem.includes(v)) {
             failedComparison = true;
