@@ -1,3 +1,7 @@
+# BEING REMADE
+Currently PostyBirb is being remade.
+All of it is available on branch PB-Next
+
 # PostyBirb
 
 **Written in JavaScript and TypeScript using Angular5+ and Electron**
