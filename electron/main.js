@@ -70,6 +70,7 @@ const blockerId = powerSaveBlocker.start('prevent-app-suspension');
 
 // app.commandLine.appendSwitch('proxy-bypass-list', '*')
 // app.commandLine.appendSwitch('proxy-server', 'direct://')
+app.commandLine.appendSwitch('disable-background-timer-throttling');
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 fs.ensureFileSync(path.join(dataPath, 'templates.json'));

@@ -260,7 +260,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
           x2: 0,
           y2: 0,
           thumbfile: ''
-        }
+        };
 
         const thumbnailResponse = await got.post(`${this.BASE_URL}/manage/thumbnail`, thumbnailData, this.BASE_URL, cookies);
         if (thumbnailResponse.error) {
@@ -274,6 +274,16 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
         const res = this.createPostResponse(null);
         res.srcURL = postResponse.success.response.request.uri.href;
         return res;
+      } else if (body.includes('Weasyl experienced a technical issue')) {
+        const recheck = await got.get(postResponse.success.response.request.uri.href, this.BASE_URL, cookies, null);
+        const body2 = recheck.success.body || '';
+        if (body2.includes('Submission Information')) {
+          const res = this.createPostResponse(null);
+          res.srcURL = postResponse.success.response.request.uri.href;
+          return res;
+        } else {
+          return Promise.reject(this.createPostResponse('Weasyl experienced a technical issue and cannot verify if posting completed', body2));
+        }
       } else {
         return Promise.reject(this.createPostResponse('Unknown response from Weasyl', body));
       }

@@ -1,5 +1,5 @@
 import { ISubmission, SubmissionRating, SubmissionType, FileMap } from '../tables/submission.table';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, Subject } from 'rxjs';
 import { FileObject } from '../tables/submission-file.table';
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
@@ -38,7 +38,7 @@ export interface PostStats {
 }
 
 export class Submission implements ISubmission {
-  private changeSubject: BehaviorSubject<SubmissionChange> = new BehaviorSubject({ postStats: { noUpdate: true, validate: false, current: null, old: null } });
+  private changeSubject: Subject<SubmissionChange> = new Subject();
   public readonly changes: Observable<SubmissionChange>;
 
   public id: number;

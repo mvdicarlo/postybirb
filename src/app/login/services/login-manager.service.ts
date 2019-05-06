@@ -153,4 +153,9 @@ export class LoginManagerService {
   public getWebsiteStatus(profileId: string, website: string): WebsiteStatus {
     return this.profileStatuses[profileId][website];
   }
+
+  public manuallyUpdateStatus(profileId: string, website: string, loginStatus: WebsiteStatus): void {
+    this.profileStatuses[profileId][website] = loginStatus;
+    this.statusSubject.next(copyObject(this.profileStatuses));
+  }
 }

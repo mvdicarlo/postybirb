@@ -26,7 +26,7 @@ exports.getAuthURL = function () {
     return auth.generateAuthUrl('/deviant-art/v1/authorize');
 };
 
-exports.refresh = function (authInfo) {
+exports.refresh = function (authInfo, forceRenew) {
     const created = new Date(authInfo.created || 0);
     const expire = created.setHours(created.getHours() + 1); // this should be the expiration time
 
@@ -34,7 +34,7 @@ exports.refresh = function (authInfo) {
     const diff = expire - (Date.now() + (6 * 60000)); // should be negative if expiring in the next 6 minutes
     if (diff <= 0) shouldRenew = true;
 
-    if (shouldRenew) {
+    if (shouldRenew || forceRenew) {
         return renew(authInfo);
     }
 

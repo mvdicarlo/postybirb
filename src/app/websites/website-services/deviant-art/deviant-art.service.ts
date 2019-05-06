@@ -7,7 +7,7 @@ import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submis
 import { SubmissionFormData, Submission } from 'src/app/database/models/submission.model';
 import { BaseWebsiteService } from '../base-website-service';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
-import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
+import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult, WebsiteService } from '../../interfaces/website-service.interface';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { Folder } from '../../interfaces/folder.interface';
@@ -52,6 +52,7 @@ function descriptionParse(html: string): string {
 })
 @Website({
   refreshInterval: 5 * 60000,
+  refreshBeforePost: true,
   login: {
     dialog: DeviantArtLoginDialog,
     url: 'https://www.deviantart.com/users/login'
@@ -71,7 +72,7 @@ function descriptionParse(html: string): string {
     }
   }
 })
-export class DeviantArt extends BaseWebsiteService {
+export class DeviantArt extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://www.deviantart.com';
 
   constructor(private _profileManager: LoginProfileManagerService) {
@@ -86,6 +87,29 @@ export class DeviantArt extends BaseWebsiteService {
 
     if (data) {
       const refresh = await auth.deviantart.refresh(data);
+      if (refresh) {
+        returnValue.status = LoginStatus.LOGGED_IN;
+        returnValue.username = refresh.username;
+        this._profileManager.storeData(profileId, 'DeviantArt', refresh);
+        await this._getFolders(profileId, refresh.access_token);
+      } else {
+        this.unauthorize(profileId);
+      }
+    } else {
+      this.unauthorize(profileId);
+    }
+
+    return returnValue;
+  }
+
+  public async refreshTokens(profileId: string, data?: any): Promise<WebsiteStatus> {
+    const returnValue: WebsiteStatus = {
+      username: null,
+      status: LoginStatus.LOGGED_OUT
+    };
+
+    if (data) {
+      const refresh = await auth.deviantart.refresh(data, true);
       if (refresh) {
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = refresh.username;

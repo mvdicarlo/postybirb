@@ -51,6 +51,7 @@ export class ErrorLoggerHandler extends ErrorHandler {
     if (error.stack) {
       if (error.stack.includes('throwRPCError')) return;
       if (error.stack.includes('ExpressionChangedAfterItHasBeenCheckedError')) return;
+      if (error.message.includes('version.html')) return;
     }
 
     error.version = appVersion;

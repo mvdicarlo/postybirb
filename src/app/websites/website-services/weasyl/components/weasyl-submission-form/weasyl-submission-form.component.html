@@ -23,7 +23,7 @@
         <div class="col-md-4 col-lg-4 col-xl-4">
           <mat-form-field color="accent" class="w-100">
             <mat-select formControlName="category" [placeholder]="'Category' | translate">
-              <ng-template [ngIf]="type === typeOfSubmission.ART">
+              <ng-template [ngIf]="type === typeOfSubmission.ART || !type">
                 <mat-option value="1010">Sketch</mat-option>
                 <mat-option value="1020">Traditional</mat-option>
                 <mat-option value="1030">Digital</mat-option>

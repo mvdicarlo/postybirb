@@ -11,6 +11,7 @@ import { LoginManagerService } from 'src/app/login/services/login-manager.servic
 import { getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import * as dotProp from 'dot-prop';
+import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,12 +19,22 @@ import * as dotProp from 'dot-prop';
 export class PostManagerService {
   private serviceMap: Map<string, WebsiteService> = new Map();
   private usernameCodes: { code: string, url: string }[] = [];
+  private refreshBeforePostWebsites: string[] = [];
 
-  constructor(injector: Injector, private _submissionFileDB: SubmissionFileDBService, private _loginManager: LoginManagerService) {
+  constructor(
+    injector: Injector,
+    private _submissionFileDB: SubmissionFileDBService,
+    private _loginManager: LoginManagerService,
+    private _profileManager: LoginProfileManagerService,
+  ) {
     const registries: WebsiteRegistryEntry = WebsiteRegistry.getRegistered();
     Object.keys(registries).forEach(key => {
       const registry = registries[key];
       this.serviceMap.set(registry.name, injector.get(registry.class));
+      if (registry.websiteConfig.refreshBeforePost) {
+        this.refreshBeforePostWebsites.push(registry.name);
+      }
+
       if (registry.websiteConfig.parsers.usernameShortcut) {
         this.usernameCodes.push({
           code: registry.websiteConfig.parsers.usernameShortcut.code,
@@ -33,62 +44,127 @@ export class PostManagerService {
     });
   }
 
-  public post(website: string, submissionToPost: Submission): Promise<any> {
-    const loginInformation: WebsiteStatus = this._loginManager.getWebsiteStatus(submissionToPost.formData.loginProfile, website);
+  public async post(website: string, submissionToPost: Submission): Promise<any> {
+    try {
+      if (this.refreshBeforePostWebsites.includes(website)) {
+        const service: WebsiteService = this.serviceMap.get(website);
+        let loginStatus: WebsiteStatus = null;
+        if (service.refreshTokens) {
+          loginStatus = await service.refreshTokens(submissionToPost.formData.loginProfile, this._profileManager.getData(submissionToPost.formData.loginProfile, website));
+        } else {
+          loginStatus = await service.checkStatus(submissionToPost.formData.loginProfile, this._profileManager.getData(submissionToPost.formData.loginProfile, website));
+        }
 
-    if (loginInformation && loginInformation.status === LoginStatus.LOGGED_IN) {
-      return new Promise((resolve, reject) => {
-        this._submissionFileDB.getFilesBySubmissionId(submissionToPost.id)
-          .then(f => {
-            this._convertFilesToArrayType(f)
-            .then(files => {
-              try {
-                const postObject: SubmissionPostData = {
-                  additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
-                  description: this._parseDescription(getDescription(submissionToPost, website), website),
-                  loginInformation,
-                  options: getOptions(submissionToPost, website),
-                  primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
-                  profileId: submissionToPost.formData.loginProfile,
-                  srcURLs: submissionToPost.postStats.sourceURLs,
-                  tags: getTags(submissionToPost, website),
-                  thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
-                  typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
-                };
+        this._loginManager.manuallyUpdateStatus(submissionToPost.formData.loginProfile, website, loginStatus);
+      }
 
-                // Filter thumbnails on specified excluded websites
-                const excludedThubmanails: string[] = submissionToPost.formData.excludeThumbnailWebsites || [];
-                if (excludedThubmanails.length && excludedThubmanails.includes(website)) {
-                  postObject.thumbnail = undefined;
-                }
+      const loginInformation: WebsiteStatus = this._loginManager.getWebsiteStatus(submissionToPost.formData.loginProfile, website);
+      if (loginInformation && loginInformation.status === LoginStatus.LOGGED_IN) {
+        const f = await this._submissionFileDB.getFilesBySubmissionId(submissionToPost.id);
+        const files = await this._convertFilesToArrayType(f);
 
-                // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
-                // setTimeout(() => {
-                //   let rand = Math.floor(Math.random() * 100);
-                //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
-                // });
+        const postObject: SubmissionPostData = {
+          additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
+          description: this._parseDescription(getDescription(submissionToPost, website), website),
+          loginInformation,
+          options: getOptions(submissionToPost, website),
+          primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
+          profileId: submissionToPost.formData.loginProfile,
+          srcURLs: submissionToPost.postStats.sourceURLs,
+          tags: getTags(submissionToPost, website),
+          thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
+          typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
+        };
 
-                this.serviceMap.get(website).post(submissionToPost, postObject)
-                  .then(res => {
-                    resolve(res);
-                  }).catch(err => {
-                    reject(err);
-                  });
-              } catch (error) {
-                reject({ msg: 'An internal error occurred', error });
-              }
-            })
-            .catch(error => {
-              reject({ msg: 'An internal error occurred', error });
-            });
-          }).catch(error => {
-            reject({ msg: 'An internal error occurred', error });
-          });
-      });
-    } else {
-      return Promise.reject({ msg: 'Not logged in', error: 'Not logged in' });
+        // Filter thumbnails on specified excluded websites
+        const excludedThubmanails: string[] = submissionToPost.formData.excludeThumbnailWebsites || [];
+        if (excludedThubmanails.length && excludedThubmanails.includes(website)) {
+          postObject.thumbnail = undefined;
+        }
+
+        // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
+        // try {
+        //   let rand = Math.floor(Math.random() * 100);
+        //   if (rand >= 50) {
+        //     return {};
+        //   } else {
+        //     return Promise.reject({ msg: 'Fail', error: 'Me gusta bailar'})
+        //   }
+        // } catch (err) {
+        //   return Promise.reject(err)
+        // }
+
+        try {
+          const post = await this.serviceMap.get(website).post(submissionToPost, postObject);
+          return post;
+        } catch (err) {
+          return Promise.reject(err)
+        }
+
+      } else {
+        return Promise.reject({ msg: 'Not logged in', error: 'Not logged in' });
+      }
+    } catch (error) {
+      return Promise.reject({ msg: 'An internal error occurred', error });
     }
   }
+
+  // public post(website: string, submissionToPost: Submission): Promise<any> {
+  //   const loginInformation: WebsiteStatus = this._loginManager.getWebsiteStatus(submissionToPost.formData.loginProfile, website);
+  //
+  //   if (loginInformation && loginInformation.status === LoginStatus.LOGGED_IN) {
+  //     return new Promise((resolve, reject) => {
+  //       this._submissionFileDB.getFilesBySubmissionId(submissionToPost.id)
+  //         .then(f => {
+  //           this._convertFilesToArrayType(f)
+  //             .then(files => {
+  //               try {
+  //                 const postObject: SubmissionPostData = {
+  //                   additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
+  //                   description: this._parseDescription(getDescription(submissionToPost, website), website),
+  //                   loginInformation,
+  //                   options: getOptions(submissionToPost, website),
+  //                   primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
+  //                   profileId: submissionToPost.formData.loginProfile,
+  //                   srcURLs: submissionToPost.postStats.sourceURLs,
+  //                   tags: getTags(submissionToPost, website),
+  //                   thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
+  //                   typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
+  //                 };
+  //
+  //                 // Filter thumbnails on specified excluded websites
+  //                 const excludedThubmanails: string[] = submissionToPost.formData.excludeThumbnailWebsites || [];
+  //                 if (excludedThubmanails.length && excludedThubmanails.includes(website)) {
+  //                   postObject.thumbnail = undefined;
+  //                 }
+  //
+  //                 // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
+  //                 // setTimeout(() => {
+  //                 //   let rand = Math.floor(Math.random() * 100);
+  //                 //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
+  //                 // });
+  //
+  //                 this.serviceMap.get(website).post(submissionToPost, postObject)
+  //                   .then(res => {
+  //                     resolve(res);
+  //                   }).catch(err => {
+  //                     reject(err);
+  //                   });
+  //               } catch (error) {
+  //                 reject({ msg: 'An internal error occurred', error });
+  //               }
+  //             })
+  //             .catch(error => {
+  //               reject({ msg: 'An internal error occurred', error });
+  //             });
+  //         }).catch(error => {
+  //           reject({ msg: 'An internal error occurred', error });
+  //         });
+  //     });
+  //   } else {
+  //     return Promise.reject({ msg: 'Not logged in', error: 'Not logged in' });
+  //   }
+  // }
 
   private _parseDescription(description: string, website: string): string {
     const config = WebsiteRegistry.getConfigForRegistry(website).websiteConfig

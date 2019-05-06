@@ -36,5 +36,6 @@ export interface SubmissionPostData {
 export interface WebsiteService {
   readonly BASE_URL: string
   checkStatus(profileId: string, data?: any): Promise<WebsiteStatus>;
+  refreshTokens?(profileId: string, data?: any): Promise<WebsiteStatus>;
   post(submission: Submission, postData: SubmissionPostData): Promise<PostResult>;
 }

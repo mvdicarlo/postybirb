@@ -10,6 +10,7 @@ export interface WebsiteConfig {
   displayedName?: string;        // name value that is displayed in the UI to the user [default=constructor name]
   postWaitInterval?: number; // interval to wait (in ms) between posts to this website
   refreshInterval?: number;     // interval at which the app will check status [default=30 minutes]
+  refreshBeforePost?: boolean;  // if the website should try to refresh cookies/tokens or whatever before trying to post
   components: {
     submissionForm: Type<BaseWebsiteSubmissionForm>,
     journalForm?: Type<BaseWebsiteSubmissionForm>

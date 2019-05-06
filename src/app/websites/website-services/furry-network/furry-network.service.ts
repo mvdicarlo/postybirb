@@ -9,7 +9,7 @@ import { supportsFileType } from '../../helpers/website-validator.helper';
 import { MBtoBytes, isGIF, fileAsBlob } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { HttpClient } from '@angular/common/http';
-import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
+import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult, WebsiteService } from '../../interfaces/website-service.interface';
 import { FurryNetworkSubmissionForm } from './components/furry-network-submission-form/furry-network-submission-form.component';
 import { FurryNetworkJournalForm } from './components/furry-network-journal-form/furry-network-journal-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
@@ -37,6 +37,8 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 })
 @Website({
   displayedName: 'Furry Network',
+  refreshInterval: 60000 * 10,
+  refreshBeforePost: true,
   login: {
     dialog: FurryNetworkLoginDialog,
     url: 'https://furrynetwork.com'
@@ -56,7 +58,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     }
   }
 })
-export class FurryNetwork extends BaseWebsiteService {
+export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://furrynetwork.com';
   private collections: string[] = ['artwork', 'story', 'multimedia'];
 
@@ -106,6 +108,10 @@ export class FurryNetwork extends BaseWebsiteService {
     }
 
     return returnValue;
+  }
+
+  public async refreshTokens(profileId: string, data?: any): Promise<WebsiteStatus> {
+    return await this.checkStatus(profileId, data);
   }
 
   private async _loadCollections(profileId: string, token: any, character: any): Promise<void> {
