@@ -12,7 +12,7 @@
     </tr>
 
     <tr *ngIf="statuses.length === 0">
-      <td class="text-info">{{ 'No login found' | translate }}</td>
+      <td class="text-info" (click)="login()">{{ 'No login found' | translate }}</td>
     </tr>
   </tbody>
 </table>

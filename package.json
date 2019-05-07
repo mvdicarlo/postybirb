@@ -1,6 +1,6 @@
 {
   "name": "postybirb",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "scripts": {
     "ng": "ng",
     "compile": "ng build --vendor-chunk=false",
