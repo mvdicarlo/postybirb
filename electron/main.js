@@ -70,7 +70,6 @@ const blockerId = powerSaveBlocker.start('prevent-app-suspension');
 
 // app.commandLine.appendSwitch('proxy-bypass-list', '*')
 // app.commandLine.appendSwitch('proxy-server', 'direct://')
-app.commandLine.appendSwitch('disable-background-timer-throttling');
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 fs.ensureFileSync(path.join(dataPath, 'templates.json'));
@@ -197,12 +196,17 @@ function initialize(show = true) {
       nodeIntegration: false,
       preload: path.join(__dirname, 'dist', 'electron-src', 'index.js'),
       webviewTag: true,
+      backgroundThrottling: false,
+      contextIsolation: false,
     },
   });
 
   win.closeAfterPost = !show;
 
   if (!devMode) mainWindowState.manage(win);
+  if (devMode) {
+    win.webContents.openDevTools();
+  }
 
   win.webContents.session.clearCache(() => {
     log.info('Cache cleared')
