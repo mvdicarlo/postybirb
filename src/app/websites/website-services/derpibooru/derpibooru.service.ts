@@ -113,35 +113,56 @@ export class Derpibooru extends BaseWebsiteService {
     return 'safe';
   }
 
+  public getFormData(profileId: string): Promise<any> {
+    return new Promise((resolve) => {
+      const win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          partition: `persist:${profileId}`
+        }
+      });
+      win.loadURL(`${this.BASE_URL}/images/new`);
+      win.once('ready-to-show', () => {
+        if (win.isDestroyed()) {
+          resolve({});
+          return;
+        }
+
+        win.webContents.executeJavaScript(`Array.from(new FormData(document.getElementById('new_image'))).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})`).then(function(value) {
+          resolve(value);
+        })
+        .catch(() => {
+          resolve({});
+        })
+        .finally(() => {
+          win.destroy();
+        });
+      });
+    });
+  }
+
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/images/new`, this.BASE_URL, cookies, null);
-    const body = formPage.body;
-
-    if (!body.includes('Upload an Image')) {
-      return Promise.reject(this.createPostResponse('Derpibooru is acting up. Please try relogging', body));
-    }
-
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
     const ratingTag: string = this.getRatingTag(submission.rating);
     if (!tags.includes(ratingTag)) tags.push(ratingTag);
 
     const options = postData.options;
 
-    const data: any = {
-      authenticity_token: HTMLParser.getInputValue(body, 'authenticity_token'),
+    const data = await this.getFormData(postData.profileId);
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+
+    Object.assign(data, {
+      _method: 'post',
       'image[tag_input]': tags.join(', ').trim(),
       'image[image]': fileAsFormDataObject(postData.primary),
       'image[description]': postData.description,
       'image[source_url]': options.sourceURL || (postData.srcURLs[0] || ''),
-      'utf8': '✓',
-      'scraper_url': '',
       'image[anonymous]': '0',
-      'image[image_cache]': '',
       'commit': 'Create Image'
-    };
+    });
 
     const postRequest = await got.post(`${this.BASE_URL}/images`, data, this.BASE_URL, cookies);
+
     if (postRequest.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postRequest.error));
     }
