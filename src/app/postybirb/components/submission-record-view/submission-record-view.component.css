@@ -34,6 +34,8 @@ mat-select {
 .img img {
   height: 50px;
   width: 50px;
+  word-break: break-word;
+  font-size: 9px;
 }
 
 .img mat-icon {
