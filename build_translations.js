@@ -102,6 +102,13 @@ Please specify the language it is being translated to.
 LANGUAGE: <Language being translated to>
 TRANSLATOR: <Person to be credited>
 
+PLEASE UNDERSTAND WHAT THE FIELDS MEAN
+
+Internal: Just ignore this field. I use this for mapping it to the final translation file.
+Translate Me: The text you are translating.
+Context: Just some context for translators since some people have been confused about the purpose/context of the text.
+Translated: The actual translation of Translate Me.
+
 -----------------------------------------------------------------------`;
 
 const buildString = `${all.map(t => JSON.stringify(t, null, 2)).join('\n\n')}\n\n`;
