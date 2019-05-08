@@ -1,8 +1,9 @@
 <ng-snotify></ng-snotify>
+<hotkeys-cheatsheet></hotkeys-cheatsheet>
 <div class="app-layout">
   <mat-toolbar color="primary" class="mat-elevation-z6 p-0">
     <div class="drawer-control">
-      <button mat-icon-button (click)="drawer.toggle()">
+      <button mat-icon-button [disableRipple]="true" (click)="drawer.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
     </div>
@@ -48,6 +49,9 @@
       </a>
       <a [matTooltip]="'Settings' | translate" matTooltipPosition="right" (click)="openSettings()">
         <i class="fas fa-cog"></i>
+      </a>
+      <a [matTooltip]="'Shortcuts' | translate" matTooltipPosition="right" (click)="toggleCheatSheet()">
+        <i class="far fa-keyboard"></i>
       </a>
     </mat-drawer>
 

@@ -18,6 +18,7 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { SnotifyModule, SnotifyService, ToastDefaults } from 'ng-snotify';
+import { HotkeyModule } from 'angular2-hotkeys';
 
 import {
   MatButtonModule,
@@ -47,6 +48,7 @@ import { AppComponent } from './app.component';
         deps: [HttpClient]
       }
     }),
+    HotkeyModule.forRoot(),
     LoginModule,
     PostybirbModule,
     UtilsModule,

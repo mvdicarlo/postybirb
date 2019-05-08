@@ -26,6 +26,7 @@
     "@ngx-translate/core": "^11.0.1",
     "@ngx-translate/http-loader": "^4.0.0",
     "@tinymce/tinymce-angular": "^2.5.0",
+    "angular2-hotkeys": "^2.1.4",
     "bootstrap-css-only": "^4.2.1",
     "core-js": "^2.5.4",
     "dot-prop": "^4.2.0",

@@ -11,6 +11,7 @@ import { MatSelectChange, MatDialog } from '@angular/material';
 
 import { SettingsDialog } from './miscellaneous/dialogs/settings-dialog/settings-dialog.component';
 import { AgreementDialog } from './miscellaneous/dialogs/agreement-dialog/agreement-dialog.component';
+import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 
 @Component({
   selector: 'app-root',
@@ -30,6 +31,7 @@ export class AppComponent implements OnInit {
     _loginManager: LoginManagerService,
     private _router: Router,
     private dialog: MatDialog,
+    private _hotkeyService: HotkeysService,
     snotify: SnotifyService,
     updatesAndNotifications: UpdatesAndNotificationsService // instantiated just to initialize it
   ) {
@@ -81,6 +83,15 @@ export class AppComponent implements OnInit {
 
   ngAfterViewInit() {
     window['loginPanel'] = this.loginPanel;
+    this._hotkeyService.add(new Hotkey(['ctrl+shift+l', 'command+shift+l'], (event: KeyboardEvent) => {
+      this.loginPanel.toggle();
+      return false;
+    }, undefined, 'Toggle Login panel.'));
+
+    this._hotkeyService.add(new Hotkey(['ctrl+shift+s', 'command+shift+s'], (event: KeyboardEvent) => {
+      this.openSettings();
+      return false;
+    }, undefined, 'Open Settings.'));
   }
 
   /**
@@ -118,6 +129,10 @@ export class AppComponent implements OnInit {
       height: '100%',
       width: '100%',
     });
+  }
+
+  public toggleCheatSheet(): void {
+    this._hotkeyService.cheatSheetToggle.next();
   }
 
 }

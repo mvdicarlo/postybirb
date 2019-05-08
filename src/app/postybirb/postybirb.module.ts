@@ -14,6 +14,7 @@ import { WebsitesModule } from '../websites/websites.module';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { OwlDateTimeModule, OwlNativeDateTimeModule } from 'ng-pick-datetime';
+import { HotkeyModule } from 'angular2-hotkeys';
 
 import { ImageCropperModule } from 'ngx-image-cropper';
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
@@ -71,6 +72,7 @@ import { AdditionalImageSplitDialog } from './components/additional-image-split-
     ReactiveFormsModule,
     FormsModule,
     DatabaseModule,
+    HotkeyModule,
     LoginModule,
     TemplatesModule,
     TranslateModule,

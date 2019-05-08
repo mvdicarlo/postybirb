@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material';
 import { FileMetadata, readFileMetadata } from 'src/app/utils/helpers/file-reader.helper';
@@ -20,6 +20,7 @@ import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-d
 import { arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
 import { QueueInserterService } from '../../services/queue-inserter.service';
+import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 
 @Component({
   selector: 'postybirb-layout',
@@ -27,7 +28,7 @@ import { QueueInserterService } from '../../services/queue-inserter.service';
   styleUrls: ['./postybirb-layout.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PostybirbLayout implements OnInit, OnDestroy {
+export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
 
   get submissions(): Submission[] {
@@ -59,6 +60,7 @@ export class PostybirbLayout implements OnInit, OnDestroy {
     public _postQueue: PostQueueService,
     public _queueInserter: QueueInserterService,
     private _changeDetector: ChangeDetectorRef,
+    private _hotkeyService: HotkeysService,
     _scheduler: ScheduledSubmissionManagerService // only called so it will be instantiated
   ) {
 
@@ -97,6 +99,35 @@ export class PostybirbLayout implements OnInit, OnDestroy {
       this.queuedSubmissions = [...queued];
       this._changeDetector.detectChanges();
     });
+  }
+
+  ngAfterViewInit() {
+    this._hotkeyService.add(new Hotkey(['ctrl+t', 'command+t'], (event: KeyboardEvent) => {
+      this._router.navigate(['/template']);
+      return false;
+    }, undefined, 'Opens Template form.'));
+
+    this._hotkeyService.add(new Hotkey(['ctrl+b', 'command+b'], (event: KeyboardEvent) => {
+      this._router.navigate(['/bulk']);
+      return false;
+    }, undefined, 'Opens Bulk Update form.'));
+
+    this._hotkeyService.add(new Hotkey(['ctrl+l', 'command+l'], (event: KeyboardEvent) => {
+      this._router.navigate(['/logs']);
+      return false;
+    }, undefined, 'Opens Logs section.'));
+
+    this._hotkeyService.add(new Hotkey(['ctrl+n+s', 'command+n+s'], (event: KeyboardEvent) => {
+      if (this.fileInput) {
+        this.fileInput.nativeElement.click();
+      }
+      return false;
+    }, undefined, 'Create new submission.'));
+
+    this._hotkeyService.add(new Hotkey(['ctrl+n+j', 'command+n+j'], (event: KeyboardEvent) => {
+      this.createNewJournal();
+      return false;
+    }, undefined, 'Create new journal.'));
   }
 
   ngOnDestroy() {
