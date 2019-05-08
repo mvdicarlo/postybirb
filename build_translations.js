@@ -106,7 +106,7 @@ PLEASE UNDERSTAND WHAT THE FIELDS MEAN
 
 Internal: Just ignore this field. I use this for mapping it to the final translation file.
 Translate Me: The text you are translating.
-Context: Just some context for translators since some people have been confused about the purpose/context of the text.
+Context: Just some context for translators since some people have been confused about the purpose/context of the text. You do not need to translate this field.
 Translated: The actual translation of Translate Me.
 
 -----------------------------------------------------------------------`;
