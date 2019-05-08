@@ -1,6 +1,7 @@
 import { Injectable, isDevMode } from '@angular/core';
 import { Submission, PostStats } from 'src/app/database/models/submission.model';
 import { ISubmission } from 'src/app/database/tables/submission.table';
+import { Subject, Observable } from 'rxjs';
 
 export interface PostyBirbLog {
   submission: ISubmission;
@@ -14,6 +15,9 @@ export interface PostyBirbLog {
 })
 export class PostLoggerService {
   private readonly FILE_NAME: string = 'postybirb_post_logs';
+
+  private subject: Subject<void> = new Subject();
+  public onUpdate: Observable<void> = this.subject.asObservable();
 
   constructor() { }
 
@@ -34,6 +38,8 @@ export class PostLoggerService {
     if (isDevMode()) {
       console.info('Submission Log written', logs[logs.length - 1]);
     }
+
+    this.subject.next();
   }
 
   public getLogs(): Promise<PostyBirbLog[]> {

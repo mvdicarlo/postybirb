@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { PostLoggerService, PostyBirbLog } from '../../services/post-logger.service';
 import { saveAs } from 'file-saver';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'post-logs',
@@ -8,9 +9,11 @@ import { saveAs } from 'file-saver';
   styleUrls: ['./post-logs.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class PostLogs implements OnInit {
+export class PostLogs implements OnInit, OnDestroy {
   public logs: PostyBirbLog[] = [];
   public loading: boolean = true;
+
+  private subscriber: Subscription = Subscription.EMPTY;
 
   constructor(private _postLogs: PostLoggerService, private _changeDetector: ChangeDetectorRef) { }
 
@@ -19,6 +22,12 @@ export class PostLogs implements OnInit {
     this.logs = this.logs.reverse();
     this.loading = false;
     this._changeDetector.markForCheck();
+
+    this.subscriber = this._postLogs.onUpdate.subscribe(() => this.ngOnInit());
+  }
+
+  ngOnDestroy() {
+    this.subscriber.unsubscribe();
   }
 
   public save(log: PostyBirbLog): void {
