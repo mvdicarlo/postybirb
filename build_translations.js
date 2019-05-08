@@ -74,11 +74,14 @@ Object.keys(otherMap).forEach((key) => {
     if (!map[key]) {
         const obj = {
             Internal: key,
+            Context: '',
             'Translate Me': key,
         };
 
         if (contextMap[key] && contextMap[key].length) {
             obj.Context = contextMap[key];
+        } else {
+          delete obj.Context;
         }
 
         obj.Translated = "";
@@ -105,8 +108,8 @@ TRANSLATOR: <Person to be credited>
 PLEASE UNDERSTAND WHAT THE FIELDS MEAN
 
 Internal: Just ignore this field. I use this for mapping it to the final translation file.
-Translate Me: The text you are translating.
 Context: Just some context for translators since some people have been confused about the purpose/context of the text. You do not need to translate this field.
+Translate Me: The text you are translating.
 Translated: The actual translation of Translate Me.
 
 -----------------------------------------------------------------------`;

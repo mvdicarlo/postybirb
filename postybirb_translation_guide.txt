@@ -10,23 +10,23 @@ TRANSLATOR: <Person to be credited>
 PLEASE UNDERSTAND WHAT THE FIELDS MEAN
 
 Internal: Just ignore this field. I use this for mapping it to the final translation file.
-Translate Me: The text you are translating.
 Context: Just some context for translators since some people have been confused about the purpose/context of the text. You do not need to translate this field.
+Translate Me: The text you are translating.
 Translated: The actual translation of Translate Me.
 
 -----------------------------------------------------------------------
 
 {
   "Internal": "Additional Images",
-  "Translate Me": "Additional Images",
   "Context": "Header for a section where users add additional images to a submission form",
+  "Translate Me": "Additional Images",
   "Translated": ""
 }
 
 {
   "Internal": "Adult",
-  "Translate Me": "Adult",
   "Context": "A submission rating. Meaning explicit content or something you wouldn't consider SFW",
+  "Translate Me": "Adult",
   "Translated": ""
 }
 
@@ -38,8 +38,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "All Ages",
-  "Translate Me": "All Ages",
   "Context": "Safe for all ages (found in Pixiv additional options)",
+  "Translate Me": "All Ages",
   "Translated": ""
 }
 
@@ -51,8 +51,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Allow Community Tags",
-  "Translate Me": "Allow Community Tags",
   "Context": "A checkbox option (Pixiv)",
+  "Translate Me": "Allow Community Tags",
   "Translated": ""
 }
 
@@ -64,8 +64,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Authentication Failed",
-  "Translate Me": "Authentication Failed",
   "Context": "Message shown when unable to authenticate a website",
+  "Translate Me": "Authentication Failed",
   "Translated": ""
 }
 
@@ -77,8 +77,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Block Guests",
-  "Translate Me": "Block Guests",
   "Context": "A checkbox option (Inkbunny)",
+  "Translate Me": "Block Guests",
   "Translated": ""
 }
 
@@ -90,8 +90,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Bulk",
-  "Translate Me": "Bulk",
   "Context": "A mode indicator for editing forms in bulk, rather than single (subject to change in the future)",
+  "Translate Me": "Bulk",
   "Translated": ""
 }
 
@@ -115,8 +115,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Category",
-  "Translate Me": "Category",
   "Context": "Header for website options that can be put into categories (e.g. FurAffinity)",
+  "Translate Me": "Category",
   "Translated": ""
 }
 
@@ -134,15 +134,15 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Charge Patrons",
-  "Translate Me": "Charge Patrons",
   "Context": "A checkbox option for Patreon (whether to charge patrons or not)",
+  "Translate Me": "Charge Patrons",
   "Translated": ""
 }
 
 {
   "Internal": "Clear",
-  "Translate Me": "Clear",
   "Context": "Clear form",
+  "Translate Me": "Clear",
   "Translated": ""
 }
 
@@ -196,8 +196,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Critique",
-  "Translate Me": "Critique",
   "Context": "A checkbox for website options",
+  "Translate Me": "Critique",
   "Translated": ""
 }
 
@@ -209,15 +209,15 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Default Description",
-  "Translate Me": "Default Description",
   "Context": "Generic description used by all websites unless changed elsewhere",
+  "Translate Me": "Default Description",
   "Translated": ""
 }
 
 {
   "Internal": "Default Tags",
-  "Translate Me": "Default Tags",
   "Context": "Generic tags used by all websites unless changes elsewhere",
+  "Translate Me": "Default Tags",
   "Translated": ""
 }
 
@@ -289,8 +289,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Extreme",
-  "Translate Me": "Extreme",
   "Context": "A submission rating. Refers to adult and anything that could be considered offensive",
+  "Translate Me": "Extreme",
   "Translated": ""
 }
 
@@ -314,8 +314,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Friends Only",
-  "Translate Me": "Friends Only",
   "Context": "A checkbox option (Inkbunny)",
+  "Translate Me": "Friends Only",
   "Translated": ""
 }
 
@@ -327,29 +327,29 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Gender",
-  "Translate Me": "Gender",
   "Context": "FurAffinity Option",
+  "Translate Me": "Gender",
   "Translated": ""
 }
 
 {
   "Internal": "General",
-  "Translate Me": "General",
   "Context": "A submission rating. Refers to anything SFW.",
+  "Translate Me": "General",
   "Translated": ""
 }
 
 {
   "Internal": "Gore/Violence",
-  "Translate Me": "Gore/Violence",
   "Context": "Pixiv category option",
+  "Translate Me": "Gore/Violence",
   "Translated": ""
 }
 
 {
   "Internal": "Group Only",
-  "Translate Me": "Group Only",
   "Context": "SoFurry option",
+  "Translate Me": "Group Only",
   "Translated": ""
 }
 
@@ -361,15 +361,15 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Help Translate",
-  "Translate Me": "Help Translate",
   "Context": "Help Translate",
+  "Translate Me": "Help Translate",
   "Translated": ""
 }
 
 {
   "Internal": "Hidden",
-  "Translate Me": "Hidden",
   "Context": "SoFurry option",
+  "Translate Me": "Hidden",
   "Translated": ""
 }
 
@@ -387,8 +387,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "In minutes",
-  "Translate Me": "In minutes",
   "Context": "Denotes that the form field is counted in minutes (1 = 1 minute)",
+  "Translate Me": "In minutes",
   "Translated": ""
 }
 
@@ -466,22 +466,22 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Mature",
-  "Translate Me": "Mature",
   "Context": "A submission rating. Refers to things not quite SFW, but not necessarily explicit in nature.",
+  "Translate Me": "Mature",
   "Translated": ""
 }
 
 {
   "Internal": "Mature Category",
-  "Translate Me": "Mature Category",
   "Context": "A website option header",
+  "Translate Me": "Mature Category",
   "Translated": ""
 }
 
 {
   "Internal": "Mature Content",
-  "Translate Me": "Mature Content",
   "Context": "A website option header",
+  "Translate Me": "Mature Content",
   "Translated": ""
 }
 
@@ -499,8 +499,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Minors",
-  "Translate Me": "Minors",
   "Context": "Rating option for Pixiv",
+  "Translate Me": "Minors",
   "Translated": ""
 }
 
@@ -536,8 +536,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "No Free Download",
-  "Translate Me": "No Free Download",
   "Context": "DeviantArt option",
+  "Translate Me": "No Free Download",
   "Translated": ""
 }
 
@@ -573,8 +573,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Notify",
-  "Translate Me": "Notify",
   "Context": "Common website option. Whether or not to notify watchers (DA, IB, Weasyl)",
+  "Translate Me": "Notify",
   "Translated": ""
 }
 
@@ -586,15 +586,15 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Original Work",
-  "Translate Me": "Original Work",
   "Context": "Website option",
+  "Translate Me": "Original Work",
   "Translated": ""
 }
 
 {
   "Internal": "Overwrite Default",
-  "Translate Me": "Overwrite Default",
   "Context": "A checkbox option for tags",
+  "Translate Me": "Overwrite Default",
   "Translated": ""
 }
 
@@ -618,8 +618,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Post",
-  "Translate Me": "Post",
   "Context": "Post/Send/Upload submission",
+  "Translate Me": "Post",
   "Translated": ""
 }
 
@@ -637,8 +637,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Public",
-  "Translate Me": "Public",
   "Context": "Website option",
+  "Translate Me": "Public",
   "Translated": ""
 }
 
@@ -656,8 +656,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Rating",
-  "Translate Me": "Rating",
   "Context": "Content rating of submission",
+  "Translate Me": "Rating",
   "Translated": ""
 }
 
@@ -705,8 +705,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Save",
-  "Translate Me": "Save",
   "Context": "Save/store submission for posting",
+  "Translate Me": "Save",
   "Translated": ""
 }
 
@@ -718,8 +718,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Schedule",
-  "Translate Me": "Schedule",
   "Context": "Button text to schedule a submission to post at a certain time",
+  "Translate Me": "Schedule",
   "Translated": ""
 }
 
@@ -749,15 +749,15 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Sexual Content",
-  "Translate Me": "Sexual Content",
   "Context": "A checkbox for Pixiv (maybe DA) options that spedcifies if the content has sexual content",
+  "Translate Me": "Sexual Content",
   "Translated": ""
 }
 
 {
   "Internal": "Shortcuts",
-  "Translate Me": "Shortcuts",
   "Context": "Text for a button that shows description help and shortcuts",
+  "Translate Me": "Shortcuts",
   "Translated": ""
 }
 
@@ -775,15 +775,15 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Source URL",
-  "Translate Me": "Source URL",
   "Context": "e621 website option",
+  "Translate Me": "Source URL",
   "Translated": ""
 }
 
 {
   "Internal": "Species",
-  "Translate Me": "Species",
   "Context": "FurAffinity species category option",
+  "Translate Me": "Species",
   "Translated": ""
 }
 
@@ -801,8 +801,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Status",
-  "Translate Me": "Status",
   "Context": "FurryNetwork website option to denote status of submission",
+  "Translate Me": "Status",
   "Translated": ""
 }
 
@@ -832,8 +832,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Tags",
-  "Translate Me": "Tags",
   "Context": "Section header for Tag section",
+  "Translate Me": "Tags",
   "Translated": ""
 }
 
@@ -863,8 +863,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Theme",
-  "Translate Me": "Theme",
   "Context": "Generic website option",
+  "Translate Me": "Theme",
   "Translated": ""
 }
 
@@ -894,22 +894,22 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Title",
-  "Translate Me": "Title",
   "Context": "Title of a submission",
+  "Translate Me": "Title",
   "Translated": ""
 }
 
 {
   "Internal": "Unauthorize",
-  "Translate Me": "Unauthorize",
   "Context": "To revoke access to an authorized website (essentially to logout)",
+  "Translate Me": "Unauthorize",
   "Translated": ""
 }
 
 {
   "Internal": "Unlisted",
-  "Translate Me": "Unlisted",
   "Context": "FurryNetwork (maybe SoFurry) visibility option",
+  "Translate Me": "Unlisted",
   "Translated": ""
 }
 
@@ -921,8 +921,8 @@ Translated: The actual translation of Translate Me.
 
 {
   "Internal": "Use Title",
-  "Translate Me": "Use Title",
   "Context": "Tumblr website option to display the title",
+  "Translate Me": "Use Title",
   "Translated": ""
 }
 
