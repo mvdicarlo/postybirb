@@ -1,7 +1,9 @@
 const fs = require('fs');
 
-const fileName = 'jatranslation.json';
-const language = 'ja';
+const fileName = 'translationfile.json';
+const language = 'ar';
+
+// JSON.parse('[' + document.body.innerText.match(/\n{(.*?)\n}/gsm).join(',') + ']')
 
 function loadTranslationFile() {
   return JSON.parse(fs.readFileSync(`${__dirname}/${fileName}`, 'utf8')) || {};

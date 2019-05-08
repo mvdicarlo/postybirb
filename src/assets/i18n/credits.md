@@ -22,3 +22,6 @@ Sledyn
 
 JA
 AlphaKodi
+
+AR
+LurDraigo
