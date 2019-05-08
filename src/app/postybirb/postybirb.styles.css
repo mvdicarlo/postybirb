@@ -51,14 +51,29 @@
   top: 0;
   left: 0;
   opacity: 0.8;
+  background-color: white;
 }
 
-.editing-form .thumbnail div {
+.editing-form .thumbnail img:hover {
+  opacity: 1;
+}
+
+.editing-form .thumbnail div.text-center {
+  pointer-events: none;
   position: absolute;
   bottom: 0;
   left: 0;
   background: #222;
   width: 100%;
+  opacity: 0.75;
+}
+
+.editing-form .thumbnail div.size {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #222;
   opacity: 0.75;
 }
 
