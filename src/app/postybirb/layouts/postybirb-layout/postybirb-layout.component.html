@@ -94,7 +94,12 @@
         </nav>
       </div>
 
-      <div style="overflow: auto">
+      <div class="router-scroller" (scroll)="scrolled($event)" #scroller>
+        <div *ngIf="!hideScrollTop" class="scroll-top-section">
+          <button type="button" class="mt-1 mr-1" mat-mini-fab color="secondary" [disableRipple]="true" (click)="scroller.scrollTo({ top: 0, behavior: 'smooth' })">
+            <mat-icon>keyboard_arrow_up</mat-icon>
+          </button>
+        </div>
         <div class="container mat-elevation-z4" *ngIf="!hideRoute">
           <router-outlet></router-outlet>
         </div>

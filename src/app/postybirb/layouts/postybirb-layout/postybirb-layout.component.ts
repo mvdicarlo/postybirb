@@ -45,6 +45,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   public queuedSubmissions: Submission[] = [];
 
   public loading: boolean = false;
+  public hideScrollTop: boolean = true;
   public hideRoute: boolean = true;
   public cacheCompleted: boolean = false;
   public searchControl: FormControl = new FormControl();
@@ -134,6 +135,20 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.submissionUpdatesListener.unsubscribe();
     this.queueListener.unsubscribe();
+  }
+
+  public async scrolled(event: any) {
+    if (event.target.scrollTop >= event.target.offsetHeight * .15) {
+      if (this.hideScrollTop) {
+        this.hideScrollTop = false;
+        this._changeDetector.markForCheck();
+      }
+    } else {
+      if (!this.hideScrollTop) {
+        this.hideScrollTop = true;
+        this._changeDetector.markForCheck();
+      }
+    }
   }
 
   public cancelAllQueued(): void {

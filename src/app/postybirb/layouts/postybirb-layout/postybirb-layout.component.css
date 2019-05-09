@@ -32,6 +32,26 @@
   /* 48px is height of tab bar */
 }
 
+.router-scroller {
+  overflow: auto;
+  position: relative;
+}
+
+.scroll-top-section {
+  position: sticky;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: row-reverse;
+  height: 0px;
+}
+
+.scroll-top-btn button {
+  opacity: 0.9;
+  outline: none;
+}
+
 .container {
   background-color: rgba(0, 0, 0, 0.1);
 }
