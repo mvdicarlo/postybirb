@@ -133,7 +133,7 @@
         <button mat-button color="accent" (click)="saveTemplate()">{{ 'Save To Template' | translate }}</button>
       </div>
       <div>
-        <button mat-button color="primary" [disabled]="submission.problems.length > 0" (click)="post()">{{ submission.schedule ? 'Schedule' : 'Post' | translate }}</button>
+        <button mat-button color="accent" [disabled]="submission.problems.length > 0" (click)="post()">{{ submission.schedule ? 'Schedule' : 'Post' | translate }}</button>
       </div>
     </div>
 
