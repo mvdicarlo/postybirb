@@ -4,15 +4,17 @@
     <button mat-button (click)="login()" color="accent">{{ 'Login' | translate }}</button>
   </div>
 </div>
-<table class="table table-dark table-hover w-100 m-0">
-  <tbody>
-    <tr *ngFor="let loginStatus of statuses" (click)="login(loginStatus.profileId)">
-      <td class="text-info">{{ loginStatus.profileId | profileName }}</td>
-      <td class="text-uppercase font-weight-bold text-success">{{ loginStatus.status.username }}</td>
-    </tr>
+<div class="table-container">
+  <table class="table table-dark table-hover w-100 m-0">
+    <tbody>
+      <tr *ngFor="let loginStatus of statuses" (click)="login(loginStatus.profileId)">
+        <td class="text-info">{{ loginStatus.profileId | profileName }}</td>
+        <td class="text-uppercase font-weight-bold text-success">{{ loginStatus.status.username }}</td>
+      </tr>
 
-    <tr *ngIf="statuses.length === 0">
-      <td class="text-info" (click)="login()">{{ 'No login found' | translate }}</td>
-    </tr>
-  </tbody>
-</table>
+      <tr *ngIf="statuses.length === 0">
+        <td class="text-info" (click)="login()">{{ 'No login found' | translate }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

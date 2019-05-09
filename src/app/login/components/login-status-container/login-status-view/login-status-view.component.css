@@ -7,3 +7,8 @@
 tr {
   cursor: pointer;
 }
+
+.table-container {
+  max-height: 100px;
+  overflow: overlay;
+}
