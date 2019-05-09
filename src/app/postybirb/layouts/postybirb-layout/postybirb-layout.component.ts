@@ -30,6 +30,7 @@ import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 })
 export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
+  private creatingJournal: boolean = false;
 
   get submissions(): Submission[] {
     if (this.searchControl.value) {
@@ -118,14 +119,14 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     }, undefined, 'Opens Logs section.'));
 
     this._hotkeyService.add(new Hotkey(['ctrl+n+s', 'command+n+s'], (event: KeyboardEvent) => {
-      if (this.fileInput) {
+      if (this.fileInput && !this.loading) {
         this.fileInput.nativeElement.click();
       }
       return false;
     }, undefined, 'Create new submission.'));
 
     this._hotkeyService.add(new Hotkey(['ctrl+n+j', 'command+n+j'], (event: KeyboardEvent) => {
-      this.createNewJournal();
+      if (!this.creatingJournal) this.createNewJournal();
       return false;
     }, undefined, 'Create new journal.'));
   }
@@ -211,6 +212,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
 
   public createNewJournal(): void {
     this.loading = true;
+    this.creatingJournal = true;
     this._changeDetector.markForCheck();
 
     this.dialog.open(InputDialog, {
@@ -230,11 +232,13 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
             submissionType: SubmissionType.JOURNAL
           }]).then(insertResults => {
             this.loading = false;
+            this.creatingJournal = false;
             this.submissions = [...this.submissions, ...insertResults];
             this._changeDetector.markForCheck();
           })
         } else {
           this.loading = false;
+          this.creatingJournal = false;
           this._changeDetector.markForCheck();
         }
       });

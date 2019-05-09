@@ -7,7 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { LoginManagerService } from './login/services/login-manager.service';
 import { UpdatesAndNotificationsService } from './miscellaneous/services/updates-and-notifications.service';
 
-import { MatSelectChange, MatDialog } from '@angular/material';
+import { MatSelectChange, MatDialog, MatDialogRef } from '@angular/material';
 
 import { SettingsDialog } from './miscellaneous/dialogs/settings-dialog/settings-dialog.component';
 import { AgreementDialog } from './miscellaneous/dialogs/agreement-dialog/agreement-dialog.component';
@@ -25,6 +25,8 @@ export class AppComponent implements OnInit {
   public userLanguage: string = 'en';
   public knownLanguages: string[] = ['ar', 'de', 'en', 'es', 'fi', 'fr', 'ja', 'pt', 'ru'];
   private readonly BASE_LANGUAGE: string = 'en';
+  private settingsDialog: MatDialogRef<any>;
+
 
   constructor(
     private _translate: TranslateService,
@@ -123,12 +125,17 @@ export class AppComponent implements OnInit {
   }
 
   public openSettings(): void {
-    this.dialog.open(SettingsDialog, {
-      maxWidth: '100vw',
-      maxHeight: '100vh',
-      height: '100%',
-      width: '100%',
-    });
+    if (this.settingsDialog) {
+      this.settingsDialog.close();
+      this.settingsDialog = null;
+    } else {
+      this.settingsDialog = this.dialog.open(SettingsDialog, {
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        height: '100%',
+        width: '100%',
+      });
+    }
   }
 
   public toggleCheatSheet(): void {

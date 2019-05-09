@@ -1,19 +1,27 @@
-const { remote, nativeImage, shell, clipboard } = require('electron');
+const {
+  remote,
+  nativeImage,
+  shell,
+  clipboard
+} = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 
-const { app, session } = remote;
+const {
+  app,
+  session
+} = remote;
 
 // Loads these behaviors into browser (unsure if this is required anymore)
 const _setImmediate = setImmediate;
 const _clearImmediate = clearImmediate;
 const _Buffer = Buffer;
 process.once('loaded', () => {
-    global.setImmediate = _setImmediate;
-    global.clearImmediate = _clearImmediate;
-    global.Buffer = _Buffer;
+  global.setImmediate = _setImmediate;
+  global.clearImmediate = _clearImmediate;
+  global.Buffer = _Buffer;
 });
 
 window.appVersion = remote.app.getVersion();
@@ -64,17 +72,44 @@ window.auth = {
 
 window.AUTH_URL = require('./src/auth-server.js').auth_server;
 
+const {
+  FindInPage
+} = require('electron-find');
+
+window.onload = () => {
+  let findInPage = new FindInPage(remote.getCurrentWebContents());
+  let hasOpened;
+
+  function searchToggle() {
+    // get symbol reference
+    if (!hasOpened) {
+      hasOpened = Reflect.ownKeys(findInPage).find(s => {
+        return String(s) === "Symbol(hasOpened)";
+      });
+    }
+
+    if (findInPage[hasOpened]) findInPage.closeFindWindow();
+    else findInPage.openFindWindow();
+  }
+
+  window.addEventListener('keydown', event => {
+    if (event.ctrlKey && String.fromCharCode(event.which).toLowerCase() === 'f') {
+      searchToggle();
+    }
+  });
+}
+
 /**
  * Writes object data to a specified JSON file
  * @param  {string} fileName Name of the file to write to
  * @param  {object} data     Data to be written
  */
 window.writeJsonToFile = function writeJsonToFile(fileName, data) {
-    fs.writeJson(path.join(app.getPath('userData'), 'data', `${fileName}.json`), data, (err) => {
-        if (err) {
-            console.error(err);
-        }
-    });
+  fs.writeJson(path.join(app.getPath('userData'), 'data', `${fileName}.json`), data, (err) => {
+    if (err) {
+      console.error(err);
+    }
+  });
 };
 
 /**
@@ -94,7 +129,7 @@ window.readJsonFile = function readJsonFile(fileName) {
  * @param  {string} url URL being opened
  */
 window.openUrlInBrowser = function openUrl(url) {
-    shell.openExternal(url);
+  shell.openExternal(url);
 };
 
 /**
@@ -104,12 +139,14 @@ window.openUrlInBrowser = function openUrl(url) {
  * @return {Promise<Cookie[]>}     Cookies
  */
 window.getCookies = function getCookies(persistId, url) {
-    const cookies = session.fromPartition(`persist:${persistId}`).cookies;
-    return new Promise((resolve, reject) => {
-        cookies.get({ url }, (error, cookies) => {
-            error ? reject(error) : resolve(cookies);
-        });
+  const cookies = session.fromPartition(`persist:${persistId}`).cookies;
+  return new Promise((resolve, reject) => {
+    cookies.get({
+      url
+    }, (error, cookies) => {
+      error ? reject(error) : resolve(cookies);
     });
+  });
 };
 
 /**
@@ -130,11 +167,14 @@ window.getSession = function(persistId) {
 window.getClipboardFormats = clipboard.availableFormats;
 window.writeToClipboard = clipboard.write;
 window.readClipboard = function readClipboard() {
-    return { availableFormats: clipboard.availableFormats(), content: clipboard.readImage() };
+  return {
+    availableFormats: clipboard.availableFormats(),
+    content: clipboard.readImage()
+  };
 };
 
 // Relaunch application (mostly used for toggling hardware acceleration)
 window.relaunch = function relaunch() {
-    app.relaunch();
-    app.exit();
+  app.relaunch();
+  app.exit();
 };
