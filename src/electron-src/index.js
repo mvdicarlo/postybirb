@@ -93,7 +93,7 @@ window.onload = () => {
   }
 
   window.addEventListener('keydown', event => {
-    if (event.ctrlKey && String.fromCharCode(event.which).toLowerCase() === 'f') {
+    if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 'f') {
       searchToggle();
     }
   });
