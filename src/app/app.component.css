@@ -1,10 +1,13 @@
 .app-icon {
-  height: 100%;
   flex: 10;
 }
 
+.app-icon button {
+  max-height: 36px;
+}
+
 .app-icon img {
-  height: 100%;
+  height: 36px;
   width: auto;
   padding: 0.2em 0;
 }
@@ -31,12 +34,12 @@
 }
 
 mat-toolbar {
-  height: 40px;
+  height: 36px;
 }
 
 .app-layout {
   display: grid;
-  grid-template-rows: 40px calc(100vh - 40px);
+  grid-template-rows: 36px calc(100vh - 36px);
 }
 
 mat-drawer a {
