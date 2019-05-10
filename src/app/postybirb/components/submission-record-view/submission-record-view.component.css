@@ -42,12 +42,6 @@ mat-select {
   font-size: 50px;
 }
 
-.img .problem-icon {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
 .control-btns {
   margin-top: 2px;
 }
@@ -66,4 +60,10 @@ button mat-icon {
   font-size: 16px;
   vertical-align: top;
   height: 16px;
+}
+
+.problem-indicator {
+  position: absolute;
+  top: 5px;
+  left: 5px;
 }

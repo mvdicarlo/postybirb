@@ -3,7 +3,6 @@
     <div class="img mr-1" *ngIf="!hideForReload" (click)="fileChange.click()">
       <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL: '50' | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
       <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
-      <i *ngIf="submission.problems && submission.problems.length" class="fas fa-exclamation-triangle problem-icon warn-text"></i>
     </div>
     <form [formGroup]="form" class="submission-controls">
       <input formControlName="title" maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">
@@ -16,7 +15,6 @@
         <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
       </mat-select>
     </form>
-
   </div>
   <div class="control-btns row no-gutters">
     <div class="col" style="min-width: 50px">
@@ -52,4 +50,8 @@
     </ng-template>
   </mat-menu>
   <input #fileChange type="file" class="d-none" (change)="changeFile($event)" single>
+
+  <div *ngIf="submission.problems && submission.problems.length" class="problem-indicator">
+    <div [matBadge]="submission.problems.length" matBadgeColor="warn" matBadgePosition="before" [matBadgeHidden]="!submission.problems || !submission.problems.length" matBadgeSize="small"></div>
+  </div>
 </loading-overlay>

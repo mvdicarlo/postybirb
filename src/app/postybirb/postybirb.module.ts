@@ -20,6 +20,7 @@ import { ImageCropperModule } from 'ngx-image-cropper';
 import { ScrollDispatchModule } from '@angular/cdk/scrolling';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
+  MatBadgeModule,
   MatButtonModule,
   MatCheckboxModule,
   MatDialogModule,
@@ -78,6 +79,7 @@ import { AdditionalImageSplitDialog } from './components/additional-image-split-
     TranslateModule,
     UtilsModule,
     WebsitesModule,
+    MatBadgeModule,
     MatButtonModule,
     MatCheckboxModule,
     MatDialogModule,
