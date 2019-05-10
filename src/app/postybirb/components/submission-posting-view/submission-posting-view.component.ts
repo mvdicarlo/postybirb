@@ -7,7 +7,7 @@ import { QueueInserterService } from '../../services/queue-inserter.service';
 @Component({
   selector: 'submission-posting-view',
   templateUrl: './submission-posting-view.component.html',
-  styleUrls: ['./submission-posting-view.component.css'],
+  styleUrls: ['./submission-posting-view.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SubmissionPostingViewComponent implements OnInit, OnDestroy {

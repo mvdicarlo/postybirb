@@ -17,30 +17,38 @@
       </div>
       <div class="d-inline-block data-section">
         <div class="row no-gutters">
-          <div class="col">
-            <mat-form-field color="accent" class="d-block">
-              <input matInput name="title" [(ngModel)]="d.title" maxlength="50" [placeholder]="'Title' | translate">
-            </mat-form-field>
+          <div class="w-100">
+            <div class="row no-gutters">
+              <div class="col">
+                <mat-form-field color="accent" class="d-block">
+                  <input matInput name="title" [(ngModel)]="d.title" maxlength="50" [placeholder]="'Title' | translate">
+                </mat-form-field>
+              </div>
+              <mat-form-field color="accent" class="col">
+                <mat-select [placeholder]="'Template' | translate" (selectionChange)="d.formData = $event.value">
+                  <mat-option *ngFor="let template of templates" [value]="template.data">{{ template.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <div class="col resize" *ngIf="d.isImage && !d.isGIF && d.width">
+                <mat-form-field color="accent">
+                  <input #width matInput type="number" name="width" placeholder="W" [(ngModel)]="d.width" min="25">
+                </mat-form-field>
+                <mat-form-field color="accent">
+                  <input #height matInput type="number" name="height" placeholder="H" [(ngModel)]="d.height" min="25">
+                </mat-form-field>
+              </div>
+            </div>
           </div>
-          <mat-form-field color="accent" class="col">
-            <mat-select [placeholder]="'Template' | translate" (selectionChange)="d.formData = $event.value">
-              <mat-option *ngFor="let template of templates" [value]="template.data">{{ template.name }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <div class="col resize" *ngIf="d.isImage && !d.isGIF && d.width">
-            <mat-form-field color="accent">
-              <input #width matInput type="number" name="width" placeholder="W" [(ngModel)]="d.width" min="25">
-            </mat-form-field>
-            <mat-form-field color="accent">
-              <input #height matInput type="number" name="height" placeholder="H" [(ngModel)]="d.height" min="25">
-            </mat-form-field>
+          <div class="w-100">
+            <div class="row no-gutters">
+              <mat-radio-group color="accent" (change)="d.rating = $event.value" class="col">
+                <mat-radio-button value="General">{{ 'General' | translate }}</mat-radio-button>
+                <mat-radio-button value="Mature">{{ 'Mature' | translate }}</mat-radio-button>
+                <mat-radio-button value="Adult">{{ 'Adult' | translate }}</mat-radio-button>
+                <mat-radio-button value="Extreme">{{ 'Extreme' | translate }}</mat-radio-button>
+              </mat-radio-group>
+            </div>
           </div>
-          <mat-radio-group color="accent" (change)="d.rating = $event.value" class="d-block">
-            <mat-radio-button value="General">{{ 'General' | translate }}</mat-radio-button>
-            <mat-radio-button value="Mature">{{ 'Mature' | translate }}</mat-radio-button>
-            <mat-radio-button value="Adult">{{ 'Adult' | translate }}</mat-radio-button>
-            <mat-radio-button value="Extreme">{{ 'Extreme' | translate }}</mat-radio-button>
-          </mat-radio-group>
         </div>
       </div>
     </form>

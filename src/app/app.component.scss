@@ -1,0 +1,92 @@
+@import '~@angular/material/theming';
+
+$custom-toolbar-height: 36px;
+
+mat-toolbar {
+  height: $custom-toolbar-height;
+}
+
+mat-drawer {
+  a {
+    position: relative;
+    display: block;
+    width: 50px;
+    height: 50px;
+    cursor: pointer;
+    border-bottom: 1px solid mat-color($mat-gray, 700);
+
+    i {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: lightgray;
+      font-size: 1.5em;
+    }
+
+    &:hover {
+      background-color: mat-color($mat-gray, 600);
+      color: white;
+    }
+  }
+}
+
+mat-sidenav-container {
+  height: 100%;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-rows: 36px calc(100vh - 36px);
+}
+
+.app-icon {
+  flex: 10;
+
+  button {
+    max-height: $custom-toolbar-height;
+  }
+
+  img {
+    height: $custom-toolbar-height;
+    width: auto;
+    padding: 0.2em 0;
+  }
+
+  h3 {
+    display: inline;
+  }
+
+  .version-number {
+    font-size: 0.55em;
+  }
+}
+
+.language-select {
+  flex: 1;
+  font-size: 15px;
+  align-self: stretch;
+  width: 150px;
+
+  mat-form-field {
+    height: 100%;
+    width: 150px !important;
+    float: right;
+  }
+}
+
+.drawer-control {
+  width: 50px;
+
+  button {
+    width: 50px;
+    outline: none;
+  }
+}
+
+.kofi-img {
+  height: 50px;
+  width: 35px;
+  margin: auto;
+  display: block;
+}

@@ -1,0 +1,74 @@
+@import '~@angular/material/theming';
+@import '../../../../material-theme';
+
+mat-select {
+  border-bottom: 1px solid mat-color($accent);
+}
+
+.submission-info-container {
+  font-size: 10px;
+
+  .submission-controls {
+    vertical-align: top;
+  }
+}
+
+.submission-input {
+  outline: none;
+  border: none;
+  background-color: transparent;
+  border-bottom: 1px solid mat-color($accent);
+  color: white;
+
+  &:focus {
+    border-bottom-width: 2px;
+  }
+}
+
+.img {
+  height: 50px;
+  width: 50px;
+  min-width: 50px;
+  margin: auto;
+  cursor: pointer;
+  position: relative;
+
+  img {
+    height: 50px;
+    width: 50px;
+    word-break: break-word;
+    font-size: 9px;
+  }
+
+  mat-icon {
+    font-size: 50px;
+  }
+}
+
+.control-btns {
+  margin-top: 2px;
+
+  div {
+    &:first-child {
+      max-width: 50px !important;
+    }
+  }
+
+  button {
+    border-radius: 0 !important;
+    height: 26px;
+    width: 100%;
+  }
+}
+
+button mat-icon {
+  font-size: 16px;
+  vertical-align: top;
+  height: 16px;
+}
+
+.problem-indicator {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}

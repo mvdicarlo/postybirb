@@ -16,7 +16,7 @@ import { Hotkey, HotkeysService } from 'angular2-hotkeys';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   @ViewChild('loginPanel') loginPanel: any;

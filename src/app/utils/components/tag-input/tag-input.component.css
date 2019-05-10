@@ -1,6 +1,8 @@
 .tag-actions {
-  padding-top: 22px;
+  padding-bottom: 20px;
   font-size: 18px;
+  display: flex;
+  align-items: flex-end;
 }
 
 .tag-actions i,

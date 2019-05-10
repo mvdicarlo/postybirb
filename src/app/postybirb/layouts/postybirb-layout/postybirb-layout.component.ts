@@ -25,7 +25,7 @@ import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 @Component({
   selector: 'postybirb-layout',
   templateUrl: './postybirb-layout.component.html',
-  styleUrls: ['./postybirb-layout.component.css'],
+  styleUrls: ['./postybirb-layout.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
@@ -138,7 +138,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public async scrolled(event: any) {
-    if (event.target.scrollTop >= event.target.offsetHeight * .15) {
+    if (event.target.scrollTop >= Math.min(event.target.offsetHeight * .15, 150)) {
       if (this.hideScrollTop) {
         this.hideScrollTop = false;
         this._changeDetector.markForCheck();

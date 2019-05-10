@@ -1,0 +1,123 @@
+@import '../../material-theme';
+$background: map-get($theme, background);
+
+.editing-form {
+  padding: 0.5em 0.5em 0;
+  position: relative;
+
+  mat-panel-title {
+    width: 150px;
+    flex-grow: unset;
+
+    & > span {
+      flex: 10;
+    }
+  }
+
+  .menu {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  img {
+    height: 100px;
+    width: 100px;
+    cursor: pointer;
+  }
+
+  .thumbnail {
+    position: relative;
+    height: 100px;
+    width: 100px;
+
+    i {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 10;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0.8;
+      background-color: white;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &-block {
+      vertical-align: bottom;
+      font-size: 12px;
+      padding-bottom: 12px;
+    }
+
+    div {
+      position: absolute;
+      pointer-events: none;
+      background: #222;
+
+      &.size {
+        top: 0;
+        left: 0;
+        opacity: 0.75;
+      }
+
+      &.text-center {
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        opacity: 0.75;
+      }
+    }
+  }
+
+  .alert {
+    width: 100%;
+    border-radius: 0;
+    font-size: 12px;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin: 0;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+
+  .template-import {
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.12em;
+  }
+
+  .additional-img-container {
+    cursor: grab;
+  }
+}
+
+.form-actions {
+  position: sticky;
+  bottom: 0;
+  background-color: mat-color($background, 'table');
+  margin-left: -23px;
+  margin-right: -23px;
+  margin-top: 1em;
+}
+
+.basic-form mat-form-field {
+  display: block;
+  margin: -.45em 0;
+}
+
+.help-icon {
+  font-size: 1rem;
+}
+
+.mat-expansion-panel-header[aria-disabled='true'] {
+  cursor: not-allowed;
+}

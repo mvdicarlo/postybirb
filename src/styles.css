@@ -17,6 +17,13 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url("./vendors/fonts/material-icons.woff2") format('woff2');
+}
+
 /* CSS to force fullscreen */
 html, body {
   height: 100% !important;
@@ -41,17 +48,8 @@ body {
   }
 }
 
-.table-dark {
-  background-color: #212529 !important;
-}
-
 .fill-background {
   background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Override default bootstrap coloring for nested tables */
-.table .table {
-  background-color: #2c2c2c !important;
 }
 
 /* Used to size postybirb add menu */

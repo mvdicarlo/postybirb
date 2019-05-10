@@ -1,3 +1,6 @@
+@import '~@angular/material/theming';
+@import '../../../../material-theme';
+
 .submission-posting-info-container {
   font-size: 12px;
 }
@@ -11,27 +14,27 @@
   width: 50px;
   min-width: 50px;
   position: relative;
-}
 
-.img img {
-  height: 50px;
-  width: 50px;
-}
+  img {
+    height: 50px;
+    width: 50px;
+  }
 
-.img mat-icon {
-  font-size: 50px;
+  mat-icon {
+    font-size: 50px;
+  }
 }
 
 .title-bar {
-  border-bottom: 1px solid #039be5 !important;
+  border-bottom: 1px solid mat-color($accent) !important;
   position: relative;
-}
 
-.title-bar mat-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
 }
 
 .title-bar .close-btn {

@@ -1,0 +1,48 @@
+@import './material-theme';
+
+$background: map-get($theme, background);
+
+.table,
+.table-dark {
+   background: mat-color($background, 'table') !important;
+}
+
+.table .table {
+  background: #292929 !important;
+}
+
+.text {
+  &-danger {
+    color: mat-color($warn) !important;
+  }
+
+  &-info {
+    color: mat-color($accent) !important;
+  }
+
+  &-primary {
+    color: mat-color($primary) !important;
+  }
+}
+
+.btn {
+  &-link {
+    color: mat-color($accent) !important;
+
+    &:hover {
+      color: mat-color($accent, 800) !important;
+    }
+  }
+
+  &-secondary {
+    background-color: mat-color($accent) !important;
+    border-color: mat-color($accent) !important;
+  }
+}
+
+.alert {
+  &-danger {
+    border-color: map-get($mat-red, 100) !important;
+    background-color: map-get($mat-red, 100) !important;
+  }
+}

@@ -2,28 +2,34 @@
   height: 100%;
 }
 
+.container {
+  min-height: 100%;
+  background: #26282d;
+}
+
 .pb-sidebar {
   display: grid;
   grid-template-rows: auto 1fr 1fr;
   width: 200px;
-  background-color: #212529;
-}
 
-.actions .add-button {
-  height: 48px;
-  /* to match tab bar */
-}
+  .submission-nav {
+    z-index: 100;
+  }
 
-.actions .submission-actions button {
-  width: 50%;
-}
+  .actions {
+    button {
+      border-radius: 0 !important;
+    }
 
-.pb-sidebar .actions button {
-  border-radius: 0 !important;
-}
+    .add-button {
+      height: 48px;
+      /* to match tab bar */
+    }
 
-.pb-sidebar .submission-nav {
-  z-index: 100;
+    .submission-actions button {
+      width: 50%;
+    }
+  }
 }
 
 .pb-content-grid {
@@ -45,15 +51,11 @@
   display: flex;
   flex-direction: row-reverse;
   height: 0px;
-}
 
-.scroll-top-btn button {
-  opacity: 0.9;
-  outline: none;
-}
-
-.container {
-  background-color: rgba(0, 0, 0, 0.1);
+  button {
+    opacity: 0.9;
+    outline: none;
+  }
 }
 
 .search-input {
@@ -69,10 +71,10 @@
 
 .submission-tab {
   min-width: 120px !important;
-}
 
-.submission-tab submission-tab {
-  width: 120px;
+  submission-tab {
+    width: 120px;
+  }
 }
 
 .cancel-all-btn {

@@ -1,22 +1,31 @@
 @import '~@angular/material/theming';
 
-$custom-typography: mat-typography-config(
-  $font-family: 'Electrolize, Jura, Roboto, "Helvetica Neue", sans-serif;'
+$mat-dark-theme-background: (
+  status-bar: black,
+  app-bar: map_get($mat-grey, 900),
+  background: #202225,
+  hover: rgba(white, 0.04), // TODO(kara): check style with Material Design UX
+  card: map_get($mat-grey, 800),
+  table: map_get($mat-grey, 900),
+  dialog: map_get($mat-grey, 800),
+  disabled-button: rgba(white, 0.12),
+  raised-button: map-get($mat-grey, 800),
+  focused-button: $light-focused,
+  selected-button: map_get($mat-grey, 900),
+  selected-disabled-button: map_get($mat-grey, 800),
+  disabled-button-toggle: black,
+  unselected-chip: map_get($mat-grey, 700),
+  disabled-list-option: black,
 );
+
+$custom-typography: mat-typography-config($font-family: 'Electrolize, Jura, Roboto, "Helvetica Neue", sans-serif;');
 
 @include mat-core($custom-typography);
 $primary: mat-palette($mat-blue, 800);
-$accent: mat-palette($mat-light-blue, 600, 100, 800);
+$accent: mat-palette($mat-light-blue, 700, 100, 800);
 $warn: mat-palette($mat-red, 600);
 $theme: mat-dark-theme($primary, $accent, $warn);
 @include angular-material-theme($theme); // Material Icons
-/* fallback */
-@font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url("./vendors/fonts/material-icons.woff2") format('woff2');
-}
 
 // Need to overwrite bootstrap _reboot.scss
 body {
@@ -35,44 +44,15 @@ code {
   color: mat-color($accent);
 }
 
-.btn-link {
-  color: mat-color($accent) !important;
-}
-
-.btn-link:hover {
-  color: mat-color($accent, 800) !important;
-}
-
-.btn-secondary {
-  background-color: mat-color($accent) !important;
-  border-color: mat-color($accent) !important;
-}
-
 .bordered:not(.clear-border) {
-  background:
-    linear-gradient(to right, mat-color($accent) 1px, transparent 1px) 0 0,
-    linear-gradient(to right, mat-color($accent) 1px, transparent 1px) 0 100%,
-    linear-gradient(to left, mat-color($accent) 1px, transparent 1px) 100% 0,
-    linear-gradient(to left, mat-color($accent) 1px, transparent 1px) 100% 100%,
-    linear-gradient(to bottom, mat-color($accent) 1px, transparent 1px) 0 0,
-    linear-gradient(to bottom, mat-color($accent) 1px, transparent 1px) 100% 0,
-    linear-gradient(to top, mat-color($accent) 1px, transparent 1px) 0 100%,
-    linear-gradient(to top, mat-color($accent) 1px, transparent 1px) 100% 100%;
+  background: linear-gradient(to right, mat-color($accent) 1px, transparent 1px) 0 0, linear-gradient(to right, mat-color($accent) 1px, transparent 1px) 0 100%, linear-gradient(to left, mat-color($accent) 1px, transparent 1px) 100% 0, linear-gradient(to left, mat-color($accent) 1px, transparent 1px) 100% 100%, linear-gradient(to bottom, mat-color($accent) 1px, transparent 1px) 0 0, linear-gradient(to bottom, mat-color($accent) 1px, transparent 1px) 100% 0, linear-gradient(to top, mat-color($accent) 1px, transparent 1px) 0 100%, linear-gradient(to top, mat-color($accent) 1px, transparent 1px) 100% 100%;
   background-repeat: no-repeat;
   background-size: 8px 10px;
   border-radius: 0 !important;
 }
 
 .bordered:hover:not(.clear-border) {
-  background:
-    linear-gradient(to right, mat-color($accent, 800) 1px, transparent 1px) 0 0,
-    linear-gradient(to right, mat-color($accent, 800) 1px, transparent 1px) 0 100%,
-    linear-gradient(to left, mat-color($accent, 800) 1px, transparent 1px) 100% 0,
-    linear-gradient(to left, mat-color($accent, 800) 1px, transparent 1px) 100% 100%,
-    linear-gradient(to bottom, mat-color($accent, 800) 1px, transparent 1px) 0 0,
-    linear-gradient(to bottom, mat-color($accent, 800) 1px, transparent 1px) 100% 0,
-    linear-gradient(to top, mat-color($accent, 800) 1px, transparent 1px) 0 100%,
-    linear-gradient(to top, mat-color($accent, 800) 1px, transparent 1px) 100% 100%;
+  background: linear-gradient(to right, mat-color($accent, 800) 1px, transparent 1px) 0 0, linear-gradient(to right, mat-color($accent, 800) 1px, transparent 1px) 0 100%, linear-gradient(to left, mat-color($accent, 800) 1px, transparent 1px) 100% 0, linear-gradient(to left, mat-color($accent, 800) 1px, transparent 1px) 100% 100%, linear-gradient(to bottom, mat-color($accent, 800) 1px, transparent 1px) 0 0, linear-gradient(to bottom, mat-color($accent, 800) 1px, transparent 1px) 100% 0, linear-gradient(to top, mat-color($accent, 800) 1px, transparent 1px) 0 100%, linear-gradient(to top, mat-color($accent, 800) 1px, transparent 1px) 100% 100%;
   background-repeat: no-repeat;
   background-size: 8px 10px;
   border-radius: 0 !important;
@@ -111,11 +91,6 @@ code {
   overflow-x: auto !important;
   background-color: mat-color($accent);
 }
-
-// .mat-pseudo-checkbox-checked::after {
-//   left: 2px !important;
-//   padding-top: 3px !important;
-// }
 
 mat-radio-button + mat-radio-button {
   margin-left: 4px;
