@@ -22,7 +22,7 @@ $custom-typography: mat-typography-config($font-family: 'Electrolize, Jura, Robo
 
 @include mat-core($custom-typography);
 $primary: mat-palette($mat-blue, 800);
-$accent: mat-palette($mat-light-blue, 700, 100, 800);
+$accent: mat-palette($mat-light-blue, 600, 100, 800);
 $warn: mat-palette($mat-red, 600);
 $theme: mat-dark-theme($primary, $accent, $warn);
 @include angular-material-theme($theme); // Material Icons
