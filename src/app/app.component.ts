@@ -135,6 +135,11 @@ export class AppComponent implements OnInit {
         height: '100%',
         width: '100%',
       });
+
+      this.settingsDialog.afterClosed()
+        .subscribe(() => {
+          this.settingsDialog = null;
+        });
     }
   }
 
