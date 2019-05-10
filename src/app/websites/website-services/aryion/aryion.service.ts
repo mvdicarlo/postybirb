@@ -131,7 +131,7 @@ export class Aryion extends BaseWebsiteService {
       file: fileAsFormDataObject(postData.primary),
       thumb: fileAsFormDataObject(postData.thumbnail),
       desc: postData.description,
-      tags: this.formatTags(postData.tags, []).filter(f => !f.match(/(v|V)ore/)).filter(f => !f.match(/(n|N)on-vore/)).join('\n'),
+      tags: this.formatTags(postData.tags, []).filter(f => !f.match(/^(v|V)ore$/)).filter(f => !f.match(/^(n|N)on-vore$/)).join('\n'),
       'reqtag[]': postData.options.reqtag === 1 ? 'Non-Vore' : '',
       view_perm: postData.options.viewPerm,
       comment_perm: postData.options.commentPerm,
