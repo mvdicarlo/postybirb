@@ -139,7 +139,7 @@ export class SubmissionFileDBService extends DatabaseService {
 
       let altered: boolean = false;
 
-      if (file.isImage && !file.isGIF && file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
+      if (file.canResize && file.isImage && !file.isGIF && file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
         const ni = nativeImage.createFromBuffer(Buffer.from(file.buffer))
         const resizedNi = ni.resize({
           width: Math.min(Number(file.width), Number(file.originalWidth)),

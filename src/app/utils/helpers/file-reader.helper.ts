@@ -1,4 +1,4 @@
-import { isGIF, isImage } from './file.helper';
+import { isGIF, isImage, isType } from './file.helper';
 
 export interface FileMetadata {
   buffer: Uint8Array,
@@ -12,6 +12,7 @@ export interface FileMetadata {
   originalHeight?: number;
   isImage?: boolean;
   isGIF?: boolean;
+  canResize?: boolean;
   formData?: any;
 }
 
@@ -21,10 +22,11 @@ export async function readFileMetadata(file: File, withMetadata: boolean = true)
     buffer: new Uint8Array(await new Response(file).arrayBuffer()),
     title: (file['name'] || '').replace('_', ' ').split('.').shift().substring(0, 50),
     isImage: isImage(file),
-    isGIF: isGIF(file)
+    isGIF: isGIF(file),
+    canResize: isType(file, 'image/png') || isType(file, 'image/jpeg') || isType(file, 'image/jpg')
   };
 
-  if (withMetadata && data.isImage && !data.isGIF) {
+  if (withMetadata && data.canResize && data.isImage && !data.isGIF) {
     const ni = nativeImage.createFromBuffer(Buffer.from(data.buffer));
     const size = ni.getSize();
     data.originalWidth = size.width;

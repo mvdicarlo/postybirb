@@ -9,9 +9,21 @@ export enum TypeOfSubmission {
 
 const TypeMapping: any = {
   [TypeOfSubmission.ART]: ['image'],
-  [TypeOfSubmission.STORY]: ['pdf', 'text', 'rtf', 'doc', 'docx', 'odt', 'md'],
+  [TypeOfSubmission.STORY]: ['pdf', 'text', 'rtf', 'doc', 'docx', 'odt', 'md', 'html', 'log'],
   [TypeOfSubmission.AUDIO]: ['mp3', 'mid', 'wav', 'wav', 'mpeg'],
   [TypeOfSubmission.ANIMATION]: ['swf', 'flv', 'webm', 'mp4']
+}
+
+export function getTypeByExtension(file: File|FileObject): any {
+  const extension = file.type.split('.').pop();
+  for (let key of Object.keys(TypeMapping)) {
+      const accepted = TypeMapping[key];
+      if (accepted.includes(extension)) {
+        return key;
+      }
+  }
+
+  return null;
 }
 
 export function getTypeOfSubmission(file: File|FileObject): any {
@@ -23,5 +35,5 @@ export function getTypeOfSubmission(file: File|FileObject): any {
       }
   }
 
-  return null;
+  return getTypeByExtension(file) || null;
 }
