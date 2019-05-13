@@ -163,6 +163,7 @@ app.on('ready', () => {
   });
 
   if (!devMode) {
+    autoUpdater.checkForUpdates();
     updateInterval = setInterval(() => {
       autoUpdater.checkForUpdates();
     }, 3 * 60 * 60000);
