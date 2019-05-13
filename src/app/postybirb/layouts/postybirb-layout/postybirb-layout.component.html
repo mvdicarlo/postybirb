@@ -36,7 +36,7 @@
       </div>
 
       <div class="submission-nav">
-        <table class="table table-dark m-0" style="height: 100%">
+        <table class="table table-dark m-0 h-100">
           <cdk-virtual-scroll-viewport itemSize="95">
             <tr *cdkVirtualFor="let record of submissions; templateCacheSize: 0">
               <td>
@@ -47,7 +47,7 @@
         </table>
 
         <!-- Queue List -->
-        <table class="table table-dark m-0" style="height: 100%">
+        <table class="table table-dark m-0 h-100">
           <thead>
             <tr>
               {{ 'Queue' | translate }}
