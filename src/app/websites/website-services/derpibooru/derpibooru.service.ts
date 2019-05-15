@@ -10,7 +10,6 @@ import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plain
 import { DerpibooruSubmissionForm } from './components/derpibooru-submission-form/derpibooru-submission-form.component';
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
-import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {

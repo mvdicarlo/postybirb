@@ -68,7 +68,7 @@ export class HentaiFoundry extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
+    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, null);
     try {
       const body = response.body;
       if (body.includes('Logout')) {
@@ -91,8 +91,9 @@ export class HentaiFoundry extends BaseWebsiteService {
   }
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    await this.attemptSessionLoad(postData.profileId);
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/UserBlogs/create`, this.BASE_URL, cookies, postData.profileId);
+    const formPage = await got.get(`${this.BASE_URL}/UserBlogs/create`, this.BASE_URL, cookies, null);
 
     const data: any = {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(formPage.body, 'YII_CSRF_TOKEN'),
@@ -109,8 +110,9 @@ export class HentaiFoundry extends BaseWebsiteService {
   }
 
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    await this.attemptSessionLoad(postData.profileId);
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/pictures/create`, this.BASE_URL, cookies, postData.profileId);
+    const formPage = await got.get(`${this.BASE_URL}/pictures/create`, this.BASE_URL, cookies, null);
     const options = postData.options;
 
     const data: any = {
@@ -155,7 +157,7 @@ export class HentaiFoundry extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
 
-    if (!postResponse.success.body.includes('Submit new picture')) {
+    if (!postResponse.success.body.includes('Submit new picture') && !postResponse.success.response.request.uri.href.includes('/create')) {
       const res = this.createPostResponse(null);
       res.srcURL = postResponse.success.response.request.uri.href;
       return res;

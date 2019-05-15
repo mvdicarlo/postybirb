@@ -38,4 +38,25 @@ export class BaseWebsiteService implements WebsiteService {
     throw new Error("Method not implemented.");
   }
 
+  protected attemptSessionLoad(profileId: string, url?: string): Promise<void> {
+    return new Promise((resolve) => {
+      const win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          partition: `persist:${profileId}`
+        }
+      });
+      win.loadURL(url || this.BASE_URL);
+      win.once('ready-to-show', () => {
+        if (win.isDestroyed()) {
+          resolve();
+          return;
+        }
+
+        win.destroy();
+        resolve();
+      });
+    });
+  }
+
 }
