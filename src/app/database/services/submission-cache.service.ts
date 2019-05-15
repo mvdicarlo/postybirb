@@ -70,6 +70,11 @@ export class SubmissionCache extends CacheService {
       this._validateSubmission(submission);
     }
 
+    if (submission.updateAfterInit) {
+      submission.formData = Object.assign({}, submission.formData);
+      submission.postStats = Object.assign({}, submission.postStats);
+    }
+
     return this.get(`${submission.id}`);
   }
 

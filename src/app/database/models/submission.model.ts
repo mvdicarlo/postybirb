@@ -40,6 +40,7 @@ export interface PostStats {
 export class Submission implements ISubmission {
   private changeSubject: Subject<SubmissionChange> = new Subject();
   public readonly changes: Observable<SubmissionChange>;
+  public updateAfterInit: boolean = false;
 
   public id: number;
   public submissionType: SubmissionType;
@@ -146,7 +147,7 @@ export class Submission implements ISubmission {
     this.formData = submission.formData || <any>{};
 
     // Try to rejuvinate websites in case of a hard reset
-    let forceUpdate: boolean = false;
+    this.updateAfterInit = false;
     if (submission.postStats) {
       if (submission.postStats.fail.length) {
         submission.postStats.fail.forEach(website => {
@@ -155,7 +156,7 @@ export class Submission implements ISubmission {
           }
         });
         this.formData.websites = this.formData.websites.sort();
-        forceUpdate = true;
+        this.updateAfterInit = true;
       }
 
       this.postStats.sourceURLs = submission.postStats.sourceURLs || [];
@@ -166,7 +167,7 @@ export class Submission implements ISubmission {
     }
 
     this.changes = this.changeSubject.asObservable();
-    if (forceUpdate) {
+    if (this.updateAfterInit) {
       this.postStats = Object.assign({}, this.postStats);
     }
   }
