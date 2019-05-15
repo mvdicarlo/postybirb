@@ -1,11 +1,15 @@
 <div class="overlay-container">
   <!-- Blocks UI when loading large data -->
   <div class="blocking-overlay" *ngIf="loading">
-    <mat-progress-bar mode="buffer"></mat-progress-bar>
+    <mat-progress-bar [mode]="mode"></mat-progress-bar>
+    <div class="additional-content">
+      <ng-content select="[loading-body]"></ng-content>
+    </div>
   </div>
 
   <div class="stop" *ngIf="loading && allowStop">
-    <mat-icon [matTooltip]="'Cancel' | translate" matTooltipPosition="right" (click)="emitStop()">close</mat-icon>
+    <mat-icon *ngIf="!faStopIcon" [matTooltip]="'Cancel' | translate" matTooltipPosition="right" (click)="emitStop()">close</mat-icon>
+    <i *ngIf="faStopIcon" [ngClass]="faStopIcon" [matTooltip]="'Cancel' | translate" matTooltipPosition="right" (click)="emitStop()"></i>
   </div>
 
   <ng-content></ng-content>

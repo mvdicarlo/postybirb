@@ -1,4 +1,9 @@
-<loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [allowStop]="submission && (submission.queued || submission.isScheduled)" (stop)="stopPosting()">
+<loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [mode]="submission.isScheduled ? 'indeterminate' : 'buffer'" [allowStop]="submission && (submission.queued || submission.isScheduled)" [faStopIcon]="submission && submission.isScheduled ? 'far fa-calendar-times mt-2' : null" (stop)="stopPosting()">
+  <div loading-body *ngIf="submission && submission.isScheduled">
+    <i class="far fa-clock"></i>
+    <span> {{ submission.schedule | date:'short' }}</span>
+  </div>
+
   <div class="submission-info-container d-flex">
     <div class="img mr-1" *ngIf="!hideForReload" (click)="fileChange.click()">
       <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL: '50' | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">

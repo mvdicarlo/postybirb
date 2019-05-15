@@ -1,0 +1,41 @@
+.overlay-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  .additional-content {
+    text-align: center;
+  }
+
+  .blocking-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .stop {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    text-align: center;
+    width: 100%;
+
+    i,
+    mat-icon {
+      cursor: pointer;
+      height: 40px;
+      width: 40px;
+      font-size: 40px;
+
+      &:hover {
+        color: red;
+      }
+    }
+  }
+}
