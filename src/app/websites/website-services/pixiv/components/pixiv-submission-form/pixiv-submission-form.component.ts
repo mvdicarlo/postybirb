@@ -1,7 +1,6 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
-import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'pixiv-submission-form',
@@ -33,8 +32,6 @@ export class PixivSubmissionForm  extends BaseWebsiteSubmissionForm implements O
 
   ngOnInit() {
     super.ngOnInit();
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 

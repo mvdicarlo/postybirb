@@ -1,6 +1,5 @@
 import { Component, OnInit, forwardRef, Injector, AfterViewInit } from '@angular/core';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
-import { FormControl } from '@angular/forms';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
 
@@ -31,8 +30,6 @@ export class SofurrySubmissionForm extends BaseWebsiteSubmissionForm implements 
   ngOnInit() {
     super.ngOnInit();
     this.folders = this.websiteService.getFolders(this.parentForm.getLoginProfileId()) || [];
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 

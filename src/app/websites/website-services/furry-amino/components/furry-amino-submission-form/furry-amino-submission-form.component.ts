@@ -1,5 +1,4 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { FurryAmino } from '../../furry-amino.service';
 
@@ -23,8 +22,6 @@ export class FurryAminoSubmissionForm extends BaseWebsiteSubmissionForm implemen
   ngOnInit() {
     super.ngOnInit();
     this.categories = (<FurryAmino>this.websiteService).categories;
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 }

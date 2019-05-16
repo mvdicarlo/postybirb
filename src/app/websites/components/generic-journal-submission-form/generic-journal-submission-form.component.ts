@@ -1,5 +1,4 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from '../base-website-submission-form/base-website-submission-form.component';
 
 @Component({
@@ -17,8 +16,6 @@ export class GenericJournalSubmissionForm extends BaseWebsiteSubmissionForm impl
 
   ngOnInit() {
     super.ngOnInit();
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
   }
 
 }

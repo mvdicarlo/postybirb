@@ -2,7 +2,6 @@ import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
-import { FormControl, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'fur-affinity-submission-form',
@@ -37,8 +36,6 @@ export class FurAffinitySubmissionForm extends BaseWebsiteSubmissionForm impleme
   ngOnInit() {
     super.ngOnInit();
     this.folders = this.websiteService.getFolders(this.parentForm.getLoginProfileId()) || [];
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 

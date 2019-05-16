@@ -1,7 +1,7 @@
 import { Component, OnInit, forwardRef, Injector } from '@angular/core';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
-import { FormControl, Validators } from '@angular/forms';
+import { Validators } from '@angular/forms';
 
 @Component({
   selector: 'patreon-submission-form',
@@ -29,8 +29,6 @@ export class PatreonSubmissionForm extends BaseWebsiteSubmissionForm implements 
 
   ngOnInit() {
     super.ngOnInit();
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 

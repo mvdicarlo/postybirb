@@ -24,6 +24,7 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   @Input() websiteService: BaseWebsiteService;
 
   public typeOfSubmission = TypeOfSubmission;
+  public initialized: boolean = false;
 
   public snotify: SnotifyService;
   public controlContainer: ControlContainer;
@@ -47,12 +48,12 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
     this.formGroup = <FormGroup>this.controlContainer.control.get(this.website);
     this.resetListener = this.parentForm.onReset.subscribe(() => {
       // Should I just remove the controls instead?
-      this.formGroup.removeControl('tags');
-      this.formGroup.removeControl('description');
       if (this.optionDefaults) {
         this.formGroup.removeControl('options');
       }
     });
+
+    this.initialized = true;
   }
 
   ngAfterViewInit() {

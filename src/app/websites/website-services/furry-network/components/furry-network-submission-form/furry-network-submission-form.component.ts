@@ -1,7 +1,6 @@
 import { Component, OnInit, Injector, forwardRef, AfterViewInit } from '@angular/core';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
-import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'furry-network-submission-form',
@@ -35,8 +34,6 @@ export class FurryNetworkSubmissionForm extends BaseWebsiteSubmissionForm implem
   ngOnInit() {
     super.ngOnInit();
     this.profiles = (<any>this.websiteService).getProfiles(this.parentForm.getLoginProfileId());
-    if (!this.formGroup.get('tags')) this.formGroup.addControl('tags', new FormControl(null));
-    if (!this.formGroup.get('description')) this.formGroup.addControl('description', new FormControl(null));
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
 
     if (this.formGroup.value.options.profile) {
