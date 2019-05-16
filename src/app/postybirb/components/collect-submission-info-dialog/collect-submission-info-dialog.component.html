@@ -9,13 +9,13 @@
   </div>
 </div>
 <div mat-dialog-content>
-  <div class="row no-gutters my-2">
-    <form class="col-8 col-md-12 col-lg-12 col-xl-12 col-sm-12" *ngFor="let d of data">
-      <div class="d-inline-block mr-1" style="vertical-align: top">
-        <img *ngIf="d.isImage" [src]="d.buffer | objectURL: '75' | safe" [alt]="d.file.name" [title]="d.file.name">
+  <div class="my-2">
+    <form class="d-flex" *ngFor="let d of data">
+      <div class="mr-1" style="vertical-align: top">
+        <img *ngIf="d.isImage" [src]="d.buffer | objectURL | safe" [alt]="d.file.name" [title]="d.file.name">
         <img *ngIf="!d.isImage" [alt]="d.file.name" [title]="d.file.name">
       </div>
-      <div class="d-inline-block data-section">
+      <div class="data-section">
         <div class="row no-gutters">
           <div class="w-100">
             <div class="row no-gutters">

@@ -7,8 +7,15 @@ button {
 }
 
 img {
-  height: 75px;
-  width: 75px;
+  height: 100px;
+  width: 100px;
+  max-width: 100px;
+  word-break: break-word;
+  font-size: 9px;
+}
+
+form + form {
+  margin-top: .25em;
 }
 
 mat-radio-button + mat-radio-button {
@@ -28,7 +35,6 @@ mat-radio-button + mat-radio-button {
 
 .data-section {
   font-size: 12px;
-  width: calc(100% - 90px);
 }
 
 .resize mat-form-field {
