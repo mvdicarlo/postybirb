@@ -1,4 +1,4 @@
-import { Component, OnDestroy, Injector, ChangeDetectorRef, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, Injector, ChangeDetectorRef, AfterViewInit, ViewChild, isDevMode } from '@angular/core';
 import { ProfileStatuses, LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { Subscription, Subject, Observable } from 'rxjs';
 import { Submission } from 'src/app/database/models/submission.model';
@@ -159,9 +159,14 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       this.formDataForm.get(key).valueChanges
         .pipe(debounceTime(300))
         .subscribe((value) => {
-          const copy = copyObject(this.submission.formData);
-          copy[keyField] = value;
-          this._formUpdated(copy);
+          if (JSON.stringify((this.submission.formData || {})[keyField]) !== JSON.stringify(value)) {
+            if (isDevMode()) {
+              console.info(`UPDATED [${keyField}]`, (this.submission.formData || {})[keyField], value);
+            }
+            const copy = copyObject(this.submission.formData);
+            copy[keyField] = value;
+            this._formUpdated(copy);
+          }
         });
     });
   }
