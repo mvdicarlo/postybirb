@@ -124,7 +124,7 @@ app.on('ready', () => {
     label: 'Open',
     click() {
       clearScheduleCheck();
-      createOrOpenNewProfile(PRIMARY_WINDOW_NAME);
+      createOrInitializeWindow();
     },
   }, {
     label: 'Quit',
@@ -147,18 +147,7 @@ app.on('ready', () => {
   tray.setContextMenu(trayMenu);
   tray.setToolTip('PostyBirb');
   tray.on('click', () => {
-    if (!hasWindows()) {
-      initialize();
-    } else {
-      win.closeAfterPost = false;
-      if (win.isMinimized()) {
-        win.restore();
-      } else {
-        win.show();
-      }
-      win.focus();
-    }
-
+    createOrInitializeWindow();
     clearScheduleCheck();
   });
 
@@ -171,6 +160,20 @@ app.on('ready', () => {
 
   initialize();
 });
+
+function createOrInitializeWindow() {
+  if (!hasWindows()) {
+    initialize();
+  } else {
+    win.closeAfterPost = false;
+    if (win.isMinimized()) {
+      win.restore();
+    } else {
+      win.show();
+    }
+    win.focus();
+  }
+}
 
 /**
  * Initializes Application Window
@@ -215,6 +218,11 @@ function initialize(show = true) {
   win.loadURL(`file://${__dirname}/dist/index.html`);
 
   win.on('page-title-updated', e => e.preventDefault()); // Do not allow title changes
+
+  win.webContents.on('new-window', (event) => {
+    log.info('Preventing new window...');
+    event.preventDefault();
+  });
 
   win.on('closed', () => {
     clearInterval(cacheClearInterval);
