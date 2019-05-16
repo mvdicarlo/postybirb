@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/base-value-accessor';
 import { tap } from 'rxjs/operators';
@@ -60,7 +60,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
   public characterCount: number = 0;
   private usernameCodes: { code: string, url: string }[] = [];
 
-  constructor(private _descriptionTemplates: DescriptionTemplatesService, private dialog: MatDialog) {
+  constructor(private _descriptionTemplates: DescriptionTemplatesService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) {
     super({
       overwrite: false,
       description: ''
@@ -151,6 +151,8 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
       description = PlaintextParser.parse(description);
       this.characterCount = description.length;
     }
+
+    this._changeDetector.markForCheck();
   }
 
   public saveDescriptionTemplate(): void {
