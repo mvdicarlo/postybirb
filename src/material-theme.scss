@@ -92,6 +92,12 @@ code {
   background-color: mat-color($accent);
 }
 
+.transparent-dialog mat-dialog-container {
+  background: rgba(0,0,0,0.9) !important;
+  box-shadow: unset;
+  padding: 0;
+}
+
 mat-radio-button + mat-radio-button {
   margin-left: 4px;
 }

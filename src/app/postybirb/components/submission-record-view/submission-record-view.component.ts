@@ -16,6 +16,7 @@ import { SubmissionSelectDialog } from '../submission-select-dialog/submission-s
 import { TemplateSelectDialog } from 'src/app/templates/components/template-select-dialog/template-select-dialog.component';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
 import { QueueInserterService } from '../../services/queue-inserter.service';
+import { ImagePreviewDialog } from '../image-preview-dialog/image-preview-dialog.component';
 
 @Component({
   selector: 'submission-record-view',
@@ -208,6 +209,18 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
           this._copySubmission(toCopy);
         }
       });
+  }
+
+  public openPreview(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.dialog.open(ImagePreviewDialog, {
+      data: this.submission.fileMap.PRIMARY,
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      panelClass: 'transparent-dialog'
+    });
   }
 
   public splitSubmission(): void {

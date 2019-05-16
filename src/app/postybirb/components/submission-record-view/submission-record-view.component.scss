@@ -1,4 +1,3 @@
-@import '~@angular/material/theming';
 @import '../../../../material-theme';
 
 mat-select {
@@ -42,6 +41,14 @@ mat-select {
 
   mat-icon {
     font-size: 50px;
+  }
+
+  .preview {
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: zoom-in;
+    font-size: 11px;
   }
 }
 

@@ -1,0 +1,6 @@
+<div class="preview d-flex h-100">
+  <img *ngIf="fileBuffer" [src]="fileBuffer | objectURL | safe" alt="No preview available">
+  <button mat-icon-button type="button" color="warn" class="close-button warn-text" mat-dialog-close>
+    <mat-icon>close</mat-icon>
+  </button>
+</div>

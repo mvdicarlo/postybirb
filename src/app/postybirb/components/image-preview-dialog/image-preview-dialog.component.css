@@ -1,0 +1,15 @@
+img {
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  margin: auto;
+}
+
+.preview {
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
