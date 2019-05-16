@@ -137,29 +137,10 @@ export class SubmissionFileDBService extends DatabaseService {
     for (let i = 0; i < files.length; i++) {
       const file: FileMetadata = files[i];
 
-      let altered: boolean = false;
-
-      if (file.canResize && file.isImage && !file.isGIF && file.width && file.height && (file.height != file.originalHeight || file.width != file.originalWidth)) {
-        const ni = nativeImage.createFromBuffer(Buffer.from(file.buffer))
-        const resizedNi = ni.resize({
-          width: Math.min(Number(file.width), Number(file.originalWidth)),
-          height: Math.min(Number(file.height), Number(file.originalHeight)),
-          quality: 'best'
-        });
-
-        if (isType(file.file, 'png')) {
-          file.buffer = new Uint8Array(resizedNi.toPNG());
-        } else if (!file.isGIF) {
-          file.buffer = new Uint8Array(resizedNi.toJPEG(100));
-        }
-
-        altered = true;
-      }
-
       modelObjs.push({
         id: undefined,
         submissionId,
-        buffer: altered || file.buffer instanceof Uint8Array ? arrayBufferAsBlob(file.buffer, file.file.type) : file.file,
+        buffer: file.buffer instanceof Uint8Array ? arrayBufferAsBlob(file.buffer, file.file.type) : file.file,
         fileInfo: asFileObject(file.file),
         fileType
       });
