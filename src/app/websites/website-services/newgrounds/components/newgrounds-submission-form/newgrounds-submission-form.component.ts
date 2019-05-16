@@ -39,4 +39,12 @@ export class NewgroundsSubmissionForm extends BaseWebsiteSubmissionForm implemen
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 
+  public usingCreativeCommons(): boolean {
+    if (this.formGroup && this.formGroup.controls.options) {
+      return this.formGroup.controls.options.value.creativeCommons;
+    }
+
+    return true;
+  }
+
 }
