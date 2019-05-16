@@ -171,7 +171,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
   protected _copySubmission(submission: ISubmission): void {
     if (submission.formData) this._safeLoadFormData(submission.formData);
-    if (submission.rating) this.basicInfoForm.patchValue({ rating: submission.rating });
+    if (submission.rating && this.basicInfoForm) this.basicInfoForm.patchValue({ rating: submission.rating });
     this._changeDetector.markForCheck();
   }
 
