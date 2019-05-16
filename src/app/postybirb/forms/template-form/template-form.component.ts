@@ -39,7 +39,8 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
   }
 
   protected _formUpdated(changes: any): void {
-    store.set(this.LOCAL_STORE, changes);
+    super._formUpdated(changes);
+    store.set(this.LOCAL_STORE, this.submission.formData);
   }
 
   public clear(): void {
