@@ -16,6 +16,7 @@ export class SettingsDialog implements OnInit {
   constructor(fb: FormBuilder, private dialog: MatDialog, private databaseService: DatabaseService) {
     this.settingsForm = fb.group({
       hardwareAcceleration: [true],
+      startAsTaskbar: [false],
       postInterval: [0],
       clearQueueOnFailure: [true],
       advertise: [true]
@@ -39,6 +40,10 @@ export class SettingsDialog implements OnInit {
             this.settingsForm.controls.hardwareAcceleration.patchValue(!hardwareAcceleration, { emitEvent: false }); // set back to what it was
           }
         });
+    });
+
+    this.settingsForm.controls.startAsTaskbar.valueChanges.subscribe(startAsTaskbar => {
+      settingsDB.set('startAsTaskbar', startAsTaskbar).write();
     });
 
     this.settingsForm.controls.postInterval.valueChanges.subscribe(postInterval => {

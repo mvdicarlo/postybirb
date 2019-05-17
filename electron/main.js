@@ -158,7 +158,11 @@ app.on('ready', () => {
     }, 3 * 60 * 60000);
   }
 
-  initialize();
+  if (!settings.startAsTaskbar) {
+    initialize();
+  } else {
+    hasScheduled(); // start timers
+  }
 });
 
 function createOrInitializeWindow() {

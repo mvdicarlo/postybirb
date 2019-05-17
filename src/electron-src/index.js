@@ -56,6 +56,7 @@ const sldb = low(settingsAdapter);
 window.settingsDB = sldb;
 settingsDB.defaults({
   hardwareAcceleration: true,
+  startAsTaskbar: false,
   postInterval: 0,
   clearQueueOnFailure: true,
   advertise: true
