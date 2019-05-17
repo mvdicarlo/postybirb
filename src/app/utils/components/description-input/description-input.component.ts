@@ -44,6 +44,8 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
     paste_data_images: false,
     browser_spellcheck: false,
     entity_encoding: 'raw',
+    paste_retain_style_properties: 'color',
+    invalid_elements: 'img,audio,video',
     block_formats: 'Paragraph=p;Header 1=h1;Header 2=h2;Header 3=h3;Header 4=h4;Header 5=h5;Header 6=h6',
     content_style: 'p {margin: 0}',
     height: 200,
