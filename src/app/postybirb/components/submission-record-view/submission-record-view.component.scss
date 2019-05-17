@@ -37,6 +37,11 @@ mat-select {
     width: 50px;
     word-break: break-word;
     font-size: 9px;
+    opacity: 0.8;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   mat-icon {
