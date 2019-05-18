@@ -4,6 +4,7 @@ import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
 import { MatChipInputEvent } from '@angular/material';
+import { copyObject } from '../../helpers/copy.helper';
 
 export interface TagData {
   tags: string[];
@@ -111,6 +112,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   writeValue(data: TagData) {
+    data = copyObject(data);
     if (data && JSON.stringify(this.value) != JSON.stringify(data)) {
       this.value = data;
 
@@ -129,7 +131,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   onChange() {
-    this._onChange(this.value);
+    this._onChange(copyObject(this.value));
     this._internalProvider.next(this.value);
   }
 

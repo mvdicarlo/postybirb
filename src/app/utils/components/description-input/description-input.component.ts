@@ -9,6 +9,7 @@ import { SaveTemplateDialog } from './save-template-dialog/save-template-dialog.
 import { UsernameParser } from '../../helpers/description-parsers/username.parser';
 import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { PlaintextParser } from '../../helpers/description-parsers/plaintext.parser';
+import { copyObject } from '../../helpers/copy.helper';
 
 export interface DescriptionData {
   overwrite: boolean;
@@ -119,6 +120,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
   }
 
   writeValue(data: DescriptionData) {
+    data = copyObject(data);
     if (data && JSON.stringify(this.value) != JSON.stringify(data)) {
       this.value = data;
 
@@ -135,7 +137,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
 
   onChange() {
     if (this.value.overwrite || !this.canOverwrite) {
-      this._onChange(this.value);
+      this._onChange(copyObject(this.value));
     } else {
       this._onChange({ overwrite: false, description: '' });
     }
