@@ -14,7 +14,7 @@ export class UpdatesAndNotificationsService {
   private readonly UPDATES_URL: string = 'http://postybirb.com/version.html';
 
   constructor(private snotify: SnotifyService, private http: HttpClient, private translate: TranslateService) {
-    timer(0, 60 * 60000).subscribe(this._checkForUpdate.bind(this));
+    timer(0, 12 * 60 * 60000).subscribe(this._checkForUpdate.bind(this));
   }
 
   private _checkForUpdate(): void {
