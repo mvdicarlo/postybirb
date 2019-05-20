@@ -1,7 +1,8 @@
 import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { MAT_DIALOG_DATA, MatRadioChange } from '@angular/material';
+import { MAT_DIALOG_DATA } from '@angular/material';
 import { ImageCroppedEvent } from 'ngx-image-cropper';
 import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'image-cropper-dialog',
@@ -14,6 +15,7 @@ export class ImageCropperDialog {
   public cropped64: Uint8Array;
   public ratio: number = 1/1;
   public originalRatio: number = 1/1;
+  public ratioControl = new FormControl([1/1]);
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: Uint8Array, private _changeDetector: ChangeDetectorRef) {
     let ni = nativeImage.createFromBuffer(data);
@@ -32,6 +34,10 @@ export class ImageCropperDialog {
 
     this.base64 = ni.toDataURL();
     this.cropped64 = data;
+
+    this.ratioControl.valueChanges.subscribe(value => this.changeRatio(value));
+
+    this.ratioControl.patchValue(this.originalRatio);
   }
 
   public cropped(crop: ImageCroppedEvent): void {
@@ -39,8 +45,8 @@ export class ImageCropperDialog {
     this._changeDetector.markForCheck();
   }
 
-  public changeRatio(event: MatRadioChange): void {
-    this.ratio = event.value;
+  public changeRatio(value): void {
+    this.ratio = value;
     this._changeDetector.markForCheck();
   }
 

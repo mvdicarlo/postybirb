@@ -10,8 +10,8 @@
 </div>
 <div mat-dialog-content style="height: calc(100vh - 150px); max-height: calc(100vh - 150px);">
   <div>
-    <mat-radio-group (change)="changeRatio($event)">
-      <mat-radio-button [value]="originalRatio">Unset</mat-radio-button>
+    <mat-radio-group [formControl]="ratioControl">
+      <mat-radio-button [value]="originalRatio" *ngIf="originalRatio !== 1/1">Unset</mat-radio-button>
       <mat-radio-button [value]="1/1">1:1</mat-radio-button>
       <mat-radio-button [value]="4/3">4:3</mat-radio-button>
       <mat-radio-button [value]="16/9">16:9</mat-radio-button>
