@@ -277,12 +277,15 @@ export class PostQueueService {
         }
         this._translate.get(failed ? 'Failed' : 'Success', ).subscribe((msg) => {
           new Notification(msg, {
-            body: submission.title,
+            body: submission.title || submission.fileInfo.name,
             icon
           });
 
-          failed ? this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true })
-            : this.snotify.success(submission.title, { timeout: 10000, showProgressBar: true });
+          if (failed) {
+            this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true });
+          } else {
+            this.snotify.success(submission.title || submission.fileInfo.name, { timeout: 7500, showProgressBar: true });
+          }
         });
       } catch (e) { /* ignore */}
 
