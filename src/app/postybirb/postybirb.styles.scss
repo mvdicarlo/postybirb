@@ -1,6 +1,10 @@
 @import '../../material-theme';
 $background: map-get($theme, background);
 
+.failed {
+  border: 1px solid mat-color($warn);
+}
+
 .editing-form {
   padding: 0.5em 0.5em 0;
   position: relative;

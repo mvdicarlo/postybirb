@@ -83,23 +83,23 @@ export class PostManagerService {
         }
 
         // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
-        // try {
-        //   let rand = Math.floor(Math.random() * 100);
-        //   if (rand >= 50) {
-        //     return {};
-        //   } else {
-        //     return Promise.reject({ msg: 'Fail', error: 'Me gusta bailar'})
-        //   }
-        // } catch (err) {
-        //   return Promise.reject(err)
-        // }
-
         try {
-          const post = await this.serviceMap.get(website).post(submissionToPost, postObject);
-          return post;
+          let rand = Math.floor(Math.random() * 100);
+          if (rand >= 100) {
+            return {};
+          } else {
+            return Promise.reject({ msg: 'Fail', error: 'Me gusta bailar'})
+          }
         } catch (err) {
           return Promise.reject(err)
         }
+
+        // try {
+        //   const post = await this.serviceMap.get(website).post(submissionToPost, postObject);
+        //   return post;
+        // } catch (err) {
+        //   return Promise.reject(err)
+        // }
 
       } else {
         return Promise.reject({ msg: 'Not logged in', error: 'Not logged in' });

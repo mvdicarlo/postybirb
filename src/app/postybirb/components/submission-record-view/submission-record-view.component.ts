@@ -22,7 +22,11 @@ import { ImagePreviewDialog } from '../image-preview-dialog/image-preview-dialog
   selector: 'submission-record-view',
   templateUrl: './submission-record-view.component.html',
   styleUrls: ['./submission-record-view.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    'class': 'd-block',
+    '[class.failed]': 'submission && submission.failed'
+  }
 })
 export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   @Input() submission: Submission;

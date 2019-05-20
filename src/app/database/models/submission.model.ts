@@ -107,6 +107,10 @@ export class Submission implements ISubmission {
   }
   private _formData: SubmissionFormData;
 
+  get failed(): boolean {
+    return !!this.postStats.fail.length || !!this.postStats.errors.length;
+  }
+
   get problems(): string[] { return this._problems }
   set problems(problems: string[]) {
     this._problems = problems || [];
@@ -160,6 +164,7 @@ export class Submission implements ISubmission {
       }
 
       this.postStats.sourceURLs = submission.postStats.sourceURLs || [];
+      this.postStats.errors = submission.postStats.errors || [];
     }
 
     if (this.formData.websites) {
