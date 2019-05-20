@@ -11,12 +11,18 @@
         <mat-icon class="warn-text">close</mat-icon>
       </div>
     </div>
-    <div class="row no-gutters">
+    <div class="row no-gutters" *ngIf="!submission.isScheduled">
       <div *ngIf="postingWebsite" class="posting-website">{{ postingWebsite | websiteDisplayname }}</div>
       <div class="w-100 status text-info" *ngIf="wait">
         <span *ngIf="wait">@ {{ wait | date:'mediumTime' }}</span>
       </div>
       <mat-progress-bar class="w-100" *ngIf="postingWebsite" color="accent" mode="determinate" [value]="getProgress()"></mat-progress-bar>
+    </div>
+
+    <div class="row no-gutters" *ngIf="submission.isScheduled">
+      <div class="w-100 status text-info">
+        <span >@ {{ submission.schedule | date:'short' }}</span>
+      </div>
     </div>
   </div>
 </div>

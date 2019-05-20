@@ -87,6 +87,8 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
             this._changeDetector.markForCheck();
           }
         });
+
+        this._updateQueued(this.queuedSubmissions);
       });
 
     this.submissionUpdatesListener = this._submissionDB.changes.subscribe(() => {
@@ -97,10 +99,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
         });
     });
 
-    this.queueListener = this._postQueue.changes.subscribe(queued => {
-      this.queuedSubmissions = [...queued];
-      this._changeDetector.detectChanges();
-    });
+    this.queueListener = this._postQueue.changes.subscribe(queued => this._updateQueued(queued));
   }
 
   ngAfterViewInit() {
@@ -379,6 +378,13 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
       .filter(s => !s.queued)
       .filter(s => !s.isScheduled)
       .filter(s => s.problems.length === 0);
+  }
+
+  private _updateQueued(queued: Submission[]): void {
+    this.queuedSubmissions = [...queued, ...this.submissions.filter(s => s.isScheduled).sort((a,b) => {
+      return b.schedule - a.schedule;
+    })];
+    this._changeDetector.detectChanges();
   }
 
 }

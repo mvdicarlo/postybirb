@@ -106,7 +106,7 @@ export class PostQueueService {
     this._notify();
   }
 
-  private _notify(): void {
+  public _notify(): void {
     this.queueSubject.next(this.queue);
   }
 
