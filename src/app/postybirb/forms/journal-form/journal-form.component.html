@@ -61,6 +61,9 @@
         </div>
 
         <!-- Selected Websites Section -->
+        <div class="alert alert-danger" *ngIf="!formDataForm.value.loginProfile">
+          {{ 'Must select a login profile' | translate }}
+        </div>
         <mat-accordion *ngIf="!triggerWebsiteReload" class="mt-3">
           <mat-expansion-panel #panel *ngFor="let website of formDataForm.value.websites" [disabled]="!isLoggedIn(website)">
             <mat-expansion-panel-header>
