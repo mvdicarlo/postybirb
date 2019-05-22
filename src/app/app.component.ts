@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
 
   public version: string;
   public userLanguage: string = 'en';
-  public knownLanguages: string[] = ['ar', 'de', 'en', 'es', 'fi', 'fr', 'ja', 'pt', 'ru'];
+  public knownLanguages: string[] = ['ar', 'de', 'en', 'es', 'fi', 'fr', 'ja', 'pt', 'ru', 'zh'];
   private readonly BASE_LANGUAGE: string = 'en';
   private settingsDialog: MatDialogRef<any>;
 

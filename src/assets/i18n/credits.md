@@ -25,3 +25,6 @@ AlphaKodi
 
 AR
 LurDraigo
+
+ZH / Chinese
+hker021 (deviantART)
