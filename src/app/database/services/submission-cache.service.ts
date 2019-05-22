@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { CacheService } from './cache.service';
 import { Subscription } from 'rxjs';
 import { Submission } from '../models/submission.model';
-import { validate, getAllWebsiteValidatorsForWebsites } from 'src/app/websites/helpers/website-validator.helper';
+import { validate, getAllWebsiteValidatorsForWebsites, getAllWebsiteWarningValidatorsForWebsites } from 'src/app/websites/helpers/website-validator.helper';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 
 @Injectable({
@@ -33,13 +33,19 @@ export class SubmissionCache extends CacheService {
 
   private _validateSubmission(submission: Submission): void {
     let problems = validate(submission);
+    let warnings = [];
     if (submission.formData && submission.formData.websites) {
       getAllWebsiteValidatorsForWebsites(submission.formData.websites, submission.submissionType)
         .filter(fn => fn !== undefined)
         .forEach(validatorFn => problems = [...problems, ...validatorFn(submission, submission.formData)]);
+
+      getAllWebsiteWarningValidatorsForWebsites(submission.formData.websites, submission.submissionType)
+        .filter(fn => fn !== undefined)
+        .forEach(validatorFn => warnings = [...warnings, ...validatorFn(submission, submission.formData)]);
     }
 
     submission.problems = problems;
+    submission.warnings = warnings.filter(w => !!w);
   }
 
   public getAll(): Submission[] {

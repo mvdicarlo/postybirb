@@ -118,6 +118,13 @@ export class Submission implements ISubmission {
   }
   private _problems: string[] = [];
 
+  get warnings(): string[] { return this._warnings }
+  set warnings(warnings: string[]) {
+    this._warnings = warnings || [];
+    this.flagUpdate('warnings');
+  }
+  private _warnings: string[] = [];
+
   get queued(): boolean { return this._queued }
   set queued(queued: boolean) {
     this._queued = queued;

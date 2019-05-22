@@ -64,6 +64,16 @@ export function getAllWebsiteValidatorsForWebsites(websites: string[], submissio
   return validatorFns;
 }
 
+export function getAllWebsiteWarningValidatorsForWebsites(websites: string[], submissionType: SubmissionType): ((submission: Submission, formData: any) => boolean[])[] {
+  const validatorFns = [];
+  for (let i = 0; i < websites.length; i++) {
+    const config = WebsiteRegistry.getConfigForRegistry(websites[i]).websiteConfig;
+    validatorFns.push(config.validators.warningCheck)
+  }
+
+  return validatorFns;
+}
+
 export function supportsFileType(fileInfo: FileObject, supportedFileTypes: string[]): boolean {
   const split = fileInfo.type.split('/')[1];
   let extension = null;

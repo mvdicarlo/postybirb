@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
-import { supportsFileType } from '../../helpers/website-validator.helper';
+import { supportsFileType, getDescription } from '../../helpers/website-validator.helper';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { MastodonLoginDialog } from './components/mastodon-login-dialog/mastodon-login-dialog.component';
 import { BaseWebsiteService } from '../base-website-service';
@@ -24,6 +24,15 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function warningCheck(submission: Submission, formData: SubmissionFormData): string {
+  const description: string = PlaintextParser.parse(getDescription(submission, Mastodon.name) || '');
+  if (description && description.length > 500) {
+    return Mastodon.name;
+  }
+
+  return null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -38,6 +47,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     journalForm: MastodonSubmissionForm
   },
   validators: {
+    warningCheck,
     submission: submissionValidate
   },
   parsers: {

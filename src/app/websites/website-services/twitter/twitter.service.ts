@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
 import { BaseWebsiteService } from '../base-website-service';
-import { GenericSubmissionForm } from '../../components/generic-submission-form/generic-submission-form.component';
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { Website } from '../../decorators/website-decorator';
 import { TwitterLoginDialog } from './components/twitter-login-dialog/twitter-login-dialog.component';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
-import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
-import { supportsFileType } from '../../helpers/website-validator.helper';
+import { supportsFileType, getDescription } from '../../helpers/website-validator.helper';
 import { MBtoBytes, isGIF } from 'src/app/utils/helpers/file.helper';
 import { TwitterSubmissionForm } from './components/twitter-submission-form/twitter-submission-form.component';
 
@@ -32,6 +30,15 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function warningCheck(submission: Submission, formData: SubmissionFormData): string {
+  const description: string = PlaintextParser.parse(descriptionParse(getDescription(submission, Twitter.name) || ''));
+  if (description && description.length > 280) {
+    return Twitter.name;
+  }
+
+  return null;
+}
+
 function descriptionParse(html: string): string {
   return html.replace(/:tw(.*?):/gi, `@$1`);
 }
@@ -50,6 +57,7 @@ function descriptionParse(html: string): string {
     journalForm: TwitterSubmissionForm
   },
   validators: {
+    warningCheck,
     submission: submissionValidate
   },
   preparsers: {

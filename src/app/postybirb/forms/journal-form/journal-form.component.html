@@ -83,6 +83,11 @@
     </div>
 
     <div class="form-actions d-flex flex-wrap">
+      <div class="alert alert-warning w-100" role="alert" *ngIf="submission.warnings.length">
+        <div *ngFor="let warning of submission.warnings">
+          <i class="fas fa-exclamation-triangle"></i> {{ warning }}
+        </div>
+      </div>
       <div class="alert alert-danger w-100" role="alert" *ngIf="submission.problems.length">
         <div *ngFor="let problem of submission.problems" [translate]="problem[0]" [translateParams]="problem[1]"></div>
       </div>
