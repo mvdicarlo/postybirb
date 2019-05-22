@@ -103,6 +103,11 @@ if (settings) {
   log.info('Hardware Acceleration is off');
 }
 
+// Enable windows 10 notifications
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.lemonynade.postybirb');
+}
+
 app.on('ready', () => {
   log.info('PostyBirb Ready...');
 
