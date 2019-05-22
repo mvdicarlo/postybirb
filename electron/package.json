@@ -1,7 +1,7 @@
 {
   "name": "postybirb",
-  "version": "2.2.4",
-  "description": "postybirb crossposter nodejs angular electronjs electron",
+  "version": "2.2.5",
+  "description": "PostyBirb is an application that helps artists post art and other multimedia to multiple websites more quickly.",
   "main": "main.js",
   "scripts": {
     "clean": "rm -rf electron-dist/",
@@ -83,6 +83,9 @@
           ]
         }
       ]
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true
     }
   },
   "devDependencies": {
