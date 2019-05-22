@@ -17,7 +17,7 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const tags = getTags(submission, Derpibooru.name);
   if (tags.length < 3) problems.push(['Requires minimum tags', { website: 'Derpibooru', value: 3 }]);
   if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'svg', 'gif'])) {
-    problems.push(['Does not support file format', { website: 'e621', value: submission.fileInfo.type }]);
+    problems.push(['Does not support file format', { website: 'Derpibooru', value: submission.fileInfo.type }]);
   }
 
   const type = getTypeOfSubmission(submission.fileInfo)
