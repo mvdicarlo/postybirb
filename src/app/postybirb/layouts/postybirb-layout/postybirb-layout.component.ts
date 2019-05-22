@@ -214,6 +214,8 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
 
                   this.submissions = [...this.submissions, ...insertResults];
                   this._changeDetector.markForCheck();
+
+                  this._openToTab(insertResults[0]);
                 });
             });
           } else {
@@ -249,7 +251,9 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
             this.creatingJournal = false;
             this.submissions = [...this.submissions, ...insertResults];
             this._changeDetector.markForCheck();
-          })
+
+            this._openToTab(insertResults[0]);
+          });
         } else {
           this.loading = false;
           this.creatingJournal = false;
@@ -371,6 +375,12 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
         this.loading = false;
         this._changeDetector.markForCheck();
       });
+  }
+
+  private _openToTab(submission: Submission): void {
+    if (submission) {
+      this._tabManager.addTab(submission);
+    }
   }
 
   private _postableSubmissions(): Submission[] {
