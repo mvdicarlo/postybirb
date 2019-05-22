@@ -18,7 +18,7 @@ $mat-dark-theme-background: (
   disabled-list-option: black,
 );
 
-$custom-typography: mat-typography-config($font-family: 'Electrolize, Jura, Roboto, "Helvetica Neue", sans-serif;');
+$custom-typography: mat-typography-config($font-family: 'Roboto, "Helvetica Neue", sans-serif;');
 
 @include mat-core($custom-typography);
 $primary: mat-palette($mat-blue, 800);
@@ -29,7 +29,7 @@ $theme: mat-dark-theme($primary, $accent, $warn);
 
 // Need to overwrite bootstrap _reboot.scss
 body {
-  font-family: Electrolize, Roboto, "Helvetica Neue", sans-serif !important;
+  font-family: Roboto, "Helvetica Neue", sans-serif !important;
 }
 
 code {
@@ -100,4 +100,8 @@ code {
 
 mat-radio-button + mat-radio-button {
   margin-left: 4px;
+}
+
+.mat-badge-small .mat-badge-content {
+  font-size: 8px !important;
 }
