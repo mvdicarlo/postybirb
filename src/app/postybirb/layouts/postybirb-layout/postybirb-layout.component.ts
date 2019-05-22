@@ -204,7 +204,9 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
                   insertResults.forEach(r => this._submissionCache.store(r));
                   for (let i = 0; i < flat.length; i++) {
                     insertResults[i].fileMap = {
-                      [SubmissionFileType.PRIMARY_FILE]: flat[i].id
+                      [SubmissionFileType.PRIMARY_FILE]: flat[i].id,
+                      [SubmissionFileType.THUMBNAIL_FILE]: null,
+                      [SubmissionFileType.ADDITIONAL_FILE]: [],
                     }
 
                     if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
