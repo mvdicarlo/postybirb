@@ -24,6 +24,8 @@ export class SubmissionDBService extends DatabaseService {
   ) {
     super();
     _cache.setUpdateCallback(this.update.bind(this));
+
+    this._validateDatabase();
   }
 
   public async getSubmissions(): Promise<Submission[]> {
@@ -155,6 +157,20 @@ export class SubmissionDBService extends DatabaseService {
 
   private _updateScheduleWriter(): void {
     this._scheduleWriter.update(this._cache.getAll());
+  }
+
+  private async _validateDatabase() {
+    try {
+      const submissions: ISubmission[] = await this.connection.select({
+        from: SubmissionTableName,
+      });
+
+      if (submissions && submissions.length) {
+        this._submissionFileDB._validateDatabase(submissions.map(s => s.id));
+      }
+    } catch (e) {
+      console.error('Unable to validate database', e);
+    }
   }
 
 }

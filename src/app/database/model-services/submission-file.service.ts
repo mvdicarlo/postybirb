@@ -148,4 +148,19 @@ export class SubmissionFileDBService extends DatabaseService {
 
     return modelObjs;
   }
+
+  public async _validateDatabase(submissionIds: number[]) {
+    const submissionFiles: ISubmissionFile[] = await this.connection.select({
+      from: SubmissionFileTableName,
+    });
+
+    if (submissionFiles && submissionFiles.length) {
+      // Remove submission files that somehow lost their submission binding
+      submissionFiles.forEach(file => {
+        if (!submissionIds.includes(file.submissionId)) {
+          this.deleteSubmissionFileById(file.id);
+        }
+      });
+    }
+  }
 }
