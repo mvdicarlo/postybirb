@@ -109,63 +109,6 @@ export class PostManagerService {
     }
   }
 
-  // public post(website: string, submissionToPost: Submission): Promise<any> {
-  //   const loginInformation: WebsiteStatus = this._loginManager.getWebsiteStatus(submissionToPost.formData.loginProfile, website);
-  //
-  //   if (loginInformation && loginInformation.status === LoginStatus.LOGGED_IN) {
-  //     return new Promise((resolve, reject) => {
-  //       this._submissionFileDB.getFilesBySubmissionId(submissionToPost.id)
-  //         .then(f => {
-  //           this._convertFilesToArrayType(f)
-  //             .then(files => {
-  //               try {
-  //                 const postObject: SubmissionPostData = {
-  //                   additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
-  //                   description: this._parseDescription(getDescription(submissionToPost, website), website),
-  //                   loginInformation,
-  //                   options: getOptions(submissionToPost, website),
-  //                   primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
-  //                   profileId: submissionToPost.formData.loginProfile,
-  //                   srcURLs: submissionToPost.postStats.sourceURLs,
-  //                   tags: getTags(submissionToPost, website),
-  //                   thumbnail: files.filter(f => f.fileType === SubmissionFileType.THUMBNAIL_FILE)[0],
-  //                   typeOfSubmission: submissionToPost.submissionType === SubmissionType.SUBMISSION ? getTypeOfSubmission(files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0].fileInfo) : null
-  //                 };
-  //
-  //                 // Filter thumbnails on specified excluded websites
-  //                 const excludedThubmanails: string[] = submissionToPost.formData.excludeThumbnailWebsites || [];
-  //                 if (excludedThubmanails.length && excludedThubmanails.includes(website)) {
-  //                   postObject.thumbnail = undefined;
-  //                 }
-  //
-  //                 // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
-  //                 // setTimeout(() => {
-  //                 //   let rand = Math.floor(Math.random() * 100);
-  //                 //   rand >= 50 ? resolve({}) : reject({ msg: 'Fail', error: 'Me gusta bailar'})
-  //                 // });
-  //
-  //                 this.serviceMap.get(website).post(submissionToPost, postObject)
-  //                   .then(res => {
-  //                     resolve(res);
-  //                   }).catch(err => {
-  //                     reject(err);
-  //                   });
-  //               } catch (error) {
-  //                 reject({ msg: 'An internal error occurred', error });
-  //               }
-  //             })
-  //             .catch(error => {
-  //               reject({ msg: 'An internal error occurred', error });
-  //             });
-  //         }).catch(error => {
-  //           reject({ msg: 'An internal error occurred', error });
-  //         });
-  //     });
-  //   } else {
-  //     return Promise.reject({ msg: 'Not logged in', error: 'Not logged in' });
-  //   }
-  // }
-
   private _parseDescription(description: string, website: string): string {
     const config = WebsiteRegistry.getConfigForRegistry(website).websiteConfig
     const preparsers: any[] = dotProp.get(config, 'preparsers.description', []);
