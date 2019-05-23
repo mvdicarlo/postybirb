@@ -157,18 +157,24 @@ app.on('ready', () => {
   });
 
   if (!devMode) {
-    autoUpdater.checkForUpdates();
+    autoUpdater.autoUpdater.checkForUpdates();
     updateInterval = setInterval(() => {
       autoUpdater.checkForUpdates();
     }, 3 * 60 * 60000);
-  }
 
+    start();
+  } else {
+    start();
+  }
+});
+
+function start() {
   if (!settings.startAsTaskbar) {
-    initialize();
+    createOrInitializeWindow();
   } else {
     hasScheduled(); // start timers
   }
-});
+}
 
 function createOrInitializeWindow() {
   if (!hasWindows()) {

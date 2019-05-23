@@ -67,7 +67,7 @@ autoUpdater.on('error', (err) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   if (progressWindow) {
-    progressWindow.close();
+    progressWindow.destroy();
     progressWindow = null;
   }
 
@@ -101,4 +101,4 @@ function sendStatusToWindow(text) {
   }
 }
 
-module.exports = autoUpdater;
+module.exports = { autoUpdater };
