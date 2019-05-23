@@ -6,6 +6,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { Aryion } from './website-services/aryion/aryion.service';
 import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
 import { DeviantArt } from './website-services/deviant-art/deviant-art.service';
+import { Discord } from './website-services/discord/discord.service';
 import { E621 } from './website-services/e621/e621.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
 import { Furiffic } from './website-services/furiffic/furiffic.service';
@@ -79,6 +80,8 @@ import { WeasylSubmissionForm } from './website-services/weasyl/components/weasy
 import { WebsiteDisplaynamePipe } from './pipes/website-displayname.pipe';
 import { WebsiteSubmissionFormDisplayDirective } from './directives/website-submission-form-display.directive';
 import { PiczelSubmissionForm } from './website-services/piczel/components/piczel-submission-form/piczel-submission-form.component';
+import { DiscordLoginDialog } from './website-services/discord/components/discord-login-dialog/discord-login-dialog.component';
+import { DiscordSubmissionForm } from './website-services/discord/components/discord-submission-form/discord-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -121,6 +124,8 @@ export function INIT_WEBSITE_REGISTRY() {
     WebsiteDisplaynamePipe,
     WebsiteSubmissionFormDisplayDirective,
     PiczelSubmissionForm,
+    DiscordLoginDialog,
+    DiscordSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -151,6 +156,8 @@ export function INIT_WEBSITE_REGISTRY() {
     DerpibooruSubmissionForm,
     DeviantArtLoginDialog,
     DeviantArtSubmissionForm,
+    DiscordLoginDialog,
+    DiscordSubmissionForm,
     E621SubmissionForm,
     FurAffinitySubmissionForm,
     FurryAminoSubmissionForm,
@@ -186,6 +193,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Aryion,
         Derpibooru,
         DeviantArt,
+        Discord,
         E621,
         FurAffinity,
         Furiffic,

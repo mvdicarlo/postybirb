@@ -1,0 +1,14 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <mat-form-field color="accent">
+      <mat-select formControlName="webhooks" [placeholder]="'Webhooks' | translate" required multiple>
+        <mat-option *ngFor="let webhook of webhooks" [value]="webhook">{{ webhook.name }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</form>

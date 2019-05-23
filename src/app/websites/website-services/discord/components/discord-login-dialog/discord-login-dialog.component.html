@@ -1,0 +1,44 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ data.title | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content class="ignore-max-content-height">
+  <div class="container">
+    <h4>Webhooks</h4>
+    <h6>
+      <a href="#" (click)="openHelp($event)">
+        Making A Webhook
+      </a>
+    </h6>
+    <div *ngFor="let webhook of webhooks" class="mt-1">
+      <span style="word-break: break-word;">
+        {{ webhook.name }} <i class="fas fa-times warn-text" (click)="removeWebhook(webhook.webhook)"></i>
+        <br>
+        {{ webhook.webhook }}
+      </span>
+    </div>
+
+    <div class="mt-3">
+      <form [formGroup]="webhookForm" (ngSubmit)="addWebhook()">
+        <div class="d-flex">
+          <mat-form-field color="accent" style="flex: 1">
+            <input matInput type="text" formControlName="name" [placeholder]="'Name' | translate" required>
+          </mat-form-field>
+          <mat-form-field color="accent" style="flex: 10">
+            <input matInput type="text" formControlName="webhook" [placeholder]="'Webhook URL' | translate" required>
+          </mat-form-field>
+        </div>
+        <div class="w-100">
+          <button mat-flat-button color="accent" type="submit" [disabled]="webhookForm.invalid">{{ 'Add' | translate }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
