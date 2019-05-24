@@ -77,7 +77,7 @@ export class Submission implements ISubmission {
     title = (title || '').trim();
     const old = this._title;
     this._title = title;
-    this._emitChange('title', old, title, true);
+    this._emitChange('title', old, title);
   }
   private _title: string;
 

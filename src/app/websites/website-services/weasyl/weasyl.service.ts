@@ -15,7 +15,6 @@ import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.help
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, Weasyl.name);
-  if (!submission.title) problems.push(['Weasyl requires a title']);
   if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'Weasyl', value: 2 }]);
   if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'])) {
     problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
@@ -191,7 +190,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
 
     const data = {
       token: HTMLParser.getInputValue(journalPage, 'token'),
-      title: submission.title,
+      title: submission.title || 'New Submission',
       rating: this.getRating(submission.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, [])
@@ -215,7 +214,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
 
     const data: any = {
       token: HTMLParser.getInputValue(journalPage, 'token'),
-      title: submission.title,
+      title: submission.title || 'New Submission',
       rating: this.getRating(submission.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, []),

@@ -10,6 +10,7 @@ import { LoginProfileManagerService } from 'src/app/login/services/login-profile
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { TumblrSubmissionForm } from './components/tumblr-submission-form/tumblr-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
+import { CustomHTMLParser } from 'src/app/utils/helpers/description-parsers/html.parser';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -35,9 +36,9 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 
 function descriptionParse(html: string): string {
   if (!html) return '';
-  return html
+  return CustomHTMLParser.parse(html
     .replace(/<p/gm, '<div')
-    .replace(/<\/p>/gm, '</div>');
+    .replace(/<\/p>/gm, '</div>'));
 }
 
 @Injectable({
