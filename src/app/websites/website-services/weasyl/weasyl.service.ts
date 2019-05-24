@@ -15,6 +15,7 @@ import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.help
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, Weasyl.name);
+  if (!submission.title) problems.push(['Weasyl requires a title']);
   if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'Weasyl', value: 2 }]);
   if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'])) {
     problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
