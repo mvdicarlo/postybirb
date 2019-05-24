@@ -37,7 +37,7 @@ export class BBCodeParser {
     html = html.replace(/<div>/gi, '');
     html = html.replace(/<\/div>/gi, '\r');
     html = html.replace(/<p>/gi, '');
-    html = html.replace(/<\/p>/gi, '');
+    html = html.replace(/<\/p>/gi, '\r');
     html = html.replace(/<pre>/gi, '');
     html = html.replace(/<\/pre>/gi, '\r');
     html = html.replace(/<td(.*?)>/gi, ' ');
