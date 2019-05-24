@@ -141,7 +141,7 @@ export class Patreon extends BaseWebsiteService {
       post_type: 'text_only',
       is_paid: false,
       min_cents_pledged_to_view: 0,
-      title: submission.title,
+      title: postData.title,
       tags: { publish: true }
     };
 
@@ -268,7 +268,7 @@ export class Patreon extends BaseWebsiteService {
       post_type: this._getPostType(postData.typeOfSubmission),
       is_paid: options.chargePatrons,
       min_cents_pledged_to_view: options.patronsOnly ? (options.minimumDollarsToView || 0) * 100 || 1 : (options.minimumDollarsToView || 0) * 100,
-      title: submission.title,
+      title: postData.title,
       tags: { publish: true }
     };
 

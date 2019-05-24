@@ -159,7 +159,7 @@ export class SoFurry extends BaseWebsiteService {
     const data: any = {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(body, 'YII_CSRF_TOKEN'),
       'UploadForm[P_id]': HTMLParser.getInputValue(body, 'UploadForm[P_id]'),
-      'UploadForm[P_title]': submission.title,
+      'UploadForm[P_title]': postData.title,
       'UploadForm[textcontent]': postData.description,
       'UploadForm[description]': postData.description.split('.')[0],
       'UploadForm[formtags]': this.formatTags(postData.tags, []),
@@ -195,7 +195,7 @@ export class SoFurry extends BaseWebsiteService {
     const data: any = {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(body, 'YII_CSRF_TOKEN'),
       'UploadForm[binarycontent_5]': fileAsFormDataObject(postData.thumbnail),
-      'UploadForm[P_title]': submission.title,
+      'UploadForm[P_title]': postData.title,
       'UploadForm[description]': postData.description.replace(/<\/div>(\n|\r)/g, '</div>'),
       'UploadForm[formtags]': this.formatTags(postData.tags, []),
       'UploadForm[contentLevel]': this.getContentRating(submission.rating),

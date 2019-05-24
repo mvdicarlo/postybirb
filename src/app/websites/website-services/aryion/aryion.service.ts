@@ -127,7 +127,7 @@ export class Aryion extends BaseWebsiteService {
       action: 'new-item',
       parentid: postData.options.folderId,
       MAX_FILE_SIZE: '78643200',
-      title: submission.title,
+      title: postData.title,
       file: fileAsFormDataObject(postData.primary),
       thumb: fileAsFormDataObject(postData.thumbnail),
       desc: postData.description,

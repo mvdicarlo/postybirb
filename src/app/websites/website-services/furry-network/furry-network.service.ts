@@ -217,7 +217,7 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
       content: postData.description,
       description: postData.description.split('.')[0],
       rating: this.getRating(submission.rating),
-      title: submission.title,
+      title: postData.title,
       subtitle: '',
       tags: this.formatTags(postData.tags, []),
       status: 'public'
@@ -266,9 +266,9 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
     if (type === 'story') {
       return {
         collections: options.folders || [],
-        description: postData.description || submission.title,
+        description: postData.description || postData.title,
         status: options.status,
-        title: submission.title,
+        title: postData.title,
         tags: this.formatTags(postData.tags, []),
         rating: this.getRating(submission.rating),
         community_tags_allowed: options.communityTags.toString(),
@@ -279,7 +279,7 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
         collections: options.folders || [],
         description: postData.description,
         status: options.status,
-        title: submission.title,
+        title: postData.title,
         tags: this.formatTags(postData.tags, []),
         rating: this.getRating(submission.rating),
         community_tags_allowed: options.communityTags,

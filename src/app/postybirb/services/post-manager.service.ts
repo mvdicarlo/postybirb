@@ -64,6 +64,7 @@ export class PostManagerService {
         const files = await this._convertFilesToArrayType(f);
 
         const postObject: SubmissionPostData = {
+          title: submissionToPost.title || 'New Submission',
           additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
           description: this._parseDescription(getDescription(submissionToPost, website), website),
           loginInformation,

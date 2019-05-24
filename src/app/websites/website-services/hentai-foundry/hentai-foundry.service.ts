@@ -97,7 +97,7 @@ export class HentaiFoundry extends BaseWebsiteService {
 
     const data: any = {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(formPage.body, 'YII_CSRF_TOKEN'),
-      'UserBlogs[blog_title]': submission.title,
+      'UserBlogs[blog_title]': postData.title,
       'UserBlogs[blog_body]': postData.description
     };
 
@@ -118,7 +118,7 @@ export class HentaiFoundry extends BaseWebsiteService {
     const data: any = {
       YII_CSRF_TOKEN: HTMLParser.getInputValue(formPage.body, 'YII_CSRF_TOKEN'),
       'Pictures[user_id]': HTMLParser.getInputValue(formPage.body, 'Pictures[user_id]'),
-      'Pictures[title]': submission.title,
+      'Pictures[title]': postData.title,
       'Pictures[description]': postData.description,
       'Pictures[fileupload]': fileAsFormDataObject(postData.primary),
       'Pictures[submissionPolicyAgree]': '1',

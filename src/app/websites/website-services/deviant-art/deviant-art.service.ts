@@ -203,7 +203,7 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const authData = this._profileManager.getData(postData.profileId, DeviantArt.name);
     const data: any = {
-      title: submission.title,
+      title: postData.title,
       access_token: authData.access_token,
       file: fileAsFormDataObject(postData.primary),
       artist_comments: postData.description

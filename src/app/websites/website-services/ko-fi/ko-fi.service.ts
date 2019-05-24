@@ -115,7 +115,7 @@ export class KoFi extends BaseWebsiteService {
 
     const data = {
       blogPostId: '',
-      blogPostTitle: submission.title,
+      blogPostTitle: postData.title,
       blogPostBody: postData.description,
       featuredImage: '',
       embedUrl: '',
@@ -197,7 +197,7 @@ export class KoFi extends BaseWebsiteService {
 
     const data: any = {
       uniqueName: filename,
-      title: submission.title,
+      title: postData.title,
       description: PlaintextParser.parse(postData.description),
       postToTwitter: 'false',
       enableHiRes: 'false',

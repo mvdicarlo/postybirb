@@ -91,7 +91,7 @@ export class Pixiv extends BaseWebsiteService {
       uptype: 'illust',
       'x_restrict_sexual': this.getContentRating(submission.rating),
       sexual: '',
-      title: submission.title.substring(0, 32),
+      title: postData.title.substring(0, 32),
       tag: this.formatTags(postData.tags, []),
       comment: postData.description,
       rating: '1',

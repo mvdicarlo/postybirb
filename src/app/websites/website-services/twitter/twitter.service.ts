@@ -104,7 +104,7 @@ export class Twitter extends BaseWebsiteService {
     const options = postData.options;
     const authData = this._profileManager.getData(postData.profileId, Twitter.name);
     const data: any = {
-      status: `${options.useTitle ? submission.title + '\n\n' : ''}${postData.description}`.substring(0, 280),
+      status: `${options.useTitle ? postData.title + '\n\n' : ''}${postData.description}`.substring(0, 280),
       medias: [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => {
         return {
           base64: Buffer.from(f.buffer).toString('base64'),

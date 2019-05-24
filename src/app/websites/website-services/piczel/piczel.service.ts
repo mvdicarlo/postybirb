@@ -109,7 +109,7 @@ export class Piczel extends BaseWebsiteService {
     const data: any = {
       nsfw: forceNSFWRating || options.nsfw,
       description: postData.description,
-      title: submission.title || 'New Submission',
+      title: postData.title || 'New Submission',
       tags: this.formatTags(postData.tags || [], []),
       image: `data:${postData.primary.fileInfo.type};base64,${Buffer.from(postData.primary.buffer).toString('base64')}`
     };

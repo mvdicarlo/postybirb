@@ -21,6 +21,7 @@ export interface PostResult {
 }
 
 export interface SubmissionPostData {
+  title: string;
   additionalFiles: ISubmissionFileWithArray[];
   description: string;
   loginInformation: WebsiteStatus;

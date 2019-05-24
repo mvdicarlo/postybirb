@@ -93,7 +93,7 @@ export class Mastodon extends BaseWebsiteService {
       authData.website,
       [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => fileAsFormDataObject(f)),
       submission.rating !== SubmissionRating.GENERAL,
-      `${postData.options.useTitle ? submission.title + '\n' : ''}${postData.description}`.substring(0, 490).trim(), // substr 500 seems to cause issue
+      `${postData.options.useTitle ? postData.title + '\n' : ''}${postData.description}`.substring(0, 490).trim(), // substr 500 seems to cause issue
       postData.options.spoilerText
     );
 

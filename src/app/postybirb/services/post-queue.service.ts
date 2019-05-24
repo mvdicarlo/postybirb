@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Submission, SubmissionChange } from 'src/app/database/models/submission.model';
+import { Submission } from 'src/app/database/models/submission.model';
 import { TabManager } from './tab-manager.service';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { PostManagerService } from './post-manager.service';
 import { SnotifyService } from 'ng-snotify';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';

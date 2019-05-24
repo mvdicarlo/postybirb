@@ -118,7 +118,7 @@ export class Route50 extends BaseWebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     const data: any = {
-      title: submission.title,
+      title: postData.title,
       file: fileAsFormDataObject(postData.primary),
       thumbnail: fileAsFormDataObject(postData.thumbnail),
       category: this.getCategoryCode(postData.typeOfSubmission),
@@ -137,7 +137,7 @@ export class Route50 extends BaseWebsiteService {
     if (response.error) {
       return Promise.reject(this.createPostResponse('Unknown error posting to Route 50', response.error));
     } else {
-      if (response.success.body.includes(submission.title)) {
+      if (response.success.body.includes(postData.title)) {
         return this.createPostResponse(null);
       } else {
         return Promise.reject(this.createPostResponse(null, response.error));

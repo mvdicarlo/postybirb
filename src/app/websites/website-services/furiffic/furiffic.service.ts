@@ -106,7 +106,7 @@ export class Furiffic extends BaseWebsiteService {
 
     const data: any = {
       type: 'textual',
-      name: submission.title,
+      name: postData.title,
       link: '',
       body: `[p]${postData.description}[/p]`,
       shortDescription: postData.description.split('.')[0],
@@ -162,7 +162,7 @@ export class Furiffic extends BaseWebsiteService {
     const formData: any = JSON.parse(form.success.body);
 
     const infoData: any = {
-      name: submission.title.substring(0, 30),
+      name: postData.title.substring(0, 30),
       rating: this.getRating(submission.rating),
       category: formData[0].category,
       visibility: 'public',

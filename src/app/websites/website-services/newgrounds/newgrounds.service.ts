@@ -129,7 +129,7 @@ export class Newgrounds extends BaseWebsiteService {
 
     const data2: any = {
       userkey,
-      title: submission.title,
+      title: postData.title,
       description: `<p>${postData.description}</p>`,
       thumbnail: fileAsFormDataObject(thumbfile),
       cc_commercial: options.commercial ? 'yes' : 'no',

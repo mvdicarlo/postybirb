@@ -131,7 +131,7 @@ export class FurryAmino extends BaseWebsiteService {
           fansOnly: false
         },
         taggedBlogCategoryIdList: '',
-        title: submission.title,
+        title: postData.title,
         type: 0
       }
     };
@@ -190,7 +190,7 @@ export class FurryAmino extends BaseWebsiteService {
         },
         mediaList,
         taggedBlogCategoryIdList: postData.options.categories,
-        title: submission.title,
+        title: postData.title,
         type: 0
       }
     };

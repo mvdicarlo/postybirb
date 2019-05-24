@@ -190,7 +190,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     const data: any = {
       key: HTMLParser.getInputValue(page.body, 'key'),
       message: postData.description,
-      subject: submission.title,
+      subject: postData.title,
       submit: 'Create / Update Journal',
       id: '',
       do: 'update'
@@ -245,7 +245,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         const finalizeData: any = {
           part: '5',
           key: HTMLParser.getInputValue(uploadBody, 'key'),
-          title: submission.title,
+          title: postData.title,
           keywords: this.formatTags(postData.tags, []),
           message: postData.description,
           submission_type: this.getContentType(postData.typeOfSubmission),

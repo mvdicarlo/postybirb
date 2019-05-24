@@ -178,7 +178,7 @@ export class InkBunny extends BaseWebsiteService {
       const editData: any = {
         sid: authData.sid,
         submission_id: responseBody.submission_id,
-        title: submission.title,
+        title: postData.title,
         desc: postData.description,
         keywords: this.formatTags(postData.tags, []),
       };
