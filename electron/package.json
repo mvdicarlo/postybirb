@@ -9,7 +9,7 @@
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
     "eb-windows": "electron-builder -w",
-    "build": "electron-builder -wml -p always"
+    "build": "export $(cat .env | xargs) && electron-builder -mwl -p always"
   },
   "repository": {
     "type": "git",
@@ -83,9 +83,6 @@
           ]
         }
       ]
-    },
-    "nsis": {
-      "allowToChangeInstallationDirectory": true
     }
   },
   "devDependencies": {
