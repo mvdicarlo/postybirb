@@ -59,6 +59,9 @@
       ]
     },
     "win": {
+      "publisherName": [
+        "Michael DiCarlo"
+      ],
       "icon": "icons/icon.ico",
       "target": [
         {
