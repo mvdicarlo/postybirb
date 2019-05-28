@@ -15,6 +15,7 @@ export interface WebsiteStatus {
 export interface PostResult {
   success: boolean;
   error?: any;
+  log?: any;
   msg?: string;
   time: string;
   srcURL?: string;

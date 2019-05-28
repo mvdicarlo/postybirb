@@ -82,6 +82,7 @@ import { WebsiteSubmissionFormDisplayDirective } from './directives/website-subm
 import { PiczelSubmissionForm } from './website-services/piczel/components/piczel-submission-form/piczel-submission-form.component';
 import { DiscordLoginDialog } from './website-services/discord/components/discord-login-dialog/discord-login-dialog.component';
 import { DiscordSubmissionForm } from './website-services/discord/components/discord-submission-form/discord-submission-form.component';
+import { FurAffinityJournalForm } from './website-services/fur-affinity/components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -126,6 +127,7 @@ export function INIT_WEBSITE_REGISTRY() {
     PiczelSubmissionForm,
     DiscordLoginDialog,
     DiscordSubmissionForm,
+    FurAffinityJournalForm,
   ],
   imports: [
     CommonModule,
@@ -159,6 +161,7 @@ export function INIT_WEBSITE_REGISTRY() {
     DiscordLoginDialog,
     DiscordSubmissionForm,
     E621SubmissionForm,
+    FurAffinityJournalForm,
     FurAffinitySubmissionForm,
     FurryAminoSubmissionForm,
     FurryNetworkJournalForm,

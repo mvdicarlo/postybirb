@@ -145,7 +145,16 @@ export class Aryion extends BaseWebsiteService {
     }
 
     if (postRequest.success.response.statusCode === 200) {
-      return this.createPostResponse(null);
+      try {
+        const json: any = JSON.parse(postRequest.success.body.replace(/<(?:[^>'"]*|(['"]).*?\1)*>/gmi, ''));
+        if (json.id) {
+          return this.createPostResponse(null);
+        } else {
+          return Promise.reject(this.createPostResponse('Unknown error', postRequest.success.body));
+        }
+      } catch (e) {
+        return Promise.reject(this.createPostResponse('Unknown error', postRequest.success.body));
+      }
     } else {
       return Promise.reject(this.createPostResponse('Unknown error', postRequest.success.body));
     }

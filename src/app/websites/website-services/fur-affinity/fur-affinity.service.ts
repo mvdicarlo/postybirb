@@ -7,13 +7,13 @@ import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { BaseWebsiteService, UserInformation } from '../base-website-service';
 import { Folder } from '../../interfaces/folder.interface';
 import { FurAffinitySubmissionForm } from './components/fur-affinity-submission-form/fur-affinity-submission-form.component';
-import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { BBCodeParser } from 'src/app/utils/helpers/description-parsers/bbcode.parser';
 import { supportsFileType } from '../../helpers/website-validator.helper';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
+import { FurAffinityJournalForm } from './components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -53,7 +53,7 @@ function descriptionParser(bbcode: string): string {
   },
   components: {
     submissionForm: FurAffinitySubmissionForm,
-    journalForm: GenericJournalSubmissionForm
+    journalForm: FurAffinityJournalForm
   },
   validators: {
     submission: submissionValidate
@@ -195,6 +195,8 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       id: '',
       do: 'update'
     };
+
+    if (postData.options.feature) data.make_featured = 'on';
 
     const response = await got.post(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
     if (response.error) {
