@@ -1,4 +1,5 @@
 export class BBCodeParser {
+  private static BLOCKS: string[] = ['p', 'div', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
   public static parse(html: string): string {
     if (!html) return '';
 
@@ -17,8 +18,7 @@ export class BBCodeParser {
     html = html.replace(/<strong>/gi, '[b]');
     html = html.replace(/<\/strong>/gi, '[/b]');
 
-    const blocks = ['p', 'div', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-    blocks.forEach(block => {
+    BBCodeParser.BLOCKS.forEach(block => {
       const regex = new RegExp(`<${block}(.*?)style="text-align: ((left|right|center)?);"(.*?)>((.|\n)*?)<\/${block}>`, 'gmi');
       html = html.replace(regex, '[$3]$5[/$3]');
 
@@ -41,7 +41,7 @@ export class BBCodeParser {
     html = html.replace(/<ul(.*?)>/gi, '[list]');
     html = html.replace(/<\/ul>/gi, '[/list]');
 
-    blocks.forEach(block => {
+    BBCodeParser.BLOCKS.forEach(block => {
       const regex1 = new RegExp(`</${block}>`, 'gmi');
       html = html.replace(regex1, '\n');
 
@@ -77,8 +77,10 @@ export class BBCodeParser {
 
     const tags: string[] = ['b','s','u','i'];
     tags.forEach(tag => {
-      const regex = new RegExp(`\\[\/${tag}\\]<\/p><p>\\[${tag}\\]`, 'gmi');
-      html = html.replace(regex, '\n');
+      BBCodeParser.BLOCKS.forEach(block => {
+        const regex = new RegExp(`\\[\/${tag}\\]<\/${block}><${block}>\\[${tag}\\]`, 'gmi');
+        html = html.replace(regex, '\n');
+      });
     });
 
     const blocks = ['left', 'right', 'center'];
@@ -86,10 +88,6 @@ export class BBCodeParser {
       const regex = new RegExp(`\\[\/${block}\\]\\[${block}\\]`, 'gmi');
       html = html.replace(regex, '\n');
     });
-
-    // html = html.replace(/\[\/center\]/gmi, '[/center]\r');
-    // html = html.replace(/\[\/right\]/gmi, '[/right]\r');
-    // html = html.replace(/\[\/left\]/gmi, '[/left]\r');
 
     return html;
   }

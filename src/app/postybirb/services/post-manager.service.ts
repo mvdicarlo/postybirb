@@ -114,7 +114,7 @@ export class PostManagerService {
     const config = WebsiteRegistry.getConfigForRegistry(website).websiteConfig
     const preparsers: any[] = dotProp.get(config, 'preparsers.description', []);
     const parsers: any[] = dotProp.get(config, 'parsers.description', []);
-    let parsed = AdInsertParser.parse((description || '').trim(), website);
+    let parsed = description || '';
 
     preparsers.forEach(parser => {
       parsed = parser(parsed);
@@ -127,6 +127,8 @@ export class PostManagerService {
     parsers.forEach(parser => {
       parsed = parser(parsed);
     });
+
+    parsed = AdInsertParser.parse((parsed || '').trim(), website);
 
     return parsed;
   }
