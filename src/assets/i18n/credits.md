@@ -28,3 +28,6 @@ LurDraigo
 
 ZH / Chinese
 hker021 (deviantART)
+
+IT / Italian
+DZ-Aladan (Discord)
