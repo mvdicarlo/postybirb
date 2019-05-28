@@ -268,7 +268,7 @@ app.on('window-all-closed', () => {
 });
 
 function hasWindows() {
-  return BrowserWindow.getAllWindows().filter(b => b.isVisible()).length > 0;
+  return win !== null;
 }
 
 function clearScheduleCheck() {
