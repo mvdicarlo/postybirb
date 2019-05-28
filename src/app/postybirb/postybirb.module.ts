@@ -50,6 +50,7 @@ import { SubmissionTabComponent } from './components/submission-tab/submission-t
 import { TemplateForm } from './forms/template-form/template-form.component';
 import { AdditionalImageSplitDialog } from './components/additional-image-split-dialog/additional-image-split-dialog.component';
 import { ImagePreviewDialog } from './components/image-preview-dialog/image-preview-dialog.component';
+import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { ImagePreviewDialog } from './components/image-preview-dialog/image-prev
     TemplateForm,
     AdditionalImageSplitDialog,
     ImagePreviewDialog,
+    FileDropDialog,
   ],
   imports: [
     CommonModule,
@@ -109,6 +111,7 @@ import { ImagePreviewDialog } from './components/image-preview-dialog/image-prev
     ImageCropperDialog,
     ImagePreviewDialog,
     SubmissionSelectDialog,
+    FileDropDialog,
   ]
 })
 export class PostybirbModule { }

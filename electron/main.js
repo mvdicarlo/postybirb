@@ -217,6 +217,7 @@ function initialize(show = true) {
       webviewTag: true,
       backgroundThrottling: false,
       contextIsolation: false,
+      navigateOnDragDrop: true // needed for drop of files
     },
   });
 

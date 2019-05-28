@@ -1,0 +1,6 @@
+div {
+  border: 2px dashed gray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

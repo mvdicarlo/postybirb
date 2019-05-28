@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material';
 import { FileMetadata, readFileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { CollectSubmissionInfoDialog } from '../../components/collect-submission-info-dialog/collect-submission-info-dialog.component';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
@@ -21,6 +21,8 @@ import { arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
 import { QueueInserterService } from '../../services/queue-inserter.service';
 import { HotkeysService, Hotkey } from 'angular2-hotkeys';
+import { FileDropWatcherService } from '../../services/file-drop-watcher.service';
+import { FileDropDialog } from '../../components/file-drop-dialog/file-drop-dialog.component';
 
 @Component({
   selector: 'postybirb-layout',
@@ -52,6 +54,8 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   private submissionUpdatesListener: Subscription = Subscription.EMPTY;
   private queueListener: Subscription = Subscription.EMPTY;
 
+  private dragWindow: MatDialogRef<any>;
+
   constructor(
     private _router: Router,
     private dialog: MatDialog,
@@ -63,9 +67,29 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     public _queueInserter: QueueInserterService,
     private _changeDetector: ChangeDetectorRef,
     private _hotkeyService: HotkeysService,
+    _fileDropService: FileDropWatcherService,
     _scheduler: ScheduledSubmissionManagerService // only called so it will be instantiated
   ) {
+    _fileDropService.onDrop.subscribe(files => {
+      this._handleFiles(files);
+    });
 
+    _fileDropService.onDragStateChange.subscribe(dragging => {
+      if (dragging) {
+        if (!this.dragWindow) {
+          this.dragWindow = this.dialog.open(FileDropDialog, {
+            height: '50vh',
+            width: '50vw',
+            panelClass: 'transparent-dialog'
+          });
+        }
+      } else {
+        if (this.dragWindow) {
+          this.dragWindow.close();
+          this.dragWindow = null;
+        }
+      }
+    });
   }
 
   ngOnInit() {
@@ -159,7 +183,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(result => {
         if (result) {
           this.queuedSubmissions
-          .forEach(qs => this._queueInserter.dequeue(qs));
+            .forEach(qs => this._queueInserter.dequeue(qs));
         }
       });
   }
@@ -322,29 +346,34 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   public filesSelected(event: Event): void {
     event.stopPropagation()
     event.preventDefault();
-    this.loading = true;
-    this._changeDetector.markForCheck();
 
     const files: File[] = event.target['files'];
 
     if (files && files.length) {
-      const loadPromises: Promise<FileMetadata>[] = [];
-      for (let i = 0; i < files.length; i++) {
-        loadPromises.push(readFileMetadata(files[i]));
-      }
-
-      Promise.all(loadPromises)
-        .then(results => {
-          this.loading = false;
-          this._changeDetector.markForCheck();
-          this.createNewSubmission(results);
-        });
-    } else {
-      this.loading = false;
-      this._changeDetector.markForCheck();
+      this._handleFiles(files);
     }
 
     this.fileInput.nativeElement.value = '';
+  }
+
+  private _handleFiles(files: File[] | FileList): void {
+    this.loading = true;
+    this._changeDetector.markForCheck();
+
+    const loadPromises: Promise<FileMetadata>[] = [];
+    for (let i = 0; i < files.length; i++) {
+      loadPromises.push(readFileMetadata(files[i]));
+    }
+
+    Promise.all(loadPromises)
+      .then(results => {
+        this.loading = false;
+        this._changeDetector.markForCheck();
+        this.createNewSubmission(results);
+      });
+
+    this.loading = false;
+    this._changeDetector.markForCheck();
   }
 
   public hasPostableSubmissions(): boolean {
@@ -371,7 +400,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(results => {
         if (results && results.length) {
           results
-          .forEach((submission: ISubmission) => this._queueInserter.queue(this._submissionCache.get(submission.id)));
+            .forEach((submission: ISubmission) => this._queueInserter.queue(this._submissionCache.get(submission.id)));
         }
 
         this.loading = false;
@@ -393,7 +422,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private _updateQueued(queued: Submission[]): void {
-    this.queuedSubmissions = [...queued, ...this.submissions.filter(s => s.isScheduled).sort((a,b) => {
+    this.queuedSubmissions = [...queued, ...this.submissions.filter(s => s.isScheduled).sort((a, b) => {
       return b.schedule - a.schedule;
     })];
     this._changeDetector.detectChanges();
