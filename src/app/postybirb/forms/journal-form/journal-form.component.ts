@@ -94,6 +94,7 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
           this.basicInfoForm.reset();
           this.formDataForm.reset();
           this.resetSubject.next();
+          this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }
       });
   }

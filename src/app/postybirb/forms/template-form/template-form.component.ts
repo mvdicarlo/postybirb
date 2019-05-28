@@ -56,6 +56,7 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
           this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
           this.loadedTemplateName = null;
+          this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }
       });
   }

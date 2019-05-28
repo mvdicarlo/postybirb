@@ -145,6 +145,8 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
           this.basicInfoForm.reset();
           this.formDataForm.reset();
           this.resetSubject.next();
+
+          this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }
       });
   }

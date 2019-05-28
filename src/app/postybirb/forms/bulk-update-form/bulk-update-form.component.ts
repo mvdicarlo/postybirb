@@ -53,6 +53,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
           this.formDataForm.reset();
           this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
+          this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }
       });
   }
