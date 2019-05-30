@@ -59,16 +59,16 @@ export class KoFi extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/Manage/`, this.BASE_URL, cookies, profileId);
+    const response = await got.get(`${this.BASE_URL}/manage/mypage`, this.BASE_URL, cookies, profileId);
     try {
       if (!response.body.includes('Log in')) {
         returnValue.status = LoginStatus.LOGGED_IN;
         const html$ = $.parseHTML(response.body);
 
-        returnValue.username = $(html$).find('#dash-profile-link').attr('title');
+        returnValue.username = $(html$).find('name').text();
         this.userInformation.set(profileId, {
-          gold: response.body.includes('Upgrade to Gold'),
-          id: $(html$).find('#dash-profile-link').attr('href').replace('/', '')
+          gold: !response.body.includes('Upgrade to Gold'),
+          id: response.url.split('/').pop() // hope that this is stable
         });
 
         this._hardenCookies(profileId, cookies);
@@ -193,7 +193,6 @@ export class KoFi extends BaseWebsiteService {
     const filename = body.FileName;
 
     const info = this.userInformation.get(postData.profileId);
-
 
     const data: any = {
       uniqueName: filename,
