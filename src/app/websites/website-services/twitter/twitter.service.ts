@@ -9,6 +9,7 @@ import { Submission, SubmissionFormData } from 'src/app/database/models/submissi
 import { supportsFileType, getDescription } from '../../helpers/website-validator.helper';
 import { MBtoBytes, isGIF } from 'src/app/utils/helpers/file.helper';
 import { TwitterSubmissionForm } from './components/twitter-submission-form/twitter-submission-form.component';
+import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -104,15 +105,16 @@ export class Twitter extends BaseWebsiteService {
     const options = postData.options;
     const authData = this._profileManager.getData(postData.profileId, Twitter.name);
     const data: any = {
-      status: `${options.useTitle ? postData.title + '\n\n' : ''}${postData.description}`.substring(0, 280),
+      status: `${options.useTitle ? postData.title + '\n\n' : ''}${postData.description}`,
       medias: [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => {
         return {
           base64: Buffer.from(f.buffer).toString('base64'),
           type: f.fileInfo.type
         };
-      }).slice(0, 4),
+      }),
       token: authData.token,
-      secret: authData.secret
+      secret: authData.secret,
+      sensitive: submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME
     };
 
     const postResponse = await got.post(`${AUTH_URL}/twitter/v1/post`, null, this.BASE_URL, [], {
