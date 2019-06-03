@@ -130,7 +130,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
     // We want to keep all added websites through the filter so users can remove filtered ones
     if (this.submission.formData && this.submission.formData.websites) {
-      this.submission.formData.websites.forEach(website => {
+      this.submission.formData.websites.filter(w => !!w).forEach(website => {
         this.availableWebsites[website] = WebsiteRegistry.getConfigForRegistry(website);
       });
     }
@@ -189,6 +189,14 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
   public getLoginProfileId(): string {
     return this.formDataForm.value.loginProfile;
+  }
+
+  public getWebsites(): string[] {
+    if (this.formDataForm) {
+      return (this.formDataForm.value.websites || []).filter(w => !!w);
+    }
+
+    return [];
   }
 
   public importTemplateField(paths: string[], event: Event): void {
