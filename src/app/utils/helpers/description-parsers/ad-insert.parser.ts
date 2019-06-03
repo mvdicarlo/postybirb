@@ -1,6 +1,7 @@
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { PlaintextParser } from './plaintext.parser';
 import { BBCodeParser } from './bbcode.parser';
+import { MarkdownParser } from './markdown.parser';
 
 export class AdInsertParser {
   public static parse(html: string, postToWebsite: string): string {
@@ -14,6 +15,8 @@ export class AdInsertParser {
           html += '\n\nPosted using PostyBirb';
         } else if (parsers.includes(BBCodeParser.parse)) {
           html += '\n\n[url=http://www.postybirb.com]Posted using PostyBirb[/url]';
+        } else if (parsers.includes(MarkdownParser.parse)) {
+          html += MarkdownParser.parse('<br /><br /><p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>');
         } else { // assume html
           html += '<br /><br /><p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>';
         }
