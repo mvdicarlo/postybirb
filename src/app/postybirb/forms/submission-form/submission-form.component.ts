@@ -117,9 +117,6 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
               info.forEach(i => newMap.ADDITIONAL.push(i.id));
               this.submission.fileMap = newMap;
             })
-            .catch(err => {
-              console.error(err);
-            })
             .finally(() => {
               this.hideForReload = false;
               this.loading = false;
