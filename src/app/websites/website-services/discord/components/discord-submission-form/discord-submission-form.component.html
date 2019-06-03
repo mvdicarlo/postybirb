@@ -7,7 +7,7 @@
   <div formGroupName="options" class="row no-gutters section">
     <mat-form-field color="accent">
       <mat-select formControlName="webhooks" [placeholder]="'Webhooks' | translate" required multiple>
-        <mat-option *ngFor="let webhook of webhooks" [value]="webhook">{{ webhook.name }}</mat-option>
+        <mat-option *ngFor="let webhook of webhooks" [value]="webhook.webhook">{{ webhook.name }}</mat-option>
       </mat-select>
     </mat-form-field>
   </div>

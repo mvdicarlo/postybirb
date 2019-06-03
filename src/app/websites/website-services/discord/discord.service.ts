@@ -112,14 +112,20 @@ export class Discord extends BaseWebsiteService {
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const webhooks: DiscordWebhook[] = postData.options.webhooks;
+    const webhooks: string[] = postData.options.webhooks.map(wh => {
+      if (typeof wh === 'object') { // support legacy for now
+        return wh.webhook;
+      }
+
+      return wh; // assumed to be string
+    });
     const description = (postData.description || '').substring(0, 2000);
     const files: File[] = [postData.primary, ...postData.additionalFiles]
       .filter(f => !!f)
       .map(f => new File([fileAsBlob(f)], f.fileInfo.name));
 
     try {
-      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh.webhook, description, files)));
+      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh, description, files)));
       return this.createPostResponse(null);
     } catch (e) {
       return Promise.reject(this.createPostResponse('Webhook failure', e));
