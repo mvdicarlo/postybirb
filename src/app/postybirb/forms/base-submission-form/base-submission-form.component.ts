@@ -145,7 +145,6 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this.formDataForm.patchValue(copyObject(this.submission.formData) || {});
 
     this.formDataForm.controls.loginProfile.valueChanges
-      .pipe(debounceTime(100))
       .subscribe(() => {
         this.triggerWebsiteReload = true;
         this._changeDetector.detectChanges();
@@ -157,7 +156,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     Object.keys(this.formDataForm.controls).forEach(key => {
       let keyField = key;
       this.formDataForm.get(key).valueChanges
-        .pipe(debounceTime(300))
+        .pipe(debounceTime(250))
         .subscribe((value) => {
           if (JSON.stringify((this.submission.formData || {})[keyField]) !== JSON.stringify(value)) {
             if (isDevMode()) {
