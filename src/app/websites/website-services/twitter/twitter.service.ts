@@ -7,20 +7,24 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType, getDescription } from '../../helpers/website-validator.helper';
-import { MBtoBytes, isGIF } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, isGIF, isType } from 'src/app/utils/helpers/file.helper';
 import { TwitterSubmissionForm } from './components/twitter-submission-form/twitter-submission-form.component';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'webp'])) {
+  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'])) {
     problems.push(['Does not support file format', { website: 'Twitter', value: submission.fileInfo.type }]);
   }
 
   if (isGIF(submission.fileInfo)) {
     if (MBtoBytes(15) < submission.fileInfo.size) {
       problems.push(['Max file size', { website: 'Twitter (GIF)', value: '15MB' }]);
+    }
+  } else if (isType(submission.fileInfo, 'video')) {
+    if (MBtoBytes(512) < submission.fileInfo.size) {
+      problems.push(['Max file size', { website: 'Twitter (Video)', value: '512MB' }]);
     }
   } else {
     if (MBtoBytes(5) < submission.fileInfo.size) {
