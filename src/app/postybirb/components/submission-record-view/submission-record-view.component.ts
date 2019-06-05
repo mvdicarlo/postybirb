@@ -154,7 +154,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       }
     }).afterClosed()
       .subscribe(title => {
-        if (title !== false) {
+        if (!!title) {
           this.loading = true;
           this._changeDetector.markForCheck();
           this._submissionDB.duplicate(this.submission.id, title)
