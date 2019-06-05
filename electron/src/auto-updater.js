@@ -66,12 +66,18 @@ autoUpdater.on('error', (err) => {
 });
 
 autoUpdater.on('update-downloaded', (info) => {
+  app.removeAllListeners('window-all-closed');
+
   if (progressWindow) {
+    progressWindow.setClosable(true);
     progressWindow.destroy();
     progressWindow = null;
   }
+  BrowserWindow.getAllWindows().forEach(w => {
+    w.destroy();
+  });
 
-  setTimeout(() => autoUpdater.quitAndInstall(), 1);
+  setTimeout(() => autoUpdater.quitAndInstall(), 1000);
 });
 
 function openProgressWindow() {
