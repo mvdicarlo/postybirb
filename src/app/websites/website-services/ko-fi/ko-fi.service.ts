@@ -61,7 +61,7 @@ export class KoFi extends BaseWebsiteService {
     const cookies = await getCookies(profileId, this.BASE_URL);
     const response = await got.get(`${this.BASE_URL}/manage/mypage`, this.BASE_URL, cookies, profileId);
     try {
-      if (!response.body.includes('Log in')) {
+      if (!response.body.includes('Start a Page')) {
         returnValue.status = LoginStatus.LOGGED_IN;
         const html$ = $.parseHTML(response.body);
 
