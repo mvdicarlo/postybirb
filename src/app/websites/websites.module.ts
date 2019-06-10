@@ -43,6 +43,7 @@ import {
   MatRadioModule,
   MatSelectModule,
   MatTabsModule,
+  MatTooltipModule
 } from '@angular/material';
 
 import { AryionSubmissionForm } from './website-services/aryion/components/aryion-submission-form/aryion-submission-form.component';
@@ -146,6 +147,7 @@ export function INIT_WEBSITE_REGISTRY() {
     MatRadioModule,
     MatSelectModule,
     MatTabsModule,
+    MatTooltipModule,
     OwlDateTimeModule,
     OwlNativeDateTimeModule
   ],

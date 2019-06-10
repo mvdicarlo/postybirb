@@ -8,7 +8,7 @@ export interface UserInformation {
 
 export class BaseWebsiteService implements WebsiteService {
   BASE_URL: string;
-  protected userInformation: Map<string, UserInformation|any> = new Map();
+  protected userInformation: Map<string, UserInformation | any> = new Map();
 
   protected createPostResponse(msg: string, error?: any): PostResult {
     return { msg, error, success: error === undefined, time: (new Date()).toLocaleString() };
@@ -56,6 +56,32 @@ export class BaseWebsiteService implements WebsiteService {
         win.destroy();
         resolve();
       });
+    });
+  }
+
+  public resetCookies(profileId: string, url?: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const cookieURL: string = url || this.BASE_URL;
+      const sessionCookies: any = getCookieAPI(profileId);
+      if (sessionCookies) {
+        // get cookies
+        sessionCookies.get({ url: cookieURL }, (err, cookies) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          // iterate over cookies and remove
+          const promises: Promise<any>[] = [];
+          for (let i = 0; i < cookies.length; i++) {
+            promises.push(new Promise((resolve) => {
+              sessionCookies.remove(cookieURL, cookies[i].name, () => resolve());
+            }));
+          }
+
+          Promise.all(promises).finally(() => resolve());
+        });
+      }
     });
   }
 

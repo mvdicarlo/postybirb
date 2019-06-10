@@ -101,7 +101,8 @@ export class LoginStatusViewComponent implements OnInit, OnDestroy {
       data: {
         title: displayedName,
         url: login.url,
-        persist: profileId
+        persist: profileId,
+        website: this.config.class
       }
     })
       .afterClosed()

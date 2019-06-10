@@ -1,6 +1,11 @@
 <div mat-dialog-title>
   <div class="w-100 d-flex">
-    <h4 style="flex: 10">{{ data.title | translate }}</h4>
+    <h4 style="flex: 10">
+      {{ data.title | translate }}
+      <span class="clear-cookies" [matTooltip]="'Reset Cookies' | translate" (click)="resetCookies()">
+        <i class="fas fa-cookie crossed-out"></i>
+      </span>
+    </h4>
     <div class="m-auto">
       <button class="close-button warn-text" mat-dialog-close>
         <mat-icon>close</mat-icon>
