@@ -698,6 +698,12 @@ Translated: The actual translation of Translate Me.
 }
 
 {
+  "Internal": "Reset Cookies",
+  "Translate Me": "Reset Cookies",
+  "Translated": ""
+}
+
+{
   "Internal": "Reupload better quality image",
   "Translate Me": "Reupload better quality image",
   "Translated": ""
