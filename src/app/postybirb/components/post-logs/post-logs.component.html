@@ -1,18 +1,18 @@
 <loading-overlay [loading]="loading">
   <table class="table table-dark table-striped table-hover w-100">
     <thead>
-      <th>#</th>
-      <th>Submission Name</th>
-      <th>Status</th>
+      <th style="width: 10px">#</th>
+      <th style="width: 25%">Submission Name</th>
+      <th style="width: 15%">Status</th>
       <th>Time</th>
       <th>Response(s)</th>
-      <th></th>
+      <th style="width: 10px"></th>
     </thead>
     <tbody *ngIf="logs.length">
       <tr *ngFor="let log of logs; let i = index">
         <td>{{ i + 1 }}</td>
-        <td>{{ log.submission.title }}</td>
-        <td [class.warn-text]="!log.success" [class.text-success]>{{ log.success ? 'SUCCESS' : 'FAILED' }}</td>
+        <td style="word-break: break-all">{{ log.submission.title }}</td>
+        <td class="text-uppercase" [class.warn-text]="!log.success" [class.text-success]="log.success">{{ (log.success ? 'Success' : 'Failed') | translate }}</td>
         <td>{{ log.created | date:'medium' }}</td>
         <td>
           <div class="src-container">
