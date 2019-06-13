@@ -3,9 +3,15 @@
 </button>
 <table class="table table-dark m-0">
   <tbody>
-    <tr *ngFor="let registry of registeredWebsites | keyvalue">
+    <tr *ngFor="let config of loggedInWebsites">
       <td>
-        <login-status-view [config]="registry.value"></login-status-view>
+        <login-status-view [config]="config"></login-status-view>
+      </td>
+    </tr>
+
+    <tr *ngFor="let config of loggedOutWebsites">
+      <td>
+        <login-status-view [config]="config"></login-status-view>
       </td>
     </tr>
   </tbody>

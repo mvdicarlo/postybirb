@@ -125,10 +125,7 @@ export class LoginManagerService {
     });
 
     if (options && options.websites) {
-      services = services.filter(s => {
-        if (options.websites.includes(s.constructor.name)) return true;
-        return false;
-      });
+      services = services.filter(s => options.websites.includes(s.constructor.name));
     }
 
     this._update(ids, services);
@@ -151,9 +148,26 @@ export class LoginManagerService {
    * @return           WebsiteStatus
    */
   public getWebsiteStatus(profileId: string, website: string): WebsiteStatus {
-    return this.profileStatuses[profileId][website];
+    return dotProp.get(this.profileStatuses[profileId], website, { username: null, status: LoginStatus.LOGGED_OUT });
   }
 
+  /**
+   * Returns a list of Website Statuses for a website across all login profiles
+   * @param  website   Website to check
+   * @return           WebsiteStatus[]
+   */
+  public getStatusesForWebsite(website: string): WebsiteStatus[] {
+    const statuses: WebsiteStatus[] = [];
+    this.profileIds.forEach(id => statuses.push(this.getWebsiteStatus(id, website)));
+    return statuses;
+  }
+
+  /**
+   * Force an update to a website status
+   * @param  profileId Profile Ids to check
+   * @param  website   Website to check
+   * @param  loginStatus   Status to set
+   */
   public manuallyUpdateStatus(profileId: string, website: string, loginStatus: WebsiteStatus): void {
     this.profileStatuses[profileId][website] = loginStatus;
     this.statusSubject.next(copyObject(this.profileStatuses));
