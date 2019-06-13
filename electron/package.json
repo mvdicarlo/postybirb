@@ -58,13 +58,15 @@
         "snap"
       ]
     },
+    "appImage": {
+      "systemIntegration": "doNotAsk"
+    },
     "win": {
       "publisherName": [
         "Michael DiCarlo"
       ],
       "icon": "icons/icon.ico",
-      "target": [
-        {
+      "target": [{
           "target": "nsis",
           "arch": [
             "x64",
