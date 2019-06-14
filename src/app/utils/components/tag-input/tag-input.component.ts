@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl, Validators } from '@angular/forms';
 import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/base-value-accessor';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
@@ -59,7 +59,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   public tagCount: number = 0;
   public tagGroupTemplates: TagTemplate[] = [];
 
-  constructor(private _tagTemplates: TagTemplatesService, private dialog: MatDialog) {
+  constructor(private _tagTemplates: TagTemplatesService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) {
     super({
       tags: [],
       extend: true
@@ -73,6 +73,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
     this.tagGroupTemplates = this._tagTemplates.getTemplates();
     this.templateSubscriber = this._tagTemplates.templateUpdates.subscribe(templates => {
       this.tagGroupTemplates = templates;
+      this._changeDetector.markForCheck();
     });
 
     if (!this.config.maxTags) this.config.maxTags = 200;
