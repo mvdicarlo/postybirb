@@ -1,0 +1,10 @@
+<form [formGroup]="form">
+  <mat-form-field class="d-block" color="accent">
+    <input matInput formControlName="title" [placeholder]="'Title' | translate" required>
+  </mat-form-field>
+  <tag-input formControlName="tags" class="w-100" [canExtend]="false" [canManageGroups]="false"></tag-input>
+  <div>
+    <button mat-button type="button" color="accent" (click)="saveTemplate()" [disabled]="!canSave()">{{ 'Save' | translate }}</button>
+    <button class="ml-1" *ngIf="canDelete" mat-button type="button" color="warn" (click)="deleteTemplate()">{{ 'Delete' | translate }}</button>
+  </div>
+</form>

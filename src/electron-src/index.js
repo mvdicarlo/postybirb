@@ -50,6 +50,11 @@ const descriptionAdapter = new FileSync(path.join(app.getPath('userData'), 'data
 const dldb = low(descriptionAdapter);
 window.descriptionTemplateDB = dldb;
 
+// Set up tag templates DB
+const tagAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'tag-templates.json'));
+const tagldb = low(tagAdapter);
+window.tagTemplateDB = tagldb;
+
 // Set up settings DB
 const settingsAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'settings.json'));
 const sldb = low(settingsAdapter);

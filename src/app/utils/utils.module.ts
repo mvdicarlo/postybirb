@@ -9,10 +9,13 @@ import {
   MatCheckboxModule,
   MatChipsModule,
   MatDialogModule,
+  MatDividerModule,
   MatIconModule,
   MatInputModule,
+  MatMenuModule,
   MatProgressBarModule,
   MatSelectModule,
+  MatTabsModule,
   MatTooltipModule,
 } from '@angular/material';
 import { EditorModule } from '@tinymce/tinymce-angular';
@@ -28,6 +31,8 @@ import { SafePipe } from './pipes/safe.pipe';
 import { SaveTemplateDialog } from './components/description-input/save-template-dialog/save-template-dialog.component';
 import { TagInput } from './components/tag-input/tag-input.component';
 import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
+import { TagGroupManagementDialog } from './components/tag-input/tag-group-management-dialog/tag-group-management-dialog.component';
+import { TagGroupInputField } from './components/tag-input/tag-group-management-dialog/tag-group-input-field/tag-group-input-field.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +47,8 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     SaveTemplateDialog,
     TagInput,
     WebsiteShortcutsComponent,
+    TagGroupManagementDialog,
+    TagGroupInputField,
   ],
   imports: [
     CommonModule,
@@ -51,10 +58,13 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
     MatCheckboxModule,
     MatChipsModule,
     MatDialogModule,
+    MatDividerModule,
     MatIconModule,
     MatInputModule,
+    MatMenuModule,
     MatProgressBarModule,
     MatSelectModule,
+    MatTabsModule,
     MatTooltipModule,
     EditorModule
   ],
@@ -70,7 +80,8 @@ import { WebsiteShortcutsComponent } from './components/description-input/websit
   entryComponents: [
     ConfirmDialog,
     InputDialog,
-    SaveTemplateDialog
+    SaveTemplateDialog,
+    TagGroupManagementDialog
   ]
 })
 export class UtilsModule { }

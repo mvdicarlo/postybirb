@@ -1,0 +1,28 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ 'Manage Tag Groups' | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-content>
+  <div>
+    <mat-tab-group>
+      <mat-tab [label]="'New' | translate">
+        <div class="w-100">
+          <tag-group-input-field #newTemplateField (save)="saveNewTemplate($event)"></tag-group-input-field>
+        </div>
+      </mat-tab>
+      <mat-tab [label]="'Manage' | translate">
+        <div class="w-100" *ngFor="let group of templates">
+          <tag-group-input-field (save)="updateTemplate($event)" (remove)="deleteTemplate($event)" [template]="group"></tag-group-input-field>
+          <mat-divider class="my-2"></mat-divider>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

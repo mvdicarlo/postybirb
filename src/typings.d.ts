@@ -3,6 +3,7 @@ declare function closeAfterPost(): boolean; // flag letting the app know it was 
 declare var nativeImage: any; // electron nativeImage object
 declare var store: any; //storejs
 declare var descriptionTemplateDB: any; //lowDB instance
+declare var tagTemplateDB: any; //lowDB instance
 declare var templateDB: any; //lowDB instance
 declare var profilesDB: any; //lowDB instance
 declare var settingsDB: any; //lowDB instance

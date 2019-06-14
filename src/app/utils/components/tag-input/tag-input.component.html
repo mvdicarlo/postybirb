@@ -35,3 +35,12 @@
     <i class="fas fa-copy ml-2" style="vertical-align: top" (click)="copyToClipboard()"></i>
   </div>
 </div>
+<div *ngIf="canManageGroups">
+  <button mat-button type="button" (click)="addOrManageTagGroups()">{{ 'Manage Tag Groups' | translate }}</button>
+  <span *ngIf="tagGroupTemplates && tagGroupTemplates.length">
+    <button mat-button [matMenuTriggerFor]="menu">{{ 'Apply Group' | translate }}</button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item *ngFor="let template of tagGroupTemplates" (click)="applyGroup(template)">{{ template.title }}</button>
+    </mat-menu>
+  </span>
+</div>

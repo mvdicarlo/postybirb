@@ -3,8 +3,10 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl, Validators } from
 import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/base-value-accessor';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { ENTER, COMMA } from '@angular/cdk/keycodes';
-import { MatChipInputEvent } from '@angular/material';
+import { MatChipInputEvent, MatDialog } from '@angular/material';
 import { copyObject } from '../../helpers/copy.helper';
+import { TagGroupManagementDialog } from './tag-group-management-dialog/tag-group-management-dialog.component';
+import { TagTemplatesService, TagTemplate } from '../../services/tag-templates.service';
 
 export interface TagData {
   tags: string[];
@@ -34,7 +36,9 @@ export interface TagConfig {
 })
 export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, ControlValueAccessor {
   @Input() canExtend: boolean = true;
+  @Input() canManageGroups: boolean = true;
   @Input() defaultTagProvider: Observable<TagData>;
+  private templateSubscriber: Subscription = Subscription.EMPTY;
   private providerSubscriber: Subscription = Subscription.EMPTY;
   private providerData: TagData;
 
@@ -53,8 +57,9 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   public tagControl: FormControl = new FormControl([]);
   public extendControl: FormControl = new FormControl(true);
   public tagCount: number = 0;
+  public tagGroupTemplates: TagTemplate[] = [];
 
-  constructor() {
+  constructor(private _tagTemplates: TagTemplatesService, private dialog: MatDialog) {
     super({
       tags: [],
       extend: true
@@ -65,6 +70,11 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   ngOnInit() {
+    this.tagGroupTemplates = this._tagTemplates.getTemplates();
+    this.templateSubscriber = this._tagTemplates.templateUpdates.subscribe(templates => {
+      this.tagGroupTemplates = templates;
+    });
+
     if (!this.config.maxTags) this.config.maxTags = 200;
     if (!this.config.minTagLength) this.config.minTagLength = 1;
 
@@ -107,12 +117,14 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   ngOnDestroy() {
+    this.templateSubscriber.unsubscribe();
     this.providerSubscriber.unsubscribe();
     this._internalProvider.complete();
   }
 
   writeValue(data: TagData) {
     data = copyObject(data);
+
     if (data && JSON.stringify(this.value) != JSON.stringify(data)) {
       this.value = data;
 
@@ -163,6 +175,19 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
       this.value.tags = filtered;
       this.tagControl.setValue(filtered, { emitEvent: false });
     }
+  }
+
+  public addOrManageTagGroups(): void {
+    this.dialog.open(TagGroupManagementDialog, {
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '100%',
+      width: '100%',
+    });
+  }
+
+  public applyGroup(template: TagTemplate): void {
+    template.tags.forEach(tag => this._addTag(tag));
   }
 
   public getTags(): string[] {

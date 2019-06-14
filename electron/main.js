@@ -74,6 +74,7 @@ const blockerId = powerSaveBlocker.start('prevent-app-suspension');
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 fs.ensureFileSync(path.join(dataPath, 'templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'description-templates.json'));
+fs.ensureFileSync(path.join(dataPath, 'tag-templates.json'));
 fs.ensureFileSync(path.join(dataPath, 'settings.json'));
 fs.ensureFileSync(path.join(dataPath, 'scheduled-submissions.json'));
 

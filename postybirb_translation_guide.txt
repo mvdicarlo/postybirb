@@ -64,6 +64,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Apply Group",
+  "Translate Me": "Apply Group",
+  "Translated": ""
+}
+
+{
   "Internal": "Authentication Failed",
   "Context": "Message shown when unable to authenticate a website",
   "Translate Me": "Authentication Failed",
@@ -456,6 +462,18 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Make Default",
   "Translate Me": "Make Default",
+  "Translated": ""
+}
+
+{
+  "Internal": "Manage",
+  "Translate Me": "Manage",
+  "Translated": ""
+}
+
+{
+  "Internal": "Manage Tag Groups",
+  "Translate Me": "Manage Tag Groups",
   "Translated": ""
 }
 

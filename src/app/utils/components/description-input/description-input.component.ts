@@ -3,13 +3,13 @@ import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/base-value-accessor';
 import { tap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
-import { DescriptionTemplatesService } from '../../services/description-templates.service';
 import { MatDialog } from '@angular/material';
 import { SaveTemplateDialog } from './save-template-dialog/save-template-dialog.component';
 import { UsernameParser } from '../../helpers/description-parsers/username.parser';
 import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { PlaintextParser } from '../../helpers/description-parsers/plaintext.parser';
 import { copyObject } from '../../helpers/copy.helper';
+import { DescriptionTemplatesService } from '../../services/description-templates.service';
 
 export interface DescriptionData {
   overwrite: boolean;
@@ -29,6 +29,7 @@ export interface DescriptionData {
 export class DescriptionInput extends BaseValueAccessor implements OnInit, AfterViewInit, OnDestroy {
   @Input() canOverwrite: boolean = true;
   @Input() defaultDescriptionProvider: Observable<DescriptionData>;
+  private templateSubscriber: Subscription = Subscription.EMPTY;
   private providerSubscriber: Subscription = Subscription.EMPTY;
   private providerData: DescriptionData;
 
@@ -87,6 +88,8 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
   }
 
   ngOnInit() {
+    this.templateSubscriber = this._descriptionTemplates.templateUpdates.subscribe(templates => this.tinyMCESettings.templates = templates);
+
     if (this.defaultDescriptionProvider) {
       this.providerSubscriber = this.defaultDescriptionProvider
         .subscribe(defaultDescriptionData => {
@@ -115,6 +118,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
   }
 
   ngOnDestroy() {
+    this.templateSubscriber.unsubscribe();
     this.providerSubscriber.unsubscribe();
     this._internalProvider.complete();
   }
@@ -166,7 +170,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
       .afterClosed()
       .subscribe(result => {
         if (result) {
-          this._descriptionTemplates.saveTemplate(result.title, result.description, result.content);
+          this._descriptionTemplates.saveTemplate(null, { id: null, title: result.title, description: result.description, content: result.content });
           this.tinyMCESettings.templates = this._descriptionTemplates.getTemplates();
         }
       });
