@@ -112,6 +112,7 @@ Context: Just some context for translators since some people have been confused 
 Translate Me: The text you are translating.
 Translated: The actual translation of Translate Me.
 
+DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 -----------------------------------------------------------------------`;
 
 const buildString = `${all.map(t => JSON.stringify(t, null, 2)).join('\n\n')}\n\n`;

@@ -14,6 +14,7 @@ Context: Just some context for translators since some people have been confused 
 Translate Me: The text you are translating.
 Translated: The actual translation of Translate Me.
 
+DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 -----------------------------------------------------------------------
 
 {
