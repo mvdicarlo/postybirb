@@ -75,6 +75,8 @@ export class TabManager {
       } else {
         this._route.navigateByUrl(`**`);
       }
+    } else {
+      this._route.navigateByUrl(`**`);
     }
 
     this._save();

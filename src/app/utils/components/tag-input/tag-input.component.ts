@@ -226,7 +226,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   private _addTag(addTag: string): void {
     let tag = addTag
       .trim()
-      .replace(/("|;|\\|\[|\]|\{|\}|\||\!|\@|\$|\%|\^|\&|\*|\+|\=|\<|\>|\.|\?|`|~)/g, '');
+      .replace(/("|;|\\|\[|\]|\{|\}|\||\!|\@|\$|\%|\^|\&|\*|\+|\=|\<|\>||\?|`|~)/g, '');
 
     if (tag.length >= this.config.minTagLength) {
       const allTags = this.getTags()
@@ -242,7 +242,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
 
 
   public captureIllegalKeys(event: KeyboardEvent): void {
-    const illegalKeys: string = '";|\\[]{}=*&^%$!`~.<>?+';
+    const illegalKeys: string = '";|\\[]{}=*&^%$!`~<>?+';
     if (illegalKeys.includes(event.key)) {
       event.stopPropagation();
       event.preventDefault();

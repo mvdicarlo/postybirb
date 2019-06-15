@@ -92,22 +92,25 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.triggerWebsiteReload = false;
-    this.profileListener = this._loginProfileManager.profileChanges.subscribe(profiles => {
-      const existingProfiles = profiles.map(p => p.id);
-      if (!existingProfiles.includes(this.formDataForm.value.loginProfile)) {
-        this.formDataForm.patchValue({ loginProfile: null });
-        this._changeDetector.markForCheck();
+    // This shouldn't really occur, but it is possible on a rare case
+    if (this.formDataForm) {
+      this.triggerWebsiteReload = false;
+      this.profileListener = this._loginProfileManager.profileChanges.subscribe(profiles => {
+        const existingProfiles = profiles.map(p => p.id);
+        if (!existingProfiles.includes(this.formDataForm.value.loginProfile)) {
+          this.formDataForm.patchValue({ loginProfile: null });
+          this._changeDetector.markForCheck();
+        }
+      });
+
+      if (this.submission.formData && !this.submission.formData.loginProfile && this.formDataForm.value.loginProfile) {
+        const obj: any = Object.assign({}, this.submission.formData);
+        obj.loginProfile = this.formDataForm.value.loginProfile;
+        this.submission.formData = obj;
       }
-    });
 
-    if (this.submission.formData && !this.submission.formData.loginProfile && this.formDataForm.value.loginProfile) {
-      const obj: any = Object.assign({}, this.submission.formData);
-      obj.loginProfile = this.formDataForm.value.loginProfile;
-      this.submission.formData = obj;
+      this._changeDetector.markForCheck();
     }
-
-    this._changeDetector.markForCheck();
   }
 
   ngOnDestroy() {
