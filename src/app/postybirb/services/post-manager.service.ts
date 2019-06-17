@@ -89,17 +89,17 @@ export class PostManagerService {
         //   if (rand >= 1) {
         //     return {};
         //   } else {
-        //     return Promise.reject({ msg: 'Fail', error: 'Me gusta bailar'})
+        //     return Promise.reject({ msg: 'Fail', error: 'Me gusta bailar'});
         //   }
         // } catch (err) {
-        //   return Promise.reject(err)
+        //   return Promise.reject(err);
         // }
 
         try {
           const post = await this.serviceMap.get(website).post(submissionToPost, postObject);
           return post;
         } catch (err) {
-          return Promise.reject(err)
+          return Promise.reject(err);
         }
 
       } else {

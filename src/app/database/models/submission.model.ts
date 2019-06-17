@@ -158,7 +158,7 @@ export class Submission implements ISubmission {
     this.formData = submission.formData || <any>{ websites: [] };
 
     // Perform any regeneration form data somehow gets into a bad state
-    this.formData.websites = this.formData.website || [];
+    this.formData.websites = this.formData.websites || [];
 
     // Try to rejuvinate websites in case of a hard reset
     this.updateAfterInit = false;
