@@ -4,6 +4,7 @@
   "Default Tag Tooltip": "Tags that will be sent to all websites unless overwritten",
   "Does not support file format": "{{website}} does not support file format: {{value}}",
   "Does not support rating": "{{website}} does not support rating: {{value}}",
+  "Ignored tag": "Ignored duplicate tag: {{tag}}",
   "Max file size": "{{website}} does not support files larger than {{value}}",
   "Options are incomplete": "{{website}} options are incomplete",
   "Requires minimum tags": "{{website}} requires at least {{value}} tags",

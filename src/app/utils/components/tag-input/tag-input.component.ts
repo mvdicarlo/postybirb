@@ -7,6 +7,8 @@ import { MatChipInputEvent, MatDialog } from '@angular/material';
 import { copyObject } from '../../helpers/copy.helper';
 import { TagGroupManagementDialog } from './tag-group-management-dialog/tag-group-management-dialog.component';
 import { TagTemplatesService, TagTemplate } from '../../services/tag-templates.service';
+import { SnotifyService } from 'ng-snotify';
+import { TranslateService } from '@ngx-translate/core';
 
 export interface TagData {
   tags: string[];
@@ -59,7 +61,13 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   public tagCount: number = 0;
   public tagGroupTemplates: TagTemplate[] = [];
 
-  constructor(private _tagTemplates: TagTemplatesService, private dialog: MatDialog, private _changeDetector: ChangeDetectorRef) {
+  constructor(
+    private _tagTemplates: TagTemplatesService,
+    private dialog: MatDialog,
+    private snotify: SnotifyService,
+    private translateService: TranslateService,
+    private _changeDetector: ChangeDetectorRef
+  ) {
     super({
       tags: [],
       extend: true
@@ -236,6 +244,8 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
         }
 
         this.tagControl.patchValue([...this.value.tags, tag]);
+      } else {
+        this.snotify.warning(this.translateService.instant(`Ignored tag`, { tag }));
       }
     }
   }

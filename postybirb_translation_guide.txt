@@ -387,6 +387,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Ignored tag",
+  "Translate Me": "Ignored duplicate tag: {{tag}}",
+  "Translated": ""
+}
+
+{
   "Internal": "Import from existing Template",
   "Translate Me": "Import from existing Template",
   "Translated": ""

@@ -267,28 +267,27 @@ export class PostQueueService {
   }
 
   private async _outputNotification(submission: Submission): Promise<void> {
-      const failed = submission.postStats.fail.length > 0;
+    const failed = submission.postStats.fail.length > 0;
 
-      try {
-        const thumbnail = await this._generatedThumbnailDB.getThumbnail(submission.id, SubmissionFileType.PRIMARY_FILE);
-        let icon = null;
-        if (thumbnail && thumbnail.length) {
-          icon = 'data:image/jpeg;base64,' + Buffer.from(await blobToUint8Array(thumbnail[0].buffer)).toString('base64');
-        }
-        this._translate.get(failed ? 'Failed' : 'Success', ).subscribe((msg) => {
-          new Notification(msg, {
-            body: submission.title || submission.fileInfo.name,
-            icon
-          });
+    try {
+      const thumbnail = await this._generatedThumbnailDB.getThumbnail(submission.id, SubmissionFileType.PRIMARY_FILE);
+      let icon = null;
+      if (thumbnail && thumbnail.length) {
+        icon = 'data:image/jpeg;base64,' + Buffer.from(await blobToUint8Array(thumbnail[0].buffer)).toString('base64');
+      }
 
-          if (failed) {
-            this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true });
-          } else {
-            this.snotify.success(submission.title || submission.fileInfo.name, { timeout: 7500, showProgressBar: true });
-          }
-        });
-      } catch (e) { /* ignore */}
+      new Notification(this._translate.instant(failed ? 'Failed' : 'Success'), {
+        body: submission.title || submission.fileInfo.name,
+        icon
+      });
 
-      return;
+      if (failed) {
+        this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true });
+      } else {
+        this.snotify.success(submission.title || submission.fileInfo.name, { timeout: 7500, showProgressBar: true });
+      }
+    } catch (e) { /* ignore */ }
+
+    return;
   }
 }
