@@ -31,3 +31,6 @@ hker021 (deviantART)
 
 IT / Italian
 DZ-Aladan (Discord)
+
+TH / Thai
+Fenrirwolfen
