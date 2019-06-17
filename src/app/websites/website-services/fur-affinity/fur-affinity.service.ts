@@ -284,6 +284,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
             return Promise.reject(this.createPostResponse('Unknown error', body));
           }
 
+          if (postResponse.success.response.request.uri.href.includes('/submit')) {
+            return Promise.reject(this.createPostResponse('Something went wrong', body));
+          }
+
           try {
             if (options.reupload) {
               const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
@@ -295,9 +299,8 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
               await got.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
             }
           } catch (e) {
-            console.log(e);
-          }
-          finally {
+            console.error(e);
+          } finally {
             const res = this.createPostResponse(null);
             res.srcURL = postResponse.success.response.request.uri.href;
             return res;
