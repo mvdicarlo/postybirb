@@ -155,7 +155,10 @@ export class Submission implements ISubmission {
     this.rating = submission.rating;
     this.fileInfo = submission.fileInfo;
     this.fileMap = submission.fileMap;
-    this.formData = submission.formData || <any>{};
+    this.formData = submission.formData || <any>{ websites: [] };
+
+    // Perform any regeneration form data somehow gets into a bad state
+    this.formData.websites = this.formData.website || [];
 
     // Try to rejuvinate websites in case of a hard reset
     this.updateAfterInit = false;

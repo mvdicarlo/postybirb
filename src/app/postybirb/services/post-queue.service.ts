@@ -85,9 +85,10 @@ export class PostQueueService {
   public dequeue(id: number): void {
     const index: number = this.queue.findIndex(submission => submission.id === id);
     if (index !== -1) {
-      this.queue[index].queued = false;
-      this.queue[index].formData.websites = [...this.queue[index].formData.websites, ...this.queue[index].postStats.fail].sort();
-      this.queue[index].formData = Object.assign({}, this.queue[index].formData);
+      const submission = this.queue[index];
+      submission.queued = false;
+      submission.formData.websites = [...submission.formData.websites, ...submission.postStats.fail].sort();
+      submission.formData = Object.assign({}, submission.formData);
       this.queue.splice(index, 1);
     }
 
