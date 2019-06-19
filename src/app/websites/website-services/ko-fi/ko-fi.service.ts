@@ -68,7 +68,7 @@ export class KoFi extends BaseWebsiteService {
         returnValue.username = $(html$).find('name').text();
         this.userInformation.set(profileId, {
           gold: !response.body.includes('Upgrade to Gold'),
-          id: response.url.split('/').pop() // hope that this is stable
+          id: response.body.match(/pageId:\s'.*?'/g)[0].split("'")[1]
         });
 
         this._hardenCookies(profileId, cookies);
