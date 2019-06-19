@@ -11,6 +11,7 @@ import { E621 } from './website-services/e621/e621.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
 import { Furiffic } from './website-services/furiffic/furiffic.service';
 import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
+import { FurryLife } from './website-services/furry-life/furry-life.service';
 import { FurryNetwork } from './website-services/furry-network/furry-network.service';
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
 import { InkBunny } from './website-services/inkbunny/inkbunny.service';
@@ -84,6 +85,7 @@ import { PiczelSubmissionForm } from './website-services/piczel/components/picze
 import { DiscordLoginDialog } from './website-services/discord/components/discord-login-dialog/discord-login-dialog.component';
 import { DiscordSubmissionForm } from './website-services/discord/components/discord-submission-form/discord-submission-form.component';
 import { FurAffinityJournalForm } from './website-services/fur-affinity/components/fur-affinity-journal-form/fur-affinity-journal-form.component';
+import { FurryLifeSubmissionForm } from './website-services/furry-life/components/furry-life-submission-form/furry-life-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -129,6 +131,7 @@ export function INIT_WEBSITE_REGISTRY() {
     DiscordLoginDialog,
     DiscordSubmissionForm,
     FurAffinityJournalForm,
+    FurryLifeSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -166,6 +169,7 @@ export function INIT_WEBSITE_REGISTRY() {
     FurAffinityJournalForm,
     FurAffinitySubmissionForm,
     FurryAminoSubmissionForm,
+    FurryLifeSubmissionForm,
     FurryNetworkJournalForm,
     FurryNetworkLoginDialog,
     FurryNetworkSubmissionForm,
@@ -203,6 +207,7 @@ export function INIT_WEBSITE_REGISTRY() {
         FurAffinity,
         Furiffic,
         FurryAmino,
+        FurryLife,
         FurryNetwork,
         HentaiFoundry,
         InkBunny,
