@@ -3,17 +3,15 @@ import $ from 'jquery';
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { SubmissionFormData, Submission } from 'src/app/database/models/submission.model';
-import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteService, LoginStatus, WebsiteStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { Folder } from '../../interfaces/folder.interface';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { FurryLifeSubmissionForm } from './components/furry-life-submission-form/furry-life-submission-form.component';
 import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submission.table';
 import * as dotProp from 'dot-prop';
-import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -90,6 +88,8 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     const response = await got.get(`${this.BASE_URL}/gallery/submit/?noWrapper=1&category=${sfwCategory}`, this.BASE_URL, cookies, null);
     const { body } = response;
     const nsfw: boolean = sfwCategory === 2;
+    if (nsfw && body.includes('(SFW)')) return; // nsfw not enabled by user
+
     const folder: Folder = {
       id: `0-${nsfw ? 'nsfw' : 'sfw'}`,
       title: nsfw ? 'NSFW' : 'SFW',
@@ -127,7 +127,7 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
 
   public getFolders(profileId: string): Folder[] {
     const info = this.userInformation.get(profileId);
-    return info ? [info.sfwFolders, info.nsfwFolders] : [];
+    return info ? [info.sfwFolders, info.nsfwFolders].filter(f=> !!f) : [];
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -188,24 +188,134 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     });
   }
 
-  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const page = await got.get(`${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`, this.BASE_URL, cookies, null);
+  public getSubmissionFormData(profileId: string, url: string): Promise<any> {
+    return new Promise((resolve) => {
+      const win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          partition: `persist:${profileId}`
+        }
+      });
+      win.loadURL(url);
+      win.once('ready-to-show', () => {
+        if (win.isDestroyed()) {
+          resolve({});
+          return;
+        }
 
-    const data: any = {
-      csrfKey: HTMLParser.getInputValue(page.body, 'csrfKey'),
-      plupload: HTMLParser.getInputValue(page.body, 'plupload'),
-      new_status_submitted: '1',
-      MAX_FILE_SIZE: '1072693248',
+        win.webContents.executeJavaScript(`Array.from(new FormData(document.getElementById('elGallerySubmit'))).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})`).then(function(value) {
+          resolve(value);
+        })
+          .catch(() => {
+            resolve({});
+          })
+          .finally(() => {
+            win.destroy();
+          });
+      });
+    });
+  }
+
+  private async uploadImage(uploadKey: string, albumParam: string, category: number, cookies: any[], file: any): Promise<any> {
+    const data = {
+      title: file.options.filename,
+      images: file,
+      chunk: '0',
+      chunks: '1'
     };
 
-    if (postData.options.feature) data.make_featured = 'on';
+    const upload = await got.post(`${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}`, data, this.BASE_URL, cookies, {
+      headers: {
+        'referer': 'https://furrylife.online',
+        'origin': 'https://furrylife.online',
+        'x-plupload': uploadKey
+      }
+    });
+    if (upload.error) return Promise.reject(upload.error);
 
-    const response = await got.post(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
-    if (response.error) {
-      return Promise.reject(this.createPostResponse('Unknown error occurred', response.error));
-    } else {
-      return this.createPostResponse(null);
+    const { body } = upload.success;
+    try {
+      const json = JSON.parse(body);
+      if (json.id) {
+        return json;
+      }
+    } catch (e) {
+      /* Swallow */
     }
+
+    return Promise.reject(upload.success.body);
+  }
+
+  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const { options } = postData;
+    const albumParts = options.folder.split('-');
+    const album = albumParts[0];
+    const category = albumParts[1].includes('nsfw') ? 2 : 1;
+
+    const files = [postData.primary, ...postData.additionalFiles].filter(f => !!f);
+
+    const albumParam: string = `${album === '0' ? 'noAlbum=1' : 'album='+album}`;
+
+    const data: any = await this.getSubmissionFormData(postData.profileId, `${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}`);
+    try {
+      const cookies = await getCookies(postData.profileId, this.BASE_URL);
+      const uploads = await Promise.all(files.map(f => this.uploadImage(data.images, albumParam, category, cookies, fileAsFormDataObject(f))));
+
+      Object.assign(data, {
+        upload_images_submitted: '1',
+        credit_all: options.credit || '',
+        copyright_all: options.copyright || '',
+        tags_all: postData.tags.join('\r\n') || '',
+        prefix_all: '',
+        images_order: uploads.map(u => u.id),
+        images_autofollow_all: '0',
+      });
+
+      const images_info: any[] = [];
+      uploads.forEach(u => {
+        images_info.push({ name: `image_title_${u.id}`, value: postData.title });
+        images_info.push({ name: `filedata__image_description_${u.id}`, value: postData.description });
+        images_info.push({ name: `image_textarea_${u.id}`, value: '' });
+        images_info.push({ name: `image_tags_${u.id}_original`, value: '' });
+        images_info.push({ name: `image_tags_${u.id}`, value: '' });
+        images_info.push({ name: `image_credit_info_${u.id}`, value: '' });
+        images_info.push({ name: `image_copyright_${u.id}`, value: '' });
+        images_info.push({ name: `image_gps_show_${u.id}`, value: '0' });
+
+        data[`images_existing[o_${u.id}]`] = u.id;
+        data[`images_keep[o_${u.id}]`] = '1';
+      });
+
+      data.images_info = JSON.stringify(images_info);
+
+      const postResponse = await got.post(`${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}&noWrapper=1`, data, this.BASE_URL, cookies, {
+        headers: {
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+          'referer': 'https://furrylife.online',
+          'origin': 'https://furrylife.online',
+        },
+        // form: data
+      });
+
+      if (postResponse.error) {
+        return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
+      }
+
+      for (let i = 0; i < uploads.length + 1; i++) {
+        let url: string = `${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}&totalImages=${uploads.length}&do=saveImages&mr=${i}&csrfKey=${data.csrfKey}`;
+        if (i === 0) {
+          url += '&_mrReset=1';
+        }
+
+        const res = await got.get(url, this.BASE_URL, cookies, null);
+      }
+
+      // MAJOR NOTE: I HAVE NO CLUE HOW TO VALIDATE A TRUE SUCCESS WENT THROUGH
+
+      return this.createPostResponse(null);
+    } catch (e) {
+      return Promise.reject(this.createPostResponse('Unknown error', e));
+    }
+
   }
 }
