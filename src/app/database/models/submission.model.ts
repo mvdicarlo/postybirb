@@ -3,6 +3,7 @@ import { Observable, BehaviorSubject, Subject } from 'rxjs';
 import { FileObject } from '../tables/submission-file.table';
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
+import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 
 export interface SubmissionFormData {
   websites: string[];
@@ -101,6 +102,9 @@ export class Submission implements ISubmission {
   get formData(): SubmissionFormData { return this._formData }
   set formData(formData: SubmissionFormData) {
     const old = this._formData;
+    if (formData && formData.websites) {
+      formData.websites = formData.websites.filter(website => !!WebsiteRegistry.getConfigForRegistry(website)); // filter out any removed websites
+    }
     this._formData = formData;
 
     this._emitChange('formData', old, formData, true);
@@ -159,6 +163,7 @@ export class Submission implements ISubmission {
 
     // Perform any regeneration form data somehow gets into a bad state
     this.formData.websites = this.formData.websites || [];
+    this.formData.websites = this.formData.websites.filter(website => !!WebsiteRegistry.getConfigForRegistry(website)); // filter out any removed websites
 
     // Try to rejuvinate websites in case of a hard reset
     this.updateAfterInit = false;

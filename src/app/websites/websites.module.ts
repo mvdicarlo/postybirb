@@ -10,7 +10,7 @@ import { Discord } from './website-services/discord/discord.service';
 import { E621 } from './website-services/e621/e621.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
 import { Furiffic } from './website-services/furiffic/furiffic.service';
-import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
+// import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
 import { FurryLife } from './website-services/furry-life/furry-life.service';
 import { FurryNetwork } from './website-services/furry-network/furry-network.service';
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
@@ -18,7 +18,7 @@ import { InkBunny } from './website-services/inkbunny/inkbunny.service';
 import { KoFi } from './website-services/ko-fi/ko-fi.service';
 import { Mastodon } from './website-services/mastodon/mastodon.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
-import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
+// import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
 import { Patreon } from './website-services/patreon/patreon.service';
 import { Piczel } from './website-services/piczel/piczel.service';
 import { Pixiv } from './website-services/pixiv/pixiv.service';
@@ -206,7 +206,7 @@ export function INIT_WEBSITE_REGISTRY() {
         E621,
         FurAffinity,
         Furiffic,
-        FurryAmino,
+        // FurryAmino, Dead due to captcha
         FurryLife,
         FurryNetwork,
         HentaiFoundry,
@@ -214,7 +214,7 @@ export function INIT_WEBSITE_REGISTRY() {
         KoFi,
         Mastodon,
         Newgrounds,
-        PaigeeWorld,
+        // PaigeeWorld, Shutdown
         Patreon,
         Piczel,
         Pixiv,
