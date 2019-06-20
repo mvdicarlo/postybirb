@@ -5,6 +5,7 @@ import { MarkdownParser } from './markdown.parser';
 
 export class AdInsertParser {
   public static parse(html: string, postToWebsite: string): string {
+    const appendNewLines: boolean = html.trim().length > 0;
     if (settingsDB.get('advertise').value()) {
       const registryEntry = WebsiteRegistry.getConfigForRegistry(postToWebsite);
       if (registryEntry && !registryEntry.websiteConfig.parsers.disableAdvertise) {
@@ -12,13 +13,13 @@ export class AdInsertParser {
         // Don't want link conversion for plaintext only
         const parsers: any = registryEntry.websiteConfig.parsers.description;
         if (parsers.includes(PlaintextParser.parse)) {
-          html += '\n\nPosted using PostyBirb';
+          html += `${appendNewLines ? '\n\n' : ''}Posted using PostyBirb`;
         } else if (parsers.includes(BBCodeParser.parse)) {
-          html += '\n\n[url=http://www.postybirb.com]Posted using PostyBirb[/url]';
+          html += `${appendNewLines ? '\n\n' : ''}[url=http://www.postybirb.com]Posted using PostyBirb[/url]`;
         } else if (parsers.includes(MarkdownParser.parse)) {
-          html += MarkdownParser.parse('<br /><br /><p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>');
+          html += MarkdownParser.parse(`${appendNewLines ? '<br /><br />' : ''}<p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>`);
         } else { // assume html
-          html += '<br /><br /><p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>';
+          html += `${appendNewLines ? '<br /><br />' : ''}<p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>`;
         }
       }
     }
