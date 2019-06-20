@@ -12,6 +12,7 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import { FurryLifeSubmissionForm } from './components/furry-life-submission-form/furry-life-submission-form.component';
 import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submission.table';
 import * as dotProp from 'dot-prop';
+import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -127,7 +128,7 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
 
   public getFolders(profileId: string): Folder[] {
     const info = this.userInformation.get(profileId);
-    return info ? [info.sfwFolders, info.nsfwFolders].filter(f=> !!f) : [];
+    return info ? [info.sfwFolders, info.nsfwFolders].filter(f => !!f) : [];
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -141,7 +142,12 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
   }
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const data = await this.getStatusFormData(postData.profileId);
+    const data = await BrowserWindowHelper.retrieveFormData(
+      postData.profileId,
+      `${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`,
+      { id: 'elStatusSubmit' }
+    );
+
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     Object.assign(data, {
@@ -158,62 +164,6 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     }
 
     return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
-  }
-
-  public getStatusFormData(profileId: string): Promise<any> {
-    return new Promise((resolve) => {
-      const win = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          partition: `persist:${profileId}`
-        }
-      });
-      win.loadURL(`${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`);
-      win.once('ready-to-show', () => {
-        if (win.isDestroyed()) {
-          resolve({});
-          return;
-        }
-
-        win.webContents.executeJavaScript(`Array.from(new FormData(document.getElementById('elStatusSubmit'))).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})`).then(function(value) {
-          resolve(value);
-        })
-          .catch(() => {
-            resolve({});
-          })
-          .finally(() => {
-            win.destroy();
-          });
-      });
-    });
-  }
-
-  public getSubmissionFormData(profileId: string, url: string): Promise<any> {
-    return new Promise((resolve) => {
-      const win = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          partition: `persist:${profileId}`
-        }
-      });
-      win.loadURL(url);
-      win.once('ready-to-show', () => {
-        if (win.isDestroyed()) {
-          resolve({});
-          return;
-        }
-
-        win.webContents.executeJavaScript(`Array.from(new FormData(document.getElementById('elGallerySubmit'))).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})`).then(function(value) {
-          resolve(value);
-        })
-          .catch(() => {
-            resolve({});
-          })
-          .finally(() => {
-            win.destroy();
-          });
-      });
-    });
   }
 
   private async uploadImage(uploadKey: string, albumParam: string, category: number, cookies: any[], file: any): Promise<any> {
@@ -254,9 +204,14 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
 
     const files = [postData.primary, ...postData.additionalFiles].filter(f => !!f);
 
-    const albumParam: string = `${album === '0' ? 'noAlbum=1' : 'album='+album}`;
+    const albumParam: string = `${album === '0' ? 'noAlbum=1' : 'album=' + album}`;
 
-    const data: any = await this.getSubmissionFormData(postData.profileId, `${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}`);
+    const data: any = await BrowserWindowHelper.retrieveFormData(
+      postData.profileId,
+      `${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}`,
+      { id: 'elGallerySubmit' }
+    );
+
     try {
       const cookies = await getCookies(postData.profileId, this.BASE_URL);
       const uploads = await Promise.all(files.map(f => this.uploadImage(data.images, albumParam, category, cookies, fileAsFormDataObject(f))));
