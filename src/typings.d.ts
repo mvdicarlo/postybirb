@@ -16,6 +16,8 @@ declare var got: {
   gotPost(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<any>;
   convertCookie(cookie: any): any;
 }
+declare var parse5: any;
+declare var sanitize: any;
 
 declare function openUrlInBrowser(url: string): void;
 declare function getCookies(persistId: string, url: string): Promise<any[]>;

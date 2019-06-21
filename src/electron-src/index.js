@@ -78,6 +78,9 @@ window.auth = {
 
 window.AUTH_URL = require('./src/auth-server.js').auth_server;
 
+window.parse5 = require('parse5');
+window.sanitize = require('sanitize-html');
+
 const {
   FindInPage
 } = require('electron-find');

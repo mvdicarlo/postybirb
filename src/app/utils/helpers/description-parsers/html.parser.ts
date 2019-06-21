@@ -14,49 +14,27 @@ export class CustomHTMLParser {
 
 export class HTMLFormatParser {
   public static parse(html: string): string {
-    return null;
+    if (!html) return '';
+    html = HTMLFormatParser.preparse(html);
+    html = HTMLFormatParser.trim(html)
+    html = sanitize(html, {
+      allowedTags: false,
+      allowedAttributes: {
+        '*': ['align', 'style', 'href', 'target']
+      },
+      allowedStyles: {
+        '*': {
+          'color': [/.*/],
+          'text-align': [/.*/],
+          'font-size': [/.*/]
+        }
+      }
+    });
+    html = HTMLFormatParser.bundle(html);
+    return html.trim();
   }
 
-  //   const parse5 = require('parse5');
-  // const sanitize = require('sanitize-html');
-  //
-  // const str = `
-  // <div>
-  // </div>
-  // <div id="Hello">First Line</div>
-  // <p> </p>
-  // Basic Text
-  // BasicText 2
-  // <hr>
-  // <div style="text-align: center; margin-left: 10px"><span>Hello!</span></div>
-  // <div style="text-align: center; margin-left: 10px">Goodbye!</div>
-  // <div style="text-align: right; margin-left: 10px">Right!</div>
-  // <div>Hello</div>
-  // <div><b>Collapsed</b></div>
-  // <a href="google.com">Text</a>
-  // <a href="google.com">2</a>
-  // <div></div>
-  // `.trim();
-  //
-  // const preparsed = preparse(str);
-  // const trimmed = trim(preparsed);
-  // const sanitized = sanitize(trimmed, {
-  //     allowedTags: false,
-  //     allowedAttributes: {
-  //         '*': ['align', 'style', 'href', 'target']
-  //     },
-  //     allowedStyles: {
-  //         '*': {
-  //             'color': [/.*/],
-  //             'text-align': [/.*/],
-  //             'font-size': [/.*/]
-  //         }
-  //     }
-  // });
-  //
-  // const parsed = bundle(sanitized);
-
-  private static preparse(html): string {
+  private static preparse(html: string): string {
     if (!html) return '';
 
     html = html
@@ -71,7 +49,7 @@ export class HTMLFormatParser {
     if (!html) return '';
 
     const startRegex = /^(<br>|<br \/>)(\n|\r)*/gi
-    let matches
+    let matches;
     while ((matches = html.match(startRegex))) {
       html = html.replace(startRegex, '');
     }
