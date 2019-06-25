@@ -139,7 +139,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
     this._internalProvider.next(this.value);
   }
 
-  onChange() {z
+  onChange() {
     if (this.value.overwrite || !this.canOverwrite) {
       this._onChange(copyObject(this.value));
     } else {
