@@ -10,8 +10,6 @@ import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registri
 import { PlaintextParser } from '../../helpers/description-parsers/plaintext.parser';
 import { copyObject } from '../../helpers/copy.helper';
 import { DescriptionTemplatesService } from '../../services/description-templates.service';
-import { HTMLFormatParser } from '../../helpers/description-parsers/html.parser';
-import { BBCodeParser } from '../../helpers/description-parsers/bbcode.parser';
 
 export interface DescriptionData {
   overwrite: boolean;
@@ -141,9 +139,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
     this._internalProvider.next(this.value);
   }
 
-  onChange() {
-    console.log(PlaintextParser.parse(HTMLFormatParser.parse(this.value.description)))
-    console.log(BBCodeParser.parse(HTMLFormatParser.parse(this.value.description)))
+  onChange() {z
     if (this.value.overwrite || !this.canOverwrite) {
       this._onChange(copyObject(this.value));
     } else {
