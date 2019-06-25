@@ -12,7 +12,6 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { Folder } from '../../interfaces/folder.interface';
 import { DeviantArtSubmissionForm } from './components/deviant-art-submission-form/deviant-art-submission-form.component';
-import { CustomHTMLParser } from 'src/app/utils/helpers/description-parsers/html.parser';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -37,15 +36,15 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 
 function descriptionParse(html: string): string {
   html = html
-    .replace(/style="text-align: center;"/g, 'align="center"')
-    .replace(/style="text-align: right;"/g, 'align="right"');
+    .replace(/style="text-align:center;"/g, 'align="center"')
+    .replace(/style="text-align:right;"/g, 'align="right"');
 
   const regex = new RegExp(`:da(.*?):`, 'gi');
   html = html.replace(regex, `:icon$1:`);
 
-  return CustomHTMLParser.parse(html
+  return html
     .replace(/<p/gm, '<div')
-    .replace(/<\/p>/gm, '</div>'));
+    .replace(/<\/p>/gm, '</div>');
 }
 
 @Injectable({

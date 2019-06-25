@@ -134,7 +134,10 @@ export class Twitter extends BaseWebsiteService {
     } else {
       let message = 'Unknown error';
       if (postResponse.success.body.errors) {
-        message = postResponse.success.body.errors.join('\n') || 'Unknown error';
+        message = postResponse.success.body.errors.map(e => {
+          if (e && e.response) return e.response;
+          return e;
+        }).join('\n') || 'Unknown error';
       }
       return Promise.reject(this.createPostResponse(message, postResponse.success.body));
     }

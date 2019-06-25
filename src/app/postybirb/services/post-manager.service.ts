@@ -12,6 +12,7 @@ import { getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import * as dotProp from 'dot-prop';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { HTMLFormatParser } from 'src/app/utils/helpers/description-parsers/html.parser';
 
 @Injectable({
   providedIn: 'root'
@@ -114,7 +115,7 @@ export class PostManagerService {
     const config = WebsiteRegistry.getConfigForRegistry(website).websiteConfig
     const preparsers: any[] = dotProp.get(config, 'preparsers.description', []);
     const parsers: any[] = dotProp.get(config, 'parsers.description', []);
-    let parsed = description || '';
+    let parsed = HTMLFormatParser.parse(description || '');
 
     preparsers.forEach(parser => {
       parsed = parser(parsed);

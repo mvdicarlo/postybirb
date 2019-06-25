@@ -28,6 +28,12 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function descriptionParse(html: string): string {
+  return html
+    .replace(/<div/gm, '<p')
+    .replace(/<\/div>/gm, '</p>');
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -43,7 +49,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     submission: submissionValidate
   },
   parsers: {
-    description: [],
+    description: [descriptionParse],
     usernameShortcut: {
       code: 'ng',
       url: 'https://$1.newgrounds.com'

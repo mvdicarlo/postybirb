@@ -1,7 +1,6 @@
 export class CustomHTMLParser {
   public static parse(html: string): string {
     if (!html) return '';
-    html = html.replace(/>\s</g, '><');
     const blocks = ['p', 'div', 'pre'];
     blocks.forEach(block => {
       const regex = new RegExp(`<${block}(.*?)>((.|\n)*?)<\/${block}>`, 'gmi');
@@ -31,6 +30,9 @@ export class HTMLFormatParser {
       }
     });
     html = HTMLFormatParser.bundle(html);
+    html = html
+      .replace(/<br \/>/g, '<br>')
+      .replace(/<br\/>/g, '<br>');
     return html.trim();
   }
 
@@ -39,7 +41,7 @@ export class HTMLFormatParser {
 
     html = html
       .replace(/<p/g, '<div')
-      .replace(/<\/p/, '</div');
+      .replace(/<\/p/g, '</div');
     html = html.replace(/<div>(\s|\n|\r)*?<\/div>/g, '<br>');
 
     return html;
@@ -82,7 +84,7 @@ export class HTMLFormatParser {
       }
 
       if (lastNode) {
-        if (lastNode.tagName === node.tagName && JSON.stringify(lastNode.attrs) === JSON.stringify(node.attrs)) {
+        if (node.tagName !== 'br' && lastNode.tagName === node.tagName && JSON.stringify(lastNode.attrs) === JSON.stringify(node.attrs)) {
           lastNode.childNodes.push({
             nodeName: 'br',
             tagName: 'br',

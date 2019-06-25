@@ -19,7 +19,7 @@ export class BBCodeParser {
     html = html.replace(/<\/strong>/gi, '[/b]');
 
     BBCodeParser.BLOCKS.forEach(block => {
-      const regex = new RegExp(`<${block}(.*?)style="text-align: ((left|right|center)?);"(.*?)>((.|\n)*?)<\/${block}>`, 'gmi');
+      const regex = new RegExp(`<${block}(.*?)style="text-align:((left|right|center)?)"(.*?)>((.|\n)*?)<\/${block}>`, 'gmi');
       html = html.replace(regex, '[$3]$5[/$3]');
 
       const regex2 = new RegExp(`<${block}>\\s<\/${block}>`, 'gm');
@@ -28,12 +28,11 @@ export class BBCodeParser {
 
     html = BBCodeParser.postParse(html);
 
-    html = html.replace(/ data-mce-(style)="(.*?);"/gmi, '');
-    html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
+    html = html.replace(/<span style="color:(.*?)">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
 
     html = html.replace(/<h[1-7](.*?)>(.*?)<\/h[1-7]>/, '$2\n');
 
-    html = html.replace(/<br(.*?)>/gi, '\n');
+    html = html.replace(/<br>/gi, '\n');
     html = html.replace(/<hr(.*?)>/gi, '\n[hr]\n');
 
     // opting to use \r for now

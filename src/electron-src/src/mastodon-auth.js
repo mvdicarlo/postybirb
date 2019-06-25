@@ -86,6 +86,16 @@ function uploadMedia(media, token, website) {
   });
 }
 
+async function uploadMedias(files, token, website) {
+  const ids = [];
+  for (let i = 0; i < files.length; i++) {
+    const id = await uploadMedia(files[i], token, website);
+    ids.push(id);
+  }
+
+  return ids;
+}
+
 exports.post = function post(token, website, files, sensitive, status, spoilerText) {
   return new Promise((resolve) => {
     const M = new Mastodon({
@@ -104,21 +114,21 @@ exports.post = function post(token, website, files, sensitive, status, spoilerTe
     }
 
     if (files && files.length) { // submission w/ images
-      const promises = files.slice(0, 4).map(f => uploadMedia(f, token, website));
-      Promise.all(promises).then((media_ids) => {
-        data.media_ids = media_ids;
-        M.post('statuses', data).then((response) => {
-          resolve(response.data);
+      uploadMedias(files.slice(0, 4), token, website)
+        .then((media_ids) => {
+          data.media_ids = media_ids;
+          M.post('statuses', data).then((response) => {
+            resolve(response.data);
+          }).catch((err) => {
+            resolve({
+              error: err
+            });
+          });
         }).catch((err) => {
           resolve({
             error: err
           });
         });
-      }).catch((err) => {
-        resolve({
-          error: err
-        });
-      });
     } else {
       M.post('statuses', data)
         .then((response) => {
