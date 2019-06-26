@@ -58,6 +58,31 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
     formats: {
       underline: { inline: 'u', exact: true },
       strikethrough: { inline: 's', exact: true },
+    },
+    paste_preprocess(plugin, args) {
+      args.content = sanitize(args.content, {
+        allowedTags: false,
+        allowedAttributes: {
+          'a': ['href', 'target'],
+          'div': ['align', 'style'],
+          'pre': ['align', 'style'],
+          'p': ['align', 'style'],
+          'h1': ['align', 'style'],
+          'h2': ['align', 'style'],
+          'h3': ['align', 'style'],
+          'h4': ['align', 'style'],
+          'h5': ['align', 'style'],
+          'h6': ['align', 'style'],
+          'span': ['align', 'style'],
+        },
+        allowedStyles: {
+          '*': {
+            'color': [/.*/],
+            'text-align': [/.*/],
+            'font-size': [/.*/]
+          }
+        }
+      });
     }
   }
 

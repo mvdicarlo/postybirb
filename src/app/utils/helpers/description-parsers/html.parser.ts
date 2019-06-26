@@ -19,7 +19,17 @@ export class HTMLFormatParser {
     html = sanitize(html, {
       allowedTags: false,
       allowedAttributes: {
-        '*': ['align', 'style', 'href', 'target']
+        'a': ['href', 'target'],
+        'div': ['align', 'style'],
+        'pre': ['align', 'style'],
+        'p': ['align', 'style'],
+        'h1': ['align', 'style'],
+        'h2': ['align', 'style'],
+        'h3': ['align', 'style'],
+        'h4': ['align', 'style'],
+        'h5': ['align', 'style'],
+        'h6': ['align', 'style'],
+        'span': ['align', 'style'],
       },
       allowedStyles: {
         '*': {
