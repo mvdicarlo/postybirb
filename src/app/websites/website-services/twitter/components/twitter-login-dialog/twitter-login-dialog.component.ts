@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { LoginStatus } from 'src/app/websites/interfaces/website-service.interface';
+import { SnotifyService } from 'ng-snotify';
 
 @Component({
   selector: 'twitter-login-dialog',
@@ -29,7 +30,8 @@ export class TwitterLoginDialog implements OnInit, AfterViewInit, OnDestroy {
     private _changeDetector: ChangeDetectorRef,
     private _loginManager: LoginManagerService,
     private _loginProfileManager: LoginProfileManagerService,
-    private dialogRef: MatDialogRef<TwitterLoginDialog>
+    private dialogRef: MatDialogRef<TwitterLoginDialog>,
+    private snotify: SnotifyService
   ) {
     this.loginForm = fb.group({
       pin: [null, Validators.required],
@@ -67,9 +69,10 @@ export class TwitterLoginDialog implements OnInit, AfterViewInit, OnDestroy {
         this.attempting = false;
         this._changeDetector.markForCheck();
       })
-      .catch(() => {
+      .catch((errors) => {
         this.attempting = false;
         this._changeDetector.markForCheck();
+        this.snotify.error(errors.errors.join('\n'));
       });
   }
 

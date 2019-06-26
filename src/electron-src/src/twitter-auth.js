@@ -51,9 +51,13 @@ app.get('/auth/twitter', (req, res) => {
     if (err) {
       res.send('Error occured while trying to authenticate.');
     } else {
-      const r = JSON.parse(body);
-      oauth = r;
-      res.redirect(r.url);
+      try {
+        const r = JSON.parse(body);
+        oauth = r;
+        res.redirect(r.url);
+      } catch (e) {
+        res.send(e.message + '\n' + body);
+      }
     }
   });
 });
