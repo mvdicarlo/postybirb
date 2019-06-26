@@ -2,7 +2,7 @@ import { Component, OnDestroy, Injector, ChangeDetectorRef, AfterViewInit, ViewC
 import { ProfileStatuses, LoginManagerService } from 'src/app/login/services/login-manager.service';
 import { Subscription, Subject, Observable } from 'rxjs';
 import { Submission } from 'src/app/database/models/submission.model';
-import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
+import { WebsiteRegistryEntry, WebsiteRegistry, WebsiteRegistryConfig } from 'src/app/websites/registries/website.registry';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FormGroup, FormControl, FormBuilder, Validators } from '@angular/forms';
 import { LoginStatus, WebsiteStatus } from 'src/app/websites/interfaces/website-service.interface';
@@ -134,7 +134,8 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     // We want to keep all added websites through the filter so users can remove filtered ones
     if (this.submission.formData && this.submission.formData.websites) {
       this.submission.formData.websites.filter(w => !!w).forEach(website => {
-        this.availableWebsites[website] = WebsiteRegistry.getConfigForRegistry(website);
+        const config = WebsiteRegistry.getConfigForRegistry(website);
+        if (config && this.allowWebsite(config)) this.availableWebsites[website] = config;
       });
     }
 
@@ -189,16 +190,21 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this.formDataForm.patchValue(copy);
   }
 
+  protected allowWebsite(config: WebsiteRegistryConfig): boolean { return !!config };
+
   public getLoginProfileId(): string {
     return this.formDataForm.value.loginProfile;
   }
 
   public getWebsites(): string[] {
+    let websites = [];
     if (this.formDataForm) {
-      return (this.formDataForm.value.websites || []).filter(w => !!w);
+      websites = (this.formDataForm.value.websites || [])
+        .filter(w => !!w)
+        .filter(w => !!this.availableWebsites[w]);
     }
 
-    return [];
+    return websites;
   }
 
   public importTemplateField(paths: string[], event: Event): void {
@@ -213,7 +219,13 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         if (template) {
           for (let i = 0; i < paths.length; i++) {
             const path = paths[i];
-            dotProp.set(this.submission.formData, path, dotProp.get(copyObject(template.data), path));
+            if (path === 'websites') {
+              const websites = dotProp.get(copyObject(template.data), path, [])
+                .filter(w => this.allowWebsite(this.availableWebsites[w]));
+              dotProp.set(this.submission.formData, path, websites);
+            } else {
+              dotProp.set(this.submission.formData, path, dotProp.get(copyObject(template.data), path));
+            }
           }
           this.formDataForm.patchValue(copyObject(this.submission.formData));
           this._changeDetector.markForCheck();

@@ -9,6 +9,7 @@ import { SubmissionType, ISubmission } from 'src/app/database/tables/submission.
 import { SubmissionSelectDialog } from '../../components/submission-select-dialog/submission-select-dialog.component';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
+import { WebsiteRegistryConfig } from 'src/app/websites/registries/website.registry';
 
 @Component({
   selector: 'journal-form',
@@ -81,6 +82,10 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
     this.basicInfoForm.controls.schedule.valueChanges.subscribe((schedule: Date) => {
       this.submission.schedule = schedule ? schedule.getTime() : null;
     });
+  }
+
+  protected allowWebsite(config: WebsiteRegistryConfig): boolean {
+    return config && !!config.websiteConfig.components.journalForm;
   }
 
   public clear(): void {

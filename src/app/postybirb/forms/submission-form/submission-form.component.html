@@ -55,7 +55,7 @@
             </mat-select>
           </mat-form-field>
           <button mat-button (click)="toggleLogin()" color="accent">{{ 'Login' | translate }}</button>
-          <button mat-button color="accent"><i (click)="importTemplateField(['websites', 'loginProfile'])" [matTooltip]="'Import from existing Template' | translate" class="fas fa-share-alt-square template-import accent-text"></i></button>
+          <button mat-button color="accent" (click)="importTemplateField(['websites', 'loginProfile'])" [matTooltip]="'Import from existing Template' | translate"><i class="fas fa-share-alt-square template-import accent-text"></i></button>
         </div>
 
         <!-- Defaults Section -->
