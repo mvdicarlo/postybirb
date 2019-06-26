@@ -1,4 +1,4 @@
-<loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [mode]="submission.isScheduled ? 'indeterminate' : 'buffer'" [allowStop]="submission && (submission.queued || submission.isScheduled)" [faStopIcon]="submission && submission.isScheduled ? 'far fa-calendar-times mt-2' : null" (stop)="stopPosting()">
+<loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [mode]="submission.isScheduled ? 'determinate' : 'buffer'" [allowStop]="submission && (submission.queued || submission.isScheduled)" [faStopIcon]="submission && submission.isScheduled ? 'far fa-calendar-times mt-2' : null" (stop)="stopPosting()">
   <div loading-body *ngIf="submission && submission.isScheduled">
     <i class="far fa-clock"></i>
     <span> {{ submission.schedule | date:'short' }}</span>
