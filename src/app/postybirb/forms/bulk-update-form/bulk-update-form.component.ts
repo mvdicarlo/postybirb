@@ -29,16 +29,37 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
     this.loading = true;
     this.availableWebsites = getUnfilteredWebsites() || {};
     this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
-    this.submission.formData = store.get(this.LOCAL_STORE) || {};
+    const storedSubmission: ISubmission = store.get(this.LOCAL_STORE);
+    if (storedSubmission) {
+      if (storedSubmission.formData) {
+        this.submission.formData = storedSubmission.formData
+      }
+
+      if (storedSubmission.rating) {
+        this.submission.rating = storedSubmission.rating;
+      }
+    }
+    this._initializeBasicInfoForm();
     this._initializeFormDataForm();
 
     this.loading = false;
     this._changeDetector.markForCheck();
   }
 
+  private _initializeBasicInfoForm(): void {
+    this.basicInfoForm = this._fb.group({
+      rating: [this.submission.rating],
+    }, { updateOn: 'blur' });
+
+    this.basicInfoForm.controls.rating.valueChanges.subscribe(rating => {
+      this.submission.rating = rating;
+      store.set(this.LOCAL_STORE, this.submission.asISubmission());
+    });
+  }
+
   protected _formUpdated(changes: any): void {
     super._formUpdated(changes);
-    store.set(this.LOCAL_STORE, this.submission.formData);
+    store.set(this.LOCAL_STORE, this.submission.asISubmission());
   }
 
   public clear(): void {
@@ -53,6 +74,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
           this.formDataForm.reset();
           this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
+          this.basicInfoForm.reset();
           this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }
       });
@@ -70,7 +92,11 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
       .subscribe((submissions: ISubmission[]) => {
         if (submissions && submissions.length) {
           submissions.forEach(submission => {
-            this._submissionCache.get(submission.id).formData = copyObject(this.formDataForm.value);
+            const s = this._submissionCache.get(submission.id)
+            s.formData = copyObject(this.formDataForm.value);
+            if (this.basicInfoForm.value.rating) {
+              s.rating = this.basicInfoForm.value.rating;
+            }
           });
         }
 

@@ -1,6 +1,22 @@
 <loading-overlay [loading]="loading">
   <div class="editing-form" *ngIf="submission">
-    <div class="mt-4">
+    <div class="basic-info">
+      <form [formGroup]="basicInfoForm" class="basic-form">
+        <div class="w-50 d-inline-block">
+          <mat-form-field color="accent">
+            <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
+              <mat-option [value]="null">{{ 'None' | translate }}</mat-option>
+              <mat-option value="General">{{ 'General' | translate }}</mat-option>
+              <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
+              <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
+              <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </form>
+    </div>
+
+    <div class="mt-2">
       <form [formGroup]="formDataForm">
         <div class="w-100 d-flex">
           <button mat-button [color]="formDataForm.value.loginProfile ? 'accent' : 'warn'" (click)="openProfileSelect()" class="pl-0">
