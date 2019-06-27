@@ -44,6 +44,7 @@
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "icons/icon.icns",
+      "gatekeeperAssess": false,
       "target": [
         "zip",
         "dmg"
@@ -94,7 +95,7 @@
   "devDependencies": {
     "babel-eslint": "^7.2.3",
     "electron": "^4.2.5",
-    "electron-builder": "^20.41.0",
+    "electron-builder": "^20.44.4",
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^15.0.2",
     "eslint-plugin-import": "^2.11.0",
