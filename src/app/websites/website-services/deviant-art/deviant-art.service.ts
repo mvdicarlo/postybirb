@@ -44,7 +44,8 @@ function descriptionParse(html: string): string {
 
   return html
     .replace(/<p/gm, '<div')
-    .replace(/<\/p>/gm, '</div>');
+    .replace(/<\/p>/gm, '</div>')
+    .replace(/\n/g, '');
 }
 
 @Injectable({
