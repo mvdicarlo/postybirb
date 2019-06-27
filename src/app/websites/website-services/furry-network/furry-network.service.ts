@@ -297,7 +297,7 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
     // Need to check that a correct profile is used
     let profile: string = options.profile ? options.profile : null;
     const existingProfiles = this.getProfiles(postData.profileId) || [];
-    if (!existingProfiles.includes(profile)) {
+    if (!existingProfiles.find(p => p.name === profile)) {
       profile = existingProfiles[0].name;
       options.folders = [];
     }

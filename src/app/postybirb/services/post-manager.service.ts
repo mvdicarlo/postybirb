@@ -13,6 +13,7 @@ import { SubmissionType } from 'src/app/database/tables/submission.table';
 import * as dotProp from 'dot-prop';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { HTMLFormatParser } from 'src/app/utils/helpers/description-parsers/html.parser';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -69,7 +70,7 @@ export class PostManagerService {
           additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
           description: this._parseDescription(getDescription(submissionToPost, website), website),
           loginInformation,
-          options: getOptions(submissionToPost, website),
+          options: copyObject(getOptions(submissionToPost, website)),
           primary: files.filter(f => f.fileType === SubmissionFileType.PRIMARY_FILE)[0],
           profileId: submissionToPost.formData.loginProfile,
           srcURLs: submissionToPost.postStats.sourceURLs,
