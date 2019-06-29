@@ -80,6 +80,8 @@ window.AUTH_URL = require('./src/auth-server.js').auth_server;
 
 window.parse5 = require('parse5');
 window.sanitize = require('sanitize-html');
+const Entities = require('html-entities').AllHtmlEntities;
+window.entities = new Entities();
 
 const {
   FindInPage

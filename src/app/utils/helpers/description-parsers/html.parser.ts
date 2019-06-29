@@ -43,6 +43,7 @@ export class HTMLFormatParser {
     html = html
       .replace(/<br \/>/g, '<br>')
       .replace(/<br\/>/g, '<br>');
+    html = html.replace(/(\s)*&nbsp;/g, '');
     return html.trim();
   }
 
@@ -122,6 +123,6 @@ export class HTMLFormatParser {
     });
 
     parsed.childNodes = nodeTree;
-    return parse5.serialize(parsed);
+    return parse5.serialize(parsed, { encodeHtmlEntities: false });
   }
 }

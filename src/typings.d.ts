@@ -18,6 +18,7 @@ declare var got: {
 }
 declare var parse5: any;
 declare var sanitize: any;
+declare var entities: any;
 
 declare function openUrlInBrowser(url: string): void;
 declare function getCookies(persistId: string, url: string): Promise<any[]>;
