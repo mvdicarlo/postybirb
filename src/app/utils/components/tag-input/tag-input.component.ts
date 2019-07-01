@@ -196,7 +196,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
   }
 
   public applyGroup(template: TagTemplate): void {
-    template.tags.forEach(tag => this._addTag(tag));
+    template.tags.forEach(tag => this._addTag(tag, false));
   }
 
   public getTags(): string[] {
@@ -231,7 +231,7 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
     tags.forEach(t => this._addTag(t));
   }
 
-  private _addTag(addTag: string): void {
+  private _addTag(addTag: string, doNotify: boolean = true): void {
     let tag = addTag
       .trim()
       .replace(/("|;|\\|\[|\]|\{|\}|\||\!|\@|\$|\%|\^|\&|\*|\+|\=|\<|\>||\?|`|~)/g, '');
@@ -244,8 +244,8 @@ export class TagInput extends BaseValueAccessor implements OnInit, OnDestroy, Co
         }
 
         this.tagControl.patchValue([...this.value.tags, tag]);
-      } else {
-        this.snotify.warning(this.translateService.instant(`Ignored tag`, { tag }));
+      } else if (doNotify) {
+        this.snotify.warning(this.translateService.instant(`Ignored tag`, { tag }), { timeout: 2000 });
       }
     }
   }

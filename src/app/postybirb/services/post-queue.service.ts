@@ -283,9 +283,9 @@ export class PostQueueService {
       });
 
       if (failed) {
-        this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 30000, showProgressBar: true });
+        this.snotify.error(`${submission.title} (${submission.postStats.fail.join(', ')})`, { timeout: 10000, showProgressBar: true });
       } else {
-        this.snotify.success(submission.title || submission.fileInfo.name, { timeout: 7500, showProgressBar: true });
+        this.snotify.success(submission.title || submission.fileInfo.name, { timeout: 4500, showProgressBar: true });
       }
     } catch (e) { /* ignore */ }
 
