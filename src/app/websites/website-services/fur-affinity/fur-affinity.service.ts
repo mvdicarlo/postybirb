@@ -313,9 +313,19 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
     const maxLength = 250;
     const tags = super.formatTags(defaultTags, other);
-    let tagString = tags.join(' ').trim();
+    const filteredTags = tags.filter(tag => tag.length >= 3);
+    let tagString = filteredTags.join(' ').trim();
+    if (tagString.length > maxLength) {
+      let fitTags = [];
+      filteredTags.forEach(tag => {
+        if (fitTags.join(' ').length + 1 + tag.length < maxLength) {
+          fitTags.push(tag);
+        }
+      });
+      tagString = fitTags.join(' ');
+    }
 
-    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(' ').filter(tag => tag.length >= 3).join(' ') : tagString;
+    return tagString.length > maxLength ? tagString.substring(0, maxLength) : tagString;
   }
 
 }
