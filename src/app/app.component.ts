@@ -47,7 +47,7 @@ export class AppComponent implements OnInit {
       },
       toast: {
         timeout: 6000,
-        showProgressBar: false,
+        showProgressBar: true,
         pauseOnHover: true,
         closeOnClick: true,
         titleMaxLength: 50

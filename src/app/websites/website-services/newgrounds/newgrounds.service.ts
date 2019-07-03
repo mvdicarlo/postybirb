@@ -8,6 +8,8 @@ import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import * as dotProp from 'dot-prop';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
+import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -44,6 +46,7 @@ function descriptionParse(html: string): string {
   },
   components: {
     submissionForm: NewgroundsSubmissionForm,
+    journalForm: GenericJournalSubmissionForm
   },
   validators: {
     submission: submissionValidate
@@ -82,7 +85,61 @@ export class Newgrounds extends BaseWebsiteService {
     return returnValue;
   }
 
-  public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    if (submission.submissionType === SubmissionType.SUBMISSION) {
+      return this.postSubmission(submission, postData);
+    } else if (submission.submissionType === SubmissionType.JOURNAL) {
+      return this.postJournal(submission, postData);
+    } else {
+      throw new Error('Unknown submission type.');
+    }
+  }
+
+  public async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const uploadPage = await got.get(`${this.BASE_URL}/account/news/post`, this.BASE_URL, cookies, null);
+
+    const userkey: string = HTMLParser.getInputValue(uploadPage.body, 'userkey');
+    const data: any = {
+      post_id: '',
+      userkey,
+      subject: postData.title,
+      emoticon: '6',
+      comments_pref: '1',
+      tag: '',
+      'tags[]': this.formatTags(postData.tags, []),
+      body: `<p>${postData.description}</p>`
+    };
+
+    const postResponse = await got.post(`${this.BASE_URL}/account/news/post`, data, this.BASE_URL, cookies, {
+      qsStringifyOptions: { arrayFormat: 'repeat' },
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'Origin': 'https://www.newgrounds.com',
+        'Referer': `https://www.newgrounds.com/account/news/post`,
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept': '*',
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (postResponse.error) {
+      return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
+    }
+
+    try {
+      const res: any = JSON.parse(postResponse.success.body);
+      if (res.url) {
+        return this.createPostResponse(null);
+      } else {
+        return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
+      }
+    } catch (err) {
+      return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
+    }
+  }
+
+  public async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const uploadPage = await got.get(`${this.BASE_URL}/art/submit/create`, this.BASE_URL, cookies, null);
 
