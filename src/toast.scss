@@ -1,0 +1,30 @@
+.snotifyToast {
+  background-color: #212529 !important;
+
+  .snotifyToast__title {
+    font-size: 1.2em !important;
+    color: #fff;
+  }
+
+  .snotifyToast__body {
+    color: #fff !important;
+    max-width: 100%;
+  }
+
+  .snotifyToast__buttons {
+    border-top: 1px solid #95999c !important;
+
+    button {
+      color: #fff !important;
+    }
+  }
+
+  .snotifyToast__inner {
+    min-height: 40px !important;
+
+    .snotify-icon {
+      max-height: 38px !important;
+      max-width: 38px !important;
+    }
+  }
+}

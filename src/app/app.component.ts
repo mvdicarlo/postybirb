@@ -46,10 +46,11 @@ export class AppComponent implements OnInit {
         maxOnScreen: 5
       },
       toast: {
-        timeout: 7500,
-        showProgressBar: true,
+        timeout: 6000,
+        showProgressBar: false,
         pauseOnHover: true,
-        closeOnClick: true
+        closeOnClick: true,
+        titleMaxLength: 50
       }
     });
   }
