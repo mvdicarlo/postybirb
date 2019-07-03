@@ -189,7 +189,7 @@ export class PostQueueService {
           }).catch((err: PostResult) => { // could this every return something that isn't a PostResult?
             postingSubmission.postStats.fail.push(website);
 
-            let error = err.error;
+            let error = err instanceof Error ? err : err.error;
             if (error instanceof Error) {
               error = `${error.toString()}\n${error.stack}`;
             }
