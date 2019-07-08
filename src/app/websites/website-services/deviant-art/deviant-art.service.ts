@@ -34,6 +34,15 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function preparser(html: string): string {
+  if (!html) return '';
+
+  const regex = new RegExp(`:da(.*?):`, 'gi');
+  html = html.replace(regex, `:icon$1:`);
+
+  return html;
+}
+
 function descriptionParse(html: string): string {
   html = html
     .replace(/style="text-align:center;"/g, 'align="center"')
@@ -64,6 +73,9 @@ function descriptionParse(html: string): string {
   },
   validators: {
     submission: submissionValidate
+  },
+  preparsers: {
+    description: [preparser]
   },
   parsers: {
     description: [descriptionParse],
