@@ -10,6 +10,7 @@ import { getDescription } from '../../helpers/website-validator.helper';
 import { DiscordSubmissionForm } from './components/discord-submission-form/discord-submission-form.component';
 import * as dotProp from 'dot-prop';
 import { HttpClient } from '@angular/common/http';
+import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 export interface DiscordWebhook {
   webhook: string;
@@ -24,7 +25,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Options are incomplete', { website: 'Discord' }]);
   }
 
-  if (MBtoBytes(8) < submission.fileInfo.size) {
+  if (submission.submissionType !== SubmissionType.JOURNAL && MBtoBytes(8) < submission.fileInfo.size) {
     problems.push(['Max file size', { website: 'Discord', value: '8MB' }]);
   }
 
@@ -55,7 +56,8 @@ function warningCheck(submission: Submission, formData: SubmissionFormData): str
   },
   validators: {
     warningCheck,
-    submission: submissionValidate
+    submission: submissionValidate,
+    journal: submissionValidate
   },
   parsers: {
     description: [PlaintextParser.parse],
