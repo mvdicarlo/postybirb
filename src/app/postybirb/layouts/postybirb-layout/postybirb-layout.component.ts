@@ -252,11 +252,74 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  public reviveSubmission(reviver: ISubmission): void {
+    this.loading = true;
+    const revive: ISubmission = copyObject(reviver);
+    revive.id = undefined;
+    if (revive.submissionType === SubmissionType.SUBMISSION) {
+      revive.fileMap = {
+        PRIMARY: -1,
+        THUMBNAIL: null,
+        ADDITIONAL: []
+      };
+      revive.fileInfo = {
+        name: 'unknown',
+        size: 0,
+        path: '',
+        type: ''
+      };
+    }
+
+    this._submissionDB.createSubmissions([revive]).then(insertResults => {
+      if (revive.submissionType === SubmissionType.JOURNAL) {
+        this.loading = false;
+        this.submissions = [...this.submissions, ...insertResults];
+        this._changeDetector.markForCheck();
+
+        this._openToTab(insertResults[0]);
+      } else {
+        const promises: Promise<any>[] = [];
+        for (let i = 0; i < insertResults.length; i++) {
+          promises.push(this._submissionFileDBService.createSubmissionFiles(insertResults[i].id, SubmissionFileType.PRIMARY_FILE, [{
+            file: new File([new Uint8Array()], 'unknown'),
+            buffer: new Uint8Array()
+          }]));
+        }
+
+        Promise.all(promises)
+          .then((submissionFiles: ISubmissionFile[][]) => {
+            this.loading = false;
+
+            let flat = [];
+            submissionFiles.forEach(f => { flat = [...flat, ...f] });
+
+            // cache and build file mapping
+            insertResults.forEach(r => this._submissionCache.store(r));
+            for (let i = 0; i < flat.length; i++) {
+              insertResults[i].fileMap = {
+                [SubmissionFileType.PRIMARY_FILE]: flat[i].id,
+                [SubmissionFileType.THUMBNAIL_FILE]: null,
+                [SubmissionFileType.ADDITIONAL_FILE]: [],
+              }
+
+              if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
+                insertResults[i].fileInfo = flat[i].fileInfo;
+              }
+            }
+
+            this.submissions = [...this.submissions, ...insertResults];
+            this._changeDetector.markForCheck();
+
+            this._openToTab(insertResults[0]);
+          });
+      }
+    });
+  }
+
   public createNewJournal(): void {
     this.loading = true;
     this.creatingJournal = true;
     this._changeDetector.markForCheck();
-
     this.dialog.open(InputDialog, {
       data: {
         title: 'Title',
@@ -286,6 +349,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
           this._changeDetector.markForCheck();
         }
       });
+
   }
 
   public clipboardIsEligible(): boolean {

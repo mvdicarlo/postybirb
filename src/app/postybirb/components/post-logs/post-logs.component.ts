@@ -1,7 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, Host } from '@angular/core';
 import { PostLoggerService, PostyBirbLog } from '../../services/post-logger.service';
 import { saveAs } from 'file-saver';
 import { Subscription } from 'rxjs';
+import { PostybirbLayout } from '../../layouts/postybirb-layout/postybirb-layout.component';
 
 @Component({
   selector: 'post-logs',
@@ -15,7 +16,7 @@ export class PostLogs implements OnInit, OnDestroy {
 
   private subscriber: Subscription = Subscription.EMPTY;
 
-  constructor(private _postLogs: PostLoggerService, private _changeDetector: ChangeDetectorRef) { }
+  constructor(@Host() private layout: PostybirbLayout, private _postLogs: PostLoggerService, private _changeDetector: ChangeDetectorRef) { }
 
   async ngOnInit() {
     this.logs = await this._postLogs.getLogs() || [];
@@ -34,6 +35,10 @@ export class PostLogs implements OnInit, OnDestroy {
     const report = JSON.stringify(log, null, 1);
     const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
     saveAs(blob, `PB_${log.success ? 'SUCCESS' : 'FAILURE'}_${log.created}.log`);
+  }
+
+  public revive(log: PostyBirbLog): void {
+    this.layout.reviveSubmission(log.submission);
   }
 
 }

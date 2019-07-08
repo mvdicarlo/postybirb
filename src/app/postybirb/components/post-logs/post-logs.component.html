@@ -20,8 +20,11 @@
           </div>
         </td>
         <td>
-          <button mat-icon-button color="accent" (click)="save(log)">
+          <button mat-icon-button color="accent" (click)="save(log)" [matTooltip]="'Save' | translate">
             <mat-icon>save</mat-icon>
+          </button>
+          <button mat-icon-button color="accent" (click)="revive(log)" [matTooltip]="'Revive' | translate">
+            <mat-icon>repeat</mat-icon>
           </button>
         </td>
       </tr>
