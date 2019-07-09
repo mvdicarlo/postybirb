@@ -18,13 +18,14 @@ import { copyObject } from 'src/app/utils/helpers/copy.helper';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  protected readonly LOCAL_STORE: string = 'template-form-store';
+  protected readonly LOCAL_STORE: string = 'pb-template-form-store';
   private loadedTemplateName: string;
 
   constructor(
     injector: Injector
   ) {
     super(injector);
+    if (store.get('template-form-store')) store.remove('template-form-store');
   }
 
   ngOnInit() {
@@ -53,7 +54,6 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
         if (doClear) {
           this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
           this.formDataForm.reset();
-          this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
           this.loadedTemplateName = null;
           this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
@@ -68,11 +68,8 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
         if (template) {
           this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
           this.formDataForm.reset();
-          this.resetSubject.next();
           this.loadedTemplateName = template.name;
-          const copy = copyObject(template.data);
-          this.submission.formData = copy;
-          this.formDataForm.patchValue(copy);
+          this._safeLoadFormData(template.data);
         }
       });
   }

@@ -16,13 +16,14 @@ import { copyObject } from 'src/app/utils/helpers/copy.helper';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  protected readonly LOCAL_STORE: string = 'bulk-form-store';
+  protected readonly LOCAL_STORE: string = 'pb-bulk-form-store';
 
   constructor(
     injector: Injector,
     private _submissionCache: SubmissionCache,
   ) {
     super(injector);
+    if (store.get('bulk-form-store')) store.remove('bulk-form-store');
   }
 
   ngOnInit() {
@@ -72,7 +73,6 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
         if (doClear) {
           this.submission = new Submission(<any>{ id: -1 }); // Create stub submission
           this.formDataForm.reset();
-          this.resetSubject.next();
           store.remove(this.LOCAL_STORE);
           this.basicInfoForm.reset();
           this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });

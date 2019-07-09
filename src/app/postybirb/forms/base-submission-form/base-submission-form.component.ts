@@ -1,6 +1,6 @@
 import { Component, OnDestroy, Injector, ChangeDetectorRef, AfterViewInit, ViewChild, isDevMode } from '@angular/core';
 import { ProfileStatuses, LoginManagerService } from 'src/app/login/services/login-manager.service';
-import { Subscription, Subject, Observable } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { Submission } from 'src/app/database/models/submission.model';
 import { WebsiteRegistryEntry, WebsiteRegistry, WebsiteRegistryConfig } from 'src/app/websites/registries/website.registry';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
@@ -42,8 +42,6 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   public basicInfoForm: FormGroup;
   public formDataForm: FormGroup;
   public typeOfSubmission: TypeOfSubmission;
-  public resetSubject: Subject<void> = new Subject();
-  public onReset: Observable<void> = this.resetSubject.asObservable();
 
   protected _changeDetector: ChangeDetectorRef;
   protected dialog: MatDialog;
@@ -114,7 +112,6 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.resetSubject.complete();
     this.loginListener.unsubscribe();
     this.profileListener.unsubscribe();
   }
@@ -157,6 +154,17 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         this._changeDetector.markForCheck();
       });
 
+    // Clean up removed websites of dead form controls
+    this.formDataForm.controls.websites.valueChanges.subscribe((websites: string[]) => {
+      const chosenWebsites = websites || [];
+      const resetableWebsites = Object.keys(this.availableWebsites).filter(key => !chosenWebsites.includes(key));
+      resetableWebsites.forEach(website => {
+        if (this.formDataForm.get(website) && this.formDataForm.get(website).get('options')) {
+          (<FormGroup>this.formDataForm.get(website)).removeControl('options');
+        }
+      });
+    });
+
     Object.keys(this.formDataForm.controls).forEach(key => {
       let keyField = key;
       this.formDataForm.get(key).valueChanges
@@ -167,7 +175,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
               console.info(`UPDATED [${keyField}]`, (this.submission.formData || {})[keyField], value);
             }
             const copy = copyObject(this.submission.formData);
-            copy[keyField] = value;
+            copy[keyField] = copyObject(value);
             this._formUpdated(copy);
           }
         });
@@ -184,7 +192,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this._changeDetector.markForCheck();
   }
 
-  private _safeLoadFormData(formData: any): void {
+  protected _safeLoadFormData(formData: any): void {
     const copy = copyObject(formData || {});
     this.submission.formData = copy; // need to set this first due to how base-website-submission populate data
     this.formDataForm.patchValue(copy);

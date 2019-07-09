@@ -17,6 +17,7 @@ import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-website
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { ImageCropperDialog } from '../../components/image-cropper-dialog/image-cropper-dialog.component';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'submission-form',
@@ -28,6 +29,7 @@ import { ImageCropperDialog } from '../../components/image-cropper-dialog/image-
 export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
   @ViewChild('additionalImageInput') additionalImageInput: ElementRef;
+  private submissionChangeSubscription: Subscription = Subscription.EMPTY;''
 
   constructor(
     injector: Injector,
@@ -54,7 +56,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
 
-    this.submission.changes.subscribe(change => {
+    this.submissionChangeSubscription = this.submission.changes.subscribe(change => {
       if (change.title) this.basicInfoForm.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.basicInfoForm.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.basicInfoForm.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
@@ -67,6 +69,11 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
 
     this.loading = false;
     this._changeDetector.markForCheck();
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.submissionChangeSubscription.unsubscribe();
   }
 
   private _initializeBasicInfoForm(): void {
@@ -141,7 +148,6 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
         if (doClear) {
           this.basicInfoForm.reset();
           this.formDataForm.reset();
-          this.resetSubject.next();
 
           this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }

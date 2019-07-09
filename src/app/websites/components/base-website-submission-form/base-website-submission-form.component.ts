@@ -3,7 +3,6 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { ControlContainer, FormGroup, FormBuilder } from '@angular/forms';
 import { WebsiteRegistryConfig, WebsiteRegistry } from '../../registries/website.registry';
-import { Subscription } from 'rxjs';
 import { BaseWebsiteService } from '../../website-services/base-website-service';
 import { BaseSubmissionForm } from 'src/app/postybirb/forms/base-submission-form/base-submission-form.component';
 import { SnotifyService } from 'ng-snotify';
@@ -33,7 +32,6 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   public formGroup: FormGroup;
   public config: WebsiteRegistryConfig;
   public optionDefaults: any;
-  public resetListener: Subscription = Subscription.EMPTY;
 
   constructor(private injector: Injector) {
     this.parentForm = injector.get(BaseSubmissionForm);
@@ -46,12 +44,6 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
     this.config = WebsiteRegistry.getConfigForRegistry(this.website);
     this.websiteService = this.injector.get(this.config.class);
     this.formGroup = <FormGroup>this.controlContainer.control.get(this.website);
-    this.resetListener = this.parentForm.onReset.subscribe(() => {
-      // Should I just remove the controls instead?
-      if (this.optionDefaults) {
-        this.formGroup.removeControl('options');
-      }
-    });
 
     this.initialized = true;
   }
@@ -63,7 +55,9 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   }
 
   ngOnDestroy() {
-    this.resetListener.unsubscribe();
+    // if (this.formGroup && this.formGroup.get('options')) {
+    //   this.formGroup.removeControl('options');
+    // }
   }
 
   protected resetOnConflict(optionName: string, compareItem: any): void {

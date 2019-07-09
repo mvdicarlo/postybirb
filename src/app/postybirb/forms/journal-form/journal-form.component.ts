@@ -10,6 +10,7 @@ import { SubmissionSelectDialog } from '../../components/submission-select-dialo
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
 import { WebsiteRegistryConfig } from 'src/app/websites/registries/website.registry';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'journal-form',
@@ -19,6 +20,7 @@ import { WebsiteRegistryConfig } from 'src/app/websites/registries/website.regis
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JournalForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
+  private submissionChangeSubscription: Subscription = Subscription.EMPTY;''
 
   constructor(
     injector: Injector,
@@ -50,7 +52,7 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
 
-    this.submission.changes.subscribe(change => {
+    this.submissionChangeSubscription = this.submission.changes.subscribe(change => {
       if (change.title) this.basicInfoForm.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.basicInfoForm.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.basicInfoForm.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
@@ -62,6 +64,11 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
 
     this.loading = false;
     this._changeDetector.markForCheck();
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.submissionChangeSubscription.unsubscribe();
   }
 
   private _initializeBasicInfoForm(): void {
@@ -98,7 +105,6 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
         if (doClear) {
           this.basicInfoForm.reset();
           this.formDataForm.reset();
-          this.resetSubject.next();
           this.formDataForm.patchValue({ loginProfile: this._loginProfileManager.getDefaultProfile().id });
         }
       });
