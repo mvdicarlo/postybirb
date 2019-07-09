@@ -76,11 +76,15 @@ function uploadMedia(media, token, website) {
       },
       formData,
     }, (err, resp, body) => {
-      const json = JSON.parse(body);
-      if (err || json.errors) {
-        reject(err);
-      } else {
-        resolve(json.id);
+      try {
+        const json = JSON.parse(body);
+        if (err || json.errors) {
+          reject(err || json.errors);
+        } else {
+          resolve(json.id);
+        }
+      } catch (e) {
+        reject(err + ' - ' + body);
       }
     });
   });
