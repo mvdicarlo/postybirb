@@ -78,6 +78,7 @@ app.get('/tumblr', (req, res) => {
   }, (err, response, body) => {
     if (err || response.statusCode === 500) {
       res.send('Error occured while trying to authenticate.');
+      return;
     } else {
       if (cb) {
         cb(body);
