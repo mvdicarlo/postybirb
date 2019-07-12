@@ -11,6 +11,7 @@ import { DerpibooruSubmissionForm } from './components/derpibooru-submission-for
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
+import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -112,34 +113,6 @@ export class Derpibooru extends BaseWebsiteService {
     return 'safe';
   }
 
-  public getFormData(profileId: string): Promise<any> {
-    return new Promise((resolve) => {
-      const win = new BrowserWindow({
-        show: false,
-        webPreferences: {
-          partition: `persist:${profileId}`
-        }
-      });
-      win.loadURL(`${this.BASE_URL}/images/new`);
-      win.once('ready-to-show', () => {
-        if (win.isDestroyed()) {
-          resolve({});
-          return;
-        }
-
-        win.webContents.executeJavaScript(`Array.from(new FormData(document.getElementById('new_image'))).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})`).then(function(value) {
-          resolve(value);
-        })
-        .catch(() => {
-          resolve({});
-        })
-        .finally(() => {
-          win.destroy();
-        });
-      });
-    });
-  }
-
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
     const ratingTag: string = this.getRatingTag(submission.rating);
@@ -147,7 +120,8 @@ export class Derpibooru extends BaseWebsiteService {
 
     const options = postData.options;
 
-    const data = await this.getFormData(postData.profileId);
+    await BrowserWindowHelper.hitUrl(postData.profileId, `${this.BASE_URL}/images/new`);
+    const data = await BrowserWindowHelper.retrieveFormData(postData.profileId, `${this.BASE_URL}/images/new`, { id: 'new_image' });
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     Object.assign(data, {
