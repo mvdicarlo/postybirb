@@ -222,7 +222,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       this.hideForReload = true;
 
       this._changeDetector.markForCheck();
-      readFileMetadata(files[0], false)
+      readFileMetadata(files[0])
         .then((data: FileMetadata) => {
           this.dialog.open(ImageCropperDialog, {
             data: data.buffer,

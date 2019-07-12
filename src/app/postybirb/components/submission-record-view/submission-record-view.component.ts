@@ -110,7 +110,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       this.hideForReload = true;
 
       this._changeDetector.markForCheck();
-      readFileMetadata(files[0], false)
+      readFileMetadata(files[0])
         .then(data => {
           this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.PRIMARY, data)
             .then(() => {

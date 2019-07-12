@@ -23,6 +23,7 @@ import { QueueInserterService } from '../../services/queue-inserter.service';
 import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 import { FileDropWatcherService } from '../../services/file-drop-watcher.service';
 import { FileDropDialog } from '../../components/file-drop-dialog/file-drop-dialog.component';
+import { SnotifyService } from 'ng-snotify';
 
 @Component({
   selector: 'postybirb-layout',
@@ -67,6 +68,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     public _queueInserter: QueueInserterService,
     private _changeDetector: ChangeDetectorRef,
     private _hotkeyService: HotkeysService,
+    private snotify: SnotifyService,
     _fileDropService: FileDropWatcherService,
     _scheduler: ScheduledSubmissionManagerService // only called so it will be instantiated
   ) {
@@ -252,22 +254,34 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  public reviveSubmission(reviver: ISubmission): void {
+  public async reviveSubmission(reviver: ISubmission): Promise<void> {
     this.loading = true;
     const revive: ISubmission = copyObject(reviver);
     revive.id = undefined;
+    let file: File;
     if (revive.submissionType === SubmissionType.SUBMISSION) {
       revive.fileMap = {
         PRIMARY: -1,
         THUMBNAIL: null,
         ADDITIONAL: []
       };
-      revive.fileInfo = {
-        name: 'unknown',
-        size: 0,
-        path: '',
-        type: ''
-      };
+
+      try {
+        const response = await fetch(revive.fileInfo.path);
+        const blob = await response.blob();
+        file = new File([blob], revive.fileInfo.name, { type: blob.type });
+      } catch (e) {
+        this.snotify.warning(`Unable to revive file: ${revive.fileInfo.name}`);
+      }
+      if (!file) {
+        revive.fileInfo = {
+          name: 'unknown',
+          size: 0,
+          path: '',
+          type: ''
+        };
+      }
+
     }
 
     if (revive.formData) {
@@ -289,8 +303,8 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
         const promises: Promise<any>[] = [];
         for (let i = 0; i < insertResults.length; i++) {
           promises.push(this._submissionFileDBService.createSubmissionFiles(insertResults[i].id, SubmissionFileType.PRIMARY_FILE, [{
-            file: new File([new Uint8Array()], 'unknown'),
-            buffer: new Uint8Array()
+            file: file ? file : new File([new Uint8Array()], 'unknown'),
+            buffer: null
           }]));
         }
 

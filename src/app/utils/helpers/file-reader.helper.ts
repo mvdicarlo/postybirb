@@ -16,7 +16,7 @@ export interface FileMetadata {
   formData?: any;
 }
 
-export async function readFileMetadata(file: File, withMetadata: boolean = true /*Deprecated param*/): Promise<FileMetadata> {
+export async function readFileMetadata(file: File): Promise<FileMetadata> {
   const data: any = {
     file,
     buffer: new Uint8Array(await new Response(file).arrayBuffer()),
