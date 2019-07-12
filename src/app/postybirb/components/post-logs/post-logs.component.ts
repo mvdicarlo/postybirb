@@ -38,7 +38,7 @@ export class PostLogs implements OnInit, OnDestroy {
   }
 
   public revive(log: PostyBirbLog): void {
-    this.layout.reviveSubmission(log.submission);
+    this.layout.reviveSubmission(Object.assign(log.submission, { postStats: log.post }));
   }
 
 }

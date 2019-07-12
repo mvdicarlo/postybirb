@@ -270,6 +270,14 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
       };
     }
 
+    if (revive.formData) {
+      const websites = [...revive.postStats.fail, ...revive.postStats.success].sort();
+      revive.formData.websites = [];
+      websites.forEach(w => {
+        if (!revive.formData.websites.includes(w)) revive.formData.websites.push(w);
+      });
+    }
+
     this._submissionDB.createSubmissions([revive]).then(insertResults => {
       if (revive.submissionType === SubmissionType.JOURNAL) {
         this.loading = false;
