@@ -51,6 +51,12 @@ export class PostQueueService {
       this.queue.push(submission);
 
       // Sort website post order
+      const websitesToPost = [];
+      submission.formData.websites.forEach(website => {
+        if (!websitesToPost.includes(website)) websitesToPost.push(website);
+      });
+
+      submission.formData.websites = websitesToPost;
       submission.formData.websites = submission.formData.websites.sort((a, b) => {
         const aUsesSrc = WebsiteRegistry.getConfigForRegistry(a).websiteConfig.acceptsSrcURL ? true : false;
         const bUsesSrc = WebsiteRegistry.getConfigForRegistry(b).websiteConfig.acceptsSrcURL ? true : false;
