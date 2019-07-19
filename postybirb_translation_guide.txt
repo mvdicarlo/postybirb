@@ -693,6 +693,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Recent",
+  "Translate Me": "Recent",
+  "Translated": ""
+}
+
+{
   "Internal": "Reference",
   "Translate Me": "Reference",
   "Translated": ""
