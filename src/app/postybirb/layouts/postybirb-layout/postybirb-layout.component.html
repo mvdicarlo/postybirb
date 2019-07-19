@@ -26,10 +26,10 @@
         </mat-form-field>
 
         <div class="submission-actions" *ngIf="submissions.length">
-          <button mat-flat-button color="warn" (click)="deleteMany()">
+          <button mat-flat-button color="warn" (click)="deleteMany()" [matTooltip]="'Delete' | translate">
             <mat-icon>delete</mat-icon>
           </button>
-          <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()" (click)="postMany()">
+          <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()" (click)="postMany()" [matTooltip]="'Post' | translate">
             <mat-icon>send</mat-icon>
           </button>
         </div>

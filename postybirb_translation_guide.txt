@@ -767,6 +767,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Select All",
+  "Translate Me": "Select All",
+  "Translated": ""
+}
+
+{
   "Internal": "Select a Login Profile",
   "Translate Me": "Select a Login Profile",
   "Translated": ""

@@ -51,13 +51,17 @@ export class SubmissionSelectDialog implements OnInit {
     }
   }
 
-  public drop(event: CdkDragDrop<string[]>) {
+  public drop(event: CdkDragDrop<string[]>): any {
     moveItemInArray(this.selected, event.previousIndex, event.currentIndex);
   }
 
   public getReturn(): any {
     if (this.data.allowReorder) return this.selected;
     else return this.selectControl.value;
+  }
+
+  public selectAll(): void {
+    this.selectControl.patchValue(this.options);
   }
 
 }
