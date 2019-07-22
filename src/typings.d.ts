@@ -9,6 +9,8 @@ declare var profilesDB: any; //lowDB instance
 declare var settingsDB: any; //lowDB instance
 declare var loginPanel: any; // login panel hook inserted into window
 declare var got: {
+  crGet(url: string, headers: any, partition: string): Promise<{ statusCode: number, statusMessage: string, body: string }>;
+  crPost(url: string, headers: any, partition: string, body: any, json: boolean, method?: string): Promise<{ statusCode: number, statusMessage: string, body: string }>;
   get(url: string, cookieUrl: string, cookies: any[], profileId: string, options?: any): Promise<any>;
   requestGet(url: string, cookieUrl: string, cookies: any[], options?: any): Promise<any>;
   patch(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;

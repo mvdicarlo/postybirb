@@ -1,5 +1,5 @@
 const {
-  remote
+  remote,
 } = require('electron');
 const Got = require('got');
 const Request = require('request');
@@ -10,20 +10,99 @@ const {
 const setCookie = require('set-cookie-parser');
 
 const {
-  session
+  session,
+  net
 } = require('electron').remote;
 
+const agent = `${remote.getCurrentWebContents().getUserAgent()} PostyBirb/${remote.app.getVersion()}`
 const got = Got.extend({
   headers: {
-    'User-Agent': `PostyBirb/${remote.app.getVersion()}`
+    'User-Agent': agent
   }
 });
 
 const request = Request.defaults({
   headers: {
-    'User-Agent': `PostyBirb/${remote.app.getVersion()}`
+    'User-Agent': agent
   }
 });
+
+exports.crGet = function(url, headers, partition) {
+  return new Promise((resolve, reject) => {
+    headers['User-Agent'] = agent;
+    const request = net.request({
+      headers,
+      partition: `persist:${partition}`,
+      url,
+      redirect: 'follow'
+    });
+
+    request.end();
+
+    request.on('response', (response) => {
+      const res = {
+        statusCode: response.statusCode,
+        statusMessage: response.statusMessage,
+        body: (response.data || []).filter(d => !!d).map(d => d.toString()).join()
+      };
+      resolve(res);
+    });
+
+    request.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
+exports.crPost = function crPost(url, headers, partition, body, json, method) {
+  return new Promise((resolve, reject) => {
+    headers['User-Agent'] = agent;
+    const request = net.request({
+      method: method || 'POST',
+      headers,
+      partition: `persist:${partition}`,
+      url,
+      redirect: 'follow'
+    });
+
+    request.chunkedEncoding = true;
+
+    if (json) {
+      const data = JSON.stringify(body);
+      request.setHeader('Content-Length', data.length);
+      request.setHeader('Content-Type', 'application/json');
+      request.write(data);
+    } else {
+      const form = new FormData();
+      Object.keys(body).forEach((key) => {
+        const val = body[key];
+        if (val.options) { // assume file?
+          form.append(key, val.value, val.options);
+        } else {
+          form.append(key, body[key]);
+        }
+      });
+
+      request.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
+      request.setHeader('Content-Length', form.getLengthSync());
+      request.write(form.getBuffer().toString());
+    }
+    request.end();
+
+    request.on('response', (response) => {
+      const res = {
+        statusCode: response.statusCode,
+        statusMessage: response.statusMessage,
+        body: (response.data || []).filter(d => !!d).map(d => d.toString()).join()
+      };
+      resolve(res);
+    });
+
+    request.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
 
 exports.get = function get(url, cookieUrl, cookies, profileId, options) {
   return new Promise((resolve, reject) => {
@@ -141,9 +220,15 @@ exports.post = function post(url, formData, cookieUrl, cookies, options) {
 
     const opts = Object.assign({
       formData,
-      jar: cookieJar,
       followAllRedirects: true
     }, options || {});
+
+    if (cookies) {
+      Object.assign(opts, {
+        jar: cookieJar,
+      });
+    }
+
     request.post(url, opts, (err, response, body) => {
       if (err) {
         resolve({
@@ -198,7 +283,7 @@ exports.gotPost = function gotPost(url, formData, cookieUrl, cookies, options) {
 };
 
 function _convertCookie(cookie) {
-  const url = `${(cookie.secure) ? 'https' : 'http'}://${cookie.domain}${cookie.path}`;
+  const url = `${(cookie.secure) ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
   const {
     name,
     value,
