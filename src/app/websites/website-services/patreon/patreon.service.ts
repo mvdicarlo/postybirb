@@ -3,7 +3,7 @@ import { Website } from '../../decorators/website-decorator';
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsBlob, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { PatreonSubmissionForm } from './components/patreon-submission-form/patreon-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
@@ -339,7 +339,7 @@ export class Patreon extends BaseWebsiteService {
         }
       });
 
-      win.loadURL(`https://www.patreon.com/posts/${id}/edit`);
+      win.loadURL(`${this.BASE_URL}/posts/${id}/edit`);
 
       win.once('ready-to-show', function() {
         if (win.isDestroyed()) {
@@ -368,6 +368,56 @@ export class Patreon extends BaseWebsiteService {
         Object.assign({}, { body: body, status: xhr.status })`;
         win.webContents.executeJavaScript(cmd, (result) => {
           if (result && result.body && result.status && result.status < 320) {
+            resolve(result);
+          } else {
+            reject(result);
+          }
+
+          win.destroy()
+        });
+      });
+    });
+  }
+
+  private _uploadAttachment(id: string, file: ISubmissionFileWithArray, csrf: string, partitionId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const uuid = URL.createObjectURL(fileAsBlob(file));
+
+      const data: any = {
+        qquuid: uuid,
+        qqfilename: file.fileInfo.name,
+        qqtotalfilesize: file.fileInfo.size,
+      };
+
+      const win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          partition: `persist:${partitionId}`
+        }
+      });
+
+      win.loadURL(`${this.BASE_URL}/posts/${id}/edit`);
+
+      win.once('ready-to-show', function() {
+        if (win.isDestroyed()) {
+          reject(new Error(`Browser Window for patreon post was already destroyed.`));
+          return;
+        }
+
+        const arr: any = [...<any>file.buffer];
+        const cmd = `
+        const data = '${JSON.stringify(data)}';
+        var fd = new FormData();
+        var file = new File([new Blob([new Uint8Array([${arr}])], { type: '${file.fileInfo.type}' })], '${file.fileInfo.name}', { type: '${file.fileInfo.type}' });
+        Object.entries(data).forEach(([key, value]) => fd.append(key, value));
+        fd.append('file', file);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/posts/${id}/attachments?json-api-version=1.0', false);
+        xhr.setRequestHeader("X-CSRF-Signature", "${csrf}");
+        xhr.send(fd);
+        xhr.status`;
+        win.webContents.executeJavaScript(cmd, (result) => {
+          if (result && result < 320) {
             resolve(result);
           } else {
             reject(result);
@@ -425,10 +475,19 @@ export class Patreon extends BaseWebsiteService {
 
     let primaryFileUpload;
     let thumbnailFileUpload;
+    let additionalUploads = [];
     try {
       primaryFileUpload = await this._uploadFile(link, postData.primary, csrf, postData.profileId, uploadType);
       if (shouldUploadThumbnail) {
         thumbnailFileUpload = await this._uploadFile(link, postData.thumbnail, csrf, postData.profileId, 'main');
+      }
+
+      if (postData.additionalFiles && postData.additionalFiles.length) {
+        for (let i = 0; i < postData.additionalFiles.length; i++) {
+          const file = postData.additionalFiles[i];
+          const upload = await this._uploadAttachment(link, file, csrf, postData.profileId);
+          additionalUploads.push(upload);
+        }
       }
     } catch (err) {
       return Promise.reject(this.createPostResponse('Failure to upload file', err));
