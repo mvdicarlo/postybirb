@@ -260,6 +260,15 @@ export class Patreon extends BaseWebsiteService {
       tags: { publish: true },
     };
 
+    if (options.schedule) {
+      if (typeof options.schedule === 'string') {
+        attributes.scheduled_for = new Date(options.schedule).toISOString().split('.')[0];
+      } else {
+        attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
+      }
+      attributes.tags.publish = false;
+    }
+
     const relationships = {
       post_tag: {
         data: relationshipTags.length > 0 ? relationshipTags[0] : {}
@@ -518,7 +527,11 @@ export class Patreon extends BaseWebsiteService {
     };
 
     if (options.schedule) {
-      attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
+      if (typeof options.schedule === 'string') {
+        attributes.scheduled_for = new Date(options.schedule).toISOString().split('.')[0];
+      } else {
+        attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
+      }
       attributes.tags.publish = false;
     }
 
