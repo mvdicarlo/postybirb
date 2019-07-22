@@ -3,23 +3,31 @@ import { Website } from '../../decorators/website-decorator';
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, fileAsFormDataObject, fileAsBlob } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { PatreonSubmissionForm } from './components/patreon-submission-form/patreon-submission-form.component';
-import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
+import { Folder } from '../../interfaces/folder.interface';
+import * as dotProp from 'dot-prop';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'])) {
-    problems.push(['Does not support file format', { website: 'Patreon', value: submission.fileInfo.type }]);
+  if (submission.submissionType === SubmissionType.SUBMISSION) {
+    if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'])) {
+      problems.push(['Does not support file format', { website: 'Patreon', value: submission.fileInfo.type }]);
+    }
+
+    if (MBtoBytes(200) < submission.fileInfo.size) {
+      problems.push(['Max file size', { website: 'Patreon', value: '200MB' }]);
+    }
   }
 
-  if (MBtoBytes(200) < submission.fileInfo.size) {
-    problems.push(['Max file size', { website: 'Patreon', value: '200MB' }]);
+  const options = dotProp.get(formData, 'Patreon.options', {});
+  if (!(options.tiers && options.tiers.length)) {
+    problems.push(['Options are incomplete', { website: 'Patreon' }]);
   }
 
   return problems;
@@ -45,10 +53,11 @@ function descriptionParse(html: string): string {
   },
   components: {
     submissionForm: PatreonSubmissionForm,
-    journalForm: GenericJournalSubmissionForm
+    journalForm: PatreonSubmissionForm
   },
   validators: {
-    submission: submissionValidate
+    submission: submissionValidate,
+    journal: submissionValidate
   },
   parsers: {
     description: [descriptionParse],
@@ -80,10 +89,98 @@ export class Patreon extends BaseWebsiteService {
         const title = body.match(/<title(.|\s)*?(?=\/title)/)[0] || '';
         const user = title.length > 0 ? title.split(' ')[0].replace('<title>', '') : undefined;
         returnValue.username = user;
+        await this.loadTiers(profileId, cookies);
       }
     } catch (e) { /* No important error handling */ }
 
     return returnValue;
+  }
+
+  private async loadTiers(profileId: string, cookies: any[]): Promise<any> {
+    const csrf = await this._getCSRF(cookies, profileId);
+    const createData = {
+      data: {
+        type: 'post',
+        attributes: {
+          post_type: 'image_file'
+        }
+      }
+    };
+
+    const create = await got.crPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`, {
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Content-Type': 'application/vnd.api+json',
+      'Host': 'www.patreon.com',
+      'Origin': 'https://www.patreon.com',
+      'Pragma': 'no-cache',
+      'Referer': 'https://www.patreon.com/posts/new',
+      'X-CSRF-Signature': csrf,
+      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    }, profileId, createData, true);
+
+    const response: any = JSON.parse(create.body);
+    const id = response.data.id;
+
+    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,campaign.access_rules.tier.null`, {
+      'Host': 'www.patreon.com',
+      'Origin': 'https://www.patreon.com',
+      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    }, profileId);
+    if (patreonTiers.body) {
+      const body = JSON.parse(patreonTiers.body);
+      if (body.included) {
+        const customTiers: Folder = {
+          title: 'Tiers',
+          subfolders: []
+        };
+        const tiers: Folder[] = [];
+        body.included
+          .filter(t => t.type === 'access-rule' || t.type === 'reward')
+          .filter(t => {
+            if (t.attributes.access_rule_type === 'public' || t.attributes.access_rule_type === 'patrons') return true;
+            else if (t.attributes.title) return true;
+            return false;
+          })
+          .forEach(t => {
+            let id = t.id;
+            if (t.type === 'reward') {
+              const found = body.included.find(relation => {
+                if (relation.attributes.access_rule_type === 'tier') {
+                  const relationship = dotProp.get(relation, 'relationships.tier.data.id', null);
+                  if (id === relationship) return true;
+                }
+              });
+
+              if (found) {
+                id = found.id;
+              }
+            }
+            const tierObj: Folder = {
+              id,
+              title: t.attributes.title || t.attributes.access_rule_type
+            };
+            if (t.type === 'access-rule') {
+              if (tierObj.title === 'patrons') tierObj.title = 'Patrons Only';
+              else if (tierObj.title === 'public') tierObj.title = 'Public';
+              tiers.push(tierObj);
+            } else {
+              customTiers.subfolders.push(tierObj);
+            }
+          });
+
+        tiers.push(customTiers);
+        this.userInformation.set(profileId, { folders: tiers });
+      }
+    }
+  }
+
+  public getFolders(profileId: string): Folder[] {
+    const info = this.userInformation.get(profileId);
+    if (info) return info.folders || [];
+    return [];
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -103,31 +200,41 @@ export class Patreon extends BaseWebsiteService {
   }
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    let cookies = await getCookies(postData.profileId, this.BASE_URL);
     const csrf = await this._getCSRF(cookies, postData.profileId);
 
     const createData = {
       data: {
         type: 'post',
         attributes: {
-          post_type: 'text_only'
+          post_type: this._getPostType(postData.typeOfSubmission, true)
         }
       }
     };
 
-    const create = await got.post(`${this.BASE_URL}/api/posts?json-api-version=1.0`, null, this.BASE_URL, cookies, {
-      json: createData,
-      headers: {
-        'X-CSRF-Signature': csrf
-      }
-    });
+    await BrowserWindowHelper.hitUrl(postData.profileId, 'https://www.patreon.com/posts/new?ru=%2Fhome');
+    cookies = await getCookies(postData.profileId, this.BASE_URL)
 
-    if (create.error) {
-      return Promise.reject(this.createPostResponse('Unknown error', create.error));
+    const create = await got.crPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`, {
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Content-Type': 'application/vnd.api+json',
+      'Host': 'www.patreon.com',
+      'Origin': 'https://www.patreon.com',
+      'Pragma': 'no-cache',
+      'Referer': 'https://www.patreon.com/posts/new',
+      'X-CSRF-Signature': csrf,
+      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    }, postData.profileId, createData, true);
+
+    if (!create.body || !create.body.includes('self')) {
+      return Promise.reject(this.createPostResponse('Unknown error', create.body));
     }
 
-    const response: any = create.success.body;
-    const link = response.links.self;
+    const response: any = JSON.parse(create.body);
+    const link = response.data.id;
 
     const formattedTags = this.formatTags(postData.tags, []);
     const relationshipTags = formattedTags.map(tag => {
@@ -137,13 +244,20 @@ export class Patreon extends BaseWebsiteService {
       }
     });
 
-    const attributes = {
+    const options = postData.options;
+
+    const accessRules: any[] = options.tiers.map(tier => {
+      return { type: 'access-rule', id: tier };
+    });
+
+    const attributes: any = {
       content: postData.description,
-      post_type: 'text_only',
-      is_paid: false,
-      min_cents_pledged_to_view: 0,
+      post_type: this._getPostType(postData.typeOfSubmission),
+      is_paid: options.chargePatrons,
       title: postData.title,
-      tags: { publish: true }
+      teaser_text: '',
+      post_metadata: {},
+      tags: { publish: true },
     };
 
     const relationships = {
@@ -152,6 +266,12 @@ export class Patreon extends BaseWebsiteService {
       },
       user_defined_tags: {
         data: relationshipTags
+      },
+      access_rule: {
+        data: accessRules[accessRules.length - 1]
+      },
+      access_rules: {
+        data: accessRules
       }
     };
 
@@ -164,86 +284,99 @@ export class Patreon extends BaseWebsiteService {
       included: formattedTags
     };
 
-    const postResponse = await got.patch(`${link}?json-api-version=1.0`, null, this.BASE_URL, cookies, {
-      json: data,
-      headers: {
-        'X-CSRF-Signature': csrf
-      }
-    });
+    accessRules.forEach(rule => data.included.push(rule));
 
-    if (postResponse.error) {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
-    }
+    const postResponse = await got.crPost(`${this.BASE_URL}/api/posts/${link}?json-api-version=1.0`, {
+      'X-CSRF-Signature': csrf,
+      'Host': 'www.patreon.com',
+      'Referer': 'https://www.patreon.com/posts',
+      'Origin': 'https://www.patreon.com',
+      'Accept': '*/*',
+      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    }, postData.profileId, data, true, 'PATCH');
 
-    if (postResponse.success.response.statusCode === 200) {
+    if (postResponse.statusCode === 200) {
       return this.createPostResponse(null);
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', JSON.stringify(postResponse.success.body)));
+      return Promise.reject(this.createPostResponse('Unknown error', postResponse.body));
     }
   }
 
-  private _getPostType(type: TypeOfSubmission): any {
-    if (type === TypeOfSubmission.ART) return 'image_file';
-    if (type === TypeOfSubmission.AUDIO) return 'audio_file';
-    if (type === TypeOfSubmission.STORY) return 'text_only';
+  private _getPostType(type: TypeOfSubmission, alt: boolean = false): any {
+    if (alt) {
+      if (type === TypeOfSubmission.ART) return 'image_file';
+      if (type === TypeOfSubmission.AUDIO) return 'audio_embed';
+      if (type === TypeOfSubmission.STORY) return 'text_only';
+    } else {
+      if (type === TypeOfSubmission.ART) return 'image_file';
+      if (type === TypeOfSubmission.AUDIO) return 'audio_file';
+      if (type === TypeOfSubmission.STORY) return 'text_only';
+    }
+
     return 'image_file';
   }
 
-  private async _uploadFile(id: string, file: ISubmissionFileWithArray, attachment: boolean, cookies: any[], csrf: string, partitionId: string): Promise<any> {
-    const uuid = URL.createObjectURL(fileAsBlob(file));
 
-    const data: any = {
-      data: {
-        attributes: {
-          state: 'pending_upload',
-          owner_id: id,
-          owner_type: 'post',
-          owner_relationship: 'main',
-          file_name: file.fileInfo.name
-        },
-        type: 'media'
-      }
-    };
+  private _uploadFile(id: string, file: ISubmissionFileWithArray, csrf: string, partitionId: string, relationship?: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const data: any = {
+        data: {
+          attributes: {
+            state: 'pending_upload',
+            owner_id: id,
+            owner_type: 'post',
+            owner_relationship: relationship || 'main',
+            file_name: file.fileInfo.name
+          },
+          type: 'media'
+        }
+      };
 
-    const idk = await got.get(`${this.BASE_URL}/REST/auth/CSRFTicket?uri=${encodeURIComponent(`"/posts/${id}/edit&json-api-version=1.0`)}`, this.BASE_URL, cookies, partitionId);
+      const win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          partition: `persist:${partitionId}`
+        }
+      });
 
-    const upload = await got.crPost(`${this.BASE_URL}/api/media?json-api-version=1.0`, {
-      'X-CSRF-Signature': csrf,
-      'Host': 'www.patreon.com',
-      'Referer': `https://www.patreon.com/posts/${id}/edit`,
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; '),
-      'Cache-Control': 'no-cache',
-      'Accept': '*/*',
-      'Pragma': 'no-cache',
-    }, partitionId, data, true);
+      win.loadURL(`https://www.patreon.com/posts/${id}/edit`);
 
-    try {
-      const body: any = JSON.parse(upload.body);
-      const amazonData = body.data.attributes.upload_parameters;
-      amazonData.file = fileAsFormDataObject(file);
+      win.once('ready-to-show', function() {
+        if (win.isDestroyed()) {
+          reject(new Error(`Browser Window for patreon post was already destroyed.`));
+          return;
+        }
 
-      const sendFile = await got.crPost(body.data.attributes.upload_url, {
-        'Accept': '*/*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Host': 'patreon-media.s3-accelerate.amazonaws.com',
-        'Origin': 'https://www.patreon.com',
-        'Referer': 'https://www.patreon.com/',
-        'Connection': 'keep-alive',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        'Keep-Alive': 300,
-        'Access-Control-Request-Method': 'POST'
-      }, partitionId, amazonData, false);
+        const arr: any = [...<any>file.buffer];
+        const cmd = `
+        const data = '${JSON.stringify(data)}';
+        var h = new XMLHttpRequest();
+        h.open('POST', '/api/media?json-api-version=1.0', false);
+        h.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        h.setRequestHeader("X-CSRF-Signature", "${csrf}");
+        h.send(data);
+        var body = JSON.parse(h.response);
+        var x = body.data.attributes.upload_parameters;
+        var dest = body.data.attributes.upload_url;
+        var fd = new FormData();
+        var file = new File([new Blob([new Uint8Array([${arr}])], { type: '${file.fileInfo.type}' })], '${file.fileInfo.name}', { type: '${file.fileInfo.type}' });
+        Object.entries(x).forEach(([key, value]) => fd.append(key, value));
+        fd.append('file', file);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', dest, false);
+        xhr.send(fd);
+        Object.assign({}, { body: body, status: xhr.status })`;
+        win.webContents.executeJavaScript(cmd, (result) => {
+          if (result && result.body && result.status && result.status < 320) {
+            resolve(result);
+          } else {
+            reject(result);
+          }
 
-      if (sendFile.body.includes('Error')) {
-        return Promise.reject(this.createPostResponse('Problem uploading file', sendFile.body));
-      }
-
-      return body;
-    } catch (err) {
-      return Promise.reject(this.createPostResponse('Problem uploading file', upload.body));
-    }
+          win.destroy()
+        });
+      });
+    });
   }
 
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -254,7 +387,7 @@ export class Patreon extends BaseWebsiteService {
       data: {
         type: 'post',
         attributes: {
-          post_type: this._getPostType(postData.typeOfSubmission)
+          post_type: this._getPostType(postData.typeOfSubmission, true)
         }
       }
     };
@@ -263,18 +396,18 @@ export class Patreon extends BaseWebsiteService {
     cookies = await getCookies(postData.profileId, this.BASE_URL)
 
     const create = await got.crPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`, {
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-            'Content-Type': 'application/vnd.api+json',
-            'Host': 'www.patreon.com',
-            'Origin': 'https://www.patreon.com',
-            'Pragma': 'no-cache',
-            'Referer': 'https://www.patreon.com/posts/new',
-            'X-CSRF-Signature': csrf,
-            'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-          }, postData.profileId, createData, true);
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Content-Type': 'application/vnd.api+json',
+      'Host': 'www.patreon.com',
+      'Origin': 'https://www.patreon.com',
+      'Pragma': 'no-cache',
+      'Referer': 'https://www.patreon.com/posts/new',
+      'X-CSRF-Signature': csrf,
+      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    }, postData.profileId, createData, true);
 
     if (!create.body || !create.body.includes('self')) {
       return Promise.reject(this.createPostResponse('Unknown error', create.body));
@@ -283,18 +416,22 @@ export class Patreon extends BaseWebsiteService {
     const response: any = JSON.parse(create.body);
     const link = response.data.id;
 
-    const primaryFileUpload = await this._uploadFile(link, postData.primary, postData.typeOfSubmission === TypeOfSubmission.STORY, cookies, csrf, postData.profileId);
-    let uploadJSON: any = JSON.stringify(primaryFileUpload);
-    if (uploadJSON.errors && uploadJSON.errors) {
-      return Promise.reject(this.createPostResponse(uploadJSON.errors.map(err => `${err.code_name}: ${err.detail}\n`), uploadJSON.errors));
+    let uploadType = 'main';
+    let shouldUploadThumbnail: boolean = false;
+    if (postData.typeOfSubmission === TypeOfSubmission.AUDIO) {
+      uploadType = 'audio';
+      shouldUploadThumbnail = postData.thumbnail ? true : false;
     }
 
-    for (let i = 0; i < postData.additionalFiles.length; i++) {
-      const upload = await this._uploadFile(link, postData.additionalFiles[i], true, cookies, csrf, postData.profileId);
-      uploadJSON = JSON.stringify(upload);
-      if (uploadJSON.errors && uploadJSON.errors) {
-        return Promise.reject(this.createPostResponse(uploadJSON.errors.map(err => `${err.code_name}: ${err.detail}\n`), uploadJSON.errors));
+    let primaryFileUpload;
+    let thumbnailFileUpload;
+    try {
+      primaryFileUpload = await this._uploadFile(link, postData.primary, csrf, postData.profileId, uploadType);
+      if (shouldUploadThumbnail) {
+        thumbnailFileUpload = await this._uploadFile(link, postData.thumbnail, csrf, postData.profileId, 'main');
       }
+    } catch (err) {
+      return Promise.reject(this.createPostResponse('Failure to upload file', err));
     }
 
     const options = postData.options;
@@ -307,13 +444,18 @@ export class Patreon extends BaseWebsiteService {
       }
     });
 
+    const accessRules: any[] = options.tiers.map(tier => {
+      return { type: 'access-rule', id: tier };
+    });
+
     const attributes: any = {
       content: postData.description,
       post_type: this._getPostType(postData.typeOfSubmission),
       is_paid: options.chargePatrons,
-      min_cents_pledged_to_view: options.patronsOnly ? (options.minimumDollarsToView || 0) * 100 || 1 : (options.minimumDollarsToView || 0) * 100,
       title: postData.title,
-      tags: { publish: true }
+      teaser_text: '',
+      post_metadata: {},
+      tags: { publish: true },
     };
 
     if (options.schedule) {
@@ -327,6 +469,12 @@ export class Patreon extends BaseWebsiteService {
       },
       user_defined_tags: {
         data: relationshipTags
+      },
+      access_rule: {
+        data: accessRules[accessRules.length - 1]
+      },
+      access_rules: {
+        data: accessRules
       }
     };
 
@@ -336,35 +484,36 @@ export class Patreon extends BaseWebsiteService {
         relationships,
         type: 'post'
       },
-      included: formattedTags
+      included: formattedTags,
+      meta: {
+        image_order: [thumbnailFileUpload ? thumbnailFileUpload.body.data.id : primaryFileUpload.body.data.id]
+      }
     };
 
-    const postResponse = await got.patch(`${link}?json-api-version=1.0`, null, this.BASE_URL, cookies, {
-      json: data,
-      headers: {
-        'X-CSRF-Signature': csrf,
-        'Host': 'www.patreon.com',
-        'Referer': 'https://www.patreon.com/posts',
-        'Origin': 'https://www.patreon.com',
-        'Accept': '*/*'
-      }
-    });
+    accessRules.forEach(rule => data.included.push(rule));
 
-    if (postResponse.error) {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
-    }
+    const postResponse = await got.crPost(`${this.BASE_URL}/api/posts/${link}?json-api-version=1.0`, {
+      'X-CSRF-Signature': csrf,
+      'Host': 'www.patreon.com',
+      'Referer': 'https://www.patreon.com/posts',
+      'Origin': 'https://www.patreon.com',
+      'Accept': '*/*',
+      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    }, postData.profileId, data, true, 'PATCH');
 
-    if (postResponse.success.response.statusCode === 200) {
+    if (postResponse.statusCode === 200) {
       const res = this.createPostResponse(null);
-      res.srcURL = `${this.BASE_URL}${postResponse.success.body.data.attributes.patreon_url}`;
+      try {
+        res.srcURL = `${this.BASE_URL}${postResponse.body.match(/"patreon_url":".*?"/g)[0].split(':')[1].replace(/"/g, '')}`;
+      } catch (e) { /* Don't really care if this fails */ }
       return res;
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', JSON.stringify(postResponse.success.body)));
+      return Promise.reject(this.createPostResponse('Unknown error', postResponse.body));
     }
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
-    const tags = [...defaultTags, ...other].slice(0, 5);
+    const tags = [...defaultTags, ...other];
     return tags.map(tag => {
       return {
         type: 'post_tag',

@@ -27,11 +27,38 @@ const request = Request.defaults({
   }
 });
 
-exports.crPost = function crPost(url, headers, partition, body, json) {
+exports.crGet = function(url, headers, partition) {
   return new Promise((resolve, reject) => {
     headers['User-Agent'] = agent;
     const request = net.request({
-      method: 'POST',
+      headers,
+      partition: `persist:${partition}`,
+      url,
+      redirect: 'follow'
+    });
+
+    request.end();
+
+    request.on('response', (response) => {
+      const res = {
+        statusCode: response.statusCode,
+        statusMessage: response.statusMessage,
+        body: (response.data || []).filter(d => !!d).map(d => d.toString()).join()
+      };
+      resolve(res);
+    });
+
+    request.on('error', (error) => {
+      reject(error);
+    });
+  });
+}
+
+exports.crPost = function crPost(url, headers, partition, body, json, method) {
+  return new Promise((resolve, reject) => {
+    headers['User-Agent'] = agent;
+    const request = net.request({
+      method: method || 'POST',
       headers,
       partition: `persist:${partition}`,
       url,
@@ -58,7 +85,6 @@ exports.crPost = function crPost(url, headers, partition, body, json) {
 
       request.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
       request.setHeader('Content-Length', form.getLengthSync());
-      // form.pipe(request);
       request.write(form.getBuffer().toString());
     }
     request.end();
