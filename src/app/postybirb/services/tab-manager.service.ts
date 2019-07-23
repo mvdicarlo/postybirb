@@ -42,6 +42,10 @@ export class TabManager {
     return false;
   }
 
+  private _findTab(id: number): TabInfo|null {
+    return this.tabs.find(t => t.id === id);
+  }
+
   public hasTab(id: number) {
     const index: number = this.tabs.findIndex(t => t.id === id);
     return index !== -1;
@@ -55,7 +59,10 @@ export class TabManager {
       };
 
       this.tabs.push(tab);
+    }
 
+    if (submission) {
+      const tab = this._findTab(submission.id);
       this.tabSubject.next(this.tabs);
       this._route.navigateByUrl(`${tab.type}/${tab.id}`);
       this._save();

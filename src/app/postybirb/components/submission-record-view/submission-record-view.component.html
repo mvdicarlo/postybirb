@@ -1,4 +1,4 @@
-<loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [mode]="submission.isScheduled ? 'determinate' : 'buffer'" [allowStop]="submission && (submission.queued || submission.isScheduled)" [faStopIcon]="submission && submission.isScheduled ? 'far fa-calendar-times mt-2' : null" (stop)="stopPosting()">
+<loading-overlay [loading]="loading || (submission && (submission.queued || submission.isScheduled))" [mode]="submission && submission.isScheduled ? 'determinate' : 'buffer'" [allowStop]="submission && (submission.queued || submission.isScheduled)" [faStopIcon]="submission && submission.isScheduled ? 'far fa-calendar-times mt-2' : null" (stop)="stopPosting()">
   <div loading-body *ngIf="submission && submission.isScheduled">
     <i class="far fa-clock"></i>
     <span> {{ submission.schedule | date:'short' }}</span>
@@ -6,7 +6,7 @@
 
   <div class="submission-info-container d-flex">
     <div class="img mr-1" *ngIf="!hideForReload" (click)="fileChange.click()">
-      <img *ngIf="submission.submissionType === 'SUBMISSION'" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
+      <img *ngIf="submission.submissionType === 'SUBMISSION' && submission.fileMap" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
       <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
       <i *ngIf="submission.submissionType === 'SUBMISSION' && submission.fileInfo.type.includes('image')" class="fas fa-search-plus preview pl-1 pb-1" (click)="openPreview($event)"></i>
     </div>

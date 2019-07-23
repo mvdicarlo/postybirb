@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, Host } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { PostLoggerService, PostyBirbLog } from '../../services/post-logger.service';
 import { saveAs } from 'file-saver';
 import { Subscription } from 'rxjs';
@@ -16,7 +16,7 @@ export class PostLogs implements OnInit, OnDestroy {
 
   private subscriber: Subscription = Subscription.EMPTY;
 
-  constructor(@Host() private layout: PostybirbLayout, private _postLogs: PostLoggerService, private _changeDetector: ChangeDetectorRef) { }
+  constructor(private layout: PostybirbLayout, private _postLogs: PostLoggerService, private _changeDetector: ChangeDetectorRef) { }
 
   async ngOnInit() {
     this.logs = await this._postLogs.getLogs() || [];

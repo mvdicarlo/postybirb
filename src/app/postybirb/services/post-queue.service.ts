@@ -12,6 +12,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { PostResult } from 'src/app/websites/interfaces/website-service.interface';
 import { PostLoggerService } from './post-logger.service';
 import { blobToUint8Array } from 'src/app/utils/helpers/file.helper';
+import { shareReplay } from 'rxjs/operators';
 
 export interface PostQueueStatus {
   currentId: number;
@@ -32,7 +33,7 @@ export class PostQueueService {
   public readonly changes: Observable<Submission[]> = this.queueSubject.asObservable();
 
   private statusSubject: BehaviorSubject<PostQueueStatus> = new BehaviorSubject({ currentId: null });
-  public readonly statusUpdates: Observable<PostQueueStatus> = this.statusSubject.asObservable();
+  public readonly statusUpdates: Observable<PostQueueStatus> = this.statusSubject.asObservable().pipe(shareReplay(1));
 
   constructor(
     private _tabManager: TabManager,
@@ -217,13 +218,12 @@ export class PostQueueService {
             // Check to see if the queued post still belongs in the queue
             if (!postingSubmission.formData.websites.length) {
               this.posting = null;
-
-              this.dequeue(postingSubmission.id);
               this.useWaitIntervalIfSet = true;
 
               this._postLogger.addLog(postingSubmission);
 
               if (postingSubmission.postStats.fail.length) {
+                this.dequeue(postingSubmission.id);
                 if (settingsDB.get('clearQueueOnFailure').value()) {
                   [...this.queue].forEach((queuedItem: Submission) => this.dequeue(queuedItem.id));
                 }
@@ -240,6 +240,7 @@ export class PostQueueService {
                   });
               } else {
                 postingSubmission.cleanUp();
+                this.dequeue(postingSubmission.id);
                 this._outputNotification(postingSubmission)
                   .finally(() => {
                     if (this._tabManager.hasTab(postingSubmission.id)) this._tabManager.removeTab(postingSubmission.id);

@@ -8,7 +8,7 @@ import { LandingPage } from './pages/landing-page/landing-page.component';
 
 const PostybirbRoutes: Routes = [
   {
-    path: 'landing',
+    path: 'home',
     component: LandingPage
   },
   {
@@ -33,7 +33,7 @@ const PostybirbRoutes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'bulk'
+    redirectTo: 'home'
   },
 ];
 

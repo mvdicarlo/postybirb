@@ -27,13 +27,14 @@ export class QueueInserterService {
       .map(entry => entry.name);
   }
 
-  public queue(submission: Submission): void {
+  public queue(submission: Submission, fromScheduler: boolean = false): void {
     if (submission) {
-      if (submission.schedule) {
+      if (submission.schedule && !fromScheduler) {
         submission.isScheduled = true;
-        if (this._tabManager.hasTab(submission.id)) this._tabManager.removeTab(submission.id);
+        this._tabManager.removeTab(submission.id);
         this._postQueue._notify();
       } else {
+        submission.isScheduled = false;
         this._postQueue.enqueue(submission);
       }
     }
@@ -74,8 +75,7 @@ export class QueueInserterService {
               }
               Promise.all(promises)
                 .then(submissions => resolve(submissions.length))
-                .catch(() => resolve(0))
-                .finally(() => this._submissionDB.notifyListeners());
+                .catch(() => resolve(0));
             } else {
               resolve(0);
             }
@@ -96,11 +96,7 @@ export class QueueInserterService {
     }
     newSubmission.formData.websites = newSubmission.formData.websites
       .filter(website => !this.websitesSupportingAdditional.includes(website));
-    newSubmission.fileMap = {
-      ADDITIONAL: [],
-      PRIMARY: null,
-      THUMBNAIL: null
-    };
+    newSubmission.fileMap = null;
 
     const submissionToInsert = newSubmission.asISubmission();
     const [createdSubmission] = await this._submissionDB.createSubmissions([submissionToInsert]);

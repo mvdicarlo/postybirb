@@ -320,6 +320,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Filter",
+  "Translate Me": "Filter",
+  "Translated": ""
+}
+
+{
   "Internal": "Folder",
   "Translate Me": "Folder",
   "Translated": ""
@@ -383,6 +389,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
   "Internal": "Hidden",
   "Context": "SoFurry option",
   "Translate Me": "Hidden",
+  "Translated": ""
+}
+
+{
+  "Internal": "Hide Queue",
+  "Translate Me": "Hide Queue",
   "Translated": ""
 }
 
@@ -811,6 +823,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Show Queue",
+  "Translate Me": "Show Queue",
+  "Translated": ""
+}
+
+{
   "Internal": "Sketch",
   "Translate Me": "Sketch",
   "Translated": ""
@@ -984,6 +1002,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Username",
   "Translate Me": "Username",
+  "Translated": ""
+}
+
+{
+  "Internal": "View",
+  "Translate Me": "View",
   "Translated": ""
 }
 

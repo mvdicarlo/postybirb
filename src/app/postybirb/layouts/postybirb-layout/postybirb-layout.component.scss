@@ -1,5 +1,23 @@
 .pb-container {
   height: 100%;
+  display: grid;
+  grid-template-rows: 48px auto;
+
+  .actions-bar {
+    display: grid;
+    grid-template-columns: 200px auto 1fr 200px;
+
+    button {
+      border-radius: 0 !important;
+      height: 48px;
+    }
+  }
+
+  .pb-areas {
+    display: grid;
+    grid-template-columns: 200px auto;
+    height: calc(100vh - 36px - 48px);
+  }
 }
 
 .container {
@@ -9,7 +27,7 @@
 
 .pb-sidebar {
   display: grid;
-  grid-template-rows: auto 1fr 1fr;
+  grid-template-rows: auto 1fr;
   width: 200px;
 
   .submission-nav {
@@ -19,11 +37,7 @@
   .actions {
     button {
       border-radius: 0 !important;
-    }
-
-    .add-button {
       height: 48px;
-      /* to match tab bar */
     }
 
     .submission-actions button {
@@ -32,10 +46,15 @@
   }
 }
 
-.pb-content-grid {
+.pb-queue-section {
   display: grid;
-  grid-template-rows: 48px calc(100% - 48px);
-  /* 48px is height of tab bar */
+  grid-template-rows: 1fr auto;
+  width: 200px;
+
+  button {
+    border-radius: 0 !important;
+    height: 48px;
+  }
 }
 
 .router-scroller {
@@ -44,7 +63,7 @@
 }
 
 .scroll-top-section {
-  position: sticky;
+  position: absolute;
   top: 0;
   right: 0;
   z-index: 100;
@@ -62,11 +81,6 @@
   max-width: 200px;
   font-size: 12px;
   margin-bottom: -15px;
-}
-
-.nav-bar {
-  display: grid;
-  grid-template-columns: auto 1fr;
 }
 
 .submission-tab {

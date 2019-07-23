@@ -32,6 +32,7 @@ import {
   MatProgressBarModule,
   MatRadioModule,
   MatSelectModule,
+  MatSidenavModule,
   MatTabsModule,
   MatTooltipModule,
 } from '@angular/material';
@@ -93,6 +94,7 @@ import { LandingPage } from './pages/landing-page/landing-page.component';
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,
+    MatSidenavModule,
     MatInputModule,
     MatMenuModule,
     MatProgressBarModule,

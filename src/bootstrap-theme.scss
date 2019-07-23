@@ -25,6 +25,12 @@ $background: map-get($theme, background);
   }
 }
 
+.bg {
+  &-danger {
+    background-color: mat-color($warn) !important;
+  }
+}
+
 .btn {
   &-link {
     color: mat-color($accent) !important;

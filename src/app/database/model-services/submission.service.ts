@@ -4,28 +4,35 @@ import { SubmissionTableName, ISubmission, FileMap, SubmissionType } from '../ta
 import { Submission } from '../models/submission.model';
 import { SubmissionFileDBService } from './submission-file.service';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
-import { Observable, Subject } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { SubmissionCache } from '../services/submission-cache.service';
 import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
 import { ScheduleWriterService } from '../services/schedule-writer.service';
+import { SubmissionState } from '../services/submission-state.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SubmissionDBService extends DatabaseService {
-  private notifySubject: Subject<void> = new Subject();
-  public changes: Observable<void> = this.notifySubject.asObservable();
+  private initializedSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  public readonly onInitialized: Observable<boolean> = this.initializedSubject.asObservable();
 
   constructor(
     private _submissionFileDB: SubmissionFileDBService,
     private _generatedThumbnailDB: GeneratedThumbnailDBService,
     private _cache: SubmissionCache,
-    private _scheduleWriter: ScheduleWriterService
+    private _scheduleWriter: ScheduleWriterService,
+    private _state: SubmissionState
   ) {
     super();
     _cache.setUpdateCallback(this.update.bind(this));
-
     this._validateDatabase();
+    this.initialize();
+  }
+
+  private async initialize(): Promise<void> {
+    await this.getSubmissions();
+    this.initializedSubject.next(true);
   }
 
   public async getSubmissions(): Promise<Submission[]> {
@@ -35,7 +42,11 @@ export class SubmissionDBService extends DatabaseService {
 
     const submissions: Submission[] = results.map(r => {
       if (this._cache.exists(r.id)) return this._cache.get(r.id);
-      else return this._cache.store(new Submission(r));
+      else {
+        const s = this._cache.store(new Submission(r));
+        this._state.append(s);
+        return s;
+      }
     });
 
     return submissions;
@@ -68,7 +79,11 @@ export class SubmissionDBService extends DatabaseService {
       return: true
     });
 
-    return inserts.map(i => this._cache.store(new Submission(i)));
+    return inserts.map(i => {
+      const s = this._cache.store(new Submission(i));
+      this._state.append(s);
+      return s;
+    });
   }
 
   public async delete(ids: number[], deleteFiles: boolean = true): Promise<void> {
@@ -86,8 +101,10 @@ export class SubmissionDBService extends DatabaseService {
       }
     });
 
-    ids.forEach(id => this._cache.remove(id));
-    this.notifySubject.next();
+    ids.forEach(id => {
+      this._cache.remove(id)
+      this._state.remove(id);
+    });
     this._updateScheduleWriter();
   }
 
@@ -96,6 +113,7 @@ export class SubmissionDBService extends DatabaseService {
     if (submission) {
       const copy = Object.assign({}, submission.asISubmission());
       copy.title = title;
+      copy.fileMap = null;
       delete copy.id;
       const inserts = await this.createSubmissions([copy]);
       const duplicateSubmission = inserts[0];
@@ -118,8 +136,6 @@ export class SubmissionDBService extends DatabaseService {
         duplicateSubmission.fileMap = fileMap;
       }
     }
-
-    this.notifySubject.next();
   }
 
   public update(id: number, fieldName: string, value: any): void {
@@ -146,13 +162,6 @@ export class SubmissionDBService extends DatabaseService {
         }
       });
     }
-  }
-
-  /**
-  * Forcibly call the notify subject. Should only be used when new submissions are created outside of the normal flow.
-  **/
-  public notifyListeners(): void {
-    this.notifySubject.next();
   }
 
   private _updateScheduleWriter(): void {

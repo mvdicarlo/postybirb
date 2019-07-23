@@ -1,0 +1,33 @@
+td {
+  vertical-align: middle;
+}
+
+mat-icon {
+  vertical-align: middle;
+}
+
+button {
+  margin: 0 !important;
+}
+
+.actions mat-card {
+  box-shadow: none;
+  height: 100%;
+  width: 100%;
+  flex: 5;
+  flex-basis: 50%;
+}
+
+.badge {
+  font-size: 0.6em;
+  vertical-align: middle;
+}
+
+.card-container+.card-container {
+  margin-top: .5rem !important;
+}
+
+.table-wrapper {
+  max-height: 300px;
+  overflow: auto;
+}

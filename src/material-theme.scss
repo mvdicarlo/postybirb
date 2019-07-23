@@ -5,9 +5,9 @@ $mat-dark-theme-background: (
   app-bar: map_get($mat-grey, 900),
   background: #202225,
   hover: rgba(white, 0.04), // TODO(kara): check style with Material Design UX
-  card: map_get($mat-grey, 800),
+  card: map_get($mat-grey, 900),
   table: map_get($mat-grey, 900),
-  dialog: map_get($mat-grey, 800),
+  dialog: #3a3a3a,
   disabled-button: rgba(white, 0.12),
   raised-button: map-get($mat-grey, 800),
   focused-button: $light-focused,
@@ -96,6 +96,10 @@ code {
   background: rgba(0,0,0,0.9) !important;
   box-shadow: unset;
   padding: 0;
+}
+
+.mat-dialog-container {
+  min-width: 33vw;
 }
 
 mat-radio-button + mat-radio-button {

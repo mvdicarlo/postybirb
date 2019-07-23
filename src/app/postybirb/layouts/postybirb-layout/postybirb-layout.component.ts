@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef, MatDrawer } from '@angular/material';
 import { FileMetadata, readFileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { CollectSubmissionInfoDialog } from '../../components/collect-submission-info-dialog/collect-submission-info-dialog.component';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
@@ -24,6 +24,7 @@ import { HotkeysService, Hotkey } from 'angular2-hotkeys';
 import { FileDropWatcherService } from '../../services/file-drop-watcher.service';
 import { FileDropDialog } from '../../components/file-drop-dialog/file-drop-dialog.component';
 import { SnotifyService } from 'ng-snotify';
+import { SubmissionState } from 'src/app/database/services/submission-state.service';
 
 @Component({
   selector: 'postybirb-layout',
@@ -33,6 +34,7 @@ import { SnotifyService } from 'ng-snotify';
 })
 export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('fileInput') fileInput: ElementRef;
+  @ViewChild('drawer') drawer: MatDrawer;
   private creatingJournal: boolean = false;
 
   get submissions(): Submission[] {
@@ -45,7 +47,24 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   }
   set submissions(submissions: Submission[]) { this._submissions = submissions || [] }
   private _submissions: Submission[] = [];
+
   public queuedSubmissions: Submission[] = [];
+  public scheduledSubmissions: Submission[] = [];
+
+  get editableSubmissions(): Submission[] {
+    if (this.searchControl.value) {
+      const filter: string = this.searchControl.value.toLowerCase();
+      return this._editableSubmissions.filter(s => (s.title || '').toLowerCase().includes(filter));
+    }
+
+    return this._editableSubmissions;
+  }
+  set editableSubmissions(submissions: Submission[]) { this._editableSubmissions = submissions || [] }
+  private _editableSubmissions: Submission[] = [];
+
+  get queuedOrScheduled(): Submission[] {
+    return [...this.queuedSubmissions, ...this.scheduledSubmissions];
+  }
 
   public loading: boolean = false;
   public hideScrollTop: boolean = true;
@@ -61,6 +80,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     private _router: Router,
     private dialog: MatDialog,
     private _submissionCache: SubmissionCache,
+    private _submissionState: SubmissionState,
     private _submissionDB: SubmissionDBService,
     private _submissionFileDBService: SubmissionFileDBService,
     public _tabManager: TabManager,
@@ -96,9 +116,25 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.loading = true;
-    this._submissionDB.getSubmissions()
-      .then(submissions => {
-        this.submissions = submissions;
+
+    this._submissionState.noPostingState.subscribe(submissions => {
+      this.editableSubmissions = submissions;
+      this._changeDetector.detectChanges();
+    });
+
+    this._submissionState.scheduled.subscribe(submissions => {
+      this.scheduledSubmissions = submissions;
+      this._changeDetector.detectChanges();
+    });
+
+    this._postQueue.changes.subscribe(submissions => {
+      this.queuedSubmissions = submissions;
+      this._changeDetector.detectChanges();
+    })
+
+    this._submissionDB.onInitialized.subscribe(isInitialized => {
+      if (isInitialized) {
+        this.submissions = this._submissionCache.getAll();
         this.cacheCompleted = true;
         this.loading = false;
         this.hideRoute = false;
@@ -114,18 +150,12 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
           }
         });
 
-        this._updateQueued(this.queuedSubmissions);
-      });
-
-    this.submissionUpdatesListener = this._submissionDB.changes.subscribe(() => {
-      this._submissionDB.getSubmissions()
-        .then(submissions => {
-          this.submissions = submissions;
+        this.submissionUpdatesListener = this._submissionState.onSubmissionPublish.subscribe(submissions => {
+          this.submissions = [...submissions];
           this._changeDetector.detectChanges();
         });
+      }
     });
-
-    this.queueListener = this._postQueue.changes.subscribe(queued => this._updateQueued(queued));
   }
 
   ngAfterViewInit() {
@@ -163,6 +193,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public async scrolled(event: any) {
+    event.stopPropagation();
     if (event.target.scrollTop >= Math.min(event.target.offsetHeight * .15, 150)) {
       if (this.hideScrollTop) {
         this.hideScrollTop = false;
@@ -184,7 +215,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     }).afterClosed()
       .subscribe(result => {
         if (result) {
-          this.queuedSubmissions
+          this.queuedOrScheduled
             .forEach(qs => this._queueInserter.dequeue(qs));
         }
       });
@@ -240,7 +271,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
                     }
                   }
 
-                  this.submissions = [...this.submissions, ...insertResults];
+                  // this.submissions = [...this.submissions, ...insertResults];
                   this._changeDetector.markForCheck();
 
                   this._openToTab(insertResults[0]);
@@ -295,7 +326,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     this._submissionDB.createSubmissions([revive]).then(insertResults => {
       if (revive.submissionType === SubmissionType.JOURNAL) {
         this.loading = false;
-        this.submissions = [...this.submissions, ...insertResults];
+        // this.submissions = [...this.submissions, ...insertResults];
         this._changeDetector.markForCheck();
 
         this._openToTab(insertResults[0]);
@@ -329,7 +360,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
               }
             }
 
-            this.submissions = [...this.submissions, ...insertResults];
+            // this.submissions = [...this.submissions, ...insertResults];
             this._changeDetector.markForCheck();
 
             this._openToTab(insertResults[0]);
@@ -360,7 +391,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
           }]).then(insertResults => {
             this.loading = false;
             this.creatingJournal = false;
-            this.submissions = [...this.submissions, ...insertResults];
+            // this.submissions = [...this.submissions, ...insertResults];
             this._changeDetector.markForCheck();
 
             this._openToTab(insertResults[0]);
@@ -404,7 +435,8 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     this.dialog.open(SubmissionSelectDialog, {
       data: {
         title: 'Delete',
-        multiple: true
+        multiple: true,
+        submissions: this.editableSubmissions
       }
     }).afterClosed()
       .subscribe(deletes => {
@@ -505,13 +537,6 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
       .filter(s => !s.queued)
       .filter(s => !s.isScheduled)
       .filter(s => s.problems.length === 0);
-  }
-
-  private _updateQueued(queued: Submission[]): void {
-    this.queuedSubmissions = [...queued, ...this.submissions.filter(s => s.isScheduled).sort((a, b) => {
-      return b.schedule - a.schedule;
-    })];
-    this._changeDetector.detectChanges();
   }
 
 }

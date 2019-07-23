@@ -1,12 +1,14 @@
 <loading-overlay [loading]="loading">
-  <div class="pb-container row no-gutters" *ngIf="cacheCompleted">
-    <div class="pb-sidebar mat-elevation-z4">
-      <div class="actions">
 
-        <button color="accent" class="add-button w-100" mat-flat-button [matMenuTriggerFor]="addMenu">
+  <div class="pb-container" *ngIf="cacheCompleted">
+    <div class="actions-bar mat-elevation-z4">
+      <!-- Submission Button -->
+      <div>
+        <button color="accent" class="w-100" mat-flat-button [matMenuTriggerFor]="addMenu">
           <mat-icon>add</mat-icon>
           <span>{{ 'New' | translate }}</span>
         </button>
+
         <mat-menu #addMenu="matMenu" class="width-200" xPosition="after">
           <button mat-menu-item (click)="fileInput.click()">
             <mat-icon>attach_file</mat-icon>{{ 'Submission' | translate }}
@@ -19,91 +21,106 @@
           </button>
         </mat-menu>
         <input #fileInput type="file" class="d-none" (change)="filesSelected($event)" multiple>
-
-        <mat-form-field class="w-100 search-input" color="accent" appearance="fill">
-          <input matInput [formControl]="searchControl">
-          <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
-        </mat-form-field>
-
-        <div class="submission-actions" *ngIf="submissions.length">
-          <button mat-flat-button color="warn" (click)="deleteMany()" [matTooltip]="'Delete' | translate">
-            <mat-icon>delete</mat-icon>
-          </button>
-          <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()" (click)="postMany()" [matTooltip]="'Post' | translate">
-            <mat-icon>send</mat-icon>
-          </button>
-        </div>
       </div>
 
-      <div class="submission-nav">
-        <table class="table table-dark m-0 h-100">
-          <cdk-virtual-scroll-viewport itemSize="95">
-            <tr *cdkVirtualFor="let record of submissions; templateCacheSize: 0">
-              <td>
-                <submission-record-view [submission]="record"></submission-record-view>
-              </td>
-            </tr>
-          </cdk-virtual-scroll-viewport>
-        </table>
+      <!-- Nav Tabs -->
+      <nav mat-tab-nav-bar backgroundColor="accent">
+        <a mat-tab-link routerLink="home" routerLinkActive #rla3="routerLinkActive" [active]="rla3.isActive">
+          <mat-icon>home</mat-icon>
+        </a>
 
-        <!-- Queue List -->
-        <table class="table table-dark m-0 h-100">
-          <thead>
-            <tr>
-              {{ 'Queue' | translate }}
-              <i class="fas fa-ban warn-text cancel-all-btn" *ngIf="queuedSubmissions.length" (click)="cancelAllQueued()"></i>
-            </tr>
-          </thead>
-          <cdk-virtual-scroll-viewport itemSize="80" *ngIf="queuedSubmissions.length">
-            <tr *cdkVirtualFor="let record of queuedSubmissions; templateCacheSize: 0">
-              <td>
-                <submission-posting-view [submission]="record"></submission-posting-view>
-              </td>
-            </tr>
-          </cdk-virtual-scroll-viewport>
-          <tbody *ngIf="!queuedSubmissions.length" style="font-size: 12px;">
-            <td class="text-center">{{ 'Empty' | translate }}</td>
-          </tbody>
-        </table>
+        <a mat-tab-link routerLink="bulk" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive" [matTooltip]="'Bulk' | translate">
+          <mat-icon>view_list</mat-icon>
+          <span>{{ 'Bulk' | translate }}</span>
+        </a>
+
+        <a mat-tab-link routerLink="template" routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive" [matTooltip]="'Template' | translate">
+          <mat-icon>folder</mat-icon>
+          <span>{{ 'Template' | translate }}</span>
+        </a>
+      </nav>
+
+      <nav mat-tab-nav-bar backgroundColor="accent">
+        <a class="submission-tab" *ngFor="let tab of _tabManager.tabChanges | async" mat-tab-link [routerLink]="tab.type + '/' + tab.id" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+          <submission-tab [tab]="tab"></submission-tab>
+        </a>
+      </nav>
+
+      <div>
+        <button mat-flat-button class="w-100" color="accent" (click)="drawer.toggle()">
+          <span *ngIf="!drawer.opened">{{ 'Show Queue' | translate }}</span>
+          <span *ngIf="drawer.opened">{{ 'Hide Queue' | translate }}</span>
+          <span class="ml-1 badge badge-light">{{ queuedOrScheduled.length }}</span>
+        </button>
       </div>
     </div>
+    <mat-drawer-container>
+      <mat-drawer #drawer mode="side" position="end">
+        <div class="pb-queue-section mat-elevation-z4 h-100" *ngIf="drawer.opened">
+          <table class="table table-dark m-0 h-100">
+            <cdk-virtual-scroll-viewport itemSize="80" *ngIf="queuedOrScheduled.length">
+              <tr *cdkVirtualFor="let record of queuedOrScheduled; templateCacheSize: 0">
+                <td>
+                  <submission-posting-view [submission]="record"></submission-posting-view>
+                </td>
+              </tr>
+            </cdk-virtual-scroll-viewport>
+            <tbody *ngIf="!queuedOrScheduled.length" style="font-size: 12px;">
+              <td class="text-center">{{ 'Empty' | translate }}</td>
+            </tbody>
+          </table>
 
-    <div class="col col-sm col-md col-lg col-xl pb-content-grid">
-      <div class="nav-bar">
-        <nav mat-tab-nav-bar backgroundColor="accent">
-          <a mat-tab-link routerLink="logs" routerLinkActive #rla3="routerLinkActive" [active]="rla3.isActive" [matTooltip]="'Logs' | translate">
-            <mat-icon>history</mat-icon>
-            <span>{{ 'Logs' | translate }}</span>
-          </a>
-
-          <a mat-tab-link routerLink="bulk" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive" [matTooltip]="'Bulk' | translate">
-            <mat-icon>view_list</mat-icon>
-            <span>{{ 'Bulk' | translate }}</span>
-          </a>
-
-          <a mat-tab-link routerLink="template" routerLinkActive #rla2="routerLinkActive" [active]="rla2.isActive" [matTooltip]="'Template' | translate">
-            <mat-icon>folder</mat-icon>
-            <span>{{ 'Template' | translate }}</span>
-          </a>
-        </nav>
-
-        <nav mat-tab-nav-bar backgroundColor="accent">
-          <a class="submission-tab" *ngFor="let tab of _tabManager.tabChanges | async" mat-tab-link [routerLink]="tab.type + '/' + tab.id" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
-            <submission-tab [tab]="tab"></submission-tab>
-          </a>
-        </nav>
-      </div>
-
-      <div class="router-scroller" (scroll)="scrolled($event)" #scroller>
-        <div *ngIf="!hideScrollTop" class="scroll-top-section">
-          <button type="button" class="mt-1 mr-1" mat-mini-fab color="secondary" [disableRipple]="true" (click)="scroller.scrollTo({ top: 0, behavior: 'smooth' })">
-            <mat-icon>keyboard_arrow_up</mat-icon>
-          </button>
+          <div *ngIf="queuedOrScheduled.length">
+            <button mat-flat-button color="warn" class="w-100" (click)="cancelAllQueued()">{{ 'Cancel All' | translate }}</button>
+          </div>
         </div>
-        <div class="container mat-elevation-z4" *ngIf="!hideRoute">
-          <router-outlet></router-outlet>
+      </mat-drawer>
+
+      <mat-drawer-content>
+        <div class="pb-areas">
+          <div class="pb-sidebar mat-elevation-z4">
+            <div class="actions">
+              <mat-form-field class="w-100 search-input" color="accent" appearance="fill">
+                <input matInput [formControl]="searchControl">
+                <mat-icon style="vertical-align: bottom; font-size: 1.2em" matPrefix>search</mat-icon>
+              </mat-form-field>
+
+              <div class="submission-actions" *ngIf="submissions.length">
+                <button mat-flat-button color="warn" (click)="deleteMany()" [matTooltip]="'Delete' | translate">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-flat-button color="primary" [disabled]="!hasPostableSubmissions()" (click)="postMany()" [matTooltip]="'Post' | translate">
+                  <mat-icon>send</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="submission-nav">
+              <table class="table table-dark m-0 h-100">
+                <cdk-virtual-scroll-viewport itemSize="95">
+                  <tr *cdkVirtualFor="let record of editableSubmissions; templateCacheSize: 0">
+                    <td>
+                      <submission-record-view [submission]="record"></submission-record-view>
+                    </td>
+                  </tr>
+                </cdk-virtual-scroll-viewport>
+              </table>
+            </div>
+          </div>
+
+          <div class="router-scroller" (scroll)="scrolled($event)" #scroller>
+            <div class="container mat-elevation-z4" *ngIf="!hideRoute">
+              <router-outlet></router-outlet>
+            </div>
+          </div>
+          <div *ngIf="!hideScrollTop" class="scroll-top-section">
+            <button type="button" class="mt-1 mr-1" mat-mini-fab color="secondary" [disableRipple]="true" (click)="scroller.scrollTo({ top: 0, behavior: 'smooth' })">
+              <mat-icon>keyboard_arrow_up</mat-icon>
+            </button>
+          </div>
         </div>
-      </div>
-    </div>
+      </mat-drawer-content>
+    </mat-drawer-container>
+
   </div>
 </loading-overlay>
