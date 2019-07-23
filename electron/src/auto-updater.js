@@ -16,17 +16,8 @@ autoUpdater.allowPrerelease = true; // REMOVE WHEN 2.X GOES TO BEING MAIN BUILD!
 let updateDialogShowing = false;
 let progressWindow = null;
 
-// For details about these events, see the Wiki:
-// https://github.com/electron-userland/electron-builder/wiki/Auto-Update#events
-//
-// The app doesn't need to listen to any events except `update-downloaded`
-//
-// Uncomment any of the below events to listen for them.  Also,
-// look in the previous section to see them being used.
-//-------------------------------------------------------------------
-
 autoUpdater.on('checking-for-update', () => {
-  log.info('Checking for update...');
+  // log.info('Checking for update...');
 });
 
 autoUpdater.on('update-available', (info) => {
@@ -77,7 +68,7 @@ autoUpdater.on('update-downloaded', (info) => {
     w.destroy();
   });
 
-  setTimeout(() => autoUpdater.quitAndInstall(), 1000);
+  setTimeout(() => autoUpdater.quitAndInstall(false, true), 1000);
 });
 
 function openProgressWindow() {

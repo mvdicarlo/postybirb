@@ -31,7 +31,6 @@ log.info('Starting PostyBirb...');
 
 let tray = null;
 let win = null; // Primary App BrowserWindow
-let updateInterval = null; // Interval for checking for updates
 let scheduleCheckInterval = null; // Interval for checking for scheduled posts when app is in a closed state
 let cacheClearInterval = null; // Interval for manually clearing cache
 const userDataPath = app.getPath('userData');
@@ -68,8 +67,11 @@ app.on('second-instance', () => {
 
 const blockerId = powerSaveBlocker.start('prevent-app-suspension');
 
+// Switches [https://peter.sh/experiments/chromium-command-line-switche]
 // app.commandLine.appendSwitch('proxy-bypass-list', '*')
 // app.commandLine.appendSwitch('proxy-server', 'direct://')
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
 fs.ensureFileSync(path.join(dataPath, 'templates.json'));
@@ -137,8 +139,8 @@ app.on('ready', () => {
     click() {
       try { // Potential to throw error if not initialized intervals
         clearInterval(cacheClearInterval);
-        clearInterval(updateInterval);
         clearScheduleCheck();
+        powerSaveBlocker.stop(blockerId);
       } catch (e) {
         // Don't Care
       } finally {
@@ -159,10 +161,6 @@ app.on('ready', () => {
 
   if (!devMode) {
     autoUpdater.autoUpdater.checkForUpdates();
-    updateInterval = setInterval(() => {
-      autoUpdater.checkForUpdates();
-    }, 3 * 60 * 60000);
-
     start();
   } else {
     start();
