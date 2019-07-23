@@ -36,15 +36,15 @@ export class TabManager {
     store.set(this.STORE, this.tabs);
   }
 
-  private hasTab(id: number) {
-    const index: number = this.tabs.findIndex(t => t.id === id);
-    return index !== -1;
-  }
-
   private _shouldNavigate(removedId: number): boolean {
     const url: string = this._route.url;
     if (Number(url.split('/').pop()) == removedId) return true;
     return false;
+  }
+
+  public hasTab(id: number) {
+    const index: number = this.tabs.findIndex(t => t.id === id);
+    return index !== -1;
   }
 
   public addTab(submission: Submission): void {

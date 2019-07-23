@@ -415,7 +415,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
             const deletedSubmission = this._submissionCache.get(d.id);
             this._queueInserter.dequeue(deletedSubmission);
             deletedSubmission.cleanUp();
-            this._tabManager.removeTab(d.id);
+            if (this._tabManager.hasTab(d.id)) this._tabManager.removeTab(d.id);
           });
 
           this._submissionDB.delete(deletes.map(d => d.id))

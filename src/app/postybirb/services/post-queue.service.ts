@@ -47,7 +47,7 @@ export class PostQueueService {
   public enqueue(submission: Submission): void {
     const index: number = this.queue.findIndex(s => s.id === submission.id);
     if (index === -1) {
-      this._tabManager.removeTab(submission.id);
+      if (this._tabManager.hasTab(submission.id)) this._tabManager.removeTab(submission.id);
       this.queue.push(submission);
 
       // Sort website post order
@@ -242,7 +242,7 @@ export class PostQueueService {
                 postingSubmission.cleanUp();
                 this._outputNotification(postingSubmission)
                   .finally(() => {
-                    this._tabManager.removeTab(postingSubmission.id);
+                    if (this._tabManager.hasTab(postingSubmission.id)) this._tabManager.removeTab(postingSubmission.id);
                     this._submissionDB.delete([postingSubmission.id])
                       .finally(() => {
                         if (!this.queue.length && closeAfterPost() /* global var*/) {

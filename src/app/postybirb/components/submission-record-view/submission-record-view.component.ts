@@ -138,7 +138,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
           this._changeDetector.markForCheck();
           this._queueInserter.dequeue(this.submission);
           this.submission.cleanUp();
-          this._tabManager.removeTab(this.submission.id);
+          if (this._tabManager.hasTab(this.submission.id)) this._tabManager.removeTab(this.submission.id);
           this._submissionDB.delete([this.submission.id], this.submission.submissionType === SubmissionType.SUBMISSION);
         }
       });
