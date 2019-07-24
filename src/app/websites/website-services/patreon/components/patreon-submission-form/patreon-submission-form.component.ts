@@ -20,7 +20,7 @@ export class PatreonSubmissionForm extends BaseWebsiteSubmissionForm implements 
   };
 
   public tagConfig: TagConfig = {
-    maxTags: 5
+    maxTags: 50
   };
 
   public folders: Folder[] = [];

@@ -595,6 +595,6 @@ export class Patreon extends BaseWebsiteService {
           cardinality: 1
         }
       };
-    });
+    }).slice(0, 50);
   }
 }
