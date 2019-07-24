@@ -4,8 +4,13 @@ import { TemplateForm } from './forms/template-form/template-form.component';
 import { SubmissionForm } from './forms/submission-form/submission-form.component';
 import { JournalForm } from './forms/journal-form/journal-form.component';
 import { PostLogs } from './components/post-logs/post-logs.component';
+import { LandingPage } from './pages/landing-page/landing-page.component';
 
 const PostybirbRoutes: Routes = [
+  {
+    path: 'landing',
+    component: LandingPage
+  },
   {
     path: 'bulk',
     component: BulkUpdateForm
@@ -28,7 +33,7 @@ const PostybirbRoutes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'bulk'
+    redirectTo: 'landing'
   },
 ];
 

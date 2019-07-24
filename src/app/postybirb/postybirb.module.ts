@@ -22,6 +22,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import {
   MatBadgeModule,
   MatButtonModule,
+  MatCardModule,
   MatCheckboxModule,
   MatDialogModule,
   MatExpansionModule,
@@ -51,6 +52,7 @@ import { TemplateForm } from './forms/template-form/template-form.component';
 import { AdditionalImageSplitDialog } from './components/additional-image-split-dialog/additional-image-split-dialog.component';
 import { ImagePreviewDialog } from './components/image-preview-dialog/image-preview-dialog.component';
 import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.component';
+import { LandingPage } from './pages/landing-page/landing-page.component';
 
 @NgModule({
   declarations: [
@@ -70,6 +72,7 @@ import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.c
     AdditionalImageSplitDialog,
     ImagePreviewDialog,
     FileDropDialog,
+    LandingPage,
   ],
   imports: [
     CommonModule,
@@ -85,6 +88,7 @@ import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.c
     WebsitesModule,
     MatBadgeModule,
     MatButtonModule,
+    MatCardModule,
     MatCheckboxModule,
     MatDialogModule,
     MatExpansionModule,
