@@ -9,5 +9,6 @@
   "Options are incomplete": "{{website}} options are incomplete",
   "Requires minimum tags": "{{website}} requires at least {{value}} tags",
   "Split Additional Image Info": "Not all websites support bulk images. This will split this submission into new submissions for the below websites.",
-  "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post."
+  "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post.",
+  "Website Options Tooltip": "Customize website specific options and overwrite default tags and descriptions"
 }
