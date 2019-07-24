@@ -209,6 +209,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Website Options Tooltip",
+  "Translate Me": "Customize website specific options and overwrite default tags and descriptions",
+  "Translated": ""
+}
+
+{
   "Internal": "Data",
   "Translate Me": "Data",
   "Translated": ""
@@ -996,6 +1002,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Violence",
   "Translate Me": "Violence",
+  "Translated": ""
+}
+
+{
+  "Internal": "Website Options",
+  "Translate Me": "Website Options",
   "Translated": ""
 }
 
