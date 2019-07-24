@@ -51,7 +51,7 @@
         </div>
 
         <!-- Selected Websites Section -->
-        <h5>{{ 'Website Options' | translate }}
+        <h5 *ngIf="getWebsites().length">{{ 'Website Options' | translate }}
           <mat-icon class="help-icon" color="accent" [matTooltip]="'Website Options Tooltip' | translate">info</mat-icon>
         </h5>
         <div class="alert alert-danger" *ngIf="!formDataForm.value.loginProfile">
