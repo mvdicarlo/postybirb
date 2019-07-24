@@ -33,7 +33,7 @@ const PostybirbRoutes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'landing'
+    redirectTo: 'bulk'
   },
 ];
 
