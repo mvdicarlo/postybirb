@@ -3,7 +3,7 @@ import { Website } from '../../decorators/website-decorator';
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, fileAsBlob, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsBlob } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { PatreonSubmissionForm } from './components/patreon-submission-form/patreon-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
@@ -25,16 +25,22 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     }
   }
 
-  const options = dotProp.get(formData, 'Patreon.options', {});
-  if (!(options.tiers && options.tiers.length)) {
-    problems.push(['Options are incomplete', { website: 'Patreon' }]);
-  }
-
   return problems;
 }
 
 function descriptionParse(html: string): string {
   if (!html) return '';
+  // encode html
+  html = html.replace(/[\u00A0-\u9999<>&](?!#)/gim, (i) => {
+    return '&#' + i.charCodeAt(0) + ';';
+  });
+
+  // decode html
+  // this converts html tags back, but not entities which could cause patreon to break
+  html = html.replace(/&#([0-9]{1,3});/gi, (match, num) => {
+    return String.fromCharCode(parseInt(num));
+  });
+
   return html
     .replace(/\n/g, '')
     .replace(/<p/gm, '<div')
@@ -124,7 +130,7 @@ export class Patreon extends BaseWebsiteService {
     const response: any = JSON.parse(create.body);
     const id = response.data.id;
 
-    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,campaign.access_rules.tier.null`, {
+    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`, {
       'Host': 'www.patreon.com',
       'Origin': 'https://www.patreon.com',
       'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')

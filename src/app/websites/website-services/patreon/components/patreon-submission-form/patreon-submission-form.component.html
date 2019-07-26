@@ -16,7 +16,7 @@
 
     <div class="col-md-9 col-lg-9 col-xl-9">
       <div class="row no-gutters">
-        <folder-select formControlName="tiers" class="col-md-6 col-lg-6 col-xl-6" placeholder="Access Tiers" [folders]="folders" [multiple]="true" [required]="true"></folder-select>
+        <folder-select formControlName="tiers" class="col-md-6 col-lg-6 col-xl-6" placeholder="Access Tiers" [folders]="folders" [multiple]="true"></folder-select>
         <mat-form-field name="schedule-field" color="accent" class="col-md-4 col-lg-4 col-xl-4">
           <input class="w-100" matInput formControlName="schedule" [owlDateTime]="dt1" [owlDateTimeTrigger]="dt1" [placeholder]="'Schedule' | translate">
           <mat-icon style="vertical-align: bottom; font-size: 1.2em" matSuffix>access_time</mat-icon>

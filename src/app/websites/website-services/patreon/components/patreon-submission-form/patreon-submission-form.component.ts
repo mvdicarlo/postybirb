@@ -14,7 +14,7 @@ import { Validators } from '@angular/forms';
 export class PatreonSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
-    tiers: [[], Validators.minLength(1)],
+    tiers: [[]],
     chargePatrons: [false],
     schedule: [null]
   };
