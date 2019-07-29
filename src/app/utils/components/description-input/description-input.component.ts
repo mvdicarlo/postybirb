@@ -29,7 +29,6 @@ export interface DescriptionData {
 export class DescriptionInput extends BaseValueAccessor implements OnInit, AfterViewInit, OnDestroy {
   @Input() canOverwrite: boolean = true;
   @Input() defaultDescriptionProvider: Observable<DescriptionData>;
-  private templateSubscriber: Subscription = Subscription.EMPTY;
   private providerSubscriber: Subscription = Subscription.EMPTY;
   private providerData: DescriptionData;
 
@@ -59,7 +58,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
       underline: { inline: 'u', exact: true },
       strikethrough: { inline: 's', exact: true },
     },
-    paste_preprocess(plugin, args) {
+    paste_preprocess(plugin: any, args: any) {
       args.content = sanitize(args.content, {
         allowedTags: false,
         allowedAttributes: {
@@ -113,8 +112,6 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
   }
 
   ngOnInit() {
-    this.templateSubscriber = this._descriptionTemplates.templateUpdates.subscribe(templates => this.tinyMCESettings.templates = templates);
-
     if (this.defaultDescriptionProvider) {
       this.providerSubscriber = this.defaultDescriptionProvider
         .subscribe(defaultDescriptionData => {
@@ -143,7 +140,6 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
   }
 
   ngOnDestroy() {
-    this.templateSubscriber.unsubscribe();
     this.providerSubscriber.unsubscribe();
     this._internalProvider.complete();
   }
@@ -196,7 +192,6 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
       .subscribe(result => {
         if (result) {
           this._descriptionTemplates.saveTemplate(null, { id: null, title: result.title, description: result.description, content: result.content });
-          this.tinyMCESettings.templates = this._descriptionTemplates.getTemplates();
         }
       });
   }
