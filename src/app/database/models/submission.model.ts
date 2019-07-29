@@ -1,5 +1,5 @@
 import { ISubmission, SubmissionRating, SubmissionType, FileMap } from '../tables/submission.table';
-import { Observable, BehaviorSubject, Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { FileObject } from '../tables/submission-file.table';
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
@@ -53,6 +53,14 @@ export class Submission implements ISubmission {
     this._emitChange('fileInfo', old, file, true);
   }
   private _fileInfo: FileObject;
+
+  get additionalFileInfo(): FileObject[] { return this._additionalFileInfo }
+  set additionalFileInfo(fileInfos: FileObject[]) {
+    const old = this._additionalFileInfo;
+    this._additionalFileInfo = fileInfos;
+    this._emitChange('additionalFileInfo', old, fileInfos, true);
+  }
+  private _additionalFileInfo: FileObject[];
 
   get schedule(): any { return this._schedule }
   set schedule(schedule: any) {
@@ -158,6 +166,7 @@ export class Submission implements ISubmission {
     this.submissionType = submission.submissionType;
     this.rating = submission.rating;
     this.fileInfo = submission.fileInfo;
+    this.additionalFileInfo = submission.additionalFileInfo || [];
     this.fileMap = submission.fileMap;
     this.formData = submission.formData || <any>{ websites: [] };
 
@@ -193,7 +202,7 @@ export class Submission implements ISubmission {
   }
 
   public asISubmission(): ISubmission {
-    const { id, rating, title, schedule, submissionType, fileInfo, fileMap, formData } = this;
+    const { id, rating, title, schedule, submissionType, fileInfo, additionalFileInfo, fileMap, formData } = this;
     return JSON.parse(JSON.stringify(
       {
         id,
@@ -202,6 +211,7 @@ export class Submission implements ISubmission {
         schedule,
         submissionType,
         fileInfo,
+        additionalFileInfo,
         fileMap,
         formData
       }

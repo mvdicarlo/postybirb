@@ -6,7 +6,7 @@ import { SubmissionFileDBService } from './submission-file.service';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { SubmissionCache } from '../services/submission-cache.service';
-import { ISubmissionFile, SubmissionFileType } from '../tables/submission-file.table';
+import { ISubmissionFile, SubmissionFileType, FileObject } from '../tables/submission-file.table';
 import { ScheduleWriterService } from '../services/schedule-writer.service';
 import { SubmissionState } from '../services/submission-state.service';
 
@@ -123,6 +123,8 @@ export class SubmissionDBService extends DatabaseService {
           ADDITIONAL: []
         };
 
+        const additionalFileInfo: FileObject[] = [];
+
         files.forEach(file => {
           if (file.fileType === SubmissionFileType.PRIMARY_FILE) {
             fileMap.PRIMARY = file.id;
@@ -130,10 +132,12 @@ export class SubmissionDBService extends DatabaseService {
             fileMap.THUMBNAIL = file.id;
           } else if (file.fileType === SubmissionFileType.ADDITIONAL_FILE) {
             fileMap.ADDITIONAL.push(file.id);
+            additionalFileInfo.push(file.fileInfo);
           }
         });
 
         duplicateSubmission.fileMap = fileMap;
+        duplicateSubmission.additionalFileInfo = additionalFileInfo;
       }
     }
   }

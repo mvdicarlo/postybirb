@@ -15,9 +15,17 @@ import * as dotProp from 'dot-prop';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'];
+
   if (submission.submissionType === SubmissionType.SUBMISSION) {
-    if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'])) {
+    if (!supportsFileType(submission.fileInfo, supportedFiles)) {
       problems.push(['Does not support file format', { website: 'Patreon', value: submission.fileInfo.type }]);
+    }
+
+    if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+      submission.additionalFileInfo
+        .filter(info => !supportsFileType(info, supportedFiles))
+        .forEach(info => problems.push(['Does not support file format', { website: 'Patreon', value: info.type }]));
     }
 
     if (MBtoBytes(200) < submission.fileInfo.size) {
@@ -53,7 +61,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   login: {
     url: 'https://www.patreon.com/login'
   },

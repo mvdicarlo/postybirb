@@ -13,8 +13,16 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'])) {
+  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'];
+
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Mastodon', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'Mastodon', value: info.type }]));
   }
 
   if (MBtoBytes(300) < submission.fileInfo.size) {
@@ -37,7 +45,7 @@ function warningCheck(submission: Submission, formData: SubmissionFormData): str
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   login: {
     dialog: MastodonLoginDialog,
     url: ''

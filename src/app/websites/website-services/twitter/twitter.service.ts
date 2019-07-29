@@ -13,9 +13,16 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+  const supportedFiles: string[] = ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'];
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'])) {
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Twitter', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'Twitter', value: info.type }]));
   }
 
   if (isGIF(submission.fileInfo)) {
@@ -52,7 +59,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   login: {
     dialog: TwitterLoginDialog,
     url: 'https://twitter.com/'

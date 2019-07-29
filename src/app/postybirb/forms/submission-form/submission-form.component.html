@@ -79,8 +79,8 @@
           <mat-expansion-panel #additionalImagesPanel>
             <mat-expansion-panel-header>
               <mat-panel-title style="min-width: 400px">
-                {{ 'Additional Images' | translate }}
-                <mat-icon class="help-icon" color="accent" [matTooltip]="'Additional Images Help' | translate">info</mat-icon>
+                {{ 'Additional Files' | translate }}
+                <mat-icon class="help-icon" color="accent" [matTooltip]="'Additional Files Help' | translate">info</mat-icon>
               </mat-panel-title>
             </mat-expansion-panel-header>
             <div *ngIf="additionalImagesPanel.expanded" class="text-center">
@@ -91,9 +91,10 @@
               <button mat-flat-button color="accent" (click)="additionalImageInput.click()" class="w-100 mt-2">
                 <mat-icon>add</mat-icon>
               </button>
-              <input #additionalImageInput type="file" class="d-none" accept="image/jpeg,image/png,image/gif" multiple (change)="addAdditionalImages($event)">
+              <input #additionalImageInput type="file" class="d-none" accept="*" multiple (change)="addAdditionalImages($event)">
               <div cdkDropList (cdkDropListDropped)="swapAdditionalImages($event)">
-                <div *ngFor="let imgId of submission.fileMap.ADDITIONAL" class="additional-img-container mt-1" cdkDrag cdkDragLockAxis="y">
+                <div *ngFor="let imgId of submission.fileMap.ADDITIONAL; let i = index" class="additional-img-container mt-1" cdkDrag cdkDragLockAxis="y">
+                  <div>{{ submission.additionalFileInfo[i].name }}</div>
                   <img [src]="imgId | thumbnailFromFileId | async | objectURL: '100' | safe">
                   <button mat-icon-button color="warn" (click)="removeAdditionalImage(imgId)">
                     <mat-icon>delete</mat-icon>

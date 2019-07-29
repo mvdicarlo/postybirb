@@ -13,7 +13,7 @@ export class AdditionalImageSplitDialog implements OnInit {
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: Submission) {
     this.splitWebsites = WebsiteRegistry.getRegisteredAsArray()
-      .filter(entry => !entry.websiteConfig.additionalImages)
+      .filter(entry => !entry.websiteConfig.additionalFiles)
       .filter(entry => data.formData.websites.includes(entry.name))
       .map(entry => entry.websiteConfig.displayedName);
   }

@@ -1,5 +1,5 @@
 {
-  "Additional Images Help": "Upload additional images with this submission",
+  "Additional Files Help": "Upload additional files with this submission",
   "Default Description Tooltip": "This description will be used for all websites unless overwritten",
   "Default Tag Tooltip": "Tags that will be sent to all websites unless overwritten",
   "Does not support file format": "{{website}} does not support file format: {{value}}",
@@ -8,7 +8,7 @@
   "Max file size": "{{website}} does not support files larger than {{value}}",
   "Options are incomplete": "{{website}} options are incomplete",
   "Requires minimum tags": "{{website}} requires at least {{value}} tags",
-  "Split Additional Image Info": "Not all websites support bulk images. This will split this submission into new submissions for the below websites.",
+  "Split Additional File Info": "Not all websites support additional files. This will split this submission into new submissions for the below websites.",
   "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post.",
   "Website Options Tooltip": "Customize website specific options and overwrite default tags and descriptions"
 }

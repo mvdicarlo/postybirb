@@ -108,7 +108,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     if (files && files.length) {
       const loadPromises: Promise<FileMetadata>[] = [];
       for (let i = 0; i < files.length; i++) {
-        if (isImage(files[i])) {
+        if (files[i]) {
           loadPromises.push(readFileMetadata(files[i]));
         }
       }
@@ -119,10 +119,15 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
           this._changeDetector.markForCheck();
           this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.ADDITIONAL_FILE, results)
             .then(info => {
+              const additionalMap = this.submission.additionalFileInfo || [];
               const newMap = Object.assign({}, this.submission.fileMap);
               if (!newMap.ADDITIONAL) newMap.ADDITIONAL = [];
-              info.forEach(i => newMap.ADDITIONAL.push(i.id));
+              info.forEach(i => {
+                newMap.ADDITIONAL.push(i.id);
+                additionalMap.push(i.fileInfo);
+              });
               this.submission.fileMap = newMap;
+              this.submission.additionalFileInfo = [...additionalMap];
             })
             .finally(() => {
               this.hideForReload = false;
@@ -156,7 +161,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
 
   public canHaveAdditionalImages(decision: boolean): string[] {
     return WebsiteRegistry.getRegisteredAsArray().
-      filter(entry => !!entry.websiteConfig.additionalImages === decision)
+      filter(entry => !!entry.websiteConfig.additionalFiles === decision)
       .map(entry => entry.websiteConfig.displayedName);
   }
 
@@ -183,7 +188,9 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
         const index: number = this.submission.fileMap.ADDITIONAL.indexOf(id);
         if (index !== -1) {
           this.submission.fileMap.ADDITIONAL.splice(index, 1);
+          this.submission.additionalFileInfo.splice(index, 1);
           this.submission.fileMap = Object.assign({}, this.submission.fileMap);
+          this.submission.additionalFileInfo = [...this.submission.additionalFileInfo];
           this._changeDetector.markForCheck();
         }
       });
@@ -284,9 +291,12 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       });
   }
 
-  public swapAdditionalImages(event: CdkDragDrop<string[]>) {
+  public swapAdditionalImages(event: CdkDragDrop<string[]>): void {
+    if (event.previousIndex === event.currentIndex) return;
     moveItemInArray(this.submission.fileMap.ADDITIONAL, event.previousIndex, event.currentIndex);
+    moveItemInArray(this.submission.additionalFileInfo, event.previousIndex, event.currentIndex);
     this.submission.fileMap = Object.assign({}, this.submission.fileMap);
+    this.submission.additionalFileInfo = [...this.submission.additionalFileInfo];
     this._changeDetector.markForCheck();
   }
 

@@ -11,8 +11,16 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif'])) {
+  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif'];
+  
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Piczel', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'Piczel', value: info.type }]));
   }
 
   if (MBtoBytes(30) < submission.fileInfo.size) {
@@ -26,7 +34,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   login: {
     url: 'https://piczel.tv/login'
   },

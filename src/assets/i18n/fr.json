@@ -1,5 +1,5 @@
 {
- "Additional Images Help": "Téléchargez des images supplémentaires avec cette soumission.",
+ "Additional Files Help": "Téléchargez des images supplémentaires avec cette soumission.",
  "Default Description Tooltip": "Cette description sera utilisée pour tout les sites configurés à utiliser l'option par défaut",
  "Default Tag Tooltip": "Les étiquettes seront envoyées à tout les sites sauf si écrasées",
  "Does not support file format": "{{website}} ne prend pas en charge le format de fichier: {{value}}",
@@ -8,7 +8,7 @@
  "Options are incomplete": "Les options de {{website}} sont incomplètes",
  "Requires minimum tags": "{{website}} nécessite au moins 5 tags",
  "Website Agreement": "En utilisant PostyBirb, vous agréez aux Termes de Service ainsi qu'aux règles des sites sur lesquels vous mettez à jour. Vous êtes responsable de tout contenu que vous mettez en ligne.",
- "Additional Images": "Images supplémentaires",
+ "Additional Files": "Images supplémentaires",
  "Adult": "Adulte",
  "All Ages": "Tous âges",
  "Allow Community Tags": "Autoriser les étiquettes communautaires",

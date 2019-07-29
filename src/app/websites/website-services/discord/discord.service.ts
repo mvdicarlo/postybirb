@@ -45,7 +45,7 @@ function warningCheck(submission: Submission, formData: SubmissionFormData): str
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   login: {
     url: '',
     dialog: DiscordLoginDialog,

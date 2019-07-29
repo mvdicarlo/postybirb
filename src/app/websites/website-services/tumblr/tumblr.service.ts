@@ -14,13 +14,20 @@ import { CustomHTMLParser } from 'src/app/utils/helpers/description-parsers/html
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'];
 
   if (submission.rating && (submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME)) {
     problems.push(['Does not support rating', { website: 'Tumblr', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'])) {
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Tumblr', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'Tumblr', value: info.type }]));
   }
 
   const type: TypeOfSubmission = getTypeOfSubmission(submission.fileInfo);
@@ -45,7 +52,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   refreshInterval: 45 * 60000,
   login: {
     dialog: TumblrLoginDialog,

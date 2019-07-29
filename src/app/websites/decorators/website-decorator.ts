@@ -6,7 +6,7 @@ import { Submission, SubmissionFormData } from 'src/app/database/models/submissi
 
 export interface WebsiteConfig {
   acceptsSrcURL?: boolean; // Whether or not this website uses Source Url options. This will stall a website from posting so that other websites may post and provide src urls
-  additionalImages?: boolean; // Whether or not additional images are allowed to be added to the submission form [default=false]
+  additionalFiles?: boolean; // Whether or not additional files are allowed to be added to the submission form [default=false]
   displayedName?: string;        // name value that is displayed in the UI to the user [default=constructor name]
   postWaitInterval?: number; // interval to wait (in ms) between posts to this website
   refreshInterval?: number;     // interval at which the app will check status [default=30 minutes]

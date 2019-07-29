@@ -18,9 +18,9 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 -----------------------------------------------------------------------
 
 {
-  "Internal": "Additional Images",
-  "Context": "Header for a section where users add additional images to a submission form",
-  "Translate Me": "Additional Images",
+  "Internal": "Additional Files",
+  "Context": "Header for a section where users add additional files to a submission form",
+  "Translate Me": "Additional Files",
   "Translated": ""
 }
 
@@ -609,8 +609,8 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
-  "Internal": "Split Additional Image Info",
-  "Translate Me": "Not all websites support bulk images. This will split this submission into new submissions for the below websites.",
+  "Internal": "Split Additional File Info",
+  "Translate Me": "Not all websites support additional files. This will split this submission into new submissions for the below websites.",
   "Translated": ""
 }
 
@@ -855,8 +855,8 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
-  "Internal": "Split Additional Images Into New Submissions",
-  "Translate Me": "Split Additional Images Into New Submissions",
+  "Internal": "Split Additional Files Into New Submissions",
+  "Translate Me": "Split Additional Files Into New Submissions",
   "Translated": ""
 }
 
@@ -981,8 +981,8 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
-  "Internal": "Additional Images Help",
-  "Translate Me": "Upload additional images with this submission.",
+  "Internal": "Additional Files Help",
+  "Translate Me": "Upload additional files with this submission",
   "Translated": ""
 }
 

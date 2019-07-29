@@ -23,7 +23,7 @@ export class QueueInserterService {
     private dialog: MatDialog
   ) {
     this.websitesSupportingAdditional = WebsiteRegistry.getRegisteredAsArray()
-      .filter(entry => entry.websiteConfig.additionalImages)
+      .filter(entry => entry.websiteConfig.additionalFiles)
       .map(entry => entry.name);
   }
 
@@ -114,6 +114,7 @@ export class QueueInserterService {
 
     createdSubmission.fileInfo = newPrimaryFile.fileInfo;
     createdSubmission.fileMap = newFileMap;
+    newSubmission.additionalFileInfo = [];
 
     return createdSubmission;
   }

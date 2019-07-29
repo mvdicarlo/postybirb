@@ -1,5 +1,5 @@
 {
- "Additional Images Help": "Zusätzliche Bilder in diesem Post hochladen",
+ "Additional Files Help": "Zusätzliche Bilder in diesem Post hochladen",
  "Default Description Tooltip": "Diese Beschreibung wird für alle Webseiten benutzt, die diese als Standard markiert haben",
  "Default Tag Tooltip": "Tags werden an alle Webseiten gesendet, es sei denn, sie werden überschrieben",
  "Does not support file format": "{{website}} unterstützt kein Dateiformat: {{value}}",
@@ -8,7 +8,7 @@
  "Options are incomplete": "{{website}}-Optionen sind unvollständig",
  "Requires minimum tags": "{{website}} benötigt mindestens {{value}} tags",
  "Website Agreement": "Durch die Nutzung von PostyBirb stimmen Sie den Nutzungsbedingungen und Regeln der Seiten zu, auf denen Sie Veröffentlichungen tätigen. Sie sind verantwortlich für alles, was Sie veröffentlichen.",
- "Additional Images": "Zusätzliche Bilder",
+ "Additional Files": "Zusätzliche Bilder",
  "Adult": "18+/Nicht jugendfrei",
  "All Ages": "Alle Altersgruppen",
  "Allow Community Tags": "Community-Tags erlauben",

@@ -12,12 +12,19 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif'];
 
   const tags = getTags(submission, Pixiv.name);
   if (tags.length < 1) problems.push(['Requires minimum tags', { website: 'Pixiv', value: 1 }]);
 
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif'])) {
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Pixiv', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'Pixiv', value: info.type }]));
   }
 
   if (MBtoBytes(8) < submission.fileInfo.size) {
@@ -31,7 +38,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   postWaitInterval: 60000 * 10, // 10 minutes
   login: {
     url: 'https://accounts.pixiv.net/login?lang=en'

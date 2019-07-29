@@ -16,9 +16,16 @@ import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+  const supportedFiles: string[] = ['jpeg', 'jpg', 'png', 'gif'];
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif'])) {
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'FurryLife', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'FurryLife', value: info.type }]));
   }
 
   if (MBtoBytes(1023) < submission.fileInfo.size) {
@@ -41,7 +48,7 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   displayedName: 'FurryLife',
   login: {
     url: 'https://furrylife.online/'

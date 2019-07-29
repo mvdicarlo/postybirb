@@ -14,8 +14,15 @@ import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-fil
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif'])) {
+  const supportedFiles: string[] = ['jpg', 'jpeg', 'png', 'gif'];
+  if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Furry Amino', value: submission.fileInfo.type }]);
+  }
+
+  if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
+    submission.additionalFileInfo
+      .filter(info => !supportsFileType(info, supportedFiles))
+      .forEach(info => problems.push(['Does not support file format', { website: 'Furry Amino', value: info.type }]));
   }
 
   if (MBtoBytes(10) < submission.fileInfo.size) {
@@ -29,7 +36,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
-  additionalImages: true,
+  additionalFiles: true,
   displayedName: 'Furry Amino',
   login: {
     url: 'https://aminoapps.com/c/furry-amino/home/'
@@ -170,13 +177,13 @@ export class FurryAmino extends BaseWebsiteService {
     const mediaList: any[] = [];
     let content: string = '';
     for (let i = 0; i < mediaIds.length; i++) {
-        content += `[IMG=${i}] `;
-        mediaList.push([
-          100,
-          mediaIds[i],
-          "",
-          `${i}`
-        ]);
+      content += `[IMG=${i}] `;
+      mediaList.push([
+        100,
+        mediaIds[i],
+        "",
+        `${i}`
+      ]);
     }
 
     content += postData.description;
@@ -238,14 +245,14 @@ export class FurryAmino extends BaseWebsiteService {
       };
 
       got.post('https://aminoapps.com/api/upload-image', data, this.COOKIES_URL, cookies)
-      .then(res => {
-        const json = JSON.parse(res.success.body);
-        if (json.code === 200) {
-          resolve(json.result.mediaValue);
-        } else {
-          reject(res.success.body);
-        }
-      }).catch(err => reject(err));
+        .then(res => {
+          const json = JSON.parse(res.success.body);
+          if (json.code === 200) {
+            resolve(json.result.mediaValue);
+          } else {
+            reject(res.success.body);
+          }
+        }).catch(err => reject(err));
     });
   }
 }
