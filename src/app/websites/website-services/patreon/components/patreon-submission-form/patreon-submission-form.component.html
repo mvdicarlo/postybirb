@@ -11,7 +11,7 @@
 
   <div formGroupName="options" class="row no-gutters section">
     <div class="col-md col-lg col-xl">
-      <mat-checkbox formControlName="chargePatrons">{{'Charge Patrons' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="chargePatrons">{{'Charge Patrons' | translate}}</mat-checkbox> <small *ngIf="formGroup.value.options.chargePatrons" class="form-text">Patrons will be charged their pledge amount for this post on the first of next month.</small>
     </div>
 
     <div class="col-md-9 col-lg-9 col-xl-9">
