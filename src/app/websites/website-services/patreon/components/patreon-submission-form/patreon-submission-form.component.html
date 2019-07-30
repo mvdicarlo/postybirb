@@ -22,6 +22,13 @@
           <mat-icon style="vertical-align: bottom; font-size: 1.2em" matSuffix>access_time</mat-icon>
           <owl-date-time #dt1></owl-date-time>
         </mat-form-field>
+
+        <mat-form-field name="schedule-field" color="accent" class="col-md-4 col-lg-4 col-xl-4">
+          <input class="w-100" matInput formControlName="earlyAccess" [owlDateTime]="dt2" [owlDateTimeTrigger]="dt2" [placeholder]="'Early Access' | translate">
+          <mat-icon style="vertical-align: bottom; font-size: 1.2em" matSuffix>access_time</mat-icon>
+          <mat-hint>This post will become public on</mat-hint>
+          <owl-date-time #dt2></owl-date-time>
+        </mat-form-field>
       </div>
     </div>
   </div>

@@ -2,7 +2,6 @@ import { Component, OnInit, forwardRef, Injector, AfterViewInit } from '@angular
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
 import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 import { Folder } from 'src/app/websites/interfaces/folder.interface';
-import { Validators } from '@angular/forms';
 
 @Component({
   selector: 'patreon-submission-form',
@@ -16,7 +15,8 @@ export class PatreonSubmissionForm extends BaseWebsiteSubmissionForm implements 
   public optionDefaults: any = {
     tiers: [[]],
     chargePatrons: [false],
-    schedule: [null]
+    schedule: [null],
+    earlyAccess: [null]
   };
 
   public tagConfig: TagConfig = {

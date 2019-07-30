@@ -274,12 +274,12 @@ export class Patreon extends BaseWebsiteService {
       tags: { publish: true },
     };
 
+    if (options.earlyAccess) {
+      attributes.change_visibility_at = this.toUTCISO(options.earlyAccess);
+    }
+
     if (options.schedule) {
-      if (typeof options.schedule === 'string') {
-        attributes.scheduled_for = new Date(options.schedule).toISOString().split('.')[0];
-      } else {
-        attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
-      }
+      attributes.scheduled_for = this.toUTCISO(options.schedule);
       attributes.tags.publish = false;
     }
 
@@ -452,6 +452,11 @@ export class Patreon extends BaseWebsiteService {
     });
   }
 
+  private toUTCISO(date: Date | string): string {
+    let d: Date = typeof date === 'string' ? new Date(date) : date;
+    return d.toISOString().split('.').shift();
+  }
+
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     let cookies = await getCookies(postData.profileId, this.BASE_URL);
     const csrf = await this._getCSRF(cookies, postData.profileId);
@@ -540,12 +545,12 @@ export class Patreon extends BaseWebsiteService {
       tags: { publish: true },
     };
 
+    if (options.earlyAccess) {
+      attributes.change_visibility_at = this.toUTCISO(options.earlyAccess);
+    }
+
     if (options.schedule) {
-      if (typeof options.schedule === 'string') {
-        attributes.scheduled_for = new Date(options.schedule).toISOString().split('.')[0];
-      } else {
-        attributes.scheduled_for = options.schedule.toISOString().split('.')[0];
-      }
+      attributes.scheduled_for = this.toUTCISO(options.schedule);
       attributes.tags.publish = false;
     }
 
