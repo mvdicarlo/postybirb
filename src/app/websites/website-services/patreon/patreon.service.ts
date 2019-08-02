@@ -138,7 +138,7 @@ export class Patreon extends BaseWebsiteService {
     const response: any = JSON.parse(create.body);
     const id = response.data.id;
 
-    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null%2Ccampaign.access_rules.tier.null%2Ccampaign.is_nsfw%2Cuser_defined_tags.null%2C&fields[access_rule]=access_rule_type&json-api-version=1.0`, {
+    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`, {
       'Host': 'www.patreon.com',
       'Origin': 'https://www.patreon.com',
       'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
@@ -146,7 +146,8 @@ export class Patreon extends BaseWebsiteService {
     if (patreonTiers.body) {
       let body: any = {};
       try {
-        body = JSON.parse(patreonTiers.body);
+        const parsedBody: string = patreonTiers.body.replace(/,:/gm, ':');
+        body = JSON.parse(parsedBody);
       } catch (e) {
         // NOTE: fallback for some users since patreon returns weird json sometimes
         // Should probably determine a better fix
@@ -155,7 +156,8 @@ export class Patreon extends BaseWebsiteService {
           'Origin': 'https://www.patreon.com',
           'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
         }, profileId);
-        body = JSON.parse(fallback.body);
+        const parsedBody: string = fallback.body.replace(/,:/gm, ':');
+        body = JSON.parse(parsedBody);
       }
       if (body.included) {
         const customTiers: Folder = {
