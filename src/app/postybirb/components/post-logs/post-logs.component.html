@@ -1,5 +1,5 @@
 <loading-overlay [loading]="loading">
-  <table class="table table-dark table-striped table-hover w-100">
+  <table class="table table-dark table-striped table-hover w-100" *ngIf="logs.length">
     <thead>
       <th style="width: 10px">#</th>
       <th style="width: 25%">Submission Name</th>
@@ -8,7 +8,7 @@
       <th>Response(s)</th>
       <th style="width: 10px"></th>
     </thead>
-    <tbody *ngIf="logs.length">
+    <tbody>
       <tr *ngFor="let log of logs; let i = index">
         <td>{{ i + 1 }}</td>
         <td style="word-break: break-all">{{ log.submission.title }}</td>
@@ -29,11 +29,8 @@
         </td>
       </tr>
     </tbody>
-
-    <tbody *ngIf="!logs.length">
-      <tr>
-        No logs founds.
-      </tr>
-    </tbody>
   </table>
+  <div *ngIf="!logs.length">
+    No logs founds.
+  </div>
 </loading-overlay>
