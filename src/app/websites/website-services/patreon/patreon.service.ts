@@ -138,7 +138,7 @@ export class Patreon extends BaseWebsiteService {
     const response: any = JSON.parse(create.body);
     const id = response.data.id;
 
-    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null%2Cattachments.null%2Ccampaign.access_rules.tier.null%2Ccampaign.earnings_visibility%2Ccampaign.is_nsfw%2Cpoll%2Cuser.null%2Cuser_defined_tags.null%2Cimages.null%2Caudio.null&fields[post]=category%2Ccents_pledged_at_creation%2Cchange_visibility_at%2Ccomment_count%2Ccontent%2Ccreated_at%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cdeleted_at%2Cedit_url%2Cedited_at%2Cembed%2Cimage%2Cis_automated_monthly_charge%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cnum_pushable_users%2Cpatreon_url%2Cpatron_count%2Cpledge_url%2Cpost_file%2Cpost_metadata%2Cpost_type%2Cpublished_at%2Cscheduled_for%2Cteaser_text%2Cthumbnail%2Ctitle%2Curl%2Cwas_posted_by_campaign_owner&fields[access_rule]=access_rule_type%2Camount_cents&fields[reward]=title%2Camount_cents%2Cpatron_count%2Cid%2Cpublished&fields[campaign]=is_nsfw&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata&json-api-version=1.0`, {
+    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null%2Ccampaign.access_rules.tier.null%2Ccampaign.is_nsfw%2Cuser_defined_tags.null%2C&fields[access_rule]=access_rule_type&json-api-version=1.0`, {
       'Host': 'www.patreon.com',
       'Origin': 'https://www.patreon.com',
       'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
