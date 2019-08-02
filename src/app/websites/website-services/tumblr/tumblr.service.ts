@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
-import { MBtoBytes, isGIF, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, isGIF } from 'src/app/utils/helpers/file.helper';
 import { supportsFileType } from '../../helpers/website-validator.helper';
 import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { TumblrLoginDialog } from './components/tumblr-login-dialog/tumblr-login-dialog.component';

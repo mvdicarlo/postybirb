@@ -16,7 +16,7 @@ import { copyObject } from 'src/app/utils/helpers/copy.helper';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  protected readonly LOCAL_STORE: string = 'pb-bulk-form-store';
+  protected readonly LOCAL_STORE: string = 'local-bulk-form-store';
 
   constructor(
     injector: Injector,
@@ -24,6 +24,7 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
   ) {
     super(injector);
     if (store.get('bulk-form-store')) store.remove('bulk-form-store');
+    if (store.get('pb-bulk-form-store')) store.remove('pb-bulk-form-store');
   }
 
   ngOnInit() {

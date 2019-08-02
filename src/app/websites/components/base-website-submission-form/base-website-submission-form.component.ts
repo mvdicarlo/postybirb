@@ -7,6 +7,8 @@ import { BaseWebsiteService } from '../../website-services/base-website-service'
 import { BaseSubmissionForm } from 'src/app/postybirb/forms/base-submission-form/base-submission-form.component';
 import { SnotifyService } from 'ng-snotify';
 import { Folder } from '../../interfaces/folder.interface';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
+import * as dotProp from 'dot-prop';
 
 export const HOST_DATA = {
   'class': 'submission-form'
@@ -49,16 +51,10 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
   }
 
   ngAfterViewInit() {
-    // Behavioral Note: This can have weird behavior if loading in a template if
-    // the formData is not set first
-    this.formGroup.patchValue(this.parentForm.submission.formData[this.website] || {}, { emitEvent: true });
+    this.formGroup.patchValue(this.restoreOptions(this.parentForm.submission.formData[this.website] || {}));
   }
 
-  ngOnDestroy() {
-    // if (this.formGroup && this.formGroup.get('options')) {
-    //   this.formGroup.removeControl('options');
-    // }
-  }
+  ngOnDestroy() { }
 
   protected resetOnConflict(optionName: string, compareItem: any): void {
     let val: any = this.formGroup.get('options').value[optionName];
@@ -89,16 +85,44 @@ export class BaseWebsiteSubmissionForm implements OnInit, AfterViewInit, OnDestr
     const ids: string[] = [];
 
     for (let i = 0; i < folders.length; i++) {
-        const f = folders[i];
-        ids.push(f.id);
-        if (f.subfolders) {
-          f.subfolders.forEach(s => {
-            ids.push(...this.getIdsFromFolders([s]));
-          });
-        }
+      const f = folders[i];
+      ids.push(f.id);
+      if (f.subfolders) {
+        f.subfolders.forEach(s => {
+          ids.push(...this.getIdsFromFolders([s]));
+        });
+      }
     }
 
     return ids.filter(id => !!id);
+  }
+
+  protected getOptionDefaults(): any | null {
+    if (this.optionDefaults) {
+      const defaults: any = copyObject(this.optionDefaults);
+      const defaultVals: any = {};
+      Object.entries(defaults).forEach(([key, value]) => {
+        defaultVals[key] = Array.isArray(value) ? value[0] : value;
+      });
+      return defaultVals;
+    }
+
+    return null;
+  }
+
+  protected restoreOptions(data: any): any {
+    if (!this.optionDefaults) return copyObject(data);
+
+    const restoredObj: any = copyObject(data);
+    const options = dotProp.get(restoredObj, 'options', {});
+    Object.entries(this.getOptionDefaults())
+      .forEach(([key, value]) => {
+        if (options[key] === undefined || options[key] === null) {
+          options[key] = value;
+        }
+      });
+    restoredObj.options = options;
+    return restoredObj;
   }
 
 }

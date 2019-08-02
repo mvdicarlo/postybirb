@@ -13,6 +13,7 @@ import { PostResult } from 'src/app/websites/interfaces/website-service.interfac
 import { PostLoggerService } from './post-logger.service';
 import { blobToUint8Array } from 'src/app/utils/helpers/file.helper';
 import { shareReplay } from 'rxjs/operators';
+import * as dotProp from 'dot-prop';
 
 export interface PostQueueStatus {
   currentId: number;
@@ -142,7 +143,7 @@ export class PostQueueService {
   }
 
   private _getWaitTime(website: string): number {
-    let timeToWait: number = WebsiteRegistry.getConfigForRegistry(website).websiteConfig.postWaitInterval || 0;
+    let timeToWait: number = dotProp.get(WebsiteRegistry.getConfigForRegistry(website), 'websiteConfig.postWaitInterval', 0); // BUG FIX: using dotProp in case config doesn't exist (somehow)
     const timeDifference: number = Date.now() - this._getLastPostTime(website); // the time between the last post time and now
     const userSetWaitInterval: number = settingsDB.get('postInterval').value() || 0;
 

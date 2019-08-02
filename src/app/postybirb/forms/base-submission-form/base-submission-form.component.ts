@@ -102,7 +102,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       });
 
       if (this.submission.formData && !this.submission.formData.loginProfile && this.formDataForm.value.loginProfile) {
-        const obj: any = Object.assign({}, this.submission.formData);
+        const obj: any = copyObject(this.submission.formData);
         obj.loginProfile = this.formDataForm.value.loginProfile;
         this.submission.formData = obj;
       }
@@ -162,13 +162,16 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         if (this.formDataForm.get(website) && this.formDataForm.get(website).get('options')) {
           (<FormGroup>this.formDataForm.get(website)).removeControl('options');
         }
+        if (this.submission && this.submission.formData[website] && this.submission.formData[website].options) {
+          delete this.submission.formData[website].options;
+        }
       });
     });
 
     Object.keys(this.formDataForm.controls).forEach(key => {
       let keyField = key;
       this.formDataForm.get(key).valueChanges
-        .pipe(debounceTime(250))
+        .pipe(debounceTime(200))
         .subscribe((value) => {
           if (JSON.stringify((this.submission.formData || {})[keyField]) !== JSON.stringify(value)) {
             if (isDevMode()) {
@@ -260,7 +263,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe(template => {
         if (template) {
-          this._safeLoadFormData(template.data)
+          this._safeLoadFormData(template.data);
         }
       });
   }

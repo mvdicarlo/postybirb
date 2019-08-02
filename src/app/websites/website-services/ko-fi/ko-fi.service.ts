@@ -9,7 +9,6 @@ import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submis
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { LoginStatus, WebsiteStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { KoFiSubmissionForm } from './components/ko-fi-submission-form/ko-fi-submission-form.component';
-import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
