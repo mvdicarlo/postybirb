@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { TagTemplate, TagTemplatesService } from 'src/app/utils/services/tag-templates.service';
 import { TagGroupInputField } from './tag-group-input-field/tag-group-input-field.component';
 
