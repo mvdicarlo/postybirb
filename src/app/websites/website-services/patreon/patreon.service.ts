@@ -618,7 +618,7 @@ export class Patreon extends BaseWebsiteService {
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
-    const tags = [...defaultTags, ...other];
+    const tags = [...defaultTags, ...other].filter(tag => tag.length <= 25);
     return tags.map(tag => {
       return {
         type: 'post_tag',
@@ -628,6 +628,7 @@ export class Patreon extends BaseWebsiteService {
           cardinality: 1
         }
       };
-    }).slice(0, 50);
+    })
+    .slice(0, 50);
   }
 }
