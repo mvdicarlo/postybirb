@@ -36,6 +36,7 @@ export class BaseTemplateService<T extends BaseSimpleTemplate> {
         .assign(data)
         .write();
     } else {
+      delete data.id;
       this.db
         .get(this.FIELD)
         .push(Object.assign({ id: nanoid() }, data))
