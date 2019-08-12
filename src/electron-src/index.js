@@ -34,32 +34,80 @@ try {
   const Encrypt = require('./src/encrypt.js');
 
   // Set up profiles DB
-  const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'), {
-    serialize: (data) => Encrypt.encryptProfile(data),
-    deserialize: (data) => Encrypt.decryptProfile(data)
-  });
-  const ldb = low(adapter);
-  window.profilesDB = ldb;
+  try {
+    const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'), {
+      serialize: (data) => Encrypt.encryptProfile(data),
+      deserialize: (data) => Encrypt.decryptProfile(data)
+    });
+    const ldb = low(adapter);
+    window.profilesDB = ldb;
+  } catch (e) {
+    fs.writeJSONSync(path.join(app.getPath('userData'), 'data', 'profiles.json'), {});
+    const adapter = new FileSync(path.join(app.getPath('userData'), 'data', 'profiles.json'), {
+      serialize: (data) => Encrypt.encryptProfile(data),
+      deserialize: (data) => Encrypt.decryptProfile(data)
+    });
+    const ldb = low(adapter);
+    window.profilesDB = ldb;
+    alert('Login profiles was corrupted and had to be recreated.\nThis will affect existing templates and queued submissions.\nThis is a bug and should be reported.');
+  }
+
 
   // Set up templates DB
-  const templatesAdaptor = new FileSync(path.join(app.getPath('userData'), 'data', 'templates.json'));
-  const tldb = low(templatesAdaptor);
-  window.templateDB = tldb;
+  try {
+    const templatesAdaptor = new FileSync(path.join(app.getPath('userData'), 'data', 'templates.json'));
+    const tldb = low(templatesAdaptor);
+    window.templateDB = tldb;
+  } catch (e) {
+    fs.writeJSONSync(path.join(app.getPath('userData'), 'data', 'templates.json'), {});
+    const templatesAdaptor = new FileSync(path.join(app.getPath('userData'), 'data', 'templates.json'));
+    const tldb = low(templatesAdaptor);
+    window.templateDB = tldb;
+    alert('Templates were corrupted and had to be recreated.\nAll old templates will now be gone.\nThis is a bug and should be reported.');
+  }
+
 
   // Set up description templates DB
-  const descriptionAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'description-templates.json'));
-  const dldb = low(descriptionAdapter);
-  window.descriptionTemplateDB = dldb;
+  try {
+    const descriptionAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'description-templates.json'));
+    const dldb = low(descriptionAdapter);
+    window.descriptionTemplateDB = dldb;
+  } catch (e) {
+    fs.writeJSONSync(path.join(app.getPath('userData'), 'data', 'description-templates.json'), {});
+    const descriptionAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'description-templates.json'));
+    const dldb = low(descriptionAdapter);
+    window.descriptionTemplateDB = dldb;
+    alert('Description Templates were corrupted and had to be recreated.\nAll old description templates will now be gone.\nThis is a bug and should be reported.');
+  }
+
 
   // Set up tag templates DB
-  const tagAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'tag-templates.json'));
-  const tagldb = low(tagAdapter);
-  window.tagTemplateDB = tagldb;
+  try {
+    const tagAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'tag-templates.json'));
+    const tagldb = low(tagAdapter);
+    window.tagTemplateDB = tagldb;
+  } catch (e) {
+    fs.writeJSONSync(path.join(app.getPath('userData'), 'data', 'tag-templates.json'), {});
+    const tagAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'tag-templates.json'));
+    const tagldb = low(tagAdapter);
+    window.tagTemplateDB = tagldb;
+    alert('Tag Groups were corrupted and had to be recreated.\nAll old tag groups will now be gone.\nThis is a bug and should be reported.');
+  }
+
 
   // Set up settings DB
-  const settingsAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'settings.json'));
-  const sldb = low(settingsAdapter);
-  window.settingsDB = sldb;
+  try {
+    const settingsAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'settings.json'));
+    const sldb = low(settingsAdapter);
+    window.settingsDB = sldb;
+  } catch (e) {
+    fs.writeJSONSync(path.join(app.getPath('userData'), 'data', 'settings.json'), {});
+    const settingsAdapter = new FileSync(path.join(app.getPath('userData'), 'data', 'settings.json'));
+    const sldb = low(settingsAdapter);
+    window.settingsDB = sldb;
+    alert('Settings were corrupted and had to be recreated.\nAll settings have been reset.\nThis is a bug and should be reported.');
+  }
+
   settingsDB.defaults({
     hardwareAcceleration: true,
     startAsTaskbar: false,
@@ -194,6 +242,8 @@ try {
   alert(`Unable to initialize application correctly.
     This may affect application performance and behavior.
     Restarting in Administrator mode or reinstalling may solve these issues.
+
+    Please report this as a bug.
 
     ${error.message}
     ${error.stack}`);
