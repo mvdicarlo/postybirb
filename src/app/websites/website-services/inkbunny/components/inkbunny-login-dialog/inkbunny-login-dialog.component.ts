@@ -19,6 +19,7 @@ export class InkbunnyLoginDialog implements OnInit {
   public hide: boolean = true;
   public loggedIn: boolean = false;
   public attempting: boolean = false;
+  public showHint: boolean = false;
 
   public loginForm: FormGroup;
 
@@ -49,6 +50,7 @@ export class InkbunnyLoginDialog implements OnInit {
     this.inkbunny.authorize(this.loginForm.value, this.data.persist)
       .then(loggedIn => {
         this.loggedIn = loggedIn;
+        this.showHint = !loggedIn;
       }).finally(() => {
         this.attempting = false;
         this._changeDetector.markForCheck();

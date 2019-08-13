@@ -10,6 +10,9 @@
 </div>
 <div mat-dialog-content class="ignore-max-content-height">
   <img src="./assets/help-pictures/ib_api.png" alt="Enable Inkbunny API">
+  <div class="text-danger">
+    To connect to InkBunny you must first enable "Enable API Access" in your InkBunny account settings.
+  </div>
   <loading-overlay [loading]="attempting">
     <form [formGroup]="loginForm" (ngSubmit)="login()" *ngIf="!loggedIn">
       <mat-form-field color="accent" class="w-100">
@@ -20,6 +23,7 @@
         <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
       </mat-form-field>
       <button mat-flat-button type="submit" color="primary" [disabled]="loginForm.invalid">{{ 'Login' | translate }}</button>
+      <span *ngIf="showHint" class="ml-2 text-warning">Incorrect login or API Access has not been enabled on the account.</span>
     </form>
   </loading-overlay>
   <button mat-flat-button color="warn" *ngIf="loggedIn" (click)="logout()">{{ 'Logout' | translate}}</button>
