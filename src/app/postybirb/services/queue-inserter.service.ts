@@ -31,7 +31,7 @@ export class QueueInserterService {
     if (submission) {
       if (submission.schedule && !fromScheduler) {
         submission.isScheduled = true;
-        this._tabManager.removeTab(submission.id);
+        if (this._tabManager.hasTab(submission.id)) this._tabManager.removeTab(submission.id);
         this._postQueue._notify();
       } else {
         submission.isScheduled = false;
