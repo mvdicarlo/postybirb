@@ -40,6 +40,20 @@
             </mat-select>
           </mat-form-field>
         </div>
+        <div class="col-md-4 col-lg-4 col-xl-4">
+          <mat-form-field color="accent" class="w-100">
+            <mat-select formControlName="displayResolution" [placeholder]="'Display Resolution' | translate">
+              <mat-option value="0">{{ 'Original' | translate }}</mat-option>
+              <mat-option value="1">400px</mat-option>
+              <mat-option value="2">600px</mat-option>
+              <mat-option value="3">800px</mat-option>
+              <mat-option value="4">900px</mat-option>
+              <mat-option value="5">1024px</mat-option>
+              <mat-option value="6">1280px</mat-option>
+              <mat-option value="7">1600px</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
         <div class="col-md-12 col-lg-12 col-xl-12">
           <deviant-art-category-select formControlName="category"></deviant-art-category-select>
         </div>
