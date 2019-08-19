@@ -519,9 +519,14 @@ export class Patreon extends BaseWebsiteService {
     let thumbnailFileUpload;
     let additionalUploads = [];
     try {
-      primaryFileUpload = await this._uploadFile(link, postData.primary, csrf, postData.profileId, uploadType);
-      if (shouldUploadThumbnail) {
-        thumbnailFileUpload = await this._uploadFile(link, postData.thumbnail, csrf, postData.profileId, 'main');
+      if (postData.typeOfSubmission === TypeOfSubmission.STORY) {
+        const upload = await this._uploadAttachment(link, postData.primary, csrf, postData.profileId);
+        additionalUploads.push(upload);
+      } else {
+        primaryFileUpload = await this._uploadFile(link, postData.primary, csrf, postData.profileId, uploadType);
+        if (shouldUploadThumbnail) {
+          thumbnailFileUpload = await this._uploadFile(link, postData.thumbnail, csrf, postData.profileId, 'main');
+        }
       }
 
       if (postData.additionalFiles && postData.additionalFiles.length) {
@@ -583,6 +588,10 @@ export class Patreon extends BaseWebsiteService {
       }
     };
 
+    let image_order = [];
+    if (postData.typeOfSubmission === TypeOfSubmission.AUDIO || postData.typeOfSubmission === TypeOfSubmission.ART) {
+      image_order = [thumbnailFileUpload ? thumbnailFileUpload.body.data.id : primaryFileUpload.body.data.id];
+    }
     const data: any = {
       data: {
         attributes,
@@ -591,7 +600,7 @@ export class Patreon extends BaseWebsiteService {
       },
       included: formattedTags,
       meta: {
-        image_order: [thumbnailFileUpload ? thumbnailFileUpload.body.data.id : primaryFileUpload.body.data.id]
+        image_order
       }
     };
 
