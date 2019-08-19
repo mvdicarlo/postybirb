@@ -57,7 +57,7 @@
                   <button mat-icon-button color="warn" (click)="resetProfile(profile)" [matTooltip]="'Reset' | translate">
                     <mat-icon>cached</mat-icon>
                   </button>
-                  <button mat-icon-button color="warn" (click)="deleteProfile(profile)" [matTooltip]="'Delete' | translate">
+                  <button mat-icon-button color="warn" [disabled]="profile.defaultProfile" (click)="deleteProfile(profile)" [matTooltip]="'Delete' | translate">
                     <mat-icon>delete</mat-icon>
                   </button>
                 </td>

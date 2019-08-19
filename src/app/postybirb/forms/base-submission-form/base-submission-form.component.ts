@@ -20,6 +20,7 @@ import { TemplateManagerService } from 'src/app/templates/services/template-mana
 import * as dotProp from 'dot-prop';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
 import { QueueInserterService } from '../../services/queue-inserter.service';
+import { LoginProfile } from 'src/app/login/interfaces/login-profile';
 
 @Component({
   selector: 'base-submission-form',
@@ -32,12 +33,14 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   protected loginStatuses: ProfileStatuses = {};
   protected loginListener: Subscription = Subscription.EMPTY;
   protected profileListener: Subscription = Subscription.EMPTY;
+  protected loginProfileListener: Subscription = Subscription.EMPTY;
 
   public submission: Submission;
   public loading: boolean = false;
   public hideForReload: boolean = false;
   public triggerWebsiteReload: boolean = true;
   public availableWebsites: WebsiteRegistryEntry = {};
+  public profiles: LoginProfile[] = [];
 
   public basicInfoForm: FormGroup;
   public formDataForm: FormGroup;
@@ -59,6 +62,11 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
     this._loginProfileManager = injector.get(LoginProfileManagerService);
     this._queueInserter = injector.get(QueueInserterService);
     this._templateManager = injector.get(TemplateManagerService);
+
+    // somewhat of a duplicate that could be refactored into other listener if optimization is needed
+    this.loginProfileListener = this._loginProfileManager.profileChanges.subscribe(profiles => {
+      this.profiles = profiles;
+    });
 
     this.loginListener = this._loginManager.statusChanges.subscribe(statuses => {
       const oldStatuses = this.loginStatuses || {};
@@ -114,6 +122,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.loginListener.unsubscribe();
     this.profileListener.unsubscribe();
+    this.loginProfileListener.unsubscribe();
   }
 
   protected _initializeFormDataForm(): void {
@@ -264,17 +273,6 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
       .subscribe(template => {
         if (template) {
           this._safeLoadFormData(template.data);
-        }
-      });
-  }
-
-  public openProfileSelect(): void {
-    this.dialog.open(LoginProfileSelectDialog)
-      .afterClosed()
-      .subscribe(profile => {
-        if (profile) {
-          this.formDataForm.controls.loginProfile.setValue(profile.id);
-          this._changeDetector.markForCheck();
         }
       });
   }

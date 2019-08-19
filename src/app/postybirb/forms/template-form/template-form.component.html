@@ -3,11 +3,11 @@
     <div class="mt-4">
       <form [formGroup]="formDataForm">
         <div class="w-100 d-flex">
-          <button mat-button [color]="formDataForm.value.loginProfile ? 'accent' : 'warn'" (click)="openProfileSelect()" class="pl-0">
-            <span *ngIf="formDataForm.value.loginProfile">{{ formDataForm.value.loginProfile | profileName }}</span>
-            <span *ngIf="!formDataForm.value.loginProfile">{{ 'Select a Login Profile' | translate }}</span>
-            <mat-icon>arrow_drop_down</mat-icon>
-          </button>
+          <mat-form-field color="accent" style="flex: 2" class="mr-1">
+            <mat-select formControlName="loginProfile" [placeholder]="'Login Profile' | translate" required>
+              <mat-option *ngFor="let profile of profiles" [value]="profile.id">{{ profile.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
           <mat-form-field color="accent" style="flex: 10">
             <mat-select formControlName="websites" [placeholder]="'Websites' | translate" required multiple>
               <mat-option class="warn-text" [value]="registry.value.name" *ngFor="let registry of availableWebsites | keyvalue" [class.text-success]="isLoggedIn(registry.value.name)">{{ registry.value.websiteConfig.displayedName }}</mat-option>
