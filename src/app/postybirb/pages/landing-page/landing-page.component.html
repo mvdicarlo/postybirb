@@ -1,148 +1,168 @@
-<div class="py-2">
-  <div class="landing row">
-    <div class="card-container col-12">
-      <mat-card class="actions">
-        <mat-card-content>
-          <div>
-            <div class="d-flex flex-wrap">
-              <mat-card>
-                <mat-card-title>{{ 'Create New Submission' | translate }}</mat-card-title>
-                <mat-card-content>
-                  Create and edit a new submission by choosing a file, copying from your clipboard, or dropping files into PostyBirb.
-                </mat-card-content>
-                <mat-card-footer>
-                  <button mat-button color="accent" (click)="parent.fileInput.nativeElement.click()">{{ 'Create Submission' }}</button>
-                  <button mat-button color="accent" (click)="parent.createSubmissionFromClipboard()" [disabled]="!parent.clipboardIsEligible()">{{ 'Create Submission From Clipboard' }}</button>
-                </mat-card-footer>
-              </mat-card>
+<mat-tab-group class="home-tab-header">
+  <mat-tab>
+    <ng-template mat-tab-label>
+      {{ 'Submission' | translate }}
+    </ng-template>
+    <div>
+      <div class="landing row no-gutters">
+        <div class="card-container col-12">
+          <mat-card class="actions">
+            <mat-card-content>
+              <div>
+                <div class="d-flex flex-wrap">
+                  <mat-card>
+                    <mat-card-title>{{ 'Create New Submission' | translate }}</mat-card-title>
+                    <mat-card-content>
+                      Create and edit a new submission by choosing a file, copying from your clipboard, or dropping files into PostyBirb.
+                    </mat-card-content>
+                    <mat-card-footer>
+                      <button mat-button color="accent" (click)="parent.fileInput.nativeElement.click()">{{ 'Create Submission' }}</button>
+                      <button mat-button color="accent" (click)="parent.createSubmissionFromClipboard()" [disabled]="!parent.clipboardIsEligible()">{{ 'Create Submission From Clipboard' }}</button>
+                    </mat-card-footer>
+                  </mat-card>
 
-              <mat-card>
-                <mat-card-title>{{ 'Create New Journal/Status' | translate }}</mat-card-title>
-                <mat-card-content>
-                  Create and edit a new journal/status.
-                </mat-card-content>
-                <mat-card-footer>
-                  <button mat-button color="accent" (click)="parent.createNewJournal()">{{ 'Create Journal' | translate }}</button>
-                </mat-card-footer>
-              </mat-card>
+                  <mat-card>
+                    <mat-card-title>{{ 'Create New Journal/Status' | translate }}</mat-card-title>
+                    <mat-card-content>
+                      Create and edit a new journal/status.
+                    </mat-card-content>
+                    <mat-card-footer>
+                      <button mat-button color="accent" (click)="parent.createNewJournal()">{{ 'Create Journal' | translate }}</button>
+                    </mat-card-footer>
+                  </mat-card>
 
-              <mat-card>
-                <mat-card-title>{{ 'Edit Multiple Submissions' | translate }}</mat-card-title>
-                <mat-card-content>
-                  Edit one of more submission at a time.
-                </mat-card-content>
-                <mat-card-footer>
-                  <button mat-button color="accent" routerLink="/bulk">{{ 'Open' | translate }}</button>
-                </mat-card-footer>
-              </mat-card>
+                  <mat-card>
+                    <mat-card-title>{{ 'Edit Multiple Submissions' | translate }}</mat-card-title>
+                    <mat-card-content>
+                      Edit one of more submission at a time.
+                    </mat-card-content>
+                    <mat-card-footer>
+                      <button mat-button color="accent" routerLink="/bulk">{{ 'Open' | translate }}</button>
+                    </mat-card-footer>
+                  </mat-card>
 
-              <mat-card>
-                <mat-card-title>{{ 'Manage Templates' | translate }}</mat-card-title>
-                <mat-card-content>
-                  Create, update, and manage reusable submission templates that can be applied to submissions.
-                </mat-card-content>
-                <mat-card-footer>
-                  <button mat-button color="accent" routerLink="/template">{{ 'Open' | translate }}</button>
-                </mat-card-footer>
-              </mat-card>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
+                  <mat-card>
+                    <mat-card-title>{{ 'Manage Templates' | translate }}</mat-card-title>
+                    <mat-card-content>
+                      Create, update, and manage reusable submission templates that can be applied to submissions.
+                    </mat-card-content>
+                    <mat-card-footer>
+                      <button mat-button color="accent" routerLink="/template">{{ 'Open' | translate }}</button>
+                    </mat-card-footer>
+                  </mat-card>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <div class="card-container col-12 col-lg-6 pr-2">
+          <mat-card>
+            <mat-card-title>
+              <mat-icon>send</mat-icon> {{ 'Queued' | translate }} <span class="ml-1 badge badge-light">{{ queued.length }}</span>
+            </mat-card-title>
+            <mat-card-content *ngIf="queued.length">
+              <div class="table-wrapper">
+                <table class="table table-dark table-striped table-hover">
+                  <tbody>
+                    <tr *ngFor="let record of queued; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ record.title || 'Untitled' }}</td>
+                      <td>
+                        <button mat-icon-button color="warn" (click)="queueInserter.dequeue(record)">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </mat-card-content>
+            <mat-card-actions *ngIf="queued.length">
+              <button mat-button color="accent" (click)="parent.drawer.toggle()">{{ 'View' | translate }}</button>
+              <button mat-button color="warn" (click)="cancelAll(queued)"> {{ 'Cancel All' | translate }}</button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+
+        <div class="card-container col-12 col-lg-6 pl-2">
+          <mat-card>
+            <mat-card-title>
+              <mat-icon>access_time</mat-icon> {{ 'Scheduled' | translate }} <span class="ml-1 badge badge-light">{{ scheduled.length }}</span>
+            </mat-card-title>
+            <mat-card-content *ngIf="scheduled.length">
+              <div class="table-wrapper">
+                <table class="table table-dark table-striped table-hover">
+                  <tbody>
+                    <tr *ngFor="let record of scheduled; let i = index">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ record.title || 'Untitled' }}</td>
+                      <td><i class="far fa-clock"></i> {{ record.schedule | date:'short' }}</td>
+                      <td>
+                        <button mat-icon-button color="warn" (click)="queueInserter.dequeue(record)">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </mat-card-content>
+            <mat-card-actions *ngIf="scheduled.length">
+              <button mat-button color="accent" (click)="parent.drawer.toggle()">{{ 'View' | translate }}</button>
+              <button mat-button color="warn" (click)="cancelAll(scheduled)"> {{ 'Cancel All' | translate }}</button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+
+        <div class="card-container col-12">
+          <mat-card>
+            <mat-card-title>
+              <mat-icon>edit</mat-icon> {{ 'Submissions' | translate }} <span class="ml-1 badge badge-light">{{ editable.length }}</span>
+            </mat-card-title>
+            <mat-card-content *ngIf="editable.length">
+              <div class="table-wrapper">
+                <table class="table table-dark table-striped table-hover">
+                  <tbody>
+                    <tr *ngFor="let record of editable; let i = index" [class.bg-danger]="record.problems.length">
+                      <td>{{ i + 1 }}</td>
+                      <td>{{ record.title || 'Untitled' }}</td>
+                      <td>
+                        <div style="max-height: 75px;overflow: auto">
+                          <div *ngFor="let problem of record.problems" [translate]="problem[0]" [translateParams]="problem[1]"></div>
+                        </div>
+                      </td>
+                      <td>
+                        <button mat-icon-button color="accent" (click)="edit(record)" [matTooltip]="'Edit' | translate">
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
     </div>
+  </mat-tab>
 
-    <div class="card-container col-12 col-lg-6">
-      <mat-card>
-        <mat-card-title><mat-icon>send</mat-icon> {{ 'Queued' | translate }} <span class="ml-1 badge badge-light">{{ queued.length }}</span></mat-card-title>
-        <mat-card-content *ngIf="queued.length">
-          <div class="table-wrapper">
-            <table class="table table-dark table-striped table-hover">
-              <tbody>
-                <tr *ngFor="let record of queued; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td>{{ record.title || 'Untitled' }}</td>
-                  <td>
-                    <button mat-icon-button color="warn" (click)="queueInserter.dequeue(record)">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </mat-card-content>
-        <mat-card-actions *ngIf="queued.length">
-          <button mat-button color="accent" (click)="parent.drawer.toggle()">{{ 'View' | translate }}</button>
-          <button mat-button color="warn" (click)="cancelAll(queued)"> {{ 'Cancel All' | translate }}</button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon>account_circle</mat-icon> {{ 'Login Profile' | translate }}
+    </ng-template>
+    <login-profile-page></login-profile-page>
+  </mat-tab>
 
-    <div class="card-container col-12 col-lg-6">
-      <mat-card>
-        <mat-card-title><mat-icon>access_time</mat-icon> {{ 'Scheduled' | translate }} <span class="ml-1 badge badge-light">{{ scheduled.length }}</span></mat-card-title>
-        <mat-card-content *ngIf="scheduled.length">
-          <div class="table-wrapper">
-            <table class="table table-dark table-striped table-hover">
-              <tbody>
-                <tr *ngFor="let record of scheduled; let i = index">
-                  <td>{{ i + 1 }}</td>
-                  <td>{{ record.title || 'Untitled' }}</td>
-                  <td><i class="far fa-clock"></i> {{ record.schedule | date:'short' }}</td>
-                  <td>
-                    <button mat-icon-button color="warn" (click)="queueInserter.dequeue(record)">
-                      <mat-icon>close</mat-icon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </mat-card-content>
-        <mat-card-actions *ngIf="scheduled.length">
-          <button mat-button color="accent" (click)="parent.drawer.toggle()">{{ 'View' | translate }}</button>
-          <button mat-button color="warn" (click)="cancelAll(scheduled)"> {{ 'Cancel All' | translate }}</button>
-        </mat-card-actions>
-      </mat-card>
-    </div>
-
-    <div class="card-container col-12">
-      <mat-card>
-        <mat-card-title><mat-icon>edit</mat-icon> {{ 'Submissions' | translate }} <span class="ml-1 badge badge-light">{{ editable.length }}</span></mat-card-title>
-        <mat-card-content *ngIf="editable.length">
-          <div class="table-wrapper">
-            <table class="table table-dark table-striped table-hover">
-              <tbody>
-                <tr *ngFor="let record of editable; let i = index" [class.bg-danger]="record.problems.length">
-                  <td>{{ i + 1 }}</td>
-                  <td>{{ record.title || 'Untitled' }}</td>
-                  <td>
-                    <div style="max-height: 75px;overflow: auto">
-                      <div *ngFor="let problem of record.problems" [translate]="problem[0]" [translateParams]="problem[1]"></div>
-                    </div>
-                  </td>
-                  <td>
-                    <button mat-icon-button color="accent" (click)="edit(record)" [matTooltip]="'Edit' | translate">
-                      <mat-icon>edit</mat-icon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <div class="card-container col-12">
-      <mat-card>
-        <mat-card-title>
-          <mat-icon>history</mat-icon> {{ 'Logs' | translate }}
-        </mat-card-title>
-        <mat-card-content>
-          <post-logs></post-logs>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </div>
-</div>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <mat-icon>history</mat-icon> {{ 'Logs' | translate }}
+    </ng-template>
+    <mat-card>
+      <mat-card-content>
+        <post-logs></post-logs>
+      </mat-card-content>
+    </mat-card>
+  </mat-tab>
+</mat-tab-group>

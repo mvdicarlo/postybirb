@@ -1,35 +1,49 @@
 <loading-overlay [loading]="loading">
-  <table class="table table-dark table-striped table-hover w-100" *ngIf="logs.length">
-    <thead>
-      <th style="width: 10px">#</th>
-      <th style="width: 25%">Submission Name</th>
-      <th style="width: 15%">Status</th>
-      <th>Time</th>
-      <th>Response(s)</th>
-      <th style="width: 10px"></th>
-    </thead>
-    <tbody>
-      <tr *ngFor="let log of logs; let i = index">
-        <td>{{ i + 1 }}</td>
-        <td style="word-break: break-all">{{ log.submission.title }}</td>
-        <td class="text-uppercase" [class.warn-text]="!log.success" [class.text-success]="log.success">{{ (log.success ? 'Success' : 'Failed') | translate }}</td>
-        <td>{{ log.created | date:'medium' }}</td>
-        <td>
-          <div class="src-container">
-            <div *ngFor="let src of log.post.sourceURLs" class="text-info src">{{ src }}</div>
+  <div *ngIf="logs.length" class="row no-gutters">
+    <div class="col-12 log" *ngFor="let log of logs; let i = index">
+      <div class="p-2">
+        <div><strong>{{ log.submission.title }}</strong> - <span class="text-uppercase" [class.warn-text]="!log.success" [class.text-success]="log.success">{{ (log.success ? 'Success' : 'Failed') | translate }}</span></div>
+        <div>
+          <i class="far fa-clock mr-1"></i><span>{{ log.created | date:'medium' }}</span>
+        </div>
+        <div class="row no-gutters mt-2">
+          <div class="col">
+            <strong>{{ 'Websites' | translate }}</strong>
+            <div class="w-100 d-flex website-status">
+              <div *ngIf="log.post.success.length">
+                <div>Successful</div>
+                <ul class="text-success">
+                  <li *ngFor="let success of log.post.success">{{ success }}</li>
+                </ul>
+              </div>
+
+              <div *ngIf="log.post.fail.length">
+                <div>Failed</div>
+                <ul class="text-danger">
+                  <li *ngFor="let fail of log.post.fail">{{ fail }}</li>
+                </ul>
+              </div>
+            </div>
           </div>
-        </td>
-        <td>
+          <div class="col-6" *ngIf="log.post.sourceURLs.length">
+            <strong>{{ 'Website URLs' | translate }}</strong>
+            <div class="w-100 source-urls">
+              <span *ngFor="let src of log.post.sourceURLs" class="text-info mb-1"> {{ src }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2">
           <button mat-icon-button color="accent" (click)="save(log)" [matTooltip]="'Save' | translate">
             <mat-icon>save</mat-icon>
           </button>
           <button mat-icon-button color="accent" (click)="revive(log)" [matTooltip]="'Revive' | translate">
             <mat-icon>repeat</mat-icon>
           </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div *ngIf="!logs.length">
     No logs founds.
   </div>

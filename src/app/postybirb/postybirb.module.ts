@@ -54,6 +54,7 @@ import { AdditionalImageSplitDialog } from './components/additional-image-split-
 import { ImagePreviewDialog } from './components/image-preview-dialog/image-preview-dialog.component';
 import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.component';
 import { LandingPage } from './pages/landing-page/landing-page.component';
+import { LoginProfilePage } from './pages/login-profile-page/login-profile-page.component';
 
 @NgModule({
   declarations: [
@@ -74,6 +75,7 @@ import { LandingPage } from './pages/landing-page/landing-page.component';
     ImagePreviewDialog,
     FileDropDialog,
     LandingPage,
+    LoginProfilePage,
   ],
   imports: [
     CommonModule,

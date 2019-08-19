@@ -1,0 +1,71 @@
+<div class="landing row no-gutters">
+  <div class="card-container col-12">
+    <mat-card>
+      <mat-card-title>
+        What is a Login Profile?
+      </mat-card-title>
+      <mat-card-content>
+        <p>A Login Profile allows a user to manage and group their accounts.</p>
+        A common use is when a user has two or more accounts for the same website.
+        <br>
+        By creating a Login Profile for the second account a user can then select that profile in any submission form and it will post only to the secondary account.
+      </mat-card-content>
+    </mat-card>
+  </div>
+  <div class="card-container col-12">
+    <mat-card class="actions">
+      <mat-card-content>
+        <div>
+          <div class="d-flex flex-wrap">
+            <mat-card>
+              <mat-card-title>{{ 'Create New Login Profile' | translate }}</mat-card-title>
+              <mat-card-content>
+                Create a new Login Profile to manage account groups.
+              </mat-card-content>
+              <mat-card-footer>
+                <button mat-button color="accent" (click)="createNewLoginProfile()">{{ 'Create Login Profile' | translate }}</button>
+              </mat-card-footer>
+            </mat-card>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <div class="card-container col-12">
+    <mat-card>
+      <mat-card-title>
+        {{ 'Login Profiles' | translate }}
+      </mat-card-title>
+      <mat-card-content>
+        <div class="table-wrapper">
+          <table class="table table-dark table-striped table-hover">
+            <tbody>
+              <tr *ngFor="let profile of profiles; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ profile.name }}</td>
+                <td>
+                  <span *ngIf="profile.defaultProfile">{{ 'Default' | translate }}</span>
+                  <span *ngIf="!profile.defaultProfile">
+                    <button mat-button color="accent" (click)="setDefault(profile)">{{ 'Make Default' | translate }}</button>
+                  </span>
+                </td>
+                <td>
+                  <button mat-icon-button color="accent" (click)="renameProfile(profile)" [matTooltip]="'Rename' | translate">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="resetProfile(profile)" [matTooltip]="'Reset' | translate">
+                    <mat-icon>cached</mat-icon>
+                  </button>
+                  <button mat-icon-button color="warn" (click)="deleteProfile(profile)" [matTooltip]="'Delete' | translate">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
