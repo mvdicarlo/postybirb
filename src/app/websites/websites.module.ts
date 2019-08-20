@@ -88,6 +88,8 @@ import { DiscordSubmissionForm } from './website-services/discord/components/dis
 import { FurAffinityJournalForm } from './website-services/fur-affinity/components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 import { FurryLifeSubmissionForm } from './website-services/furry-life/components/furry-life-submission-form/furry-life-submission-form.component';
 import { DummySubmissionForm } from './website-services/dummy/components/dummy-submission-form/dummy-submission-form.component';
+import { DummyJournalForm } from './website-services/dummy/components/dummy-journal-form/dummy-journal-form.component';
+import { DummyLoginDialog } from './website-services/dummy/components/dummy-login-dialog/dummy-login-dialog.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -135,6 +137,8 @@ export function INIT_WEBSITE_REGISTRY() {
     FurAffinityJournalForm,
     FurryLifeSubmissionForm,
     DummySubmissionForm,
+    DummyJournalForm,
+    DummyLoginDialog,
   ],
   imports: [
     CommonModule,
@@ -197,6 +201,8 @@ export function INIT_WEBSITE_REGISTRY() {
     TwitterSubmissionForm,
     WeasylSubmissionForm,
     DummySubmissionForm,
+    DummyJournalForm,
+    DummyLoginDialog,
   ],
   providers: [
     {

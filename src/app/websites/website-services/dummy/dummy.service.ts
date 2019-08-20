@@ -4,17 +4,19 @@ import { Injectable } from '@angular/core';
 import { BaseWebsiteService } from '../base-website-service';
 import { Website } from '../../decorators/website-decorator';
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
-import { supportsFileType } from '../../helpers/website-validator.helper';
+import { supportsFileType, getDescription } from '../../helpers/website-validator.helper';
 import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submission.table';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { LoginStatus, WebsiteStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { DummySubmissionForm } from './components/dummy-submission-form/dummy-submission-form.component';
+import { DummyJournalForm } from './components/dummy-journal-form/dummy-journal-form.component';
+import { DummyLoginDialog } from './components/dummy-login-dialog/dummy-login-dialog.component';
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  console.log("valid Submission", submission)
+  console.log('valid Submission', submission);
 
   if (submission.rating && submission.rating !== SubmissionRating.GENERAL) {
     problems.push(['Does not support rating', { website: 'Dummy', value: submission.rating }]);
@@ -27,6 +29,14 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function warningCheck(submission: Submission, formData: SubmissionFormData): string {
+  const description: string = PlaintextParser.parse(getDescription(submission, 'Dummy') || '');
+  if (description && description.length > 500) {
+    return 'Dummy';
+  }
+
+  return null;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -34,26 +44,27 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 @Website({
   displayedName: 'Dummy',
   login: {
-    url: 'http://localhost:8080/dummy/api/login'
+    dialog: DummyLoginDialog,
+    url: ''
   },
   components: {
     submissionForm: DummySubmissionForm,
-    journalForm: DummySubmissionForm
+    journalForm: DummyJournalForm
   },
   validators: {
+    warningCheck,
     submission: submissionValidate
   },
   parsers: {
-    description: [],
+    description: [PlaintextParser.parse],
+    disableAdvertise: true,
   }
 })
 export class Dummy extends BaseWebsiteService {
-  readonly BASE_URL: string = 'http://localhost:8080';
 
   constructor() {
     super();
   }
-
 
   public async checkStatus(profileId: string): Promise<WebsiteStatus> {
     const returnValue: WebsiteStatus = {
