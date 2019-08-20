@@ -96,11 +96,15 @@ export class Mastodon extends BaseWebsiteService {
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const authData = this._profileManager.getData(postData.profileId, Mastodon.name);
+    let sensitive: boolean = submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME;
+    if (postData.options.sensitiveOverride !== null) {
+      sensitive = postData.options.sensitiveOverride === 'yes';
+    }
     const postResponse: any = await auth.mastodon.post(
       authData.token,
       authData.website,
       [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => fileAsFormDataObject(f)),
-      submission.rating !== SubmissionRating.GENERAL,
+      sensitive,
       `${postData.options.useTitle ? postData.title + '\n' : ''}${postData.description}`.substring(0, 490).trim(), // substr 500 seems to cause issue
       postData.options.spoilerText
     );

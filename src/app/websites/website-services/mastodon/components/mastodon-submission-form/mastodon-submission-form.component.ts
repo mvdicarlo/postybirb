@@ -13,7 +13,8 @@ export class MastodonSubmissionForm extends BaseWebsiteSubmissionForm implements
 
   public optionDefaults: any = {
     useTitle: [false],
-    spoilerText: []
+    spoilerText: [],
+    sensitiveOverride: [null]
   };
 
   constructor(injector: Injector) {
