@@ -34,6 +34,15 @@ export class DeviantArtLoginDialog implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.webview.nativeElement.partition = `persist:${this.data.persist}`;
     this.webview.nativeElement.src = auth.deviantart.getAuthURL();
+
+    // HACK: A workaround for authenticating a user that just logged in due
+    // Currently needed because DA broke the redirect when logging in.
+    // DATE: 08/19/2019
+    this.webview.nativeElement.addEventListener('did-navigate', event => {
+      if (event.url.includes('loggedin')) {
+        this.webview.nativeElement.src = auth.deviantart.getAuthURL();
+      }
+    });
   }
 
   ngOnDestroy() {
