@@ -15,7 +15,15 @@ export class SubmissionState {
   public readonly onSubmissionPublish: Observable<Submission[]> = this.submissionsPublisher.asObservable();
 
   public readonly scheduled: Observable<Submission[]> = this.onSubmissionPublish
-    .pipe(map(s => s.filter(_s => _s.isScheduled)), shareReplay(1));
+    .pipe(map(s => s.filter(_s => _s.isScheduled)
+    .sort((a, b) => {
+      const aDate = new Date(a.schedule);
+      const bDate = new Date(b.schedule);
+
+      if (aDate < bDate) return -1;
+      if (aDate > bDate) return 1;
+      return 0;
+    })), shareReplay(1));
 
   public readonly queued: Observable<Submission[]> = this.submissionsPublisher
     .pipe(map(s => s.filter(_s => _s.queued)), shareReplay(1));
