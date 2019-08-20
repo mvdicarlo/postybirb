@@ -12,7 +12,8 @@ import { FormControl } from '@angular/forms';
 export class TwitterSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 
     public optionDefaults: any = {
-      useTitle: [false]
+      useTitle: [false],
+      sensitiveOverride: [null]
     };
 
     constructor(injector: Injector) {

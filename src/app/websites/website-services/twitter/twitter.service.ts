@@ -115,6 +115,10 @@ export class Twitter extends BaseWebsiteService {
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const options = postData.options;
     const authData = this._profileManager.getData(postData.profileId, Twitter.name);
+    let sensitive: boolean = submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME;
+    if (options.sensitiveOverride !== null) {
+      sensitive = options.sensitiveOverride === 'yes';
+    }
     const data: any = {
       status: `${options.useTitle ? postData.title + '\n\n' : ''}${postData.description}`,
       medias: [postData.primary, ...postData.additionalFiles].filter(f => !!f).map(f => {
@@ -125,7 +129,7 @@ export class Twitter extends BaseWebsiteService {
       }),
       token: authData.token,
       secret: authData.secret,
-      sensitive: submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME
+      sensitive
     };
 
     const postResponse = await got.post(`${AUTH_URL}/twitter/v1/post`, null, this.BASE_URL, [], {
