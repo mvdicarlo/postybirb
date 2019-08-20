@@ -110,6 +110,31 @@ export class Patreon extends BaseWebsiteService {
     return returnValue;
   }
 
+  private attemptAccessTiers(profileId: string, id: any): Promise<any> {
+    return new Promise((resolve) => {
+      const win = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          partition: `persist:${profileId}`
+        }
+      });
+
+      win.loadURL(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`);
+
+      win.once('ready-to-show', function() {
+        if (win.isDestroyed()) {
+          resolve('');
+          return;
+        }
+
+        win.webContents.executeJavaScript('document.body.innerText', (result) => {
+          resolve(result);
+          win.destroy();
+        });
+      });
+    });
+  }
+
   private async loadTiers(profileId: string, cookies: any[]): Promise<any> {
     const csrf = await this._getCSRF(cookies, profileId);
     const createData = {
@@ -137,16 +162,17 @@ export class Patreon extends BaseWebsiteService {
 
     const response: any = JSON.parse(create.body);
     const id = response.data.id;
-
-    const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`, {
-      'Host': 'www.patreon.com',
-      'Origin': 'https://www.patreon.com',
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-    }, profileId);
-    if (patreonTiers.body) {
-      let body: any = {};
+    let body: any = {};
+    try {
+      body = JSON.parse(await this.attemptAccessTiers(profileId, id));
+    } catch (e) {
       try {
-        const parsedBody: string = patreonTiers.body.replace(/,:/gm, ':');
+        const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`, {
+          'Host': 'www.patreon.com',
+          'Origin': 'https://www.patreon.com',
+          'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+        }, profileId);
+        const parsedBody: string = patreonTiers.body.replace(/(,:|:,)/gm, ':');
         body = JSON.parse(parsedBody);
       } catch (e) {
         // NOTE: fallback for some users since patreon returns weird json sometimes
@@ -156,9 +182,12 @@ export class Patreon extends BaseWebsiteService {
           'Origin': 'https://www.patreon.com',
           'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
         }, profileId);
-        const parsedBody: string = fallback.body.replace(/,:/gm, ':');
+        const parsedBody: string = fallback.body.replace(/(,:|:,)/gm, ':');
         body = JSON.parse(parsedBody);
       }
+    }
+
+    if (body) {
       if (body.included) {
         const customTiers: Folder = {
           title: 'Tiers',
@@ -638,6 +667,6 @@ export class Patreon extends BaseWebsiteService {
         }
       };
     })
-    .slice(0, 50);
+      .slice(0, 50);
   }
 }
