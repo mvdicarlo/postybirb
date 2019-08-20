@@ -27,6 +27,7 @@ import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { Tumblr } from './website-services/tumblr/tumblr.service';
 import { Twitter } from './website-services/twitter/twitter.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
+import { Dummy } from './website-services/dummy/dummy.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -86,6 +87,7 @@ import { DiscordLoginDialog } from './website-services/discord/components/discor
 import { DiscordSubmissionForm } from './website-services/discord/components/discord-submission-form/discord-submission-form.component';
 import { FurAffinityJournalForm } from './website-services/fur-affinity/components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 import { FurryLifeSubmissionForm } from './website-services/furry-life/components/furry-life-submission-form/furry-life-submission-form.component';
+import { DummySubmissionForm } from './website-services/dummy/components/dummy-submission-form/dummy-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -132,6 +134,7 @@ export function INIT_WEBSITE_REGISTRY() {
     DiscordSubmissionForm,
     FurAffinityJournalForm,
     FurryLifeSubmissionForm,
+    DummySubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -193,6 +196,7 @@ export function INIT_WEBSITE_REGISTRY() {
     TwitterLoginDialog,
     TwitterSubmissionForm,
     WeasylSubmissionForm,
+    DummySubmissionForm,
   ],
   providers: [
     {
@@ -223,6 +227,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Tumblr,
         Twitter,
         Weasyl,
+        Dummy
       ],
       multi: true
     }
