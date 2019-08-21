@@ -18,13 +18,17 @@ export class PostLogs implements OnInit, OnDestroy {
 
   constructor(private layout: PostybirbLayout, private _postLogs: PostLoggerService, private _changeDetector: ChangeDetectorRef) { }
 
-  async ngOnInit() {
+  ngOnInit() {
+    this.getLogs();
+    this.subscriber = this._postLogs.onUpdate.subscribe(() => this.getLogs());
+  }
+
+  private async getLogs() {
+    this.loading = true;
     this.logs = await this._postLogs.getLogs() || [];
     this.logs = this.logs.reverse();
     this.loading = false;
     this._changeDetector.markForCheck();
-
-    this.subscriber = this._postLogs.onUpdate.subscribe(() => this.ngOnInit());
   }
 
   ngOnDestroy() {
