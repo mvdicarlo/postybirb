@@ -70,7 +70,7 @@ export class Pixiv extends BaseWebsiteService {
     const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
-      if (body.includes('Logout')) {
+      if (body.includes('header-logout')) {
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = body.match(/<a\sclass="(?=user-name).*?(?=<)/g)[0].split('>')[1];
       }
