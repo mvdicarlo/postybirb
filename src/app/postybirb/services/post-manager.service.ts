@@ -87,14 +87,9 @@ export class PostManagerService {
 
         // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
         // try {
-        //   let rand = Math.floor(Math.random() * 100);
-        //   if (rand >= 1) {
-        //     return {};
-        //   } else {
-        //     return Promise.reject({ msg: 'Fail', error: 'Me gusta bailar'});
-        //   }
-        // } catch (err) {
-        //   return Promise.reject(err);
+        //   return await this._fakePost();
+        // } catch (e) {
+        //   return Promise.reject(e);
         // }
 
         try {
@@ -110,6 +105,23 @@ export class PostManagerService {
     } catch (error) {
       return Promise.reject({ msg: 'An internal error occurred', error });
     }
+  }
+
+  private _fakePost(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        try {
+          let rand = Math.floor(Math.random() * 100);
+          if (rand >= 50) {
+            resolve({});
+          } else {
+            reject({ msg: 'Fail', error: 'Me gusta bailar' });
+          }
+        } catch (err) {
+          reject(err);
+        }
+      }, Math.floor(Math.random() * 7000));
+    });
   }
 
   private _parseDescription(description: string, website: string): string {

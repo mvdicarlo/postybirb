@@ -12,6 +12,7 @@ import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
+import { Promisify } from 'src/app/utils/helpers/promisify.helper';
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -34,23 +35,23 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
 }
 
 function descriptionParser(html: string): string {
-    if (!html) return '';
+  if (!html) return '';
 
-    html = html.replace(/<b>/gi, '*');
-    html = html.replace(/<i>/gi, '_');
-    html = html.replace(/<u>/gi, '+');
-    html = html.replace(/<s>/gi, '-');
-    html = html.replace(/<\/b>/gi, '*');
-    html = html.replace(/<\/i>/gi, '_');
-    html = html.replace(/<\/u>/gi, '+');
-    html = html.replace(/<\/s>/gi, '-');
-    html = html.replace(/<em>/gi, '_');
-    html = html.replace(/<\/em>/gi, '_');
-    html = html.replace(/<strong>/gi, '*');
-    html = html.replace(/<\/strong>/gi, '*');
-    html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+  html = html.replace(/<b>/gi, '*');
+  html = html.replace(/<i>/gi, '_');
+  html = html.replace(/<u>/gi, '+');
+  html = html.replace(/<s>/gi, '-');
+  html = html.replace(/<\/b>/gi, '*');
+  html = html.replace(/<\/i>/gi, '_');
+  html = html.replace(/<\/u>/gi, '+');
+  html = html.replace(/<\/s>/gi, '-');
+  html = html.replace(/<em>/gi, '_');
+  html = html.replace(/<\/em>/gi, '_');
+  html = html.replace(/<strong>/gi, '*');
+  html = html.replace(/<\/strong>/gi, '*');
+  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
 
-    return html;
+  return html;
 }
 
 @Injectable({
@@ -100,6 +101,7 @@ export class Derpibooru extends BaseWebsiteService {
       if (body.includes('Logout')) {
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = body.match(/\/profiles\/.*?(?=")/g)[0].split('/')[2];
+        BrowserWindowHelper.hitUrl(profileId, `${this.BASE_URL}`); // potential cookie refresh
       }
     } catch (e) { /* No important error handling */ }
 
@@ -114,6 +116,22 @@ export class Derpibooru extends BaseWebsiteService {
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    try {
+      const res = await this.attemptPost(submission, postData);
+      return res;
+    } catch (e) {
+      if (e instanceof Error) return Promise.reject(e);
+      const err: PostResult = e;
+      if (err.error && err.error.includes('Invalid CSRF')) {
+        await Promisify.wait(3000);
+        return await this.attemptPost(submission, postData); // NOTE: sometimes the post succeeds on the second attempt
+      }
+
+      return Promise.reject(e);
+    }
+  }
+
+  private async attemptPost(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
     const ratingTag: string = this.getRatingTag(submission.rating);
     if (!tags.includes(ratingTag)) tags.push(ratingTag);
@@ -148,4 +166,5 @@ export class Derpibooru extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse($(problem).find('#error_explanation').text().split(':')[1], postRequest.success.body));
     }
   }
+
 }
