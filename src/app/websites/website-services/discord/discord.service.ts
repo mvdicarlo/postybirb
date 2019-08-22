@@ -32,6 +32,26 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
+function descriptionPreparse(html: string): string {
+  if (!html) return '';
+  return html
+    .replace(/(<b>|<strong>)/gm, '**')
+    .replace(/(<\/b>|<\/strong>)/gm, '**')
+    .replace(/(<i>|<em>)/gm, '*')
+    .replace(/(<\/i>|<\/em>)/gm, '*');
+}
+
+function descriptionParse(html: string): string {
+  const links = html.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm) || [];
+  links.forEach(link => {
+    if (link[link.length - 1] === ')' && !link.includes('(')) {
+      link = link.replace(/\)$/, '');
+    }
+    html = html.replace(link, `<${link}>`)
+  });
+  return html;
+}
+
 function warningCheck(submission: Submission, formData: SubmissionFormData): string {
   const description: string = PlaintextParser.parse(getDescription(submission, Discord.name) || '');
   if (description && description.length > 2000) {
@@ -59,8 +79,11 @@ function warningCheck(submission: Submission, formData: SubmissionFormData): str
     submission: submissionValidate,
     journal: submissionValidate
   },
+  preparsers: {
+    description: [descriptionPreparse]
+  },
   parsers: {
-    description: [PlaintextParser.parse],
+    description: [PlaintextParser.parse, descriptionParse],
   }
 })
 export class Discord extends BaseWebsiteService {
