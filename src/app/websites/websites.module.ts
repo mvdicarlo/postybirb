@@ -131,7 +131,7 @@ export function INIT_WEBSITE_REGISTRY() {
     DiscordLoginDialog,
     DiscordSubmissionForm,
     FurAffinityJournalForm,
-    FurryLifeSubmissionForm
+    FurryLifeSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -192,7 +192,7 @@ export function INIT_WEBSITE_REGISTRY() {
     TumblrSubmissionForm,
     TwitterLoginDialog,
     TwitterSubmissionForm,
-    WeasylSubmissionForm
+    WeasylSubmissionForm,
   ],
   providers: [
     {
@@ -222,7 +222,7 @@ export function INIT_WEBSITE_REGISTRY() {
         SoFurry,
         Tumblr,
         Twitter,
-        Weasyl
+        Weasyl,
       ],
       multi: true
     }
