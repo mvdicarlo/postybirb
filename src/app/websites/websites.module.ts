@@ -27,7 +27,6 @@ import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { Tumblr } from './website-services/tumblr/tumblr.service';
 import { Twitter } from './website-services/twitter/twitter.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
-import { Dummy } from './website-services/dummy/dummy.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -87,9 +86,6 @@ import { DiscordLoginDialog } from './website-services/discord/components/discor
 import { DiscordSubmissionForm } from './website-services/discord/components/discord-submission-form/discord-submission-form.component';
 import { FurAffinityJournalForm } from './website-services/fur-affinity/components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 import { FurryLifeSubmissionForm } from './website-services/furry-life/components/furry-life-submission-form/furry-life-submission-form.component';
-import { DummySubmissionForm } from './website-services/dummy/components/dummy-submission-form/dummy-submission-form.component';
-import { DummyJournalForm } from './website-services/dummy/components/dummy-journal-form/dummy-journal-form.component';
-import { DummyLoginDialog } from './website-services/dummy/components/dummy-login-dialog/dummy-login-dialog.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -135,10 +131,7 @@ export function INIT_WEBSITE_REGISTRY() {
     DiscordLoginDialog,
     DiscordSubmissionForm,
     FurAffinityJournalForm,
-    FurryLifeSubmissionForm,
-    DummySubmissionForm,
-    DummyJournalForm,
-    DummyLoginDialog,
+    FurryLifeSubmissionForm
   ],
   imports: [
     CommonModule,
@@ -199,10 +192,7 @@ export function INIT_WEBSITE_REGISTRY() {
     TumblrSubmissionForm,
     TwitterLoginDialog,
     TwitterSubmissionForm,
-    WeasylSubmissionForm,
-    DummySubmissionForm,
-    DummyJournalForm,
-    DummyLoginDialog,
+    WeasylSubmissionForm
   ],
   providers: [
     {
@@ -232,8 +222,7 @@ export function INIT_WEBSITE_REGISTRY() {
         SoFurry,
         Tumblr,
         Twitter,
-        Weasyl,
-        Dummy
+        Weasyl
       ],
       multi: true
     }
