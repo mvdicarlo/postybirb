@@ -63,7 +63,14 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
   private _editableSubmissions: Submission[] = [];
 
   get queuedOrScheduled(): Submission[] {
-    return [...this.queuedSubmissions, ...this.scheduledSubmissions];
+    return [...this.queuedSubmissions, ...this.scheduledSubmissions].sort((a, b) => {
+      const aDate = new Date(a.schedule);
+      const bDate = new Date(b.schedule);
+
+      if (aDate < bDate) return -1;
+      if (aDate > bDate) return 1;
+      return 0;
+    });
   }
 
   public loading: boolean = false;
