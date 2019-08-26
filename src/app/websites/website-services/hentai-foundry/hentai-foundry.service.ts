@@ -157,7 +157,7 @@ export class HentaiFoundry extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
 
-    if (!postResponse.success.body.includes('Submit new picture') && !postResponse.success.response.request.uri.href.includes('/create')) {
+    if (!postResponse.success.body.includes('Submit new picture') && postResponse.success.body.includes('pending approval') && !postResponse.success.response.request.uri.href.includes('/create')) {
       const res = this.createPostResponse(null);
       res.srcURL = postResponse.success.response.request.uri.href;
       return res;
