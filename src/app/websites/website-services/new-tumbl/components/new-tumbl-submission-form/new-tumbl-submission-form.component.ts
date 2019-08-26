@@ -31,7 +31,7 @@ export class NewTumblSubmissionForm extends BaseWebsiteSubmissionForm implements
   ngAfterViewInit() {
     super.ngAfterViewInit();
     if (this.blogs) {
-      this.resetOnConflict('blog', this.blogs);
+      this.resetOnConflict('blog', this.blogs.map(b => b.id));
     }
   }
 
