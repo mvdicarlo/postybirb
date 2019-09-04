@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { TabManager } from '../../services/tab-manager.service';
+import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
 
 @Component({
   selector: 'landing-page',
@@ -24,7 +25,8 @@ export class LandingPage implements OnInit, OnDestroy {
     public submissionState: SubmissionState,
     public queueInserter: QueueInserterService,
     private dialog: MatDialog,
-    private _tabManager: TabManager
+    private _tabManager: TabManager,
+    private _submissionDB: SubmissionDBService,
   ) { }
 
   ngOnInit() {
@@ -48,6 +50,13 @@ export class LandingPage implements OnInit, OnDestroy {
           submissions.forEach(s => this.queueInserter.dequeue(s));
         }
       });
+  }
+
+  public duplicate(submission: Submission): void {
+    this._submissionDB.duplicate(submission.id, submission.title || 'Untitled')
+      .then(() => { })
+      .catch((err) => { console.error(err) })
+      .finally(() => { });
   }
 
   public edit(submission: Submission): void {
