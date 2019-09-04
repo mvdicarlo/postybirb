@@ -289,10 +289,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           }
 
           try {
-            if (options.reupload) {
+            if (postData.typeOfSubmission == TypeOfSubmission.ART && options.reupload) {
               const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
               const reuploadData: any = {
-                update: 'yes',
+                update: 'yes', // always seems to be 'yes'
                 newsubmission: fileAsFormDataObject(postData.primary),
               };
 
