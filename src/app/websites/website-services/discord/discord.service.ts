@@ -43,11 +43,11 @@ function descriptionPreparse(html: string): string {
 
 function descriptionParse(html: string): string {
   const links = html.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gm) || [];
+  const seenLinks = [];
   links.forEach(link => {
-    if (link[link.length - 1] === ')' && !link.includes('(')) {
-      link = link.replace(/\)$/, '');
-    }
-    html = html.replace(link, `<${link}>`)
+    if (seenLinks.includes(link)) return;
+    seenLinks.push(link);
+    html = html.replace(new RegExp(link, 'gi'), `<${link}>`);
   });
   return html;
 }

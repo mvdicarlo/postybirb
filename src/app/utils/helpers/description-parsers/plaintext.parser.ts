@@ -2,7 +2,7 @@ export class PlaintextParser {
   public static parse(html: string): string {
     if (!html) return '';
 
-    html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '$4 ($2)');
+    html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '$4 ( $2 )');
     html = html.replace(/<h[1-7](.*?)>(.*?)<\/h[1-7]>/, '$2\n');
 
     html = html.replace(/<br>\n/gi, '<br>');
@@ -34,11 +34,11 @@ export class PlaintextParser {
     html = html.replace(/&lt;/gi, '<');
     html = html.replace(/&amp;/gi, '&');
 
-    const duplicateCheck = html.match(/(\S*?) \((.*?)\)/g) || [];
+    const duplicateCheck = html.match(/(\S*?) \(\s(.*?)\s\)/g) || [];
     duplicateCheck.forEach(potentialDuplicate => {
       const parts = potentialDuplicate.split(' ');
       const part1 = parts[0];
-      const part2 = parts[1].replace(/(\(|\))/g, '');
+      const part2 = parts[2].replace(/(\(|\))/g, '');
       if (part1 === part2) {
         html = html.replace(potentialDuplicate, part1);
       }
