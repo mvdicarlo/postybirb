@@ -117,6 +117,7 @@ try {
   }).write();
 
   window.got = require('./src/got-request.js');
+  window.ehttp = require('./src/http.js');
 
   window.auth = {
     deviantart: require('./src/deviant-art-auth.js'),

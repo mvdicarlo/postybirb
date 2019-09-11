@@ -18,6 +18,10 @@ declare var got: {
   gotPost(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<any>;
   convertCookie(cookie: any): any;
 }
+declare var ehttp: {
+  get(url: string, partition: string, options?: any): Promise<any>;
+  post(url: string, partition: string, body: any, options?: any): Promise<any>;
+}
 declare var parse5: any;
 declare var sanitize: any;
 declare var entities: any;

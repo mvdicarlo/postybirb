@@ -83,7 +83,12 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/controls/submissions`, this.BASE_URL, cookies, profileId);
+    const response = await ehttp.get(`${this.BASE_URL}/controls/submissions`, profileId, {
+      updateCookies: true,
+      headers: {
+        'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+      }
+    });
     try {
       const body = response.body;
       if (body.includes('logout-link')) {
@@ -186,7 +191,9 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies, postData.profileId);
+    const page = await ehttp.get(`${this.BASE_URL}/controls/journal`, postData.profileId, {
+      cookies
+    });
     const data: any = {
       key: HTMLParser.getInputValue(page.body, 'key'),
       message: postData.description,
@@ -198,9 +205,13 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
     if (postData.options.feature) data.make_featured = 'on';
 
-    const response = await got.post(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
-    if (response.error) {
-      return Promise.reject(this.createPostResponse('Unknown error occurred', response.error));
+    const response = await ehttp.post(`${this.BASE_URL}/controls/journal/`, postData.profileId, data, {
+      multipart: true,
+      cookies
+    });
+
+    if (!response.success) {
+      return Promise.reject(this.createPostResponse('Unknown error occurred', response.body));
     } else {
       return this.createPostResponse(null);
     }
@@ -213,28 +224,37 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       submission_type: this.getContentType(postData.typeOfSubmission)
     };
 
-    const part1Response = await got.post(`${this.BASE_URL}/submit/`, initData, this.BASE_URL, cookies);
-    if (part1Response.error) {
-      return Promise.reject(this.createPostResponse('Unknown error', part1Response.error));
+    const part1Response = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, initData, {
+      cookies,
+    });
+    if (!part1Response.success) {
+      return Promise.reject(this.createPostResponse('Unknown error', part1Response.body));
     } else {
-      const part1Body = part1Response.success.body;
+      const part1Body = part1Response.body;
       if (part1Body.includes('Flood protection')) {
         return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
       }
 
       const part2Data = {
-        key: HTMLParser.getInputValue(part1Body, 'key'),
         part: '3',
-        submission: fileAsFormDataObject(postData.primary),
+        key: HTMLParser.getInputValue(part1Body, 'key'),
+        submission_type: this.getContentType(postData.typeOfSubmission),
         thumbnail: fileAsFormDataObject(postData.thumbnail),
-        submission_type: this.getContentType(postData.typeOfSubmission)
+        submission: fileAsFormDataObject(postData.primary),
       };
 
-      const uploadResponse = await got.post(`${this.BASE_URL}/submit/`, part2Data, this.BASE_URL, cookies);
-      if (uploadResponse.error) {
-        return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
+      const uploadResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, part2Data, {
+        cookies,
+        multipart: true,
+        headers: {
+          'Host': 'www.furaffinity.net',
+          'Referer': 'http://www.furaffinity.net/submit/'
+        }
+      });
+      if (!uploadResponse.success) {
+        return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.body));
       } else {
-        const uploadBody = uploadResponse.success.body;
+        const uploadBody = uploadResponse.body;
         if (uploadBody.includes('Flood protection')) {
           return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
         }
@@ -267,14 +287,15 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           finalizeData['folder_ids[]'] = options.folders;
         }
 
-        const postResponse = await got.post(`${this.BASE_URL}/submit/`, finalizeData, this.BASE_URL, cookies, {
-          qsStringifyOptions: { arrayFormat: 'repeat' },
+        const postResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, finalizeData, {
+          cookies,
+          multipart: true
         });
 
-        if (postResponse.error) {
-          return Promise.reject(this.createPostResponse(null, postResponse.error));
+        if (!postResponse.success) {
+          return Promise.reject(this.createPostResponse(null, postResponse.body));
         } else {
-          const body = postResponse.success.body;
+          const body = postResponse.body;
 
           if (body.includes('CAPTCHA verification error')) {
             return Promise.reject(this.createPostResponse('You must have 5+ posts on your account first', body));
@@ -284,7 +305,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
             return Promise.reject(this.createPostResponse('Unknown error', body));
           }
 
-          if (postResponse.success.response.request.uri.href.includes('/submit')) {
+          if (postResponse.href.includes('/submit')) {
             return Promise.reject(this.createPostResponse('Something went wrong', body));
           }
 
@@ -296,13 +317,13 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
                 newsubmission: fileAsFormDataObject(postData.primary),
               };
 
-              await got.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
+              await ehttp.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, postData.profileId, reuploadData, { cookies, multipart: true });
             }
           } catch (e) {
             console.error(e);
           } finally {
             const res = this.createPostResponse(null);
-            res.srcURL = postResponse.success.response.request.uri.href;
+            res.srcURL = postResponse.href;
             return res;
           }
         }
