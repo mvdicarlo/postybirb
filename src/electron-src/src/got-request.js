@@ -14,7 +14,7 @@ const {
   net
 } = require('electron').remote;
 
-const agent = `${remote.getCurrentWebContents().getUserAgent()} PostyBirb/${remote.app.getVersion()}`
+const agent = `${remote.getCurrentWebContents().getUserAgent()}`
 const got = Got.extend({
   headers: {
     'User-Agent': agent
