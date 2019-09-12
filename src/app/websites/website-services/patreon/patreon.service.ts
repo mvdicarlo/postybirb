@@ -98,10 +98,9 @@ export class Patreon extends BaseWebsiteService {
     const response = await got.get(`${this.BASE_URL}/user`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
-      if (!body.toLowerCase().includes('log in') && !body.includes('Cloudflare')) {
+      const user = ((body.match(/"full_name": ".*"/g) || [])[0] || '').replace(/"full_name":\s"(.*?)"/, '$1');
+      if (user) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        const title = body.match(/<title(.|\s)*?(?=\/title)/)[0] || '';
-        const user = title.length > 0 ? title.split(' ')[0].replace('<title>', '') : undefined;
         returnValue.username = user;
         await this.loadTiers(profileId, cookies);
       }
