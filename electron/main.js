@@ -13,21 +13,12 @@ const template = require('./src/electron-menu');
 const autoUpdater = require('./src/auto-updater');
 const windowStateKeeper = require('electron-window-state');
 
-const program = require('commander');
-
-if (app.isPackaged) {
-  process.argv.unshift(null)
-}
-
-program
-  .option('-d, --develop', 'Launch in develop mode. Enables access to console.')
-  .parse(process.argv);
-
 require('electron-context-menu')({
   showInspectElement: false,
 });
 
 log.info('Starting PostyBirb...');
+log.info(process.argv);
 
 let tray = null;
 let win = null; // Primary App BrowserWindow
@@ -37,7 +28,7 @@ const userDataPath = app.getPath('userData');
 const dataPath = path.join(userDataPath, 'data');
 
 
-const devMode = program.develop || false;
+const devMode = !!process.argv.find(arg => arg === '-d' || arg === '--develop');
 
 if (devMode) {
   console.log('DataPath', dataPath);
