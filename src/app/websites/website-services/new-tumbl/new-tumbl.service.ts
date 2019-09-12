@@ -209,7 +209,7 @@ export class NewTumbl extends BaseWebsiteService {
         return Promise.reject(this.createPostResponse('Failed to upload a file', upload.success.body));
       }
 
-      const id: number = res.aResults[0].qwMediaIx;
+      const id: number = res.aResults[0].qwMediaIx || res.aResults[0].qwPartIx;
       const insert = await got.post(`${this.API_URL}/set_PostPart_Insert`, null, this.BASE_URL, [], {
         form: {
           json: JSON.stringify({
