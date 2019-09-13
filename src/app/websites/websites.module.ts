@@ -58,7 +58,6 @@ import { E621SubmissionForm } from './website-services/e621/components/e621-subm
 import { FurAffinitySubmissionForm } from './website-services/fur-affinity/components/fur-affinity-submission-form/fur-affinity-submission-form.component';
 import { FurryAminoSubmissionForm } from './website-services/furry-amino/components/furry-amino-submission-form/furry-amino-submission-form.component';
 import { FurryNetworkJournalForm } from './website-services/furry-network/components/furry-network-journal-form/furry-network-journal-form.component';
-import { FurryNetworkLoginDialog } from './website-services/furry-network/components/furry-network-login-dialog/furry-network-login-dialog.component';
 import { FurryNetworkSubmissionForm } from './website-services/furry-network/components/furry-network-submission-form/furry-network-submission-form.component';
 import { GenericJournalSubmissionForm } from './components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { GenericLoginDialog } from './components/generic-login-dialog/generic-login-dialog.component';
@@ -105,7 +104,6 @@ export function INIT_WEBSITE_REGISTRY() {
     FurAffinitySubmissionForm,
     FurryAminoSubmissionForm,
     FurryNetworkJournalForm,
-    FurryNetworkLoginDialog,
     FurryNetworkSubmissionForm,
     GenericJournalSubmissionForm,
     GenericLoginDialog,
@@ -174,7 +172,6 @@ export function INIT_WEBSITE_REGISTRY() {
     FurryAminoSubmissionForm,
     FurryLifeSubmissionForm,
     FurryNetworkJournalForm,
-    FurryNetworkLoginDialog,
     FurryNetworkSubmissionForm,
     GenericJournalSubmissionForm,
     GenericLoginDialog,

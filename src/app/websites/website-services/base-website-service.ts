@@ -34,6 +34,12 @@ export class BaseWebsiteService implements WebsiteService {
     });
   }
 
+  protected storeUserInformation(profileId: string, key: string, value: any): void {
+    const info: any = this.userInformation.get(profileId) || {};
+    info[key] = value;
+    this.userInformation.set(profileId, info);
+  }
+
   post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     throw new Error("Method not implemented.");
   }
