@@ -233,6 +233,10 @@ function initialize(show = true) {
   win.on('closed', () => {
     clearInterval(cacheClearInterval);
     win = null;
+    // Destroy any lingering window (hopefully not the update window)
+    BrowserWindow.getAllWindows().forEach(w => {
+      w.destroy();
+    });
   });
 
   win.webContents.once('did-frame-finish-load', () => {
