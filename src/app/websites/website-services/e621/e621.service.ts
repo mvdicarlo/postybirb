@@ -168,7 +168,9 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       value: 'view'
     });
 
-    const response = await got.gotPost(`${this.BASE_URL}/post/create`, data, this.BASE_URL, cookies, {
+    const response = await ehttp.post(`${this.BASE_URL}/post/create`, postData.profileId, data, {
+      cookies,
+      multipart: true,
       headers: {
         'Referer': 'https://e621.net/post/upload',
         'Origin': 'https://e621.net',
@@ -177,8 +179,10 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       }
     });
 
-    if (response.statusCode === 200 || response.statusCode === 302) { // got doesn't handle 302 well
-      return this.createPostResponse(null);
+    if (response.statusCode === 200 || response.statusCode === 302) {
+      const res = this.createPostResponse(null);
+      res.srcURL = response.href;
+      return res;
     } else {
       return Promise.reject(this.createPostResponse('Unknown error', response.body));
     }
