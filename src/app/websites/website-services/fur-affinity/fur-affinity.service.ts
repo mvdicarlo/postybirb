@@ -243,6 +243,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         submission: fileAsFormDataObject(postData.primary),
       };
 
+      if (!part2Data.key) {
+        return Promise.reject(this.createPostResponse('Unable to retrieve form key', part1Body));
+      }
+
       const uploadResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, part2Data, {
         cookies,
         multipart: true,
