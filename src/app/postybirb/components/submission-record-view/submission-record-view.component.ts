@@ -77,6 +77,12 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       if (change.title) this.form.patchValue({ title: change.title.current }, { emitEvent: false });
       if (change.rating) this.form.patchValue({ rating: change.rating.current }, { emitEvent: false });
       if (change.schedule) this.form.patchValue({ schedule: change.schedule.current ? new Date(change.schedule.current) : null }, { emitEvent: false });
+      if (change.file) {
+        this.hideForReload = true;
+        this._changeDetector.detectChanges();
+        this.hideForReload = false;
+        this._changeDetector.detectChanges();
+      }
       this._changeDetector.markForCheck();
     });
 

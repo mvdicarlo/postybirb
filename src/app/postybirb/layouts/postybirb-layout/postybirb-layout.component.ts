@@ -265,7 +265,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
                   submissionFiles.forEach(f => { flat = [...flat, ...f] });
 
                   // cache and build file mapping
-                  insertResults.forEach(r => this._submissionCache.store(r));
+                  insertResults.forEach(r => this._submissionCache.store(r)); // is this still necessary?
                   for (let i = 0; i < flat.length; i++) {
                     insertResults[i].fileMap = {
                       [SubmissionFileType.PRIMARY_FILE]: flat[i].id,
@@ -278,9 +278,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
                     }
                   }
 
-                  // this.submissions = [...this.submissions, ...insertResults];
                   this._changeDetector.markForCheck();
-
                   this._openToTab(insertResults[0]);
                 });
             });
@@ -333,7 +331,6 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     this._submissionDB.createSubmissions([revive]).then(insertResults => {
       if (revive.submissionType === SubmissionType.JOURNAL) {
         this.loading = false;
-        // this.submissions = [...this.submissions, ...insertResults];
         this._changeDetector.markForCheck();
 
         this._openToTab(insertResults[0]);
@@ -367,9 +364,8 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
               }
             }
 
-            // this.submissions = [...this.submissions, ...insertResults];
+            insertResults.forEach(r => r.flagUpdate('file'));
             this._changeDetector.markForCheck();
-
             this._openToTab(insertResults[0]);
           });
       }
