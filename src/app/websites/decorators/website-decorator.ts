@@ -32,7 +32,7 @@ export interface WebsiteConfig {
     };
   };
   validators: {
-    warningCheck?: (submission: Submission, formData: SubmissionFormData) => string; // simple warning generator - should return website name
+    warningCheck?: (submission: Submission, formData: SubmissionFormData) => any[]; // simple warning generator
     submission?: (submission: Submission, formData: SubmissionFormData) => any[]; // in format [[string, ValidationProblem], ...]
     journal?: (submission: Submission, formData: SubmissionFormData) => any[];
   };

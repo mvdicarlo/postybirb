@@ -42,13 +42,14 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
-function warningCheck(submission: Submission, formData: SubmissionFormData): string {
-  const description: string = PlaintextParser.parse(descriptionParse(getDescription(submission, Twitter.name) || ''));
+function warningCheck(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
+  const description: string = PlaintextParser.parse(getDescription(submission, Twitter.name) || '');
   if (description && description.length > 280) {
-    return Twitter.name;
+    problems.push(['Max description length', { website: 'Twitter', value: '280' }]);
   }
 
-  return null;
+  return problems;
 }
 
 function descriptionParse(html: string): string {

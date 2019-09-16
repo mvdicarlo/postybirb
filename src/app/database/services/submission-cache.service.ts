@@ -45,7 +45,7 @@ export class SubmissionCache extends CacheService {
     }
 
     submission.problems = problems;
-    submission.warnings = warnings.filter(w => !!w);
+    submission.warnings = warnings;
   }
 
   public getAll(): Submission[] {

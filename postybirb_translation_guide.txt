@@ -1077,3 +1077,9 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
   "Translated": ""
 }
 
+{
+  "Internal": "Max description length",
+  "Translate Me": "{{website}} supports a description length of {{value}}",
+  "Translated": ""
+}
+

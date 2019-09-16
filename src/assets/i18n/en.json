@@ -5,6 +5,7 @@
   "Does not support file format": "{{website}} does not support file format: {{value}}",
   "Does not support rating": "{{website}} does not support rating: {{value}}",
   "Ignored tag": "Ignored duplicate tag: {{tag}}",
+  "Max description length": "{{website}} supports a description length of {{value}}",
   "Max file size": "{{website}} does not support files larger than {{value}}",
   "Options are incomplete": "{{website}} options are incomplete",
   "Requires minimum tags": "{{website}} requires at least {{value}} tags",

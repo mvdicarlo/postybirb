@@ -32,13 +32,14 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   return problems;
 }
 
-function warningCheck(submission: Submission, formData: SubmissionFormData): string {
+function warningCheck(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
   const description: string = PlaintextParser.parse(getDescription(submission, Mastodon.name) || '');
   if (description && description.length > 500) {
-    return Mastodon.name;
+    problems.push(['Max description length', { website: 'Mastodon', value: '500' }]);
   }
 
-  return null;
+  return problems;
 }
 
 @Injectable({

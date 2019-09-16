@@ -52,13 +52,14 @@ function descriptionParse(html: string): string {
   return html;
 }
 
-function warningCheck(submission: Submission, formData: SubmissionFormData): string {
+function warningCheck(submission: Submission, formData: SubmissionFormData): any[] {
+  const problems: any[] = [];
   const description: string = PlaintextParser.parse(getDescription(submission, Discord.name) || '');
   if (description && description.length > 2000) {
-    return Discord.name;
+    problems.push(['Max description length', { website: 'Discord', value: '2000' }]);
   }
 
-  return null;
+  return problems;
 }
 
 @Injectable({
