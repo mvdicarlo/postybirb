@@ -81,15 +81,13 @@ export function supportsFileType(fileInfo: FileObject, supportedFileTypes: strin
     extension = fileInfo.name.split('.').pop();
   }
   for (let i = 0; i < supportedFileTypes.length; i++) {
-      if (supportedFileTypes[i].includes(fileInfo.type) || supportedFileTypes[i].includes(split)) {
+    if (fileInfo.type && supportedFileTypes[i].includes(fileInfo.type) || split && supportedFileTypes[i].includes(split)) {
+      return true;
+    } else {
+      if (extension && supportedFileTypes[i].includes(extension)) {
         return true;
-      } else {
-        if (extension) {
-          if (supportedFileTypes[i].includes(extension)) {
-            return true;
-          }
-        }
       }
+    }
   }
 
   return false;

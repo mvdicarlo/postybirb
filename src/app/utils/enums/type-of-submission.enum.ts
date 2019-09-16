@@ -7,7 +7,7 @@ export enum TypeOfSubmission {
   ANIMATION = 'ANIMATION'
 }
 
-const TypeMapping: any = {
+export const TypeMapping: any = {
   [TypeOfSubmission.ART]: ['image'],
   [TypeOfSubmission.STORY]: ['pdf', 'text', 'rtf', 'doc', 'docx', 'odt', 'md', 'html', 'log'],
   [TypeOfSubmission.AUDIO]: ['mp3', 'mid', 'wav', 'wav', 'mpeg'],
