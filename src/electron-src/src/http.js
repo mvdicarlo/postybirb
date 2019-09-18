@@ -117,16 +117,22 @@ exports.post = (url, partitionId, body, options) => {
       request.write(data);
     } else if (options.multipart) {
       const form = new FormData();
-      Object.keys(body).forEach((key) => {
+      const keys = Object.keys(body);
+      for (var i = 0; i < keys.length; i++) {
+        const key = keys[i];
         const val = body[key];
-        if (val instanceof Array) {
-          for (let i = 0; i < val.length; i++) {
-            appendFormValue(form, key, val[i]);
+        try {
+          if (val instanceof Array) {
+            for (let i = 0; i < val.length; i++) {
+              appendFormValue(form, key, val[i]);
+            }
+          } else {
+            appendFormValue(form, key, val);
           }
-        } else {
-          appendFormValue(form, key, val);
+        } catch (err) {
+          throw new Error(`${url}\nUnable to append form value ${key}=${val}\n${err.message}`);
         }
-      });
+      }
 
       request.setHeader('Content-Type', `multipart/form-data; boundary=${form.getBoundary()}`);
       request.setHeader('Content-Length', form.getLengthSync());
