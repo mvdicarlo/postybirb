@@ -1,3 +1,5 @@
+import { Promisify } from './promisify.helper';
+
 export class BrowserWindowHelper {
   /**
    * Opens a BrowserWindow to a url and then closes it. May be useful for refreshing cookies.
@@ -56,7 +58,7 @@ export class BrowserWindowHelper {
    * @param  url            url to load
    * @return                 result of script
    */
-  public static runScript<T>(profileId: string, url: string, script: string): Promise<T> {
+  public static runScript<T>(profileId: string, url: string, script: string, wait?: number): Promise<T> {
     return new Promise((resolve, reject) => {
       const win = BrowserWindowHelper.createWindow(profileId, url);
       win.once('ready-to-show', () => {
@@ -65,10 +67,19 @@ export class BrowserWindowHelper {
           return;
         }
 
-        win.webContents.executeJavaScript(script)
-          .then(value => resolve(value))
-          .catch(err => reject(err))
-          .finally(() => win.destroy());
+        if (wait) {
+          Promisify.wait(wait).then(() => {
+            win.webContents.executeJavaScript(script)
+              .then(value => resolve(value))
+              .catch(err => reject(err))
+              .finally(() => win.destroy());
+          })
+        } else {
+          win.webContents.executeJavaScript(script)
+            .then(value => resolve(value))
+            .catch(err => reject(err))
+            .finally(() => win.destroy());
+        }
       });
     });
   }

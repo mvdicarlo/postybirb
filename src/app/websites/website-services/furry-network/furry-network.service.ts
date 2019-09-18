@@ -76,7 +76,7 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
           x.token = JSON.parse(localStorage.token);
           x.user = JSON.parse(localStorage.user);
         }
-        x`);
+        x`, 5000); // wait in hopes that refresh token fires
 
     if (data) {
       if (data.token) {
