@@ -226,6 +226,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
     const part1Response = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, initData, {
       cookies,
+      headers: {
+        'Host': 'www.furaffinity.net',
+        'Referer': 'http://www.furaffinity.net/submit/'
+      }
     });
     if (!part1Response.success) {
       return Promise.reject(this.createPostResponse('Unknown error', part1Response.body));
@@ -242,6 +246,17 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         thumbnail: fileAsFormDataObject(postData.thumbnail),
         submission: fileAsFormDataObject(postData.primary),
       };
+
+      if (!part2Data.key) {
+        // fallback to old method
+        const fallback = await got.post(`${this.BASE_URL}/submit/`, initData, this.BASE_URL, cookies);
+        if (!fallback.success) {
+          return Promise.reject(this.createPostResponse('Unknown error', fallback.error));
+        } else {
+          const body = fallback.success.body;
+          part2Data.key = HTMLParser.getInputValue(body, 'key');
+        }
+      }
 
       if (!part2Data.key) {
         return Promise.reject(this.createPostResponse('Unable to retrieve form key', part1Body));
