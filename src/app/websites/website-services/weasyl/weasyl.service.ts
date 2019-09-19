@@ -211,10 +211,10 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
 
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const response = await got.get(url, this.BASE_URL, cookies, postData.profileId);
-    const journalPage: string = response.body;
+    const submissionPage: string = response.body;
 
     const data: any = {
-      token: HTMLParser.getInputValue(journalPage, 'token'),
+      token: HTMLParser.getInputValue(submissionPage, 'token'),
       title: postData.title,
       rating: this.getRating(submission.rating),
       content: postData.description,
@@ -247,12 +247,12 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
     } else {
-      const body = postResponse.success.body || '';
+      const body = (postResponse.success || <any>{} /*somehow this became undefined once*/).body || '';
       if (body.includes('Submission Information')) {
         const res = this.createPostResponse(null);
         res.srcURL = postResponse.success.response.request.uri.href;
         return res;
-      } else if (postResponse.success.body.includes('Choose Thumbnail')) {
+      } else if (body.includes('Choose Thumbnail')) {
         const thumbnailData: any = {
           token: HTMLParser.getInputValue(body, 'token'),
           submitid: HTMLParser.getInputValue(body, 'submitid'),

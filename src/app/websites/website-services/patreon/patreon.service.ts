@@ -145,19 +145,25 @@ export class Patreon extends BaseWebsiteService {
       }
     };
 
-    const create = await got.crPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`, {
-      'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Content-Type': 'application/vnd.api+json',
-      'Host': 'www.patreon.com',
-      'Origin': 'https://www.patreon.com',
-      'Pragma': 'no-cache',
-      'Referer': 'https://www.patreon.com/posts/new',
-      'X-CSRF-Signature': csrf,
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-    }, profileId, createData, true);
+    const create = await ehttp.post(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`,
+      profileId,
+      createData,
+      {
+        cookies,
+        json: true,
+        headers: {
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Content-Type': 'application/vnd.api+json',
+          'Host': 'www.patreon.com',
+          'Origin': 'https://www.patreon.com',
+          'Pragma': 'no-cache',
+          'Referer': 'https://www.patreon.com/posts/new',
+          'X-CSRF-Signature': csrf,
+        }
+      });
 
     const response: any = JSON.parse(create.body);
     const id = response.data.id;
@@ -166,21 +172,28 @@ export class Patreon extends BaseWebsiteService {
       body = JSON.parse(await this.attemptAccessTiers(profileId, id));
     } catch (e) {
       try {
-        const patreonTiers = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`, {
-          'Host': 'www.patreon.com',
-          'Origin': 'https://www.patreon.com',
-          'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-        }, profileId);
+        const patreonTiers = await ehttp.get(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`,
+          profileId,
+          {
+            cookies,
+            headers: {
+              'Host': 'www.patreon.com',
+              'Origin': 'https://www.patreon.com',
+            }
+          });
         const parsedBody: string = patreonTiers.body.replace(/(,:|:,)/gm, ':');
         body = JSON.parse(parsedBody);
       } catch (e) {
         // NOTE: fallback for some users since patreon returns weird json sometimes
-        // Should probably determine a better fix
-        const fallback = await got.crGet(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`, {
-          'Host': 'www.patreon.com',
-          'Origin': 'https://www.patreon.com',
-          'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-        }, profileId);
+        const fallback = await ehttp.get(`${this.BASE_URL}/api/posts/${id}?include=access_rules.tier.null,attachments.null,campaign.access_rules.tier.null,campaign.earnings_visibility,campaign.is_nsfw,images.null,audio.null&fields[access_rule]=access_rule_type`,
+          profileId,
+          {
+            cookies,
+            headers: {
+              'Host': 'www.patreon.com',
+              'Origin': 'https://www.patreon.com',
+            }
+          });
         const parsedBody: string = fallback.body.replace(/(,:|:,)/gm, ':');
         body = JSON.parse(parsedBody);
       }
@@ -271,19 +284,25 @@ export class Patreon extends BaseWebsiteService {
     await BrowserWindowHelper.hitUrl(postData.profileId, 'https://www.patreon.com/posts/new?ru=%2Fhome');
     cookies = await getCookies(postData.profileId, this.BASE_URL)
 
-    const create = await got.crPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`, {
-      'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Content-Type': 'application/vnd.api+json',
-      'Host': 'www.patreon.com',
-      'Origin': 'https://www.patreon.com',
-      'Pragma': 'no-cache',
-      'Referer': 'https://www.patreon.com/posts/new',
-      'X-CSRF-Signature': csrf,
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-    }, postData.profileId, createData, true);
+    const create = await ehttp.post(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`,
+      postData.profileId,
+      createData,
+      {
+        cookies,
+        json: true,
+        headers: {
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Content-Type': 'application/vnd.api+json',
+          'Host': 'www.patreon.com',
+          'Origin': 'https://www.patreon.com',
+          'Pragma': 'no-cache',
+          'Referer': 'https://www.patreon.com/posts/new',
+          'X-CSRF-Signature': csrf,
+        }
+      });
 
     if (!create.body || !create.body.includes('self')) {
       return Promise.reject(this.createPostResponse('Unknown error', create.body));
@@ -351,19 +370,26 @@ export class Patreon extends BaseWebsiteService {
 
     accessRules.forEach(rule => data.included.push(rule));
 
-    const postResponse = await got.crPost(`${this.BASE_URL}/api/posts/${link}?json-api-version=1.0`, {
-      'X-CSRF-Signature': csrf,
-      'Host': 'www.patreon.com',
-      'Referer': 'https://www.patreon.com/posts',
-      'Origin': 'https://www.patreon.com',
-      'Accept': '*/*',
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-    }, postData.profileId, data, true, 'PATCH');
+    const postResponse = await ehttp.post(`${this.BASE_URL}/api/posts/${link}?json-api-version=1.0`,
+      postData.profileId,
+      data,
+      {
+        cookies,
+        json: true,
+        method: 'PATCH',
+        headers: {
+          'X-CSRF-Signature': csrf,
+          'Host': 'www.patreon.com',
+          'Referer': 'https://www.patreon.com/posts',
+          'Origin': 'https://www.patreon.com',
+          'Accept': '*/*',
+        }
+      });
 
-    if (postResponse.statusCode === 200) {
+    if (postResponse.success) {
       return this.createPostResponse(null);
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.body));
+      return Promise.reject(this.createPostResponse('Unknown error', `Post failed on final step\n${postResponse.body}`));
     }
   }
 
@@ -513,21 +539,27 @@ export class Patreon extends BaseWebsiteService {
     };
 
     await BrowserWindowHelper.hitUrl(postData.profileId, 'https://www.patreon.com/posts/new?ru=%2Fhome');
-    cookies = await getCookies(postData.profileId, this.BASE_URL)
+    cookies = await getCookies(postData.profileId, this.BASE_URL);
 
-    const create = await got.crPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`, {
-      'Accept': '*/*',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Content-Type': 'application/vnd.api+json',
-      'Host': 'www.patreon.com',
-      'Origin': 'https://www.patreon.com',
-      'Pragma': 'no-cache',
-      'Referer': 'https://www.patreon.com/posts/new',
-      'X-CSRF-Signature': csrf,
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-    }, postData.profileId, createData, true);
+    const create = await ehttp.post(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`,
+      postData.profileId,
+      createData,
+      {
+        cookies,
+        json: true,
+        headers: {
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'Content-Type': 'application/vnd.api+json',
+          'Host': 'www.patreon.com',
+          'Origin': 'https://www.patreon.com',
+          'Pragma': 'no-cache',
+          'Referer': 'https://www.patreon.com/posts/new',
+          'X-CSRF-Signature': csrf,
+        }
+      });
 
     if (!create.body || !create.body.includes('self')) {
       return Promise.reject(this.createPostResponse('Unknown error', create.body));
@@ -634,23 +666,29 @@ export class Patreon extends BaseWebsiteService {
 
     accessRules.forEach(rule => data.included.push(rule));
 
-    const postResponse = await got.crPost(`${this.BASE_URL}/api/posts/${link}?json-api-version=1.0`, {
-      'X-CSRF-Signature': csrf,
-      'Host': 'www.patreon.com',
-      'Referer': 'https://www.patreon.com/posts',
-      'Origin': 'https://www.patreon.com',
-      'Accept': '*/*',
-      'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-    }, postData.profileId, data, true, 'PATCH');
+    const postResponse = await ehttp.post(`${this.BASE_URL}/api/posts/${link}?json-api-version=1.0`,
+      postData.profileId,
+      data, {
+        method: 'PATCH',
+        json: true,
+        cookies,
+        headers: {
+          'X-CSRF-Signature': csrf,
+          'Host': 'www.patreon.com',
+          'Referer': 'https://www.patreon.com/posts',
+          'Origin': 'https://www.patreon.com',
+          'Accept': '*/*',
+        }
+      });
 
-    if (postResponse.statusCode === 200) {
+    if (postResponse.success) {
       const res = this.createPostResponse(null);
       try {
         res.srcURL = `${this.BASE_URL}${postResponse.body.match(/"patreon_url":".*?"/g)[0].split(':')[1].replace(/"/g, '')}`;
       } catch (e) { /* Don't really care if this fails */ }
       return res;
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.body));
+      return Promise.reject(this.createPostResponse('Unknown error', `Failed on final step\n${postResponse.body}`));
     }
   }
 

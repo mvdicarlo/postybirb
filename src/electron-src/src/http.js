@@ -113,7 +113,7 @@ exports.post = (url, partitionId, body, options) => {
     if (options.json) {
       const data = JSON.stringify(body);
       request.setHeader('Content-Length', data.length);
-      request.setHeader('Content-Type', 'application/json');
+      if (!headers['Content-Type']) request.setHeader('Content-Type', 'application/json');
       request.write(data);
     } else if (options.multipart) {
       const form = new FormData();
@@ -139,7 +139,7 @@ exports.post = (url, partitionId, body, options) => {
       request.write(form.getBuffer());
     } else {
       const encoded = UrlEncoded(body);
-      request.setHeader('Content-Type', 'application/x-www-form-urlencoded');
+      if (!headers['Content-Type']) request.setHeader('Content-Type', 'application/x-www-form-urlencoded');
       request.setHeader('Content-Length', (encoded || '').length);
       request.write(encoded);
     }
