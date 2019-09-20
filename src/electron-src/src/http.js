@@ -152,7 +152,12 @@ exports.post = (url, partitionId, body, options) => {
       request.followRedirect();
     });
 
-    request.on('response', async (response) => {
+    let response;
+    request.on('response', (r) => {
+      response = r;
+    });
+
+    request.on('close', async () => {
       const res = {
         body: (response.data || []).filter(d => !!d).map(d => d.toString()).join(),
         headers: response.headers,
