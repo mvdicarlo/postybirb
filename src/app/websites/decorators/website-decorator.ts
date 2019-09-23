@@ -17,7 +17,7 @@ export interface WebsiteConfig {
   };
   login: { // login dialog information
     dialog?: any; // dialog component
-    url: string;
+    url?: string;
   };
   preparsers?: {
     description?: ((html: string) => string)[]; // A list of parsers that occur before any other parsing

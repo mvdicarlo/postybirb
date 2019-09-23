@@ -55,7 +55,7 @@ exports.get = (url, partitionId, options) => {
       headers
     } = options;
     const _session = session.fromPartition(`persist:${partitionId}`);
-    headers['User-Agent'] = getAgent(options.extendedAgent);
+    if (!headers['User-Agent']) headers['User-Agent'] = getAgent(options.extendedAgent);
     if (options.cookies) headers['Cookie'] = options.cookies.map(c => `${c.name}=${c.value}`).join('; ')
     const request = net.request({
       headers,
@@ -97,7 +97,7 @@ exports.post = (url, partitionId, body, options) => {
       headers
     } = options;
     const _session = session.fromPartition(`persist:${partitionId}`);
-    headers['User-Agent'] = getAgent(options.extendedAgent);
+    if (!headers['User-Agent']) headers['User-Agent'] = getAgent(options.extendedAgent);
     if (options.cookies) headers['Cookie'] = options.cookies.map(c => `${c.name}=${c.value}`).join('; ');
 
     const request = net.request({

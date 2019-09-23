@@ -114,7 +114,7 @@ export class InkBunny extends BaseWebsiteService {
   }
 
   public async authorize(data: { username: string, password: string }, profileId: string): Promise<boolean> {
-    const response = await got.get(`${this.BASE_URL}/api_login.php?username=${data.username}&password=${encodeURIComponent(data.password)}`, this.BASE_URL, [], profileId);
+    const response = await got.get(`${this.BASE_URL}/api_login.php?username=${encodeURIComponent(data.username)}&password=${encodeURIComponent(data.password)}`, this.BASE_URL, [], profileId);
     const body: any = JSON.parse(response.body);
     if (body.sid) {
       this._profileManager.storeData(profileId, InkBunny.name, {

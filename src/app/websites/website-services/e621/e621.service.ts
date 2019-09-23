@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
-import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Website } from '../../decorators/website-decorator';
 import { E621SubmissionForm } from './components/e621-submission-form/e621-submission-form.component';
 import { getTags, supportsFileType } from '../../helpers/website-validator.helper';
@@ -10,6 +9,13 @@ import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plain
 import { BaseWebsiteService } from '../base-website-service';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { E621LoginDialog } from './components/e621-login-dialog/e621-login-dialog.component';
+import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+
+interface e621LoginDetails {
+  username: string;
+  hash: string;
+}
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
@@ -66,7 +72,7 @@ function linkParser(html: string): string {
   acceptsSrcURL: true,
   displayedName: 'e621',
   login: {
-    url: 'https://e621.net/user/login'
+    dialog: E621LoginDialog
   },
   components: {
     submissionForm: E621SubmissionForm
@@ -89,35 +95,47 @@ function linkParser(html: string): string {
 export class E621 extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://e621.net';
 
-  constructor() {
+  constructor(private _profileManager: LoginProfileManagerService) {
     super();
   }
 
-  public async checkStatus(profileId: string): Promise<WebsiteStatus> {
+  public async checkStatus(profileId: string, data?: any): Promise<WebsiteStatus> {
     const returnValue: WebsiteStatus = {
       username: null,
       status: LoginStatus.LOGGED_OUT
     };
 
-    const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/user/home`, this.BASE_URL, cookies, null);
-    try { // Old legacy code that is marked for refactor
-      const body = response.body;
-      const matcher = /Logged in as.*"/g;
-      const aTags = HTMLParser.getTagsOf(body, 'a');
-      if (aTags.length > 0) {
-        for (let i = 0; i < aTags.length; i++) {
-          let tag = aTags[i];
-          if (tag.match(matcher)) {
-            returnValue.username = tag.match(/Logged in as.*"/g)[0].split(' ')[3].replace('"', '') || null;
-            returnValue.status = LoginStatus.LOGGED_IN;
-            break;
-          }
-        }
-      }
-    } catch (e) { /* No important error handling */ }
+    if (data && data.username) {
+      returnValue.username = data.username;
+      returnValue.status = LoginStatus.LOGGED_IN;
+    }
 
     return returnValue;
+  }
+
+  public async authorize(data: { username: string, password: string }, profileId: string): Promise<boolean> {
+    let success: boolean = false;
+    const response = await ehttp.get(`${this.BASE_URL}/user/login.json?name=${encodeURIComponent(data.username)}&password=${encodeURIComponent(data.password)}`, profileId, {
+      headers: {
+        'User-Agent': `PostyBirb/${appVersion}`
+      }
+    });
+
+    try {
+      const info: any = JSON.parse(response.body);
+      if (info.name) {
+        success = true;
+        this._profileManager.storeData(profileId, E621.name, {
+          username: info.name,
+          hash: info.password_hash
+        });
+      }
+    } catch (err) { }
+    return success;
+  }
+
+  public unauthorize(profileId: string): void {
+    this._profileManager.storeData(profileId, E621.name, null);
   }
 
   getRatingTag(rating: SubmissionRating): any {
@@ -135,14 +153,13 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    let cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const formPage = await got.get(`${this.BASE_URL}/post/upload`, this.BASE_URL, cookies, null);
-
+    const userInfo: e621LoginDetails = this._profileManager.getData(postData.profileId, E621.name);
     const data: any = {
+      login: userInfo.username,
+      password_hash: userInfo.hash,
       'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]).join(' ').trim(),
       'post[file]': fileAsFormDataObject(postData.primary),
       'post[rating]': this.getRating(submission.rating),
-      'authenticity_token': HTMLParser.getInputValue(formPage.body, 'authenticity_token'),
       'post[description]': postData.description,
       'post[parent_id]': '',
       'post[upload_url]': ''
@@ -155,36 +172,25 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       data['post[source]'] = options.sourceURL[0] || '';
     }
 
-    formPage.headers['set-cookie'].forEach(c => {
-      const cParts = c.split(';')[0].split('=');
-      const exist = cookies.find(e => e.name === cParts[0]);
-      if (exist) {
-        exist.value = cParts[1]
-      }
-    });
-
-    cookies.push({
-      name: 'mode',
-      value: 'view'
-    });
-
-    const response = await ehttp.post(`${this.BASE_URL}/post/create`, postData.profileId, data, {
-      cookies,
+    const response = await ehttp.post(`${this.BASE_URL}/post/create.json`, postData.profileId, data, {
       multipart: true,
       headers: {
-        'Referer': 'https://e621.net/post/upload',
-        'Origin': 'https://e621.net',
-        'Host': 'e621.net',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;',
+        'User-Agent': `PostyBirb/${appVersion}`
       }
     });
 
-    if (response.statusCode === 200 || response.statusCode === 302) {
-      const res = this.createPostResponse(null);
-      res.srcURL = response.href;
-      return res;
-    } else {
+    try {
+      const postResponse: any = JSON.parse(response.body);
+      if (postResponse.success || postResponse.location) {
+        const res = this.createPostResponse(null);
+        res.srcURL = postResponse.location;
+        return res;
+      } else {
+        return Promise.reject(this.createPostResponse(postResponse.reason || 'Unknown error', response.body));
+      }
+    } catch (e) {
       return Promise.reject(this.createPostResponse('Unknown error', response.body));
     }
+
   }
 }
