@@ -94,7 +94,7 @@ export class NewTumbl extends BaseWebsiteService {
   private async _getBlogs(profileId: string): Promise<void> {
     const cookies = await getCookies(profileId, this.BASE_URL);
     const res = await got.get(`${this.BASE_URL}/blogs`, this.BASE_URL, cookies, null);
-    const json = JSON.parse(res.body.match(/Data_Session.*?{(\s|.)*?;/g)[0].replace(';', '').split('= ')[1]);
+    const json = JSON.parse(res.body.match(/Data_Session.*?{(\s|.)*?;/g)[0].replace(/Data_Session\s*=\s/g, '').replace(';', ''));
     const sets = json.aResultSet || [];
     const blogs: any[] = [];
     for (let i = 0; i < sets.length; i++) {
