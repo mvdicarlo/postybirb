@@ -76,9 +76,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
         },
         allowedStyles: {
           '*': {
-            'color': [/.*/],
-            'text-align': [/.*/],
-            'font-size': [/.*/]
+            'text-align': [/.*/]
           }
         }
       });
