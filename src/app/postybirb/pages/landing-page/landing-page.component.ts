@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';
 import { TabManager } from '../../services/tab-manager.service';
 import { SubmissionDBService } from 'src/app/database/model-services/submission.service';
+import { WebsiteRestrictionsDialog } from 'src/app/websites/components/website-restrictions-dialog/website-restrictions-dialog.component';
 
 @Component({
   selector: 'landing-page',
@@ -61,6 +62,10 @@ export class LandingPage implements OnInit, OnDestroy {
 
   public edit(submission: Submission): void {
     this._tabManager.addTab(submission);
+  }
+
+  public openWebsiteRules(): void {
+    this.dialog.open(WebsiteRestrictionsDialog);
   }
 
 }

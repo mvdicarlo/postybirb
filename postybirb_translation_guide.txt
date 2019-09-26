@@ -1036,6 +1036,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Website Rules",
+  "Translate Me": "Website Rules",
+  "Translated": ""
+}
+
+{
   "Internal": "Websites",
   "Translate Me": "Websites",
   "Translated": ""

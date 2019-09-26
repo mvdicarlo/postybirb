@@ -12,6 +12,8 @@ import { WebsiteStatus, LoginStatus, PostResult, SubmissionPostData } from '../.
 import { Folder } from '../../interfaces/folder.interface';
 import { AryionSubmissionForm } from './components/aryion-submission-form/aryion-submission-form.component';
 
+const ACCEPTED_FILES = ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
@@ -20,7 +22,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Options are incomplete', { website: 'Aryion' }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'], )) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Aryion', value: submission.fileInfo.type }]);
   }
 
@@ -44,6 +46,7 @@ function preparser(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   login: {
     url: 'https://aryion.com/forum/ucp.php?mode=login'
   },

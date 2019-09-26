@@ -11,13 +11,15 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
+const ACCEPTED_FILES = ['jpg', 'jpeg', 'png', 'gif', 'txt', 'mp3', 'midi', 'swf'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   if (submission.rating && submission.rating !== SubmissionRating.GENERAL) {
     problems.push(['Does not support rating', { website: 'Route 50', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'txt', 'mp3', 'midi', 'css', 'swf'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Route 50', value: submission.fileInfo.type }]);
   }
 
@@ -32,6 +34,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   displayedName: 'Route 50',
   login: {
     url: 'http://route50.net'

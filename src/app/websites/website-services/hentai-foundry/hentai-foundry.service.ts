@@ -12,6 +12,8 @@ import * as dotProp from 'dot-prop';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'svg', 'gif'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
@@ -20,7 +22,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Options are incomplete', { website: 'Hentai Foundry' }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'svg', 'gif'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Hentai Foundry', value: submission.fileInfo.type }]);
   }
 
@@ -35,6 +37,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   displayedName: 'Hentai Foundry',
   login: {
     url: 'https://www.hentai-foundry.com/site/login'

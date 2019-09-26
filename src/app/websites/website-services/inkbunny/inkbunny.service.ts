@@ -11,9 +11,11 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { InkbunnySubmissionForm } from './components/inkbunny-submission-form/inkbunny-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'];
+  const supportedFiles: string[] = ACCEPTED_FILES;
 
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'InkBunny', value: submission.fileInfo.type }]);
@@ -52,6 +54,7 @@ function bbcodeParse(bbcode: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   displayedName: 'InkBunny',
   login: {

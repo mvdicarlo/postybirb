@@ -10,9 +10,11 @@ import { PixivSubmissionForm } from './components/pixiv-submission-form/pixiv-su
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif'];
+  const supportedFiles: string[] = ACCEPTED_FILES;
 
   const tags = getTags(submission, Pixiv.name);
   if (tags.length < 1) problems.push(['Requires minimum tags', { website: 'Pixiv', value: 1 }]);
@@ -38,6 +40,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   postWaitInterval: 60000 * 10, // 10 minutes
   login: {

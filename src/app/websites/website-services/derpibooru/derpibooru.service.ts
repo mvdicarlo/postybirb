@@ -14,11 +14,13 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 import { Promisify } from 'src/app/utils/helpers/promisify.helper';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'svg', 'gif', 'webm']
+
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, Derpibooru.name);
   if (tags.length < 3) problems.push(['Requires minimum tags', { website: 'Derpibooru', value: 3 }]);
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'svg', 'gif', 'webm'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Derpibooru', value: submission.fileInfo.type }]);
   }
 
@@ -58,6 +60,7 @@ function descriptionParser(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   acceptsSrcURL: true,
   displayedName: 'Derpibooru',
   login: {

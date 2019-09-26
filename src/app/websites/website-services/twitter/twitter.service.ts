@@ -11,9 +11,11 @@ import { MBtoBytes, isGIF, isType } from 'src/app/utils/helpers/file.helper';
 import { TwitterSubmissionForm } from './components/twitter-submission-form/twitter-submission-form.component';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'];
+  const supportedFiles: string[] = ACCEPTED_FILES;
 
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Twitter', value: submission.fileInfo.type }]);
@@ -60,6 +62,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   login: {
     dialog: TwitterLoginDialog,

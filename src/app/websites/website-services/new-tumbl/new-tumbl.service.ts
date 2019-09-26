@@ -9,9 +9,11 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'mp4'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'mp4'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'newTumbl', value: submission.fileInfo.type }]);
   }
 
@@ -34,6 +36,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   displayedName: 'newTumbl',
   login: {

@@ -12,11 +12,13 @@ import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
 
+const ACCEPTED_FILES = ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3']
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, Weasyl.name);
   if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'Weasyl', value: 2 }]);
-  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
   }
 
@@ -61,6 +63,7 @@ function preparser(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   login: {
     url: 'https://www.weasyl.com/signin'
   },

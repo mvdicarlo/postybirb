@@ -14,11 +14,13 @@ import { Folder } from '../../interfaces/folder.interface';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, SoFurry.name);
   if (tags.length < 2) problems.push(['Requires minimum tags', { website: 'SoFurry', value: 2 }]);
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'SoFurry', value: submission.fileInfo.type }]);
   }
 
@@ -39,6 +41,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   displayedName: 'SoFurry',
   login: {
     url: 'https://www.sofurry.com/user/login'

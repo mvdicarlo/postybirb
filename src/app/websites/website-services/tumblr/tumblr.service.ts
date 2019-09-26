@@ -12,9 +12,11 @@ import { TumblrSubmissionForm } from './components/tumblr-submission-form/tumblr
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { CustomHTMLParser } from 'src/app/utils/helpers/description-parsers/html.parser';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif', 'mp3', 'mp4'];
+  const supportedFiles: string[] = ACCEPTED_FILES;
 
   if (submission.rating && (submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME)) {
     problems.push(['Does not support rating', { website: 'Tumblr', value: submission.rating }]);
@@ -52,6 +54,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   refreshInterval: 45 * 60000,
   login: {

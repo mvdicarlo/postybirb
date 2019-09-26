@@ -1,0 +1,31 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ 'Website Rules' | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <table class="table table-dark table-striped table-hover">
+    <thead>
+      <th>{{ 'Website' | translate }}</th>
+      <th>Supports Journals</th>
+      <th>Supports Additional Files</th>
+      <th>Accepted Formats</th>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of restrictions | keyvalue">
+        <td>{{ r.key }}</td>
+        <td>{{ (r.value.journals ? 'Yes' : 'No') | translate }}</td>
+        <td>{{ (r.value.additionalFiles ? 'Yes' : 'No') | translate }}</td>
+        <td>{{ r.value.acceptedFiles.join(' ') }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" style="flex: 1">{{ 'Close' | translate }}</button>
+</div>

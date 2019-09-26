@@ -14,9 +14,11 @@ import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submis
 import * as dotProp from 'dot-prop';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif']
+
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['jpeg', 'jpg', 'png', 'gif'];
+  const supportedFiles: string[] = ACCEPTED_FILES;
 
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'FurryLife', value: submission.fileInfo.type }]);
@@ -48,6 +50,7 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   displayedName: 'FurryLife',
   login: {

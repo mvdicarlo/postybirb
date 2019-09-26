@@ -10,10 +10,12 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo, ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Furiffic', value: submission.fileInfo.type }]);
   }
 
@@ -40,6 +42,7 @@ function descriptionParse(bbcode: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   login: {
     url: 'https://www.furiffic.com/'
   },

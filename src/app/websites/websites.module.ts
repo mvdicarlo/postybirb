@@ -88,6 +88,7 @@ import { FurAffinityJournalForm } from './website-services/fur-affinity/componen
 import { FurryLifeSubmissionForm } from './website-services/furry-life/components/furry-life-submission-form/furry-life-submission-form.component';
 import { NewTumblSubmissionForm } from './website-services/new-tumbl/components/new-tumbl-submission-form/new-tumbl-submission-form.component';
 import { E621LoginDialog } from './website-services/e621/components/e621-login-dialog/e621-login-dialog.component';
+import { WebsiteRestrictionsDialog } from './components/website-restrictions-dialog/website-restrictions-dialog.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -135,6 +136,7 @@ export function INIT_WEBSITE_REGISTRY() {
     FurryLifeSubmissionForm,
     NewTumblSubmissionForm,
     E621LoginDialog,
+    WebsiteRestrictionsDialog,
   ],
   imports: [
     CommonModule,
@@ -197,6 +199,7 @@ export function INIT_WEBSITE_REGISTRY() {
     TwitterLoginDialog,
     TwitterSubmissionForm,
     WeasylSubmissionForm,
+    WebsiteRestrictionsDialog,
   ],
   providers: [
     {

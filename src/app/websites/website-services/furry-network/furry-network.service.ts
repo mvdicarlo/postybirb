@@ -15,10 +15,12 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 import { ISubmissionFileWithArray } from 'src/app/database/tables/submission-file.table';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'mp3', 'mp4', 'webm', 'swf', 'gif', 'wav', 'txt', 'plain'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
-  if (!supportsFileType(submission.fileInfo, ['png', 'jpeg', 'jpg', 'mp3', 'mp4', 'webm', 'swf', 'gif', 'wav', 'txt', 'plain'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Furry Network', value: submission.fileInfo.type }]);
   }
 
@@ -36,6 +38,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   displayedName: 'Furry Network',
   refreshBeforePost: true,
   login: {

@@ -17,11 +17,13 @@ interface e621LoginDetails {
   hash: string;
 }
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'webm'];
+
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const tags = getTags(submission, E621.name);
   if (tags.length < 4) problems.push(['Requires minimum tags', { website: 'e621', value: 4 }]);
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'webm'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'e621', value: submission.fileInfo.type }]);
   }
 
@@ -69,6 +71,7 @@ function linkParser(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   acceptsSrcURL: true,
   displayedName: 'e621',
   login: {

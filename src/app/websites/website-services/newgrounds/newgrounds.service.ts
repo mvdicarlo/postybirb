@@ -11,6 +11,8 @@ import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'bmp'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
@@ -19,7 +21,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Options are incomplete', { website: 'Newgrounds' }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'gif', 'bmp'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Newgrounds', value: submission.fileInfo.type }]);
   }
 
@@ -40,6 +42,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   displayedName: 'Newgrounds',
   login: {
     url: 'https://www.newgrounds.com/login'

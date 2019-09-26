@@ -13,6 +13,8 @@ import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-
 import { Folder } from '../../interfaces/folder.interface';
 import { DeviantArtSubmissionForm } from './components/deviant-art-submission-form/deviant-art-submission-form.component';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt', 'swf', 'tiff', 'tif'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
@@ -20,7 +22,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Does not support rating', { website: 'DeviantArt', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt', 'swf', 'tiff', 'tif'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'DeviantArt', value: submission.fileInfo.type }]);
   }
 
@@ -61,6 +63,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   refreshInterval: 5 * 60000,
   refreshBeforePost: true,
   login: {

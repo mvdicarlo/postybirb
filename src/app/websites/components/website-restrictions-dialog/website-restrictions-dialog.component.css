@@ -1,0 +1,9 @@
+mat-icon {
+  cursor: pointer;
+}
+
+.close-button {
+  background-color: transparent;
+  border: none;
+  outline: none;
+}

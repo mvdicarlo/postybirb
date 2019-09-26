@@ -11,6 +11,8 @@ import { LoginStatus, WebsiteStatus, SubmissionPostData, PostResult } from '../.
 import { KoFiSubmissionForm } from './components/ko-fi-submission-form/ko-fi-submission-form.component';
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
 
@@ -18,7 +20,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Does not support rating', { website: 'Ko-fi', value: submission.rating }]);
   }
 
-  if (!supportsFileType(submission.fileInfo, ['jpeg', 'jpg', 'png'])) {
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
     problems.push(['Does not support file format', { website: 'Ko-fi', value: submission.fileInfo.type }]);
   }
 
@@ -29,6 +31,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   displayedName: 'Ko-fi',
   login: {
     url: 'https://ko-fi.com/account/login'

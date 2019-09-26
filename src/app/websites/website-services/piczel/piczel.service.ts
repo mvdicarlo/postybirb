@@ -9,10 +9,12 @@ import { Folder } from '../../interfaces/folder.interface';
 import { PiczelSubmissionForm } from './components/piczel-submission-form/piczel-submission-form.component';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif'];
-  
+  const supportedFiles: string[] = ACCEPTED_FILES;
+
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'Piczel', value: submission.fileInfo.type }]);
   }
@@ -34,6 +36,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   login: {
     url: 'https://piczel.tv/login'

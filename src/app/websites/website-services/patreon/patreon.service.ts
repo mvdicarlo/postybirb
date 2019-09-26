@@ -13,9 +13,11 @@ import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper
 import { Folder } from '../../interfaces/folder.interface';
 import * as dotProp from 'dot-prop';
 
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'];
+
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  const supportedFiles: string[] = ['png', 'jpeg', 'jpg', 'gif', 'midi', 'ogg', 'oga', 'wav', 'x-wav', 'webm', 'mp3', 'mpeg', 'pdf', 'txt', 'rtf', 'md'];
+  const supportedFiles: string[] = ACCEPTED_FILES;
 
   if (submission.submissionType === SubmissionType.SUBMISSION) {
     if (!supportsFileType(submission.fileInfo, supportedFiles)) {
@@ -61,6 +63,7 @@ function descriptionParse(html: string): string {
   providedIn: 'root'
 })
 @Website({
+  acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   login: {
     url: 'https://www.patreon.com/login'
