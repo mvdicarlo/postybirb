@@ -81,6 +81,7 @@
         <button mat-button color="accent" (click)="saveTemplate()">{{ 'Save To Template' | translate }}</button>
       </div>
       <div>
+        <button mat-button color="accent" [matTooltip]="'Preview' | translate" (click)="preview()"><i class="fa fa-search"></i></button>
         <button mat-button color="accent" (click)="saveBulkUpdates()">{{ 'Save' | translate }}</button>
       </div>
     </div>

@@ -17,6 +17,7 @@ import { TemplateSelectDialog } from 'src/app/templates/components/template-sele
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
 import { QueueInserterService } from '../../services/queue-inserter.service';
 import { ImagePreviewDialog } from '../image-preview-dialog/image-preview-dialog.component';
+import { SubmissionPreviewDialog } from '../submission-preview-dialog/submission-preview-dialog.component';
 
 @Component({
   selector: 'submission-record-view',
@@ -230,6 +231,12 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
       maxWidth: '100vw',
       maxHeight: '100vh',
       panelClass: 'transparent-dialog'
+    });
+  }
+
+  public preview(): void {
+    this.dialog.open(SubmissionPreviewDialog, {
+      data: this.submission
     });
   }
 

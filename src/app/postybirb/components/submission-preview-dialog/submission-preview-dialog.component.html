@@ -1,0 +1,38 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ data.title || 'Untitled' }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+<div mat-dialog-content>
+  <div>
+    {{ 'Rating' | translate }}: {{ (data.rating || 'None') | translate }}
+  </div>
+  <br>
+  <div class="text-warning">
+    All descriptions are approximations and may differ as each website handles description formatting differently.
+  </div>
+  <div *ngFor="let w of websites | keyvalue" class="mb-4" style="pointer-events: none">
+    <h5 class="w-100">{{ w.key }}</h5>
+    <div class="w-100">
+      <h6>{{ 'Description' | translate }} ({{ w.value.description.length }})</h6>
+      <div *ngIf="w.value.description.includes('<br')">
+        <p [innerHTML]="w.value.description"></p>
+      </div>
+      <div *ngIf="!w.value.description.includes('<br')">
+        <p [innerText]="w.value.description"></p>
+      </div>
+    </div>
+    <div class="w-100" class="mt-1">
+      <h6>{{ 'Tags' | translate }}</h6>
+      {{ w.value.tags.join(', ') }}
+    </div>
+  </div>
+</div>
+<div mat-dialog-actions class="confirm-actions">
+  <button mat-flat-button mat-dialog-close color="warn" style="flex: 1">{{ 'Close' | translate }}</button>
+</div>

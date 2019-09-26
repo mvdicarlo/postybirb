@@ -667,6 +667,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Preview",
+  "Translate Me": "Preview",
+  "Translated": ""
+}
+
+{
   "Internal": "Profanity",
   "Translate Me": "Profanity",
   "Translated": ""

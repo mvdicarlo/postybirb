@@ -2,6 +2,14 @@
 
 .submission-posting-info-container {
   font-size: 12px;
+  position: relative;
+
+  .preview-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    cursor: pointer;
+  }
 }
 
 .status {

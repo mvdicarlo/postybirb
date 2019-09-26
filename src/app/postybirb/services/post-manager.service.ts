@@ -46,6 +46,22 @@ export class PostManagerService {
     });
   }
 
+  public getSimpleSubmissionPostData(website: string, submission: Submission): SubmissionPostData {
+    return {
+      title: submission.title || 'New Submission',
+      additionalFiles: [],
+      description: this._parseDescription(getDescription(submission, website), website),
+      loginInformation: null,
+      options: {},
+      primary: null,
+      profileId: submission.formData.loginProfile,
+      srcURLs: [],
+      tags: getTags(submission, website),
+      thumbnail: null,
+      typeOfSubmission: null
+    };
+  }
+
   public async post(website: string, submissionToPost: Submission): Promise<any> {
     try {
       if (this.refreshBeforePostWebsites.includes(website)) {

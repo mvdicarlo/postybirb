@@ -3,6 +3,8 @@ import { Submission } from 'src/app/database/models/submission.model';
 import { PostQueueService } from '../../services/post-queue.service';
 import { Subscription } from 'rxjs';
 import { QueueInserterService } from '../../services/queue-inserter.service';
+import { SubmissionPreviewDialog } from '../submission-preview-dialog/submission-preview-dialog.component';
+import { MatDialog } from '@angular/material';
 
 @Component({
   selector: 'submission-posting-view',
@@ -17,7 +19,7 @@ export class SubmissionPostingViewComponent implements OnInit, OnDestroy {
   public wait: Date;
   public postingWebsite: string;
 
-  constructor(private _postQueue: PostQueueService, private _queueInserter: QueueInserterService, private _changeDetector: ChangeDetectorRef) { }
+  constructor(private _postQueue: PostQueueService, private _queueInserter: QueueInserterService, private _changeDetector: ChangeDetectorRef, private dialog: MatDialog) { }
 
   ngOnInit() {
     this.queueListener = this._postQueue.statusUpdates.subscribe(update => {
@@ -43,6 +45,12 @@ export class SubmissionPostingViewComponent implements OnInit, OnDestroy {
 
   public getProgress(): number {
     return Math.floor(((this.submission.postStats.success.length + this.submission.postStats.fail.length) / this.submission.postStats.originalCount) * 100);
+  }
+
+  public preview(): void {
+    this.dialog.open(SubmissionPreviewDialog, {
+      data: this.submission
+    });
   }
 
 }

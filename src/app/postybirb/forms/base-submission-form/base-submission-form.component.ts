@@ -21,6 +21,7 @@ import * as dotProp from 'dot-prop';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
 import { QueueInserterService } from '../../services/queue-inserter.service';
 import { LoginProfile } from 'src/app/login/interfaces/login-profile';
+import { SubmissionPreviewDialog } from '../../components/submission-preview-dialog/submission-preview-dialog.component';
 
 @Component({
   selector: 'base-submission-form',
@@ -290,6 +291,12 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
           }
         });
     }
+  }
+
+  public preview(): void {
+    this.dialog.open(SubmissionPreviewDialog, {
+      data: this.submission
+    });
   }
 
   public saveTemplate(): void {

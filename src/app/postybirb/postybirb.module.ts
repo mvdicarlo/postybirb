@@ -55,6 +55,7 @@ import { ImagePreviewDialog } from './components/image-preview-dialog/image-prev
 import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.component';
 import { LandingPage } from './pages/landing-page/landing-page.component';
 import { LoginProfilePage } from './pages/login-profile-page/login-profile-page.component';
+import { SubmissionPreviewDialog } from './components/submission-preview-dialog/submission-preview-dialog.component';
 
 @NgModule({
   declarations: [
@@ -76,6 +77,7 @@ import { LoginProfilePage } from './pages/login-profile-page/login-profile-page.
     FileDropDialog,
     LandingPage,
     LoginProfilePage,
+    SubmissionPreviewDialog,
   ],
   imports: [
     CommonModule,
@@ -120,6 +122,7 @@ import { LoginProfilePage } from './pages/login-profile-page/login-profile-page.
     ImagePreviewDialog,
     SubmissionSelectDialog,
     FileDropDialog,
+    SubmissionPreviewDialog,
   ]
 })
 export class PostybirbModule { }
