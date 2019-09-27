@@ -32,7 +32,7 @@ declare function getFileIcon(path: string, opts: any, callback: any): any;
 declare function getClipboardFormats(): any;
 declare function readClipboard(): any;
 declare function writeToClipboard(data: any): void;
-declare function writeJsonToFile(fileName: string, data: any): void;
+declare function writeJsonToFile(fileName: string, data: any, options?: any): void;
 declare function readJsonFile(fileName: string): Promise<any>;
 declare function relaunch(): void;
 declare var BrowserWindow: any; // Electron BrowserWindow

@@ -165,8 +165,8 @@ try {
    * @param  {string} fileName Name of the file to write to
    * @param  {object} data     Data to be written
    */
-  window.writeJsonToFile = function writeJsonToFile(fileName, data) {
-    fs.writeJson(path.join(app.getPath('userData'), 'data', `${fileName}.json`), data, (err) => {
+  window.writeJsonToFile = function writeJsonToFile(fileName, data, options) {
+    fs.writeJson(path.join(app.getPath('userData'), 'data', `${fileName}.json`), data, options || {}, (err) => {
       if (err) {
         console.error(err);
       }

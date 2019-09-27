@@ -17,7 +17,7 @@ export class ErrorLoggerHandler extends ErrorHandler {
     super();
 
     window.addEventListener('error', function(event: ErrorEvent) {
-      this._logErrorToServer({
+      this._log({
         type: event.type,
         message: event.message,
         timestamp: event.timeStamp,
@@ -39,7 +39,7 @@ export class ErrorLoggerHandler extends ErrorHandler {
 
   handleError(error) {
     super.handleError(error);
-    this._logErrorToServer({
+    this._log({
       type: 'Angular Handle Error',
       message: error.message,
       timestamp: Date.now(),
@@ -47,7 +47,7 @@ export class ErrorLoggerHandler extends ErrorHandler {
     });
   }
 
-  private _logErrorToServer(error: ErrorMessage): void {
+  private _log(error: ErrorMessage): void {
     if (error.stack) {
       if (error.stack.includes('throwRPCError')) return;
       if (error.stack.includes('ExpressionChangedAfterItHasBeenCheckedError')) return;
@@ -56,19 +56,29 @@ export class ErrorLoggerHandler extends ErrorHandler {
 
     if (error.message) {
       if (error.message.includes('version.html')) return;
+      if (!error.message.includes('ExpressionChangedAfterItHasBeenCheckedError')) return;
     }
 
     error.version = appVersion;
+    this._logErrorToServer(error);
+    this._logErrorToLocal(error);
+  }
+
+  private _logErrorToServer(error: ErrorMessage): void {
     if (isDevMode()) {
       console.log('Caught Error', error);
       alert(error.message);
     } else {
       if (this.seenList.includes(error.message)) return;
       this.seenList.push(error.message);
-      if (error.message && !error.message.includes('ExpressionChangedAfterItHasBeenCheckedError')) {
+      if (error.message) {
         this.http.post('https://postybirb-error-server.now.sh/log/error', { errorLog: error })
-        .subscribe(res => console.debug('Error logging success', res), err => console.debug('Error logging failure', err));
+          .subscribe(res => console.debug('Error logging success', res), err => console.debug('Error logging failure', err));
       }
     }
+  }
+
+  private _logErrorToLocal(error: ErrorMessage): void {
+    writeJsonToFile('postybirb_error_logs', error, { flag: 'a' });
   }
 }
