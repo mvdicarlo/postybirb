@@ -29,7 +29,7 @@
             <img (click)="thumbnailChange.click()" [src]="submission.id | thumbnail: 'THUMBNAIL' | async | objectURL: '100' | safe">
             <div class="text-center">{{ 'Thumbnail' | translate }}</div>
             <div class="size px-1">&le; 5MB</div>
-            <i class="fas fa-times warn-text" (click)="removeThumbnail()" *ngIf="submission.fileMap.THUMBNAIL"></i>
+            <i class="fas fa-times warn-text" (click)="removeThumbnail()" *ngIf="submission.hasThumbnail()"></i>
             <input #thumbnailChange type="file" class="d-none" accept="image/jpeg,image/png" single (change)="updateThumbnail($event)">
           </div>
         </div>

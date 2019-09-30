@@ -29,7 +29,7 @@ import { Subscription } from 'rxjs';
 export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('thumbnailChange') thumbnailInput: ElementRef;
   @ViewChild('additionalImageInput') additionalImageInput: ElementRef;
-  private submissionChangeSubscription: Subscription = Subscription.EMPTY;''
+  private submissionChangeSubscription: Subscription = Subscription.EMPTY;
 
   constructor(
     injector: Injector,
@@ -119,15 +119,9 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
           this._changeDetector.markForCheck();
           this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.ADDITIONAL_FILE, results)
             .then(info => {
-              const additionalMap = this.submission.additionalFileInfo || [];
-              const newMap = Object.assign({}, this.submission.fileMap);
-              if (!newMap.ADDITIONAL) newMap.ADDITIONAL = [];
               info.forEach(i => {
-                newMap.ADDITIONAL.push(i.id);
-                additionalMap.push(i.fileInfo);
+                this.submission.addAdditionalFile(i.id, i.fileInfo);
               });
-              this.submission.fileMap = newMap;
-              this.submission.additionalFileInfo = [...additionalMap];
             })
             .finally(() => {
               this.hideForReload = false;
@@ -185,28 +179,19 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
   public removeAdditionalImage(id: number): void {
     this._submissionFileDB.deleteSubmissionFileById(id)
       .finally(() => {
-        const index: number = this.submission.fileMap.ADDITIONAL.indexOf(id);
-        if (index !== -1) {
-          this.submission.fileMap.ADDITIONAL.splice(index, 1);
-          this.submission.additionalFileInfo.splice(index, 1);
-          this.submission.fileMap = Object.assign({}, this.submission.fileMap);
-          this.submission.additionalFileInfo = [...this.submission.additionalFileInfo];
-          this._changeDetector.markForCheck();
-        }
+        this.submission.removeAdditionalFile(id);
       });
   }
 
   public removeThumbnail(): void {
+    if (!this.submission.hasThumbnail()) return;
     this.loading = true;
     this.hideForReload = true;
 
     this._changeDetector.markForCheck();
     this._submissionFileDB.deleteSubmissionFileById(this.submission.fileMap.THUMBNAIL)
       .finally(() => {
-        const fileMap = this.submission.fileMap;
-        delete fileMap.THUMBNAIL;
-        this.submission.fileMap = Object.assign({}, fileMap);
-
+        this.submission.setThumbnailFile(null);
         this.hideForReload = false;
         this.loading = false;
         this._changeDetector.markForCheck();
@@ -241,7 +226,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
             .subscribe(buffer => {
               if (buffer) {
                 data.buffer = buffer;
-                if (this.submission.fileMap.THUMBNAIL) { // Update file
+                if (this.submission.hasThumbnail()) { // Update file
                   this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data, true)
                     .then(() => {
                       this.hideForReload = false;
@@ -251,12 +236,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
                 } else { // Create first time db record
                   this._submissionFileDB.createSubmissionFiles(this.submission.id, SubmissionFileType.THUMBNAIL_FILE, [data])
                     .then(info => {
-                      const newMap = Object.assign({}, this.submission.fileMap);
-                      newMap.THUMBNAIL = info[0].id;
-                      this.submission.fileMap = newMap;
-                    })
-                    .catch(err => {
-                      console.error(err);
+                      this.submission.setThumbnailFile(info[0].id);
                     })
                     .finally(() => {
                       this.hideForReload = false;
@@ -293,10 +273,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
 
   public swapAdditionalImages(event: CdkDragDrop<string[]>): void {
     if (event.previousIndex === event.currentIndex) return;
-    moveItemInArray(this.submission.fileMap.ADDITIONAL, event.previousIndex, event.currentIndex);
-    moveItemInArray(this.submission.additionalFileInfo, event.previousIndex, event.currentIndex);
-    this.submission.fileMap = Object.assign({}, this.submission.fileMap);
-    this.submission.additionalFileInfo = [...this.submission.additionalFileInfo];
+    this.submission.swapAdditionalFileOrder(event.previousIndex, event.currentIndex);
     this._changeDetector.markForCheck();
   }
 

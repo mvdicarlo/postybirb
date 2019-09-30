@@ -267,11 +267,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
                   // cache and build file mapping
                   insertResults.forEach(r => this._submissionCache.store(r)); // is this still necessary?
                   for (let i = 0; i < flat.length; i++) {
-                    insertResults[i].fileMap = {
-                      [SubmissionFileType.PRIMARY_FILE]: flat[i].id,
-                      [SubmissionFileType.THUMBNAIL_FILE]: null,
-                      [SubmissionFileType.ADDITIONAL_FILE]: [],
-                    }
+                    insertResults[i].setPrimaryFile(flat[i].id);
 
                     if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
                       insertResults[i].fileInfo = flat[i].fileInfo;
@@ -296,12 +292,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
     revive.id = undefined;
     let file: File;
     if (revive.submissionType === SubmissionType.SUBMISSION) {
-      revive.fileMap = {
-        PRIMARY: -1,
-        THUMBNAIL: null,
-        ADDITIONAL: []
-      };
-
+      delete revive.fileMap;
       try {
         const response = await fetch(revive.fileInfo.path);
         const blob = await response.blob();
@@ -353,11 +344,7 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
             // cache and build file mapping
             insertResults.forEach(r => this._submissionCache.store(r));
             for (let i = 0; i < flat.length; i++) {
-              insertResults[i].fileMap = {
-                [SubmissionFileType.PRIMARY_FILE]: flat[i].id,
-                [SubmissionFileType.THUMBNAIL_FILE]: null,
-                [SubmissionFileType.ADDITIONAL_FILE]: [],
-              }
+              insertResults[i].setPrimaryFile(flat[i].id);
 
               if (insertResults[i].fileInfo.size != flat[i].fileInfo.size) {
                 insertResults[i].fileInfo = flat[i].fileInfo;

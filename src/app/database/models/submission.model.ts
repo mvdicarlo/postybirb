@@ -1,9 +1,11 @@
 import { ISubmission, SubmissionRating, SubmissionType, FileMap } from '../tables/submission.table';
 import { Observable, Subject } from 'rxjs';
-import { FileObject } from '../tables/submission-file.table';
+import { FileObject, SubmissionFileType } from '../tables/submission-file.table';
 import { DescriptionData } from 'src/app/utils/components/description-input/description-input.component';
 import { TagData } from 'src/app/utils/components/tag-input/tag-input.component';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 
 export interface SubmissionFormData {
   websites: string[];
@@ -99,11 +101,9 @@ export class Submission implements ISubmission {
   private _rating: SubmissionRating;
 
   // Need to be careful about setting these - have to pass back in the whole object
-  get fileMap(): FileMap { return this._fileMap }
+  get fileMap(): FileMap { return copyObject(this._fileMap) }
   set fileMap(fileMap: FileMap) {
-    const old = this._fileMap;
     this._fileMap = fileMap;
-    this._emitChange('fileMap', old, fileMap);
   }
   private _fileMap: FileMap;
 
@@ -165,10 +165,22 @@ export class Submission implements ISubmission {
     this.schedule = submission.schedule;
     this.submissionType = submission.submissionType;
     this.rating = submission.rating;
+    this.formData = submission.formData || <any>{ websites: [] };
+
+    this._fileMap = {
+      PRIMARY: null,
+      THUMBNAIL: null,
+      ADDITIONAL: []
+    };
+
+    if (submission.fileMap) {
+      this._fileMap.PRIMARY = submission.fileMap.PRIMARY;
+      this._fileMap.THUMBNAIL = submission.fileMap.THUMBNAIL;
+      this._fileMap.ADDITIONAL = submission.fileMap.ADDITIONAL || []
+    }
+
     this.fileInfo = submission.fileInfo;
     this.additionalFileInfo = submission.additionalFileInfo || [];
-    this.fileMap = submission.fileMap;
-    this.formData = submission.formData || <any>{ websites: [] };
 
     // Perform any regeneration form data somehow gets into a bad state
     this.formData.websites = this.formData.websites || [];
@@ -203,7 +215,7 @@ export class Submission implements ISubmission {
 
   public asISubmission(): ISubmission {
     const { id, rating, title, schedule, submissionType, fileInfo, additionalFileInfo, fileMap, formData } = this;
-    return JSON.parse(JSON.stringify(
+    return copyObject(
       {
         id,
         rating,
@@ -215,7 +227,7 @@ export class Submission implements ISubmission {
         fileMap,
         formData
       }
-    )); // using stringify/parse to ensure unique object
+    ); // using stringify/parse to ensure unique object
   }
 
   /**
@@ -223,6 +235,68 @@ export class Submission implements ISubmission {
    */
   public cleanUp(): void {
     this.changeSubject.complete();
+  }
+
+  public hasPrimary(): boolean {
+    return this._fileMap.PRIMARY !== null;
+  }
+
+  public hasThumbnail(): boolean {
+    return this._fileMap.THUMBNAIL !== null;
+  }
+
+  public setPrimaryFile(id: number): void {
+    if (this._fileMap.PRIMARY !== id) {
+      const old = copyObject(this._fileMap);
+      this._fileMap.PRIMARY = id;
+      this._emitFileMapUpdate(old);
+    }
+  }
+
+  public setThumbnailFile(id: number): void {
+    if (this._fileMap.THUMBNAIL !== id) {
+      const old = copyObject(this._fileMap);
+      this._fileMap.THUMBNAIL = id;
+      this._emitFileMapUpdate(old);
+    }
+  }
+
+  public addAdditionalFile(id: number, file: FileObject): void {
+    if (!this._fileMap.ADDITIONAL.includes(id)) {
+      const old = copyObject(this._fileMap);
+      this._fileMap.ADDITIONAL.push(id);
+      this._emitFileMapUpdate(old);
+
+      const fileInfo = [...this.additionalFileInfo];
+      fileInfo.push(file);
+      this.additionalFileInfo = fileInfo;
+    }
+  }
+
+  public removeAdditionalFile(id: number): void {
+    const index: number = this._fileMap.ADDITIONAL.indexOf(id);
+    if (index !== -1) {
+      const old = copyObject(this._fileMap);
+      this._fileMap.ADDITIONAL.splice(index, 1);
+      this._emitFileMapUpdate(old);
+
+      const fileInfo = [...this.additionalFileInfo];
+      fileInfo.splice(index, 1);
+      this.additionalFileInfo = fileInfo;
+    }
+  }
+
+  public swapAdditionalFileOrder(prevIndex: number, newIndex: number): void {
+    const oldMap = copyObject(this._fileMap);
+    const newFileInfo = [...this.additionalFileInfo];
+    moveItemInArray(newFileInfo, prevIndex, newIndex);
+    moveItemInArray(this._fileMap.ADDITIONAL, prevIndex, newIndex);
+    this._emitFileMapUpdate(oldMap);
+    this.additionalFileInfo = newFileInfo;
+  }
+
+  private _emitFileMapUpdate(old: any): void {
+    this._emitChange('fileMap', old, this.fileMap);
   }
 
   /**

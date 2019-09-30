@@ -6,9 +6,9 @@
 
   <div class="submission-info-container d-flex">
     <div class="img mr-1" *ngIf="!hideForReload" (click)="fileChange.click()">
-      <img *ngIf="submission.submissionType === 'SUBMISSION' && submission.fileMap" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
+      <img *ngIf="submission.hasPrimary()" [src]="submission.id | thumbnail: 'PRIMARY' | async | objectURL | safe" [alt]="submission.fileInfo.name" [title]="submission.fileInfo.name">
       <mat-icon *ngIf="submission.submissionType === 'JOURNAL'">comment</mat-icon>
-      <i *ngIf="submission.submissionType === 'SUBMISSION' && submission.fileInfo.type.includes('image')" class="fas fa-search-plus preview pl-1 pb-1" (click)="openPreview($event)"></i>
+      <i *ngIf="submission.hasPrimary() && submission.fileInfo.type.includes('image')" class="fas fa-search-plus preview pl-1 pb-1" (click)="openPreview($event)"></i>
     </div>
     <form [formGroup]="form" class="submission-controls">
       <input formControlName="title" maxlength="50" [placeholder]="'Title' | translate" class="w-100 submission-input">

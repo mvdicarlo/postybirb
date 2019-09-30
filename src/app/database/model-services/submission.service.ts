@@ -111,33 +111,24 @@ export class SubmissionDBService extends DatabaseService {
   public async duplicate(id: number, title?: string): Promise<void> {
     const submission: Submission = this._cache.get(id);
     if (submission) {
-      const copy = Object.assign({}, submission.asISubmission());
+      const copy = submission.asISubmission();
       copy.title = title;
-      copy.fileMap = null;
+      delete copy.fileMap;
       delete copy.id;
+      delete copy.additionalFileInfo;
       const inserts = await this.createSubmissions([copy]);
-      const duplicateSubmission = inserts[0];
+      const [duplicateSubmission] = inserts;
       if (duplicateSubmission && duplicateSubmission.submissionType === SubmissionType.SUBMISSION) {
         const files: ISubmissionFile[] = await this._submissionFileDB.duplicateWithSubmissionId(id, duplicateSubmission.id);
-        const fileMap: FileMap = {
-          ADDITIONAL: []
-        };
-
-        const additionalFileInfo: FileObject[] = [];
-
         files.forEach(file => {
           if (file.fileType === SubmissionFileType.PRIMARY_FILE) {
-            fileMap.PRIMARY = file.id;
+            duplicateSubmission.setPrimaryFile(file.id);
           } else if (file.fileType === SubmissionFileType.THUMBNAIL_FILE) {
-            fileMap.THUMBNAIL = file.id;
+            duplicateSubmission.setThumbnailFile(file.id);
           } else if (file.fileType === SubmissionFileType.ADDITIONAL_FILE) {
-            fileMap.ADDITIONAL.push(file.id);
-            additionalFileInfo.push(file.fileInfo);
+            duplicateSubmission.addAdditionalFile(file.id, file.fileInfo);
           }
         });
-
-        duplicateSubmission.fileMap = fileMap;
-        duplicateSubmission.additionalFileInfo = additionalFileInfo;
       }
     }
   }

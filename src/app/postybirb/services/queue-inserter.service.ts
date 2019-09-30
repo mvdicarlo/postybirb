@@ -58,7 +58,7 @@ export class QueueInserterService {
             let needsSplit: boolean = false;
 
             // split submission if allowed
-            if (submission.fileMap.ADDITIONAL && submission.fileMap.ADDITIONAL.length) {
+            if (submission.fileMap.ADDITIONAL.length) {
               for (let i = 0; i < submission.formData.websites.length; i++) {
                 if (!this.websitesSupportingAdditional.includes(submission.formData.websites[i])) {
                   needsSplit = true;
@@ -69,8 +69,9 @@ export class QueueInserterService {
 
             if (needsSplit) {
               const promises = [];
-              for (let i = 0; i < submission.fileMap.ADDITIONAL.length; i++) {
-                const imgId = submission.fileMap.ADDITIONAL[i];
+              const additionalMap = submission.fileMap.ADDITIONAL;
+              for (let i = 0; i < additionalMap.length; i++) {
+                const imgId = additionalMap[i];
                 promises.push(this._split(submission, imgId))
               }
               Promise.all(promises)
@@ -83,20 +84,17 @@ export class QueueInserterService {
             resolve(0);
           }
         });
-
     });
   }
 
   private async _split(submission: Submission, imgId: number): Promise<Submission> {
     const copy = submission.asISubmission();
+    let thumbnailId: number = copy.fileMap.THUMBNAIL;
+    delete copy.fileMap;
+    delete copy.additionalFileInfo;
     const newSubmission = new Submission(copy);
-    let thumbnailId: number = null;
-    if (typeof newSubmission.fileMap.THUMBNAIL === 'number') {
-      thumbnailId = newSubmission.fileMap.THUMBNAIL;
-    }
     newSubmission.formData.websites = newSubmission.formData.websites
       .filter(website => !this.websitesSupportingAdditional.includes(website));
-    newSubmission.fileMap = null;
 
     const submissionToInsert = newSubmission.asISubmission();
     const [createdSubmission] = await this._submissionDB.createSubmissions([submissionToInsert]);
@@ -106,15 +104,9 @@ export class QueueInserterService {
       newThumbnailFile = await this._submissionFileDB.duplicateById(thumbnailId, SubmissionFileType.THUMBNAIL_FILE, createdSubmission.id);
     }
 
-    const newFileMap = {
-      ADDITIONAL: [],
-      PRIMARY: newPrimaryFile.id,
-      THUMBNAIL: thumbnailId ? newThumbnailFile.id : null
-    }
-
     createdSubmission.fileInfo = newPrimaryFile.fileInfo;
-    createdSubmission.fileMap = newFileMap;
-    newSubmission.additionalFileInfo = [];
+    createdSubmission.setPrimaryFile(newPrimaryFile.id);
+    if (newThumbnailFile) createdSubmission.setThumbnailFile(newThumbnailFile.id);
 
     return createdSubmission;
   }

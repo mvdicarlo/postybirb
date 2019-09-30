@@ -189,11 +189,7 @@ export class SubmissionRecordViewComponent implements OnInit, OnDestroy {
   }
 
   public hasAdditionalFiles(): boolean {
-    if (this.submission.fileMap && this.submission.fileMap.ADDITIONAL) {
-      if (this.submission.fileMap.ADDITIONAL.length) return true;
-    }
-
-    return false;
+    return !!this.submission.fileMap.ADDITIONAL.length;
   }
 
   public loadTemplate(): void {
