@@ -13,21 +13,25 @@ function getAccessTokens(website, code) {
       if (error || response.statusCode === 500 || response.statusCode === 400) {
         reject(false);
       } else {
-        const M = new Mastodon({
-          access_token: body,
-          api_url: `${website}/api/v1/`,
-        });
+        try {
+          const M = new Mastodon({
+            access_token: body,
+            api_url: `${website}/api/v1/`,
+          });
 
-        getUsernameFromAPI(M, body).then((username) => {
-          const data = {
-            token: body,
-            username,
-            website
-          };
-          resolve(data);
-        }).catch(() => {
+          getUsernameFromAPI(M, body).then((username) => {
+            const data = {
+              token: body,
+              username,
+              website
+            };
+            resolve(data);
+          }).catch(() => {
+            resolve(false);
+          });
+        } catch (err) {
           resolve(false);
-        });
+        }
       }
     });
   });

@@ -72,7 +72,8 @@ export class TwitterLoginDialog implements OnInit, AfterViewInit, OnDestroy {
       .catch((errors) => {
         this.attempting = false;
         this._changeDetector.markForCheck();
-        this.snotify.error(errors.errors.join('\n'));
+        if (errors && errors.errors) this.snotify.error(errors.errors.join('\n'));
+        else this.snotify.error('An issue occurred while trying to authenticate Twitter');
       });
   }
 
