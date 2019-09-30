@@ -113,7 +113,8 @@ try {
     startAsTaskbar: false,
     postInterval: 0,
     clearQueueOnFailure: true,
-    advertise: true
+    advertise: true,
+    localErrorLogging: true
   }).write();
 
   window.got = require('./src/got-request.js');

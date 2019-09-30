@@ -19,7 +19,8 @@ export class SettingsDialog implements OnInit {
       startAsTaskbar: [false],
       postInterval: [0],
       clearQueueOnFailure: [true],
-      advertise: [true]
+      advertise: [true],
+      localErrorLogging: [true]
     });
 
     this.settingsForm.patchValue(settingsDB.getState(), { emitEvent: false });
@@ -40,6 +41,10 @@ export class SettingsDialog implements OnInit {
             this.settingsForm.controls.hardwareAcceleration.patchValue(!hardwareAcceleration, { emitEvent: false }); // set back to what it was
           }
         });
+    });
+
+    this.settingsForm.controls.localErrorLogging.valueChanges.subscribe(localErrorLogging => {
+      settingsDB.set('localErrorLogging', localErrorLogging).write();
     });
 
     this.settingsForm.controls.startAsTaskbar.valueChanges.subscribe(startAsTaskbar => {

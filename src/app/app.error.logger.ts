@@ -79,6 +79,8 @@ export class ErrorLoggerHandler extends ErrorHandler {
   }
 
   private _logErrorToLocal(error: ErrorMessage): void {
-    writeJsonToFile('postybirb_error_logs', error, { flag: 'a' });
+    if (settingsDB.get('localErrorLogging').value()) {
+      writeJsonToFile('postybirb_error_logs', error, { flag: 'a' });
+    }
   }
 }
