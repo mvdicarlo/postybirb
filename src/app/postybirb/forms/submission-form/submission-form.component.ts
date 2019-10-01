@@ -177,9 +177,10 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
   }
 
   public removeAdditionalImage(id: number): void {
+    this.submission.removeAdditionalFile(id);
     this._submissionFileDB.deleteSubmissionFileById(id)
       .finally(() => {
-        this.submission.removeAdditionalFile(id);
+        this._changeDetector.markForCheck();
       });
   }
 
@@ -187,15 +188,16 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     if (!this.submission.hasThumbnail()) return;
     this.loading = true;
     this.hideForReload = true;
-
     this._changeDetector.markForCheck();
+
     this._submissionFileDB.deleteSubmissionFileById(this.submission.fileMap.THUMBNAIL)
       .finally(() => {
-        this.submission.setThumbnailFile(null);
         this.hideForReload = false;
         this.loading = false;
         this._changeDetector.markForCheck();
       });
+
+    this.submission.setThumbnailFile(null);
   }
 
   public updateThumbnail(event: Event): void {
