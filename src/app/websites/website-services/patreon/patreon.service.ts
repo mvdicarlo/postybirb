@@ -3,7 +3,7 @@ import { Website } from '../../decorators/website-decorator';
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, fileAsBlob } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsBlob, isImage } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { PatreonSubmissionForm } from './components/patreon-submission-form/patreon-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
@@ -552,6 +552,7 @@ export class Patreon extends BaseWebsiteService {
     let primaryFileUpload;
     let thumbnailFileUpload;
     let additionalUploads = [];
+    let additionalImageUploads = [];
     try {
       if (postData.typeOfSubmission === TypeOfSubmission.STORY) {
         const upload = await this._uploadAttachment(link, postData.primary, csrf, postData.profileId);
@@ -566,8 +567,13 @@ export class Patreon extends BaseWebsiteService {
       if (postData.additionalFiles && postData.additionalFiles.length) {
         for (let i = 0; i < postData.additionalFiles.length; i++) {
           const file = postData.additionalFiles[i];
-          const upload = await this._uploadAttachment(link, file, csrf, postData.profileId);
-          additionalUploads.push(upload);
+          if (postData.typeOfSubmission === TypeOfSubmission.ART && isImage(file.fileInfo)) {
+            const upload = await this._uploadFile(link, file, csrf, postData.profileId, uploadType);
+            additionalImageUploads.push(upload);
+          } else {
+            const upload = await this._uploadAttachment(link, file, csrf, postData.profileId);
+            additionalUploads.push(upload);
+          }
         }
       }
     } catch (err) {
@@ -624,7 +630,7 @@ export class Patreon extends BaseWebsiteService {
 
     let image_order = [];
     if (postData.typeOfSubmission === TypeOfSubmission.AUDIO || postData.typeOfSubmission === TypeOfSubmission.ART) {
-      image_order = [thumbnailFileUpload ? thumbnailFileUpload.body.data.id : primaryFileUpload.body.data.id];
+      image_order = [thumbnailFileUpload ? thumbnailFileUpload.body.data.id : primaryFileUpload.body.data.id, ...additionalImageUploads.map(img => img.body.data.id)];
     }
     const data: any = {
       data: {
