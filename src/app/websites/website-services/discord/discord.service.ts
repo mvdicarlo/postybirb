@@ -146,21 +146,25 @@ export class Discord extends BaseWebsiteService {
       return wh; // assumed to be string
     });
     const options = postData.options;
-    const description = (postData.description || '').substring(0, 2000);
+    const includesAd = (postData.description || '').includes('Posted using PostyBirb');
+    const description = (postData.description || '')
+      .replace('Posted using PostyBirb', '')
+      .substring(0, 2000)
+      .trim();
     const files: File[] = [postData.primary, ...postData.additionalFiles]
       .filter(f => !!f)
       .map(f => new File([fileAsBlob(f)], `${options.spoiler ? 'SPOILER_' : ''}${f.fileInfo.name}`))
       .slice(0, 10);
 
     try {
-      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh, submission.title, description, files)));
+      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh, submission.title, description, files, includesAd)));
       return this.createPostResponse(null);
     } catch (e) {
       return Promise.reject(this.createPostResponse('Webhook failure', e instanceof HttpErrorResponse ? e.message : e));
     }
   }
 
-  private async postToWebhook(webhook: string, title: string, description: string, files: File[]): Promise<any> {
+  private async postToWebhook(webhook: string, title: string, description: string, files: File[], includesAd: boolean): Promise<any> {
     const data: FormData = new FormData();
     if (files.length) {
       for (let i = 0; i < files.length; i++) {
@@ -168,13 +172,20 @@ export class Discord extends BaseWebsiteService {
       }
     }
 
-    data.set('payload_json', JSON.stringify({
-      // content: description,
+    const json: any = {
       embeds: [{
         title,
         description
       }]
-    }));
+    };
+
+    if (includesAd) {
+      json.embeds[0].footer = {
+        text: 'Posted using PostyBirb'
+      };
+    }
+
+    data.set('payload_json', JSON.stringify(json));
 
     await this.createPost(webhook, data)
     return true;
