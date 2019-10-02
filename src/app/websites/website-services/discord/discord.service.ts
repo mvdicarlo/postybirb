@@ -9,7 +9,7 @@ import { Submission, SubmissionFormData } from 'src/app/database/models/submissi
 import { getDescription } from '../../helpers/website-validator.helper';
 import { DiscordSubmissionForm } from './components/discord-submission-form/discord-submission-form.component';
 import * as dotProp from 'dot-prop';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
 
 export interface DiscordWebhook {
@@ -145,38 +145,38 @@ export class Discord extends BaseWebsiteService {
 
       return wh; // assumed to be string
     });
+    const options = postData.options;
     const description = (postData.description || '').substring(0, 2000);
     const files: File[] = [postData.primary, ...postData.additionalFiles]
       .filter(f => !!f)
-      .map(f => new File([fileAsBlob(f)], f.fileInfo.name));
+      .map(f => new File([fileAsBlob(f)], `${options.spoiler ? 'SPOILER_' : ''}${f.fileInfo.name}`))
+      .slice(0, 10);
 
     try {
-      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh, description, files)));
+      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh, submission.title, description, files)));
       return this.createPostResponse(null);
     } catch (e) {
-      return Promise.reject(this.createPostResponse('Webhook failure', e));
+      return Promise.reject(this.createPostResponse('Webhook failure', e instanceof HttpErrorResponse ? e.message : e));
     }
   }
 
-  private async postToWebhook(webhook: string, description: string, files: File[]): Promise<any> {
-    let hasAppended: boolean = false;
-
+  private async postToWebhook(webhook: string, title: string, description: string, files: File[]): Promise<any> {
+    const data: FormData = new FormData();
     if (files.length) {
       for (let i = 0; i < files.length; i++) {
-        const data: FormData = new FormData();
-        if (!hasAppended) {
-          data.set('content', description);
-          hasAppended = true;
-        }
-        data.set('file', files[i]);
-        await this.createPost(webhook, data)
+        data.set(`file${i}`, files[i]);
       }
-    } else { // JOURNAL
-      const data: FormData = new FormData();
-      data.set('content', description);
-      await this.createPost(webhook, data)
     }
 
+    data.set('payload_json', JSON.stringify({
+      // content: description,
+      embeds: [{
+        title,
+        description
+      }]
+    }));
+
+    await this.createPost(webhook, data)
     return true;
   }
 

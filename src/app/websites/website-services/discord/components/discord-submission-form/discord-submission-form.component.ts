@@ -13,7 +13,8 @@ import { Discord } from '../../discord.service';
 export class DiscordSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit, AfterViewInit {
 
   public optionDefaults: any = {
-    webhooks: [[], Validators.required]
+    webhooks: [[], Validators.required],
+    spoiler: [false]
   };
 
   public webhooks: any = {};
