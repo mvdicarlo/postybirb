@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { CacheService } from './cache.service';
 import { Subscription } from 'rxjs';
 import { Submission } from '../models/submission.model';
-import { validate, getAllWebsiteValidatorsForWebsites, getAllWebsiteWarningValidatorsForWebsites } from 'src/app/websites/helpers/website-validator.helper';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { SubmissionValidatorService } from 'src/app/websites/services/submission-validator.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class SubmissionCache extends CacheService {
   private _subscriptionCache: { [key: string]: Subscription } = {};
   private _updateCallback: any;
 
-  constructor(private _loginProfileManager: LoginProfileManagerService) {
+  constructor(private _loginProfileManager: LoginProfileManagerService, private _validator: SubmissionValidatorService) {
     super();
     _loginProfileManager.profileChanges.subscribe(profiles => {
       const existingProfileIds = profiles.map(p => p.id);
@@ -29,23 +29,6 @@ export class SubmissionCache extends CacheService {
 
   public setUpdateCallback(fn: () => void): void {
     this._updateCallback = fn;
-  }
-
-  private _validateSubmission(submission: Submission): void {
-    let problems = validate(submission);
-    let warnings = [];
-    if (submission.formData && submission.formData.websites) {
-      getAllWebsiteValidatorsForWebsites(submission.formData.websites, submission.submissionType)
-        .filter(fn => fn !== undefined)
-        .forEach(validatorFn => problems = [...problems, ...validatorFn(submission, submission.formData)]);
-
-      getAllWebsiteWarningValidatorsForWebsites(submission.formData.websites, submission.submissionType)
-        .filter(fn => fn !== undefined)
-        .forEach(validatorFn => warnings = [...warnings, ...validatorFn(submission, submission.formData)]);
-    }
-
-    submission.problems = problems;
-    submission.warnings = warnings;
   }
 
   public getAll(): Submission[] {
@@ -65,7 +48,7 @@ export class SubmissionCache extends CacheService {
         }
 
         if (doValidate) {
-          this._validateSubmission(submission);
+          this._validator.validate(submission);
         }
 
         Object.keys(change).filter(key => !change[key].noUpdate).forEach(key => this._updateCallback(submission.id, key, change[key].current));
@@ -73,7 +56,7 @@ export class SubmissionCache extends CacheService {
         this.remove(submission);
       });
 
-      this._validateSubmission(submission);
+      this._validator.validate(submission);
     }
 
     if (submission.updateAfterInit) {
