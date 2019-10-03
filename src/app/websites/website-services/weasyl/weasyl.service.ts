@@ -75,6 +75,7 @@ function preparser(html: string): string {
   },
   parsers: {
     description: [descriptionParse],
+    disableAdvertise: true,
     usernameShortcut: {
       code: 'ws',
       url: 'https://weasyl.com/~$1'
