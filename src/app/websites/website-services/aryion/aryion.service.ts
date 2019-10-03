@@ -11,6 +11,7 @@ import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, PostResult, SubmissionPostData } from '../../interfaces/website-service.interface';
 import { Folder } from '../../interfaces/folder.interface';
 import { AryionSubmissionForm } from './components/aryion-submission-form/aryion-submission-form.component';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['jpg', 'jpeg', 'gif', 'png', 'doc', 'docx', 'xls', 'xlsx', 'swf', 'vsd', 'txt', 'rtf', 'avi', 'mpg', 'mpeg', 'flv', 'mp4'];
 
@@ -34,12 +35,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 }
 
 function preparser(html: string): string {
-  if (!html) return '';
-
-  const regex = new RegExp(`:ar(.*?):`, 'gi');
-  html = html.replace(regex, `:icon$1:`);
-
-  return html;
+  return UsernameParser.replaceText(html, 'ar', ':icon$1:');
 }
 
 @Injectable({
@@ -161,12 +157,12 @@ export class Aryion extends BaseWebsiteService {
     } else {
       return Promise.reject(this.createPostResponse('Unknown error', postRequest.success.body));
     }
-}
+  }
 
-formatTags(defaultTags: string[] = [], other: string[] = []): any {
-  const tags = [...defaultTags, ...other];
-  return tags.map((tag) => {
-    return tag.trim();
-  });
-}
+  formatTags(defaultTags: string[] = [], other: string[] = []): any {
+    const tags = [...defaultTags, ...other];
+    return tags.map((tag) => {
+      return tag.trim();
+    });
+  }
 }

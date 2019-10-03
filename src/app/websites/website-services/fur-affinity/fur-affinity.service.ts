@@ -14,6 +14,7 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FurAffinityJournalForm } from './components/fur-affinity-journal-form/fur-affinity-journal-form.component';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'];
 
@@ -31,12 +32,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 }
 
 function preparser(html: string): string {
-  if (!html) return '';
-
-  const regex = new RegExp(`:fa(.*?):`, 'gi');
-  html = html.replace(regex, `:icon$1:`);
-
-  return html;
+  return UsernameParser.replaceText(html, 'fa', ':icon$1:');
 }
 
 function descriptionParser(bbcode: string): string {

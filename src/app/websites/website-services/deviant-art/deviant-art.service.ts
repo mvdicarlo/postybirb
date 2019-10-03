@@ -12,6 +12,7 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { Folder } from '../../interfaces/folder.interface';
 import { DeviantArtSubmissionForm } from './components/deviant-art-submission-form/deviant-art-submission-form.component';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt', 'swf', 'tiff', 'tif'];
 
@@ -37,12 +38,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 }
 
 function preparser(html: string): string {
-  if (!html) return '';
-
-  const regex = new RegExp(`:da(.*?):`, 'gi');
-  html = html.replace(regex, `:icon$1:`);
-
-  return html;
+  return UsernameParser.replaceText(html, 'da', ':icon$1:');
 }
 
 function descriptionParse(html: string): string {
@@ -50,9 +46,7 @@ function descriptionParse(html: string): string {
     .replace(/style="text-align:center;"/g, 'align="center"')
     .replace(/style="text-align:right;"/g, 'align="right"');
 
-  const regex = new RegExp(`:da(.*?):`, 'gi');
-  html = html.replace(regex, `:icon$1:`);
-
+  html = UsernameParser.replaceText(html, 'da', ':icon$1:');
   return html
     .replace(/<p/gm, '<div')
     .replace(/<\/p>/gm, '</div>')

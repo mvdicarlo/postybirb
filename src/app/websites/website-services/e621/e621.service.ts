@@ -11,6 +11,7 @@ import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
 import { E621LoginDialog } from './components/e621-login-dialog/e621-login-dialog.component';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 interface e621LoginDetails {
   username: string;
@@ -41,7 +42,12 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
 
 function descriptionParser(html: string): string {
   if (!html) return '';
+  html = UsernameParser.replaceText(html, 'e6', '@$1');
+  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+  return html;
+}
 
+function postParser(html: string): string {
   html = html.replace(/<b>/gi, '[b]');
   html = html.replace(/<i>/gi, '[i]');
   html = html.replace(/<u>/gi, '[u]');
@@ -54,16 +60,7 @@ function descriptionParser(html: string): string {
   html = html.replace(/<\/em>/gi, '[/i]');
   html = html.replace(/<strong>/gi, '[b]');
   html = html.replace(/<\/strong>/gi, '[/b]');
-  html = html.replace(/<span style="color: (.*?);">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
-
-  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
-
-  html = html.replace(/:e6(.*?):/gi, '@$1');
-
-  return html;
-}
-
-function linkParser(html: string): string {
+  html = html.replace(/<span style="color:\s*(.*?);*">((.|\n)*?)<\/span>/gmi, '[color=$1]$2[/color]');
   return html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
 }
 
@@ -87,7 +84,7 @@ function linkParser(html: string): string {
     description: [descriptionParser]
   },
   parsers: {
-    description: [linkParser, PlaintextParser.parse],
+    description: [postParser, PlaintextParser.parse],
     disableAdvertise: true,
     usernameShortcut: {
       code: 'e6',

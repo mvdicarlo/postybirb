@@ -10,6 +10,7 @@ import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.help
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { InkbunnySubmissionForm } from './components/inkbunny-submission-form/inkbunny-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc', 'rtf', 'txt', 'mp3'];
 
@@ -36,12 +37,11 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 
 function usernameParser(html: string): string {
   if (!html) return '';
-  html = html.replace(/:fa(.*?):/gi, `[fa]$1[/fa]`);
-  html = html.replace(/:sf(.*?):/gi, `[sf]$1[/sf]`);
-  html = html.replace(/:da(.*?):/gi, `[da]$1[/da]`);
-  html = html.replace(/:ws(.*?):/gi, `[w]$1[/w]`);
-  html = html.replace(/:ib(.*?):/gi, `[iconname]$1[/iconname]`);
-
+  html = UsernameParser.replaceText(html, 'fa', '[fa]$1[/fa]');
+  html = UsernameParser.replaceText(html, 'sf', '[sf]$1[/sf]');
+  html = UsernameParser.replaceText(html, 'da', '[da]$1[/da]');
+  html = UsernameParser.replaceText(html, 'ws', '[w]$1[/w]');
+  html = UsernameParser.replaceText(html, 'ib', '[iconname]$1[/iconname]');
   return html;
 }
 

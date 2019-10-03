@@ -11,6 +11,7 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { fileAsFormDataObject, MBtoBytes } from 'src/app/utils/helpers/file.helper';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['jpg', 'jpeg', 'png', 'gif', 'md', 'txt', 'pdf', 'swf', 'mp3']
 
@@ -51,12 +52,7 @@ function descriptionParse(html: string): string {
 }
 
 function preparser(html: string): string {
-  if (!html) return '';
-
-  const regex = new RegExp(`:ws(.*?):`, 'gi');
-  html = html.replace(regex, '<!~$1>');
-
-  return html;
+  return UsernameParser.replaceText(html, 'ws', '<!~$1>');
 }
 
 @Injectable({

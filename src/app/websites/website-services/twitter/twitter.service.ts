@@ -10,6 +10,7 @@ import { supportsFileType, getDescription } from '../../helpers/website-validato
 import { MBtoBytes, isGIF, isType } from 'src/app/utils/helpers/file.helper';
 import { TwitterSubmissionForm } from './components/twitter-submission-form/twitter-submission-form.component';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'webp', 'mp4', 'mov'];
 
@@ -55,7 +56,7 @@ function warningCheck(submission: Submission, formData: SubmissionFormData): any
 }
 
 function descriptionParse(html: string): string {
-  return html.replace(/:tw(.*?):/gi, `@$1`);
+  return UsernameParser.replaceText(html, 'tw', '@$1');
 }
 
 @Injectable({
