@@ -20,7 +20,7 @@ export class FileDropWatcherService {
   }
 
   private dragenter(event: DragEvent): void {
-    if (event.dataTransfer && event.dataTransfer.items.length) {
+    if (event.dataTransfer && event.dataTransfer.items.length && event.dataTransfer.types.includes('Files')) {
       if (!this.isDragging) {
         this.isDragging = true;
         this.dragStateSubject.next(this.isDragging);
