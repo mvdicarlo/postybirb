@@ -56,6 +56,8 @@ import { FileDropDialog } from './components/file-drop-dialog/file-drop-dialog.c
 import { LandingPage } from './pages/landing-page/landing-page.component';
 import { LoginProfilePage } from './pages/login-profile-page/login-profile-page.component';
 import { SubmissionPreviewDialog } from './components/submission-preview-dialog/submission-preview-dialog.component';
+import { SaveOnlyJournalForm } from './forms/save-only-journal-form/save-only-journal-form.component';
+import { SaveOnlySubmissionForm } from './forms/save-only-submission-form/save-only-submission-form.component';
 
 @NgModule({
   declarations: [
@@ -78,6 +80,8 @@ import { SubmissionPreviewDialog } from './components/submission-preview-dialog/
     LandingPage,
     LoginProfilePage,
     SubmissionPreviewDialog,
+    SaveOnlyJournalForm,
+    SaveOnlySubmissionForm,
   ],
   imports: [
     CommonModule,

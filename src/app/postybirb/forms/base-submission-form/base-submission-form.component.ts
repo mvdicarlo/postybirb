@@ -10,7 +10,6 @@ import { MatDialog } from '@angular/material';
 import { ISubmission } from 'src/app/database/tables/submission.table';
 import { DescriptionInput } from 'src/app/utils/components/description-input/description-input.component';
 import { TagInput } from 'src/app/utils/components/tag-input/tag-input.component';
-import { LoginProfileSelectDialog } from 'src/app/login/components/login-profile-select-dialog/login-profile-select-dialog.component';
 import { debounceTime } from 'rxjs/operators';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { ConfirmDialog } from 'src/app/utils/components/confirm-dialog/confirm-dialog.component';

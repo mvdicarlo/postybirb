@@ -5,6 +5,8 @@ import { SubmissionForm } from './forms/submission-form/submission-form.componen
 import { JournalForm } from './forms/journal-form/journal-form.component';
 import { PostLogs } from './components/post-logs/post-logs.component';
 import { LandingPage } from './pages/landing-page/landing-page.component';
+import { SaveOnlyJournalForm } from './forms/save-only-journal-form/save-only-journal-form.component';
+import { SaveOnlySubmissionForm } from './forms/save-only-submission-form/save-only-submission-form.component';
 
 const PostybirbRoutes: Routes = [
   {
@@ -28,8 +30,16 @@ const PostybirbRoutes: Routes = [
     component: SubmissionForm
   },
   {
+    path: 'submission/save-only/:id',
+    component: SaveOnlySubmissionForm
+  },
+  {
     path: 'journal/:id',
     component: JournalForm
+  },
+  {
+    path: 'journal/save-only/:id',
+    component: SaveOnlyJournalForm
   },
   {
     path: '**',

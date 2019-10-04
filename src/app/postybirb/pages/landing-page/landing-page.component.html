@@ -70,6 +70,7 @@
                       <td>{{ i + 1 }}</td>
                       <td>{{ record.title || 'Untitled' }}</td>
                       <td>
+
                         <button mat-icon-button color="warn" (click)="queueInserter.dequeue(record)">
                           <mat-icon>close</mat-icon>
                         </button>
@@ -100,7 +101,10 @@
                       <td>{{ record.title || 'Untitled' }}</td>
                       <td><i class="far fa-clock"></i> {{ record.schedule | date:'short' }}</td>
                       <td>
-                        <button mat-icon-button color="warn" (click)="queueInserter.dequeue(record)">
+                        <button mat-icon-button color="accent" (click)="editScheduled(record)">
+                          <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="dequeueScheduled(record)">
                           <mat-icon>close</mat-icon>
                         </button>
                       </td>

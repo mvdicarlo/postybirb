@@ -140,6 +140,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "Changes only apply after saving",
+  "Translate Me": "Changes only apply after saving",
+  "Translated": ""
+}
+
+{
   "Internal": "Charge Patrons",
   "Context": "A checkbox option for Patreon (whether to charge patrons or not)",
   "Translate Me": "Charge Patrons",

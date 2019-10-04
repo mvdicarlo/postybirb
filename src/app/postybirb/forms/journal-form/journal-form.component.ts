@@ -24,10 +24,10 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
 
   constructor(
     injector: Injector,
-    private _route: ActivatedRoute,
-    private _submissionCache: SubmissionCache,
-    private _tabManager: TabManager,
-    private _submissionDB: SubmissionDBService
+    protected _route: ActivatedRoute,
+    protected _submissionCache: SubmissionCache,
+    protected _tabManager: TabManager,
+    protected _submissionDB: SubmissionDBService
   ) {
     super(injector);
   }
@@ -71,7 +71,7 @@ export class JournalForm extends BaseSubmissionForm implements OnInit, AfterView
     this.submissionChangeSubscription.unsubscribe();
   }
 
-  private _initializeBasicInfoForm(): void {
+  protected _initializeBasicInfoForm(): void {
     this.basicInfoForm = this._fb.group({
       title: [this.submission.title, Validators.maxLength(50)],
       rating: [this.submission.rating, Validators.required],

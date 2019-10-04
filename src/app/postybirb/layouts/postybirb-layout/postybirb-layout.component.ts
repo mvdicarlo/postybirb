@@ -223,7 +223,12 @@ export class PostybirbLayout implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(result => {
         if (result) {
           this.queuedOrScheduled
-            .forEach(qs => this._queueInserter.dequeue(qs));
+            .forEach(qs => {
+              this._queueInserter.dequeue(qs);
+              if (this._tabManager.hasTab(qs.id)) {
+                this._tabManager.removeTab(qs.id);
+              }
+            });
         }
       });
   }

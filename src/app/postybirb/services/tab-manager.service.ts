@@ -11,6 +11,7 @@ export enum TabType {
 export interface TabInfo {
   id: number; // submissionId
   type: string;
+  saveOnly: boolean;
 }
 
 @Injectable({
@@ -46,16 +47,21 @@ export class TabManager {
     return this.tabs.find(t => t.id === id);
   }
 
+  public getTabUrl(tab: TabInfo): string {
+    return `${tab.type}/${tab.saveOnly ? 'save-only/' : ''}${tab.id}`;
+  }
+
   public hasTab(id: number) {
     const index: number = this.tabs.findIndex(t => t.id === id);
     return index !== -1;
   }
 
-  public addTab(submission: Submission): void {
-    if (!this.hasTab(submission.id)) {
+  public addTab(submission: Submission, saveOnly: boolean = false): void {
+    if (submission && !this.hasTab(submission.id)) {
       const tab = {
         id: submission.id,
         type: submission.submissionType.toLowerCase(),
+        saveOnly
       };
 
       this.tabs.push(tab);
@@ -64,7 +70,7 @@ export class TabManager {
     if (submission) {
       const tab = this._findTab(submission.id);
       this.tabSubject.next(this.tabs);
-      this._route.navigateByUrl(`${tab.type}/${tab.id}`);
+      this._route.navigateByUrl(this.getTabUrl(tab));
       this._save();
     }
   }
@@ -77,7 +83,7 @@ export class TabManager {
       if (this.tabs.length) {
         if (this._shouldNavigate(id)) {
           const tab = this.tabs[this.tabs.length - 1];
-          this._route.navigateByUrl(`${tab.type}/${tab.id}`);
+          this._route.navigateByUrl(this.getTabUrl(tab));
         }
       } else {
         this._route.navigateByUrl(`**`);

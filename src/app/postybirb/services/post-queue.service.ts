@@ -163,6 +163,9 @@ export class PostQueueService {
     // Get the top submission in the queue
     const postingSubmission: Submission = this.queue[0];
     if (postingSubmission) {
+      if (this._tabManager.hasTab(postingSubmission.id)) {
+        this._tabManager.removeTab(postingSubmission.id);
+      }
       this.posting = postingSubmission;
 
       // Get the submission's next website to post and generate a timeout interval

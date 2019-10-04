@@ -14,7 +14,7 @@ import { SubmissionSelectDialog } from '../../components/submission-select-dialo
 import { getTypeOfSubmission } from '../../../utils/enums/type-of-submission.enum';
 import { BaseSubmissionForm } from '../base-submission-form/base-submission-form.component';
 import { getUnfilteredWebsites } from 'src/app/login/helpers/displayable-websites.helper';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { ImageCropperDialog } from '../../components/image-cropper-dialog/image-cropper-dialog.component';
 import { Subscription } from 'rxjs';
@@ -33,11 +33,11 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
 
   constructor(
     injector: Injector,
-    private _route: ActivatedRoute,
-    private _submissionCache: SubmissionCache,
-    private _tabManager: TabManager,
-    private _submissionDB: SubmissionDBService,
-    private _submissionFileDB: SubmissionFileDBService,
+    protected _route: ActivatedRoute,
+    protected _submissionCache: SubmissionCache,
+    protected _tabManager: TabManager,
+    protected _submissionDB: SubmissionDBService,
+    protected _submissionFileDB: SubmissionFileDBService,
   ) {
     super(injector);
   }
@@ -76,7 +76,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
     this.submissionChangeSubscription.unsubscribe();
   }
 
-  private _initializeBasicInfoForm(): void {
+  protected _initializeBasicInfoForm(): void {
     this.basicInfoForm = this._fb.group({
       title: [this.submission.title, Validators.maxLength(50)],
       rating: [this.submission.rating, Validators.required],

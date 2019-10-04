@@ -41,7 +41,7 @@
       </nav>
 
       <nav mat-tab-nav-bar backgroundColor="accent">
-        <a class="submission-tab" *ngFor="let tab of _tabManager.tabChanges | async" mat-tab-link [routerLink]="tab.type + '/' + tab.id" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
+        <a class="submission-tab" *ngFor="let tab of _tabManager.tabChanges | async" mat-tab-link [routerLink]="_tabManager.getTabUrl(tab)" routerLinkActive #rla="routerLinkActive" [active]="rla.isActive">
           <submission-tab [tab]="tab"></submission-tab>
         </a>
       </nav>

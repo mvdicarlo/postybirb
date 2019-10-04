@@ -48,7 +48,12 @@ export class LandingPage implements OnInit, OnDestroy {
     }).afterClosed()
       .subscribe(result => {
         if (result) {
-          submissions.forEach(s => this.queueInserter.dequeue(s));
+          submissions.forEach(s => {
+            this.queueInserter.dequeue(s);
+            if (this._tabManager.hasTab(s.id)) {
+              this._tabManager.removeTab(s.id);
+            }
+          });
         }
       });
   }
@@ -60,8 +65,19 @@ export class LandingPage implements OnInit, OnDestroy {
       .finally(() => { });
   }
 
+  public dequeueScheduled(submission: Submission): void {
+    this.queueInserter.dequeue(submission);
+    if (this._tabManager.hasTab(submission.id)) {
+      this._tabManager.removeTab(submission.id);
+    }
+  }
+
   public edit(submission: Submission): void {
     this._tabManager.addTab(submission);
+  }
+
+  public editScheduled(submission: Submission): void {
+    this._tabManager.addTab(submission, true);
   }
 
   public openWebsiteRules(): void {

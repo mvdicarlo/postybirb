@@ -4,11 +4,11 @@
   font-size: 12px;
   position: relative;
 
-  .preview-button {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    cursor: pointer;
+  .actions {
+    i {
+      cursor: pointer;
+      color: mat-color($accent);
+    }
   }
 }
 

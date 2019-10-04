@@ -11,6 +11,10 @@
         <mat-icon class="warn-text">close</mat-icon>
       </div>
     </div>
+    <div class="actions" *ngIf="!postingWebsite">
+      <i class="fa fa-search mr-1" [matTooltip]="'Preview' | translate" (click)="preview()"></i>
+      <i *ngIf="submission.isScheduled" class="fa fa-edit" [matTooltip]="'Edit' | translate" (click)="edit()"></i>
+    </div>
     <div class="row no-gutters" *ngIf="!submission.isScheduled">
       <div *ngIf="postingWebsite" class="posting-website">{{ postingWebsite | websiteDisplayname }}</div>
       <div class="w-100 status text-info" *ngIf="wait">
@@ -25,5 +29,4 @@
       </div>
     </div>
   </div>
-  <i class="preview-button fa fa-search" [matTooltip]="'Preview' | translate" (click)="preview()"></i>
 </div>
