@@ -45,7 +45,7 @@ export class FurryNetwork extends BaseWebsite implements Website {
       }
     };
 
-    this.coordinator.insertService(this.websiteName, this, 30 * 60000);
+    this.coordinator.insertService(this.websiteName, this, 5 * 60000);
   }
 
   getStatus(): Promise<WebsiteStatus> {

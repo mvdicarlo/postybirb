@@ -55,7 +55,9 @@ export class AppComponent implements AfterViewInit {
         }
       });
     } else {
-      this.dialog.open(RemakeAlertDialogComponent);
+      if (!store.get('disablev2Notification')) {
+        this.dialog.open(RemakeAlertDialogComponent);
+      }
     }
 
     this._hotKeysService.add(new Hotkey('ctrl+l', (event: KeyboardEvent): boolean => {

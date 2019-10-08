@@ -1,15 +1,29 @@
 <h2 mat-dialog-title>PostyBirb 2.0!</h2>
 <mat-dialog-content class="window">
-  <p>
-    Over the past few months PostyBirb has been in the process of being remade. This is why there have not been many updates.
+  <div>
+    <strong>The 1.X version of PostyBirb is no longer actively supported.</strong>
+    <br>
+    <p>
+      v1.2.7 adds a setting that allows you to opt out of update prompts.
+    </p>
     <br>
     <br>
-    This is an announcement to let you know that it will be openly available for download within the next couple weeks.
-    <br>
-    <br>
-    You can find more about it here <a href="#" (click)="openInfo()">PostyBirb 2.0</a>
-  </p>
+    <p>
+      You can find more about v2 here <a href="#" (click)="openInfo()">PostyBirb 2.0</a>
+      <br>
+      If you want to download and try 2.0 you can download it <a href="http://www.postybirb.com/download.html">Here</a>
+      <br>
+      You will need to manually install v2.
+      <br>
+      <br>
+      <span class="text-danger">
+        Be aware that templates and unposted submissions will not transfer to v2.
+        Although if you decide to downgrade to v1 you should still be able to use whatever templates you already had.
+      </span>
+    </p>
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions class="float-right">
+  <button mat-raised-button color="warn" (click)="stopNotify()">Don't Tell Me Again</button>
   <button mat-raised-button color="primary" mat-dialog-close>OK</button>
 </mat-dialog-actions>

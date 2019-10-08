@@ -20,15 +20,24 @@
         <div class="col-md-12 col-xl-12 col-lg-12">
           <mat-slide-toggle [checked]="isStopAllSubmissionsEnabled()" (change)="toggleStopOnFailure($event)">{{ 'Stop posting on submission failure' | translate }}</mat-slide-toggle>
         </div>
-        <!-- <div class="col-md-12 col-xl-12 col-lg-12">
-          <mat-slide-toggle [checked]="isGenerateErrorLogEnabled()" (change)="toggleGenerateErrorLog($event)">{{ 'Allow error logs' | translate }}</mat-slide-toggle>
-        </div> -->
         <div class="col-md-12 col-xl-12 col-lg-12 mt-3">
           <button mat-button mat-raised-button color="warn" (click)="resetScheduled()">{{'Clear Scheduled' | translate}}</button>
           <button mat-button mat-raised-button color="warn" (click)="resetUnscheduled()">{{'Clear Unscheduled' | translate}}</button>
         </div>
       </div>
     </mat-expansion-panel>
+
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>Updates</mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="row no-gutters">
+        <div class="col-md-12 col-xl-12 col-lg-12">
+          <mat-slide-toggle [checked]="isAutoUpdateOn()" (change)="toggleAutoUpdate($event)">Check For Updates</mat-slide-toggle>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
     <mat-expansion-panel>
       <mat-expansion-panel-header>
         <mat-panel-title>{{'Performance' | translate}}</mat-panel-title>

@@ -1,6 +1,5 @@
-# BEING REMADE
-Currently PostyBirb is being remade.
-All of it is available on branch PB-Next
+# Legacy Version
+PostyBirb was remade and this branch is kept to track legacy code.
 
 # PostyBirb
 

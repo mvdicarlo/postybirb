@@ -40,7 +40,7 @@ export class Patreon extends BaseWebsite implements Website {
     return new Promise(resolve => {
       this.http.get(this.baseURL, { responseType: 'text' })
         .subscribe(page => {
-          if (page.includes('Log In')) this.loginStatus = WebsiteStatus.Logged_Out;
+          if (page.includes('Sign up')) this.loginStatus = WebsiteStatus.Logged_Out;
           else this.loginStatus = WebsiteStatus.Logged_In;
           resolve(this.loginStatus);
         }, err => {

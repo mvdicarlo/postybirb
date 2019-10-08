@@ -29,7 +29,6 @@ const profileWindows = {};
 const dbStore = {}; // store of all dbs for lookup
 
 let tray = null;
-let updateInterval = null;
 let scheduledInterval = null;
 let adapter = null;
 
@@ -137,7 +136,6 @@ app.on('ready', () => {
             label: 'Quit',
             click() {
                 clearInterval(scheduledInterval);
-                clearInterval(updateInterval);
                 rimraf(path.join(app.getPath('temp'), 'PostyBirb'), () => {
                     app.quit();
                 });
@@ -174,11 +172,11 @@ app.on('ready', () => {
     scheduledInterval = setInterval(checkForScheduledPost, 2 * 60000);
 
     if (!process.env.DEVELOP) {
-        updateInterval = setInterval(() => {
-            autoUpdater.checkForUpdates();
-        }, 3 * 60 * 60000);
-
-        autoUpdater.checkForUpdates();
+      const enabled = createDB('postybirb').get('autoUpdate').value();
+      const isEnabled = enabled === undefined ? true : enabled;
+      if (!isEnabled) {
+          autoUpdater.checkForUpdates();
+      }
     }
 });
 
