@@ -146,32 +146,31 @@ export class Discord extends BaseWebsiteService {
       return wh; // assumed to be string
     });
     const options = postData.options;
-    const includesAd = (postData.description || '').includes('Posted using PostyBirb');
+    const includesAd = (postData.description || '').includes('Posted using PostyBirb'); // probably a better way to detect this exists
     const description = (postData.description || '')
       .replace('Posted using PostyBirb', '')
       .substring(0, 2000)
       .trim();
     const files: File[] = [postData.primary, ...postData.additionalFiles]
       .filter(f => !!f)
-      .map(f => new File([fileAsBlob(f)], `${options.spoiler ? 'SPOILER_' : ''}${f.fileInfo.name}`))
-      .slice(0, 10);
+      .map(f => new File([fileAsBlob(f)], `${options.spoiler ? 'SPOILER_' : ''}${f.fileInfo.name}`));
 
     try {
-      const posted = await Promise.all(webhooks.map(wh => this.postToWebhook(wh, submission.title, description, files, includesAd)));
+      for (let i = 0; i < webhooks.length; i++) {
+        await this.postDescriptionToWebhook(webhooks[i], postData.title, description, includesAd);
+      }
+      for (let i = 0; i < files.length; i++) {
+        for (let j = 0; j < webhooks.length; j++) {
+          await this.postFileToWebhook(webhooks[j], files[i], includesAd);
+        }
+      }
       return this.createPostResponse(null);
     } catch (e) {
       return Promise.reject(this.createPostResponse('Webhook failure', e instanceof HttpErrorResponse ? e.message : e));
     }
   }
 
-  private async postToWebhook(webhook: string, title: string, description: string, files: File[], includesAd: boolean): Promise<any> {
-    const data: FormData = new FormData();
-    if (files.length) {
-      for (let i = 0; i < files.length; i++) {
-        data.set(`file${i}`, files[i]);
-      }
-    }
-
+  private async postDescriptionToWebhook(webhook: string, title: string, description: string, includeAd: boolean): Promise<any> {
     const json: any = {
       embeds: [{
         title,
@@ -179,16 +178,27 @@ export class Discord extends BaseWebsiteService {
       }]
     };
 
-    if (includesAd) {
+    if (includeAd) {
       json.embeds[0].footer = {
         text: 'Posted using PostyBirb'
       };
     }
 
-    data.set('payload_json', JSON.stringify(json));
+    return this.createPost(webhook, json);
+  }
 
-    await this.createPost(webhook, data)
-    return true;
+  private async postFileToWebhook(webhook: string, file: File, includeAd: boolean): Promise<any> {
+    const data: FormData = new FormData();
+    data.set('file', file);
+
+    if (includeAd) {
+      const json = {
+        embeds: [{ footer: { text: 'Posted using PostyBirb' } }]
+      };
+      data.set('payload_json', JSON.stringify(json));
+    }
+
+    return this.createPost(webhook, data);
   }
 
   private createPost(webhook: string, data: FormData): Promise<any> {
