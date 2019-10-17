@@ -84,8 +84,8 @@ export class Pixiv extends BaseWebsiteService {
 
   private getContentRating(rating: SubmissionRating): any {
     if (rating === SubmissionRating.GENERAL) return 0;
-    if (rating === SubmissionRating.MATURE) return 1;
-    if (rating === SubmissionRating.ADULT || rating === SubmissionRating.EXTREME) return 2;
+    if (rating === SubmissionRating.MATURE || rating === SubmissionRating.ADULT) return 1;
+    if (rating === SubmissionRating.EXTREME) return 2;
     return 0;
   }
 

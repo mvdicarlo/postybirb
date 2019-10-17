@@ -172,9 +172,9 @@ export class Discord extends BaseWebsiteService {
 
   private async postDescriptionToWebhook(webhook: string, title: string, description: string, includeAd: boolean): Promise<any> {
     const json: any = {
+      content: description,
       embeds: [{
-        title,
-        description
+        title
       }]
     };
 
@@ -193,7 +193,7 @@ export class Discord extends BaseWebsiteService {
 
     if (includeAd) {
       const json = {
-        embeds: [{ footer: { text: 'Posted using PostyBirb' } }]
+        // embeds: [{ footer: { text: 'Posted using PostyBirb' } }] disabled for now
       };
       data.set('payload_json', JSON.stringify(json));
     }
