@@ -129,7 +129,11 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
 
     this.overwriteControl.valueChanges.subscribe(overwrite => {
       this.value.overwrite = overwrite;
-      this.onChange();
+      if (overwrite) {
+        this.tinymce.setValue(this.providerData.description || '');
+      } else {
+        this.onChange();
+      }
     });
   }
 
