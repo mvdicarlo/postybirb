@@ -19,39 +19,86 @@
       overflow: hidden;
     }
 
-    .centered {
-      position: absolute;
-      top: 50%;
+    .main {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin: 2em 1em;
+    }
+
+    .progress-section {
       width: 100%;
-      padding-left: 2em;
-      padding-right: 2em;
+      margin-bottom: 0.25em;
+    }
+
+    .error-section {
+      width: 100%;
+    }
+
+    .notification {
+      overflow: hidden;
+      padding: .25em 0.75em !important;
+    }
+
+    code {
+      max-height: 100px;
+      overflow: auto;
+      display: block;
+    }
+
+    progress {
+      margin: 0 !important;
+    }
+
+    img {
+      min-width: 60px;
+      min-height: 60px;
+      height: 60px;
+      width: 60px;
     }
   </style>
 
-  <div class="container has-text-light" style="position: relative; height: 100%; width: 100%;">
-    <main id="header">
-      <h5 class="title is-5 has-text-light">PostyBirb</h5>
-    </main>
-    <div class="centered">
-      Updating...
+  <div class="main">
+    <div>
+      <img src="../../dist/assets/icon/minnowicon.png" alt="">
+      <div>Updating...</div>
+    </div>
+
+    <div class="progress-section">
       <progress class="progress is-info" id="progressbar" max="100"></progress>
+      <div id="advice" class="is-size-7"></div>
+    </div>
+
+    <div id="error_section" class="error-section" style="display:none">
+      <div class="notification is-danger">
+        <strong>An error has occurred</strong>
+        <div class="is-size-7">
+          <em>Manually update from:</em>
+          <br>
+          <em>http://postybirb.com/download</em>
+        </div>
+        <code id="error_message"></code>
+      </div>
     </div>
   </div>
 
   <script>
-    const ipc = require('electron').ipcRenderer;
+    setTimeout(() => {
+      document.getElementById('advice').innerText = 'Updating appears to be taking a while.\nIt may be faster to manually download the update at http://postybirb.com/download';
+    }, 60000);
 
+    const ipc = require('electron').ipcRenderer;
+    ipc.on('error', displayError);
     ipc.on('message', (event, message) => {
       document.getElementById('progressbar').value = message;
     });
 
-    ipc.on('error', (event, message) => {
-      const header = document.getElementById('header');
-      const err = document.createElement('div');
-      err.className = 'notification is-warning';
-      err.innerText = 'If issues persist, try manually updating from the PostyBirb website\n\n' + message;
-      header.appendChild(err);
-    });
+    function displayError(event, message) {
+      document.getElementById('error_message').innerText = message;
+      document.getElementById('error_section').style.display = 'block';
+      document.getElementById('progressbar').className = 'progress is-danger';
+    }
   </script>
 </body>
 
