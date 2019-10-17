@@ -157,7 +157,7 @@ export class Discord extends BaseWebsiteService {
 
     try {
       for (let i = 0; i < webhooks.length; i++) {
-        await this.postDescriptionToWebhook(webhooks[i], postData.title, description, includesAd);
+        await this.postDescriptionToWebhook(webhooks[i], postData.title, description, options.embed, includesAd);
       }
       for (let i = 0; i < files.length; i++) {
         for (let j = 0; j < webhooks.length; j++) {
@@ -170,13 +170,18 @@ export class Discord extends BaseWebsiteService {
     }
   }
 
-  private async postDescriptionToWebhook(webhook: string, title: string, description: string, includeAd: boolean): Promise<any> {
+  private async postDescriptionToWebhook(webhook: string, title: string, description: string, embedDescription: boolean, includeAd: boolean): Promise<any> {
     const json: any = {
-      content: description,
       embeds: [{
         title
       }]
     };
+
+    if (embedDescription || embedDescription === undefined) {
+      json.embeds[0].description = description;
+    } else {
+      json.content = description;
+    }
 
     if (includeAd) {
       json.embeds[0].footer = {
