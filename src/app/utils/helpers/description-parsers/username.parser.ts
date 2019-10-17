@@ -33,7 +33,7 @@ export class UsernameParser {
       if (!first) return match;
       const trimmedMatch = first.replace(/<(?:[^>'"]*|(['"]).*?\1)*>/gi, '').trim();
       if (!trimmedMatch.length) return match;
-      return replacement.replace('$1', trimmedMatch);
+      return replacement.replace(/\$1/g, trimmedMatch);
     });
 
     return html;

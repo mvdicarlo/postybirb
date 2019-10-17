@@ -9,6 +9,7 @@ import { Submission, SubmissionFormData } from 'src/app/database/models/submissi
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
+import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 const ACCEPTED_FILES = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'tif', 'doc', 'docx', 'rtf', 'pdf', 'txt', 'swf', 'flv', 'mp3', 'mp4'];
 
@@ -38,6 +39,10 @@ function descriptionParse(bbcode: string): string {
   return bbcode;
 }
 
+function preparser(html: string): string {
+  return UsernameParser.replaceText(html, 'fr', '[profile=$1=iconName]$1[/profile]');
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -52,6 +57,9 @@ function descriptionParse(bbcode: string): string {
   },
   validators: {
     submission: submissionValidate
+  },
+  preparsers: {
+    description: [preparser]
   },
   parsers: {
     description: [BBCodeParser.parse, descriptionParse],

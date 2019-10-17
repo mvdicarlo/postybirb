@@ -38,7 +38,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 }
 
 function preparser(html: string): string {
-  return UsernameParser.replaceText(html, 'da', ':icon$1:');
+  return UsernameParser.replaceText(html, 'da', ':icon$1::dev$1:');
 }
 
 function descriptionParse(html: string): string {
@@ -46,7 +46,7 @@ function descriptionParse(html: string): string {
     .replace(/style="text-align:center;"/g, 'align="center"')
     .replace(/style="text-align:right;"/g, 'align="right"');
 
-  html = UsernameParser.replaceText(html, 'da', ':icon$1:');
+  html = UsernameParser.replaceText(html, 'da', ':icon$1::dev$1:');
   return html
     .replace(/<p/gm, '<div')
     .replace(/<\/p>/gm, '</div>')
