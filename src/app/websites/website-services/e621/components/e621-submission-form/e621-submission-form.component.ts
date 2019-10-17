@@ -12,7 +12,11 @@ import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.componen
 export class E621SubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
 
   public optionDefaults: any = {
-    sourceURL: ['']
+    sourceURL: [''],
+    sourceURL2: [''],
+    sourceURL3: [''],
+    sourceURL4: [''],
+    sourceURL5: [''],
   };
 
   public tagConfig: TagConfig = {

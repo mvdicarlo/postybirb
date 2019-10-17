@@ -166,11 +166,19 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
     };
 
     const options = postData.options;
-    if (options.sourceURL) {
-      data['post[source]'] = options.sourceURL;
-    } else {
-      data['post[source]'] = options.sourceURL[0] || '';
-    }
+    const src = [
+      options.sourceURL,
+      options.sourceURL2,
+      options.sourceURL3,
+      options.sourceURL4,
+      options.sourceURL5,
+      ...postData.srcURLs
+    ]
+      .filter(s => !!s)
+      .slice(0, 5)
+      .join('%0A');
+
+    data['post[source]'] = src || '';
 
     const response = await ehttp.post(`${this.BASE_URL}/post/create.json`, postData.profileId, data, {
       multipart: true,
@@ -191,6 +199,5 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
     } catch (e) {
       return Promise.reject(this.createPostResponse('Unknown error', response.body));
     }
-
   }
 }
