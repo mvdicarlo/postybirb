@@ -25,14 +25,17 @@ export class UsernameParser {
    * @param  code        Website code e.g. fa
    * @param  replacement Regex replacement string
    */
-  public static replaceText(html: string, code: string, replacement: string): string {
+  public static replaceText(html: string, code: string, replacement: string, parseFn?: (s) => string): string {
     if (!html) return '';
 
     const regex = new RegExp(`:${code}(.+?):`, 'gi');
     html = html.replace(regex, (match, first) => {
       if (!first) return match;
-      const trimmedMatch = first.replace(/<(?:[^>'"]*|(['"]).*?\1)*>/gi, '').trim();
+      let trimmedMatch = first.replace(/<(?:[^>'"]*|(['"]).*?\1)*>/gi, '').trim();
       if (!trimmedMatch.length) return match;
+      if (parseFn) {
+        trimmedMatch = parseFn(trimmedMatch);
+      }
       return replacement.replace(/\$1/g, trimmedMatch);
     });
 

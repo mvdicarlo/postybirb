@@ -32,7 +32,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 }
 
 function preparser(html: string): string {
-  return UsernameParser.replaceText(html, 'fa', ':icon$1:');
+  return UsernameParser.replaceText(html, 'fa', ':icon$1:', (str) => str.replace(/_/g, ''));
 }
 
 function descriptionParser(bbcode: string): string {
