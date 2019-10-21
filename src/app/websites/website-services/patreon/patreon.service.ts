@@ -56,7 +56,7 @@ function descriptionParse(html: string): string {
     .replace(/<p/gm, '<div')
     .replace(/<\/p>/gm, '</div>')
     .replace(/(<s>|<\/s>)/g, '')
-    .replace(/<hr \/>/g, '');
+    .replace(/<hr\s{0,1}\/{0,1}>/g, '<br>');
 }
 
 @Injectable({
