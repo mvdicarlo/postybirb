@@ -157,9 +157,9 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
     const data: any = {
       login: userInfo.username,
       password_hash: userInfo.hash,
-      'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(submission.rating)]).join(' ').trim(),
+      'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(postData.rating)]).join(' ').trim(),
       'post[file]': fileAsFormDataObject(postData.primary),
-      'post[rating]': this.getRating(submission.rating),
+      'post[rating]': this.getRating(postData.rating),
       'post[description]': postData.description,
       'post[parent_id]': '',
       'post[upload_url]': ''

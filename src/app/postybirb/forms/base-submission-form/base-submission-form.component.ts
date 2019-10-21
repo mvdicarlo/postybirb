@@ -147,8 +147,9 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
 
     Object.keys(this.availableWebsites).forEach(website => {
       this.formDataForm.addControl(website, this._fb.group({
+        description: [],
+        rating: [],
         tags: [],
-        description: []
       }));
     });
 

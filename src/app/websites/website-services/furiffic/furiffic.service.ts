@@ -124,7 +124,7 @@ export class Furiffic extends BaseWebsiteService {
       thumbnailReset: '',
       thumbnailFile: '',
       visibility: 'public',
-      rating: this.getRating(submission.rating),
+      rating: this.getRating(postData.rating),
       'tags[]': this.formatTags(postData.tags, []),
       __csrf: (((body.match(/csrfSeed = .*;/g) || [])[0] || '').split('=')[1] || '').replace(';', '').trim()
     };
@@ -174,7 +174,7 @@ export class Furiffic extends BaseWebsiteService {
 
     const infoData: any = {
       name: postData.title.substring(0, 30),
-      rating: this.getRating(submission.rating),
+      rating: this.getRating(postData.rating),
       category: formData[0].category,
       visibility: 'public',
       folderVisibility: 'any',

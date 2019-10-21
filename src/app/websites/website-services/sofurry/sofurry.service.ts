@@ -166,7 +166,7 @@ export class SoFurry extends BaseWebsiteService {
       'UploadForm[textcontent]': postData.description,
       'UploadForm[description]': postData.description.split('.')[0],
       'UploadForm[formtags]': this.formatTags(postData.tags, []),
-      'UploadForm[contentLevel]': this.getContentRating(submission.rating),
+      'UploadForm[contentLevel]': this.getContentRating(postData.rating),
       'UploadForm[P_hidePublic]': '0',
       'UploadForm[folderId]': '0',
       'UploadForm[newFolderName]': '',
@@ -201,7 +201,7 @@ export class SoFurry extends BaseWebsiteService {
       'UploadForm[P_title]': postData.title,
       'UploadForm[description]': postData.description.replace(/<\/div>(\n|\r)/g, '</div>'),
       'UploadForm[formtags]': this.formatTags(postData.tags, []),
-      'UploadForm[contentLevel]': this.getContentRating(submission.rating),
+      'UploadForm[contentLevel]': this.getContentRating(postData.rating),
       'UploadForm[P_hidePublic]': options.viewOptions,
       'UploadForm[folderId]': options.folder
     };

@@ -136,7 +136,7 @@ export class Derpibooru extends BaseWebsiteService {
 
   private async attemptPost(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
-    const ratingTag: string = this.getRatingTag(submission.rating);
+    const ratingTag: string = this.getRatingTag(postData.rating);
     if (!tags.includes(ratingTag)) tags.push(ratingTag);
 
     const options = postData.options;

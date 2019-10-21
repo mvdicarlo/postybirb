@@ -120,7 +120,7 @@ export class Twitter extends BaseWebsiteService {
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const options = postData.options;
     const authData = this._profileManager.getData(postData.profileId, Twitter.name);
-    let sensitive: boolean = submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME;
+    let sensitive: boolean = postData.rating === SubmissionRating.ADULT || postData.rating === SubmissionRating.EXTREME;
     if (options.sensitiveOverride !== null) {
       sensitive = options.sensitiveOverride === 'yes';
     }

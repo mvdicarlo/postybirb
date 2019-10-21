@@ -192,7 +192,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     const data = {
       token: HTMLParser.getInputValue(journalPage, 'token'),
       title: postData.title,
-      rating: this.getRating(submission.rating),
+      rating: this.getRating(postData.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, [])
     }
@@ -216,7 +216,7 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     const data: any = {
       token: HTMLParser.getInputValue(submissionPage, 'token'),
       title: postData.title,
-      rating: this.getRating(submission.rating),
+      rating: this.getRating(postData.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, []),
       submitfile: fileAsFormDataObject(postData.primary),

@@ -255,7 +255,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           keywords: this.formatTags(postData.tags, []),
           message: postData.description,
           submission_type: this.getContentType(postData.typeOfSubmission),
-          rating: this.getRating(submission.rating),
+          rating: this.getRating(postData.rating),
           cat_duplicate: '',
           create_folder_name: '',
           cat: options.category,

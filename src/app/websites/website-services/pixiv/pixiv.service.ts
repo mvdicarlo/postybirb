@@ -99,7 +99,7 @@ export class Pixiv extends BaseWebsiteService {
     const data: any = {
       tt: HTMLParser.getInputValue(body, 'tt', 2),
       uptype: 'illust',
-      'x_restrict_sexual': this.getContentRating(submission.rating),
+      'x_restrict_sexual': this.getContentRating(postData.rating),
       sexual: '',
       title: postData.title.substring(0, 32),
       tag: this.formatTags(postData.tags, []),

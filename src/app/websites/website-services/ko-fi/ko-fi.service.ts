@@ -15,9 +15,9 @@ const ACCEPTED_FILES = ['jpeg', 'jpg', 'png'];
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-
-  if (submission.rating && submission.rating !== SubmissionRating.GENERAL) {
-    problems.push(['Does not support rating', { website: 'Ko-fi', value: submission.rating }]);
+  const rating = (formData[KoFi.name] || {}).rating || submission.rating;
+  if (rating && rating !== SubmissionRating.GENERAL) {
+    problems.push(['Does not support rating', { website: 'Ko-fi', value: rating }]);
   }
 
   if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {

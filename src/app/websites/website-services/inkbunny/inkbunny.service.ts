@@ -140,7 +140,7 @@ export class InkBunny extends BaseWebsiteService {
     if (rating === SubmissionRating.GENERAL) return '0';
     if (rating === SubmissionRating.MATURE) return '2';
     if (rating === SubmissionRating.EXTREME || rating === SubmissionRating.ADULT) return '4';
-    return 0;
+    return rating; // return custom
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -195,9 +195,9 @@ export class InkBunny extends BaseWebsiteService {
 
       const options = postData.options;
 
-      const rating = this._getRating(submission.rating);
-      if (rating !== 0 || options.rating) {
-        editData[`tag[${options.rating || rating}]`] = 'yes'; // use the one specified by user if provided, otherwise use default rating
+      const rating = this._getRating(postData.rating);
+      if (rating !== '0') {
+        editData[`tag[${rating}]`] = 'yes'; // use the one specified by user if provided, otherwise use default rating
       }
 
       if (options.scraps) editData.scraps = 'yes';

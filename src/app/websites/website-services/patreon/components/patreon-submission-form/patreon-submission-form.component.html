@@ -1,5 +1,17 @@
 <form [formGroup]="formGroup">
   <div class="section">
+    <mat-form-field color="accent">
+      <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
+        <mat-option [value]="null">{{ 'None' | translate }}</mat-option>
+        <mat-option value="General">{{ 'General' | translate }}</mat-option>
+        <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
+        <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
+        <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="section">
     <h6>{{ 'Description' | translate }}</h6>
     <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
   </div>
@@ -11,7 +23,8 @@
 
   <div formGroupName="options" class="row no-gutters section">
     <div class="col-md col-lg col-xl">
-      <mat-checkbox formControlName="chargePatrons">{{'Charge Patrons' | translate}}</mat-checkbox> <small *ngIf="formGroup.value.options.chargePatrons" class="form-text">Patrons will be charged their pledge amount for this post on the first of next month.</small>
+      <mat-checkbox formControlName="chargePatrons">{{'Charge Patrons' | translate}}</mat-checkbox> <small *ngIf="formGroup.value.options.chargePatrons" class="form-text">Patrons will be charged their pledge amount for this post on the first of next
+        month.</small>
     </div>
 
     <div class="col-md-9 col-lg-9 col-xl-9">

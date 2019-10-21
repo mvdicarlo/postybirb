@@ -250,7 +250,7 @@ export class NewTumbl extends BaseWebsiteService {
       }
     }
 
-    const rating: string = this.getRating(submission.rating, options.ratingOverride);
+    const rating: string = this.getRating(postData.rating, options.ratingOverride);
     const tags: string = postData.tags.map(t => `#${t}`).join('');
 
     const postPart = await got.post(`${this.API_URL}/set_PostPart_Update`, null, this.BASE_URL, [], {
@@ -364,7 +364,7 @@ export class NewTumbl extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse('Unknown error', getCompose.success.body));
     }
 
-    const rating: string = this.getRating(submission.rating, options.ratingOverride);
+    const rating: string = this.getRating(postData.rating, options.ratingOverride);
     const tags: string = postData.tags.map(t => `#${t}`).join('');
 
     const postPart = await got.post(`${this.API_URL}/set_PostPart_Update`, null, this.BASE_URL, [], {

@@ -15,8 +15,9 @@ const ACCEPTED_FILES = ['jpg', 'jpeg', 'png', 'gif', 'txt', 'mp3', 'midi', 'swf'
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-  if (submission.rating && submission.rating !== SubmissionRating.GENERAL) {
-    problems.push(['Does not support rating', { website: 'Route 50', value: submission.rating }]);
+  const rating = (formData[Route50.name] || {}).rating || submission.rating;
+  if (rating && rating !== SubmissionRating.GENERAL) {
+    problems.push(['Does not support rating', { website: 'Route 50', value: rating }]);
   }
 
   if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {

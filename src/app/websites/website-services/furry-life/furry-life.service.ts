@@ -36,7 +36,8 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
 
   const options = dotProp.get(formData, 'FurryLife.options', { folder: '0-sfw' });
   if (options.folder) {
-    const isNSFW: boolean = submission.rating !== SubmissionRating.GENERAL;
+    const rating = (formData[FurryLife.name] || {}).rating || submission.rating;
+    const isNSFW: boolean = rating !== SubmissionRating.GENERAL;
     const isNSFWFolder: boolean = options.folder.includes('nsfw');
     if (isNSFW && !isNSFWFolder) {
       problems.push(['Cannot upload NSFW to SFW Section', { website: 'FurryLife' }]);

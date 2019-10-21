@@ -18,9 +18,9 @@ const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'bmp', 'flv', 'txt', 'rtf', 'odt',
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
-
-  if (submission.rating && (submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME)) {
-    problems.push(['Does not support rating', { website: 'DeviantArt', value: submission.rating }]);
+  const rating = (formData[DeviantArt.name] || {}).rating || submission.rating;
+  if (rating && (rating === SubmissionRating.ADULT || rating === SubmissionRating.EXTREME)) {
+    problems.push(['Does not support rating', { website: 'DeviantArt', value: rating }]);
   }
 
   if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
@@ -239,11 +239,11 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
       itemid: res.itemid,
       agree_tos: '1',
       agree_submission: '1',
-      is_mature: submission.rating !== SubmissionRating.GENERAL ? 'true' : 'false',
+      is_mature: postData.rating !== SubmissionRating.GENERAL ? 'true' : 'false',
       catpath: this.getDefaultCategoryType(postData.typeOfSubmission),
     };
 
-    if (submission.rating !== SubmissionRating.GENERAL) {
+    if (postData.rating !== SubmissionRating.GENERAL) {
       submitData.mature_level = 'moderate';
     }
 

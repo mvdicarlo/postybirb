@@ -18,8 +18,9 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   const problems: any[] = [];
   const supportedFiles: string[] = ACCEPTED_FILES;
 
-  if (submission.rating && (submission.rating === SubmissionRating.ADULT || submission.rating === SubmissionRating.EXTREME)) {
-    problems.push(['Does not support rating', { website: 'Tumblr', value: submission.rating }]);
+  const rating = (formData[Tumblr.name] || {}).rating || submission.rating;
+  if (rating && (rating === SubmissionRating.ADULT || rating === SubmissionRating.EXTREME)) {
+    problems.push(['Does not support rating', { website: 'Tumblr', value: rating }]);
   }
 
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
