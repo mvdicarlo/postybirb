@@ -39,6 +39,7 @@ export interface SubmissionPostData {
 
 export interface WebsiteService {
   readonly BASE_URL: string
+  checkCloudflare?(profileId, data?: any): Promise<boolean>;
   checkStatus(profileId: string, data?: any): Promise<WebsiteStatus>;
   post(submission: Submission, postData: SubmissionPostData): Promise<PostResult>;
   refreshTokens?(profileId: string, data?: any): Promise<WebsiteStatus>;

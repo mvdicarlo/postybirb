@@ -90,9 +90,12 @@ export class LoginManagerService {
    * @param ids      Profile ids to check
    * @param services Services/websites being checked
    */
-  private _update(ids: string[], services: WebsiteService[]): void {
+  private async _update(ids: string[], services: WebsiteService[]): Promise<void> {
     for (let s of services) {
       for (let id of ids) {
+        if (s.checkCloudflare) {
+          await s.checkCloudflare(id, this._profileManager.getData(id, s.constructor.name));
+        }
         s.checkStatus(id, this._profileManager.getData(id, s.constructor.name))
           .then((status: WebsiteStatus) => {
             // ignore ids that have been removed since time of status check

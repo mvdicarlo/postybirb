@@ -70,9 +70,28 @@ function descriptionParser(bbcode: string): string {
 })
 export class FurAffinity extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://www.furaffinity.net';
+  private cloudflareActive: boolean = false;
 
   constructor() {
     super();
+  }
+
+  public async checkCloudflare(profileId: string): Promise<boolean> {
+    const cookies = await getCookies(profileId, this.BASE_URL);
+    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
+    try {
+      if (response.body.includes('Cloudflare')) {
+        this.cloudflareActive = true;
+        return true;
+      } else {
+        this.cloudflareActive = false;
+        return false;
+      }
+    } catch (e) {
+      // Swallow
+    }
+
+    return false;
   }
 
   public async checkStatus(profileId: string): Promise<WebsiteStatus> {
@@ -82,7 +101,17 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/controls/submissions`, this.BASE_URL, cookies, profileId);
+    let response: any;
+    if (this.cloudflareActive) {
+      response = await ehttp.get(`${this.BASE_URL}/controls/submissions`, profileId, {
+        updateCookies: true,
+        headers: {
+          'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+        }
+      });
+    } else {
+      response = await got.get(`${this.BASE_URL}/controls/submissions`, this.BASE_URL, cookies, profileId);
+    }
     try {
       const body = response.body;
       if (body.includes('logout-link')) {
