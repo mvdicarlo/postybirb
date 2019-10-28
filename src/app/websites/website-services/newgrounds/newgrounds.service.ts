@@ -244,7 +244,7 @@ export class Newgrounds extends BaseWebsiteService {
     if (optionsPost.success.response.statusCode === 200) {
       const successJson = JSON.parse(optionsPost.success.body);
       const res = this.createPostResponse(null);
-      res.srcURL = successJson.url;
+      res.srcURL = successJson.url.replace('//', '');
       return res;
     } else {
       return Promise.reject(this.createPostResponse('Unknown error', optionsPost.success.body));
