@@ -273,7 +273,7 @@ export class NewTumbl extends BaseWebsiteService {
     const postOptions = await got.post(`${this.API_URL}/set_Post_Options`, null, this.BASE_URL, [], {
       form: {
         json: JSON.stringify({
-          Params: ["[{IPADDRESS}]", loginToken, 0, postId, rating, '', '', tags]
+          Params: ["[{IPADDRESS}]", loginToken, 0, postId, 0, rating, '', '', tags]
         })
       }
     });
@@ -387,7 +387,7 @@ export class NewTumbl extends BaseWebsiteService {
     const postOptions = await got.post(`${this.API_URL}/set_Post_Options`, null, this.BASE_URL, [], {
       form: {
         json: JSON.stringify({
-          Params: ["[{IPADDRESS}]", loginToken, 0, postId, rating, '', '', tags]
+          Params: ["[{IPADDRESS}]", loginToken, 0, postId, 0, rating, '', '', tags]
         })
       }
     });
