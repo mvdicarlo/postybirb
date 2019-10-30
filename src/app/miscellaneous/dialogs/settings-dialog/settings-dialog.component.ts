@@ -18,6 +18,7 @@ export class SettingsDialog implements OnInit {
       hardwareAcceleration: [true],
       startAsTaskbar: [false],
       postInterval: [0],
+      postRetries: [1],
       clearQueueOnFailure: [true],
       advertise: [true],
       localErrorLogging: [true]
@@ -53,6 +54,17 @@ export class SettingsDialog implements OnInit {
 
     this.settingsForm.controls.postInterval.valueChanges.subscribe(postInterval => {
       settingsDB.set('postInterval', Math.max(postInterval, 0)).write();
+    });
+
+    this.settingsForm.controls.postRetries.valueChanges.subscribe(postRetries => {
+      let val: number = postRetries;
+      if (postRetries > 4) {
+        val = 4;
+        this.settingsForm.controls.postRetries.setValue(val, { emitEvent: false });
+      } else if (postRetries < 1) {
+        val = 1;
+      }
+      settingsDB.set('postRetries', val).write();
     });
 
     this.settingsForm.controls.clearQueueOnFailure.valueChanges.subscribe(clearQueueOnFailure => {

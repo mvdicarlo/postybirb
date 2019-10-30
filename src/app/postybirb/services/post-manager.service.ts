@@ -22,6 +22,7 @@ export class PostManagerService {
   private serviceMap: Map<string, WebsiteService> = new Map();
   private usernameCodes: { code: string, url: string }[] = [];
   private refreshBeforePostWebsites: string[] = [];
+  private postTries: number = 0;
 
   constructor(
     injector: Injector,
@@ -103,15 +104,8 @@ export class PostManagerService {
           postObject.thumbnail = undefined;
         }
 
-        // Too lazy to use injection solution. If you want to just fake a post uncomment this and comment out the post code below
-        // try {
-        //   return await this._fakePost();
-        // } catch (e) {
-        //   return Promise.reject(e);
-        // }
-
         try {
-          const post = await this.serviceMap.get(website).post(submissionToPost, postObject);
+          const post = await this._attemptPost(website, submissionToPost, postObject);
           return post;
         } catch (err) {
           return Promise.reject(err);
@@ -125,12 +119,31 @@ export class PostManagerService {
     }
   }
 
+  private async _attemptPost(website: string, submissionToPost: Submission, data: SubmissionPostData): Promise<any> {
+    const attempts = [];
+    for (let i = 0; i < (settingsDB.get('postRetries').value() || 1); i++) {
+      try {
+        const post = await this._doPost(website, submissionToPost, data);
+        // const post = await this._fakePost(); //testing only
+        return post;
+      } catch (err) {
+        attempts.push(err);
+      }
+    }
+
+    return Promise.reject(attempts.pop());
+  }
+
+  private async _doPost(website: string, submissionToPost: Submission, data: SubmissionPostData): Promise<any> {
+    return await this.serviceMap.get(website).post(submissionToPost, data);
+  }
+
   private _fakePost(): Promise<any> {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
           let rand = Math.floor(Math.random() * 100);
-          if (rand >= 50) {
+          if (rand >= 100) {
             resolve({});
           } else {
             reject({ msg: 'Fail', error: 'Me gusta bailar' });

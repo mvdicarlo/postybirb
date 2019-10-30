@@ -112,6 +112,7 @@ try {
     hardwareAcceleration: true,
     startAsTaskbar: false,
     postInterval: 0,
+    postRetries: 1,
     clearQueueOnFailure: true,
     advertise: true,
     localErrorLogging: true

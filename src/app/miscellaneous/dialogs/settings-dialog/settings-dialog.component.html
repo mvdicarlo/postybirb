@@ -44,10 +44,17 @@
         <mat-slide-toggle formControlName="clearQueueOnFailure">{{ 'Empty Queue When A Post Fails' | translate }}</mat-slide-toggle>
 
         <mat-form-field appearance="fill" color="accent">
+          <mat-label>{{ 'Post Retries' | translate }}</mat-label>
+          <input type="number" matInput formControlName="postRetries" min="1" max="4">
+          <mat-hint>{{ 'Times to retry a post' | translate }}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" color="accent">
           <mat-label>{{ 'Time Between Posts' | translate }}</mat-label>
           <input type="number" matInput formControlName="postInterval" min="0">
           <mat-hint>{{ 'In minutes' | translate }}</mat-hint>
         </mat-form-field>
+
       </mat-expansion-panel>
     </mat-accordion>
   </form>
