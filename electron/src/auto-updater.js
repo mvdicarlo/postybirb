@@ -11,7 +11,6 @@ const log = require('electron-log');
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoDownload = false;
-autoUpdater.allowPrerelease = true; // REMOVE WHEN 2.X GOES TO BEING MAIN BUILD!
 
 let updateDialogShowing = false;
 let progressWindow = null;
