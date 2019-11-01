@@ -253,6 +253,8 @@ export class FurryAmino extends BaseWebsiteService {
             reject(res.success.body);
           }
         }).catch(err => reject(err));
+
+        URL.revokeObjectURL(uuid);
     });
   }
 }

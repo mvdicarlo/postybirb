@@ -170,6 +170,8 @@ export class Newgrounds extends BaseWebsiteService {
       }
     });
 
+    URL.revokeObjectURL(uuid);
+
     if (park.error) {
       return Promise.reject(this.createPostResponse('Unknown error', park.error));
     }

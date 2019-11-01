@@ -476,6 +476,8 @@ export class Patreon extends BaseWebsiteService {
         qqtotalfilesize: file.fileInfo.size,
       };
 
+      URL.revokeObjectURL(uuid);
+
       const win = new BrowserWindow({
         show: false,
         webPreferences: {
