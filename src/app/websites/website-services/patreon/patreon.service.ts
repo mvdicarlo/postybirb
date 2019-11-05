@@ -536,6 +536,10 @@ export class Patreon extends BaseWebsiteService {
       }
     };
 
+    postData.primary.fileInfo.name = postData.primary.fileInfo.name.replace(/'/g, '');
+    if (postData.thumbnail) postData.thumbnail.fileInfo.name = postData.primary.fileInfo.name.replace(/'/g, '');
+    postData.additionalFiles.forEach(f => f.fileInfo.name = f.fileInfo.name.replace(/'/g, ''));
+
     const create = await this._startPost(postData.profileId, csrf, createData);
     if (!create.body || !create.body.includes('self')) {
       return Promise.reject(this.createPostResponse('Unknown error', create.body));
