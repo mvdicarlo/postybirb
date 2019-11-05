@@ -216,7 +216,7 @@ export class Furiffic extends BaseWebsiteService {
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
     const tags = [...defaultTags, ...other];
     return tags.map((tag) => {
-      return tag.trim().replace(/-/gm, ' ').replace(/(\/|\\)/gm, ' ');
+      return tag.trim().replace(/-/gm, ' ').replace(/(\/|\\)/gm, '');
     }).slice(0, 30);
   }
 }

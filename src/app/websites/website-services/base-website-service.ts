@@ -29,8 +29,7 @@ export class BaseWebsiteService implements WebsiteService {
     const tags = [...defaultTags, ...other];
     return tags.map((tag) => {
       return tag.trim()
-        .replace(/\s/gm, spaceReplacer)
-        .replace(/(\/|\\)/gm, spaceReplacer);
+        .replace(/\s/gm, spaceReplacer);
     });
   }
 

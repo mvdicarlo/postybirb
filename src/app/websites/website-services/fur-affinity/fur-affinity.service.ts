@@ -345,7 +345,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
     const maxLength = 250;
-    const tags = super.formatTags(defaultTags, other);
+    const tags = super.formatTags(defaultTags, other).map(tag => tag.replace(/(\/|\\)/gm, '_'));
     const filteredTags = tags.filter(tag => tag.length >= 3);
     let tagString = filteredTags.join(' ').trim();
     if (tagString.length > maxLength) {

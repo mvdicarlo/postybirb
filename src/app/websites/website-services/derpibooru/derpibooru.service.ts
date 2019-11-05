@@ -169,5 +169,4 @@ export class Derpibooru extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse($(problem).find('#error_explanation').text().split(':')[1], postRequest.success.body));
     }
   }
-
 }
