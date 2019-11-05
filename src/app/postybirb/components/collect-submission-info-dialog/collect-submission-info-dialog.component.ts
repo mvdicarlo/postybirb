@@ -2,6 +2,7 @@ import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material';
 import { FileMetadata } from 'src/app/utils/helpers/file-reader.helper';
 import { TemplateManagerService } from 'src/app/templates/services/template-manager.service';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'collect-submission-info-dialog',
@@ -17,4 +18,7 @@ export class CollectSubmissionInfoDialog {
     this.templates = _templateManager.getTemplates();
   }
 
+  public setTemplate(template: FileMetadata, event: any): any {
+    template.formData = copyObject(event.value);
+  }
 }

@@ -25,7 +25,7 @@
                 </mat-form-field>
               </div>
               <mat-form-field color="accent" class="col">
-                <mat-select [placeholder]="'Template' | translate" (selectionChange)="d.formData = $event.value">
+                <mat-select [placeholder]="'Template' | translate" (selectionChange)="setTemplate(d, $event)">
                   <mat-option *ngFor="let template of templates" [value]="template.data">{{ template.name }}</mat-option>
                 </mat-select>
               </mat-form-field>
