@@ -44,7 +44,8 @@ export const TypeMapping: any = {
     'mov',
     'wmv',
     'mpeg',
-    'sfw',
+    'swf',
+    'x-shockwave-flash',
     'webm'
   ]
 }
