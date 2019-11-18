@@ -8,25 +8,60 @@ export enum TypeOfSubmission {
 }
 
 export const TypeMapping: any = {
-  [TypeOfSubmission.ART]: ['image'],
-  [TypeOfSubmission.STORY]: ['pdf', 'text', 'rtf', 'doc', 'docx', 'odt', 'md', 'html', 'log'],
-  [TypeOfSubmission.AUDIO]: ['mp3', 'mid', 'wav', 'wav', 'mpeg'],
-  [TypeOfSubmission.ANIMATION]: ['swf', 'flv', 'webm', 'mp4']
+  [TypeOfSubmission.ART]: [
+    'png',
+    'jpeg',
+    'jpg',
+    'tiff',
+    'gif',
+    'svg',
+    'webp',
+    'ico',
+    'bmp',
+    'apng',
+    'image'
+  ],
+  [TypeOfSubmission.STORY]: [
+    'text',
+    'txt',
+    'rtf',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx',
+    'pdf',
+    'odt',
+    'md',
+    'html',
+    'log'
+  ],
+  [TypeOfSubmission.AUDIO]: ['mp3', 'mid', 'wav', 'wave', 'x-wav', 'x-pn-wav', 'audio'],
+  [TypeOfSubmission.ANIMATION]: [
+    'video',
+    'avi',
+    'flv',
+    'm3u8',
+    'mov',
+    'wmv',
+    'mpeg',
+    'sfw',
+    'webm'
+  ]
 }
 
-export function getTypeByExtension(file: File|FileObject): any {
+export function getTypeByExtension(file: File | FileObject): any {
   const extension = file.type.split('.').pop();
   for (let key of Object.keys(TypeMapping)) {
-      const accepted = TypeMapping[key];
-      if (accepted.includes(extension)) {
-        return key;
-      }
+    const accepted = TypeMapping[key];
+    if (accepted.includes(extension)) {
+      return key;
+    }
   }
 
   return null;
 }
 
-export function getTypeOfSubmission(file: File|FileObject): any {
+export function getTypeOfSubmission(file: File | FileObject): any {
   if (supportsFileType(file, TypeMapping[TypeOfSubmission.ART])) return TypeOfSubmission.ART;
   if (supportsFileType(file, TypeMapping[TypeOfSubmission.STORY])) return TypeOfSubmission.STORY;
   if (supportsFileType(file, TypeMapping[TypeOfSubmission.AUDIO])) return TypeOfSubmission.AUDIO;
@@ -35,7 +70,7 @@ export function getTypeOfSubmission(file: File|FileObject): any {
   return getTypeByExtension(file) || null;
 }
 
-function supportsFileType(fileInfo: File|FileObject, supportedFileTypes: string[]): boolean {
+function supportsFileType(fileInfo: File | FileObject, supportedFileTypes: string[]): boolean {
   const split = fileInfo.type.split('/')[1];
   let extension = null;
   if (fileInfo.name) {
