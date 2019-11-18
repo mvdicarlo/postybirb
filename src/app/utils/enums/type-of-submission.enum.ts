@@ -27,13 +27,29 @@ export function getTypeByExtension(file: File|FileObject): any {
 }
 
 export function getTypeOfSubmission(file: File|FileObject): any {
-  const type: string[] = file.type.split('/');
-  for (let key of Object.keys(TypeMapping)) {
-      const accepted = TypeMapping[key];
-      if (accepted.includes(type[0]) || accepted.includes(type[1])) {
-        return key;
-      }
-  }
+  if (supportsFileType(file, TypeMapping[TypeOfSubmission.ART])) return TypeOfSubmission.ART;
+  if (supportsFileType(file, TypeMapping[TypeOfSubmission.STORY])) return TypeOfSubmission.STORY;
+  if (supportsFileType(file, TypeMapping[TypeOfSubmission.AUDIO])) return TypeOfSubmission.AUDIO;
+  if (supportsFileType(file, TypeMapping[TypeOfSubmission.ANIMATION])) return TypeOfSubmission.ANIMATION;
 
   return getTypeByExtension(file) || null;
+}
+
+function supportsFileType(fileInfo: File|FileObject, supportedFileTypes: string[]): boolean {
+  const split = fileInfo.type.split('/')[1];
+  let extension = null;
+  if (fileInfo.name) {
+    extension = fileInfo.name.split('.').pop();
+  }
+  for (let i = 0; i < supportedFileTypes.length; i++) {
+    if (fileInfo.type && supportedFileTypes[i].includes(fileInfo.type) || split && supportedFileTypes[i].includes(split)) {
+      return true;
+    } else {
+      if (extension && supportedFileTypes[i].includes(extension)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
