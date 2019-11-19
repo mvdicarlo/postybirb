@@ -195,6 +195,13 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     return 'submission';
   }
 
+  private getContentCategory(type: TypeOfSubmission): string {
+    if (type === TypeOfSubmission.ART) return '1';
+    if (type === TypeOfSubmission.AUDIO) return '16';
+    if (type === TypeOfSubmission.STORY) return '13';
+    if (type === TypeOfSubmission.ANIMATION) return '7';
+  }
+
   private getRating(rating: SubmissionRating): any {
     if (rating === SubmissionRating.GENERAL) return 0;
     if (rating === SubmissionRating.MATURE) return 2;
@@ -292,6 +299,11 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           species: options.species,
           gender: options.gender
         };
+
+        if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
+          delete finalizeData.cat;
+          finalizeData.cat_duplicate = this.getContentCategory(postData.typeOfSubmission);
+        }
 
         if (options.disableComments) finalizeData.lock_comments = 'on';
         if (options.scraps) finalizeData.scrap = '1';
