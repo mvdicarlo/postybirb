@@ -35,7 +35,7 @@ export const TypeMapping: any = {
     'html',
     'log'
   ],
-  [TypeOfSubmission.AUDIO]: ['mp3', 'mid', 'wav', 'wave', 'x-wav', 'x-pn-wav', 'audio'],
+  [TypeOfSubmission.AUDIO]: ['mp3', 'mid', 'wav', 'wave', 'x-wav', 'x-pn-wav', 'audio', 'mpeg'],
   [TypeOfSubmission.ANIMATION]: [
     'video',
     'avi',
@@ -43,10 +43,10 @@ export const TypeMapping: any = {
     'm3u8',
     'mov',
     'wmv',
-    'mpeg',
     'swf',
     'x-shockwave-flash',
-    'webm'
+    'webm',
+    'mp4'
   ]
 }
 
