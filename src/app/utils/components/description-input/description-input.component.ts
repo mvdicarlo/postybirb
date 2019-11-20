@@ -50,7 +50,7 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
     block_formats: 'Paragraph=p;Header 1=h1;Header 2=h2;Header 3=h3;Header 4=h4;Header 5=h5;Header 6=h6',
     content_style: 'p {margin: 0}',
     height: 200,
-    plugins: 'autoresize autolink link preview paste hr textcolor template help code',
+    plugins: 'autoresize autolink link preview paste hr textcolor template help code colorpicker',
     menu: {},
     toolbar: 'newdocument undo redo | formatselect removeformat | link unlink hr | bold italic underline strikethrough forecolor | alignleft aligncenter alignright | code template help',
     templates: [],
