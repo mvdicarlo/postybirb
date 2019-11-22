@@ -42,6 +42,10 @@ export class DeviantArtLoginDialog implements OnInit, AfterViewInit, OnDestroy {
       if (event.url.includes('loggedin')) {
         this.webview.nativeElement.src = auth.deviantart.getAuthURL();
       }
+
+      if (event.url.includes('authorizeresponse')) {
+        this.webview.nativeElement.src = event.url.replace('authorizeresponse', 'authorize?response')
+      }
     });
   }
 
