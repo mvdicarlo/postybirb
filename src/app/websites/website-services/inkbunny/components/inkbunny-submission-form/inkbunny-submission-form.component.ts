@@ -14,7 +14,8 @@ export class InkbunnySubmissionForm extends BaseWebsiteSubmissionForm implements
       blockGuests: [false],
       friendsOnly: [false],
       notify: [true],
-      scraps: [false]
+      scraps: [false],
+      submissionType: [null]
     };
 
   constructor(injector: Injector) {

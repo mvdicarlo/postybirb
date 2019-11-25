@@ -195,6 +195,10 @@ export class InkBunny extends BaseWebsiteService {
 
       const options = postData.options;
 
+      if (options.submissionType) {
+        editData.type = options.submissionType;
+      }
+
       const rating = this._getRating(postData.rating);
       if (rating !== '0') {
         editData[`tag[${rating}]`] = 'yes'; // use the one specified by user if provided, otherwise use default rating
