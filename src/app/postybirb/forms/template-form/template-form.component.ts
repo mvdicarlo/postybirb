@@ -46,6 +46,10 @@ export class TemplateForm extends BaseSubmissionForm implements OnInit, AfterVie
     store.set(this.LOCAL_STORE, this.submission.formData);
   }
 
+  protected _onImport(): void {
+    store.set(this.LOCAL_STORE, this.submission.formData);
+  }
+
   public clear(): void {
     this.dialog.open(ConfirmDialog, {
       data: {

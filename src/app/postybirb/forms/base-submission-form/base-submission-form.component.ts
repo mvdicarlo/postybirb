@@ -243,16 +243,26 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
             if (path === 'websites') {
               const websites = dotProp.get(copyObject(template.data), path, [])
                 .filter(w => this.allowWebsite(this.availableWebsites[w]));
-              dotProp.set(this.submission.formData, path, websites);
+              this.submission.formData = {
+                ...this.submission.formData,
+                websites
+              };
             } else {
-              dotProp.set(this.submission.formData, path, dotProp.get(copyObject(template.data), path));
+              const newObj = {
+                ...this.submission.formData
+              };
+              dotProp.set(newObj, path, dotProp.get(copyObject(template.data), path));
+              this.submission.formData = newObj;
             }
           }
           this.formDataForm.patchValue(copyObject(this.submission.formData));
           this._changeDetector.markForCheck();
+          this._onImport();
         }
       });
   }
+
+  protected _onImport(): void {}
 
   public isLoggedIn(website: string): boolean {
     try {

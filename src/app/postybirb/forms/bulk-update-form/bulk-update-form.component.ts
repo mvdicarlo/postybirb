@@ -64,6 +64,10 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
     store.set(this.LOCAL_STORE, this.submission.asISubmission());
   }
 
+  protected _onImport(): void {
+    store.set(this.LOCAL_STORE, this.submission.asISubmission());
+  }
+
   public clear(): void {
     this.dialog.open(ConfirmDialog, {
       data: {
