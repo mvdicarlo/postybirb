@@ -116,13 +116,16 @@ export class KoFi extends BaseWebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     const data = {
+      type: '',
       blogPostId: '',
       blogPostTitle: postData.title,
       blogPostBody: postData.description,
       featuredImage: '',
+      noFeaturedImage: 'false',
+      showFeaturedImageOnPost: 'true',
       embedUrl: '',
       tags: this.formatTags(postData.tags, []).join(','),
-      postAudience: postData.options.audience
+      postAudience: postData.options.audience || 'public'
     };
 
     const postResponse = await got.post(`${this.BASE_URL}/Blog/AddBlogPost`, data, this.BASE_URL, cookies, {
@@ -175,7 +178,7 @@ export class KoFi extends BaseWebsiteService {
       file: fileAsFormDataObject(postData.primary)
     };
 
-    const upload = await got.post(`${this.BASE_URL}/Buttons/SaveUploadedFile`, uploadData, this.BASE_URL, cookies, {
+    const upload = await got.post(`${this.BASE_URL}/Media/UploadImage`, uploadData, this.BASE_URL, cookies, {
       gzip: true,
       headers: {
         'Accept-Encoding': 'gzip, deflate, br',
@@ -192,21 +195,19 @@ export class KoFi extends BaseWebsiteService {
     }
 
     const body = JSON.parse(upload.success.body);
-    const filename = body.FileName;
 
     const info = this.userInformation.get(postData.profileId);
 
     const data: any = {
-      uniqueName: filename,
-      title: postData.title,
-      description: PlaintextParser.parse(postData.description),
-      postToTwitter: 'false',
-      enableHiRes: 'false',
-      buttonId: info.id,
+      Album: '',
+      Title: postData.title,
+      Description: PlaintextParser.parse(postData.description),
+      PostToTwitter: 'false',
+      EnableHiRes: 'false',
+      FileNames: body.FileNames
     };
 
-    const postResponse = await got.requestGet(`${this.BASE_URL}/Buttons/AddImageFeedItem`, this.BASE_URL, cookies, {
-      form: data,
+    const postResponse = await got.post(`${this.BASE_URL}/Feed/AddImageFeedItem`, data, this.BASE_URL, cookies, {
       gzip: true,
       headers: {
         'Accept-Encoding': 'gzip, deflate, br',
