@@ -33,6 +33,8 @@ import { TagInput } from './components/tag-input/tag-input.component';
 import { WebsiteShortcutsComponent } from './components/description-input/website-shortcuts/website-shortcuts.component';
 import { TagGroupManagementDialog } from './components/tag-input/tag-group-management-dialog/tag-group-management-dialog.component';
 import { TagGroupInputField } from './components/tag-input/tag-group-management-dialog/tag-group-input-field/tag-group-input-field.component';
+import { DescriptionTemplateManagementDialog } from './components/description-input/description-template-management-dialog/description-template-management-dialog.component';
+import { DescriptionTemplateInputField } from './components/description-input/description-template-management-dialog/description-template-input-field/description-template-input-field.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +51,8 @@ import { TagGroupInputField } from './components/tag-input/tag-group-management-
     WebsiteShortcutsComponent,
     TagGroupManagementDialog,
     TagGroupInputField,
+    DescriptionTemplateManagementDialog,
+    DescriptionTemplateInputField,
   ],
   imports: [
     CommonModule,
@@ -81,7 +85,8 @@ import { TagGroupInputField } from './components/tag-input/tag-group-management-
     ConfirmDialog,
     InputDialog,
     SaveTemplateDialog,
-    TagGroupManagementDialog
+    TagGroupManagementDialog,
+    DescriptionTemplateManagementDialog
   ]
 })
 export class UtilsModule { }

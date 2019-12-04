@@ -25,7 +25,7 @@
     "@fortawesome/fontawesome-free": "^5.6.3",
     "@ngx-translate/core": "^11.0.1",
     "@ngx-translate/http-loader": "^4.0.0",
-    "@tinymce/tinymce-angular": "^2.5.0",
+    "@tinymce/tinymce-angular": "^3.3.1",
     "angular2-hotkeys": "^2.1.4",
     "bootstrap-css-only": "^4.2.1",
     "core-js": "^2.5.4",

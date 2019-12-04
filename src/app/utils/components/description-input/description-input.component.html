@@ -4,8 +4,7 @@
   <span class="text-muted" *ngIf="this.value.overwrite || !canOverwrite">{{characterCount}}</span>
 </div>
 <div class="description-buttons" *ngIf="this.value.overwrite || !canOverwrite">
-  <button mat-flat-button (click)="saveDescriptionTemplate()">
-    <mat-icon>add</mat-icon>
+  <button mat-flat-button (click)="openDescriptionTemplateManager()" *ngIf="canManage">
     {{ 'Description Template' | translate }}
   </button>
   <website-shortcuts></website-shortcuts>

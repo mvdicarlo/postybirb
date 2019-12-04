@@ -1,0 +1,13 @@
+<form [formGroup]="form">
+  <mat-form-field class="d-block" color="accent">
+    <input matInput formControlName="title" [placeholder]="'Title' | translate" required>
+  </mat-form-field>
+  <mat-form-field class="d-block" color="accent">
+    <input matInput formControlName="description" [placeholder]="'Description' | translate" required>
+  </mat-form-field>
+  <description-input class="d-block" style="width: 99%" formControlName="content" [canOverwrite]="false" [canManage]="false"></description-input>
+  <div>
+    <button mat-button type="button" color="accent" (click)="saveTemplate()" [disabled]="!canSave()">{{ 'Save' | translate }}</button>
+    <button class="ml-1" *ngIf="canDelete" mat-button type="button" color="warn" (click)="deleteTemplate()">{{ 'Delete' | translate }}</button>
+  </div>
+</form>

@@ -1,0 +1,20 @@
+mat-icon {
+  cursor: pointer;
+}
+
+.close-button {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  border-radius: 100% !important;
+  border: 1px solid #e53935;
+}
+
+.close-button mat-icon {
+  vertical-align: middle;
+  margin-top: -3px;
+}
+
+button {
+  border-radius: 0 !important;
+}

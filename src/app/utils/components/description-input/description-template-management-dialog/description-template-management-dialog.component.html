@@ -1,0 +1,28 @@
+<div mat-dialog-title>
+  <div class="w-100 d-flex">
+    <h4 style="flex: 10">{{ 'Manage Description Templates' | translate }}</h4>
+    <div class="m-auto">
+      <button class="close-button warn-text" mat-dialog-close>
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div mat-dialog-content>
+  <div>
+    <div class="w-100">
+      <h5>{{ 'New' | translate }}</h5>
+      <description-template-input-field #newTemplateField (save)="saveNewTemplate($event)"></description-template-input-field>
+    </div>
+
+    <br>
+    <br>
+
+    <div class="w-100" *ngFor="let t of templates">
+      <h5>{{ 'Manage' | translate }}</h5>
+      <description-template-input-field (save)="updateTemplate($event)" (remove)="deleteTemplate($event)" [template]="t"></description-template-input-field>
+      <mat-divider class="my-2"></mat-divider>
+    </div>
+  </div>
+</div>

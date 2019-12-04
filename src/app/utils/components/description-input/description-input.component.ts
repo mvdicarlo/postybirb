@@ -4,12 +4,12 @@ import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/
 import { tap } from 'rxjs/operators';
 import { BehaviorSubject, Subscription, Observable } from 'rxjs';
 import { MatDialog } from '@angular/material';
-import { SaveTemplateDialog } from './save-template-dialog/save-template-dialog.component';
 import { UsernameParser } from '../../helpers/description-parsers/username.parser';
 import { WebsiteRegistryEntry, WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { PlaintextParser } from '../../helpers/description-parsers/plaintext.parser';
 import { copyObject } from '../../helpers/copy.helper';
 import { DescriptionTemplatesService } from '../../services/description-templates.service';
+import { DescriptionTemplateManagementDialog } from './description-template-management-dialog/description-template-management-dialog.component';
 
 export interface DescriptionData {
   overwrite: boolean;
@@ -28,6 +28,7 @@ export interface DescriptionData {
 })
 export class DescriptionInput extends BaseValueAccessor implements OnInit, AfterViewInit, OnDestroy {
   @Input() canOverwrite: boolean = true;
+  @Input() canManage: boolean = true;
   @Input() defaultDescriptionProvider: Observable<DescriptionData>;
   private providerSubscriber: Subscription = Subscription.EMPTY;
   private providerData: DescriptionData;
@@ -186,16 +187,13 @@ export class DescriptionInput extends BaseValueAccessor implements OnInit, After
     this._changeDetector.markForCheck();
   }
 
-  public saveDescriptionTemplate(): void {
-    this.dialog.open(SaveTemplateDialog, {
-      data: this.tinymce.value
-    })
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this._descriptionTemplates.saveTemplate(null, { id: null, title: result.title, description: result.description, content: result.content });
-        }
-      });
+  public openDescriptionTemplateManager(): void {
+    this.dialog.open(DescriptionTemplateManagementDialog, {
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '100%',
+      width: '100%',
+    });
   }
 
 }
