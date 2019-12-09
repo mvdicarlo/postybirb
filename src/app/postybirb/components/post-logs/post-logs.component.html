@@ -27,9 +27,9 @@
           </div>
           <div class="col-6" *ngIf="log.post.sourceURLs.length">
             <strong>{{ 'Website URLs' | translate }}</strong>
-            <div class="w-100 source-urls">
-              <span *ngFor="let src of log.post.sourceURLs" class="text-info mb-1"> {{ src }}</span>
-            </div>
+            <ul class="w-100 source-urls">
+              <li *ngFor="let src of log.post.sourceURLs.sort()" class="text-info mb-1"> {{ src }}</li>
+            </ul>
           </div>
         </div>
         <div class="mt-2">
