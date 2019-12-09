@@ -249,7 +249,11 @@ export class Newgrounds extends BaseWebsiteService {
       res.srcURL = successJson.url.replace('//', '');
       return res;
     } else {
-      return Promise.reject(this.createPostResponse('Unknown error', optionsPost.success.body));
+      try {
+        return Promise.reject(this.createPostResponse(JSON.parse(optionsPost.success.response.body).errors.join(), optionsPost.success.body));
+      } catch (e) {
+        return Promise.reject(this.createPostResponse('Unknown error', optionsPost.success.body));
+      }
     }
   }
 
