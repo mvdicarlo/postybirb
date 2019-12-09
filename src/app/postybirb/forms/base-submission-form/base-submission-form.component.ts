@@ -150,6 +150,7 @@ export class BaseSubmissionForm implements AfterViewInit, OnDestroy {
         description: [],
         rating: [],
         tags: [],
+        title: null
       }));
     });
 

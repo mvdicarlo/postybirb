@@ -1,5 +1,12 @@
 <form [formGroup]="formGroup">
   <div class="section">
+    <mat-form-field color="accent">
+      <input #titleInput matInput [placeholder]="'Title' | translate" formControlName="title" maxlength="50">
+      <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
+    </mat-form-field>
+  </div>
+  
+  <div class="section">
     <mat-form-field color="accent" class="w-100">
       <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
         <mat-option [value]="null">{{ 'None' | translate }}</mat-option>
