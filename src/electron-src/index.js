@@ -130,6 +130,8 @@ try {
 
   window.AUTH_URL = require('./src/auth-server.js').auth_server;
 
+  window.iconv = require('iconv-lite');
+  window.chardet = require('chardet');
   window.parse5 = require('parse5');
   window.sanitize = require('sanitize-html');
   const Entities = require('html-entities').AllHtmlEntities;

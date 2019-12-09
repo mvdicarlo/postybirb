@@ -5,7 +5,7 @@ import { BaseWebsiteService } from '../base-website-service';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, isGIF, fileAsBlob } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, isGIF, fileAsBlob, decodeText } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { HttpClient } from '@angular/common/http';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult, WebsiteService } from '../../interfaces/website-service.interface';
@@ -223,7 +223,7 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
         tags: this.formatTags(postData.tags, []),
         rating: this.getRating(postData.rating),
         community_tags_allowed: options.communityTags.toString(),
-        content: Buffer.from(postData.primary.buffer).toString('utf-8')
+        content: decodeText(postData.primary.buffer)
       };
     } else {
       return {

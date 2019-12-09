@@ -7,7 +7,7 @@ import { GenericJournalSubmissionForm } from '../../components/generic-journal-s
 import { BaseWebsiteService } from '../base-website-service';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { getTags, supportsFileType } from '../../helpers/website-validator.helper';
-import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject, decodeText } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, PostResult, SubmissionPostData } from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Folder } from '../../interfaces/folder.interface';
@@ -207,7 +207,7 @@ export class SoFurry extends BaseWebsiteService {
     };
 
     if (submissionType === TypeOfSubmission.STORY) {
-      data['UploadForm[textcontent]'] = Buffer.from(postData.primary.buffer).toString('utf-8');
+      data['UploadForm[textcontent]'] = decodeText(postData.primary.buffer);
     } else {
       data['UploadForm[binarycontent]'] = fileAsFormDataObject(postData.primary);
     }

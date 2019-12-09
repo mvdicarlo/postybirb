@@ -3,7 +3,7 @@ import { DatabaseService } from '../services/database.service';
 import { SubmissionFileTableName, ISubmissionFile, SubmissionFileType, asFileObject } from '../tables/submission-file.table';
 import { GeneratedThumbnailDBService } from './generated-thumbnail.service';
 import { FileMetadata } from 'src/app/utils/helpers/file-reader.helper';
-import { isImage, isType, isGIF, arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
+import { arrayBufferAsBlob } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
   providedIn: 'root'

@@ -37,3 +37,9 @@ export function arrayBufferAsBlob(buffer: Uint8Array, type: string): Blob {
 export async function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   return new Uint8Array(await new Response(blob).arrayBuffer());
 }
+
+export function decodeText(buffer: Uint8Array): string {
+  const buf = Buffer.from(buffer);
+  const encoding = chardet.detect(buf);
+  return iconv.decode(buf, encoding);
+}

@@ -20,6 +20,8 @@ declare var ehttp: {
   get(url: string, partition: string, options?: any): Promise<{body: string, headers: any, statusCode: number, statusMessage: string}>;
   post(url: string, partition: string, body: any, options?: any): Promise<{body: string, headers: any, href: string, statusCode: number, statusMessage: string, success: boolean}>;
 }
+declare var chardet: any;
+declare var iconv: any;
 declare var parse5: any;
 declare var sanitize: any;
 declare var entities: any;
