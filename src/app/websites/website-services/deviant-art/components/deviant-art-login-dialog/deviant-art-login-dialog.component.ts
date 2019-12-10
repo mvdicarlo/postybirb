@@ -43,8 +43,17 @@ export class DeviantArtLoginDialog implements OnInit, AfterViewInit, OnDestroy {
         this.webview.nativeElement.src = auth.deviantart.getAuthURL();
       }
 
+      let url = event.url;
+      if (event.url.includes('join')) {
+        url = url.replace('join', 'users/login');
+      }
+
       if (event.url.includes('authorizeresponse')) {
-        this.webview.nativeElement.src = event.url.replace('authorizeresponse', 'authorize?response')
+        url = url.replace('authorizeresponse', 'authorize?response')
+      }
+
+      if (event.url !== url) {
+        this.webview.nativeElement.src = url;
       }
     });
   }
