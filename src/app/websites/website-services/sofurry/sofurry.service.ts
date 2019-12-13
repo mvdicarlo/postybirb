@@ -14,7 +14,7 @@ import { Folder } from '../../interfaces/folder.interface';
 import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
 import { TypeOfSubmission, getTypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 
-const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt'];
+const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'txt', 'mp3'];
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
