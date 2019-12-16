@@ -64,6 +64,14 @@ export class Submission implements ISubmission {
   }
   private _additionalFileInfo: FileObject[];
 
+  get ignoreAdditionalFilesMap(): { [key: string]: string[] } { return this._ignoreAdditionalFilesMap }
+  set ignoreAdditionalFilesMap(map: { [key: string]: string[] }) {
+    const old = this._ignoreAdditionalFilesMap;
+    this._ignoreAdditionalFilesMap = map;
+    this._emitChange('ignoreAdditionalFilesMap', old, map, true);
+  }
+  private _ignoreAdditionalFilesMap: { [key: string]: string[] } = {};
+
   get schedule(): any { return this._schedule }
   set schedule(schedule: any) {
     const old = this._schedule;
@@ -181,6 +189,7 @@ export class Submission implements ISubmission {
 
     this.fileInfo = submission.fileInfo;
     this.additionalFileInfo = submission.additionalFileInfo || [];
+    this.ignoreAdditionalFilesMap = submission.ignoreAdditionalFilesMap || {};
 
     // Perform any regeneration form data somehow gets into a bad state
     this.formData.websites = this.formData.websites || [];
@@ -214,7 +223,7 @@ export class Submission implements ISubmission {
   }
 
   public asISubmission(): ISubmission {
-    const { id, rating, title, schedule, submissionType, fileInfo, additionalFileInfo, fileMap, formData } = this;
+    const { id, rating, title, schedule, submissionType, fileInfo, additionalFileInfo, ignoreAdditionalFilesMap, fileMap, formData } = this;
     return copyObject(
       {
         id,
@@ -224,6 +233,7 @@ export class Submission implements ISubmission {
         submissionType,
         fileInfo,
         additionalFileInfo,
+        ignoreAdditionalFilesMap,
         fileMap,
         formData
       }

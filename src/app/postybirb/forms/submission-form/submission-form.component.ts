@@ -18,6 +18,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { WebsiteRegistry } from 'src/app/websites/registries/website.registry';
 import { ImageCropperDialog } from '../../components/image-cropper-dialog/image-cropper-dialog.component';
 import { Subscription } from 'rxjs';
+import { MatSelectChange } from '@angular/material';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 @Component({
   selector: 'submission-form',
@@ -153,10 +155,22 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
       });
   }
 
-  public canHaveAdditionalImages(decision: boolean): string[] {
+  public canHaveAdditionalImages(decision: boolean, useClassName: boolean = false): string[] {
     return WebsiteRegistry.getRegisteredAsArray().
       filter(entry => !!entry.websiteConfig.additionalFiles === decision)
-      .map(entry => entry.websiteConfig.displayedName);
+      .map(entry => useClassName ? entry.name : entry.websiteConfig.displayedName);
+  }
+
+  public getIgnoredWebsitesForId(imgId: number): string[] {
+    const val = this.submission.ignoreAdditionalFilesMap[imgId] || [];
+    return [...val];
+  }
+
+  public setIgnoredWebsitesForId(id: number, change: MatSelectChange): void {
+    const map = copyObject(this.submission.ignoreAdditionalFilesMap);
+    map[id] = change.value;
+    this.submission.ignoreAdditionalFilesMap = map;
+    this._changeDetector.markForCheck();
   }
 
   public delete(): void {

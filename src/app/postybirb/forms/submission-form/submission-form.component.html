@@ -95,7 +95,12 @@
               <div cdkDropList (cdkDropListDropped)="swapAdditionalImages($event)">
                 <div *ngFor="let imgId of submission.fileMap.ADDITIONAL; let i = index" class="additional-img-container mt-1" cdkDrag cdkDragLockAxis="y">
                   <div>{{ submission.additionalFileInfo[i].name }}</div>
-                  <img [src]="imgId | thumbnailFromFileId | async | objectURL: '100' | safe">
+                  <img class="mr-1" [src]="imgId | thumbnailFromFileId | async | objectURL: '100' | safe">
+                  <mat-form-field color="accent">
+                    <mat-select [value]="getIgnoredWebsitesForId(imgId)" (selectionChange)="setIgnoredWebsitesForId(imgId, $event)" [placeholder]="'Ignore Websites' | translate" multiple>
+                      <mat-option *ngFor="let w of canHaveAdditionalImages(true, true)" [value]="w">{{ w | websiteDisplayname }}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
                   <button mat-icon-button color="warn" (click)="removeAdditionalImage(imgId)">
                     <mat-icon>delete</mat-icon>
                   </button>

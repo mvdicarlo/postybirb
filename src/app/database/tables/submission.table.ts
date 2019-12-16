@@ -11,6 +11,7 @@ export interface ISubmission {
   submissionType: SubmissionType;
   fileInfo?: FileObject; // not required in journal types
   additionalFileInfo?: FileObject[];
+  ignoreAdditionalFilesMap?: { [key: string]: string[]};
   fileMap?: FileMap;
   formData?: SubmissionFormData;
   postStats?: PostStats;
