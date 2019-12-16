@@ -208,8 +208,10 @@ export class SoFurry extends BaseWebsiteService {
 
     if (submissionType === TypeOfSubmission.STORY) {
       data['UploadForm[textcontent]'] = decodeText(postData.primary.buffer);
+      if (options.thumbnailAsCoverArt) data['UploadForm[binarycontent_25]'] = fileAsFormDataObject(postData.thumbnail);
     } else {
       data['UploadForm[binarycontent]'] = fileAsFormDataObject(postData.primary);
+
     }
 
     const postResponse = await got.post(`${this.BASE_URL}/upload/details?contentType=${type}`, data, this.BASE_URL, cookies, {

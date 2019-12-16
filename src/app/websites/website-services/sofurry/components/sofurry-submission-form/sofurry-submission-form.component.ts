@@ -14,7 +14,8 @@ export class SofurrySubmissionForm extends BaseWebsiteSubmissionForm implements 
 
   public optionDefaults: any = {
     viewOptions: ['0'],
-    folder: ['0']
+    folder: ['0'],
+    thumbnailAsCoverArt: [false]
   };
 
   public tagConfig: TagConfig = {

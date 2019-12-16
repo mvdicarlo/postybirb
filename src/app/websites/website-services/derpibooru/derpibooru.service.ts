@@ -29,8 +29,8 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
     problems.push(['Does not support file format', { website: 'Derpibooru', value: submission.fileInfo.type }]);
   }
 
-  if (MBtoBytes(50) < submission.fileInfo.size) {
-    problems.push(['Max file size', { website: 'Derpibooru', value: '50MB' }]);
+  if (MBtoBytes(100) < submission.fileInfo.size) {
+    problems.push(['Max file size', { website: 'Derpibooru', value: '100MB' }]);
   }
 
   return problems;

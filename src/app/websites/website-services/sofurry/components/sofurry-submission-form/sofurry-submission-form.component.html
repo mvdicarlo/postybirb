@@ -5,7 +5,7 @@
       <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
     </mat-form-field>
   </div>
-  
+
   <div class="section">
     <mat-form-field color="accent">
       <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
@@ -29,6 +29,9 @@
   </div>
 
   <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md-12">
+      <mat-checkbox formControlName="thumbnailAsCoverArt">{{'Use thumbnail for cover art' | translate}}</mat-checkbox>
+    </div>
     <folder-select formControlName="folder" class="col col-md-21 col-lg-12 col-xl-12" [folders]="folders"></folder-select>
     <div class="col col-md col-lg col-xl">
       <mat-radio-group formControlName="viewOptions">
