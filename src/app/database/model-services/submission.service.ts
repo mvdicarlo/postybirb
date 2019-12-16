@@ -113,11 +113,13 @@ export class SubmissionDBService extends DatabaseService {
     if (submission) {
       const copy = submission.asISubmission();
       copy.title = title;
+      copy.ignoreAdditionalFilesMap = {};
       delete copy.fileMap;
       delete copy.id;
       delete copy.additionalFileInfo;
       const inserts = await this.createSubmissions([copy]);
       const [duplicateSubmission] = inserts;
+      const ignoreMap = {};
       if (duplicateSubmission && duplicateSubmission.submissionType === SubmissionType.SUBMISSION) {
         const files: ISubmissionFile[] = await this._submissionFileDB.duplicateWithSubmissionId(id, duplicateSubmission.id);
         files.forEach(file => {
@@ -127,8 +129,14 @@ export class SubmissionDBService extends DatabaseService {
             duplicateSubmission.setThumbnailFile(file.id);
           } else if (file.fileType === SubmissionFileType.ADDITIONAL_FILE) {
             duplicateSubmission.addAdditionalFile(file.id, file.fileInfo);
+            const index = submission.additionalFileInfo.findIndex(f => f.name === file.fileInfo.name && f.size === file.fileInfo.size)
+            if (index !== -1) {
+              const id: number = submission.fileMap.ADDITIONAL[index];
+              ignoreMap[file.id] = [...(submission.ignoreAdditionalFilesMap[id] || [])];
+            }
           }
         });
+        duplicateSubmission.ignoreAdditionalFilesMap = ignoreMap;
       }
     }
   }

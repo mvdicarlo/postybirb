@@ -84,7 +84,9 @@ export class PostManagerService {
 
         const postObject: SubmissionPostData = {
           title: submissionToPost.formData[website].title || submissionToPost.title || 'New Submission',
-          additionalFiles: this._sortFiles(submissionToPost, files.filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)),
+          additionalFiles: this._sortFiles(submissionToPost, files
+            .filter(f => f.fileType === SubmissionFileType.ADDITIONAL_FILE)
+            .filter(f => !(submissionToPost.ignoreAdditionalFilesMap[f.id] || []).includes(website))),
           description: this._parseDescription(getDescription(submissionToPost, website), website),
           loginInformation,
           options: copyObject(getOptions(submissionToPost, website)),
@@ -191,7 +193,7 @@ export class PostManagerService {
       }
     }
 
-    return orderedFiles;
+    return orderedFiles.filter(f => !!f);
   }
 
   private async _convertFilesToArrayType(files: ISubmissionFile[]): Promise<ISubmissionFileWithArray[]> {
