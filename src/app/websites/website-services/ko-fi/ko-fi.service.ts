@@ -143,9 +143,9 @@ export class KoFi extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
 
-    const postUrl = postResponse.success.body.match(/\/Blog\/PublishPost\/\d+/)[0];
+    const postUrl = (postResponse.success.body.match(/\/Blog\/PublishPost\/\d+/) || [])[0];
     if (!postUrl) {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
+      return Promise.reject(this.createPostResponse('Unable to detect a posting Url', postResponse.success.body));
     }
 
     const publish = await got.post(`${this.BASE_URL}${postUrl}`, null, this.BASE_URL, cookies, {
