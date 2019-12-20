@@ -34,7 +34,8 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 function descriptionParse(html: string): string {
   return html
     .replace(/<p/gm, '<div')
-    .replace(/<\/p>/gm, '</div>');
+    .replace(/<\/p>/gm, '</div>')
+    .replace(/<\/div>\n<br>/g, '</div>\n<div><br></div>');
 }
 
 @Injectable({

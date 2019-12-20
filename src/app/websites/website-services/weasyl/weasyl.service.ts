@@ -48,7 +48,8 @@ function descriptionParse(html: string): string {
     .replace(/<\/p>/gm, '</div>')
     .replace(/style="text-align:center"/g, 'class="align-center"')
     .replace(/style="text-align:right"/g, 'class="align-right"')
-    .replace(/<\/div>\n<br>/g, '</div><br>');
+    .replace(/<\/div>\n<br>/g, '</div><br>')
+    .replace(/<\/div><br>/g, '</div><div><br></div>');
 }
 
 function preparser(html: string): string {
