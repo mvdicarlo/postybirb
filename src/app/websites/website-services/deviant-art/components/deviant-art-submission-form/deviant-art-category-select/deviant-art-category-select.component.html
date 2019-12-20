@@ -8,7 +8,7 @@
     </mat-autocomplete>
   </mat-form-field>
   <div *ngIf="recent && recent.length">
-    <div>{{ 'Recent' | translate }}</div>
+    <h5>{{ 'Recent' | translate }}</h5>
     <mat-chip-list>
       <mat-chip *ngFor="let r of recent" (click)="recentSelect(r)">{{ r }}</mat-chip>
     </mat-chip-list>
