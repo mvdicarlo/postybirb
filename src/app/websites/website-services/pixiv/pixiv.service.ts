@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 import { Injectable } from '@angular/core';
 import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { Website } from '../../decorators/website-decorator';
@@ -76,6 +78,14 @@ export class Pixiv extends BaseWebsiteService {
       if (body.includes('header-logout')) {
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = body.match(/<a\sclass="(?=user-name).*?(?=<)/g)[0].split('>')[1];
+      } else {
+        const fragment = document.createElement('div');
+        fragment.innerHTML = body;
+        const userContainer: any = fragment.querySelector('.user-name-container');
+        if (userContainer && userContainer.innerText) {
+          returnValue.status = LoginStatus.LOGGED_IN;
+          returnValue.username = userContainer;
+        }
       }
     } catch (e) { /* No important error handling */ }
 
