@@ -142,7 +142,7 @@ export class Derpibooru extends BaseWebsiteService {
     const options = postData.options;
 
     await BrowserWindowHelper.hitUrl(postData.profileId, `${this.BASE_URL}/images/new`);
-    const data = await BrowserWindowHelper.retrieveFormData(postData.profileId, `${this.BASE_URL}/images/new`, { id: 'new_image' });
+    const data = await BrowserWindowHelper.retrieveFormData(postData.profileId, `${this.BASE_URL}/images/new`, { selectorString: 'document.body.querySelectorAll("form")[3]' });
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     Object.assign(data, {
