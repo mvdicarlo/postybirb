@@ -249,6 +249,9 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
       return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
     } else {
       const body = (postResponse.success || <any>{} /*somehow this became undefined once*/).body || '';
+      if (body.includes('You have already made a submission with this submission file')) {
+        return this.createPostResponse(null);
+      }
       if (body.includes('Submission Information')) {
         const res = this.createPostResponse(null);
         res.srcURL = postResponse.success.response.request.uri.href;
