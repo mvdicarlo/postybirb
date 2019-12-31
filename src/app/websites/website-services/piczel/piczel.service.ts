@@ -76,7 +76,10 @@ export class Piczel extends BaseWebsiteService {
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = body.match(/"username":".*?"/g)[0].split(':')[1].replace(/"/g, '');
 
-        const userData = JSON.parse(body.match(/\{(.*?)\}\}/)[0]);
+        const userData = JSON.parse(body
+          .match(/<script type="text\/javascript">window\.__PRELOADED_STATE__ = .*?<\/script>/gm)[0]
+          .replace('<script type="text/javascript">window.__PRELOADED_STATE__ = ', '')
+          .replace('</script>', ''));
         const info = this.userInformation.get(profileId) || {};
         info.userData = userData;
         this.userInformation.set(profileId, info);
@@ -98,8 +101,8 @@ export class Piczel extends BaseWebsiteService {
     const data: any[] = JSON.parse(response.body) || [];
     data.forEach(folder => {
       folders.push({
-          id: folder.id,
-          title: folder.name
+        id: folder.id,
+        title: folder.name
       });
     });
 
@@ -133,12 +136,12 @@ export class Piczel extends BaseWebsiteService {
     const { userData } = info;
     const headers: any = {
       Accent: '*/*',
-      client: userData.headers.client,
-      expiry: userData.headers.expiry,
-      'token-type': userData.headers['token-type'],
-      uid: userData.headers.uid,
-      Authorization: `${userData.headers['token-type']} ${userData.headers['access-token']}`,
-      'access-token': userData.headers['access-token']
+      client: userData.auth.client,
+      expiry: userData.auth.expiry,
+      'token-type': userData.auth['token-type'],
+      uid: userData.auth.uid,
+      Authorization: `${userData.auth['token-type']} ${userData.auth['access-token']}`,
+      'access-token': userData.auth['access-token']
     };
 
     const postResponse = await got.post(`${this.BASE_URL}/api/gallery`, null, this.BASE_URL, cookies, {
@@ -153,20 +156,20 @@ export class Piczel extends BaseWebsiteService {
     if (postResponse.success.body.id) {
       if (postData.additionalFiles && postData.additionalFiles.length) {
         for (let i = 0; i < postData.additionalFiles.length; i++) {
-            const file = postData.additionalFiles[i];
-            const d = {
-              gallery_image_id: postResponse.success.body.id,
-              image: `data:${file.fileInfo.type};base64,${Buffer.from(file.buffer).toString('base64')}`
-            };
+          const file = postData.additionalFiles[i];
+          const d = {
+            gallery_image_id: postResponse.success.body.id,
+            image: `data:${file.fileInfo.type};base64,${Buffer.from(file.buffer).toString('base64')}`
+          };
 
-            const res = await got.post(`${this.BASE_URL}/api/gallery/plain`, null, this.BASE_URL, cookies, {
-              json: d,
-              headers
-            });
+          const res = await got.post(`${this.BASE_URL}/api/gallery/plain`, null, this.BASE_URL, cookies, {
+            json: d,
+            headers
+          });
 
-            if (res.error) {
-              console.error(res.error);
-            }
+          if (res.error) {
+            console.error(res.error);
+          }
         }
       } else {
         return this.createPostResponse(null);
