@@ -43,7 +43,7 @@ export class HTMLFormatParser {
     html = html
       .replace(/<br \/>/g, '<br>')
       .replace(/<br\/>/g, '<br>');
-    html = html.replace(/(\s)*&nbsp;/g, '');
+    html = html.replace(/(\s)*&nbsp;/g, ' ');
     return html.trim();
   }
 

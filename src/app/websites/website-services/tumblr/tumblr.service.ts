@@ -48,7 +48,9 @@ function descriptionParse(html: string): string {
   if (!html) return '';
   return CustomHTMLParser.parse(html
     .replace(/<p/gm, '<div')
-    .replace(/<\/p>/gm, '</div>'));
+    .replace(/<\/p>/gm, '</div>'))
+    .replace(/<s>/gm, '<strike>')
+    .replace(/<\/s>/gm, '</strike>');
 }
 
 @Injectable({
