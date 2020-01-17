@@ -157,7 +157,7 @@ export class Discord extends BaseWebsiteService {
 
     try {
       for (let i = 0; i < webhooks.length; i++) {
-        await this.postDescriptionToWebhook(webhooks[i], postData.title, description, options.embed, includesAd);
+        await this.postDescriptionToWebhook(webhooks[i], options.useTitle ? postData.title : undefined, description, options.embed, includesAd);
       }
       for (let i = 0; i < files.length; i++) {
         for (let j = 0; j < webhooks.length; j++) {
