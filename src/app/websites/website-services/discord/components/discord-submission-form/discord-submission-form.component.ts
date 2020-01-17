@@ -15,7 +15,8 @@ export class DiscordSubmissionForm extends BaseWebsiteSubmissionForm implements 
   public optionDefaults: any = {
     webhooks: [[], Validators.required],
     spoiler: [false],
-    embed: [true]
+    embed: [true],
+    useTitle: [true],
   };
 
   public webhooks: any = {};
