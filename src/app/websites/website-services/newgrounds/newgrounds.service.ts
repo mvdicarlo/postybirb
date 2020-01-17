@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
-import { MBtoBytes, fileAsFormDataObject, fileAsBlob } from 'src/app/utils/helpers/file.helper';
+import { MBtoBytes, fileAsFormDataObject, fileAsBlob, isGIF } from 'src/app/utils/helpers/file.helper';
 import { supportsFileType } from '../../helpers/website-validator.helper';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
 import { NewgroundsSubmissionForm } from './components/newgrounds-submission-form/newgrounds-submission-form.component';
@@ -10,6 +10,7 @@ import * as dotProp from 'dot-prop';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { SubmissionType } from 'src/app/database/tables/submission.table';
+import { copyObject } from 'src/app/utils/helpers/copy.helper';
 
 const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'bmp'];
 
@@ -191,7 +192,13 @@ export class Newgrounds extends BaseWebsiteService {
     });
 
     const options = postData.options;
-    const thumbfile = postData.thumbnail ? postData.thumbnail : postData.primary;
+    let thumbfile = postData.thumbnail ? postData.thumbnail : postData.primary;
+    if (!postData.thumbnail && isGIF(thumbfile.fileInfo) && thumbfile.fileInfo.path) {
+      const [frame0] = await gifFrames({ url: thumbfile.fileInfo.path, frames: 0 });
+      thumbfile = copyObject(thumbfile);
+      thumbfile.buffer = frame0.getImage().read();
+      thumbfile.fileInfo.type = 'image/jpg';
+    }
     const nativeImg = nativeImage.createFromBuffer(thumbfile.buffer);
     const sizes = nativeImg.getSize();
 

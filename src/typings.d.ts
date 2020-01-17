@@ -38,7 +38,7 @@ declare function writeJsonToFile(fileName: string, data: any, options?: any): vo
 declare function readJsonFile(fileName: string): Promise<any>;
 declare function relaunch(): void;
 declare var BrowserWindow: any; // Electron BrowserWindow
-
+declare function gifFrames({ url: string, frames: number }): Promise<any>;
 
 declare var auth: {
   deviantart: any;
