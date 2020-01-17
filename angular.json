@@ -37,7 +37,8 @@
             ],
             "scripts": [
               "src/vendors/tinymce/tinymce.min.js",
-              "src/vendors/tinymce/themes/modern/theme.min.js"
+              "src/vendors/tinymce/themes/modern/theme.min.js",
+              "node_modules/gif-frames/dist/gif-frames.min.js"
             ]
           },
           "configurations": {
