@@ -150,9 +150,7 @@ export class Derpibooru extends BaseWebsiteService {
       'image[tag_input]': tags.join(', ').trim(),
       'image[image]': fileAsFormDataObject(postData.primary),
       'image[description]': postData.description,
-      'image[source_url]': options.sourceURL || (postData.srcURLs[0] || ''),
-      'image[anonymous]': '0',
-      'commit': 'Create Image'
+      'image[source_url]': options.sourceURL || (postData.srcURLs[0] || '')
     });
 
     const postRequest = await got.post(`${this.BASE_URL}/images`, data, this.BASE_URL, cookies);
