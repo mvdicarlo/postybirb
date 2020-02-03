@@ -36,7 +36,7 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   return problems;
 }
 
-function descriptionParser(html: string): string {
+function descriptionPreparser(html: string): string {
   if (!html) return '';
 
   html = html.replace(/<b>/gi, '*');
@@ -53,6 +53,11 @@ function descriptionParser(html: string): string {
   html = html.replace(/<\/strong>/gi, '*');
   html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
 
+  return html;
+}
+
+function descriptionParser(html: string): string {
+  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
   return html;
 }
 
@@ -73,10 +78,10 @@ function descriptionParser(html: string): string {
     submission: validate
   },
   preparsers: {
-    description: [descriptionParser]
+    description: [descriptionPreparser]
   },
   parsers: {
-    description: [PlaintextParser.parse],
+    description: [descriptionParser, PlaintextParser.parse],
     disableAdvertise: true,
     usernameShortcut: {
       code: 'db',
