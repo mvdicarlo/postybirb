@@ -5,6 +5,7 @@ import { SubmissionDBService } from 'src/app/database/model-services/submission.
 import { ISubmission, SubmissionType } from 'src/app/database/tables/submission.table';
 import { Submission } from 'src/app/database/models/submission.model';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { PostQueueService } from '../../services/post-queue.service';
 
 interface DialogOptions {
   title?: string;
@@ -12,6 +13,7 @@ interface DialogOptions {
   type?: SubmissionType;
   submissions?: Submission[]; // provided submissions to pick from - when empty this will get all submissions
   allowReorder?: boolean;
+  disallowQueued?: boolean;
 }
 
 @Component({
@@ -25,7 +27,7 @@ export class SubmissionSelectDialog implements OnInit {
   public options: ISubmission[] = [];
   public selected: any[] = [];
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: DialogOptions, private _submissionDB: SubmissionDBService) { }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: DialogOptions, private _submissionDB: SubmissionDBService, private _queue: PostQueueService) { }
 
   ngOnInit() {
     if (this.data.multiple && this.data.allowReorder) {
@@ -46,6 +48,10 @@ export class SubmissionSelectDialog implements OnInit {
 
           if (this.data.type) {
             this.options = this.options.filter(s => s.submissionType === this.data.type);
+          }
+
+          if (this.data.disallowQueued) {
+            this.options = this.options.filter(s => !this._queue.isQueuedOrPosting(s.id));
           }
         });
     }

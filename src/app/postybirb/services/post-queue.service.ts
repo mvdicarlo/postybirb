@@ -115,6 +115,19 @@ export class PostQueueService {
     this._notify();
   }
 
+  public isQueuedOrPosting(id: number): boolean {
+    const foundInQueue = this.queue.find(s => s.id === id);
+    if (!!foundInQueue) {
+      return true;
+    }
+
+    if (this.posting && this.posting.id === id) {
+      return true;
+    }
+
+    return false;
+  }
+
   public _notify(): void {
     this.queueSubject.next(this.queue);
   }
