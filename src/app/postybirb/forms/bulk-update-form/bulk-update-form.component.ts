@@ -91,7 +91,8 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
       data: {
         title: 'Save',
         type: SubmissionType.SUBMISSION,
-        multiple: true
+        multiple: true,
+        disallowQueued: true,
       }
     }).afterClosed()
       .subscribe((submissions: ISubmission[]) => {
@@ -114,7 +115,8 @@ export class BulkUpdateForm extends BaseSubmissionForm implements OnInit, AfterV
     this.dialog.open(SubmissionSelectDialog, {
       data: {
         title: 'Copy',
-        type: SubmissionType.SUBMISSION
+        type: SubmissionType.SUBMISSION,
+        disallowQueued: true,
       }
     }).afterClosed()
       .subscribe((toCopy: ISubmission) => {
