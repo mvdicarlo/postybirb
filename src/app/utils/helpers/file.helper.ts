@@ -43,3 +43,9 @@ export function decodeText(buffer: Uint8Array): string {
   const encoding = chardet.detect(buf);
   return iconv.decode(buf, encoding);
 }
+
+export function decodeBuffer(buffer: Uint8Array): Uint8Array {
+  const buf = Buffer.from(buffer);
+  const encoding = chardet.detect(buf);
+  return Buffer.from(iconv.decode(buf, encoding));
+}

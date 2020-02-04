@@ -14,6 +14,7 @@ import * as dotProp from 'dot-prop';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { HTMLFormatParser } from 'src/app/utils/helpers/description-parsers/html.parser';
 import { copyObject } from 'src/app/utils/helpers/copy.helper';
+import { decodeBuffer } from 'src/app/utils/helpers/file.helper';
 
 @Injectable({
   providedIn: 'root'
@@ -80,7 +81,12 @@ export class PostManagerService {
       const loginInformation: WebsiteStatus = this._loginManager.getWebsiteStatus(submissionToPost.formData.loginProfile, website);
       if (loginInformation && loginInformation.status === LoginStatus.LOGGED_IN) {
         const f = await this._submissionFileDB.getFilesBySubmissionId(submissionToPost.id);
-        const files = await this._convertFilesToArrayType(f);
+        const files = (await this._convertFilesToArrayType(f)).map(f => {
+          if (f.fileInfo.type === 'text/plain') {
+            f.buffer = decodeBuffer(f.buffer);
+          }
+          return f;
+        });
 
         const postObject: SubmissionPostData = {
           title: submissionToPost.formData[website].title || submissionToPost.title || 'New Submission',
