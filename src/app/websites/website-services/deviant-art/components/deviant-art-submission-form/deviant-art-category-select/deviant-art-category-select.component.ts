@@ -7,7 +7,7 @@
 import { Component, OnInit, OnDestroy, forwardRef, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormControl } from '@angular/forms';
 import { debounceTime, map } from 'rxjs/operators';
-import { Categories } from './deviant-art-categories-list';
+import DeviantArtCategories from './deviant-art-categories-list';
 import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/base-value-accessor';
 
 @Component({
@@ -24,11 +24,11 @@ import { BaseValueAccessor } from 'src/app/utils/components/base-value-accessor/
   ]
 })
 export class DeviantArtCategorySelectComponent extends BaseValueAccessor implements OnInit, OnDestroy, ControlValueAccessor {
-  private readonly LOCAL_STORE: string = 'DeviantArtCategoryRecent';
+  private readonly LOCAL_STORE: string = 'DeviantArtCategoryRecent-v2.2.61';
   public control: FormControl = new FormControl();
-  public filteredOptions: string[] = [];
+  public filteredOptions: { path: string, title: string }[] = [];
   public recent: string[] = [];
-  private options: string[] = Categories;
+  private options = DeviantArtCategories.categories;
   private clearInterval: any;
 
   @ViewChild('auto') auto: any;
@@ -52,14 +52,14 @@ export class DeviantArtCategorySelectComponent extends BaseValueAccessor impleme
     clearInterval(this.clearInterval);
   }
 
-  filter(val: string): string[] {
+  filter(val: string) {
     return this.options.filter(option =>
-      option.toLowerCase().includes(val.toLowerCase()));
+      option.title.toLowerCase().includes(val.toLowerCase()));
   }
 
   find(val: string): boolean {
     for (let i = 0; i < this.options.length; i++) {
-      if (this.options[i] === val.toLowerCase()) {
+      if (this.options[i].title === val.toLowerCase()) {
         return true;
       }
     }
@@ -124,5 +124,10 @@ export class DeviantArtCategorySelectComponent extends BaseValueAccessor impleme
         value
       }
     });
+  }
+
+  public getTitleFromPath(path: string): string {
+    const record = DeviantArtCategories.getCategoryByPath(path);
+    return record ? record.title : 'Unknown Path';
   }
 }
