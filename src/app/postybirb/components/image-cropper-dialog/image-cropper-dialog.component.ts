@@ -41,7 +41,7 @@ export class ImageCropperDialog {
   }
 
   public cropped(crop: ImageCroppedEvent): void {
-    this.cropped64 = new Uint8Array(Buffer.from(crop.base64.split('base64,')[1], 'base64').buffer);
+    this.cropped64 = Buffer.from(crop.base64.split('base64,')[1], 'base64');
     this._changeDetector.markForCheck();
   }
 

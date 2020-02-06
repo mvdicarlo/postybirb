@@ -117,11 +117,13 @@ export class SubmissionFileDBService extends DatabaseService {
     });
   }
 
-  public async updateSubmissionFileById(submissionFileId: number, file: FileMetadata, useBuffer: boolean = false): Promise<any> {
+  public async updateSubmissionFileById(submissionFileId: number, file: FileMetadata): Promise<any> {
+    const buf = file.buffer instanceof Buffer ? new Uint8Array(file.buffer) : file.buffer;
+
     await this.connection.update({
       in: SubmissionFileTableName,
       set: {
-        buffer: !useBuffer ? file.file : arrayBufferAsBlob(file.buffer, file.file.type),
+        buffer: buf instanceof Blob ? file.file : arrayBufferAsBlob(buf, file.file.type),
         fileInfo: asFileObject(file.file)
       },
       where: {
@@ -137,10 +139,12 @@ export class SubmissionFileDBService extends DatabaseService {
     for (let i = 0; i < files.length; i++) {
       const file: FileMetadata = files[i];
 
+      let buf = file.buffer instanceof Buffer ? new Uint8Array(file.buffer) : file.buffer;
+
       modelObjs.push({
         id: undefined,
         submissionId,
-        buffer: file.buffer instanceof Uint8Array ? arrayBufferAsBlob(file.buffer, file.file.type) : file.file,
+        buffer: new Blob([buf], { type: file.file.type }),
         fileInfo: asFileObject(file.file),
         fileType
       });

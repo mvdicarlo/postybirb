@@ -243,7 +243,7 @@ export class SubmissionForm extends BaseSubmissionForm implements OnInit, AfterV
               if (buffer) {
                 data.buffer = buffer;
                 if (this.submission.hasThumbnail()) { // Update file
-                  this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data, true)
+                  this._submissionFileDB.updateSubmissionFileById(this.submission.fileMap.THUMBNAIL, data)
                     .then(() => {
                       this.hideForReload = false;
                       this.loading = false;
