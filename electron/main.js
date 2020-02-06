@@ -20,7 +20,6 @@ require('electron-context-menu')({
 log.info('Starting PostyBirb...');
 log.info(process.argv);
 
-let tray = null;
 let win = null; // Primary App BrowserWindow
 let scheduleCheckInterval = null; // Interval for checking for scheduled posts when app is in a closed state
 let cacheClearInterval = null; // Interval for manually clearing cache
@@ -140,7 +139,7 @@ app.on('ready', () => {
     },
   }, ];
 
-  tray = new Tray(image);
+  global.tray = new Tray(image);
   const trayMenu = Menu.buildFromTemplate(trayItems);
 
   tray.setContextMenu(trayMenu);
