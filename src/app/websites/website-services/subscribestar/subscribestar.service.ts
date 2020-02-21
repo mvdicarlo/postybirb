@@ -44,7 +44,7 @@ function descriptionParse(html: string): string {
   additionalFiles: true,
   displayedName: 'SubscribeStar',
   login: {
-    url: 'https://www.subscribestar.com/login'
+    url: 'https://www.subscribestar.com'
   },
   components: {
     submissionForm: SubscribestarSubmissionForm,
