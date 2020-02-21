@@ -89,6 +89,8 @@ import { FurryLifeSubmissionForm } from './website-services/furry-life/component
 import { NewTumblSubmissionForm } from './website-services/new-tumbl/components/new-tumbl-submission-form/new-tumbl-submission-form.component';
 import { E621LoginDialog } from './website-services/e621/components/e621-login-dialog/e621-login-dialog.component';
 import { WebsiteRestrictionsDialog } from './components/website-restrictions-dialog/website-restrictions-dialog.component';
+import { Subscribestar } from './website-services/subscribestar/subscribestar.service';
+import { SubscribestarSubmissionForm } from './website-services/subscribestar/components/subscribestar-submission-form/subscribestar-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -137,6 +139,7 @@ export function INIT_WEBSITE_REGISTRY() {
     NewTumblSubmissionForm,
     E621LoginDialog,
     WebsiteRestrictionsDialog,
+    SubscribestarSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -194,6 +197,7 @@ export function INIT_WEBSITE_REGISTRY() {
     PiczelSubmissionForm,
     PixivSubmissionForm,
     SofurrySubmissionForm,
+    SubscribestarSubmissionForm,
     TumblrLoginDialog,
     TumblrSubmissionForm,
     TwitterLoginDialog,
@@ -228,6 +232,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Pixiv,
         Route50,
         SoFurry,
+        Subscribestar,
         Tumblr,
         Twitter,
         Weasyl,

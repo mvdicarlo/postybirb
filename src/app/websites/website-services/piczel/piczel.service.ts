@@ -119,7 +119,7 @@ export class Piczel extends BaseWebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     const options = postData.options;
-    const forceNSFWRating: boolean = postData.rating === SubmissionRating.ADULT || postData.rating === SubmissionRating.EXTREME ? true : false;
+    const forceNSFWRating: boolean = postData.rating !== SubmissionRating.GENERAL
     const data: any = {
       nsfw: forceNSFWRating || options.nsfw,
       description: postData.description,
