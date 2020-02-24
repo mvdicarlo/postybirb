@@ -26,7 +26,7 @@ export class SubmissionDBService extends DatabaseService {
   ) {
     super();
     _cache.setUpdateCallback(this.update.bind(this));
-    this._validateDatabase();
+    // this._validateDatabase(); removed for now due to fear of it deleting people's submissions
     this.initialize();
   }
 
