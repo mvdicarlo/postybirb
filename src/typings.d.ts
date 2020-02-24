@@ -37,6 +37,7 @@ declare function writeToClipboard(data: any): void;
 declare function writeJsonToFile(fileName: string, data: any, options?: any): void;
 declare function readJsonFile(fileName: string): Promise<any>;
 declare function relaunch(): void;
+declare function setStartOnLogin(value: boolean): void;
 declare var BrowserWindow: any; // Electron BrowserWindow
 declare function gifFrames({ url: string, frames: number }): Promise<any>;
 

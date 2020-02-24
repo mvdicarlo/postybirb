@@ -137,7 +137,7 @@ app.on('ready', () => {
         app.quit();
       }
     },
-  }, ];
+  }];
 
   global.tray = new Tray(image);
   const trayMenu = Menu.buildFromTemplate(trayItems);
