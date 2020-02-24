@@ -4,7 +4,7 @@
   "description": "PostyBirb is an application that helps artists post art and other multimedia to multiple websites more quickly.",
   "main": "main.js",
   "scripts": {
-    "clean": "rm -rf electron-dist/",
+    "clean": "rm -rf release/",
     "start": "electron main.js --develop",
     "eb-unix": "electron-builder -m",
     "eb-linux": "electron-builder -l",
@@ -39,14 +39,13 @@
     },
     "directories": {
       "buildResources": "build",
-      "output": "electron-dist"
+      "output": "release"
     },
     "mac": {
       "category": "public.app-category.productivity",
       "icon": "icons/icon.icns",
       "gatekeeperAssess": false,
       "target": [
-        "zip",
         "dmg"
       ]
     },
@@ -54,13 +53,13 @@
       "artifactName": "${productName}-${version}.${ext}",
       "icon": "icons/icon_256x256x32.png",
       "category": "Network",
+      "publish": [
+        "github"
+      ],
       "target": [
         "AppImage",
         "snap"
       ]
-    },
-    "appImage": {
-      "systemIntegration": "doNotAsk"
     },
     "win": {
       "publisherName": [
@@ -81,21 +80,14 @@
             "x64",
             "ia32"
           ]
-        },
-        {
-          "target": "zip",
-          "arch": [
-            "x64",
-            "ia32"
-          ]
         }
       ]
     }
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
-    "electron": "^5.0.12",
-    "electron-builder": "^20.44.4",
+    "electron": "^6.1.8",
+    "electron-builder": "^22.3.2",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^15.0.2",
     "eslint-plugin-import": "^2.11.0",
@@ -105,10 +97,10 @@
   "dependencies": {
     "chardet": "^0.8.0",
     "cryptr": "^4.0.2",
-    "electron-context-menu": "^0.10.1",
+    "electron-context-menu": "^0.16.0",
     "electron-find": "^1.0.5",
-    "electron-log": "^2.2.17",
-    "electron-updater": "^4.1.2",
+    "electron-log": "^4.0.6",
+    "electron-updater": "^4.2.2",
     "electron-window-state": "^5.0.3",
     "express": "^4.16.4",
     "form-data": "^2.3.3",
