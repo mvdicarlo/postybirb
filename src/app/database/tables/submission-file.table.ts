@@ -42,27 +42,28 @@ const SubmissionFileTableName: string = 'SubmissionFile';
 
 const SubmissionFileTable: ITable = {
   name: SubmissionFileTableName,
-  columns: [{
-    name: 'id',
-    primaryKey: true,
-    autoIncrement: true
-  }, {
-    name: 'submissionId',
-    notNull: true,
-    dataType: DATA_TYPE.Number
-  }, {
-    name: 'fileInfo',
-    notNull: true,
-    dataType: DATA_TYPE.Object
-  }, {
-    name: 'fileType',
-    notNull: true,
-    dataType: DATA_TYPE.String
-  }, {
-    name: 'buffer',
-    notNull: true,
-    dataType: DATA_TYPE.Object
-  }]
-}
+  columns: {
+    id: {
+      primaryKey: true,
+      autoIncrement: true
+    },
+    submissionId: {
+      notNull: true,
+      dataType: DATA_TYPE.Number
+    },
+    fileInfo: {
+      notNull: true,
+      dataType: DATA_TYPE.Object
+    },
+    fileType: {
+      notNull: true,
+      dataType: DATA_TYPE.String
+    },
+    buffer: {
+      notNull: true,
+      dataType: DATA_TYPE.Object
+    }
+  }
+};
 
 export { SubmissionFileTable, SubmissionFileTableName }
