@@ -28,7 +28,7 @@ export function getTags(submission: Submission, website: string): string[] {
   let tags: string[] = dotProp.get(submission.formData, 'defaults.tags.tags', []);
   const customTags: TagData = dotProp.get(submission.formData, `${website}.tags`, { extend: true }) || { extend: true };
   if (customTags.extend) {
-    tags = [...tags, ...(customTags.tags || [])];
+    tags = [...(customTags.tags || []), ...tags];
   } else {
     tags = (customTags.tags || []);
   }
