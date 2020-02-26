@@ -11,7 +11,7 @@ export interface ISubmission {
   submissionType: SubmissionType;
   fileInfo?: FileObject; // not required in journal types
   additionalFileInfo?: FileObject[];
-  ignoreAdditionalFilesMap?: { [key: string]: string[]};
+  ignoreAdditionalFilesMap?: { [key: string]: string[] };
   fileMap?: FileMap;
   formData?: SubmissionFormData;
   postStats?: PostStats;
@@ -39,45 +39,47 @@ const SubmissionTableName: string = 'Submission';
 
 const SubmissionTable: ITable = {
   name: SubmissionTableName,
-  columns: [{
-    name: 'id',
-    notNull: true,
-    primaryKey: true,
-    autoIncrement: true
-  }, {
-    name: 'title',
-    dataType: DATA_TYPE.String,
-    default: 'New Submission'
-  }, {
-    name: 'rating',
-    dataType: DATA_TYPE.String
-  }, {
-    name: 'submissionType',
-    dataType: DATA_TYPE.String,
-    notNull: true
-  }, {
-    name: 'schedule',
-    dataType: DATA_TYPE.Number
-  }, {
-    name: 'isScheduled',
-    dataType: DATA_TYPE.Boolean,
-    default: false
-  }, {
-    name: 'fileInfo',
-    dataType: DATA_TYPE.Object
-  }, {
-    name: 'additionalFileInfo',
-    dataType: DATA_TYPE.Array
-  }, {
-    name: 'fileMap',
-    dataType: DATA_TYPE.Object
-  }, {
-    name: 'formData',
-    dataType: DATA_TYPE.Object
-  }, {
-    name: 'postStats',
-    dataType: DATA_TYPE.Object
-  }]
-}
+  columns: {
+    id: {
+      notNull: true,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    title: {
+      dataType: DATA_TYPE.String,
+      default: 'New Submission'
+    },
+    rating: {
+      dataType: DATA_TYPE.String
+
+    },
+    submissionType: {
+      dataType: DATA_TYPE.String,
+      notNull: true
+    },
+    schedule: {
+      dataType: DATA_TYPE.Number
+    },
+    isScheduled: {
+      dataType: DATA_TYPE.Boolean,
+      default: false
+    },
+    fileInfo: {
+      dataType: DATA_TYPE.Object
+    },
+    additionalFileInfo: {
+      dataType: DATA_TYPE.Array
+    },
+    fileMap: {
+      dataType: DATA_TYPE.Object
+    },
+    formData: {
+      dataType: DATA_TYPE.Object
+    },
+    postStats: {
+      dataType: DATA_TYPE.Object
+    }
+  }
+};
 
 export { SubmissionTable, SubmissionTableName }

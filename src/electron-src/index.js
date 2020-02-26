@@ -115,7 +115,8 @@ try {
     postRetries: 1,
     clearQueueOnFailure: true,
     advertise: true,
-    localErrorLogging: true
+    localErrorLogging: true,
+    startOnLogin: false,
   }).write();
 
   window.got = require('./src/got-request.js');
@@ -242,6 +243,13 @@ try {
   window.relaunch = function relaunch() {
     app.relaunch();
     app.exit();
+  };
+
+  window.setStartOnLogin = function setStartOnLogin(value) {
+    app.setLoginItemSettings({
+      openAtLogin: value,
+      path: app.getPath('exe'),
+    });
   };
 } catch (error) {
   alert(`Unable to initialize application correctly.

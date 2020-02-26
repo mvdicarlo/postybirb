@@ -211,7 +211,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     if (submission.submissionType === SubmissionType.SUBMISSION) {
-      return this.postSubmission(submission, postData);
+      return this.cloudflareActive ? this.postSubmissionCloudflare(submission, postData) : this.postSubmission(submission, postData);
     } else if (submission.submissionType === SubmissionType.JOURNAL) {
       return this.postJournal(submission, postData);
     } else {
@@ -348,6 +348,125 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           } finally {
             const res = this.createPostResponse(null);
             res.srcURL = postResponse.success.response.request.uri.href;
+            return res;
+          }
+        }
+      }
+    }
+  }
+
+  private async postSubmissionCloudflare(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const initData = {
+      part: '2',
+      submission_type: this.getContentType(postData.typeOfSubmission)
+    };
+
+    const part1Response = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, initData, {
+      cookies,
+    });
+    if (!part1Response.success) {
+      return Promise.reject(this.createPostResponse('Unknown error', part1Response.body));
+    } else {
+      const part1Body = part1Response.body;
+      if (part1Body.includes('Flood protection')) {
+        return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+      }
+
+      const part2Data = {
+        part: '3',
+        key: HTMLParser.getInputValue(part1Body, 'key'),
+        submission_type: this.getContentType(postData.typeOfSubmission),
+        thumbnail: fileAsFormDataObject(postData.thumbnail),
+        submission: fileAsFormDataObject(postData.primary),
+      };
+
+      const uploadResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, part2Data, {
+        cookies,
+        multipart: true,
+        headers: {
+          'Host': 'www.furaffinity.net',
+          'Referer': 'http://www.furaffinity.net/submit/'
+        }
+      });
+      if (!uploadResponse.success) {
+        return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.body));
+      } else {
+        const uploadBody = uploadResponse.body;
+        if (uploadBody.includes('Flood protection')) {
+          return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+        }
+
+        if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
+          return Promise.reject(this.createPostResponse('Unknown error', uploadBody));
+        }
+
+        const options = postData.options || {};
+        const finalizeData: any = {
+          part: '5',
+          key: HTMLParser.getInputValue(uploadBody, 'key'),
+          title: postData.title,
+          keywords: this.formatTags(postData.tags, []),
+          message: postData.description,
+          submission_type: this.getContentType(postData.typeOfSubmission),
+          rating: this.getRating(postData.rating),
+          cat_duplicate: '',
+          create_folder_name: '',
+          cat: options.category,
+          atype: options.theme,
+          species: options.species,
+          gender: options.gender
+        };
+
+        if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
+          delete finalizeData.cat;
+          finalizeData.cat_duplicate = this.getContentCategory(postData.typeOfSubmission);
+        }
+
+        if (options.disableComments) finalizeData.lock_comments = 'on';
+        if (options.scraps) finalizeData.scrap = '1';
+
+        if (options.folders) {
+          finalizeData['folder_ids[]'] = options.folders;
+        }
+
+        const postResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, finalizeData, {
+          cookies,
+          multipart: true
+        });
+
+        if (!postResponse.success) {
+          return Promise.reject(this.createPostResponse(null, postResponse.body));
+        } else {
+          const body = postResponse.body;
+
+          if (body.includes('CAPTCHA verification error')) {
+            return Promise.reject(this.createPostResponse('You must have 5+ posts on your account first', body));
+          }
+
+          if (body.includes('pageid-submit-finalize')) {
+            return Promise.reject(this.createPostResponse('Unknown error', body));
+          }
+
+          if (postResponse.href.includes('/submit')) {
+            return Promise.reject(this.createPostResponse('Something went wrong', body));
+          }
+
+          try {
+            if (postData.typeOfSubmission == TypeOfSubmission.ART && options.reupload) {
+              const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
+              const reuploadData: any = {
+                update: 'yes', // always seems to be 'yes'
+                newsubmission: fileAsFormDataObject(postData.primary),
+              };
+
+              await ehttp.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, postData.profileId, reuploadData, { cookies, multipart: true });
+            }
+          } catch (e) {
+            console.error(e);
+          } finally {
+            const res = this.createPostResponse(null);
+            res.srcURL = postResponse.href;
             return res;
           }
         }

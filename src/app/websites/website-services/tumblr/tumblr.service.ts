@@ -152,7 +152,7 @@ export class Tumblr extends BaseWebsiteService {
       blog: options.blog || this.userInformation.get(postData.profileId).blogs.find(blog => blog.primary).name,
       type: 'text',
       tags: this.formatTags(postData.tags, []),
-      description: title + postData.description
+      description: postData.description
     };
 
     // TODO I should really just update the post server to not suck anymore. Could be done a lot better I think now
@@ -184,7 +184,7 @@ export class Tumblr extends BaseWebsiteService {
       blog: options.blog || this.userInformation.get(postData.profileId).blogs.find(blog => blog.primary).name,
       type: this.getPostType(postData.typeOfSubmission),
       tags: this.formatTags(postData.tags, []),
-      description: title + postData.description,
+      description: postData.description,
       medias: [postData.primary, ...postData.additionalFiles].map(file => {
         return {
           base64: Buffer.from(file.buffer).toString('base64'),

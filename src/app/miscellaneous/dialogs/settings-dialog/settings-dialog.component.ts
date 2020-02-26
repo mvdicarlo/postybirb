@@ -21,7 +21,8 @@ export class SettingsDialog implements OnInit {
       postRetries: [1],
       clearQueueOnFailure: [true],
       advertise: [true],
-      localErrorLogging: [true]
+      localErrorLogging: [true],
+      startOnLogin: [false],
     });
 
     this.settingsForm.patchValue(settingsDB.getState(), { emitEvent: false });
@@ -50,6 +51,11 @@ export class SettingsDialog implements OnInit {
 
     this.settingsForm.controls.startAsTaskbar.valueChanges.subscribe(startAsTaskbar => {
       settingsDB.set('startAsTaskbar', startAsTaskbar).write();
+    });
+
+    this.settingsForm.controls.startOnLogin.valueChanges.subscribe(startOnLogin => {
+      settingsDB.set('startOnLogin', startOnLogin).write();
+      setStartOnLogin(startOnLogin);
     });
 
     this.settingsForm.controls.postInterval.valueChanges.subscribe(postInterval => {
@@ -82,14 +88,18 @@ export class SettingsDialog implements OnInit {
         title: 'Clear Submission Data'
       }
     }).afterClosed()
-    .subscribe(result => {
-      if (result) {
-        store.clearAll();
-        this.databaseService.dropAll().finally(() => {
-          location.reload();
-        });
-      }
-    });
+      .subscribe(result => {
+        if (result) {
+          store.clearAll();
+          this.databaseService.dropAll().finally(() => {
+            location.reload();
+          });
+        }
+      });
+  }
+
+  public isLinux(): boolean {
+    return /Linux/.test(navigator.platform);
   }
 
 }

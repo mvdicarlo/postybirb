@@ -25,7 +25,7 @@ export class DatabaseService {
           this.connection.openDb(this.DATABASE_NAME);
         } else {
           const dataBase = this.getDatabase();
-          this.connection.createDb(dataBase);
+          this.connection.initDb(dataBase);
         }
       }).catch(err => {
         console.log(err.message);

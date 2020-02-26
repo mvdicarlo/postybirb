@@ -2,7 +2,7 @@
 .env
 # compiled output
 electron/dist
-/electron-dist
+/release
 /tmp
 /out-tsc
 
@@ -43,4 +43,3 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
-package-lock.json

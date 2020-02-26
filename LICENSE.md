@@ -1,4 +1,4 @@
-Copyright (c) 2019, Michael DiCarlo
+Copyright (c) 2020, Michael DiCarlo
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

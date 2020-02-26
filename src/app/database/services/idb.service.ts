@@ -6,7 +6,7 @@ import * as workerPath from 'file-loader?name=scripts/[name].[hash].js!jsstore/d
   providedIn: 'root'
 })
 export class IdbService {
-  static idbCon = new JsStore.Instance(new Worker(workerPath));
+  static idbCon = new JsStore.Connection(new Worker(workerPath));
 
   constructor() { }
 }
