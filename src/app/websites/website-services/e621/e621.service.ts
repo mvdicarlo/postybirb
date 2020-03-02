@@ -179,6 +179,9 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       .join('%0A');
 
     data['post[source]'] = src || '';
+    if (options.parentId) {
+      data['post[parent_id]'] = options.parentId;
+    }
 
     const response = await ehttp.post(`${this.BASE_URL}/post/create.json`, postData.profileId, data, {
       multipart: true,
@@ -192,6 +195,17 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       if (postResponse.success || postResponse.location) {
         const res = this.createPostResponse(null);
         res.srcURL = postResponse.location;
+        if (options.poolId) {
+          const addPoolResponse = await ehttp.post(`${this.BASE_URL}/pool/add_post.xml`, postData.profileId, {
+            'pool_id': options.poolId,
+            'post_id': `${postResponse.post_id}`,
+          }, {
+              multipart: true,
+              headers: {
+                'User-Agent': `PostyBirb/${appVersion}`
+              }
+            })
+        }
         return res;
       } else {
         return Promise.reject(this.createPostResponse(postResponse.reason || 'Unknown error', response.body));

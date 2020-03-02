@@ -17,6 +17,8 @@ export class E621SubmissionForm extends BaseWebsiteSubmissionForm implements OnI
     sourceURL3: [''],
     sourceURL4: [''],
     sourceURL5: [''],
+    parentId: [''],
+    poolId: ['']
   };
 
   public tagConfig: TagConfig = {
