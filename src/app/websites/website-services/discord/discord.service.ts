@@ -172,10 +172,12 @@ export class Discord extends BaseWebsiteService {
 
   private async postDescriptionToWebhook(webhook: string, title: string, description: string, embedDescription: boolean, includeAd: boolean): Promise<any> {
     const json: any = {
-      embeds: [{
-        title
-      }]
+      embeds: [{}]
     };
+
+    if (title) {
+      json.embeds[0].title = title;
+    }
 
     if (embedDescription || embedDescription === undefined) {
       json.embeds[0].description = description;
@@ -189,6 +191,9 @@ export class Discord extends BaseWebsiteService {
       };
     }
 
+    if (!Object.keys(json.embeds[0]).length) {
+      delete json.embeds;
+    }
     return this.createPost(webhook, json);
   }
 
