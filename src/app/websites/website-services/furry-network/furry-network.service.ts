@@ -42,7 +42,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   displayedName: 'Furry Network',
   refreshBeforePost: true,
   login: {
-    url: 'https://furrynetwork.com/login/?from=home'
+    url: 'https://furrynetwork.com/'
   },
   components: {
     submissionForm: FurryNetworkSubmissionForm,

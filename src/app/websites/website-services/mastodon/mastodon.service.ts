@@ -100,7 +100,7 @@ export class Mastodon extends BaseWebsiteService {
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const authData = this._profileManager.getData(postData.profileId, Mastodon.name);
-    let sensitive: boolean = postData.rating === SubmissionRating.ADULT || postData.rating === SubmissionRating.EXTREME;
+    let sensitive: boolean = postData.rating !== SubmissionRating.GENERAL;
     if (postData.options.sensitiveOverride !== null) {
       sensitive = postData.options.sensitiveOverride === 'yes';
     }

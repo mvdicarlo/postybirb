@@ -36,9 +36,11 @@ export class BBCodeParser {
     html = html.replace(/<hr(.*?)>/gi, '\n[hr]\n');
 
     // opting to use \r for now
-    html = html.replace(/<li(.*?)>(.*?)<\/li>/gi, '[*]$2');
-    html = html.replace(/<ul(.*?)>/gi, '[list]');
-    html = html.replace(/<\/ul>/gi, '[/list]');
+    html = html.replace(/<li(.*?)>(.*?)<\/li>/gi, '• $2\n');
+    html = html.replace(/<ul(.*?)>/gi, '\n');
+    html = html.replace(/<\/ul>/gi, '\n');
+    html = html.replace(/<ol(.*?)>/gi, '\n');
+    html = html.replace(/<\/ol>/gi, '\n');
 
     BBCodeParser.BLOCKS.forEach(block => {
       const regex1 = new RegExp(`</${block}>`, 'gmi');
