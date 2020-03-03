@@ -59,7 +59,7 @@ export class DeviantArtCategorySelectComponent extends BaseValueAccessor impleme
 
   find(val: string): boolean {
     for (let i = 0; i < this.options.length; i++) {
-      if (this.options[i].title === val.toLowerCase()) {
+      if (this.options[i].path === val.toLowerCase()) {
         return true;
       }
     }
