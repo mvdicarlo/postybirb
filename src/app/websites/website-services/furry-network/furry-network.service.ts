@@ -273,7 +273,7 @@ export class FurryNetwork extends BaseWebsiteService implements WebsiteService {
     } else { // ANYTHING ELSE
       const upload = await this.postChunks(profile, type, postData.primary, headers);
       if (!upload) {
-        return Promise.reject(this.createPostResponse('Unable to upload file'));
+        return Promise.reject(this.createPostResponse('Unable to upload file', 'Unable to upload file'));
       }
 
       const postResponse = await got.patch(`${this.BASE_URL}/api/${type}/${upload.id}`, null, this.BASE_URL, [], { headers, json: this.generatePostData(submission, postData, type) });
