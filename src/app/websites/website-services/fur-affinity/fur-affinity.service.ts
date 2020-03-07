@@ -211,7 +211,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     if (submission.submissionType === SubmissionType.SUBMISSION) {
-      return this.cloudflareActive ? this.postSubmissionCloudflare(submission, postData) : this.postSubmission(submission, postData);
+      return this.postSubmission(submission, postData);
     } else if (submission.submissionType === SubmissionType.JOURNAL) {
       return this.postJournal(submission, postData);
     } else {
@@ -223,7 +223,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies, postData.profileId);
     const data: any = {
-      key: HTMLParser.getInputValue(page.body, 'key'),
+      key: HTMLParser.getInputValue(page.body, 'key', 2),
       message: postData.description,
       subject: postData.title,
       submit: 'Create / Update Journal',
@@ -248,7 +248,13 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       submission_type: this.getContentType(postData.typeOfSubmission)
     };
 
-    const part1Response = await got.post(`${this.BASE_URL}/submit/`, initData, this.BASE_URL, cookies);
+    const part1Response = await got.post(`${this.BASE_URL}/submit/`, null, this.BASE_URL, cookies, {
+      form: initData,
+      headers: {
+        'Host': 'www.furaffinity.net',
+        'Referer': 'https://www.furaffinity.net/submit/'
+      }
+    });
     if (part1Response.error) {
       return Promise.reject(this.createPostResponse('Unknown error', part1Response.error));
     } else {
@@ -258,7 +264,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       }
 
       const part2Data = {
-        key: HTMLParser.getInputValue(part1Body, 'key'),
+        key: HTMLParser.getInputValue(part1Body.split('standardpage').pop(), 'key'),
         part: '3',
         submission: fileAsFormDataObject(postData.primary),
         thumbnail: fileAsFormDataObject(postData.thumbnail),
@@ -268,7 +274,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       const uploadResponse = await got.post(`${this.BASE_URL}/submit/`, part2Data, this.BASE_URL, cookies, {
         headers: {
           'Host': 'www.furaffinity.net',
-          'Referer': 'http://www.furaffinity.net/submit/'
+          'Referer': 'https://www.furaffinity.net/submit/'
         }
       });
       if (uploadResponse.error) {
@@ -286,7 +292,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         const options = postData.options || {};
         const finalizeData: any = {
           part: '5',
-          key: HTMLParser.getInputValue(uploadBody, 'key'),
+          key: HTMLParser.getInputValue(uploadBody, 'key', 2),
           title: postData.title,
           keywords: this.formatTags(postData.tags, []),
           message: postData.description,

@@ -85,6 +85,7 @@ export class PostManagerService {
           if (f.fileInfo.type === 'text/plain') {
             f.buffer = decodeBuffer(f.buffer);
           }
+          f.fileInfo.name = f.fileInfo.name.replace(/#/g, '_'); // strip potentially illegal character
           return f;
         });
 
