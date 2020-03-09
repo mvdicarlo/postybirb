@@ -106,7 +106,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
     };
 
     if (data && data.login && data.api_key) {
-      returnValue.username = data.username;
+      returnValue.username = data.login;
       returnValue.status = LoginStatus.LOGGED_IN;
     }
 
