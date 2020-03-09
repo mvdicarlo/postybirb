@@ -247,6 +247,10 @@ function initialize(show = true) {
       win.webContents.session.clearCache(() => {});
     }, 60000);
   });
+
+  win.webContents.once('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+    log.error(`${errorDescription} (${errorCode}): ${validatedURL}`);
+  });
 }
 
 /**
