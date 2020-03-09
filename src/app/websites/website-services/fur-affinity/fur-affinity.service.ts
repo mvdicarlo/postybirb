@@ -15,6 +15,7 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FurAffinityJournalForm } from './components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
+import { Logger } from 'src/app/utils/helpers/logger-helper';
 
 const ACCEPTED_FILES = ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'];
 
@@ -223,7 +224,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies, postData.profileId);
     const data: any = {
-      key: HTMLParser.getInputValue(page.body, 'key', 2),
+      key: HTMLParser.getInputValue(page.body.split('action="/controls/journal/"').pop(), 'key'),
       message: postData.description,
       subject: postData.title,
       submit: 'Create / Update Journal',
@@ -264,7 +265,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       }
 
       const part2Data = {
-        key: HTMLParser.getInputValue(part1Body.split('standardpage').pop(), 'key'),
+        key: HTMLParser.getInputValue(part1Body.split('action="/submit/"').pop(), 'key'),
         part: '3',
         submission: fileAsFormDataObject(postData.primary),
         thumbnail: fileAsFormDataObject(postData.thumbnail),
@@ -292,7 +293,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         const options = postData.options || {};
         const finalizeData: any = {
           part: '5',
-          key: HTMLParser.getInputValue(uploadBody, 'key', 2),
+          key: HTMLParser.getInputValue(uploadBody.split('action="/submit/"').pop(), 'key'),
           title: postData.title,
           keywords: this.formatTags(postData.tags, []),
           message: postData.description,
