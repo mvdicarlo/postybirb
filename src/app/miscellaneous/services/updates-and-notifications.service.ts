@@ -10,8 +10,8 @@ import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 })
 export class UpdatesAndNotificationsService {
   private version: string = appVersion;
-  private readonly DOWNLOAD_URL: string = 'http://postybirb.com/download.html'
-  private readonly UPDATES_URL: string = 'http://postybirb.com/version.html';
+  private readonly DOWNLOAD_URL: string = 'https://postybirb.com/download.html'
+  private readonly UPDATES_URL: string = 'https://postybirb.com/version.html';
 
   constructor(private snotify: SnotifyService, private http: HttpClient, private translate: TranslateService) {
     timer(0, 12 * 60 * 60000).subscribe(this._checkForUpdate.bind(this));

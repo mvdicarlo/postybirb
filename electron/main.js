@@ -1,4 +1,5 @@
 const path = require('path');
+const url = require('url');
 const fs = require('fs-extra');
 const {
   app,
@@ -219,7 +220,11 @@ function initialize(show = true) {
   win.webContents.session.clearCache(() => {
     log.info('Cache cleared')
   });
-  win.loadURL(`file://${__dirname}/dist/index.html`);
+  win.loadURL(url.format({
+    pathname: path.join(__dirname, 'dist', 'index.html'),
+    protocol: 'file:',
+    slashes: true,
+  }));
 
   win.on('page-title-updated', e => e.preventDefault()); // Do not allow title changes
 
