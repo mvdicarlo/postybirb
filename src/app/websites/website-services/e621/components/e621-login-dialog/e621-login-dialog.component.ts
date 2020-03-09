@@ -65,6 +65,6 @@ export class E621LoginDialog implements OnInit {
 
   public openAPI(event: Event): void {
     event.preventDefault();
-    openUrlInBrowser('https://e621.net/user/api_key');
+    openUrlInBrowser('https://e621.net/users/home');
   }
 }

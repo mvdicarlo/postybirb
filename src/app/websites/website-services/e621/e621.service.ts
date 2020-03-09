@@ -14,8 +14,8 @@ import { LoginProfileManagerService } from 'src/app/login/services/login-profile
 import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
 interface e621LoginDetails {
-  username: string;
-  hash: string;
+  login: string;
+  api_key: string;
 }
 
 const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif', 'webm'];
@@ -105,7 +105,7 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       status: LoginStatus.LOGGED_OUT
     };
 
-    if (data && data.username) {
+    if (data && data.login && data.api_key) {
       returnValue.username = data.username;
       returnValue.status = LoginStatus.LOGGED_IN;
     }
@@ -114,24 +114,15 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
   }
 
   public async authorize(data: { username: string, password: string }, profileId: string): Promise<boolean> {
-    let success: boolean = false;
-    const response = await ehttp.get(`${this.BASE_URL}/user/login.json?name=${encodeURIComponent(data.username)}&password=${encodeURIComponent(data.password)}`, profileId, {
-      headers: {
-        'User-Agent': `PostyBirb/${appVersion}`
-      }
-    });
+    if (data.username && data.password) {
+      this._profileManager.storeData(profileId, E621.name, {
+        login: data.username,
+        api_key: data.password
+      });
+      return true;
+    }
 
-    try {
-      const info: any = JSON.parse(response.body);
-      if (info.name) {
-        success = true;
-        this._profileManager.storeData(profileId, E621.name, {
-          username: info.name,
-          hash: info.password_hash
-        });
-      }
-    } catch (err) { }
-    return success;
+    return false;
   }
 
   public unauthorize(profileId: string): void {
@@ -155,14 +146,13 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const userInfo: e621LoginDetails = this._profileManager.getData(postData.profileId, E621.name);
     const data: any = {
-      login: userInfo.username,
-      password_hash: userInfo.hash,
-      'post[tags]': this.formatTags(postData.tags, [this.getRatingTag(postData.rating)]).join(' ').trim(),
-      'post[file]': fileAsFormDataObject(postData.primary),
-      'post[rating]': this.getRating(postData.rating),
-      'post[description]': postData.description,
-      'post[parent_id]': '',
-      'post[upload_url]': ''
+      login: userInfo.login,
+      api_key: userInfo.api_key,
+      'upload[tag_string]': this.formatTags(postData.tags, [this.getRatingTag(postData.rating)]).join(' ').trim(),
+      'upload[file]': fileAsFormDataObject(postData.primary),
+      'upload[rating]': this.getRating(postData.rating),
+      'upload[description]': postData.description,
+      'upload[parent_id]': '',
     };
 
     const options = postData.options;
@@ -178,12 +168,12 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       .slice(0, 5)
       .join('%0A');
 
-    data['post[source]'] = src || '';
+    data['upload[source]'] = src || '';
     if (options.parentId) {
-      data['post[parent_id]'] = options.parentId;
+      data['upload[parent_id]'] = options.parentId;
     }
 
-    const response = await ehttp.post(`${this.BASE_URL}/post/create.json`, postData.profileId, data, {
+    const response = await ehttp.post(`${this.BASE_URL}/uploads.json`, postData.profileId, data, {
       multipart: true,
       headers: {
         'User-Agent': `PostyBirb/${appVersion}`
@@ -194,18 +184,21 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       const postResponse: any = JSON.parse(response.body);
       if (postResponse.success || postResponse.location) {
         const res = this.createPostResponse(null);
-        res.srcURL = postResponse.location;
-        if (options.poolId) {
-          const addPoolResponse = await ehttp.post(`${this.BASE_URL}/pool/add_post.xml`, postData.profileId, {
-            'pool_id': options.poolId,
-            'post_id': `${postResponse.post_id}`,
-          }, {
-              multipart: true,
-              headers: {
-                'User-Agent': `PostyBirb/${appVersion}`
-              }
-            })
-        }
+        res.srcURL = `https://e621.net${postResponse.location}`;
+        // NOTE: Pool feature removed until API is updated with better documentation
+        // if (options.poolId) {
+        //   const addPoolResponse = await ehttp.post(`${this.BASE_URL}/pools/${options.poolId}.json`, postData.profileId, {
+        //     login: userInfo.login,
+        //     api_key: userInfo.api_key,
+        //     'pool_id': options.poolId,
+        //     'post_id': `${postResponse.post_id}`,
+        //   }, {
+        //       multipart: true,
+        //       headers: {
+        //         'User-Agent': `PostyBirb/${appVersion}`
+        //       }
+        //     });
+        // }
         return res;
       } else {
         return Promise.reject(this.createPostResponse(postResponse.reason || 'Unknown error', response.body));
