@@ -56,7 +56,7 @@ const template = [{
     submenu: [{
         label: 'Learn More',
         click() {
-            require('electron').shell.openExternal('https://postybirb.weebly.com');
+            require('electron').shell.openExternal('https://postybirb.com');
         },
     }],
 }];

@@ -209,7 +209,7 @@ export class LoginProfileManagerService {
       .find({ id })
       .value();
 
-    if (!profile.data) {
+    if (!profile.data || typeof profile.data === 'string') {
       profile.data = {};
     }
 

@@ -10,9 +10,9 @@
 </div>
 <div mat-dialog-content class="ignore-max-content-height">
   <div class="text-danger">
-    To connect to e621, you must first <a href="#" (click)="openAPI($event)">enable and generate an API Key <i class="fas fa-link"></i></a> <span class="accent-text" style="font-size:.7em">(https://e621.net/user/api_key)</span>.
+    To connect to e621, you must first <a href="#" (click)="openAPI($event)">enable and generate an API Key <i class="fas fa-link"></i></a> <span class="accent-text" style="font-size:.7em">(https://e621.net/users/home)</span>.
     <br>
-    Once you have generated an API Key, just login with your normal username/password.
+    Once you have generated an API Key, just login with your username/api key.
   </div>
   <loading-overlay [loading]="attempting">
     <form [formGroup]="loginForm" (ngSubmit)="login()" *ngIf="!loggedIn">
@@ -20,7 +20,7 @@
         <input matInput formControlName="username" [placeholder]="'Username' | translate">
       </mat-form-field>
       <mat-form-field color="accent" class="w-100">
-        <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" [placeholder]="'Password' | translate">
+        <input matInput [type]="hide ? 'password' : 'text'" formControlName="password" [placeholder]="'API Key' | translate">
         <mat-icon matSuffix (click)="hide = !hide">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
       </mat-form-field>
       <button mat-flat-button type="submit" color="primary" [disabled]="loginForm.invalid">{{ 'Login' | translate }}</button>
