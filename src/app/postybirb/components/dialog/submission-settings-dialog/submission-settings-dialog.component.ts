@@ -31,7 +31,7 @@ export class SubmissionSettingsDialogComponent implements OnDestroy {
 
   public isAutoUpdateOn(): boolean {
     const enabled = db.get('autoUpdate').value();
-    return enabled === undefined ? true : enabled;
+    return enabled === undefined || enabled === true;
   }
 
   public toggleAutoUpdate(event: any): void {

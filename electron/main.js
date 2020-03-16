@@ -174,7 +174,7 @@ app.on('ready', () => {
     if (!process.env.DEVELOP) {
       const enabled = createDB('postybirb').get('autoUpdate').value();
       const isEnabled = enabled === undefined ? true : enabled;
-      if (!isEnabled) {
+      if (enabled === undefined || enabled === true) {
           autoUpdater.checkForUpdates();
       }
     }

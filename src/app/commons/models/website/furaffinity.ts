@@ -113,7 +113,7 @@ export class Furaffinity extends BaseWebsite implements Website {
         }
 
         const uploadForm = new FormData();
-        uploadForm.set('key', HTMLParser.getInputValue(fileSubmitPage, 'key'));
+        uploadForm.set('key', HTMLParser.getInputValue(fileSubmitPage.split('action="/submit/"').pop(), 'key'));
         uploadForm.set('part', '3');
 
         uploadForm.set('submission', submission.submissionData.submissionFile.getRealFile());
@@ -142,7 +142,7 @@ export class Furaffinity extends BaseWebsite implements Website {
               const options = submission.options;
 
               submitForm.set('part', '5');
-              submitForm.set('key', HTMLParser.getInputValue(uploadPage, 'key'));
+              submitForm.set('key', HTMLParser.getInputValue(uploadPage.split('action="/submit/"').pop(), 'key'));
 
               //Primary
               submitForm.set('title', submission.submissionData.title);
@@ -210,7 +210,7 @@ export class Furaffinity extends BaseWebsite implements Website {
       this.http.get(`${this.baseURL}/controls/journal`, { responseType: 'text' })
         .subscribe(page => {
           const journalData = new FormData();
-          journalData.set('key', HTMLParser.getInputValue(page, 'key'));
+          journalData.set('key', HTMLParser.getInputValue(page.split('action="/controls/journal/"').pop(), 'key'));
           journalData.set('message', data.description);
           journalData.set('subject', data.title);
           journalData.set('submit', 'Create / Update Journal');
