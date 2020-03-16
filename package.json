@@ -1,6 +1,6 @@
 {
   "name": "postybirb",
-  "version": "2.3.5",
+  "version": "2.3.6",
   "scripts": {
     "ng": "ng",
     "compile": "ng build --vendor-chunk=false",
@@ -26,7 +26,7 @@
     "@ngx-translate/core": "^11.0.1",
     "@ngx-translate/http-loader": "^4.0.0",
     "@tinymce/tinymce-angular": "^3.3.1",
-    "angular2-hotkeys": "^2.1.4",
+    "angular2-hotkeys": "~2.1.4",
     "bootstrap-css-only": "^4.2.1",
     "core-js": "^2.5.4",
     "dot-prop": "^4.2.0",
