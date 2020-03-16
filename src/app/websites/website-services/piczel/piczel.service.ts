@@ -125,7 +125,16 @@ export class Piczel extends BaseWebsiteService {
       description: postData.description,
       title: postData.title || 'New Submission',
       tags: this.formatTags(postData.tags || [], []),
-      image: `data:${postData.primary.fileInfo.type};base64,${Buffer.from(postData.primary.buffer).toString('base64')}`
+      files: [postData.primary, ...postData.additionalFiles].filter(f => f).map(f => ({
+        name: f.fileInfo.name,
+        size: f.fileInfo.size,
+        type: f.fileInfo.type,
+        data: `data:${f.fileInfo.type};base64,${Buffer.from(f.buffer).toString('base64')}`
+      })),
+      uploadMode: 'PUBLISH',
+      queue: false,
+      publish_at: '',
+      thumbnail_id: '0',
     };
 
     if (options.folder) {
@@ -154,26 +163,7 @@ export class Piczel extends BaseWebsiteService {
     }
 
     if (postResponse.success.body.id) {
-      if (postData.additionalFiles && postData.additionalFiles.length) {
-        for (let i = 0; i < postData.additionalFiles.length; i++) {
-          const file = postData.additionalFiles[i];
-          const d = {
-            gallery_image_id: postResponse.success.body.id,
-            image: `data:${file.fileInfo.type};base64,${Buffer.from(file.buffer).toString('base64')}`
-          };
-
-          const res = await got.post(`${this.BASE_URL}/api/gallery/plain`, null, this.BASE_URL, cookies, {
-            json: d,
-            headers
-          });
-
-          if (res.error) {
-            console.error(res.error);
-          }
-        }
-      } else {
-        return this.createPostResponse(null);
-      }
+      return this.createPostResponse(null);
     } else {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body.errors.join(', ')));
     }
