@@ -421,7 +421,7 @@ export class Patreon extends BaseWebsiteService {
           return;
         }
 
-        const arr: any = [...<any>file.buffer];
+        const arr: any = new Uint8Array(file.buffer);
         const cmd = `
         const data = '${JSON.stringify(data)}';
         var h = new XMLHttpRequest();
@@ -493,7 +493,7 @@ export class Patreon extends BaseWebsiteService {
           return;
         }
 
-        const arr: any = [...<any>file.buffer];
+        const arr: any = new Uint8Array(file.buffer);
         const cmd = `
         const data = '${JSON.stringify(data)}';
         var fd = new FormData();
