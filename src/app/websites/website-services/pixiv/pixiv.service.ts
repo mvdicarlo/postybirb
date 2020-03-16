@@ -44,7 +44,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 @Website({
   acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
-  postWaitInterval: 60000 * 10, // 10 minutes
+  postWaitInterval: 60000 * 6, // 6 minutes
   login: {
     url: 'https://accounts.pixiv.net/login?lang=en'
   },

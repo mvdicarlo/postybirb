@@ -27,11 +27,14 @@ export function fileAsFormDataObject(file: ISubmissionFileWithArray): any {
 }
 
 export function fileAsBlob(file: ISubmissionFileWithArray): Blob {
-  return new Blob([file.buffer], { type: file.fileInfo.type });
+  const buf = new Uint8Array(file.buffer);
+  const type = file.fileInfo.type;
+  return new Blob([buf], { type });
 }
 
 export function arrayBufferAsBlob(buffer: Uint8Array, type: string): Blob {
-  return new Blob([buffer], { type: type });
+  const buf = new Uint8Array(buffer);
+  return new Blob([buf], { type });
 }
 
 export async function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
