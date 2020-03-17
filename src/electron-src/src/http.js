@@ -16,27 +16,30 @@ function getAgent(extended) {
 }
 
 function convertCookie(cookie) {
-  const url = `${(cookie.secure) ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
+  const url = `${cookie.secure ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
   const expirationDate = new Date();
-  return {
+  const details = {
     domain: cookie.domain,
-    expirationDate: expirationDate.setMonth(expirationDate.getMonth() + 4), // avoids session cookie
     httpOnly: cookie.httpOnly || false,
     name: cookie.name,
     secure: cookie.secure || false,
-    url,
-    value: cookie.value
+    url: url.replace('://.', '://'),
+    value: cookie.value,
   };
+
+  if (cookie.expirationDate) {
+    details.expirationDate = expirationDate.setMonth(expirationDate.getMonth() + 4);
+  }
+  return details;
 }
 
 function setCookie(session, cookie) {
-  return new Promise((resolve, reject) => {
-    session.cookies.set(cookie, function(err) {
+  return session.cookies.set(cookie)
+    .catch(function(err) {
       if (err) {
         console.warn(err, this);
       }
     }.bind(cookie));
-  });
 }
 
 function appendFormValue(form, key, value) {

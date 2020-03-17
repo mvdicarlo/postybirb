@@ -52,11 +52,12 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
             const converted = _convertCookie(c);
             const now = new Date();
             converted.expirationDate = now.setMonth(now.getMonth() + 4); // add 4 months
-            cookieSession.set(converted, function(err) {
-              if (err) {
-                console.warn(err, this);
-              }
-            }.bind(converted));
+            cookieSession.set(converted)
+              .catch( function(err) {
+                if (err) {
+                  console.warn(err, this);
+                }
+              }.bind(converted));
           });
         }
         resolve(res);
@@ -205,24 +206,16 @@ exports.gotPost = function gotPost(url, formData, cookieUrl, cookies, options) {
 };
 
 function _convertCookie(cookie) {
-  const url = `${(cookie.secure) ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
-  const {
-    name,
-    value,
-    domain,
-    path,
-    secure,
-    httpOnly
-  } = cookie;
-  return {
-    url,
-    name,
-    value: value,
-    domain,
-    path,
-    secure: secure || false,
-    httpOnly: httpOnly || false
+  const url = `${cookie.secure ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
+  const details = {
+    domain: cookie.domain,
+    httpOnly: cookie.httpOnly || false,
+    name: cookie.name,
+    secure: cookie.secure || false,
+    url: url.replace('://.', '://'),
+    value: cookie.value,
   };
+  return details;
 }
 
 exports.convertCookie = _convertCookie;

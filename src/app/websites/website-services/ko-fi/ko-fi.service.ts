@@ -83,17 +83,18 @@ export class KoFi extends BaseWebsiteService {
   private _hardenCookies(profileId: string, cookies: any[]): void {
     const api = getCookieAPI(profileId);
     for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        if (cookie.session) {
-          const c = got.convertCookie(cookie);
-          const now = new Date();
-          c.expirationDate = now.setMonth(now.getMonth() + 4);
-          api.set(c, function(err) {
+      const cookie = cookies[i];
+      if (cookie.session) {
+        const c = got.convertCookie(cookie);
+        const now = new Date();
+        c.expirationDate = now.setMonth(now.getMonth() + 4);
+        api.set(c)
+          .catch(function(err) {
             if (err) {
               console.warn('Failed to persist ko-fi', err, this);
             }
           }.bind(c));
-        }
+      }
     }
   }
 

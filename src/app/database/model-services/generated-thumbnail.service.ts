@@ -87,12 +87,8 @@ export class GeneratedThumbnailDBService extends DatabaseService {
     if (isImage(file.fileInfo) && !isGIF(file.fileInfo)) { // may need a better way to handle GIF thumbnails
       ni = nativeImage.createFromBuffer(Buffer.from(await blobToUint8Array(file.buffer)));
     } else { // other file types that don't have an image thumbnail
-      ni = await new Promise((resolve) => {
-        getFileIcon(file.fileInfo.path, {
-          size: 'normal'
-        }, (err, n) => {
-          resolve(n);
-        });
+      ni = await getFileIcon(file.fileInfo.path, {
+        size: 'normal'
       });
     }
 

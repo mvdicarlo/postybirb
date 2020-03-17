@@ -193,13 +193,7 @@ try {
    */
   window.getCookies = function getCookies(persistId, url) {
     const cookies = session.fromPartition(`persist:${persistId}`).cookies;
-    return new Promise((resolve, reject) => {
-      cookies.get({
-        url
-      }, (error, cookies) => {
-        error ? reject(error) : resolve(cookies);
-      });
-    });
+    return cookies.get({ url });
   };
 
   /**

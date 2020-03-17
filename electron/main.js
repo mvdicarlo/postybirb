@@ -14,25 +14,6 @@ const template = require('./src/electron-menu');
 const autoUpdater = require('./src/auto-updater');
 const windowStateKeeper = require('electron-window-state');
 
-require('electron-context-menu')({
-  showInspectElement: false,
-});
-
-log.info('Starting PostyBirb...');
-
-let win = null; // Primary App BrowserWindow
-let scheduleCheckInterval = null; // Interval for checking for scheduled posts when app is in a closed state
-let cacheClearInterval = null; // Interval for manually clearing cache
-const userDataPath = app.getPath('userData');
-const dataPath = path.join(userDataPath, 'data');
-
-
-const devMode = !!process.argv.find(arg => arg === '-d' || arg === '--develop');
-
-if (devMode) {
-  console.log('DataPath', dataPath);
-}
-
 const hasLock = app.requestSingleInstanceLock();
 if (!hasLock) {
   app.quit();
@@ -55,12 +36,26 @@ app.on('second-instance', () => {
   clearScheduleCheck();
 });
 
-const blockerId = powerSaveBlocker.start('prevent-app-suspension');
+require('electron-context-menu')({
+  showInspectElement: false,
+});
 
-// Switches [https://peter.sh/experiments/chromium-command-line-switche]
-// app.commandLine.appendSwitch('proxy-bypass-list', '*')
-// app.commandLine.appendSwitch('proxy-server', 'direct://')
-app.commandLine.appendSwitch('disable-background-timer-throttling');
+log.info('Starting PostyBirb...');
+
+let win = null; // Primary App BrowserWindow
+let mainWindowState = null;
+let scheduleCheckInterval = null; // Interval for checking for scheduled posts when app is in a closed state
+let cacheClearInterval = null; // Interval for manually clearing cache
+const userDataPath = app.getPath('userData');
+const dataPath = path.join(userDataPath, 'data');
+
+const devMode = !!process.argv.find(arg => arg === '-d' || arg === '--develop');
+
+if (devMode) {
+  console.log('DataPath', dataPath);
+}
+
+const blockerId = powerSaveBlocker.start('prevent-app-suspension');
 
 // Create/check for profile file
 fs.ensureFileSync(path.join(dataPath, 'profiles.json'));
@@ -116,7 +111,7 @@ app.on('ready', () => {
       height: 16,
     });
   }
-  image.setTemplateImage(true);
+  // image.setTemplateImage(true);
 
   const trayItems = [{
     label: 'Open',
@@ -184,10 +179,12 @@ function createOrInitializeWindow() {
  * @param  {Boolean} [show=true] If the application will be visible
  */
 function initialize(show = true) {
-  const mainWindowState = windowStateKeeper({
-    defaultWidth: 992,
-    defaultHeight: 800,
-  });
+  if (!mainWindowState) {
+    mainWindowState = windowStateKeeper({
+      defaultWidth: 992,
+      defaultHeight: 800,
+    });
+  }
 
   win = new BrowserWindow({
     show,
@@ -229,7 +226,6 @@ function initialize(show = true) {
   win.on('page-title-updated', e => e.preventDefault()); // Do not allow title changes
 
   win.webContents.on('new-window', (event) => {
-    log.info('Preventing new window...');
     event.preventDefault();
   });
 

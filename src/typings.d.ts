@@ -30,7 +30,7 @@ declare function openUrlInBrowser(url: string): void;
 declare function getCookies(persistId: string, url: string): Promise<any[]>;
 declare function getCookieAPI(persistId: string): any;
 declare function getSession(persistId: string): any;
-declare function getFileIcon(path: string, opts: any, callback: any): any;
+declare function getFileIcon(path: string, opts: any): Promise<any>;
 declare function getClipboardFormats(): any;
 declare function readClipboard(): any;
 declare function writeToClipboard(data: any): void;
