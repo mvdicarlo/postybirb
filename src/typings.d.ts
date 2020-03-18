@@ -19,6 +19,7 @@ declare var got: {
 declare var ehttp: {
   get(url: string, partition: string, options?: any): Promise<{body: string, headers: any, statusCode: number, statusMessage: string}>;
   post(url: string, partition: string, body: any, options?: any): Promise<{body: string, headers: any, href: string, statusCode: number, statusMessage: string, success: boolean}>;
+  browserPost(url: string, partition: string, headers: any, data: any): Promise<string>;
 }
 declare var chardet: any;
 declare var iconv: any;

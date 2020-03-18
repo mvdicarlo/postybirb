@@ -3,7 +3,8 @@ const {
 } = require('electron');
 const {
   session,
-  net
+  net,
+  BrowserWindow
 } = require('electron').remote;
 const cookieParser = require('set-cookie-parser');
 const FormData = require('form-data');
@@ -25,11 +26,8 @@ function convertCookie(cookie) {
     secure: cookie.secure || false,
     url: url.replace('://.', '://'),
     value: cookie.value,
+    expirationDate: expirationDate.setMonth(expirationDate.getMonth() + 4)
   };
-
-  if (cookie.expirationDate) {
-    details.expirationDate = expirationDate.setMonth(expirationDate.getMonth() + 4);
-  }
   return details;
 }
 
@@ -101,7 +99,7 @@ exports.post = (url, partitionId, body, options) => {
     } = options;
     const _session = session.fromPartition(`persist:${partitionId}`);
     if (!headers['User-Agent']) headers['User-Agent'] = getAgent(options.extendedAgent);
-    if (options.cookies) headers['Cookie'] = options.cookies.map(c => `${c.name}=${c.value}`).join('; ');
+    if (options.cookies) headers['cookie'] = options.cookies.map(c => `${c.name}=${c.value}`).join('; ');
 
     const request = net.request({
       headers,
@@ -113,11 +111,17 @@ exports.post = (url, partitionId, body, options) => {
 
     request.chunkedEncoding = true;
 
+    request.on('error', (error) => {
+      reject(error);
+    });
+
+    Object.entries(headers).forEach(([key, value]) => request.setHeader(key, value));
+
     if (options.json) {
       const data = JSON.stringify(body);
-      request.setHeader('Content-Length', data.length);
+      // request.setHeader('Content-Length', data.length);
       if (!headers['Content-Type']) request.setHeader('Content-Type', 'application/json');
-      request.write(data);
+      request.write(Buffer.from(data));
     } else if (options.multipart) {
       const form = new FormData();
       const keys = Object.keys(body);
@@ -179,9 +183,29 @@ exports.post = (url, partitionId, body, options) => {
 
       resolve(res);
     });
+  });
+};
 
-    request.on('error', (error) => {
-      reject(error);
+exports.browserPost = (url, partition, headers, data) => {
+  return new Promise((resolve, reject) => {
+    const bw = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        partition: `persist:${partition}`
+      }
+    });
+
+    bw.loadURL(url, {
+      extraHeaders: Object.entries(headers).map(([key, value]) => `${key}: ${value}`).join('\n'),
+      postData: [{
+        type: 'rawData',
+        bytes: Buffer.from(JSON.stringify(data))
+      }]
+    }).finally(() => {
+      bw.webContents.executeJavaScript('document.body.innerText')
+        .then(d => resolve(d))
+        .catch(err => reject(err))
+        .finally(() => bw.destroy());
     });
   });
 };

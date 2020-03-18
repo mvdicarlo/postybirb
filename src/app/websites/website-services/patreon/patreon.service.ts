@@ -101,19 +101,21 @@ export class Patreon extends BaseWebsiteService {
     const response = await got.get(`${this.BASE_URL}/user`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
-      const user = ((body.match(/"full_name": ".*"/g) || [])[0] || '').replace(/"full_name":\s"(.*?)"/, '$1');
-      if (user) {
+      const user = body.match(/"full_name": "(.*?)"/);
+      if (user && user[1]) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        returnValue.username = user;
+        returnValue.username = user[1];
         await this.loadTiers(profileId, cookies);
       }
-    } catch (e) { /* No important error handling */ }
+    } catch (e) {
+      console.log(e)
+    }
 
     return returnValue;
   }
 
   private attemptAccessTiers(profileId: string, id: any): Promise<any> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const win = new BrowserWindow({
         show: false,
         webPreferences: {
@@ -129,10 +131,10 @@ export class Patreon extends BaseWebsiteService {
           return;
         }
 
-        win.webContents.executeJavaScript('document.body.innerText', (result) => {
-          resolve(result);
-          win.destroy();
-        });
+        win.webContents.executeJavaScript('document.body.innerText')
+          .then(result => resolve(result))
+          .catch(err => reject(err))
+          .finally(() => win.destroy());
       });
     });
   }
@@ -148,27 +150,23 @@ export class Patreon extends BaseWebsiteService {
       }
     };
 
-    const create = await ehttp.post(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`,
+    const create = await ehttp.browserPost(`${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&json-api-version=1.0&include=[]`,
       profileId,
-      createData,
       {
-        cookies,
-        json: true,
-        headers: {
-          'Accept': '*/*',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
-          'Content-Type': 'application/vnd.api+json',
-          'Host': 'www.patreon.com',
-          'Origin': 'https://www.patreon.com',
-          'Pragma': 'no-cache',
-          'Referer': 'https://www.patreon.com/posts/new',
-          'X-CSRF-Signature': csrf,
-        }
-      });
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/vnd.api+json',
+        'Origin': 'https://www.patreon.com',
+        'Pragma': 'no-cache',
+        'Referer': 'https://www.patreon.com/posts/new',
+        'X-CSRF-Signature': csrf,
+      },
+      createData
+    );
 
-    const response: any = JSON.parse(create.body);
+    const response: any = JSON.parse(create);
     const id = response.data.id;
     let body: any = {};
     try {
@@ -180,7 +178,6 @@ export class Patreon extends BaseWebsiteService {
           {
             cookies,
             headers: {
-              'Host': 'www.patreon.com',
               'Origin': 'https://www.patreon.com',
             }
           });
@@ -193,7 +190,6 @@ export class Patreon extends BaseWebsiteService {
           {
             cookies,
             headers: {
-              'Host': 'www.patreon.com',
               'Origin': 'https://www.patreon.com',
             }
           });
@@ -268,7 +264,7 @@ export class Patreon extends BaseWebsiteService {
   private async _getCSRF(cookies: any[], profileId): Promise<string> {
     const uploadPage = await got.get(`${this.BASE_URL}/post`, this.BASE_URL, cookies, profileId);
     const body = uploadPage.body;
-    return body.match(/csrfSignature = ".*"/g)[0].split('"')[1];
+    return body.match(/csrfSignature = "(.*?)"/)[1];
   }
 
   private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -355,7 +351,7 @@ export class Patreon extends BaseWebsiteService {
     let json;
     try {
       json = JSON.parse(postResponse.body);
-    } catch (e) {};
+    } catch (e) { };
 
     if (json && !json.errors) {
       return this.createPostResponse(null);
@@ -440,15 +436,16 @@ export class Patreon extends BaseWebsiteService {
         xhr.open('POST', dest, false);
         xhr.send(fd);
         Object.assign({}, { body: body, status: xhr.status })`;
-        win.webContents.executeJavaScript(cmd, (result) => {
-          if (result && result.body && result.status && result.status < 320) {
-            resolve(result);
-          } else {
-            reject(result);
-          }
-
-          win.destroy()
-        });
+        win.webContents.executeJavaScript(cmd)
+          .then(result => {
+            if (result && result.body && result.status && result.status < 320) {
+              resolve(result);
+            } else {
+              reject(result);
+            }
+          })
+          .catch(err => reject(err))
+          .finally(() => win.destroy());
       });
     });
   }
@@ -505,15 +502,16 @@ export class Patreon extends BaseWebsiteService {
         xhr.setRequestHeader("X-CSRF-Signature", "${csrf}");
         xhr.send(fd);
         xhr.status`;
-        win.webContents.executeJavaScript(cmd, (result) => {
-          if (result && result < 320) {
-            resolve(result);
-          } else {
-            reject(result);
-          }
-
-          win.destroy()
-        });
+        win.webContents.executeJavaScript(cmd)
+          .then((result) => {
+            if (result && result < 320) {
+              resolve(result);
+            } else {
+              reject(result);
+            }
+          })
+          .catch(err => reject(err))
+          .finally(() => win.destroy());
       });
     });
   }
@@ -660,7 +658,7 @@ export class Patreon extends BaseWebsiteService {
     let json;
     try {
       json = JSON.parse(postResponse.body);
-    } catch (e) {};
+    } catch (e) { };
 
     if (json && !json.errors) {
       const res = this.createPostResponse(null);
