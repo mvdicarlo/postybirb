@@ -64,30 +64,13 @@ export class BaseWebsiteService implements WebsiteService {
     });
   }
 
-  public resetCookies(profileId: string, url?: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const cookieURL: string = url || this.BASE_URL;
-      const sessionCookies: any = getCookieAPI(profileId);
-      if (sessionCookies) {
-        // get cookies
-        sessionCookies.get({ url: cookieURL }, (err, cookies) => {
-          if (err) {
-            reject(err);
-            return;
-          }
-
-          // iterate over cookies and remove
-          const promises: Promise<any>[] = [];
-          for (let i = 0; i < cookies.length; i++) {
-            promises.push(new Promise((resolve) => {
-              sessionCookies.remove(cookieURL, cookies[i].name, () => resolve());
-            }));
-          }
-
-          Promise.all(promises).finally(() => resolve());
-        });
-      }
-    });
+  public async resetCookies(profileId: string, url?: string): Promise<void> {
+    const cookieURL: string = url || this.BASE_URL;
+    const sessionCookies: any = getCookieAPI(profileId);
+    if (sessionCookies) {
+      const cookies = await sessionCookies.get({ url: cookieURL });
+      await Promise.all(cookies.map(c => sessionCookies.remove(cookieURL, c.name)));
+    }
   }
 
 }
