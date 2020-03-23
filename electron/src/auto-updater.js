@@ -32,7 +32,7 @@ autoUpdater.on('update-available', (info) => {
       buttons: ['Install and Relaunch', 'Later'],
       defaultId: 0,
       message,
-    }, (response) => {
+    }).then(({ response }) => {
       if (response === 0) {
         openProgressWindow();
         setTimeout(() => autoUpdater.downloadUpdate(), 1);
