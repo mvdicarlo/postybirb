@@ -10,7 +10,7 @@ const cookieParser = require('set-cookie-parser');
 const FormData = require('form-data');
 const UrlEncoded = require('form-urlencoded').default;
 
-const agent = `${remote.getCurrentWebContents().getUserAgent()}`;
+const agent = `${remote.getCurrentWebContents().userAgent}`;
 
 function getAgent(extended) {
   return extended ? `${agent} PostyBirb/${remote.app.getVersion()}` : agent;

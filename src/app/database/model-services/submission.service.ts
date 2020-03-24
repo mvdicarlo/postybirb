@@ -72,6 +72,7 @@ export class SubmissionDBService extends DatabaseService {
   }
 
   public async createSubmissions(submissions: ISubmission[]): Promise<Submission[]> {
+    submissions.forEach(s => delete s.id);
     const inserts: ISubmission[] = <ISubmission[]>await this.connection.insert({
       into: SubmissionTableName,
       values: submissions,

@@ -13,7 +13,7 @@ const {
   session,
 } = require('electron').remote;
 
-const agent = `${remote.getCurrentWebContents().getUserAgent()}`
+const agent = `${remote.getCurrentWebContents().userAgent}`
 const got = Got.extend({
   headers: {
     'User-Agent': agent
