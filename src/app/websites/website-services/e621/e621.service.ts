@@ -173,15 +173,14 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
       data['upload[parent_id]'] = options.parentId;
     }
 
-    const response = await ehttp.post(`${this.BASE_URL}/uploads.json`, postData.profileId, data, {
-      multipart: true,
+    const response = await got.post(`${this.BASE_URL}/uploads.json`, data, null, null, {
       headers: {
         'User-Agent': `PostyBirb/${appVersion}`
       }
     });
 
     try {
-      const postResponse: any = JSON.parse(response.body);
+      const postResponse: any = JSON.parse(response.success.body);
       if (postResponse.success || postResponse.location) {
         const res = this.createPostResponse(null);
         res.srcURL = `https://e621.net${postResponse.location}`;
@@ -201,10 +200,10 @@ export class E621 extends BaseWebsiteService implements WebsiteService {
         // }
         return res;
       } else {
-        return Promise.reject(this.createPostResponse(postResponse.reason || 'Unknown error', response.body));
+        return Promise.reject(this.createPostResponse(postResponse.reason || 'Unknown error', response.success.body));
       }
     } catch (e) {
-      return Promise.reject(this.createPostResponse('Unknown error', response.body));
+      return Promise.reject(this.createPostResponse('Unknown error', response.success.body));
     }
   }
 }
