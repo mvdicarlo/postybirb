@@ -241,6 +241,7 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
       agree_submission: '1',
       is_mature: postData.rating !== SubmissionRating.GENERAL ? 'true' : 'false',
       catpath: this.getDefaultCategoryType(postData.typeOfSubmission),
+      display_resolution: '0',
     };
 
     if (postData.rating !== SubmissionRating.GENERAL) {

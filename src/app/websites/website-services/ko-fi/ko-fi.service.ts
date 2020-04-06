@@ -120,7 +120,7 @@ export class KoFi extends BaseWebsiteService {
       type: '',
       blogPostId: '',
       blogPostTitle: postData.title,
-      blogPostBody: postData.description,
+      postBody: postData.description,
       featuredImage: '',
       noFeaturedImage: 'false',
       showFeaturedImageOnPost: 'true',
