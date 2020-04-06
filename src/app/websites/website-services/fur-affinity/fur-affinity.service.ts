@@ -261,7 +261,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     } else {
       const part1Body = part1Response.success.body;
       if (part1Body.includes('Flood protection')) {
-        return Promise.reject(this.createPostResponse('Encountered flood protection', 'Flood protection'))
+        return Promise.reject(this.createPostResponse('Encountered flood protection', `Flood Protection\n\n${part1Body.success.body}`));
       }
 
       const part2Data = {

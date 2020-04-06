@@ -20,7 +20,7 @@ export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implemen
     category: [],
     matureClassification: [[]],
     matureLevel: [''],
-    displayResolution: [0]
+    displayResolution: ['0']
   };
 
   public folders: Folder[] = [];
