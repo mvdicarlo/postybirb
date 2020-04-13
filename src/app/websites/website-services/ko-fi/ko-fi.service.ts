@@ -195,7 +195,12 @@ export class KoFi extends BaseWebsiteService {
       return Promise.reject(this.createPostResponse('Unknown error', upload.error));
     }
 
-    const body = JSON.parse(upload.success.body);
+    let body = null;
+    try {
+      body = JSON.parse(upload.success.body);
+    } catch (err) {
+      return Promise.reject(this.createPostResponse('Unknown error', `JSON PARSE FAILURE\n${upload.success.body}`))
+    }
 
     const info = this.userInformation.get(postData.profileId);
 
