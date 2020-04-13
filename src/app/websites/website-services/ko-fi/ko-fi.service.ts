@@ -130,9 +130,7 @@ export class KoFi extends BaseWebsiteService {
     };
 
     const postResponse = await got.post(`${this.BASE_URL}/Blog/AddBlogPost`, data, this.BASE_URL, cookies, {
-      gzip: true,
       headers: {
-        'Accept-Encoding': 'gzip, deflate, br',
         'Accept': 'text/html,application/xhtml+xml,application/xml;',
         'Pragma': 'no-cache',
         'Cache-Control': 'no-cache',
@@ -180,9 +178,7 @@ export class KoFi extends BaseWebsiteService {
     };
 
     const upload = await got.post(`${this.BASE_URL}/Media/UploadImage`, uploadData, this.BASE_URL, cookies, {
-      gzip: true,
       headers: {
-        'Accept-Encoding': 'gzip, deflate, br',
         'Accept': 'application/json',
         'Pragma': 'no-cache',
         'Cache-Control': 'no-cache',
