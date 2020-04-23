@@ -1,5 +1,6 @@
 import { Component, OnInit, Injector, forwardRef } from '@angular/core';
 import { BaseWebsiteSubmissionForm, HOST_DATA } from 'src/app/websites/components/base-website-submission-form/base-website-submission-form.component';
+import { TagConfig } from 'src/app/utils/components/tag-input/tag-input.component';
 
 @Component({
   selector: 'inkbunny-submission-form',
@@ -17,6 +18,10 @@ export class InkbunnySubmissionForm extends BaseWebsiteSubmissionForm implements
       scraps: [false],
       submissionType: [null]
     };
+
+  public tagConfig: TagConfig = {
+    minTags: 4
+  };
 
   constructor(injector: Injector) {
     super(injector);

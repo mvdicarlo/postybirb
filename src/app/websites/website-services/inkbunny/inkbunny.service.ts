@@ -5,7 +5,7 @@ import { BaseWebsiteService } from '../base-website-service';
 import { LoginProfileManagerService } from 'src/app/login/services/login-profile-manager.service';
 import { InkbunnyLoginDialog } from './components/inkbunny-login-dialog/inkbunny-login-dialog.component';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
-import { supportsFileType } from '../../helpers/website-validator.helper';
+import { supportsFileType, getTags } from '../../helpers/website-validator.helper';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { InkbunnySubmissionForm } from './components/inkbunny-submission-form/inkbunny-submission-form.component';
@@ -17,6 +17,9 @@ const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif', 'swf', 'flv', 'mp4', 'doc',
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const supportedFiles: string[] = ACCEPTED_FILES;
+
+  const tags = getTags(submission, InkBunny.name);
+  if (tags.length < 4) problems.push(['Requires minimum tags', { website: 'InkBunny', value: 4 }]);
 
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
     problems.push(['Does not support file format', { website: 'InkBunny', value: submission.fileInfo.type }]);
