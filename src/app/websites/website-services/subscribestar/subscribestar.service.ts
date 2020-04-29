@@ -138,9 +138,10 @@ export class Subscribestar extends BaseWebsiteService {
   }
 
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const loginData = await this.checkStatus(postData.profileId);
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/${loginData.username}`, this.BASE_URL, cookies, postData.profileId);
+    const page = await got.get(this.BASE_URL, this.BASE_URL, cookies, postData.profileId);
+
+    const response = await got.get(`${this.BASE_URL}${page.body.match(/class="top_bar-branding">(.*?)href="(.*?)"/mis)[2]}`, this.BASE_URL, cookies, postData.profileId);
     const body = response.body.replace(/\&quot;/g, '"');
     const csrf = response.body.match(/<meta name="csrf-token" content="(.*?)"/)[1];
 

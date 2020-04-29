@@ -15,7 +15,6 @@ import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submis
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FurAffinityJournalForm } from './components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
-import { Logger } from 'src/app/utils/helpers/logger-helper';
 
 const ACCEPTED_FILES = ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'];
 
@@ -46,7 +45,7 @@ function descriptionParser(bbcode: string): string {
 })
 @Website({
   acceptedFiles: ACCEPTED_FILES,
-  postWaitInterval: 60000,
+  postWaitInterval: 45000,
   displayedName: 'Fur Affinity',
   login: {
     url: 'https://www.furaffinity.net/login'
