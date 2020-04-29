@@ -148,10 +148,16 @@ export class Subscribestar extends BaseWebsiteService {
       .filter(f => f)
       .map(f => fileAsFormDataObject(f));
 
+    const uploadPath = (body.match(/data-s3-upload-path=\\"(.*?)\\"/) || [])[1];
+    const uploadUrl = (body.match(/data-s3-url="(.*?)"/) || [])[1];
+    if (!uploadUrl || !uploadPath) {
+      return Promise.reject(this.createPostResponse('Issue getting upload data', body));
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const key = `${body.match(/data-s3-upload-path=\\"(.*?)\\"/)[1]}/${uuidv1()}.${file.options.filename.split('.').pop()}`;
-      const postFile = await got.post(body.match(/data-s3-url="(.*?)"/)[1], {
+      const key = `${uploadPath}/${uuidv1()}.${file.options.filename.split('.').pop()}`;
+      const postFile = await got.post(uploadUrl, {
         key,
         acl: 'public-read',
         success_action_Status: '201',
