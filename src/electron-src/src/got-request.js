@@ -62,6 +62,9 @@ exports.get = function get(url, cookieUrl, cookies, profileId, options) {
         }
         resolve(res);
       }).catch((err) => {
+        if (!err.body) {
+          err.body = err;
+        }
         resolve(err);
       });
   });

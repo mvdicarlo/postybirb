@@ -31,8 +31,8 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
       .forEach(info => problems.push(['Does not support file format', { website: 'Pixiv', value: info.type }]));
   }
 
-  if (MBtoBytes(8) < submission.fileInfo.size) {
-    problems.push(['Max file size', { website: 'Pixiv', value: '8MB' }]);
+  if (MBtoBytes(32) < submission.fileInfo.size) {
+    problems.push(['Max file size', { website: 'Pixiv', value: '32MB' }]);
   }
 
   return problems;

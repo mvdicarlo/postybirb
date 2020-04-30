@@ -20,7 +20,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
     submission.additionalFileInfo
       .filter(info => !supportsFileType(info, ['jpeg', 'jpg', 'png', 'gif', 'mp4'])) // technically wrong since mp4 isn't included but blame translations
-      .forEach(info => problems.push(['Does not support file format', { website: 'Mastodon', value: info.type }]));
+      .forEach(info => problems.push(['Does not support file format', { website: 'newTumbl', value: info.type }]));
   }
 
   return problems;

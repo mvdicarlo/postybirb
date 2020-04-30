@@ -138,9 +138,10 @@ export class Subscribestar extends BaseWebsiteService {
   }
 
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const loginData = await this.checkStatus(postData.profileId);
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/${loginData.username}`, this.BASE_URL, cookies, postData.profileId);
+    const page = await got.get(this.BASE_URL, this.BASE_URL, cookies, postData.profileId);
+
+    const response = await got.get(`${this.BASE_URL}${page.body.match(/class="top_bar-branding">(.*?)href="(.*?)"/mis)[2]}`, this.BASE_URL, cookies, postData.profileId);
     const body = response.body.replace(/\&quot;/g, '"');
     const csrf = response.body.match(/<meta name="csrf-token" content="(.*?)"/)[1];
 
@@ -148,10 +149,16 @@ export class Subscribestar extends BaseWebsiteService {
       .filter(f => f)
       .map(f => fileAsFormDataObject(f));
 
+    const uploadPath = (body.match(/data-s3-upload-path=\\"(.*?)\\"/) || [])[1];
+    const uploadUrl = (body.match(/data-s3-url="(.*?)"/) || [])[1];
+    if (!uploadUrl || !uploadPath) {
+      return Promise.reject(this.createPostResponse('Issue getting upload data', body));
+    }
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const key = `${body.match(/data-s3-upload-path=\\"(.*?)\\"/)[1]}/${uuidv1()}.${file.options.filename.split('.').pop()}`;
-      const postFile = await got.post(body.match(/data-s3-url="(.*?)"/)[1], {
+      const key = `${uploadPath}/${uuidv1()}.${file.options.filename.split('.').pop()}`;
+      const postFile = await got.post(uploadUrl, {
         key,
         acl: 'public-read',
         success_action_Status: '201',
