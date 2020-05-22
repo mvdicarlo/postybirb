@@ -275,7 +275,7 @@ export class Patreon extends BaseWebsiteService {
       data: {
         type: 'post',
         attributes: {
-          post_type: this._getPostType(postData.typeOfSubmission, true)
+          post_type: 'text_only'
         }
       }
     };
@@ -304,7 +304,7 @@ export class Patreon extends BaseWebsiteService {
 
     const attributes: any = {
       content: postData.description,
-      post_type: this._getPostType(postData.typeOfSubmission),
+      post_type: 'text_only',
       is_paid: options.chargePatrons ? 'true' : 'false',
       title: postData.title,
       teaser_text: '',
