@@ -249,6 +249,12 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
     }
 
     const options = postData.options;
+
+    if (options.matureLevel || options.matureClassification.length) {
+      submitData.mature_level = options.matureLevel || 'moderate';
+      submitData.is_mature = 'true';
+    }
+
     if (options.matureClassification.length > 0) {
       for (let i = 0; i < options.matureClassification.length; i++) {
         const opt = options.matureClassification[i];
@@ -256,7 +262,6 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
       }
     }
 
-    if (options.matureLevel) submitData.mature_level = options.matureLevel;
     if (options.category) submitData.catpath = options.category;
     if (options.disableComments) submitData.allow_comments = 'no';
     if (options.critique) submitData.request_critique = 'yes';
