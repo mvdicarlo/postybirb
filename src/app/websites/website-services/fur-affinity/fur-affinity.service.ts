@@ -45,7 +45,7 @@ function descriptionParser(bbcode: string): string {
 })
 @Website({
   acceptedFiles: ACCEPTED_FILES,
-  postWaitInterval: 45000,
+  postWaitInterval: 55000,
   displayedName: 'Fur Affinity',
   login: {
     url: 'https://www.furaffinity.net/login'
@@ -328,7 +328,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           const body = postResponse.success.body;
 
           if (body.includes('CAPTCHA verification error')) {
-            return Promise.reject(this.createPostResponse('You must have 5+ posts on your account first', body));
+            return Promise.reject(this.createPostResponse('You must have 10+ posts on your account first', body));
           }
 
           if (body.includes('pageid-submit-finalize')) {

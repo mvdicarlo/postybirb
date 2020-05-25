@@ -177,13 +177,9 @@ export class KoFi extends BaseWebsiteService {
       file: fileAsFormDataObject(postData.primary)
     };
 
-    const upload = await got.post(`${this.BASE_URL}/Media/UploadImage`, uploadData, this.BASE_URL, cookies, {
+    const upload = await got.post(`${this.BASE_URL}/api/media/gallery-item/upload`, uploadData, this.BASE_URL, cookies, {
       headers: {
-        'Accept': 'application/json',
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache',
         'Referer': 'https://ko-fi.com/',
-        'Connection': 'keep-alive'
       }
     });
 
@@ -203,10 +199,10 @@ export class KoFi extends BaseWebsiteService {
     const data: any = {
       Album: '',
       Title: postData.title,
-      Description: PlaintextParser.parse(postData.description),
+      Description: PlaintextParser.parse(postData.description.replace('<p><a href="http://www.postybirb.com">Posted using PostyBirb</a></p>', '\n\nPosted using PostyBirb')),
       PostToTwitter: 'false',
       EnableHiRes: 'false',
-      FileNames: body.FileNames
+      ImageUploadIds: [body[0].ExternalId],
     };
 
     const postResponse = await got.post(`${this.BASE_URL}/Feed/AddImageFeedItem`, data, this.BASE_URL, cookies, {
@@ -214,10 +210,7 @@ export class KoFi extends BaseWebsiteService {
       headers: {
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept': 'text/html, */*',
-        'Pragma': 'no-cache',
-        'Cache-Control': 'no-cache',
         'Referer': 'https://ko-fi.com/',
-        'Connection': 'keep-alive'
       }
     });
 

@@ -144,7 +144,7 @@ export class Tumblr extends BaseWebsiteService {
     const authData = this._profileManager.getData(postData.profileId, Tumblr.name);
 
     const options = postData.options;
-    const title = options.useTitle ? `<h1>${postData.title}</h1>` : '';
+    const title = options.useTitle ? postData.title : '';
     const data: any = {
       token: authData.accessToken,
       secret: authData.accessSecret,
