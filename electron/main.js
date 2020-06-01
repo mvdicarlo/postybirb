@@ -97,6 +97,7 @@ if (process.platform === 'win32') {
 }
 
 app.on('ready', () => {
+  app.userAgentFallback = app.userAgentFallback.replace(/Electron.*?\s/, ''); // EXPERIMENTAL: Attempt to get Google Sign-In working
   log.info('PostyBirb Ready...');
 
   // Set Menu Items

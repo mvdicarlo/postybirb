@@ -61,7 +61,7 @@ export class KoFi extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/manage/mypage`, this.BASE_URL, cookies, profileId);
+    const response = await got.get(`${this.BASE_URL}/manage/mypage`, this.BASE_URL, cookies, undefined);
     try {
       if (!response.body.includes('Start a Page')) {
         returnValue.status = LoginStatus.LOGGED_IN;
@@ -73,7 +73,7 @@ export class KoFi extends BaseWebsiteService {
           id: response.body.match(/pageId:\s'.*?'/g)[0].split("'")[1]
         });
 
-        this._hardenCookies(profileId, cookies);
+        // this._hardenCookies(profileId, cookies);
       }
     } catch (e) { /* No important error handling */ }
 
