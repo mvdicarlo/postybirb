@@ -77,12 +77,12 @@ export class Newgrounds extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, null);
+    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, null, { rejectUnauthorized: false });
     try {
       const body = response.body;
-      if (!body.includes('passport_login')) {
+      if (body.includes('activeuser')) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        returnValue.username = body.match(/"name":".*?"/g)[0].split(':')[1].replace(/"/g, '');
+        returnValue.username = body.match(/"name":"(.*?)"/)[1];
       }
     } catch (e) { /* No important error handling */ }
 
@@ -101,7 +101,7 @@ export class Newgrounds extends BaseWebsiteService {
 
   public async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const uploadPage = await got.get(`${this.BASE_URL}/account/news/post`, this.BASE_URL, cookies, null);
+    const uploadPage = await got.get(`${this.BASE_URL}/account/news/post`, this.BASE_URL, cookies, null, { rejectUnauthorized: false });
 
     const userkey: string = HTMLParser.getInputValue(uploadPage.body, 'userkey');
     const data: any = {
@@ -117,6 +117,7 @@ export class Newgrounds extends BaseWebsiteService {
 
     const postResponse = await got.post(`${this.BASE_URL}/account/news/post`, data, this.BASE_URL, cookies, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
+      rejectUnauthorized: false,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Origin': 'https://www.newgrounds.com',
@@ -145,7 +146,7 @@ export class Newgrounds extends BaseWebsiteService {
 
   public async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const uploadPage = await got.get(`${this.BASE_URL}/art/submit/create`, this.BASE_URL, cookies, null);
+    const uploadPage = await got.get(`${this.BASE_URL}/art/submit/create`, this.BASE_URL, cookies, null, { rejectUnauthorized: false });
 
     const userkey: string = HTMLParser.getInputValue(uploadPage.body, 'userkey');
 
@@ -160,6 +161,7 @@ export class Newgrounds extends BaseWebsiteService {
     };
 
     const park = await got.post(`${this.BASE_URL}/parkfile`, fileData, this.BASE_URL, cookies, {
+      rejectUnauthorized: false,
       headers: {
         'Origin': 'https://www.newgrounds.com',
         'Referer': `https://www.newgrounds.com/art/submit/create`,
@@ -235,6 +237,7 @@ export class Newgrounds extends BaseWebsiteService {
 
     const optionsPost = await got.post(`${this.BASE_URL}/art/submit/create`, data2, this.BASE_URL, cookies2, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
+      rejectUnauthorized: false,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
         'Origin': 'https://www.newgrounds.com',
