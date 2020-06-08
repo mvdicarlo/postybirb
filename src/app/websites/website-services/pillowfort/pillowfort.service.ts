@@ -175,7 +175,7 @@ export class Pillowfort extends BaseWebsiteService {
       data.nsfw = 'on';
     }
 
-    const uploads = await Promise.all([postData.primary, ...(postData.additionalFiles || [])].map(file => this.uploadImage(file, cookies, data.authenticity_token)));
+    const uploads = await Promise.all([postData.primary, /*...(postData.additionalFiles || [])*/].map(file => this.uploadImage(file, cookies, data.authenticity_token)));
     uploads.forEach((d, i) => {
       data['picture[][file]'].push('');
       data['picture[][pic_url]'].push(d.full_image);
@@ -185,7 +185,6 @@ export class Pillowfort extends BaseWebsiteService {
       data['picture[][row]'].push(i + 1);
       data['picture[][col]'].push(0);
     });
-    console.log(data, uploads)
 
     const postReponse = await got.post(`${this.BASE_URL}/posts/create`, data, this.BASE_URL, cookies);
 
