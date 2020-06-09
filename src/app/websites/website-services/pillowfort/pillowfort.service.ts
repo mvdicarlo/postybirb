@@ -1,17 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Submission, SubmissionFormData } from 'src/app/database/models/submission.model';
-import { SubmissionType, SubmissionRating } from 'src/app/database/tables/submission.table';
-import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
-import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
-import { decodeText, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submission.table';
+import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
-import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { Website } from '../../decorators/website-decorator';
 import { supportsFileType } from '../../helpers/website-validator.helper';
-import { Folder } from '../../interfaces/folder.interface';
 import { LoginStatus, PostResult, SubmissionPostData, WebsiteStatus } from '../../interfaces/website-service.interface';
 import { BaseWebsiteService } from '../base-website-service';
-import { SofurrySubmissionForm } from '../sofurry/components/sofurry-submission-form/sofurry-submission-form.component';
 import { PillowfortSubmissionForm } from './components/pillowfort-submission-form/pillowfort-submission-form.component';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif'];
