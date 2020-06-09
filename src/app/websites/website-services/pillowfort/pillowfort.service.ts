@@ -50,7 +50,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   }
 })
 export class Pillowfort extends BaseWebsiteService {
-  readonly BASE_URL: string = 'https://www.pillowfort.social/';
+  readonly BASE_URL: string = 'https://www.pillowfort.social';
 
   constructor() {
     super();
