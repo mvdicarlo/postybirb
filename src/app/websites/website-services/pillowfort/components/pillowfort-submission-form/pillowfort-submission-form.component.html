@@ -1,0 +1,46 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <mat-form-field color="accent">
+      <input #titleInput matInput [placeholder]="'Title' | translate" formControlName="title" maxlength="50">
+      <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
+    </mat-form-field>
+  </div>
+  
+  <div class="section">
+    <mat-form-field color="accent">
+      <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
+        <mat-option [value]="null">{{ 'Default' | translate }}</mat-option>
+        <mat-option value="General">{{ 'General' | translate }}</mat-option>
+        <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="allowReblog">{{'Allow Reblog' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="disableComments">{{'Disable Comments' | translate}}</mat-checkbox>
+      <mat-checkbox formControlName="nsfw">{{'NSFW' | translate}}</mat-checkbox>
+    </div>
+    <div class="col-md col-lg col-xl">
+      <mat-form-field color="accent">
+        <mat-select formControlName="viewable" [placeholder]="'Viewable By' | translate">
+          <mat-option value="public">{{ 'Everyone' | translate }}</mat-option>
+          <mat-option value="followers">{{ 'Followers' | translate }}</mat-option>
+          <mat-option value="mutuals">{{ 'Mutuals' | translate }}</mat-option>
+          <mat-option value="private">{{ 'Private' | translate }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</form>

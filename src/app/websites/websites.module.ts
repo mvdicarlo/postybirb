@@ -28,6 +28,7 @@ import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { Tumblr } from './website-services/tumblr/tumblr.service';
 import { Twitter } from './website-services/twitter/twitter.service';
 import { Weasyl } from './website-services/weasyl/weasyl.service';
+import { Pillowfort } from './website-services/pillowfort/pillowfort.service';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { UtilsModule } from '../utils/utils.module';
@@ -91,6 +92,7 @@ import { E621LoginDialog } from './website-services/e621/components/e621-login-d
 import { WebsiteRestrictionsDialog } from './components/website-restrictions-dialog/website-restrictions-dialog.component';
 import { Subscribestar } from './website-services/subscribestar/subscribestar.service';
 import { SubscribestarSubmissionForm } from './website-services/subscribestar/components/subscribestar-submission-form/subscribestar-submission-form.component';
+import { PillowfortSubmissionForm } from './website-services/pillowfort/components/pillowfort-submission-form/pillowfort-submission-form.component';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -140,6 +142,7 @@ export function INIT_WEBSITE_REGISTRY() {
     E621LoginDialog,
     WebsiteRestrictionsDialog,
     SubscribestarSubmissionForm,
+    PillowfortSubmissionForm,
   ],
   imports: [
     CommonModule,
@@ -196,6 +199,7 @@ export function INIT_WEBSITE_REGISTRY() {
     PatreonSubmissionForm,
     PiczelSubmissionForm,
     PixivSubmissionForm,
+    PillowfortSubmissionForm,
     SofurrySubmissionForm,
     SubscribestarSubmissionForm,
     TumblrLoginDialog,
@@ -229,6 +233,7 @@ export function INIT_WEBSITE_REGISTRY() {
         // PaigeeWorld, Shutdown
         Patreon,
         Piczel,
+        Pillowfort,
         Pixiv,
         Route50,
         SoFurry,
