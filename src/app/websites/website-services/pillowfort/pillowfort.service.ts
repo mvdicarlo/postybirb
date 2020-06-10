@@ -8,6 +8,7 @@ import { supportsFileType } from '../../helpers/website-validator.helper';
 import { LoginStatus, PostResult, SubmissionPostData, WebsiteStatus } from '../../interfaces/website-service.interface';
 import { BaseWebsiteService } from '../base-website-service';
 import { PillowfortSubmissionForm } from './components/pillowfort-submission-form/pillowfort-submission-form.component';
+import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif'];
 
@@ -24,7 +25,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
 })
 @Website({
   acceptedFiles: ACCEPTED_FILES,
-  additionalFiles: false, // NOTE: false due to issues
+  additionalFiles: true,
   displayedName: 'Pillowfort',
   login: {
     url: 'https://www.pillowfort.social/users/sign_in'
@@ -63,6 +64,7 @@ export class Pillowfort extends BaseWebsiteService {
     try {
       const body = response.body;
       if (body.includes('/signout')) {
+        await BrowserWindowHelper.hitUrl(profileId, this.BASE_URL);
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = body.match(/value="current_user">(.*?)</)[1];
       }
@@ -151,13 +153,6 @@ export class Pillowfort extends BaseWebsiteService {
       privacy: postData.options.viewable,
       tags: this.formatTags(postData.tags),
       commit: 'Submit',
-      'picture[][file]': [],
-      'picture[][pic_url]': [],
-      'picture[][small_image_url]': [],
-      'picture[][b2_lg_url]': [],
-      'picture[][b2_sm_url]': [],
-      'picture[][row]': [],
-      'picture[][col]': [],
     };
 
     if (postData.options.allowReblog) {
@@ -170,18 +165,20 @@ export class Pillowfort extends BaseWebsiteService {
       data.nsfw = 'on';
     }
 
-    const uploads = await Promise.all([postData.primary, /*...(postData.additionalFiles || [])*/].map(file => this.uploadImage(file, cookies, data.authenticity_token)));
-    uploads.forEach((d, i) => {
-      data['picture[][file]'].push('');
-      data['picture[][pic_url]'].push(d.full_image);
-      data['picture[][small_image_url]'].push(d.small_image);
-      data['picture[][b2_lg_url]'].push('');
-      data['picture[][b2_sm_url]'].push('');
-      data['picture[][row]'].push(i + 1);
-      data['picture[][col]'].push(0);
-    });
-
-    const postReponse = await got.post(`${this.BASE_URL}/posts/create`, data, this.BASE_URL, cookies);
+    const uploads = await Promise.all([postData.primary, ...(postData.additionalFiles || [])].map(file => this.uploadImage(file, cookies, data.authenticity_token)));
+    const postReponse = await got.post(`${this.BASE_URL}/posts/create`, (fd: any) => {
+      Object.entries(data).forEach(([key, value]) => {
+        fd.append(key, value);
+      });
+      uploads.forEach((upload, i) => {
+        fd.append('picture[][pic_url]', upload.full_image);
+        fd.append('picture[][small_image_url]', upload.small_image);
+        fd.append('picture[][b2_lg_url]', '');
+        fd.append('picture[][b2_sm_url]', '');
+        fd.append('picture[][row]', `${i + 1}`);
+        fd.append('picture[][col]', '0');
+      });
+    }, this.BASE_URL, cookies);
 
     if (postReponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postReponse.error));

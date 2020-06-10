@@ -155,7 +155,11 @@ exports.post = function post(url, formData, cookieUrl, cookies, options) {
       });
     }
 
-    request.post(url, opts, (err, response, body) => {
+    if (formData instanceof Function) {
+      delete opts.formData;
+    }
+
+    const req = request.post(url, opts, (err, response, body) => {
       if (err) {
         resolve({
           error: err
@@ -169,6 +173,10 @@ exports.post = function post(url, formData, cookieUrl, cookies, options) {
         });
       }
     });
+
+    if (formData instanceof Function) {
+      formData(req.form());
+    }
   });
 };
 
