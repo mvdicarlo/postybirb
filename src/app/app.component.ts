@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
 
   public version: string;
   public userLanguage: string = 'en';
-  public knownLanguages: string[] = ['ar', 'de', 'en', 'es', 'fi', 'fr', 'th', 'it', 'ja', 'pt', 'ru', 'zh'];
+  public knownLanguages: string[] = ['ar', 'de', 'en', 'es', 'fi', 'fr', 'th', 'it', 'ja', 'pt', 'ru', 'zh', 'pt-br'];
   private readonly BASE_LANGUAGE: string = 'en';
   private settingsDialog: MatDialogRef<any>;
 
@@ -101,9 +101,13 @@ export class AppComponent implements OnInit {
    * Set initial language pack depending on computer settings
    */
   private _initializeLanguage(): void {
-    let userLanguage: string = window.navigator.language.split('-')[0];
+    let userLanguage: string = window.navigator.language;
     if (!this.knownLanguages.includes(userLanguage)) {
-      userLanguage = this.BASE_LANGUAGE;
+      if (!this.knownLanguages.includes(userLanguage.split('-')[0])) {
+        userLanguage = this.BASE_LANGUAGE;
+      } else {
+        userLanguage = userLanguage.split('-')[0];
+      }
     }
 
     const storeLanguage: string = store.get('language');

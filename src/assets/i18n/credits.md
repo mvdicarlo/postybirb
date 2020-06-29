@@ -1,5 +1,8 @@
-PT-BR
+PT
 Juniorr452 (FA)
+
+PT-BR
+Luiziz (Discord)
 
 FI-FI
 Gustav~ (FA)
