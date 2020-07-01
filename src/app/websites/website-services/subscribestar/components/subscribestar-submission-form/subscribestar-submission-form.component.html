@@ -5,13 +5,6 @@
   </div>
 
   <div formGroupName="options" class="row no-gutters section">
-    <div class="col-md col-lg col-xl">
-      Access Tier
-      <br>
-      <mat-radio-group formControlName="tier">
-        <mat-radio-button value="free">Public</mat-radio-button>
-        <mat-radio-button value="basic">Subscribers Only</mat-radio-button>
-      </mat-radio-group>
-    </div>
+    <folder-select formControlName="tier" class="col-md col-lg col-xl" [folders]="tiers" placeholder="Access Tier"></folder-select>
   </div>
 </form>
