@@ -39,6 +39,7 @@
     "ng-pick-datetime": "^7.0.0",
     "ng-snotify": "^4.3.1",
     "ngx-image-cropper": "^2.1.0",
+    "node-sass": "^4.14.1",
     "roboto-fontface": "^0.10.0",
     "rxjs": "~6.5.2",
     "store": "^2.0.12",
