@@ -45,7 +45,7 @@ function descriptionParser(bbcode: string): string {
 })
 @Website({
   acceptedFiles: ACCEPTED_FILES,
-  postWaitInterval: 55000,
+  postWaitInterval: 70000,
   displayedName: 'Fur Affinity',
   login: {
     url: 'https://www.furaffinity.net/login'

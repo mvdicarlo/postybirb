@@ -181,7 +181,7 @@ export class Subscribestar extends BaseWebsiteService {
     )[1];
     const data = {
       utf8: '✓',
-      html_content: `<div>${postData.description}</div>`,
+      html_content: `<div>${postData.options.useTitle ? `<h1>${postData.title}</h1>` : ''}${postData.description}</div>`,
       pinned_uploads: '[]',
       new_editor: 'true',
       tier_id: postData.options.tier,
@@ -367,7 +367,7 @@ export class Subscribestar extends BaseWebsiteService {
 
     const data = {
       utf8: '✓',
-      html_content: `<div>${postData.description}</div>`,
+      html_content: `<div>${postData.options.useTitle ? `<h1>${postData.title}</h1>` : ''}${postData.description}</div>`,
       pinned_uploads: '[]',
       new_editor: 'true',
       tier_id: postData.options.tier,
