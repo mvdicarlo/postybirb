@@ -10,6 +10,7 @@ import { Submission, SubmissionFormData } from 'src/app/database/models/submissi
 import { LoginStatus, WebsiteStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { KoFiSubmissionForm } from './components/ko-fi-submission-form/ko-fi-submission-form.component';
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
+import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 
 const ACCEPTED_FILES = ['jpeg', 'jpg', 'png'];
 
@@ -61,46 +62,19 @@ export class KoFi extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/manage/mypage`, this.BASE_URL, cookies, undefined);
+    const response = await got.get(`${this.BASE_URL}/settings`, this.BASE_URL, cookies, undefined);
     try {
-      if (!response.body.includes('Start a Page')) {
+      if (!response.body.includes('btn-login')) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        const html$ = $.parseHTML(response.body);
-
-        returnValue.username = $(html$).find('name').text();
+        returnValue.username = HTMLParser.getInputValue(response.body, 'DisplayName');
         this.userInformation.set(profileId, {
-          gold: !response.body.includes('Upgrade to Gold'),
-          id: response.body.match(/pageId:\s'.*?'/g)[0].split("'")[1]
+          id: response.body.match(/pageId:\s'(.*?)'/)[1]
         });
 
-        // this._hardenCookies(profileId, cookies);
       }
     } catch (e) { /* No important error handling */ }
 
     return returnValue;
-  }
-
-  private _hardenCookies(profileId: string, cookies: any[]): void {
-    const api = getCookieAPI(profileId);
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i];
-      if (cookie.session) {
-        const c = got.convertCookie(cookie);
-        const now = new Date();
-        c.expirationDate = now.setMonth(now.getMonth() + 4);
-        api.set(c)
-          .catch(function(err) {
-            if (err) {
-              console.warn('Failed to persist ko-fi', err, this);
-            }
-          }.bind(c));
-      }
-    }
-  }
-
-  public isGold(profileId: string): boolean {
-    const info = this.userInformation.get(profileId) || {};
-    return !!info.gold;
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
