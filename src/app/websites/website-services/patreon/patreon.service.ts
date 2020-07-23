@@ -98,9 +98,8 @@ export class Patreon extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/user`, this.BASE_URL, cookies, profileId);
     try {
-      const body = response.body;
+      const body: string = await BrowserWindowHelper.runScript<string>(profileId, `${this.BASE_URL}/creator-home`, 'document.body.parentElement.innerHTML')
       const user = body.match(/"full_name": "(.*?)"/);
       if (user && user[1]) {
         returnValue.status = LoginStatus.LOGGED_IN;
@@ -108,7 +107,7 @@ export class Patreon extends BaseWebsiteService {
         await this.loadTiers(profileId, cookies);
       }
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
 
     return returnValue;
@@ -261,9 +260,8 @@ export class Patreon extends BaseWebsiteService {
     }
   }
 
-  private async _getCSRF(cookies: any[], profileId): Promise<string> {
-    const uploadPage = await got.get(`${this.BASE_URL}/post`, this.BASE_URL, cookies, profileId);
-    const body = uploadPage.body;
+  private async _getCSRF(cookies: any[], profileId: string): Promise<string> {
+    const body = await BrowserWindowHelper.runScript<string>(profileId, `${this.BASE_URL}/post`, 'document.body.innerHTML');
     return body.match(/csrfSignature = "(.*?)"/)[1];
   }
 
