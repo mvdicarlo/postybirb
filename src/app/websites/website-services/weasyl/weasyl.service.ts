@@ -23,7 +23,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
     problems.push(['Does not support file format', { website: 'Weasyl', value: submission.fileInfo.type }]);
   }
 
-  let maxMB = 10;
+  let maxMB = 50;
   const type: TypeOfSubmission = getTypeOfSubmission(submission.fileInfo);
   if (type === TypeOfSubmission.ANIMATION || type === TypeOfSubmission.AUDIO) {
     maxMB = 15;
