@@ -28,7 +28,7 @@ function submissionValidate(submission: Submission, formData: SubmissionFormData
   if (type === TypeOfSubmission.ANIMATION || type === TypeOfSubmission.AUDIO) {
     maxMB = 15;
   } else if (type === TypeOfSubmission.STORY) {
-    if (submission.fileInfo.name.includes('.md') || submission.fileInfo.name.includes('.md')) {
+    if (submission.fileInfo.name.includes('.md') || submission.fileInfo.name.includes('.txt')) {
       maxMB = 2;
     } else {
       maxMB = 10; // assume pdf
