@@ -140,9 +140,22 @@ export class Derpibooru extends BaseWebsiteService {
   }
 
   private async attemptPost(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+    const knownRatings: string[] = ['safe', 'suggestive', 'questionable', 'explicit', 'semi-grimdark', 'grimdark', 'grotesque'];
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
     const ratingTag: string = this.getRatingTag(postData.rating);
-    if (!tags.includes(ratingTag)) tags.push(ratingTag);
+    if (!tags.includes(ratingTag)) {
+      let add = true;
+
+      knownRatings.forEach(r => {
+        if (tags.includes(r)) {
+          add = false;
+        }
+      });
+
+      if (add) {
+        tags.push(ratingTag);
+      }
+    }
 
     const options = postData.options;
 
