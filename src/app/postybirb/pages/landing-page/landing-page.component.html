@@ -14,18 +14,18 @@
                   <mat-card>
                     <mat-card-title>{{ 'Create New Submission' | translate }}</mat-card-title>
                     <mat-card-content>
-                      Create and edit a new submission by choosing a file, copying from your clipboard, or dropping files into PostyBirb.
+                      {{ 'landing-page-create-info-submission' | translate }}
                     </mat-card-content>
                     <mat-card-footer>
-                      <button mat-button color="accent" (click)="parent.fileInput.nativeElement.click()">{{ 'Create Submission' }}</button>
-                      <button mat-button color="accent" (click)="parent.createSubmissionFromClipboard()" [disabled]="!parent.clipboardIsEligible()">{{ 'Create Submission From Clipboard' }}</button>
+                      <button mat-button color="accent" (click)="parent.fileInput.nativeElement.click()">{{ 'Create Submission' | translate }}</button>
+                      <button mat-button color="accent" (click)="parent.createSubmissionFromClipboard()" [disabled]="!parent.clipboardIsEligible()">{{ 'Create Submission From Clipboard' | translate }}</button>
                     </mat-card-footer>
                   </mat-card>
 
                   <mat-card>
                     <mat-card-title>{{ 'Create New Journal/Status' | translate }}</mat-card-title>
                     <mat-card-content>
-                      Create and edit a new journal/status.
+                     {{ 'landing-page-create-journal-header' | translate }}
                     </mat-card-content>
                     <mat-card-footer>
                       <button mat-button color="accent" (click)="parent.createNewJournal()">{{ 'Create Journal' | translate }}</button>
@@ -35,7 +35,7 @@
                   <mat-card>
                     <mat-card-title>{{ 'Edit Multiple Submissions' | translate }}</mat-card-title>
                     <mat-card-content>
-                      Edit one of more submission at a time.
+                      {{ 'landing-page-edit-multiple-description' | translate }}
                     </mat-card-content>
                     <mat-card-footer>
                       <button mat-button color="accent" routerLink="/bulk">{{ 'Open' | translate }}</button>
@@ -45,7 +45,7 @@
                   <mat-card>
                     <mat-card-title>{{ 'Manage Templates' | translate }}</mat-card-title>
                     <mat-card-content>
-                      Create, update, and manage reusable submission templates that can be applied to submissions.
+                      {{ 'landing-page-create-template-description' | translate }}
                     </mat-card-content>
                     <mat-card-footer>
                       <button mat-button color="accent" routerLink="/template">{{ 'Open' | translate }}</button>
