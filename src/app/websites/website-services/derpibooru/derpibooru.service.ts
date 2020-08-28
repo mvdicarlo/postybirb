@@ -143,7 +143,7 @@ export class Derpibooru extends BaseWebsiteService {
     const knownRatings: string[] = ['safe', 'suggestive', 'questionable', 'explicit', 'semi-grimdark', 'grimdark', 'grotesque'];
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
     const ratingTag: string = this.getRatingTag(postData.rating);
-    const lowerCaseTags = tags.map(t => t.toLocaleLowerCase());
+    const lowerCaseTags = tags.map(t => t.toLowerCase());
     if (!lowerCaseTags.includes(ratingTag)) {
       let add = true;
 
