@@ -1,0 +1,13 @@
+<form [formGroup]="formGroup">
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="row no-gutters">
+      <div class="col-md col-lg col-xl">
+        <div class="row no-gutters">
+          <div class="col-md col-lg col-xl">
+            <folder-select formControlName="folders" [folders]="folders" [multiple]="true"></folder-select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>

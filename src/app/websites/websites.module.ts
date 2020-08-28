@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
+import { AfterDark } from './website-services/afterdark/afterdark.service';
 import { Aryion } from './website-services/aryion/aryion.service';
 import { Derpibooru } from './website-services/derpibooru/derpibooru.service';
 import { DeviantArt } from './website-services/deviant-art/deviant-art.service';
@@ -49,6 +50,7 @@ import {
   MatTooltipModule
 } from '@angular/material';
 
+import { AfterDarkSubmissionForm } from './website-services/afterdark/components/afterdark-submission-form/afterdark-submission-form.component';
 import { AryionSubmissionForm } from './website-services/aryion/components/aryion-submission-form/aryion-submission-form.component';
 import { BaseWebsiteSubmissionForm } from './components/base-website-submission-form/base-website-submission-form.component';
 import { DerpibooruSubmissionForm } from './website-services/derpibooru/components/derpibooru-submission-form/derpibooru-submission-form.component';
@@ -100,6 +102,7 @@ export function INIT_WEBSITE_REGISTRY() {
 
 @NgModule({
   declarations: [
+    AfterDarkSubmissionForm,
     AryionSubmissionForm,
     BaseWebsiteSubmissionForm,
     DerpibooruSubmissionForm,
@@ -170,6 +173,7 @@ export function INIT_WEBSITE_REGISTRY() {
     WebsiteSubmissionFormDisplayDirective,
   ],
   entryComponents: [
+    AfterDarkSubmissionForm,
     AryionSubmissionForm,
     DerpibooruSubmissionForm,
     DeviantArtLoginDialog,
@@ -214,6 +218,7 @@ export function INIT_WEBSITE_REGISTRY() {
       provide: APP_INITIALIZER,
       useFactory: INIT_WEBSITE_REGISTRY,
       deps: [
+        AfterDark,
         Aryion,
         Derpibooru,
         DeviantArt,
