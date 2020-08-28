@@ -143,11 +143,12 @@ export class Derpibooru extends BaseWebsiteService {
     const knownRatings: string[] = ['safe', 'suggestive', 'questionable', 'explicit', 'semi-grimdark', 'grimdark', 'grotesque'];
     const tags: string[] = this.formatTags(postData.tags, [], ' ');
     const ratingTag: string = this.getRatingTag(postData.rating);
-    if (!tags.includes(ratingTag)) {
+    const lowerCaseTags = tags.map(t => t.toLocaleLowerCase());
+    if (!lowerCaseTags.includes(ratingTag)) {
       let add = true;
 
       knownRatings.forEach(r => {
-        if (tags.includes(r)) {
+        if (lowerCaseTags.includes(r)) {
           add = false;
         }
       });
