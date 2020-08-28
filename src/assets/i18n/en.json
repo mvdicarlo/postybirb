@@ -11,5 +11,14 @@
   "Requires minimum tags": "{{website}} requires at least {{value}} tags",
   "Split Additional File Info": "Not all websites support additional files. This will split this submission into new submissions for the below websites.",
   "Website Agreement": "By using PostyBirb you agree to the Terms of Service and Rules of the websites that you are posting to. You are responsible for everything you post.",
-  "Website Options Tooltip": "Customize website specific options and overwrite default tags and descriptions"
+  "Website Options Tooltip": "Customize website specific options and overwrite default tags and descriptions",
+  "landing-page-create-info-submission": "Create and edit a new submission by choosing a file, copying from your clipboard, or dropping files into PostyBirb.",
+  "landing-page-create-journal-header": "Create and edit a new journal/status.",
+  "landing-page-edit-multiple-description": "Edit one of more submissions at a time.",
+  "landing-page-create-template-description": "Create, update, and manage reusable submission templates that can be applied to submissions.",
+  "login-profile-d1": "A Login Profile allows a user to manage and group their accounts.",
+  "login-profile-d2": "Selecting a Login Profile in any submission form will make it post only to the accounts in the profile.",
+  "login-profile-d3": "Commonly used when a user has two or more accounts for the same website.",
+  "login-profile-create-text": "Create a new Login Profile to manage account groups.",
+  "login-profile-title": "What is a Login Profile?"
 }

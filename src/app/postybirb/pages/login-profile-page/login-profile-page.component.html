@@ -2,15 +2,15 @@
   <div class="card-container col-12">
     <mat-card>
       <mat-card-title>
-        What is a Login Profile?
+        {{'login-profile-title' | translate }}
       </mat-card-title>
       <mat-card-content>
         <p>
-          A Login Profile allows a user to manage and group their accounts.
+          {{ 'login-profile-d1' | translate }}
           <br>
-          Selecting a Login Profile in any submission form will make it post only to the accounts in the profile.
+          {{ 'login-profile-d2' | translate }}
         </p>
-        Commonly used when a user has two or more accounts for the same website.
+        {{ 'login-profile-d3' | translate }}
       </mat-card-content>
     </mat-card>
   </div>
@@ -22,10 +22,10 @@
             <mat-card>
               <mat-card-title>{{ 'Create New Login Profile' | translate }}</mat-card-title>
               <mat-card-content>
-                Create a new Login Profile to manage account groups.
+               {{ 'login-profile-create-text' | translate }}
               </mat-card-content>
               <mat-card-footer>
-                <button mat-button color="accent" (click)="createNewLoginProfile()">{{ 'Create Login Profile' | translate }}</button>
+                <button mat-button color="accent" (click)="createNewLoginProfile()">{{ 'Create' | translate }}</button>
               </mat-card-footer>
             </mat-card>
           </div>

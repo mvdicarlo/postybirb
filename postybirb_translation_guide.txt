@@ -18,6 +18,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 -----------------------------------------------------------------------
 
 {
+  "Internal": "login-profile-d1",
+  "Translate Me": "A Login Profile allows a user to manage and group their accounts.",
+  "Translated": ""
+}
+
+{
   "Internal": "Additional Files",
   "Context": "Header for a section where users add additional files to a submission form",
   "Translate Me": "Additional Files",
@@ -190,6 +196,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "login-profile-d3",
+  "Translate Me": "Commonly used when a user has two or more accounts for the same website.",
+  "Translated": ""
+}
+
+{
   "Internal": "Content",
   "Translate Me": "Content",
   "Translated": ""
@@ -204,6 +216,60 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Copy Submission",
   "Translate Me": "Copy Submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create Journal",
+  "Translate Me": "Create Journal",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create New Login Profile",
+  "Translate Me": "Create New Login Profile",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create New Submission",
+  "Translate Me": "Create New Submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create Submission",
+  "Translate Me": "Create Submission",
+  "Translated": ""
+}
+
+{
+  "Internal": "Create Submission From Clipboard",
+  "Translate Me": "Create Submission From Clipboard",
+  "Translated": ""
+}
+
+{
+  "Internal": "login-profile-create-text",
+  "Translate Me": "Create a new Login Profile to manage account groups.",
+  "Translated": ""
+}
+
+{
+  "Internal": "landing-page-create-journal-header",
+  "Translate Me": "Create and edit a new journal/status.",
+  "Translated": ""
+}
+
+{
+  "Internal": "landing-page-create-info-submission",
+  "Translate Me": "Create and edit a new submission by choosing a file, copying from your clipboard, or dropping files into PostyBirb.",
+  "Translated": ""
+}
+
+{
+  "Internal": "landing-page-create-template-description",
+  "Translate Me": "Create, update, and manage reusable submission templates that can be applied to submissions.",
   "Translated": ""
 }
 
@@ -279,6 +345,18 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Edit",
   "Translate Me": "Edit",
+  "Translated": ""
+}
+
+{
+  "Internal": "Edit Multiple Submissions",
+  "Translate Me": "Edit Multiple Submissions",
+  "Translated": ""
+}
+
+{
+  "Internal": "landing-page-edit-multiple-description",
+  "Translate Me": "Edit one of more submissions at a time.",
   "Translated": ""
 }
 
@@ -468,6 +546,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Login Profile",
   "Translate Me": "Login Profile",
+  "Translated": ""
+}
+
+{
+  "Internal": "Login Profiles",
+  "Translate Me": "Login Profiles",
   "Translated": ""
 }
 
@@ -809,6 +893,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 }
 
 {
+  "Internal": "login-profile-d2",
+  "Translate Me": "Selecting a Login Profile in any submission form will make it post only to the accounts in the profile.",
+  "Translated": ""
+}
+
+{
   "Internal": "Separate with commas",
   "Translate Me": "Separate with commas",
   "Translated": ""
@@ -1056,6 +1146,12 @@ DO NOT TRANSLATE TEXT IN BRACKETS SUCH AS {{website}} or {{value}}
 {
   "Internal": "Websites",
   "Translate Me": "Websites",
+  "Translated": ""
+}
+
+{
+  "Internal": "login-profile-title",
+  "Translate Me": "What is a Login Profile?",
   "Translated": ""
 }
 
