@@ -61,7 +61,7 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
     if (response.statusCode !== 200) {
       throw new Error(`Bad response getting csrf token ${response.statusCode}`);
     }
-    const match = response.body.match(new RegExp(`name="csrfmiddlewaretoken" value="([^"]+)"`));
+    const match = response.body.match(/name="csrfmiddlewaretoken" value="([^"]+)"/);
     if (!match) {
       throw new Error('Could not find csrf token in body');
     }
