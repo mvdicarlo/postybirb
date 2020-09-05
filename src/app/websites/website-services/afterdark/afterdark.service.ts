@@ -59,7 +59,7 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
   }
 
   private async getCsrfToken(profileId: string): Promise<string> {
-    var cookies = await getCookies(profileId, this.BASE_URL);
+    let cookies = await getCookies(profileId, this.BASE_URL);
     const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
     if (response.statusCode !== 200) {
       throw new Error(`Bad response getting csrf token ${response.statusCode}`);
@@ -96,7 +96,7 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
         }
       }`
     });
-    var cookies = await getCookies(profileId, this.BASE_URL);
+    let cookies = await getCookies(profileId, this.BASE_URL);
     const response = await got.gotPostJSON(`${this.BASE_URL}/graphql/`, body, this.BASE_URL, cookies, profileId, {
       headers: {
         'content-type': 'application/json',
@@ -179,7 +179,7 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
       "nsfw": postData.rating !== SubmissionRating.GENERAL && postData.rating !== SubmissionRating.MATURE,
       "claimedByUser": true,
     });
-    var formData = {
+    let formData = {
       query,
       variables,
     };
