@@ -216,49 +216,6 @@ exports.gotPost = function gotPost(url, formData, cookieUrl, cookies, options) {
   });
 };
 
-// NOTE: This was created because afterdark speaks graphql and can't use formData.
-exports.gotPostJSON = function gotPost(url, body, cookieUrl, cookies, profileId, options) {
-  return new Promise((resolve, reject) => {
-    const cookieJar = new CookieJar();
-    if (cookies && cookies.length) {
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        cookieJar.setCookie(`${cookie.name}=${cookie.value}`, cookieUrl, () => {});
-      }
-    }
-
-    const opts = Object.assign({
-      body: body,
-      cookieJar,
-      followRedirect: true
-    }, options);
-    got.post(url, opts)
-      .then((res) => {
-        if (res.headers['set-cookie'] && profileId) { // need to re-set the cookies as sessionid can change
-          const _cookies = setCookie.parse(res, {
-            decodeValues: false
-          });
-          const cookieSession = session.fromPartition(`persist:${profileId}`).cookies;
-          _cookies.forEach((c) => {
-            c.domain = c.domain || res.request.gotOptions.host;
-            const converted = _convertCookie(c);
-            const now = new Date();
-            converted.expirationDate = now.setMonth(now.getMonth() + 4); // add 4 months
-            cookieSession.set(converted)
-              .catch( function(err) {
-                if (err) {
-                  console.warn(err, this);
-                }
-              }.bind(converted));
-          });
-        }
-        resolve(res);
-      }).catch((err) => {
-        resolve(err); // got seems to throw a lot despite a successful post
-      });
-  });
-};
-
 function _convertCookie(cookie) {
   const url = `${cookie.secure ? 'https' : 'http'}://${cookie.domain}${cookie.path || ''}`;
   const details = {

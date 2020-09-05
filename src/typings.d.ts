@@ -14,7 +14,6 @@ declare var got: {
   patch(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
   post(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<{ error?: any, success?: { body: any, response: any } }>;
   gotPost(url: string, formData: any, cookieUrl: string, cookies: any[], options?: any): Promise<any>;
-  gotPostJSON(url: string, body: any, cookieUrl: string, cookies: any[], profileId: string, options?: any): Promise<any>;
   convertCookie(cookie: any): any;
 }
 declare var ehttp: {

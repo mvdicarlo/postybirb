@@ -97,11 +97,12 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
       }`
     });
     let cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.gotPostJSON(`${this.BASE_URL}/graphql/`, body, this.BASE_URL, cookies, profileId, {
+    const response = await got.gotPost(`${this.BASE_URL}/graphql/`, {}, this.BASE_URL, cookies, {
+      body,
       headers: {
         'content-type': 'application/json',
         'X-CSRFToken': csrfToken,
-      }
+      },
     });
     if (response.statusCode !== 200) {
       throw new Error(`Bad response getting user data ${response.statusCode}`);
