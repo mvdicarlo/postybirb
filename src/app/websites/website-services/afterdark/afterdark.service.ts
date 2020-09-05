@@ -9,13 +9,16 @@ import { LoginProfileManagerService } from 'src/app/login/services/login-profile
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { Folder } from '../../interfaces/folder.interface';
-import { getTags } from '../../helpers/website-validator.helper';
+import { getTags, supportsFileType } from '../../helpers/website-validator.helper';
 import * as dotProp from 'dot-prop';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg'];
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
+  if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
+    problems.push(['Does not support file format', { website: 'Twitter', value: submission.fileInfo.type }]);
+  }
   const tags = getTags(submission, AfterDark.name);
   if (tags.length < 2) {
     problems.push(['Requires minimum tags', { website: 'AfterDark', value: 2 }]);
@@ -137,12 +140,6 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    if (submission.submissionType !== SubmissionType.SUBMISSION) {
-      throw new Error('Submissions only.')
-    }
-    if (postData.typeOfSubmission != TypeOfSubmission.ART) {
-      throw new Error('Art submissions only.');
-    }
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const csrfToken = await this.getCsrfToken(postData.profileId);
     const fileFormData = fileAsFormDataObject(postData.primary);
