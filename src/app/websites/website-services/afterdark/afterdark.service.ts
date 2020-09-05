@@ -104,13 +104,13 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
       throw new Error(`Bad response getting user data ${response.statusCode}`);
     }
     const responseBody = JSON.parse(response.body);
-    if (!(responseBody.data || {}).userViewer) {
+    if (!dotProp.get(responseBody, 'data.userViewer.user', null)) {
       return null;
     }
-    const collections = ((((responseBody.data || {}).userViewer || {}).user || {}).collectionSet || {}).edges || [];
+    const collections = dotProp.get(responseBody, 'data.userViewer.user.collectionSet.edges', []);
     return {
-      'userId': (((responseBody.data || {}).userViewer || {}).user || {}).id || '',
-      'username': (((responseBody.data || {}).userViewer || {}).user || {}).username || '',
+      'userId': dotProp.get(responseBody, 'data.userViewer.user.id', ''),
+      'username': dotProp.get(responseBody, 'data.userViewer.user.username', ''),
       'collections': collections.map(c => c.node),
     };
   }
