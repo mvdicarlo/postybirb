@@ -16,6 +16,10 @@ export class AfterDarkSubmissionForm extends BaseWebsiteSubmissionForm implement
     folders: [[]],
   };
 
+  public tagConfig: TagConfig = {
+    minTags: 2
+  };
+
   public folders: Folder[] = [];
 
   constructor(injector: Injector) {
