@@ -9,22 +9,22 @@ import { LoginProfileManagerService } from 'src/app/login/services/login-profile
 import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { Folder } from '../../interfaces/folder.interface';
+import { getTags } from '../../helpers/website-validator.helper';
+import * as dotProp from 'dot-prop';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg'];
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
-  var tags = [];
-  if (formData.defaults && formData.defaults.tags) {
-    tags = formData.defaults.tags.tags;
-  }
+  const problems: any[] = [];
+  const tags = getTags(submission, AfterDark.name);
   if (tags.length < 2) {
-    return [['AfterDark requires at least two tags', { website: 'AfterDark', value: tags.length }]];
+    problems.push(['Requires minimum tags', { website: 'AfterDark', value: 2 }]);
   }
-  const collections = ((formData['AfterDark'] || {}).options || {}).folders || [];
+  const collections = dotProp.get(formData, 'AfterDark.options.folders', []);
   if (collections.length < 1) {
-    return [['AfterDark requires at least one collection folder', { website: 'AfterDark', value: collections.length }]];
+    problems.push(['AfterDark requires at least one collection folder']);
   }
-  return [];
+  return problems;
 }
 
 @Injectable({
