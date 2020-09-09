@@ -130,12 +130,11 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
     };
     const csrfToken = await this.getCsrfToken(profileId);
     const userData = await this.getUserData(profileId, csrfToken);
-    if (!userData) {
-      return returnValue;
+    if (userData) {
+          this._profileManager.storeData(profileId, AfterDark.name, userData);
+          returnValue.username = userData.username;
+          returnValue.status = LoginStatus.LOGGED_IN;
     }
-    this._profileManager.storeData(profileId, AfterDark.name, userData);
-    returnValue.username = userData.username;
-    returnValue.status = LoginStatus.LOGGED_IN;
     return returnValue;
   }
 
