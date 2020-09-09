@@ -73,9 +73,9 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
 
   private async getUserData(profileId: string, csrfToken: string): Promise<any> {
     const body = JSON.stringify({
-      "operationName": "UserQuery",
-      "variables": {},
-      "query": `query UserQuery {
+      'operationName': 'UserQuery',
+      'variables': {},
+      'query': `query UserQuery {
         userViewer {
           user {
             id
@@ -169,14 +169,14 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
       }
     }`;
     const variables = JSON.stringify({
-      "filename": postData.primary.fileInfo.name,
-      "tags": postData.tags,
-      "collectionIds": postData.options.folders,
-      "title": postData.title,
-      "artistName": this._profileManager.getData(postData.profileId, AfterDark.name).username,
-      "artistUrl": "",
-      "nsfw": postData.rating !== SubmissionRating.GENERAL && postData.rating !== SubmissionRating.MATURE,
-      "claimedByUser": true,
+      'filename': postData.primary.fileInfo.name,
+      'tags': postData.tags,
+      'collectionIds': postData.options.folders,
+      'title': postData.title,
+      'artistName': this._profileManager.getData(postData.profileId, AfterDark.name).username,
+      'artistUrl': '',
+      'nsfw': postData.rating !== SubmissionRating.GENERAL && postData.rating !== SubmissionRating.MATURE,
+      'claimedByUser': true,
     });
     let formData = {
       query,
