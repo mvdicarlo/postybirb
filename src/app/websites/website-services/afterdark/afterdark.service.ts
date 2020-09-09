@@ -17,7 +17,7 @@ const ACCEPTED_FILES = ['png', 'jpeg', 'jpg'];
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
-    problems.push(['Does not support file format', { website: 'Twitter', value: submission.fileInfo.type }]);
+    problems.push(['Does not support file format', { website: 'AfterDark', value: submission.fileInfo.type }]);
   }
   const tags = getTags(submission, AfterDark.name);
   if (tags.length < 2) {
