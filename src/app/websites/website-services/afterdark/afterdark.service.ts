@@ -68,8 +68,7 @@ export class AfterDark extends BaseWebsiteService implements WebsiteService {
     if (!match) {
       throw new Error('Could not find csrf token in body');
     }
-    const csrfToken = match[1];
-    return csrfToken;
+    return match[1];
   }
 
   private async getUserData(profileId: string, csrfToken: string): Promise<any> {
