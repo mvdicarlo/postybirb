@@ -25,6 +25,7 @@ import {
 import { v1 as uuidv1 } from 'uuid';
 import { Folder } from '../../interfaces/folder.interface';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
+import * as dotProp from 'dot-prop';
 
 function submissionValidate(
   submission: Submission,
@@ -32,21 +33,24 @@ function submissionValidate(
 ): any[] {
   const problems: any[] = [];
 
-  let maxMB = 5;
-  const type: TypeOfSubmission = getTypeOfSubmission(submission.fileInfo);
-  if (type === TypeOfSubmission.ANIMATION) {
-    maxMB = 250;
-  } else if (type === TypeOfSubmission.STORY) {
-    maxMB = 300;
-  } else if (type === TypeOfSubmission.AUDIO) {
-    maxMB = 50;
-  }
+  const options = dotProp.get(formData, `${Subscribestar.name}.options`, {});
+  if (!options.ignoreFileSizeLimit) {
+    let maxMB = 5;
+    const type: TypeOfSubmission = getTypeOfSubmission(submission.fileInfo);
+    if (type === TypeOfSubmission.ANIMATION) {
+      maxMB = 250;
+    } else if (type === TypeOfSubmission.STORY) {
+      maxMB = 300;
+    } else if (type === TypeOfSubmission.AUDIO) {
+      maxMB = 50;
+    }
 
-  if (MBtoBytes(maxMB) < submission.fileInfo.size) {
-    problems.push([
-      'Max file size',
-      { website: `SubscribeStar (${type})`, value: `${maxMB}MB` },
-    ]);
+    if (MBtoBytes(maxMB) < submission.fileInfo.size) {
+      problems.push([
+        'Max file size',
+        { website: `SubscribeStar (${type})`, value: `${maxMB}MB` },
+      ]);
+    }
   }
 
   return problems;
