@@ -88,53 +88,67 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
       if (body.includes('Sign Out')) {
         returnValue.status = LoginStatus.LOGGED_IN;
         returnValue.username = $(body).find('#elUserLink').text().trim();
-        await this.loadAlbums(profileId, cookies, 1);
-        await this.loadAlbums(profileId, cookies, 2);
+        await this.loadAlbums(profileId, cookies,  $(body).find('#cUserLink').children('a')[0].href);
       }
     } catch (e) { /* No important error handling */ }
 
     return returnValue;
   }
 
-  private async loadAlbums(profileId: string, cookies: any[], sfwCategory: number): Promise<void> {
-    const response = await got.get(`${this.BASE_URL}/gallery/submit/?noWrapper=1&category=${sfwCategory}`, this.BASE_URL, cookies, null);
-    const { body } = response;
-    const nsfw: boolean = sfwCategory === 2;
-    if (nsfw && body.includes('(SFW)')) return; // nsfw not enabled by user
+  private async loadAlbums(profileId: string, cookies: any[], url: string) {
+    const { body } = await got.get(`${url}?tab=node_gallery_gallery`, this.BASE_URL, cookies, null);
+    const $body = $(body);
+    const albumUrls: string[] = [];
+    $body.find('a').each(function() {
+      if (this.href && this.href.includes('album') && !albumUrls.includes(this.href)) {
+        albumUrls.push(this.href);
+      }
+    });
 
-    const folder: Folder = {
-      id: `0-${nsfw ? 'nsfw' : 'sfw'}`,
-      title: nsfw ? 'NSFW' : 'SFW',
-      subfolders: [{
-        id: `0-${nsfw ? 'nsfw' : 'sfw'}`,
-        title: nsfw ? 'General (NSFW)' : 'General (SFW)',
-        nsfw
-      }],
-      nsfw
+    const data = await Promise.all<Folder>(
+      albumUrls.map(async albumUrl => {
+        const res = await got.get(albumUrl, this.BASE_URL, cookies, null);
+        const urlParts = albumUrl.split('/');
+        urlParts.pop();
+        const nsfw = !res.body.includes('1-general-sfw');
+        return {
+          id: `${urlParts
+            .pop()
+            .split('-')
+            .shift()}-${nsfw ? 'nsfw' : 'sfw'}`,
+          nsfw,
+          title: res.body.match(/<title>(.*?)<\/title>/)[1].replace('- FurryLife Online', '').trim(),
+        };
+      }),
+    );
+
+    const sfwFolders: Folder = {
+      id: 'sfw',
+      title: 'SFW',
+      subfolders: [
+        {
+          id: '0-sfw',
+          title: 'General (SFW)',
+          nsfw: false,
+        },
+        ...data.filter(d => !d.nsfw).sort((a, b) => a.title.localeCompare(b.title)),
+      ],
     };
 
-    const list$ = $(body).find('#elGallerySubmit_albumChooser')[0];
-    if (list$) {
-      const albums$ = list$.children;
-      for (let i = 0; i < albums$.length; i++) {
-        const album = albums$[i];
-        const f: Folder = {
-          id: `${$(album).find('input').val().trim()}-${nsfw ? 'nsfw' : 'sfw'}`,
-          title: $(album).find('strong').text().trim()
-        }
+    const nsfwFolders: Folder = {
+      id: 'nsfw',
+      title: 'NSFW',
+      subfolders: [
+        {
+          id: '0-nsfw',
+          title: 'General (NSFW)',
+          nsfw: true,
+        },
+        ...data.filter(d => d.nsfw).sort((a, b) => a.title.localeCompare(b.title)),
+      ],
+    };
 
-        folder.subfolders.push(f);
-      }
-    }
-
-    const info = this.userInformation.get(profileId) || {};
-    if (nsfw) {
-      info.nsfwFolders = folder;
-    } else {
-      info.sfwFolders = folder;
-    }
-
-    this.userInformation.set(profileId, info);
+    this.userInformation.set(profileId, { sfwFolders, nsfwFolders });
   }
 
   public getFolders(profileId: string): Folder[] {

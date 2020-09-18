@@ -12,7 +12,8 @@ import { Folder } from 'src/app/websites/interfaces/folder.interface';
 export class SubscribestarSubmissionForm extends BaseWebsiteSubmissionForm implements OnInit {
   public optionDefaults: any = {
     tier: ['basic'],
-    useTitle: [true]
+    useTitle: [true],
+    ignoreFileSizeLimit: [false],
   };
 
   public tiers: Folder[] = [];
