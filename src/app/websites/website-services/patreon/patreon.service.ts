@@ -261,7 +261,7 @@ export class Patreon extends BaseWebsiteService {
   }
 
   private async _getCSRF(cookies: any[], profileId: string): Promise<string> {
-    const body = await BrowserWindowHelper.runScript<string>(profileId, `${this.BASE_URL}/post`, 'document.body.innerHTML');
+    const body = await BrowserWindowHelper.runScript<string>(profileId, `${this.BASE_URL}/post`, 'document.body.parentElement.innerHTML');
     return body.match(/csrfSignature = "(.*?)"/)[1];
   }
 
