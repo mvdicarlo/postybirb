@@ -128,10 +128,6 @@ export class Subscribestar extends BaseWebsiteService {
         title: 'Public',
         id: 'free',
       },
-      {
-        title: 'Subscribers Only',
-        id: 'basic',
-      },
     ];
 
     const body: string = await BrowserWindowHelper.runScript(
@@ -188,7 +184,9 @@ export class Subscribestar extends BaseWebsiteService {
       html_content: `<div>${postData.options.useTitle ? `<h1>${postData.title}</h1>` : ''}${postData.description}</div>`,
       pinned_uploads: '[]',
       new_editor: 'true',
-      tier_id: postData.options.tier,
+      is_draft: '',
+      'tier_ids[]': postData.options.tier === 'free' ? undefined : postData.options.tier,
+      'tags[]': postData.tags
     };
 
     const postResponse = await got.post(
@@ -198,6 +196,7 @@ export class Subscribestar extends BaseWebsiteService {
       cookies,
       {
         form: data,
+        qsStringifyOptions: { arrayFormat: 'repeat' },
         headers: {
           Referer: 'https://www.subscribestar.com/',
           'X-CSRF-Token': csrf,
@@ -374,7 +373,9 @@ export class Subscribestar extends BaseWebsiteService {
       html_content: `<div>${postData.options.useTitle ? `<h1>${postData.title}</h1>` : ''}${postData.description}</div>`,
       pinned_uploads: '[]',
       new_editor: 'true',
-      tier_id: postData.options.tier,
+      is_draft: '',
+      'tier_ids[]': postData.options.tier === 'free' ? undefined : postData.options.tier,
+      'tags[]': postData.tags
     };
 
     const postResponse = await got.post(
@@ -384,6 +385,7 @@ export class Subscribestar extends BaseWebsiteService {
       cookies,
       {
         form: data,
+        qsStringifyOptions: { arrayFormat: 'repeat' },
         headers: {
           Referer: 'https://www.subscribestar.com/',
           'X-CSRF-Token': csrf,

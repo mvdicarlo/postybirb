@@ -93,8 +93,9 @@ export class Pixiv extends BaseWebsiteService {
   }
 
   public async post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
-    const body = await BrowserWindowHelper.runScript<string>(postData.profileId, `${this.BASE_URL}/upload.php`, 'document.body.parentElement.innerHTML', 1000);
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const formPage = await got.get(`${this.BASE_URL}/upload.php`, this.BASE_URL, cookies, postData.profileId);
+    const body = formPage.body;
     const filesToPost = [postData.thumbnail, postData.primary, ...postData.additionalFiles].filter(f => f !== null && f !== undefined);
 
     const data: any = {
