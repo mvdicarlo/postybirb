@@ -11,6 +11,7 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { PixivSubmissionForm } from './components/pixiv-submission-form/pixiv-submission-form.component';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
+import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif'];
 
@@ -72,18 +73,12 @@ export class Pixiv extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
+    const response = await got.get(`${this.BASE_URL}/setting_user.php`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
-      if (body.includes('header-logout')) {
+      if (!body.includes('signup-form__submit--login')) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        returnValue.username = body.match(/<a\sclass="(?=user-name).*?(?=<)/g)[0].split('>')[1];
-      } else {
-        const match = body.match(/"name":"(.*?)"/);
-        if (match && match[1]) {
-          returnValue.status = LoginStatus.LOGGED_IN;
-          returnValue.username = match[1];
-        }
+        returnValue.username = body.match(/"name":"(.*?)"/)[1];
       }
     } catch (e) { /* No important error handling */ }
 
@@ -101,7 +96,6 @@ export class Pixiv extends BaseWebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const formPage = await got.get(`${this.BASE_URL}/upload.php`, this.BASE_URL, cookies, postData.profileId);
     const body = formPage.body;
-
     const filesToPost = [postData.thumbnail, postData.primary, ...postData.additionalFiles].filter(f => f !== null && f !== undefined);
 
     const data: any = {
@@ -148,6 +142,22 @@ export class Pixiv extends BaseWebsiteService {
 
     const postResponse = await got.post(`${this.BASE_URL}/upload.php`, data, this.BASE_URL, cookies, {
       qsStringifyOptions: { arrayFormat: 'repeat' },
+      gzip: true,
+      headers: {
+        pragma: 'no-cache',
+        'cache-control': 'no-cache',
+        'sec-ch-ua': '"Chromium";v="86", "\"Not\\A;Brand";v="99", "Google Chrome";v="86"',
+        accept: 'application/json, text/javascript, */*; q=0.01',
+        'x-requested-with': 'XMLHttpRequest',
+        'sec-ch-ua-mobile': '?0',
+        origin: 'https://www.pixiv.net',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        referer: 'https://www.pixiv.net/upload.php',
+        'accept-encoding': 'gzip, deflate, br',
+        'accept-language': 'en-US,en;q=0.9'
+      }
     });
 
     if (postResponse.error) {

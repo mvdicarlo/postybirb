@@ -8,6 +8,11 @@
     ></description-input>
   </div>
 
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
   <div formGroupName="options" class="row no-gutters section">
     <div class="col-md col-lg col-xl">
       <mat-checkbox formControlName="useTitle">{{
