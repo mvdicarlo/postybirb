@@ -14,6 +14,9 @@ DE/German
 kusuguttai (Discord)
 EchoesAbove
 
+NL/Dutch
+maaari (Discord)
+
 EN
 Lemonynade (me)
 
