@@ -17,7 +17,8 @@ const agent = `${remote.getCurrentWebContents().userAgent}`
 const got = Got.extend({
   headers: {
     'User-Agent': agent
-  }
+  },
+  timeout: 120_000
 });
 
 const request = Request.defaults({
@@ -83,7 +84,8 @@ exports.requestGet = function requestGet(url, cookieUrl, cookies, options) {
 
     const opts = Object.assign({
       jar: cookieJar,
-      followAllRedirects: true
+      followAllRedirects: true,
+      timeout: 120_000
     }, options || {});
     request.get(url, opts, (err, response, body) => {
       if (err) {
@@ -115,7 +117,8 @@ exports.patch = function patch(url, formData, cookieUrl, cookies, options) {
     const opts = Object.assign({
       formData,
       jar: cookieJar,
-      followAllRedirects: true
+      followAllRedirects: true,
+      timeout: 120_000
     }, options || {});
     request.patch(url, opts, (err, response, body) => {
       if (err) {
@@ -146,7 +149,8 @@ exports.post = function post(url, formData, cookieUrl, cookies, options) {
 
     const opts = Object.assign({
       formData,
-      followAllRedirects: true
+      followAllRedirects: true,
+      timeout: 120_000
     }, options || {});
 
     if (cookies) {
