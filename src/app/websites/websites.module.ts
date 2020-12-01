@@ -11,7 +11,6 @@ import { Discord } from './website-services/discord/discord.service';
 import { E621 } from './website-services/e621/e621.service';
 import { FurAffinity } from './website-services/fur-affinity/fur-affinity.service';
 import { Furiffic } from './website-services/furiffic/furiffic.service';
-// import { FurryAmino } from './website-services/furry-amino/furry-amino.service';
 import { FurryLife } from './website-services/furry-life/furry-life.service';
 import { FurryNetwork } from './website-services/furry-network/furry-network.service';
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
@@ -20,11 +19,9 @@ import { KoFi } from './website-services/ko-fi/ko-fi.service';
 import { Mastodon } from './website-services/mastodon/mastodon.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 import { NewTumbl } from './website-services/new-tumbl/new-tumbl.service';
-// import { PaigeeWorld } from './website-services/paigee-world/paigee-world.service';
 import { Patreon } from './website-services/patreon/patreon.service';
 import { Piczel } from './website-services/piczel/piczel.service';
 import { Pixiv } from './website-services/pixiv/pixiv.service';
-import { Route50 } from './website-services/route50/route50.service';
 import { SoFurry } from './website-services/sofurry/sofurry.service';
 import { Tumblr } from './website-services/tumblr/tumblr.service';
 import { Twitter } from './website-services/twitter/twitter.service';
@@ -59,7 +56,6 @@ import { DeviantArtLoginDialog } from './website-services/deviant-art/components
 import { DeviantArtSubmissionForm } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-submission-form.component';
 import { E621SubmissionForm } from './website-services/e621/components/e621-submission-form/e621-submission-form.component';
 import { FurAffinitySubmissionForm } from './website-services/fur-affinity/components/fur-affinity-submission-form/fur-affinity-submission-form.component';
-import { FurryAminoSubmissionForm } from './website-services/furry-amino/components/furry-amino-submission-form/furry-amino-submission-form.component';
 import { FurryNetworkJournalForm } from './website-services/furry-network/components/furry-network-journal-form/furry-network-journal-form.component';
 import { FurryNetworkSubmissionForm } from './website-services/furry-network/components/furry-network-submission-form/furry-network-submission-form.component';
 import { GenericJournalSubmissionForm } from './components/generic-journal-submission-form/generic-journal-submission-form.component';
@@ -73,7 +69,6 @@ import { KoFiSubmissionForm } from './website-services/ko-fi/components/ko-fi-su
 import { MastodonLoginDialog } from './website-services/mastodon/components/mastodon-login-dialog/mastodon-login-dialog.component';
 import { MastodonSubmissionForm } from './website-services/mastodon/components/mastodon-submission-form/mastodon-submission-form.component';
 import { NewgroundsSubmissionForm } from './website-services/newgrounds/components/newgrounds-submission-form/newgrounds-submission-form.component';
-import { PaigeeWorldSubmissionForm } from './website-services/paigee-world/components/paigee-world-submission-form/paigee-world-submission-form.component';
 import { PatreonSubmissionForm } from './website-services/patreon/components/patreon-submission-form/patreon-submission-form.component';
 import { PixivSubmissionForm } from './website-services/pixiv/components/pixiv-submission-form/pixiv-submission-form.component';
 import { SofurrySubmissionForm } from './website-services/sofurry/components/sofurry-submission-form/sofurry-submission-form.component';
@@ -111,7 +106,6 @@ export function INIT_WEBSITE_REGISTRY() {
     DeviantArtSubmissionForm,
     E621SubmissionForm,
     FurAffinitySubmissionForm,
-    FurryAminoSubmissionForm,
     FurryNetworkJournalForm,
     FurryNetworkSubmissionForm,
     GenericJournalSubmissionForm,
@@ -125,7 +119,6 @@ export function INIT_WEBSITE_REGISTRY() {
     MastodonLoginDialog,
     MastodonSubmissionForm,
     NewgroundsSubmissionForm,
-    PaigeeWorldSubmissionForm,
     PatreonSubmissionForm,
     PixivSubmissionForm,
     SofurrySubmissionForm,
@@ -184,7 +177,6 @@ export function INIT_WEBSITE_REGISTRY() {
     E621SubmissionForm,
     FurAffinityJournalForm,
     FurAffinitySubmissionForm,
-    FurryAminoSubmissionForm,
     FurryLifeSubmissionForm,
     FurryNetworkJournalForm,
     FurryNetworkSubmissionForm,
@@ -199,7 +191,6 @@ export function INIT_WEBSITE_REGISTRY() {
     MastodonSubmissionForm,
     NewgroundsSubmissionForm,
     NewTumblSubmissionForm,
-    PaigeeWorldSubmissionForm,
     PatreonSubmissionForm,
     PiczelSubmissionForm,
     PixivSubmissionForm,
@@ -226,7 +217,6 @@ export function INIT_WEBSITE_REGISTRY() {
         E621,
         FurAffinity,
         Furiffic,
-        // FurryAmino, Dead due to captcha
         FurryLife,
         FurryNetwork,
         HentaiFoundry,
@@ -235,12 +225,10 @@ export function INIT_WEBSITE_REGISTRY() {
         Mastodon,
         Newgrounds,
         NewTumbl,
-        // PaigeeWorld, Shutdown
         Patreon,
         Piczel,
         Pillowfort,
         Pixiv,
-        Route50,
         SoFurry,
         Subscribestar,
         Tumblr,
