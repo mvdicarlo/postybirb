@@ -269,6 +269,8 @@ export class Subscribestar extends BaseWebsiteService {
       );
     }
 
+    let processData = undefined;
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const key = `${uploadPath}/${uuidv1()}.${file.options.filename
@@ -358,6 +360,8 @@ export class Subscribestar extends BaseWebsiteService {
             )
           );
         }
+
+        processData = processResponse.success.body;
       } else {
         return Promise.reject(
           this.createPostResponse(
@@ -366,6 +370,26 @@ export class Subscribestar extends BaseWebsiteService {
           )
         );
       }
+    }
+
+    if (files.length > 1) {
+      const order = processData.imgs_and_videos.sort((a, b) => a.id - b.id).map(record => record.id);
+      const reorder = await got.post(
+        `${this.BASE_URL}/post_uploads/reorder`,
+        null,
+        this.BASE_URL,
+        cookies,
+        {
+          json: {
+            authenticity_token: csrf,
+            upload_ids: order
+          },
+          headers: {
+            Referer: 'https://www.subscribestar.com/',
+            Origin: 'https://www.subscribestar.com',
+          },
+        }
+      );
     }
 
     const data = {
