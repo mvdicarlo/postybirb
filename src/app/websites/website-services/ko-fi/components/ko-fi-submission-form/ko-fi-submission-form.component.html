@@ -1,11 +1,17 @@
 <form [formGroup]="formGroup">
   <div class="section">
     <mat-form-field color="accent">
-      <input #titleInput matInput [placeholder]="'Title' | translate" formControlName="title" maxlength="50">
+      <input
+        #titleInput
+        matInput
+        [placeholder]="'Title' | translate"
+        formControlName="title"
+        maxlength="50"
+      />
       <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
     </mat-form-field>
   </div>
-  
+
   <div class="section">
     <mat-form-field color="accent">
       <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
@@ -20,19 +26,39 @@
 
   <div class="section">
     <h6>{{ 'Description' | translate }}</h6>
-    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+    <description-input
+      formControlName="description"
+      [defaultDescriptionProvider]="parentForm.defaultDescription.changes"
+      class="w-100"
+    ></description-input>
   </div>
 
   <div class="section">
     <h6>{{ 'Tags' | translate }}</h6>
-    <tag-input formControlName="tags" class="w-100" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+    <tag-input
+      formControlName="tags"
+      class="w-100"
+      [defaultTagProvider]="parentForm.defaultTags.changes"
+    ></tag-input>
   </div>
 
   <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="hiRes">{{
+        'Offer hi-res download (gold only)' | translate
+      }}</mat-checkbox>
+    </div>
+    <folder-select
+      placeholder="Album"
+      formControlName="folder"
+      class="col col-md-12 col-lg-12 col-xl-12"
+      [folders]="folders"
+    ></folder-select>
     <div class="w-100">
       <mat-form-field color="accent">
-        <mat-select formControlName="audience">
+        <mat-select formControlName="audience" [placeholder]="'Audience' | translate">
           <mat-option value="public">{{ 'Everyone' | translate }}</mat-option>
+          <mat-option value="supporter">{{ 'All Supporters (gold only)' | translate }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
