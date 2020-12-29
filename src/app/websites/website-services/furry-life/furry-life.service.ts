@@ -4,7 +4,13 @@ import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
 import { SubmissionFormData, Submission } from 'src/app/database/models/submission.model';
 import { BaseWebsiteService } from '../base-website-service';
-import { WebsiteService, LoginStatus, WebsiteStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
+import {
+  WebsiteService,
+  LoginStatus,
+  WebsiteStatus,
+  SubmissionPostData,
+  PostResult,
+} from '../../interfaces/website-service.interface';
 import { GenericJournalSubmissionForm } from '../../components/generic-journal-submission-form/generic-journal-submission-form.component';
 import { Folder } from '../../interfaces/folder.interface';
 import { supportsFileType } from '../../helpers/website-validator.helper';
@@ -14,20 +20,25 @@ import { SubmissionRating, SubmissionType } from 'src/app/database/tables/submis
 import * as dotProp from 'dot-prop';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
-const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif']
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif'];
 
 function validate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   const supportedFiles: string[] = ACCEPTED_FILES;
 
   if (!supportsFileType(submission.fileInfo, supportedFiles)) {
-    problems.push(['Does not support file format', { website: 'FurryLife', value: submission.fileInfo.type }]);
+    problems.push([
+      'Does not support file format',
+      { website: 'FurryLife', value: submission.fileInfo.type },
+    ]);
   }
 
   if (submission.additionalFileInfo && submission.additionalFileInfo.length) {
     submission.additionalFileInfo
-      .filter(info => !supportsFileType(info, supportedFiles))
-      .forEach(info => problems.push(['Does not support file format', { website: 'FurryLife', value: info.type }]));
+      .filter((info) => !supportsFileType(info, supportedFiles))
+      .forEach((info) =>
+        problems.push(['Does not support file format', { website: 'FurryLife', value: info.type }])
+      );
   }
 
   if (MBtoBytes(1023) < submission.fileInfo.size) {
@@ -38,7 +49,7 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   if (options.folder) {
     const rating = (formData[FurryLife.name] || {}).rating || submission.rating;
     const isNSFW: boolean = rating !== SubmissionRating.GENERAL;
-    const isNSFWFolder: boolean = options.folder.includes('nsfw');
+    const isNSFWFolder: boolean = options.folder.endsWith('nsfw');
     if (isNSFW && !isNSFWFolder) {
       problems.push(['Cannot upload NSFW to SFW Section', { website: 'FurryLife' }]);
     }
@@ -48,25 +59,25 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 @Website({
   acceptedFiles: ACCEPTED_FILES,
   additionalFiles: true,
   displayedName: 'FurryLife',
   login: {
-    url: 'https://furrylife.online/'
+    url: 'https://furrylife.online/',
   },
   components: {
     submissionForm: FurryLifeSubmissionForm,
-    journalForm: GenericJournalSubmissionForm
+    journalForm: GenericJournalSubmissionForm,
   },
   validators: {
-    submission: validate
+    submission: validate,
   },
   parsers: {
     description: [],
-  }
+  },
 })
 export class FurryLife extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://furrylife.online';
@@ -78,48 +89,63 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
   public async checkStatus(profileId: string): Promise<WebsiteStatus> {
     const returnValue: WebsiteStatus = {
       username: null,
-      status: LoginStatus.LOGGED_OUT
+      status: LoginStatus.LOGGED_OUT,
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/user/home`, this.BASE_URL, cookies, null);
+    const response = await got.get(`${this.BASE_URL}`, this.BASE_URL, cookies, null);
     try {
       const body = response.body;
-      if (body.includes('Sign Out')) {
+      if (!body.includes('Log in')) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        returnValue.username = $(body).find('#elUserLink').text().trim();
-        await this.loadAlbums(profileId, cookies,  $(body).find('#cUserLink').children('a')[0].href);
+        const profile = body.match(/members\/(.*?)\.\d+/)[0];
+        returnValue.username = profile.split(/(\.|\/)/)[2];
+        this.storeUserInformation(profileId, 'profile', profile.split('/')[1]);
+        await this.loadAlbums(profileId, cookies);
       }
-    } catch (e) { /* No important error handling */ }
+    } catch (e) {
+      /* No important error handling */
+    }
 
     return returnValue;
   }
 
-  private async loadAlbums(profileId: string, cookies: any[], url: string) {
-    const { body } = await got.get(`${url}?tab=node_gallery_gallery`, this.BASE_URL, cookies, null);
+  private async loadAlbums(profileId: string, cookies: any[]) {
+    const { body } = await got.get(
+      `${this.BASE_URL}/media/albums/users/${this.userInformation.get(profileId).profile}`,
+      this.BASE_URL,
+      cookies,
+      null
+    );
     const $body = $(body);
     const albumUrls: string[] = [];
-    $body.find('a').each(function() {
-      if (this.href && this.href.includes('album') && !albumUrls.includes(this.href)) {
+    $body.find('a').each(function () {
+      if (
+        this.href &&
+        this.href.includes('media/albums') &&
+        this.parentElement.className.includes('itemList-item') &&
+        !albumUrls.includes(this.href)
+      ) {
         albumUrls.push(this.href);
       }
     });
 
     const data = await Promise.all<Folder>(
-      albumUrls.map(async albumUrl => {
+      albumUrls.map(async (albumUrl) => {
+        albumUrl = `${this.BASE_URL}/media${albumUrl.split('/media')[1]}`;
         const res = await got.get(albumUrl, this.BASE_URL, cookies, null);
         const urlParts = albumUrl.split('/');
         urlParts.pop();
-        const nsfw = !res.body.includes('1-general-sfw');
+        const nsfw = !res.body.includes('general-sfw-albums.1');
         return {
-          id: `${urlParts
-            .pop()
-            .split('-')
-            .shift()}-${nsfw ? 'nsfw' : 'sfw'}`,
+          id: `${urlParts.pop()}-${nsfw ? 'nsfw' : 'sfw'}`,
           nsfw,
-          title: res.body.match(/<title>(.*?)<\/title>/)[1].replace('- FurryLife Online', '').trim(),
+          title: res.body
+            .match(/<title>(.*?)<\/title>/)[1]
+            .replace('| FurryLife Online', '')
+            .trim(),
         };
-      }),
+      })
     );
 
     const sfwFolders: Folder = {
@@ -127,11 +153,11 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
       title: 'SFW',
       subfolders: [
         {
-          id: '0-sfw',
+          id: 'general-sfw.712-sfw',
           title: 'General (SFW)',
           nsfw: false,
         },
-        ...data.filter(d => !d.nsfw).sort((a, b) => a.title.localeCompare(b.title)),
+        ...data.filter((d) => !d.nsfw).sort((a, b) => a.title.localeCompare(b.title)),
       ],
     };
 
@@ -140,11 +166,11 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
       title: 'NSFW',
       subfolders: [
         {
-          id: '0-nsfw',
+          id: 'explicit-nsfw.714-nsfw',
           title: 'General (NSFW)',
           nsfw: true,
         },
-        ...data.filter(d => d.nsfw).sort((a, b) => a.title.localeCompare(b.title)),
+        ...data.filter((d) => d.nsfw).sort((a, b) => a.title.localeCompare(b.title)),
       ],
     };
 
@@ -153,7 +179,7 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
 
   public getFolders(profileId: string): Folder[] {
     const info = this.userInformation.get(profileId);
-    return info ? [info.sfwFolders, info.nsfwFolders].filter(f => !!f) : [];
+    return info ? [info.sfwFolders, info.nsfwFolders].filter((f) => !!f) : [];
   }
 
   public post(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
@@ -166,7 +192,10 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     }
   }
 
-  private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  private async postJournal(
+    submission: Submission,
+    postData: SubmissionPostData
+  ): Promise<PostResult> {
     const data = await BrowserWindowHelper.retrieveFormData(
       postData.profileId,
       `${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`,
@@ -176,10 +205,15 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
 
     Object.assign(data, {
-      status_content_ajax: postData.description
+      status_content_ajax: postData.description,
     });
 
-    const postResponse = await got.post(`${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`, data, this.BASE_URL, cookies);
+    const postResponse = await got.post(
+      `${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`,
+      data,
+      this.BASE_URL,
+      cookies
+    );
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
     }
@@ -191,21 +225,33 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
   }
 
-  private async uploadImage(uploadKey: string, albumParam: string, category: number, cookies: any[], file: any): Promise<any> {
+  private async uploadImage(
+    uploadKey: string,
+    albumParam: string,
+    category: number,
+    cookies: any[],
+    file: any
+  ): Promise<any> {
     const data = {
       title: file.options.filename,
       images: file,
       chunk: '0',
-      chunks: '1'
+      chunks: '1',
     };
 
-    const upload = await got.post(`${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}`, data, this.BASE_URL, cookies, {
-      headers: {
-        'referer': 'https://furrylife.online',
-        'origin': 'https://furrylife.online',
-        'x-plupload': uploadKey
+    const upload = await got.post(
+      `${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}`,
+      data,
+      this.BASE_URL,
+      cookies,
+      {
+        headers: {
+          referer: 'https://furrylife.online',
+          origin: 'https://furrylife.online',
+          'x-plupload': uploadKey,
+        },
       }
-    });
+    );
     if (upload.error) return Promise.reject(upload.error);
 
     const { body } = upload.success;
@@ -221,13 +267,16 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     return Promise.reject(upload.success.body);
   }
 
-  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  private async postSubmission(
+    submission: Submission,
+    postData: SubmissionPostData
+  ): Promise<PostResult> {
     const { options } = postData;
     const albumParts = options.folder.split('-');
     const album = albumParts[0];
     const category = albumParts[1].includes('nsfw') ? 2 : 1;
 
-    const files = [postData.primary, ...postData.additionalFiles].filter(f => !!f);
+    const files = [postData.primary, ...postData.additionalFiles].filter((f) => !!f);
 
     const albumParam: string = `${album === '0' ? 'noAlbum=1' : 'album=' + album}`;
 
@@ -239,7 +288,11 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
 
     try {
       const cookies = await getCookies(postData.profileId, this.BASE_URL);
-      const uploads = await Promise.all(files.map(f => this.uploadImage(data.images, albumParam, category, cookies, fileAsFormDataObject(f))));
+      const uploads = await Promise.all(
+        files.map((f) =>
+          this.uploadImage(data.images, albumParam, category, cookies, fileAsFormDataObject(f))
+        )
+      );
 
       Object.assign(data, {
         upload_images_submitted: '1',
@@ -247,14 +300,17 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
         copyright_all: options.copyright || '',
         tags_all: postData.tags.join('\r\n') || '',
         prefix_all: '',
-        images_order: uploads.map(u => u.id),
+        images_order: uploads.map((u) => u.id),
         images_autofollow_all: '0',
       });
 
       const images_info: any[] = [];
-      uploads.forEach(u => {
+      uploads.forEach((u) => {
         images_info.push({ name: `image_title_${u.id}`, value: postData.title });
-        images_info.push({ name: `filedata__image_description_${u.id}`, value: postData.description });
+        images_info.push({
+          name: `filedata__image_description_${u.id}`,
+          value: postData.description,
+        });
         images_info.push({ name: `image_textarea_${u.id}`, value: '' });
         images_info.push({ name: `image_tags_${u.id}_original`, value: '' });
         images_info.push({ name: `image_tags_${u.id}`, value: '' });
@@ -268,14 +324,20 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
 
       data.images_info = JSON.stringify(images_info);
 
-      const postResponse = await got.post(`${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}&noWrapper=1`, data, this.BASE_URL, cookies, {
-        headers: {
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-          'referer': 'https://furrylife.online',
-          'origin': 'https://furrylife.online',
-        },
-        // form: data
-      });
+      const postResponse = await got.post(
+        `${this.BASE_URL}/gallery/submit/?_pi=&category=${category}&${albumParam}&noWrapper=1`,
+        data,
+        this.BASE_URL,
+        cookies,
+        {
+          headers: {
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+            referer: 'https://furrylife.online',
+            origin: 'https://furrylife.online',
+          },
+          // form: data
+        }
+      );
 
       if (postResponse.error) {
         return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
@@ -296,6 +358,5 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     } catch (e) {
       return Promise.reject(this.createPostResponse('Unknown error', e));
     }
-
   }
 }
