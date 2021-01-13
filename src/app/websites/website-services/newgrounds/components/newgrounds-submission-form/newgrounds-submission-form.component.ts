@@ -17,7 +17,7 @@ export class NewgroundsSubmissionForm extends BaseWebsiteSubmissionForm implemen
   };
 
   public optionDefaults: any = {
-    creativeCommons: [true],
+    creativeCommons: [false],
     commercial: [false],
     modification: [true],
     sketch: [false],
