@@ -179,7 +179,8 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
       ],
     };
 
-    this.userInformation.set(profileId, { sfwFolders, nsfwFolders });
+    const info = this.userInformation.get(profileId) || {};
+    this.userInformation.set(profileId, { ...info, sfwFolders, nsfwFolders });
   }
 
   public getFolders(profileId: string): Folder[] {
@@ -201,33 +202,52 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     submission: Submission,
     postData: SubmissionPostData
   ): Promise<PostResult> {
-    const data = await BrowserWindowHelper.retrieveFormData(
+    await BrowserWindowHelper.hitUrl(
       postData.profileId,
-      `${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`,
-      { id: 'elStatusSubmit' }
+      `${this.BASE_URL}/members/${this.userInformation.get(postData.profileId).profile}`
     );
 
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
+    const page = await got.get(
+      `${this.BASE_URL}/members/${this.userInformation.get(postData.profileId).profile}`,
+      this.BASE_URL,
+      cookies,
+      null
+    );
 
-    Object.assign(data, {
-      status_content_ajax: postData.description,
-    });
+    const hash = HTMLParser.getInputValue(page.body, 'attachment_hash');
+    const hashCombined = HTMLParser.getInputValue(page.body, 'attachment_hash_combined').replace(
+      /&quot;/g,
+      '"'
+    );
 
-    const postResponse = await got.post(
-      `${this.BASE_URL}/index.php?app=core&module=status&controller=ajaxcreate`,
+    const data = {
+      _xfToken: page.body.match(/data-csrf="(.*?)"/)[1],
+      message_html: postData.description,
+      _xfWithData: '1',
+      _xfResponseType: 'json',
+      _xfRequestUri: `/members/${this.userInformation.get(postData.profileId).profile}`,
+      attachment_hash: hash,
+      attachment_hash_combined: hashCombined,
+    };
+
+    const res = await got.post(
+      `${this.BASE_URL}/members/${this.userInformation.get(postData.profileId).profile}/post`,
       data,
       this.BASE_URL,
       cookies
     );
-    if (postResponse.error) {
-      return Promise.reject(this.createPostResponse('Unknown error', postResponse.error));
+
+    if (res.error) {
+      return Promise.reject(this.createPostResponse('Unknown issue'));
     }
 
-    if (postResponse.success.response.request.uri.href.includes('profile')) {
+    const json = JSON.parse(res.success.body);
+    if (json.status === 'ok') {
       return this.createPostResponse(null);
     }
 
-    return Promise.reject(this.createPostResponse('Unknown error', postResponse.success.body));
+    return Promise.reject(Object.values(json.errors).join('\n'));
   }
 
   private async upload(

@@ -266,7 +266,7 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
     if (options.disableComments) submitData.allow_comments = 'no';
     if (options.critique) submitData.request_critique = 'yes';
     if (options.freeDownload) submitData.allow_free_download = 'no';
-    if (options.feature) submitData.feature = 'yes';
+    submitData.feature = options.feature ? 'yes' : 'no';
     if (options.displayResolution) submitData.display_resolution = options.displayResolution;
 
     if ((options.folders || []).length > 0) {
