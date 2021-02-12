@@ -2,7 +2,13 @@ import $ from 'jquery';
 
 import { Injectable } from '@angular/core';
 import { Website } from '../../decorators/website-decorator';
-import { WebsiteService, WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
+import {
+  WebsiteService,
+  WebsiteStatus,
+  LoginStatus,
+  SubmissionPostData,
+  PostResult,
+} from '../../interfaces/website-service.interface';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { BaseWebsiteService, UserInformation } from '../base-website-service';
 import { Folder } from '../../interfaces/folder.interface';
@@ -16,12 +22,33 @@ import { TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { FurAffinityJournalForm } from './components/fur-affinity-journal-form/fur-affinity-journal-form.component';
 import { UsernameParser } from 'src/app/utils/helpers/description-parsers/username.parser';
 
-const ACCEPTED_FILES = ['jpg', 'gif', 'png', 'jpeg', 'jpg', 'swf', 'doc', 'docx', 'rtf', 'txt', 'pdf', 'odt', 'mid', 'wav', 'mp3', 'mpeg', 'mpg'];
+const ACCEPTED_FILES = [
+  'jpg',
+  'gif',
+  'png',
+  'jpeg',
+  'jpg',
+  'swf',
+  'doc',
+  'docx',
+  'rtf',
+  'txt',
+  'pdf',
+  'odt',
+  'mid',
+  'wav',
+  'mp3',
+  'mpeg',
+  'mpg',
+];
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
   if (!supportsFileType(submission.fileInfo, ACCEPTED_FILES)) {
-    problems.push(['Does not support file format', { website: 'Fur Affinity', value: submission.fileInfo.type }]);
+    problems.push([
+      'Does not support file format',
+      { website: 'Fur Affinity', value: submission.fileInfo.type },
+    ]);
   }
 
   if (MBtoBytes(10) < submission.fileInfo.size) {
@@ -41,32 +68,32 @@ function descriptionParser(bbcode: string): string {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 @Website({
   acceptedFiles: ACCEPTED_FILES,
   postWaitInterval: 70000,
   displayedName: 'Fur Affinity',
   login: {
-    url: 'https://www.furaffinity.net/login'
+    url: 'https://www.furaffinity.net/login',
   },
   components: {
     submissionForm: FurAffinitySubmissionForm,
-    journalForm: FurAffinityJournalForm
+    journalForm: FurAffinityJournalForm,
   },
   validators: {
-    submission: submissionValidate
+    submission: submissionValidate,
   },
   preparsers: {
-    description: [preparser]
+    description: [preparser],
   },
   parsers: {
     description: [BBCodeParser.parse, descriptionParser],
     usernameShortcut: {
       code: 'fa',
-      url: 'https://www.furaffinity.net/user/$1'
-    }
-  }
+      url: 'https://www.furaffinity.net/user/$1',
+    },
+  },
 })
 export class FurAffinity extends BaseWebsiteService implements WebsiteService {
   readonly BASE_URL: string = 'https://www.furaffinity.net';
@@ -76,42 +103,47 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     super();
   }
 
-  public async checkCloudflare(profileId: string): Promise<boolean> {
-    const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
-    try {
-      if (response.body.includes('Cloudflare')) {
-        this.cloudflareActive = true;
-        return true;
-      } else {
-        this.cloudflareActive = false;
-        return false;
-      }
-    } catch (e) {
-      // Swallow
-    }
+  // public async checkCloudflare(profileId: string): Promise<boolean> {
+  //   const cookies = await getCookies(profileId, this.BASE_URL);
+  //   const response = await got.get(this.BASE_URL, this.BASE_URL, cookies, profileId);
+  //   try {
+  //     if (response.body.includes('Cloudflare')) {
+  //       this.cloudflareActive = true;
+  //       return true;
+  //     } else {
+  //       this.cloudflareActive = false;
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     // Swallow
+  //   }
 
-    return false;
-  }
+  //   return false;
+  // }
 
   public async checkStatus(profileId: string): Promise<WebsiteStatus> {
     const returnValue: WebsiteStatus = {
       username: null,
-      status: LoginStatus.LOGGED_OUT
+      status: LoginStatus.LOGGED_OUT,
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
     let response: any;
-    if (this.cloudflareActive) {
-      response = await ehttp.get(`${this.BASE_URL}/controls/submissions`, profileId, {
-        updateCookies: true,
-        headers: {
-          'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
-        }
-      });
-    } else {
-      response = await got.get(`${this.BASE_URL}/controls/submissions`, this.BASE_URL, cookies, profileId);
-    }
+    // if (this.cloudflareActive) {
+    //   response = await ehttp.get(`${this.BASE_URL}/controls/submissions`, profileId, {
+    //     updateCookies: true,
+    //     headers: {
+    //       'Cookie': cookies.map(c => `${c.name}=${c.value}`).join('; ')
+    //     }
+    //   });
+    // } else {
+    // }
+    response = await got.get(
+      `${this.BASE_URL}/controls/submissions`,
+      this.BASE_URL,
+      cookies,
+      profileId
+    );
     try {
       const body = response.body;
       if (body.includes('logout-link')) {
@@ -123,7 +155,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           for (let i = 0; i < aTags.length; i++) {
             let tag = aTags[i];
             if (tag.match(matcher)) {
-              returnValue.username = tag.match(matcher)[0].split('/')[2] || null
+              returnValue.username = tag.match(matcher)[0].split('/')[2] || null;
               returnValue.status = LoginStatus.LOGGED_IN;
               break;
             }
@@ -134,18 +166,22 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       } else {
         this.userInformation.delete(profileId);
       }
-    } catch (e) { /* No important error handling */ }
+    } catch (e) {
+      /* No important error handling */
+    }
 
     return returnValue;
   }
 
   private async _getFolders(profileId: string, html: string): Promise<void> {
     const info: UserInformation = {
-      folders: []
+      folders: [],
     };
 
     try {
-      const furAffinityFolders: { [key: string]: Folder } = { Ungrouped: { title: 'Ungrouped', subfolders: [] } };
+      const furAffinityFolders: { [key: string]: Folder } = {
+        Ungrouped: { title: 'Ungrouped', subfolders: [] },
+      };
       const select = html.match(/<select(.|\s)*?(?=\/select)/g)[0] + '/select>';
       const element = $.parseHTML(select);
       let options = $(element).find('option') || [];
@@ -159,26 +195,29 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           if (!furAffinityFolders[opt.parentElement.label]) {
             furAffinityFolders[opt.parentElement.label] = {
               title: opt.parentElement.label,
-              subfolders: []
+              subfolders: [],
             };
           }
 
           furAffinityFolders[opt.parentElement.label].subfolders.push({
             title: opt.innerHTML.replace(/\[.*\]/, '').trim(),
-            id: opt.value
+            id: opt.value,
           });
         } else {
           furAffinityFolders.Ungrouped.subfolders.push({
             title: opt.innerHTML.replace(/\[.*\]/, '').trim(),
-            id: opt.value
+            id: opt.value,
           });
         }
       }
 
-      info.folders = Object.keys(furAffinityFolders).map(key => {
-        return { title: key, subfolders: furAffinityFolders[key].subfolders };
-      }) || [];
-    } catch (e) { /* */ }
+      info.folders =
+        Object.keys(furAffinityFolders).map((key) => {
+          return { title: key, subfolders: furAffinityFolders[key].subfolders };
+        }) || [];
+    } catch (e) {
+      /* */
+    }
 
     this.userInformation.set(profileId, info);
   }
@@ -219,21 +258,34 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     }
   }
 
-  private async postJournal(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  private async postJournal(
+    submission: Submission,
+    postData: SubmissionPostData
+  ): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const page = await got.get(`${this.BASE_URL}/controls/journal`, this.BASE_URL, cookies, postData.profileId);
+    const page = await got.get(
+      `${this.BASE_URL}/controls/journal`,
+      this.BASE_URL,
+      cookies,
+      postData.profileId
+    );
     const data: any = {
       key: HTMLParser.getInputValue(page.body.split('action="/controls/journal/"').pop(), 'key'),
       message: postData.description,
       subject: postData.title,
       submit: 'Create / Update Journal',
       id: '',
-      do: 'update'
+      do: 'update',
     };
 
     if (postData.options.feature) data.make_featured = 'on';
 
-    const response = await got.post(`${this.BASE_URL}/controls/journal/`, data, this.BASE_URL, cookies);
+    const response = await got.post(
+      `${this.BASE_URL}/controls/journal/`,
+      data,
+      this.BASE_URL,
+      cookies
+    );
     if (response.error) {
       return Promise.reject(this.createPostResponse('Unknown error occurred', response.error));
     } else {
@@ -241,26 +293,34 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     }
   }
 
-  private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  private async postSubmission(
+    submission: Submission,
+    postData: SubmissionPostData
+  ): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const initData = {
       part: '2',
-      submission_type: this.getContentType(postData.typeOfSubmission)
+      submission_type: this.getContentType(postData.typeOfSubmission),
     };
 
     const part1Response = await got.post(`${this.BASE_URL}/submit/`, null, this.BASE_URL, cookies, {
       form: initData,
       headers: {
-        'Host': 'www.furaffinity.net',
-        'Referer': 'https://www.furaffinity.net/submit/'
-      }
+        Host: 'www.furaffinity.net',
+        Referer: 'https://www.furaffinity.net/submit/',
+      },
     });
     if (part1Response.error) {
       return Promise.reject(this.createPostResponse('Unknown error', part1Response.error));
     } else {
       const part1Body = part1Response.success.body;
       if (part1Body.includes('Flood protection')) {
-        return Promise.reject(this.createPostResponse('Encountered flood protection', `Flood Protection\n\n${part1Body.success.body}`));
+        return Promise.reject(
+          this.createPostResponse(
+            'Encountered flood protection',
+            `Flood Protection\n\n${part1Body.success.body}`
+          )
+        );
       }
 
       const part2Data = {
@@ -268,21 +328,27 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         part: '3',
         submission: fileAsFormDataObject(postData.primary),
         thumbnail: fileAsFormDataObject(postData.thumbnail),
-        submission_type: this.getContentType(postData.typeOfSubmission)
+        submission_type: this.getContentType(postData.typeOfSubmission),
       };
 
-      const uploadResponse = await got.post(`${this.BASE_URL}/submit/`, part2Data, this.BASE_URL, cookies, {
-        headers: {
-          'Host': 'www.furaffinity.net',
-          'Referer': 'https://www.furaffinity.net/submit/'
+      const uploadResponse = await got.post(
+        `${this.BASE_URL}/submit/`,
+        part2Data,
+        this.BASE_URL,
+        cookies,
+        {
+          headers: {
+            Host: 'www.furaffinity.net',
+            Referer: 'https://www.furaffinity.net/submit/',
+          },
         }
-      });
+      );
       if (uploadResponse.error) {
         return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
       } else {
         const uploadBody = uploadResponse.success.body;
         if (uploadBody.includes('Flood protection')) {
-          return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+          return Promise.reject(this.createPostResponse('Encountered flood protection', {}));
         }
 
         if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
@@ -303,7 +369,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           cat: options.category,
           atype: options.theme,
           species: options.species,
-          gender: options.gender
+          gender: options.gender,
         };
 
         if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
@@ -318,9 +384,15 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           finalizeData['folder_ids[]'] = options.folders;
         }
 
-        const postResponse = await got.post(`${this.BASE_URL}/submit/`, finalizeData, this.BASE_URL, cookies, {
-          qsStringifyOptions: { arrayFormat: 'repeat' },
-        });
+        const postResponse = await got.post(
+          `${this.BASE_URL}/submit/`,
+          finalizeData,
+          this.BASE_URL,
+          cookies,
+          {
+            qsStringifyOptions: { arrayFormat: 'repeat' },
+          }
+        );
 
         if (postResponse.error) {
           return Promise.reject(this.createPostResponse(null, postResponse.error));
@@ -328,7 +400,9 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           const body = postResponse.success.body;
 
           if (body.includes('CAPTCHA verification error')) {
-            return Promise.reject(this.createPostResponse('You must have 10+ posts on your account first', body));
+            return Promise.reject(
+              this.createPostResponse('You must have 10+ posts on your account first', body)
+            );
           }
 
           if (body.includes('pageid-submit-finalize')) {
@@ -347,7 +421,12 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
                 newsubmission: fileAsFormDataObject(postData.primary),
               };
 
-              await got.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, reuploadData, this.BASE_URL, cookies);
+              await got.post(
+                `${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`,
+                reuploadData,
+                this.BASE_URL,
+                cookies
+              );
             }
           } catch (e) {
             console.error(e);
@@ -361,22 +440,30 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     }
   }
 
-  private async postSubmissionCloudflare(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
+  private async postSubmissionCloudflare(
+    submission: Submission,
+    postData: SubmissionPostData
+  ): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
     const initData = {
       part: '2',
-      submission_type: this.getContentType(postData.typeOfSubmission)
+      submission_type: this.getContentType(postData.typeOfSubmission),
     };
 
-    const part1Response = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, initData, {
-      cookies,
-    });
+    const part1Response = await ehttp.post(
+      `${this.BASE_URL}/submit/`,
+      postData.profileId,
+      initData,
+      {
+        cookies,
+      }
+    );
     if (!part1Response.success) {
       return Promise.reject(this.createPostResponse('Unknown error', part1Response.body));
     } else {
       const part1Body = part1Response.body;
       if (part1Body.includes('Flood protection')) {
-        return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+        return Promise.reject(this.createPostResponse('Encountered flood protection', {}));
       }
 
       const part2Data = {
@@ -387,20 +474,25 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         submission: fileAsFormDataObject(postData.primary),
       };
 
-      const uploadResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, part2Data, {
-        cookies,
-        multipart: true,
-        headers: {
-          'Host': 'www.furaffinity.net',
-          'Referer': 'http://www.furaffinity.net/submit/'
+      const uploadResponse = await ehttp.post(
+        `${this.BASE_URL}/submit/`,
+        postData.profileId,
+        part2Data,
+        {
+          cookies,
+          multipart: true,
+          headers: {
+            Host: 'www.furaffinity.net',
+            Referer: 'http://www.furaffinity.net/submit/',
+          },
         }
-      });
+      );
       if (!uploadResponse.success) {
         return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.body));
       } else {
         const uploadBody = uploadResponse.body;
         if (uploadBody.includes('Flood protection')) {
-          return Promise.reject(this.createPostResponse('Encountered flood protection', {}))
+          return Promise.reject(this.createPostResponse('Encountered flood protection', {}));
         }
 
         if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
@@ -421,7 +513,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           cat: options.category,
           atype: options.theme,
           species: options.species,
-          gender: options.gender
+          gender: options.gender,
         };
 
         if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
@@ -436,10 +528,15 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           finalizeData['folder_ids[]'] = options.folders;
         }
 
-        const postResponse = await ehttp.post(`${this.BASE_URL}/submit/`, postData.profileId, finalizeData, {
-          cookies,
-          multipart: true
-        });
+        const postResponse = await ehttp.post(
+          `${this.BASE_URL}/submit/`,
+          postData.profileId,
+          finalizeData,
+          {
+            cookies,
+            multipart: true,
+          }
+        );
 
         if (!postResponse.success) {
           return Promise.reject(this.createPostResponse(null, postResponse.body));
@@ -447,7 +544,9 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           const body = postResponse.body;
 
           if (body.includes('CAPTCHA verification error')) {
-            return Promise.reject(this.createPostResponse('You must have 5+ posts on your account first', body));
+            return Promise.reject(
+              this.createPostResponse('You must have 5+ posts on your account first', body)
+            );
           }
 
           if (body.includes('pageid-submit-finalize')) {
@@ -466,7 +565,12 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
                 newsubmission: fileAsFormDataObject(postData.primary),
               };
 
-              await ehttp.post(`${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`, postData.profileId, reuploadData, { cookies, multipart: true });
+              await ehttp.post(
+                `${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`,
+                postData.profileId,
+                reuploadData,
+                { cookies, multipart: true }
+              );
             }
           } catch (e) {
             console.error(e);
@@ -482,12 +586,12 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
     const maxLength = 250;
-    const tags = super.formatTags(defaultTags, other).map(tag => tag.replace(/(\/|\\)/gm, '_'));
-    const filteredTags = tags.filter(tag => tag.length >= 3);
+    const tags = super.formatTags(defaultTags, other).map((tag) => tag.replace(/(\/|\\)/gm, '_'));
+    const filteredTags = tags.filter((tag) => tag.length >= 3);
     let tagString = filteredTags.join(' ').trim();
     if (tagString.length > maxLength) {
       let fitTags = [];
-      filteredTags.forEach(tag => {
+      filteredTags.forEach((tag) => {
         if (fitTags.join(' ').length + 1 + tag.length < maxLength) {
           fitTags.push(tag);
         }
@@ -497,5 +601,4 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
 
     return tagString.length > maxLength ? tagString.substring(0, maxLength) : tagString;
   }
-
 }
