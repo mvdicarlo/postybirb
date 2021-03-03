@@ -20,7 +20,7 @@ import { Subscription } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JournalForm extends BaseSubmissionForm implements OnInit, AfterViewInit, OnDestroy {
-  private submissionChangeSubscription: Subscription = Subscription.EMPTY;''
+  private submissionChangeSubscription: Subscription = Subscription.EMPTY;
 
   constructor(
     injector: Injector,

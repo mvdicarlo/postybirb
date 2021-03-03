@@ -53,7 +53,10 @@ export class SaveOnlySubmissionForm extends SubmissionForm implements OnInit {
     this._initializeBasicInfoForm();
     this._initializeFormDataForm();
 
-    this.basicInfoForm.controls.schedule.disable();
+    // Disallow sudden scheduling
+    if (!this.submission.schedule) {
+      this.basicInfoForm.controls.schedule.disable();
+    }
     this.basicInfoForm.controls.rating.valueChanges.subscribe(rating => {
       this._validator.validate(this.submission);
     });
@@ -81,9 +84,12 @@ export class SaveOnlySubmissionForm extends SubmissionForm implements OnInit {
     }).afterClosed()
       .subscribe(doSave => {
         if (doSave) {
-          const { title, rating } = this.basicInfoForm.value;
+          const { title, rating, schedule } = this.basicInfoForm.value;
           this.originalSubmission.title = title;
           this.originalSubmission.rating = rating;
+          if (this.originalSubmission.schedule && schedule) {
+            this.originalSubmission.schedule = schedule.getTime();
+          }
           this.originalSubmission.formData = copyObject(this.formDataForm.value);
         }
       });

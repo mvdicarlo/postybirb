@@ -30,7 +30,7 @@ export class SubmissionPostingViewComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.submissionChangeListener = this.submission.changes.subscribe(change => {
-      if (change.title) this._changeDetector.markForCheck();
+      if (change.title || change.schedule) this._changeDetector.markForCheck();
     });
 
     this.queueListener = this._postQueue.statusUpdates.subscribe(update => {
