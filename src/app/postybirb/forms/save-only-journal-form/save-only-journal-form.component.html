@@ -18,7 +18,7 @@
           </mat-form-field>
 
           <mat-form-field color="accent">
-            <input matInput formControlName="schedule" [placeholder]="'Schedule' | translate" [owlDateTime]="dtPicker" disabled>
+            <input matInput formControlName="schedule" [placeholder]="'Schedule' | translate" [owlDateTime]="dtPicker" [owlDateTimeTrigger]="dtPicker" [disabled]="!originalSubmission.schedule">
             <mat-icon matSuffix style="font-size: 1.2em; vertical-align: top">schedule</mat-icon>
             <owl-date-time #dtPicker></owl-date-time>
           </mat-form-field>

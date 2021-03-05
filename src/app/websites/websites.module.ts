@@ -90,6 +90,8 @@ import { WebsiteRestrictionsDialog } from './components/website-restrictions-dia
 import { Subscribestar } from './website-services/subscribestar/subscribestar.service';
 import { SubscribestarSubmissionForm } from './website-services/subscribestar/components/subscribestar-submission-form/subscribestar-submission-form.component';
 import { PillowfortSubmissionForm } from './website-services/pillowfort/components/pillowfort-submission-form/pillowfort-submission-form.component';
+import { FurbooruSubmissionForm } from './website-services/furbooru/components/furbooru-submission-form/furbooru-submission-form.component';
+import { Furbooru } from './website-services/furbooru/furbooru.service';
 
 export function INIT_WEBSITE_REGISTRY() {
   return () => {};
@@ -106,6 +108,7 @@ export function INIT_WEBSITE_REGISTRY() {
     DeviantArtSubmissionForm,
     E621SubmissionForm,
     FurAffinitySubmissionForm,
+    FurbooruSubmissionForm,
     FurryNetworkJournalForm,
     FurryNetworkSubmissionForm,
     GenericJournalSubmissionForm,
@@ -177,6 +180,7 @@ export function INIT_WEBSITE_REGISTRY() {
     E621SubmissionForm,
     FurAffinityJournalForm,
     FurAffinitySubmissionForm,
+    FurbooruSubmissionForm,
     FurryLifeSubmissionForm,
     FurryNetworkJournalForm,
     FurryNetworkSubmissionForm,
@@ -216,6 +220,7 @@ export function INIT_WEBSITE_REGISTRY() {
         Discord,
         E621,
         FurAffinity,
+        Furbooru,
         Furiffic,
         FurryLife,
         FurryNetwork,

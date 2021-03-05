@@ -7,7 +7,7 @@
   <div class="w-100">
     <div class="w-100 title-bar">
       <div class="text-truncate title" [title]="submission.title || 'Untitled'">{{ submission.title || 'Untitled' }}</div>
-      <div class="close-btn" (click)="cancel()">
+      <div class="close-btn" (click)="cancel()" [title]="'Cancel' | translate">
         <mat-icon class="warn-text">close</mat-icon>
       </div>
     </div>
