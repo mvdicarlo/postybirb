@@ -53,6 +53,10 @@ function submissionValidate(
     }
   }
 
+  if (!options.tiers.length) {
+    problems.push(['No tiers selected for SubscribeStar']);
+  }
+
   return problems;
 }
 
@@ -176,6 +180,7 @@ export class Subscribestar extends BaseWebsiteService {
       cookies,
       postData.profileId
     );
+
     const csrf = response.body.match(
       /<meta name="csrf-token" content="(.*?)"/
     )[1];
@@ -185,7 +190,7 @@ export class Subscribestar extends BaseWebsiteService {
       pinned_uploads: '[]',
       new_editor: 'true',
       is_draft: '',
-      'tier_ids[]': postData.options.tier === 'free' ? undefined : postData.options.tier,
+      'tier_ids[]': (postData.options.tiers || []).includes('free') ? undefined : postData.options.tiers,
       'tags[]': postData.tags
     };
 
@@ -398,7 +403,7 @@ export class Subscribestar extends BaseWebsiteService {
       pinned_uploads: '[]',
       new_editor: 'true',
       is_draft: '',
-      'tier_ids[]': postData.options.tier === 'free' ? undefined : postData.options.tier,
+      'tier_ids[]': (postData.options.tiers || []).includes('free') ? undefined : postData.options.tiers,
       'tags[]': postData.tags
     };
 

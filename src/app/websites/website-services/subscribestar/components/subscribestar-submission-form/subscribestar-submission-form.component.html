@@ -23,10 +23,11 @@
       }}</mat-checkbox>
     </div>
     <folder-select
-      formControlName="tier"
+      formControlName="tiers"
       class="col-md col-lg col-xl"
       [folders]="tiers"
       placeholder="Access Tier"
+      [multiple]="true"
     ></folder-select>
   </div>
 </form>
