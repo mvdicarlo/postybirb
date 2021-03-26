@@ -53,7 +53,7 @@ function submissionValidate(
     }
   }
 
-  if (!options.tiers.length) {
+  if (options.tiers && !options.tiers.length) {
     problems.push(['No tiers selected for SubscribeStar']);
   }
 
