@@ -266,9 +266,10 @@ export class Subscribestar extends BaseWebsiteService {
       .filter((f) => f)
       .map((f) => fileAsFormDataObject(f));
 
+
     const uploadPath = (body.match(/data-s3-upload-path=\\"(.*?)\\"/) || [])[1];
-    const uploadUrl = (body.match(/data-s3-url="(.*?)"/) || [])[1];
-    if (!uploadUrl || !uploadPath) {
+    const bucket = (body.match(/data-s3-bucket="(.*?)"/) || [])[1];
+    if (!uploadPath || !bucket) {
       return Promise.reject(
         this.createPostResponse('Issue getting upload data', body)
       );
@@ -281,14 +282,22 @@ export class Subscribestar extends BaseWebsiteService {
       const key = `${uploadPath}/${uuidv1()}.${file.options.filename
         .split('.')
         .pop()}`;
+      const presignUrl = `${this.BASE_URL}/presigned_url/upload?_=${Date.now()}&key=${encodeURIComponent(key)}&file_name=${encodeURIComponent(file.options.filename)}&content_type=${encodeURIComponent(file.options.contentType)}&bucket=${bucket}`;
+      const presign = await got.get(presignUrl, this.BASE_URL, cookies, postData.profileId);
+
+      let presignData = null;
+      try {
+        presignData = JSON.parse(presign.body);
+      } catch {
+        return Promise.reject(
+          this.createPostResponse('Failed to upload file', presign.body)
+        );
+      }
+ 
       const postFile = await got.post(
-        uploadUrl,
+        presignData.url,
         {
-          key,
-          acl: 'public-read',
-          success_action_Status: '201',
-          'Content-Type': file.options.contentType,
-          'x-amz-meta-original-filename': file.options.filename,
+         ...presignData.fields,
           file,
           authenticity_token: csrf,
         },
@@ -308,15 +317,14 @@ export class Subscribestar extends BaseWebsiteService {
         );
       }
 
-      if (postFile.success && postFile.success.response.statusCode === 201) {
+      if (postFile.success && postFile.success.response.statusCode >= 200 && postFile.success.response.statusCode <= 300) {
         const xml = $($.parseXML(postFile.success.body));
         const record: any = {
-          path: xml.find('Key').text(),
-          url: xml.find('Location').text(),
+          path: key,
+          url: `${presignData.url}/${key}`,
           original_filename: file.options.filename,
           content_type: file.options.contentType,
-          bucket: xml.find('Bucket').text(),
-          etag: xml.find('ETag').text(),
+          bucket,
           authenticity_token: csrf,
         };
 
