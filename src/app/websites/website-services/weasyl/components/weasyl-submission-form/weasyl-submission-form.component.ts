@@ -32,7 +32,7 @@ export class WeasylSubmissionForm extends BaseWebsiteSubmissionForm implements O
 
   ngOnInit() {
     super.ngOnInit();
-    this.folders = this.websiteService.getFolders(this.parentForm.getLoginProfileId()) || [];
+    this.folders = [{ id: '', title: 'None' }, ...this.websiteService.getFolders(this.parentForm.getLoginProfileId()) || []];
     if (!this.formGroup.get('options')) this.formGroup.addControl('options', this.formBuilder.group(this.optionDefaults));
   }
 
