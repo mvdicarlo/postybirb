@@ -98,14 +98,15 @@ export class FurryLife extends BaseWebsiteService implements WebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}`, this.BASE_URL, cookies, null);
+    const response = await got.get(`${this.BASE_URL}/account`, this.BASE_URL, cookies, null);
     try {
       const body = response.body;
       if (!body.includes('Log in')) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        const profile = body.match(/members\/(.*?)\.\d+/)[0];
-        returnValue.username = profile.split(/(\.|\/)/)[2];
-        this.storeUserInformation(profileId, 'profile', profile.split('/')[1]);
+        const $body = $(body);
+        returnValue.username = $body.find('.p-navgroup-linkText').text();
+        const profile = `${returnValue.username}.${$body.find('.avatar').attr('data-user-id')}`;
+        this.storeUserInformation(profileId, 'profile', profile);
         await this.loadAlbums(profileId, cookies);
       }
     } catch (e) {
