@@ -53,6 +53,15 @@ function descriptionParse(html: string): string {
     .replace(/\n/g, '');
 }
 
+interface DeviantArtFolder {
+  description: string;
+  folderid: string;
+  has_subfolders: boolean;
+  name: string;
+  parent?: string;
+  subfolders: DeviantArtFolder[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -150,13 +159,31 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
     });
   }
 
+  private flattenFolders(folder: DeviantArtFolder): DeviantArtFolder[] {
+    const folders = [folder];
+
+    if (!folder) {
+      return [];
+    }
+
+    if (!folder.has_subfolders) {
+      return folders;
+    }
+
+    folder.subfolders.forEach(sf => folders.push(...this.flattenFolders(sf)))
+    return folders;
+  }
+
   private async _getFolders(profileId: string, accessToken: string): Promise<void> {
     const folderResponse = await got.get(`${this.BASE_URL}/api/v1/oauth2/gallery/folders?calculate_size=false&limit=50&access_token=${accessToken}`, this.BASE_URL, [], profileId);
     const results = (JSON.parse(folderResponse.body).results || []);
     const folders: Folder[] = [];
 
-    results.forEach(folder => {
-      const parent = folder.parent ? results.find(f => f.folderid === folder.parent && f.name !== 'Featured') : undefined;
+    const flattenedFolders: DeviantArtFolder[] = [];
+    results.forEach((r: DeviantArtFolder) => flattenedFolders.push(...this.flattenFolders(r)));
+
+    flattenedFolders.forEach(folder => {
+      const parent = folder.parent ? flattenedFolders.find(f => f.folderid === folder.parent && f.name !== 'Featured') : undefined;
       folders.push({
         id: folder.folderid,
         title: parent ? `${parent.name} / ${folder.name}` : folder.name,
