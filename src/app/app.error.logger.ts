@@ -72,8 +72,9 @@ export class ErrorLoggerHandler extends ErrorHandler {
       if (this.seenList.includes(error.message)) return;
       this.seenList.push(error.message);
       if (error.message) {
-        this.http.post('https://postybirb-error-server.now.sh/log/error', { errorLog: error })
-          .subscribe(res => console.debug('Error logging success', res), err => console.debug('Error logging failure', err));
+        // Haven't logged errors to any server in a long time
+        // this.http.post('https://postybirb-error-server.now.sh/log/error', { errorLog: error })
+        //   .subscribe(res => console.debug('Error logging success', res), err => console.debug('Error logging failure', err));
       }
     }
   }
