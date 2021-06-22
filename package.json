@@ -29,7 +29,7 @@
     "angular2-hotkeys": "~2.1.4",
     "bootstrap-css-only": "^4.2.1",
     "core-js": "^2.5.4",
-    "dot-prop": "^4.2.0",
+    "dot-prop": "^4.2.1",
     "file-saver": "^2.0.1",
     "gif-frames": "^1.0.1",
     "hammerjs": "^2.0.8",
