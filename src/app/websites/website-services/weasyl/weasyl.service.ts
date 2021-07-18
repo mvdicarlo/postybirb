@@ -191,14 +191,19 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     const journalPage: string = response.body;
 
     const data = {
-      token: HTMLParser.getInputValue(journalPage, 'token'),
       title: postData.title,
       rating: this.getRating(postData.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, [])
     }
 
-    const postResponse = await got.post(`${this.BASE_URL}/submit/journal`, data, this.BASE_URL, cookies);
+    const postResponse = await got.post(`${this.BASE_URL}/submit/journal`, data, this.BASE_URL, cookies, {
+      headers: {
+        Referer: `${this.BASE_URL}/submit/journal`,
+        Origin: 'https://www.weasyl.com',
+        Host: 'www.weasyl.com',
+      }
+    });
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
     } else {
@@ -215,13 +220,11 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     const submissionPage: string = response.body;
 
     const data: any = {
-      token: HTMLParser.getInputValue(submissionPage, 'token'),
       title: postData.title,
       rating: this.getRating(postData.rating),
       content: postData.description,
       tags: this.formatTags(postData.tags, []),
       submitfile: fileAsFormDataObject(postData.primary),
-      redirect: url
     }
 
     if (postData.thumbnail) {
@@ -244,7 +247,13 @@ export class Weasyl extends BaseWebsiteService implements WebsiteService {
     data.folderid = options.folder || '';
     data.subtype = options.category || '';
 
-    const postResponse = await got.post(url, data, this.BASE_URL, cookies);
+    const postResponse = await got.post(url, data, this.BASE_URL, cookies, {
+      headers: {
+        Referer: url,
+        Origin: 'https://www.weasyl.com',
+        Host: 'www.weasyl.com',
+      },
+    });
     if (postResponse.error) {
       return Promise.reject(this.createPostResponse(postResponse.error.message, postResponse.error.stack));
     } else {
