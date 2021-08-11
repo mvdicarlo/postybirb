@@ -298,143 +298,133 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     postData: SubmissionPostData
   ): Promise<PostResult> {
     const cookies = await getCookies(postData.profileId, this.BASE_URL);
-    const initData = {
-      part: '2',
+
+    const part1Response = await got.get(
+      `${this.BASE_URL}/submit/`,
+      this.BASE_URL,
+      cookies,
+      postData.profileId
+    );
+
+    const part1Body = part1Response.body;
+    if (part1Body.includes('Flood protection')) {
+      return Promise.reject(
+        this.createPostResponse(
+          'Encountered flood protection',
+          `Flood Protection\n\n${part1Body.body}`
+        )
+      );
+    }
+
+    const part2Data = {
+      key: HTMLParser.getInputValue(part1Body.split('upload_form').pop(), 'key'),
+      submission: fileAsFormDataObject(postData.primary),
+      thumbnail: fileAsFormDataObject(postData.thumbnail),
       submission_type: this.getContentType(postData.typeOfSubmission),
     };
 
-    const part1Response = await got.post(`${this.BASE_URL}/submit/`, null, this.BASE_URL, cookies, {
-      form: initData,
-      headers: {
-        Host: 'www.furaffinity.net',
-        Referer: 'https://www.furaffinity.net/submit/',
-      },
-    });
-    if (part1Response.error) {
-      return Promise.reject(this.createPostResponse('Unknown error', part1Response.error));
+    const uploadResponse = await got.post(
+      `${this.BASE_URL}/submit/upload`,
+      part2Data,
+      this.BASE_URL,
+      cookies,
+      {
+        headers: {
+          Host: 'www.furaffinity.net',
+          Referer: 'https://www.furaffinity.net/submit/',
+        },
+      }
+    );
+    if (uploadResponse.error) {
+      return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
     } else {
-      const part1Body = part1Response.success.body;
-      if (part1Body.includes('Flood protection')) {
-        return Promise.reject(
-          this.createPostResponse(
-            'Encountered flood protection',
-            `Flood Protection\n\n${part1Body.success.body}`
-          )
-        );
+      const uploadBody = uploadResponse.success.body;
+      if (uploadBody.includes('Flood protection')) {
+        return Promise.reject(this.createPostResponse('Encountered flood protection', {}));
       }
 
-      const part2Data = {
-        key: HTMLParser.getInputValue(part1Body.split('action="/submit/"').pop(), 'key'),
-        part: '3',
-        submission: fileAsFormDataObject(postData.primary),
-        thumbnail: fileAsFormDataObject(postData.thumbnail),
-        submission_type: this.getContentType(postData.typeOfSubmission),
+      if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
+        return Promise.reject(this.createPostResponse('Unknown error', uploadBody));
+      }
+
+      const options = postData.options || {};
+      const finalizeData: any = {
+        key: HTMLParser.getInputValue(uploadBody.split('"submit-finalize"').pop(), 'key'),
+        title: postData.title,
+        keywords: this.formatTags(postData.tags, []),
+        message: postData.description,
+        rating: this.getRating(postData.rating),
+        create_folder_name: '',
+        cat: options.category,
+        atype: options.theme,
+        species: options.species,
+        gender: options.gender,
       };
 
-      const uploadResponse = await got.post(
-        `${this.BASE_URL}/submit/`,
-        part2Data,
+      if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
+        delete finalizeData.cat;
+        finalizeData.cat_duplicate = this.getContentCategory(postData.typeOfSubmission);
+      }
+
+      if (options.disableComments) finalizeData.lock_comments = 'on';
+      if (options.scraps) finalizeData.scrap = '1';
+
+      if (options.folders) {
+        finalizeData['folder_ids[]'] = options.folders;
+      }
+
+      const postResponse = await got.post(
+        `${this.BASE_URL}/submit/finalize`,
+        finalizeData,
         this.BASE_URL,
         cookies,
         {
-          headers: {
-            Host: 'www.furaffinity.net',
-            Referer: 'https://www.furaffinity.net/submit/',
-          },
+          qsStringifyOptions: { arrayFormat: 'repeat' },
         }
       );
-      if (uploadResponse.error) {
-        return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
+
+      if (postResponse.error) {
+        return Promise.reject(this.createPostResponse(null, postResponse.error));
       } else {
-        const uploadBody = uploadResponse.success.body;
-        if (uploadBody.includes('Flood protection')) {
-          return Promise.reject(this.createPostResponse('Encountered flood protection', {}));
-        }
+        const body = postResponse.success.body;
 
-        if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
-          return Promise.reject(this.createPostResponse('Unknown error', uploadBody));
-        }
-
-        const options = postData.options || {};
-        const finalizeData: any = {
-          part: '5',
-          key: HTMLParser.getInputValue(uploadBody.split('action="/submit/"').pop(), 'key'),
-          title: postData.title,
-          keywords: this.formatTags(postData.tags, []),
-          message: postData.description,
-          submission_type: this.getContentType(postData.typeOfSubmission),
-          rating: this.getRating(postData.rating),
-          cat_duplicate: '',
-          create_folder_name: '',
-          cat: options.category,
-          atype: options.theme,
-          species: options.species,
-          gender: options.gender,
-        };
-
-        if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
-          delete finalizeData.cat;
-          finalizeData.cat_duplicate = this.getContentCategory(postData.typeOfSubmission);
-        }
-
-        if (options.disableComments) finalizeData.lock_comments = 'on';
-        if (options.scraps) finalizeData.scrap = '1';
-
-        if (options.folders) {
-          finalizeData['folder_ids[]'] = options.folders;
-        }
-
-        const postResponse = await got.post(
-          `${this.BASE_URL}/submit/`,
-          finalizeData,
-          this.BASE_URL,
-          cookies,
-          {
-            qsStringifyOptions: { arrayFormat: 'repeat' },
-          }
-        );
-
-        if (postResponse.error) {
-          return Promise.reject(this.createPostResponse(null, postResponse.error));
-        } else {
-          const body = postResponse.success.body;
-
+        if (!postResponse.success.response.request.uri.href.includes('?upload-successful')) {
           if (body.includes('CAPTCHA verification error')) {
             return Promise.reject(
               this.createPostResponse('You must have 10+ posts on your account first', body)
             );
           }
-
+  
           if (body.includes('pageid-submit-finalize')) {
             return Promise.reject(this.createPostResponse('Unknown error', body));
           }
-
+  
           if (postResponse.success.response.request.uri.href.includes('/submit')) {
             return Promise.reject(this.createPostResponse('Something went wrong', body));
           }
+        }
 
-          try {
-            if (postData.typeOfSubmission == TypeOfSubmission.ART && options.reupload) {
-              const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
-              const reuploadData: any = {
-                update: 'yes', // always seems to be 'yes'
-                newsubmission: fileAsFormDataObject(postData.primary),
-              };
+        try {
+          if (postData.typeOfSubmission == TypeOfSubmission.ART && options.reupload) {
+            const submissionId = HTMLParser.getInputValue(body, 'submission_ids[]');
+            const reuploadData: any = {
+              update: 'yes', // always seems to be 'yes'
+              newsubmission: fileAsFormDataObject(postData.primary),
+            };
 
-              await got.post(
-                `${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`,
-                reuploadData,
-                this.BASE_URL,
-                cookies
-              );
-            }
-          } catch (e) {
-            console.error(e);
-          } finally {
-            const res = this.createPostResponse(null);
-            res.srcURL = postResponse.success.response.request.uri.href;
-            return res;
+            await got.post(
+              `${this.BASE_URL}/controls/submissions/changesubmission/${submissionId}`,
+              reuploadData,
+              this.BASE_URL,
+              cookies
+            );
           }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          const res = this.createPostResponse(null);
+          res.srcURL = postResponse.success.response.request.uri.href.replace('?upload-successful', '');
+          return res;
         }
       }
     }
