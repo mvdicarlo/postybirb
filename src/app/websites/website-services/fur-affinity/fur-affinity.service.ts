@@ -293,6 +293,16 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     }
   }
 
+  private processForError(body: string): string | undefined {
+    if (body.includes('redirect-message')) {
+      const body$ = $.parseHTML(body);
+      const msg = $(body$).find('.redirect-message').first().text();
+      return msg;
+    }
+
+    return undefined;
+  }
+
   private async postSubmission(
     submission: Submission,
     postData: SubmissionPostData
@@ -307,13 +317,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
     );
 
     const part1Body = part1Response.body;
-    if (part1Body.includes('Flood protection')) {
-      return Promise.reject(
-        this.createPostResponse(
-          'Encountered flood protection',
-          `Flood Protection\n\n${part1Body.body}`
-        )
-      );
+    let err = this.processForError(part1Body);
+
+    if (err) {
+      return Promise.reject(this.createPostResponse(err, part1Body));
     }
 
     const part2Data = {
@@ -339,12 +346,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       return Promise.reject(this.createPostResponse('Unknown error', uploadResponse.error));
     } else {
       const uploadBody = uploadResponse.success.body;
-      if (uploadBody.includes('Flood protection')) {
-        return Promise.reject(this.createPostResponse('Encountered flood protection', {}));
-      }
+      err = this.processForError(uploadBody);
 
-      if (uploadBody.includes('pageid-error') || !uploadBody.includes('pageid-submit-finalize')) {
-        return Promise.reject(this.createPostResponse('Unknown error', uploadBody));
+      if (err) {
+        return Promise.reject(this.createPostResponse(err, uploadBody));
       }
 
       const options = postData.options || {};
@@ -362,8 +367,7 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
       };
 
       if (postData.typeOfSubmission !== TypeOfSubmission.ART) {
-        delete finalizeData.cat;
-        finalizeData.cat_duplicate = this.getContentCategory(postData.typeOfSubmission);
+        finalizeData.cat = this.getContentCategory(postData.typeOfSubmission);
       }
 
       if (options.disableComments) finalizeData.lock_comments = 'on';
@@ -389,19 +393,13 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
         const body = postResponse.success.body;
 
         if (!postResponse.success.response.request.uri.href.includes('?upload-successful')) {
-          if (body.includes('CAPTCHA verification error')) {
-            return Promise.reject(
-              this.createPostResponse('You must have 10+ posts on your account first', body)
-            );
+          err = this.processForError(body);
+
+          if (err) {
+            return Promise.reject(this.createPostResponse(err, body));
           }
-  
-          if (body.includes('pageid-submit-finalize')) {
-            return Promise.reject(this.createPostResponse('Unknown error', body));
-          }
-  
-          if (postResponse.success.response.request.uri.href.includes('/submit')) {
-            return Promise.reject(this.createPostResponse('Something went wrong', body));
-          }
+
+          return Promise.reject(this.createPostResponse('Unknown error', body));
         }
 
         try {
@@ -423,7 +421,10 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
           console.error(e);
         } finally {
           const res = this.createPostResponse(null);
-          res.srcURL = postResponse.success.response.request.uri.href.replace('?upload-successful', '');
+          res.srcURL = postResponse.success.response.request.uri.href.replace(
+            '?upload-successful',
+            ''
+          );
           return res;
         }
       }
