@@ -51,6 +51,27 @@
         }
       }
     },
+    "http": {
+      "root": "libs/http",
+      "sourceRoot": "libs/http/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/http/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/http"],
+          "options": {
+            "jestConfig": "libs/http/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "postybirb": {
       "root": "apps/postybirb",
       "sourceRoot": "apps/postybirb/src",
