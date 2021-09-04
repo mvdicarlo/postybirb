@@ -12,4 +12,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/client-server',
+  setupFiles: ['./jest.setup.js'],
+  runner: '@jest-runner/electron/main',
+  verbose: false,
 };

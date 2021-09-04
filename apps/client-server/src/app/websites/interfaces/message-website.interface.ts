@@ -1,4 +1,5 @@
-import BaseWebsiteOptions from '../../submission/models/message-submission.model';
+import BaseWebsiteOptions from '../../submission/models/base-website-options.model';
+import MessageSubmission from '../../submission/models/message-submission.model';
 import PostData from '../../submission/models/post-data.model';
 import Ctor from './constructor.interface';
 
@@ -10,12 +11,11 @@ export default interface MessageWebsite<T extends BaseWebsiteOptions> {
 
   onPostMessageSubmission(
     postData: PostData<T>,
-    accountData: Record<string, unknown>,
     cancellationToken: unknown
   ): Promise<unknown>;
 
   onValidateMessageSubmission(
-    postData: PostData<T>,
-    accountData: Record<string, unknown>
+    submissionData: MessageSubmission,
+    postData: PostData<T>
   ): Promise<unknown>;
 }

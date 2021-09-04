@@ -1,6 +1,5 @@
-export default interface UserAccount<T extends Record<string, unknown>> {
+export default interface UserAccount {
   id: string;
   website: string;
   name: string;
-  data: T;
 }

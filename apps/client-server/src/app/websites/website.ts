@@ -1,112 +1,58 @@
 import { Logger } from '@nestjs/common';
-import SubmissionType from '../submission/enums/submission-type.enum';
-import BaseWebsiteOptions from '../submission/models/base-website-options.model';
-import FileSubmission from '../submission/models/file-submission.model';
-import FileWebsiteOptions from '../submission/models/file-website-options.model';
-import MessageSubmission from '../submission/models/message-submission.model';
-import PostData from '../submission/models/post-data.model';
-import Submission from '../submission/models/submission.model';
-import LoginRequestData from './models/login-request-data.model';
+import UserAccount from '../account/models/user-account.model';
 import LoginResponse from './models/login-response.model';
+import WebsiteData from './website-data';
 
-export default abstract class Website<V extends Record<string, unknown>> {
+export default abstract class Website<D extends Record<string, unknown>> {
   protected readonly logger: Logger;
 
+  /**
+   * UserAccount info for reference primarily during posting and login.
+   */
+  protected readonly account: UserAccount;
+
+  /**
+   * Data store for website data that is persisted to dick and read on initialization.
+   */
+  protected readonly websiteDataStore: WebsiteData<D>;
+
+  /**
+   * Base website URL user for reference during website calls.
+   */
   protected abstract readonly BASE_URL: string;
 
-  protected data: Record<string, unknown>;
+  constructor(userAccount: UserAccount) {
+    const { id, website } = userAccount;
+    const alias = `${website}-${id}`;
 
-  constructor() {
-    this.logger = new Logger(typeof this);
+    this.logger = new Logger(`${typeof this}:${alias}`);
+    this.account = userAccount;
+    this.websiteDataStore = new WebsiteData(alias);
   }
 
-  public onInitialize(data: V | undefined): void {
-    this.data = data ?? {};
+  // -------------- Data Access Methods --------------
+
+  public clearWebsiteData() {
+    this.websiteDataStore.clearData();
   }
 
-  public abstract onLogin(
-    request: LoginRequestData<V>
-  ): Promise<LoginResponse<V>>;
-
-  // TODO models need to be completely revamped during actual implementation design
-  public onPost(
-    postData: PostData<any>,
-    accountData: Record<string, unknown>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
-    switch (postData.type) {
-      case SubmissionType.FILE: {
-        return this.onPostFileSubmission(
-          postData,
-          accountData,
-          cancellationToken
-        );
-      }
-
-      case SubmissionType.MESSAGE: {
-        return this.onPostMessageSubmission(
-          postData,
-          accountData,
-          cancellationToken
-        );
-      }
-    }
+  public getWebsiteData(): D {
+    return this.websiteDataStore.getData();
   }
 
-  public onPostFileSubmission<T extends FileWebsiteOptions>(
-    postData: PostData<T>,
-    accountData: Record<string, unknown>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
-    throw new Error('Method onPostFileSubmission not implemented');
-  }
+  // -------------- End Data Access Methods --------------
 
-  public onPostMessageSubmission<T extends BaseWebsiteOptions>(
-    postData: PostData<T>,
-    accountData: Record<string, unknown>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
-    throw new Error('Method onPostMessageSubmission not implemented');
-  }
+  // -------------- Event Methods --------------
 
-  // TODO models need to be completely revamped during actual implementation design
-  public onValidate(
-    submissionData: Submission,
-    postData: PostData<any>,
-    accountData: Record<string, unknown>
-  ): Promise<unknown> {
-    switch (postData.type) {
-      case SubmissionType.FILE: {
-        return this.onValidateFileSubmission(
-          submissionData as FileSubmission,
-          postData,
-          accountData
-        );
-      }
+  /**
+   * Method that runs once on initialization of the Website class.
+   */
+  public onInitialize(): void {}
 
-      case SubmissionType.MESSAGE: {
-        return this.onValidateMessageSubmission(
-          submissionData as MessageSubmission,
-          postData,
-          accountData
-        );
-      }
-    }
-  }
+  /**
+   * Method that runs whenever a user closes the login page or on a scheduled interval.
+   */
+  public abstract onLogin(): Promise<LoginResponse>;
 
-  public onValidateFileSubmission<T extends FileWebsiteOptions>(
-    submissionData: FileSubmission,
-    postData: PostData<T>,
-    accountData: Record<string, unknown>
-  ): Promise<unknown> {
-    throw new Error('Method onValidateFileSubmission not implemented');
-  }
-
-  public onValidateMessageSubmission<T extends BaseWebsiteOptions>(
-    submissionData: MessageSubmission,
-    postData: PostData<T>,
-    accountData: Record<string, unknown>
-  ): Promise<unknown> {
-    throw new Error('Method onValidateMessageSubmission not implemented');
-  }
+  // -------------- End Event Methods --------------
 }

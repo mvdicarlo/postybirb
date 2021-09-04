@@ -1,3 +1,4 @@
+import FileSubmission from '../../submission/models/file-submission.model';
 import FileWebsiteOptions from '../../submission/models/file-website-options.model';
 import PostData from '../../submission/models/post-data.model';
 import Ctor from './constructor.interface';
@@ -11,12 +12,11 @@ export default interface FileWebsite<T extends FileWebsiteOptions> {
 
   onPostFileSubmission(
     postData: PostData<T>,
-    accountData: Record<string, unknown>,
     cancellationToken: unknown
   ): Promise<unknown>;
 
   onValidateFileSubmission(
-    postData: PostData<T>,
-    accountData: Record<string, unknown>
+    submissionData: FileSubmission,
+    postData: PostData<T>
   ): Promise<unknown>;
 }

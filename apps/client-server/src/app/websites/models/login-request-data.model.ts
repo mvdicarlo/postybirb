@@ -1,4 +1,3 @@
-export default interface LoginRequestData<T extends Record<string, unknown>> {
-  data: T;
+export default interface LoginRequestData {
   accountId: string;
 }
