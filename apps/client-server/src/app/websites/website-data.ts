@@ -1,28 +1,33 @@
 import { Logger } from '@nestjs/common';
 import { WEBSITE_DATA_DIRECTORY } from '../data-storage/data-storage-directories';
-import { readJsonSync, writeJsonSync } from '../data-storage/data-storage.util';
+import {
+  readJsonSync,
+  removeFileSync,
+  writeJsonSync,
+} from '../data-storage/data-storage.util';
 import { join } from 'path';
-
-const FILE_ENCODING = 'binary';
 
 export default class WebsiteData<T extends Record<string, unknown>> {
   private readonly logger: Logger;
 
   private readonly id: string;
-  private readonly path: string;
   private data: T;
+  private initialized: boolean;
+
+  get path(): string {
+    return join(WEBSITE_DATA_DIRECTORY, `${this.id}.json`);
+  }
 
   constructor(id: string) {
     this.logger = new Logger(`WebsiteData[${id}]`);
     this.id = id;
-    this.path = join(WEBSITE_DATA_DIRECTORY, `${id}.json`);
-    this.loadData();
+    this.initialized = false;
   }
 
   private loadData() {
     let data: T = {} as T;
     try {
-      data = readJsonSync<T>(this.path, FILE_ENCODING);
+      data = readJsonSync<T>(this.path);
     } catch {
       // Ignore
     }
@@ -31,14 +36,24 @@ export default class WebsiteData<T extends Record<string, unknown>> {
   }
 
   private saveData() {
-    writeJsonSync(this.path, this.data, FILE_ENCODING);
+    writeJsonSync(this.path, this.data);
   }
 
-  // TODO delete file
+  public initialize() {
+    if (!this.initialized) {
+      this.initialized = true;
+      this.loadData();
+    }
+  }
+
+  public isInitialized(): boolean {
+    return this.initialized;
+  }
+
   public clearData() {
     this.logger.log('Clearing website data');
     this.data = {} as T;
-    this.saveData();
+    removeFileSync(this.path);
   }
 
   public getData(): T {

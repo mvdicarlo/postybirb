@@ -25,9 +25,5 @@ describe('Website', () => {
 
     const data = readJsonSync(filePath);
     expect(data).toEqual({ test: 'test-mode' });
-
-    website.clearWebsiteData();
-    const clearData = readJsonSync(filePath);
-    expect(clearData).toEqual({});
   });
 });

@@ -25,7 +25,7 @@ export default abstract class Website<D extends Record<string, unknown>> {
     const { id, website } = userAccount;
     const alias = `${website}-${id}`;
 
-    this.logger = new Logger(`${typeof this}:${alias}`);
+    this.logger = new Logger(`[${typeof this}:${id}]`);
     this.account = userAccount;
     this.websiteDataStore = new WebsiteData(alias);
   }
@@ -47,7 +47,13 @@ export default abstract class Website<D extends Record<string, unknown>> {
   /**
    * Method that runs once on initialization of the Website class.
    */
-  public onInitialize(): void {}
+  public onInitialize(): void {
+    this.logger.log('Initializing');
+
+    this.websiteDataStore.initialize();
+
+    this.logger.log('Finished initializing');
+  }
 
   /**
    * Method that runs whenever a user closes the login page or on a scheduled interval.
