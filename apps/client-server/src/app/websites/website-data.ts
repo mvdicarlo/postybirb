@@ -1,11 +1,13 @@
 import { Logger } from '@nestjs/common';
-import { WEBSITE_DATA_DIRECTORY } from '../data-storage/data-storage-directories';
 import {
   readJsonSync,
   removeFileSync,
   writeJsonSync,
-} from '../data-storage/data-storage.util';
+  PostyBirbDirectories,
+} from '@postybirb/fs';
 import { join } from 'path';
+
+const { WEBSITE_DATA_DIRECTORY } = PostyBirbDirectories;
 
 export default class WebsiteData<T extends Record<string, unknown>> {
   private readonly logger: Logger;

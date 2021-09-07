@@ -1,11 +1,12 @@
 import TestWebsite from './test.website';
 import { join } from 'path';
-import { readJsonSync } from '../data-storage/data-storage.util';
+import { readJsonSync, PostyBirbDirectories } from '@postybirb/fs';
 import { rmdirSync } from 'fs';
-import {
-  POSTYBIRB_DIRECTORY,
-  WEBSITE_DATA_DIRECTORY,
-} from '../data-storage/data-storage-directories';
+
+const { POSTYBIRB_DIRECTORY, WEBSITE_DATA_DIRECTORY, initializeDirectories } =
+  PostyBirbDirectories;
+
+initializeDirectories();
 
 afterAll(() => {
   rmdirSync(POSTYBIRB_DIRECTORY, { recursive: true });

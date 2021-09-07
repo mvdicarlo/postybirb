@@ -1,15 +1,17 @@
 import { rmdirSync } from 'fs';
 import { join } from 'path';
-import { POSTYBIRB_DIRECTORY } from './data-storage-directories';
+import { POSTYBIRB_DIRECTORY, initializeDirectories } from './directories';
 import {
   writeSync,
   readSync,
   writeJsonSync,
   readJsonSync,
   removeFileSync,
-} from './data-storage.util';
+} from './fs';
 
 let filepath: string;
+
+initializeDirectories();
 
 beforeEach(() => {
   filepath = join(POSTYBIRB_DIRECTORY, `${Date.now()}.test.txt`);
@@ -19,7 +21,7 @@ afterAll(() => {
   rmdirSync(POSTYBIRB_DIRECTORY, { recursive: true });
 });
 
-describe('DataStorageUtil', () => {
+describe('PostyBirbFS', () => {
   describe('writeSync/readSync', () => {
     it('should write file', () => {
       const data = 'test data';

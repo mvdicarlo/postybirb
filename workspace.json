@@ -51,6 +51,27 @@
         }
       }
     },
+    "fs": {
+      "root": "libs/fs",
+      "sourceRoot": "libs/fs/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/fs/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/fs"],
+          "options": {
+            "jestConfig": "libs/fs/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
+    },
     "http": {
       "root": "libs/http",
       "sourceRoot": "libs/http/src",

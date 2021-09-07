@@ -5,7 +5,7 @@ import {
   writeFileSync,
   unlinkSync,
 } from 'fs';
-import { POSTYBIRB_DIRECTORY } from './data-storage-directories';
+import { POSTYBIRB_DIRECTORY } from './directories';
 
 function validatePath(path: string) {
   if (!path.startsWith(POSTYBIRB_DIRECTORY)) {
