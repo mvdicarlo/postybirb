@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import UserAccount from '../account/models/user-account.model';
+import UserAccount from '../accounts/models/user-account.model';
 import LoginResponse from './models/login-response.model';
 import WebsiteData from './website-data';
 

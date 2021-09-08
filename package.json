@@ -42,7 +42,9 @@
     "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "0.13.7",
     "rxjs": "~6.6.3",
-    "tslib": "^2.0.0"
+    "sqlite3": "^5.0.2",
+    "tslib": "^2.0.0",
+    "typeorm": "^0.2.37"
   },
   "devDependencies": {
     "@babel/core": "7.12.13",
