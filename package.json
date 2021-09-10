@@ -32,6 +32,7 @@
     "@nestjs/common": "^7.0.0",
     "@nestjs/core": "^7.0.0",
     "@nestjs/platform-express": "^7.0.0",
+    "compression": "^1.7.4",
     "core-js": "^3.6.5",
     "document-register-element": "1.13.1",
     "form-data": "^4.0.0",
