@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@postybirb/fs": ["libs/fs/src/index.ts"],
-      "@postybirb/http": ["libs/http/src/index.ts"]
+      "@postybirb/http": ["libs/http/src/index.ts"],
+      "@postybirb/utils/electron": ["libs/utils/electron/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

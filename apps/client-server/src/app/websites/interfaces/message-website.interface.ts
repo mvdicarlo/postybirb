@@ -1,9 +1,9 @@
 import BaseWebsiteOptions from '../../submission/models/base-website-options.model';
 import MessageSubmission from '../../submission/models/message-submission.model';
 import PostData from '../../submission/models/post-data.model';
-import Ctor from './constructor.interface';
+import { Ctor } from '../../shared/interfaces/constructor.interface';
 
-export default interface MessageWebsite<T extends BaseWebsiteOptions> {
+export interface MessageWebsite<T extends BaseWebsiteOptions> {
   messageModel: Ctor<T>;
   supportsMessage: true;
 

@@ -1,4 +1,4 @@
-export default interface LoginResponse<> {
+export interface ILoginResponse {
   username?: string;
   loggedIn: boolean;
 }

@@ -1,15 +1,17 @@
 import { Logger } from '@nestjs/common';
-import UserAccount from '../accounts/models/user-account.model';
-import LoginResponse from './models/login-response.model';
+import { LoginState } from './models/login-state.model';
 import WebsiteData from './website-data';
+import { session } from 'electron';
+import { Account } from '../accounts/models/account.model';
+import { getPartitionKey } from '@postybirb/utils/electron';
 
 export default abstract class Website<D extends Record<string, unknown>> {
   protected readonly logger: Logger;
 
   /**
-   * UserAccount info for reference primarily during posting and login.
+   * User account info for reference primarily during posting and login.
    */
-  protected readonly account: UserAccount;
+  protected readonly account: Account;
 
   /**
    * Data store for website data that is persisted to dick and read on initialization.
@@ -17,30 +19,42 @@ export default abstract class Website<D extends Record<string, unknown>> {
   protected readonly websiteDataStore: WebsiteData<D>;
 
   /**
+   * Tracks the login state of a website.
+   */
+  protected readonly loginState: LoginState;
+
+  /**
    * Base website URL user for reference during website calls.
    */
   protected abstract readonly BASE_URL: string;
 
-  constructor(userAccount: UserAccount) {
+  constructor(userAccount: Account) {
     const { id, website } = userAccount;
     const alias = `${website}-${id}`;
 
     this.logger = new Logger(`[${typeof this}:${id}]`);
     this.account = userAccount;
     this.websiteDataStore = new WebsiteData(alias);
+    this.loginState = new LoginState();
   }
 
-  // -------------- Data Access Methods --------------
+  // -------------- Externally Accessed Methods --------------
+  // Methods intended to be executed to be run by consumers of a Website
 
-  public clearWebsiteData() {
+  public async clearLoginStateAndData() {
+    this.logger.log('Clearing login state and data');
+    await session
+      .fromPartition(getPartitionKey(this.account.id))
+      .clearStorageData();
     this.websiteDataStore.clearData();
+    this.loginState.logout();
   }
 
   public getWebsiteData(): D {
     return this.websiteDataStore.getData();
   }
 
-  // -------------- End Data Access Methods --------------
+  // -------------- End Externally Accessed Methods --------------
 
   // -------------- Event Methods --------------
 
@@ -58,7 +72,7 @@ export default abstract class Website<D extends Record<string, unknown>> {
   /**
    * Method that runs whenever a user closes the login page or on a scheduled interval.
    */
-  public abstract onLogin(): Promise<LoginResponse>;
+  public abstract onLogin(): Promise<LoginState>;
 
   // -------------- End Event Methods --------------
 }

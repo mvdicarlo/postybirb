@@ -5,5 +5,6 @@ module.exports = {
     '<rootDir>/apps/client-server',
     '<rootDir>/libs/http',
     '<rootDir>/libs/fs',
+    '<rootDir>/libs/utils/electron',
   ],
 };

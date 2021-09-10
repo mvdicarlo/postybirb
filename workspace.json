@@ -259,6 +259,27 @@
           }
         }
       }
+    },
+    "utils-electron": {
+      "root": "libs/utils/electron",
+      "sourceRoot": "libs/utils/electron/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/utils/electron/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/utils/electron"],
+          "options": {
+            "jestConfig": "libs/utils/electron/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
     }
   },
   "cli": {

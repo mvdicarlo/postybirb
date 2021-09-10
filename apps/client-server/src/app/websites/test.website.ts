@@ -3,12 +3,12 @@ import FileSubmission from '../submission/models/file-submission.model';
 import FileWebsiteOptions from '../submission/models/file-website-options.model';
 import messageSubmissionModel from '../submission/models/message-submission.model';
 import PostData from '../submission/models/post-data.model';
-import Ctor from './interfaces/constructor.interface';
-import FileWebsite from './interfaces/file-website.interface';
-import MessageWebsite from './interfaces/message-website.interface';
-import OAuthWebsite from './interfaces/oauth-website.interface';
-import loginResponseModel from './models/login-response.model';
+import { Ctor } from '../shared/interfaces/constructor.interface';
+import { FileWebsite } from './interfaces/file-website.interface';
+import { MessageWebsite } from './interfaces/message-website.interface';
+import { OAuthWebsite } from './interfaces/oauth-website.interface';
 import Website from './website';
+import { LoginState } from './models/login-state.model';
 
 class FileModel implements FileWebsiteOptions {
   useThumbnail = true;
@@ -38,13 +38,13 @@ export default class TestWebsite
 
   protected BASE_URL = 'http://localhost:3000';
 
-  public async onLogin(): Promise<loginResponseModel> {
+  public async onLogin(): Promise<LoginState> {
     if (this.account.id === 'FAIL') {
-      return { loggedIn: false };
+      this.loginState.logout();
     }
 
     this.websiteDataStore.setData({ test: 'test-mode' });
-    return { loggedIn: true, username: 'TestUser' };
+    return this.loginState.setLogin(true, 'TestUser');
   }
 
   createFileModel(): FileModel {

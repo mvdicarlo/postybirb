@@ -3,6 +3,7 @@ import { net, ClientRequest, ClientRequestConstructorOptions } from 'electron';
 import { encode as encodeQueryString } from 'querystring';
 import * as urlEncoded from 'form-urlencoded';
 import * as FormData from 'form-data';
+import { getPartitionKey } from '@postybirb/utils/electron';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods
 const RESTRICTED_HEADERS: string[] = [
@@ -65,22 +66,6 @@ interface CreateBodyData {
 export class Http {
   private static logger: Logger = new Logger(Http.name);
 
-  /**
-   * https://www.electronjs.org/docs/api/session#sessionfrompartitionpartition-options
-   *
-   * @todo Move into utility function since I am sure this won't be the only place
-   * I will want to generate a partition key.
-   *
-   * @private
-   * @static
-   * @param {string} key
-   * @return {*}  {string}
-   * @memberof Http
-   */
-  private static getPartitionKey(key: string): string {
-    return `persist:${key}`;
-  }
-
   private static createClientRequest(
     options: HttpOptions,
     crOptions: ClientRequestConstructorOptions
@@ -94,7 +79,7 @@ export class Http {
 
     if (options.partition && options.partition.trim().length) {
       clientRequestOptions.useSessionCookies = true;
-      clientRequestOptions.partition = Http.getPartitionKey(options.partition);
+      clientRequestOptions.partition = getPartitionKey(options.partition);
     }
 
     if (options.queryParameters) {

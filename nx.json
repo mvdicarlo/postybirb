@@ -45,6 +45,9 @@
     "ui-e2e": {
       "tags": [],
       "implicitDependencies": ["ui"]
+    },
+    "utils-electron": {
+      "tags": []
     }
   }
 }

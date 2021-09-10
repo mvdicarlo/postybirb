@@ -1,9 +1,9 @@
 import FileSubmission from '../../submission/models/file-submission.model';
 import FileWebsiteOptions from '../../submission/models/file-website-options.model';
 import PostData from '../../submission/models/post-data.model';
-import Ctor from './constructor.interface';
+import { Ctor } from '../../shared/interfaces/constructor.interface';
 
-export default interface FileWebsite<T extends FileWebsiteOptions> {
+export interface FileWebsite<T extends FileWebsiteOptions> {
   fileModel: Ctor<T>;
   supportsFile: true;
   supportsAdditionalFiles: boolean;
