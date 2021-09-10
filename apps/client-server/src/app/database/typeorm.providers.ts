@@ -23,7 +23,7 @@ export const typeormDatabaseProviders: Provider[] = [
         type: 'sqlite',
         database: DATABASE_PATH,
         synchronize: !exists,
-        entities
+        entities,
       }),
   },
 ];
