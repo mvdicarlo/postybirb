@@ -1,7 +1,7 @@
 import { Provider } from '@nestjs/common';
 import { Connection } from 'typeorm';
 import { ACCOUNT_REPOSITORY, DATABASE_CONNECTION } from '../../constants';
-import { Account } from '../models/account.model';
+import { Account } from '../entities/account.entity';
 
 export const accountProvider: Provider = {
   provide: ACCOUNT_REPOSITORY,

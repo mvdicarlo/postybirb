@@ -4,6 +4,7 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { DATABASE_CONNECTION } from '../constants';
+import { entities } from './entities';
 
 // Only need to run a synchronize on first initialization.
 // Any schema changes afterwards should be handled by migrations.
@@ -22,6 +23,7 @@ export const typeormDatabaseProviders: Provider[] = [
         type: 'sqlite',
         database: DATABASE_PATH,
         synchronize: !exists,
+        entities
       }),
   },
 ];
