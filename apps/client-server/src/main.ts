@@ -1,5 +1,9 @@
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import {
+  ClassSerializerInterceptor,
+  Logger,
+  ValidationPipe,
+} from '@nestjs/common';
+import { NestFactory, Reflector } from '@nestjs/core';
 import * as compression from 'compression';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
@@ -11,6 +15,12 @@ async function bootstrap(appPort?: number) {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      forbidUnknownValues: true,
+    })
+  );
   app.use(compression());
 
   // Swagger
@@ -18,7 +28,7 @@ async function bootstrap(appPort?: number) {
     .setTitle('PostyBirb')
     .setDescription('PostyBirb API')
     .setVersion('1.0')
-    .addTag('postybirb')
+    .addTag('account')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

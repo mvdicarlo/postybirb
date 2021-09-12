@@ -1,3 +1,3 @@
-import { Account } from '../accounts/entities/account.entity';
+import { Account } from '../account/entities/account.entity';
 
 export const entities = [Account];

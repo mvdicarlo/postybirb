@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { LoginState } from './models/login-state.model';
 import WebsiteData from './website-data';
 import { session } from 'electron';
-import { Account } from '../accounts/entities/account.entity';
+import { Account } from '../account/entities/account.entity';
 import { getPartitionKey } from '@postybirb/utils/electron';
 
 export default abstract class Website<D extends Record<string, unknown>> {

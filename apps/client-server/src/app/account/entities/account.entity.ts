@@ -1,13 +1,14 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { IAccount } from '../interfaces/account.interface';
 
 @Entity()
-export class Account {
+export class Account implements IAccount {
   @PrimaryGeneratedColumn('uuid')
-  readonly id: string;
+  id: string;
 
   @Column({ nullable: false })
   name: string;
 
   @Column({ nullable: false, update: false })
-  readonly website: string;
+  website: string;
 }
