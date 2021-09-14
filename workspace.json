@@ -280,6 +280,27 @@
           }
         }
       }
+    },
+    "website-metadata": {
+      "root": "libs/website-metadata",
+      "sourceRoot": "libs/website-metadata/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/website-metadata/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/website-metadata"],
+          "options": {
+            "jestConfig": "libs/website-metadata/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      }
     }
   },
   "cli": {

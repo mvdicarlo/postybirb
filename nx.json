@@ -48,6 +48,9 @@
     },
     "utils-electron": {
       "tags": []
+    },
+    "website-metadata": {
+      "tags": []
     }
   }
 }

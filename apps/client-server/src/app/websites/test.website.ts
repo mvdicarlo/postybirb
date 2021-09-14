@@ -9,6 +9,8 @@ import { MessageWebsite } from './interfaces/message-website.interface';
 import { OAuthWebsite } from './interfaces/oauth-website.interface';
 import Website from './website';
 import { LoginState } from './models/login-state.model';
+import { WebsiteMetadata } from './website-metadata.decorator';
+import { TestMetadata } from '@postybirb/website-metadata';
 
 class FileModel implements FileWebsiteOptions {
   useThumbnail = true;
@@ -26,6 +28,7 @@ class MessageModel implements BaseWebsiteOptions {
   rating: unknown;
 }
 
+@WebsiteMetadata(TestMetadata)
 export default class TestWebsite
   extends Website<{ test: string }>
   implements FileWebsite<FileModel>, MessageWebsite<MessageModel>, OAuthWebsite

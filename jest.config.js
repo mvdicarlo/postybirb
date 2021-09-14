@@ -6,5 +6,6 @@ module.exports = {
     '<rootDir>/libs/http',
     '<rootDir>/libs/fs',
     '<rootDir>/libs/utils/electron',
+    '<rootDir>/libs/website-metadata',
   ],
 };

@@ -4,6 +4,7 @@ import WebsiteData from './website-data';
 import { session } from 'electron';
 import { Account } from '../account/entities/account.entity';
 import { getPartitionKey } from '@postybirb/utils/electron';
+import { IWebsiteMetadata } from '@postybirb/website-metadata';
 
 export default abstract class Website<D extends Record<string, unknown>> {
   protected readonly logger: Logger;
@@ -22,6 +23,12 @@ export default abstract class Website<D extends Record<string, unknown>> {
    * Tracks the login state of a website.
    */
   protected readonly loginState: LoginState;
+
+  /**
+   * Do not set this manually.
+   * This property is filled with the {WebsiteMetadata} decorator.
+   */
+  public readonly metadata: IWebsiteMetadata;
 
   /**
    * Base website URL user for reference during website calls.
