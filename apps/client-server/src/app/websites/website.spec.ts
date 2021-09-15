@@ -1,4 +1,4 @@
-import TestWebsite from './test.website';
+import TestWebsite from './implementations/test/test.website';
 import { join } from 'path';
 import { readJsonSync, PostyBirbDirectories } from '@postybirb/fs';
 import { rmdirSync } from 'fs';
@@ -30,6 +30,9 @@ describe('Website', () => {
   });
 
   it('should set website metadata', () => {
-    expect(TestWebsite.prototype.metadata).toEqual(TestMetadata);
+    expect(TestWebsite.prototype.metadata).toEqual({
+      ...TestMetadata,
+      refreshInterval: 60_000 * 60,
+    });
   });
 });

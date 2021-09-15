@@ -1,15 +1,15 @@
-import BaseWebsiteOptions from '../submission/models/base-website-options.model';
-import FileSubmission from '../submission/models/file-submission.model';
-import FileWebsiteOptions from '../submission/models/file-website-options.model';
-import messageSubmissionModel from '../submission/models/message-submission.model';
-import PostData from '../submission/models/post-data.model';
-import { Ctor } from '../shared/interfaces/constructor.interface';
-import { FileWebsite } from './interfaces/file-website.interface';
-import { MessageWebsite } from './interfaces/message-website.interface';
-import { OAuthWebsite } from './interfaces/oauth-website.interface';
-import Website from './website';
-import { LoginState } from './models/login-state.model';
-import { WebsiteMetadata } from './website-metadata.decorator';
+import BaseWebsiteOptions from '../../../submission/models/base-website-options.model';
+import FileSubmission from '../../../submission/models/file-submission.model';
+import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
+import messageSubmissionModel from '../../../submission/models/message-submission.model';
+import PostData from '../../../submission/models/post-data.model';
+import { Ctor } from '../../../shared/interfaces/constructor.interface';
+import { FileWebsite } from '../../interfaces/file-website.interface';
+import { MessageWebsite } from '../../interfaces/message-website.interface';
+import { OAuthWebsite } from '../../interfaces/oauth-website.interface';
+import Website from '../../website';
+import { LoginState } from '../../models/login-state.model';
+import { WebsiteMetadata } from '../../website-metadata.decorator';
 import { TestMetadata } from '@postybirb/website-metadata';
 
 class FileModel implements FileWebsiteOptions {

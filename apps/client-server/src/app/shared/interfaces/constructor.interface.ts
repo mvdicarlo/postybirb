@@ -1,3 +1,3 @@
 export interface Ctor<T> {
-  new (): T;
+  new (...args): T;
 }

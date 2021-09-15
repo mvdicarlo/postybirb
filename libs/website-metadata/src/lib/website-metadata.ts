@@ -36,4 +36,9 @@ export interface IWebsiteMetadata {
    * Only needed when using File posting websites.
    */
   allowAdditionalFiles?: boolean;
+
+  /**
+   * How often in milliseconds login should be re-checked.
+   */
+  refreshInterval?: number;
 }
