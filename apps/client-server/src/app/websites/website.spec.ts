@@ -21,7 +21,8 @@ describe('Website', () => {
       website: 'test',
     });
 
-    website.onLogin();
+    await website.onInitialize();
+    await website.onLogin();
 
     const filePath = join(WEBSITE_DATA_DIRECTORY, 'test-store.json');
 

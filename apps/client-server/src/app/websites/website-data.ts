@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 import {
-  readJsonSync,
-  removeFileSync,
-  writeJsonSync,
+  readJson,
+  removeFile,
+  writeJson,
   PostyBirbDirectories,
 } from '@postybirb/fs';
 import { join } from 'path';
@@ -26,10 +26,10 @@ export default class WebsiteData<T extends Record<string, unknown>> {
     this.initialized = false;
   }
 
-  private loadData() {
+  private async loadData() {
     let data: T = {} as T;
     try {
-      data = readJsonSync<T>(this.path);
+      data = await readJson<T>(this.path);
     } catch {
       // Ignore
     }
@@ -37,14 +37,14 @@ export default class WebsiteData<T extends Record<string, unknown>> {
     this.data = data;
   }
 
-  private saveData() {
-    writeJsonSync(this.path, this.data);
+  private async saveData() {
+    await writeJson(this.path, this.data);
   }
 
-  public initialize() {
+  public async initialize() {
     if (!this.initialized) {
       this.initialized = true;
-      this.loadData();
+      await this.loadData();
     }
   }
 
@@ -52,20 +52,20 @@ export default class WebsiteData<T extends Record<string, unknown>> {
     return this.initialized;
   }
 
-  public clearData() {
+  public async clearData() {
     this.logger.log('Clearing website data');
     this.data = {} as T;
-    removeFileSync(this.path);
+    await removeFile(this.path);
   }
 
   public getData(): T {
     return { ...this.data };
   }
 
-  public setData(data: T) {
+  public async setData(data: T) {
     if (JSON.stringify(data) !== JSON.stringify(this.data)) {
       this.data = { ...data };
-      this.saveData();
+      await this.saveData();
     }
   }
 }

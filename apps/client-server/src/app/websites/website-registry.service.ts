@@ -35,7 +35,9 @@ export class WebsiteRegistryService implements OnModuleInit {
     );
   }
 
-  public async create(account: Account): Promise<void> {
+  public async create(
+    account: Account
+  ): Promise<Website<Record<string, unknown>> | undefined> {
     const { name, id } = account;
     if (this.availableWebsites[name]) {
       const websiteCtor = this.availableWebsites[name];
@@ -46,13 +48,32 @@ export class WebsiteRegistryService implements OnModuleInit {
       if (!this.websiteInstances[name][id]) {
         this.logger.log(`Creating instance of "${name}" with id "${id}"`);
         this.websiteInstances[name][id] = new websiteCtor(account);
+        await this.websiteInstances[name][id].onInitialize();
       } else {
         this.logger.warn(
           `An instance of "${name}" with id "${id}" already exists`
         );
       }
+
+      return this.websiteInstances[name][id];
     } else {
       this.logger.error(`Unable to find website name "${name}"`);
+    }
+  }
+
+  public findInstance(
+    account: Account
+  ): Website<Record<string, unknown>> | undefined {
+    const { name, id } = account;
+    if (this.websiteInstances[name] && this.websiteInstances[name][id]) {
+      return this.websiteInstances[name][id];
+    }
+  }
+
+  public async remove(account: Account): Promise<void> {
+    const instance = this.findInstance(account);
+    if (instance) {
+      await instance.clearLoginStateAndData();
     }
   }
 }

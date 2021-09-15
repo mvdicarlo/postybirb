@@ -53,7 +53,7 @@ export default abstract class Website<D extends Record<string, unknown>> {
     await session
       .fromPartition(getPartitionKey(this.account.id))
       .clearStorageData();
-    this.websiteDataStore.clearData();
+    await this.websiteDataStore.clearData();
     this.loginState.logout();
   }
 
@@ -68,10 +68,10 @@ export default abstract class Website<D extends Record<string, unknown>> {
   /**
    * Method that runs once on initialization of the Website class.
    */
-  public onInitialize(): void {
+  public async onInitialize(): Promise<void> {
     this.logger.log('Initializing');
 
-    this.websiteDataStore.initialize();
+    await this.websiteDataStore.initialize();
 
     this.logger.log('Finished initializing');
   }
