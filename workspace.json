@@ -160,6 +160,19 @@
         }
       }
     },
+    "socket-events": {
+      "root": "libs/socket-events",
+      "sourceRoot": "libs/socket-events/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/socket-events/**/*.ts"]
+          }
+        }
+      }
+    },
     "ui": {
       "root": "apps/ui",
       "sourceRoot": "apps/ui/src",

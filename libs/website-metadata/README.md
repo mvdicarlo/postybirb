@@ -1,6 +1,6 @@
 # website-metadata
 
-This library was generated with [Nx](https://nx.dev).
+Contains shared website metadata for backend and frontend.
 
 ## Running unit tests
 

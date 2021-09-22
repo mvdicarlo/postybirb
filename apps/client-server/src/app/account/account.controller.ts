@@ -7,11 +7,16 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
+/**
+ * @todo return get with login state
+ *
+ * @class AccountController
+ */
 @ApiTags('account')
 @Controller('account')
 export class AccountController {

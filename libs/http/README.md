@@ -1,6 +1,6 @@
 # http
 
-This library was generated with [Nx](https://nx.dev).
+Extends implementation of ElectronJS ClientRequest.
 
 ## Running unit tests
 

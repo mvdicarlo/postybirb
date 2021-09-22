@@ -1,6 +1,6 @@
 # utils-electron
 
-This library was generated with [Nx](https://nx.dev).
+PostyBirb utilities.
 
 ## Running unit tests
 

@@ -7,10 +7,11 @@ import { Ctor } from '../../../shared/interfaces/constructor.interface';
 import { FileWebsite } from '../../interfaces/file-website.interface';
 import { MessageWebsite } from '../../interfaces/message-website.interface';
 import { OAuthWebsite } from '../../interfaces/oauth-website.interface';
-import Website from '../../website';
+import { Website } from '../../website';
 import { LoginState } from '../../models/login-state.model';
 import { WebsiteMetadata } from '../../website-metadata.decorator';
 import { TestMetadata } from '@postybirb/website-metadata';
+import { ILoginState } from '../../interfaces/login-state.interface';
 
 class FileModel implements FileWebsiteOptions {
   useThumbnail = true;
@@ -41,7 +42,7 @@ export default class TestWebsite
 
   protected BASE_URL = 'http://localhost:3000';
 
-  public async onLogin(): Promise<LoginState> {
+  public async onLogin(): Promise<ILoginState> {
     if (this.account.id === 'FAIL') {
       this.loginState.logout();
     }

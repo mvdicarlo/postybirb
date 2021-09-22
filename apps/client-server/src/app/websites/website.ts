@@ -5,8 +5,11 @@ import { session } from 'electron';
 import { Account } from '../account/entities/account.entity';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { ILoginState } from './interfaces/login-state.interface';
 
-export default abstract class Website<D extends Record<string, unknown>> {
+export type UnknownWebsite = Website<Record<string, unknown>>;
+
+export abstract class Website<D extends Record<string, unknown>> {
   protected readonly logger: Logger;
 
   /**
@@ -35,12 +38,32 @@ export default abstract class Website<D extends Record<string, unknown>> {
    */
   protected abstract readonly BASE_URL: string;
 
+  /**
+   * Reference Id of a website instance.
+   *
+   * @readonly
+   * @type {string}
+   */
+  public get id(): string {
+    return `${this.account.website}:${this.account.id}[${this.account.name}]`;
+  }
+
+  /**
+   * Reference to account id.
+   *
+   * @readonly
+   * @type {string}
+   */
+  public get accountId(): string {
+    return this.account.id;
+  }
+
   constructor(userAccount: Account) {
+    this.account = userAccount;
     const { id, website } = userAccount;
     const alias = `${website}-${id}`;
 
-    this.logger = new Logger(`[${typeof this}:${id}]`);
-    this.account = userAccount;
+    this.logger = new Logger(this.id);
     this.websiteDataStore = new WebsiteData(alias);
     this.loginState = new LoginState();
   }
@@ -61,6 +84,10 @@ export default abstract class Website<D extends Record<string, unknown>> {
     return this.websiteDataStore.getData();
   }
 
+  public getLoginState() {
+    return this.loginState.getState();
+  }
+
   // -------------- End Externally Accessed Methods --------------
 
   // -------------- Event Methods --------------
@@ -79,7 +106,7 @@ export default abstract class Website<D extends Record<string, unknown>> {
   /**
    * Method that runs whenever a user closes the login page or on a scheduled interval.
    */
-  public abstract onLogin(): Promise<LoginState>;
+  public abstract onLogin(): Promise<ILoginState>;
 
   // -------------- End Event Methods --------------
 }

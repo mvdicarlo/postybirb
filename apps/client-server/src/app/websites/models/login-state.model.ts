@@ -13,10 +13,10 @@ export class LoginState implements ILoginState {
     return this;
   }
 
-  public setLogin(isLoggedIn: boolean, username: string | null): LoginState {
+  public setLogin(isLoggedIn: boolean, username: string | null): ILoginState {
     this.isLoggedIn = isLoggedIn;
     this.username = username;
-    return this;
+    return this.getState();
   }
 
   getState(): ILoginState {

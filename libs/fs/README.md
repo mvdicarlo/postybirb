@@ -1,6 +1,7 @@
 # fs
 
-This library was generated with [Nx](https://nx.dev).
+Contains wrappers around filesystem functions and directory references to be used by PostyBirb.
+Protects actions to only affect approved directories.
 
 ## Running unit tests
 
