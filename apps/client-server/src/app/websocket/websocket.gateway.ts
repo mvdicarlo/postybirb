@@ -1,15 +1,14 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
+import { WebsocketEvents } from './websocket.events';
 
 @WebSocketGateway()
 export class WSGateway {
   @WebSocketServer()
-  server: Server;
+  private server: Server;
 
-  public emit(
-    event: string,
-    data: Record<string, unknown> | Record<string, unknown>[]
-  ) {
+  public emit(socketEvent: WebsocketEvents) {
+    const { event, data } = socketEvent;
     this.server.emit(event, data);
   }
 }

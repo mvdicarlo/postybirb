@@ -1,17 +1,16 @@
+import { TestMetadata } from '@postybirb/website-metadata';
+import { Ctor } from '../../../shared/interfaces/constructor.interface';
 import BaseWebsiteOptions from '../../../submission/models/base-website-options.model';
 import FileSubmission from '../../../submission/models/file-submission.model';
 import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
 import messageSubmissionModel from '../../../submission/models/message-submission.model';
 import PostData from '../../../submission/models/post-data.model';
-import { Ctor } from '../../../shared/interfaces/constructor.interface';
-import { FileWebsite } from '../../interfaces/file-website.interface';
-import { MessageWebsite } from '../../interfaces/message-website.interface';
-import { OAuthWebsite } from '../../interfaces/oauth-website.interface';
+import { FileWebsite } from '../../models/file-website.interface';
+import { ILoginState } from '../../models/login-state.interface';
+import { MessageWebsite } from '../../models/message-website.interface';
+import { OAuthWebsite } from '../../models/oauth-website.interface';
 import { Website } from '../../website';
-import { LoginState } from '../../models/login-state.model';
 import { WebsiteMetadata } from '../../website-metadata.decorator';
-import { TestMetadata } from '@postybirb/website-metadata';
-import { ILoginState } from '../../interfaces/login-state.interface';
 
 class FileModel implements FileWebsiteOptions {
   useThumbnail = true;
@@ -39,6 +38,10 @@ export default class TestWebsite
   supportsAdditionalFiles = false;
   supportsFile: true = true;
   supportsMessage: true = true;
+
+  public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
+    test: true,
+  };
 
   protected BASE_URL = 'http://localhost:3000';
 

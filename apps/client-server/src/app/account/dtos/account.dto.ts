@@ -1,9 +1,10 @@
-import { ILoginState } from '../../websites/interfaces/login-state.interface';
+import { ILoginState } from '../../websites/models/login-state.interface';
 import { IAccount } from '../interfaces/account.interface';
 import { IsString, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { SafeObject } from '../../shared/types/safe-object.type';
 
-export class AccountDto<T extends Record<string, unknown>> implements IAccount {
+export class AccountDto<T extends SafeObject> implements IAccount {
   @ApiProperty()
   @IsString()
   id: string;

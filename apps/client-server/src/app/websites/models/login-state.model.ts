@@ -1,15 +1,17 @@
-import { ILoginState } from '../interfaces/login-state.interface';
+import { ILoginState } from './login-state.interface';
 
 /**
  * A class used for tracking the login state of a website.
  */
 export class LoginState implements ILoginState {
+  pending: boolean = false;
   isLoggedIn = false;
   username: string | null = null;
 
   public logout(): LoginState {
     this.isLoggedIn = false;
     this.username = null;
+    this.pending = false;
     return this;
   }
 
@@ -21,8 +23,7 @@ export class LoginState implements ILoginState {
 
   getState(): ILoginState {
     return {
-      isLoggedIn: this.isLoggedIn,
-      username: this.username,
+      ...this,
     };
   }
 }

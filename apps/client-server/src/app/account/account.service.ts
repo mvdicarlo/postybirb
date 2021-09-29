@@ -5,23 +5,24 @@ import {
   Logger,
   NotFoundException,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
+import { AccountEvent } from '@postybirb/socket-events';
 import { DeleteResult, Repository } from 'typeorm';
 import { ACCOUNT_REPOSITORY } from '../constants';
 import { Ctor } from '../shared/interfaces/constructor.interface';
+import { SafeObject } from '../shared/types/safe-object.type';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { AccountLoginStateService } from './account-login-state/account-login-state.service';
+import { WSGateway } from '../websocket/websocket.gateway';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
 
 /**
- * @todo initialization and timer setup
- * @todo remove instances from timers on delete
- * @todo figure out how to handle timers and their cleanup
- * @todo figure out how/when to emit to socket
+ * Service responsible for returning Account data.
+ * Also stores login refresh timers for initiating login checks.
  */
 @Injectable()
 export class AccountService implements OnModuleInit {
@@ -38,8 +39,8 @@ export class AccountService implements OnModuleInit {
   constructor(
     @Inject(ACCOUNT_REPOSITORY)
     private readonly accountRepository: Repository<Account>,
-    private readonly accountLoginState: AccountLoginStateService,
-    private readonly websiteRegistry: WebsiteRegistryService
+    private readonly websiteRegistry: WebsiteRegistryService,
+    @Optional() private readonly webSocket: WSGateway
   ) {}
 
   /**
@@ -55,6 +56,7 @@ export class AccountService implements OnModuleInit {
       this.logger.error(err.message, err.stack, 'Account onModuleInit');
     });
 
+    // Initialize website login check timers
     const availableWebsites = this.websiteRegistry.getAvailableWebsites();
     availableWebsites.forEach((website) => {
       const interval =
@@ -71,23 +73,66 @@ export class AccountService implements OnModuleInit {
       this.loginRefreshTimers[interval].websites.push(website);
     });
 
-    this.accountLoginState.initializeLoginStates(accounts);
-    Object.keys(this.loginRefreshTimers).forEach(this.executeOnLogin);
+    this.emit();
+
+    // POST INIT
+    Object.keys(this.loginRefreshTimers).forEach(
+      this.executeOnLoginForInterval
+    );
   }
 
   /**
-   * Runs onLogin on all created website instances and updates website login state.
+   * Emits account state and data onto websocket.
    */
-  private async executeOnLogin(interval: string) {
+  private async emit() {
+    if (this.webSocket) {
+      this.webSocket.emit({
+        event: AccountEvent.ACCOUNT_UPDATES,
+        data: await this.findAll(),
+      });
+    }
+  }
+
+  /**
+   * Runs onLogin on all created website instances within a specific interval
+   * and updates website login state.
+   *
+   * @param {string} interval
+   */
+  private async executeOnLoginForInterval(interval: string) {
     const { websites } = this.loginRefreshTimers[interval];
     this.logger.log(
       `Running login check on interval ${interval} for ${websites.length} websites`
     );
     websites.forEach((website) => {
-      this.websiteRegistry
-        .getInstancesOf(website)
-        .forEach(this.accountLoginState.executeOnLogin);
+      this.websiteRegistry.getInstancesOf(website).forEach(this.executeOnLogin);
     });
+  }
+
+  /**
+   * Executes onLogin for passed in website.
+   * Updates caches login state and data.
+   *
+   * @param {UnknownWebsite} website
+   */
+  private async executeOnLogin(website: UnknownWebsite) {
+    this.logger.log(`Running onLogin on ${website.id}`);
+    try {
+      website.onBeforeLogin();
+      this.emit();
+      await website.onLogin();
+    } catch (e) {
+      // @consider Force login state logged out here
+      if (e instanceof Error) {
+        this.logger.error(
+          `Website onLogin threw exception: ${e.message}`,
+          e.stack
+        );
+      }
+    } finally {
+      website.onAfterLogin();
+      this.emit();
+    }
   }
 
   /**
@@ -97,12 +142,11 @@ export class AccountService implements OnModuleInit {
    * @param {UnknownWebsite} website
    */
   private afterCreate(account: Account, website: UnknownWebsite) {
-    this.accountLoginState.executeOnLogin(website);
+    this.executeOnLogin(website);
   }
 
   /**
    * Creates an Account.
-   * @todo Fire off side-effects
    * @param {CreateAccountDto} createAccountDto
    */
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
@@ -117,48 +161,46 @@ export class AccountService implements OnModuleInit {
   /**
    * Returns a list of all Accounts and their associated login state and data.
    */
-  findAll(): Promise<AccountDto<Record<string, unknown>>[]> {
-    return this.accountRepository.find().then((accounts) => {
-      return accounts.map((account) => {
-        const instance = this.websiteRegistry.findInstance(account);
-        return {
-          ...account,
-          loginState: instance.getLoginState(),
-          data: instance.getWebsiteData(),
-        };
-      });
+  async findAll(): Promise<AccountDto<SafeObject>[]> {
+    const accounts = await this.accountRepository.find();
+    return accounts.map((account) => {
+      const instance = this.websiteRegistry.findInstance(account);
+      return {
+        ...account,
+        loginState: instance.getLoginState(),
+        data: instance.getWebsiteData(),
+      };
     });
   }
 
   /**
    * Finds an Account matching the Id provided or throws NotFoundException.
-   * @todo get real website state and data
    */
-  findOne(id: string): Promise<AccountDto<Record<string, unknown>>> {
-    return this.accountRepository
-      .findOneOrFail(id)
-      .then((account) => {
-        const instance = this.websiteRegistry.findInstance(account);
-        return {
-          ...account,
-          loginState: instance.getLoginState(),
-          data: instance.getWebsiteData(),
-        };
-      })
-      .catch(() => {
-        throw new NotFoundException(id);
-      });
+  async findOne(id: string): Promise<AccountDto<SafeObject>> {
+    try {
+      const account = await this.accountRepository.findOneOrFail(id);
+      const instance = this.websiteRegistry.findInstance(account);
+      return {
+        ...account,
+        loginState: instance.getLoginState(),
+        data: instance.getWebsiteData(),
+      };
+    } catch (e) {
+      throw new NotFoundException(id);
+    }
   }
 
   /**
    * Deleted an Account matching the Id provided.
-   * @todo cleanup website resources
    */
   async remove(id: string): Promise<DeleteResult> {
     const account = await this.findOne(id);
     this.logger.log(`Deleting account ${id}`);
     await this.websiteRegistry.remove(account);
-    return await this.accountRepository.delete(id);
+    return await this.accountRepository.delete(id).then((result) => {
+      this.emit();
+      return result;
+    });
   }
 
   /**
@@ -174,6 +216,7 @@ export class AccountService implements OnModuleInit {
     );
     return await this.accountRepository
       .update(id, updateAccountDto)
+      .then(() => this.emit())
       .then(() => true)
       .catch((err) => {
         throw new BadRequestException(err);

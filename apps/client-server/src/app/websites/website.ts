@@ -5,11 +5,13 @@ import { session } from 'electron';
 import { Account } from '../account/entities/account.entity';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
-import { ILoginState } from './interfaces/login-state.interface';
+import { ILoginState } from './models/login-state.interface';
+import { SafeObject } from '../shared/types/safe-object.type';
+import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
 
-export type UnknownWebsite = Website<Record<string, unknown>>;
+export type UnknownWebsite = Website<SafeObject>;
 
-export abstract class Website<D extends Record<string, unknown>> {
+export abstract class Website<D extends SafeObject> {
   protected readonly logger: Logger;
 
   /**
@@ -37,6 +39,14 @@ export abstract class Website<D extends Record<string, unknown>> {
    * Base website URL user for reference during website calls.
    */
   protected abstract readonly BASE_URL: string;
+
+  /**
+   * An explicit map of data properties of {D} that is allowed to be sent back out of the
+   * client server to the ui.
+   *
+   * Just an extra protection to reduce unnecessary passing of sensitive keys.
+   */
+  public abstract readonly externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<D>;
 
   /**
    * Reference Id of a website instance.
@@ -80,8 +90,21 @@ export abstract class Website<D extends Record<string, unknown>> {
     this.loginState.logout();
   }
 
+  /**
+   * Returns website data.
+   * Filters out any property marked false in externallyAccessibleWebsiteDataProperties.
+   */
   public getWebsiteData(): D {
-    return this.websiteDataStore.getData();
+    const data = this.websiteDataStore.getData();
+
+    // Filter any property marked false
+    Object.entries(this.externallyAccessibleWebsiteDataProperties)
+      .filter(([key, value]) => !value)
+      .forEach(([key]) => {
+        delete data[key];
+      });
+
+    return data;
   }
 
   public getLoginState() {
@@ -96,11 +119,33 @@ export abstract class Website<D extends Record<string, unknown>> {
    * Method that runs once on initialization of the Website class.
    */
   public async onInitialize(): Promise<void> {
-    this.logger.log('Initializing');
+    this.logger.log('onInitialize');
 
     await this.websiteDataStore.initialize();
 
-    this.logger.log('Finished initializing');
+    this.logger.log('Done onInitialize');
+  }
+
+  /**
+   * Method that runs before onLogin to set pending flag.
+   */
+  public onBeforeLogin() {
+    this.logger.verbose('onBeforeLogin');
+
+    this.loginState.pending = true;
+
+    this.logger.verbose('Done onBeforeLogin');
+  }
+
+  /**
+   * Method that runs after onLogin completes to remove pending flag.
+   */
+  public onAfterLogin() {
+    this.logger.verbose('onAfterLogin');
+
+    this.loginState.pending = false;
+
+    this.logger.verbose('Done onAfterLogin');
   }
 
   /**

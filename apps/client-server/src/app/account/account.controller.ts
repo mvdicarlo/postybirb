@@ -13,8 +13,7 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
 /**
- * @todo return get with login state
- *
+ * CRUD operations on Account data.
  * @class AccountController
  */
 @ApiTags('account')

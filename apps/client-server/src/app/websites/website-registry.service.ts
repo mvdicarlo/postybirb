@@ -75,7 +75,9 @@ export class WebsiteRegistryService implements OnModuleInit {
    * @param {Ctor<UnknownWebsite>} website
    */
   public getInstancesOf(website: Ctor<UnknownWebsite>): UnknownWebsite[] {
-    return Object.values(this.websiteInstances[website.prototype.metadata.name]);
+    return Object.values(
+      this.websiteInstances[website.prototype.metadata.name]
+    );
   }
 
   /**
