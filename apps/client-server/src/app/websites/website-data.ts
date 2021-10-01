@@ -55,7 +55,11 @@ export default class WebsiteData<T extends Record<string, unknown>> {
   public async clearData() {
     this.logger.log('Clearing website data');
     this.data = {} as T;
-    await removeFile(this.path);
+    try {
+      await removeFile(this.path);
+    } catch (err) {
+      this.logger.warn(err.message);
+    }
   }
 
   public getData(): T {
