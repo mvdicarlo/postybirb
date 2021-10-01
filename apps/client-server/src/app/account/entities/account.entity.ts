@@ -11,4 +11,10 @@ export class Account implements IAccount {
 
   @Column({ nullable: false, update: false })
   website: string;
+
+  constructor(account?: Partial<IAccount>) {
+    if (account) {
+      Object.assign(this, account);
+    }
+  }
 }

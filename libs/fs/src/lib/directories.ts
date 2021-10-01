@@ -2,7 +2,7 @@ import { app } from 'electron';
 import { join } from 'path';
 import { ensureDirSync } from './fs';
 
-const IS_TEST_DIRECTORY = process.env.TEST === 'TRUE';
+const IS_TEST_DIRECTORY = process.env.NODE_ENV === 'Test';
 
 const DOCUMENTS_DIRECTORY = IS_TEST_DIRECTORY
   ? join('./', 'test')

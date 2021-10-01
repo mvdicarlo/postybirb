@@ -1,7 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Account } from '../account/entities/account.entity';
+import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Ctor } from '../shared/interfaces/constructor.interface';
-import * as websites from './implementations';
 import { UnknownWebsite } from './website';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
@@ -18,21 +18,28 @@ export class WebsiteRegistryService implements OnModuleInit {
 
   private readonly websiteInstances: WebsiteInstances = {};
 
-  onModuleInit() {
-    Object.values({ ...websites }).forEach((website: Ctor<UnknownWebsite>) => {
-      if (!website.prototype.metadata.name) {
-        throw new Error(`${website.name} is missing metadata field "name"`);
-      }
+  constructor(
+    @Inject(WEBSITE_IMPLEMENTATIONS)
+    private readonly websiteImplementations: Ctor<UnknownWebsite>[]
+  ) {}
 
-      this.logger.verbose(
-        `Registering website: ${website.prototype.metadata.name}`
-      );
-      this.availableWebsites[website.prototype.metadata.name] = website;
-    });
+  onModuleInit() {
+    Object.values({ ...this.websiteImplementations }).forEach(
+      (website: Ctor<UnknownWebsite>) => {
+        if (!website.prototype.metadata.name) {
+          throw new Error(`${website.name} is missing metadata field "name"`);
+        }
+
+        this.logger.verbose(
+          `Registering website: ${website.prototype.metadata.name}`
+        );
+        this.availableWebsites[website.prototype.metadata.name] = website;
+      }
+    );
   }
 
   /**
-   * Creates an instance of a {Website} associated with an {Account}.
+   * Creates an instance of a Website associated with an Account.
    * @param {Account} account
    */
   public async create(account: Account): Promise<UnknownWebsite | undefined> {
@@ -60,7 +67,7 @@ export class WebsiteRegistryService implements OnModuleInit {
   }
 
   /**
-   * Finds an existing {Website} instance.
+   * Finds an existing Website instance.
    * @param {Account} account
    */
   public findInstance(account: Account): UnknownWebsite | undefined {
@@ -88,7 +95,7 @@ export class WebsiteRegistryService implements OnModuleInit {
   }
 
   /**
-   * Removes an instance of a {Website}.
+   * Removes an instance of a Website.
    * Cleans up login, stored, and cache data.
    * @param {Account} account
    */

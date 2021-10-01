@@ -12,6 +12,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/fs',
-  setupFiles: ['./jest.setup.js'],
   runner: '@jest-runner/electron/main',
 };
