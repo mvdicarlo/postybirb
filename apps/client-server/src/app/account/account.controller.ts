@@ -6,8 +6,10 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Coerce } from '../utils/coerce.util';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
@@ -30,8 +32,11 @@ export class AccountController {
   @Get(':id')
   @ApiResponse({ status: 200, description: 'The requested Account.' })
   @ApiResponse({ status: 404, description: 'Account Id not found.' })
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  async findOne(@Param('id') id: string, @Query('refresh') refresh: boolean) {
+    if (Coerce.boolean(refresh)) {
+      await this.service.manuallyExecuteOnLogin(id);
+    }
+    return await this.service.findOne(id);
   }
 
   @Post()

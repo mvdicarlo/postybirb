@@ -9,6 +9,9 @@ import { join } from 'path';
 
 const { WEBSITE_DATA_DIRECTORY } = PostyBirbDirectories;
 
+/**
+ * @todo Make this write to a database instead of a json file?
+ */
 export default class WebsiteData<T extends Record<string, unknown>> {
   private readonly logger: Logger;
 

@@ -39,12 +39,22 @@ export class WebsiteRegistryService implements OnModuleInit {
   }
 
   /**
+   * Checks if the website is registered.
+   *
+   * @param {string} websiteName
+   * @return {*}  {boolean}
+   */
+  public canCreate(websiteName: string): boolean {
+    return Boolean(this.availableWebsites[websiteName]);
+  }
+
+  /**
    * Creates an instance of a Website associated with an Account.
    * @param {Account} account
    */
   public async create(account: Account): Promise<UnknownWebsite | undefined> {
     const { name, id } = account;
-    if (this.availableWebsites[name]) {
+    if (this.canCreate(account.website)) {
       const websiteCtor = this.availableWebsites[name];
       if (!this.websiteInstances[name]) {
         this.websiteInstances[name] = {};

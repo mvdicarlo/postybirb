@@ -7,18 +7,19 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { AccountEvent } from '@postybirb/socket-events';
+import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { DeleteResult, Repository } from 'typeorm';
 import { ACCOUNT_REPOSITORY } from '../constants';
 import { Ctor } from '../shared/interfaces/constructor.interface';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { WSGateway } from '../websocket/websocket.gateway';
+import { WSGateway } from '../web-socket/web-socket.gateway';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
+import { wait } from '../utils/wait.util';
 
 /**
  * Service responsible for returning Account data.
@@ -87,7 +88,7 @@ export class AccountService implements OnModuleInit {
   private async emit() {
     if (this.webSocket) {
       this.webSocket.emit({
-        event: AccountEvent.ACCOUNT_UPDATES,
+        event: ACCOUNT_UPDATES,
         data: await this.findAll(),
       });
     }
@@ -118,6 +119,7 @@ export class AccountService implements OnModuleInit {
   private async executeOnLogin(website: UnknownWebsite) {
     this.logger.log(`Running onLogin on ${website.id}`);
     try {
+      await this.awaitPendingLogin(website);
       website.onBeforeLogin();
       this.emit();
       await website.onLogin();
@@ -146,10 +148,39 @@ export class AccountService implements OnModuleInit {
   }
 
   /**
+   * Waits for a website's pending state to be false.
+   *
+   * @param {UnknownWebsite} website
+   */
+  private async awaitPendingLogin(website: UnknownWebsite): Promise<void> {
+    while (website.getLoginState().pending) {
+      await wait(1000);
+    }
+  }
+
+  /**
+   * Executes a login refresh initiated from an external source.
+   * Will always wait for current pending to complete.
+   *
+   * @param {string} id
+   */
+  async manuallyExecuteOnLogin(id: string): Promise<void> {
+    const account = await this.findOne(id);
+    const instance = this.websiteRegistry.findInstance(account);
+    await this.awaitPendingLogin(instance);
+    await this.executeOnLogin(instance);
+  }
+
+  /**
    * Creates an Account.
    * @param {CreateAccountDto} createAccountDto
    */
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
+    if (!this.websiteRegistry.canCreate(createAccountDto.website)) {
+      throw new BadRequestException(
+        `Website ${createAccountDto.website} is not supported.`
+      );
+    }
     const account = this.accountRepository.create(createAccountDto);
     this.logger.log(`Creating account - ${JSON.stringify(account)}`);
     const createdAccount = await this.accountRepository.save(account);

@@ -1,2 +1,1 @@
-import * as AccountEvent from './account.events';
-export { AccountEvent };
+export * from './account.events';
