@@ -204,6 +204,8 @@ function initialize(show = true) {
       webviewTag: true,
       backgroundThrottling: false,
       contextIsolation: false,
+      spellcheck: true,
+      enableRemoteModule: true,
       navigateOnDragDrop: true // needed for drop of files
     },
   });
