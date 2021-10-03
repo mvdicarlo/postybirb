@@ -1,7 +1,15 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Account } from '../account/entities/account.entity';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Ctor } from '../shared/interfaces/constructor.interface';
+import { SafeObject } from '../shared/types/safe-object.type';
+import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
+import { OAuthWebsite } from './models/oauth-website.interface';
 import { UnknownWebsite } from './website';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
@@ -11,7 +19,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  * Creates a new instance for each user account provided.
  */
 @Injectable()
-export class WebsiteRegistryService implements OnModuleInit {
+export class WebsiteRegistryService {
   private readonly logger: Logger = new Logger(WebsiteRegistryService.name);
 
   private readonly availableWebsites: Record<string, Ctor<UnknownWebsite>> = {};
@@ -21,9 +29,7 @@ export class WebsiteRegistryService implements OnModuleInit {
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Ctor<UnknownWebsite>[]
-  ) {}
-
-  onModuleInit() {
+  ) {
     Object.values({ ...this.websiteImplementations }).forEach(
       (website: Ctor<UnknownWebsite>) => {
         if (!website.prototype.metadata.name) {
@@ -53,26 +59,26 @@ export class WebsiteRegistryService implements OnModuleInit {
    * @param {Account} account
    */
   public async create(account: Account): Promise<UnknownWebsite | undefined> {
-    const { name, id } = account;
+    const { website, id } = account;
     if (this.canCreate(account.website)) {
-      const websiteCtor = this.availableWebsites[name];
-      if (!this.websiteInstances[name]) {
-        this.websiteInstances[name] = {};
+      const websiteCtor = this.availableWebsites[website];
+      if (!this.websiteInstances[website]) {
+        this.websiteInstances[website] = {};
       }
 
-      if (!this.websiteInstances[name][id]) {
-        this.logger.log(`Creating instance of "${name}" with id "${id}"`);
-        this.websiteInstances[name][id] = new websiteCtor(account);
-        await this.websiteInstances[name][id].onInitialize();
+      if (!this.websiteInstances[website][id]) {
+        this.logger.log(`Creating instance of "${website}" with id "${id}"`);
+        this.websiteInstances[website][id] = new websiteCtor(account);
+        await this.websiteInstances[website][id].onInitialize();
       } else {
         this.logger.warn(
-          `An instance of "${name}" with id "${id}" already exists`
+          `An instance of "${website}" with id "${id}" already exists`
         );
       }
 
-      return this.websiteInstances[name][id];
+      return this.websiteInstances[website][id];
     } else {
-      this.logger.error(`Unable to find website name "${name}"`);
+      this.logger.error(`Unable to find website "${website}"`);
     }
   }
 
@@ -81,9 +87,9 @@ export class WebsiteRegistryService implements OnModuleInit {
    * @param {Account} account
    */
   public findInstance(account: Account): UnknownWebsite | undefined {
-    const { name, id } = account;
-    if (this.websiteInstances[name] && this.websiteInstances[name][id]) {
-      return this.websiteInstances[name][id];
+    const { website, id } = account;
+    if (this.websiteInstances[website] && this.websiteInstances[website][id]) {
+      return this.websiteInstances[website][id];
     }
   }
 
@@ -117,7 +123,24 @@ export class WebsiteRegistryService implements OnModuleInit {
         `Removing and cleaning up ${website} - ${name} - ${id}`
       );
       await instance.clearLoginStateAndData();
-      delete this.websiteInstances[name][id];
+      delete this.websiteInstances[website][id];
     }
+  }
+
+  /**
+   * Runs an authorization step for a website.
+   * @todo better type overlap
+   * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
+   */
+  public performOAuthStep(oauthRequestDto: OAuthWebsiteRequestDto<SafeObject>) {
+    const instance = this.findInstance(oauthRequestDto as unknown as Account);
+    if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
+      return (instance as unknown as OAuthWebsite).onAuthorize(
+        oauthRequestDto.data,
+        oauthRequestDto.state
+      );
+    }
+
+    throw new BadRequestException('Website does not support OAuth operations.');
   }
 }

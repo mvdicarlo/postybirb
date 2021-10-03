@@ -77,8 +77,8 @@ export class AccountService implements OnModuleInit {
     this.emit();
 
     // POST INIT
-    Object.keys(this.loginRefreshTimers).forEach(
-      this.executeOnLoginForInterval
+    Object.keys(this.loginRefreshTimers).forEach((interval) =>
+      this.executeOnLoginForInterval(interval)
     );
   }
 
@@ -106,7 +106,9 @@ export class AccountService implements OnModuleInit {
       `Running login check on interval ${interval} for ${websites.length} websites`
     );
     websites.forEach((website) => {
-      this.websiteRegistry.getInstancesOf(website).forEach(this.executeOnLogin);
+      this.websiteRegistry
+        .getInstancesOf(website)
+        .forEach((instance) => this.executeOnLogin(instance));
     });
   }
 
@@ -174,6 +176,7 @@ export class AccountService implements OnModuleInit {
   /**
    * Creates an Account.
    * @param {CreateAccountDto} createAccountDto
+   * @return {*}  {Promise<Account>}
    */
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
     if (!this.websiteRegistry.canCreate(createAccountDto.website)) {
@@ -191,6 +194,8 @@ export class AccountService implements OnModuleInit {
 
   /**
    * Returns a list of all Accounts and their associated login state and data.
+   *
+   * @return {*}  {Promise<AccountDto<SafeObject>[]>}
    */
   async findAll(): Promise<AccountDto<SafeObject>[]> {
     const accounts = await this.accountRepository.find();
@@ -206,6 +211,9 @@ export class AccountService implements OnModuleInit {
 
   /**
    * Finds an Account matching the Id provided or throws NotFoundException.
+   *
+   * @param {string} id
+   * @return {*}  {Promise<AccountDto<SafeObject>>}
    */
   async findOne(id: string): Promise<AccountDto<SafeObject>> {
     try {
@@ -223,6 +231,9 @@ export class AccountService implements OnModuleInit {
 
   /**
    * Deleted an Account matching the Id provided.
+   *
+   * @param {string} id
+   * @return {*}  {Promise<DeleteResult>}
    */
   async remove(id: string): Promise<DeleteResult> {
     const account = await this.findOne(id);
@@ -236,6 +247,10 @@ export class AccountService implements OnModuleInit {
 
   /**
    * Updates an Account matching the Id provided.
+   *
+   * @param {string} id
+   * @param {UpdateAccountDto} updateAccountDto
+   * @return {*}  {Promise<boolean>}
    */
   async update(
     id: string,
@@ -252,5 +267,16 @@ export class AccountService implements OnModuleInit {
       .catch((err) => {
         throw new BadRequestException(err);
       });
+  }
+
+  /**
+   * Clears the data and login state associated with an account.
+   *
+   * @param {string} id
+   */
+  async clearAccountData(id: string) {
+    const account = await this.findOne(id);
+    const instance = this.websiteRegistry.findInstance(account);
+    await instance.clearLoginStateAndData();
   }
 }

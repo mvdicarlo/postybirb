@@ -4,7 +4,7 @@ import { Ctor } from '../../shared/interfaces/constructor.interface';
 import { UnknownWebsite } from '../website';
 import TestWebsite from './test/test.website';
 
-const useValue: Ctor<UnknownWebsite>[] = [];
+const useValue: Ctor<UnknownWebsite>[] = [TestWebsite];
 
 if (process.env.NODE_ENV === 'Test') {
   useValue.push(TestWebsite);

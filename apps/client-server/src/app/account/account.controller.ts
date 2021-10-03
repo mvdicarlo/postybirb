@@ -46,6 +46,14 @@ export class AccountController {
     return this.service.create(createAccountDto);
   }
 
+  @Post('/clear/:id')
+  @ApiResponse({ status: 200, description: 'Account data cleared.' })
+  @ApiResponse({ status: 400, description: 'Bad request made.' })
+  async clear(@Param('id') id: string) {
+    await this.service.clearAccountData(id);
+    return this.service.manuallyExecuteOnLogin(id);
+  }
+
   @Patch(':id')
   @ApiResponse({ status: 200, description: 'Account updated.', type: Boolean })
   @ApiResponse({ status: 404, description: 'Account Id not found.' })
