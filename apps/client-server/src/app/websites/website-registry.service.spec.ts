@@ -1,24 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { initializeDirectories } from 'libs/fs/src/lib/directories';
+import { getRepository, Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
+import { DATABASE_CONNECTION } from '../constants';
+import { getTestDatabaseProvider } from '../database/typeorm.providers';
+import { WebsiteData } from './entities/website-data.entity';
 import { websiteImplementationProvider } from './implementations';
 import TestWebsite from './implementations/test/test.website';
+import { websiteDataProvider } from './providers/website-data.provider';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
-
-  beforeAll(() => {
-    initializeDirectories();
-  });
+  let repository: Repository<WebsiteData<any>>;
+  let testingModule: TestingModule;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [WebsiteRegistryService, websiteImplementationProvider],
+    testingModule = await Test.createTestingModule({
+      providers: [
+        getTestDatabaseProvider([WebsiteData]),
+        websiteDataProvider,
+        WebsiteRegistryService,
+        websiteImplementationProvider,
+      ],
     }).compile();
 
-    service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
-    service.onModuleInit();
+    service = testingModule.get<WebsiteRegistryService>(WebsiteRegistryService);
+    repository = getRepository(WebsiteData, DATABASE_CONNECTION);
+  });
+
+  afterEach(async () => {
+    await repository.manager.connection.close();
+    await testingModule.close();
   });
 
   it('should be defined', () => {

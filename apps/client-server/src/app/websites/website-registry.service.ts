@@ -4,11 +4,13 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
-import { WEBSITE_IMPLEMENTATIONS } from '../constants';
+import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Ctor } from '../shared/interfaces/constructor.interface';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
+import { WebsiteData } from './entities/website-data.entity';
 import { OAuthWebsite } from './models/oauth-website.interface';
 import { UnknownWebsite } from './website';
 
@@ -27,6 +29,8 @@ export class WebsiteRegistryService {
   private readonly websiteInstances: WebsiteInstances = {};
 
   constructor(
+    @Inject(WEBSITE_DATA_REPOSITORY)
+    private readonly websiteDataRepository: Repository<WebsiteData<SafeObject>>,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Ctor<UnknownWebsite>[]
   ) {
@@ -69,7 +73,9 @@ export class WebsiteRegistryService {
       if (!this.websiteInstances[website][id]) {
         this.logger.log(`Creating instance of "${website}" with id "${id}"`);
         this.websiteInstances[website][id] = new websiteCtor(account);
-        await this.websiteInstances[website][id].onInitialize();
+        await this.websiteInstances[website][id].onInitialize(
+          this.websiteDataRepository
+        );
       } else {
         this.logger.warn(
           `An instance of "${website}" with id "${id}" already exists`

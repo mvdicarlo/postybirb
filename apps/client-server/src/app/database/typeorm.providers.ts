@@ -18,12 +18,30 @@ const exists = existsSync(DATABASE_PATH);
 export const typeormDatabaseProviders: Provider[] = [
   {
     provide: DATABASE_CONNECTION,
-    useFactory: async () =>
-      await createConnection({
+    useFactory: async () => {
+      return await createConnection({
         type: 'sqlite',
         database: DATABASE_PATH,
         synchronize: !exists,
         entities,
-      }),
+      });
+    },
   },
 ];
+
+export function getTestDatabaseProvider(entities: any[]): Provider {
+  return {
+    provide: DATABASE_CONNECTION,
+    useFactory: async () => {
+      return await createConnection({
+        type: 'sqlite',
+        database: ':memory:',
+        dropSchema: true,
+        synchronize: true,
+        logging: false,
+        entities,
+        name: DATABASE_CONNECTION,
+      });
+    },
+  };
+}

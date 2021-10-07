@@ -1,19 +1,29 @@
-import TestWebsite from './implementations/test/test.website';
-import { join } from 'path';
-import { readJsonSync, PostyBirbDirectories } from '@postybirb/fs';
-import { rmdirSync } from 'fs';
+import { Test, TestingModule } from '@nestjs/testing';
 import { TestMetadata } from '@postybirb/website-metadata';
-
-const { POSTYBIRB_DIRECTORY, WEBSITE_DATA_DIRECTORY, initializeDirectories } =
-  PostyBirbDirectories;
-
-initializeDirectories();
-
-afterAll(() => {
-  rmdirSync(POSTYBIRB_DIRECTORY, { recursive: true });
-});
+import { getRepository, Repository } from 'typeorm';
+import { DATABASE_CONNECTION } from '../constants';
+import { getTestDatabaseProvider } from '../database/typeorm.providers';
+import { WebsiteData } from './entities/website-data.entity';
+import TestWebsite from './implementations/test/test.website';
+import { websiteDataProvider } from './providers/website-data.provider';
 
 describe('Website', () => {
+  let repository: Repository<WebsiteData<any>>;
+  let testingModule: TestingModule;
+
+  beforeEach(async () => {
+    testingModule = await Test.createTestingModule({
+      providers: [getTestDatabaseProvider([WebsiteData]), websiteDataProvider],
+    }).compile();
+
+    repository = getRepository(WebsiteData, DATABASE_CONNECTION);
+  });
+
+  afterEach(async () => {
+    await repository.manager.connection.close();
+    await testingModule.close();
+  });
+
   it('should store data', async () => {
     const website = new TestWebsite({
       id: 'store',
@@ -21,13 +31,11 @@ describe('Website', () => {
       website: 'test',
     });
 
-    await website.onInitialize();
+    await website.onInitialize(repository);
     await website.onLogin();
 
-    const filePath = join(WEBSITE_DATA_DIRECTORY, 'test-store.json');
-
-    const data = readJsonSync(filePath);
-    expect(data).toEqual({ test: 'test-mode' });
+    const entity = await repository.findOne(website.accountId);
+    expect(entity.data).toEqual({ test: 'test-mode' });
   });
 
   it('should set website metadata', () => {

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { LoginState } from './models/login-state.model';
-import WebsiteData from './website-data';
+import WebsiteDataManager from './website-data-manager';
 import { session } from 'electron';
 import { Account } from '../account/entities/account.entity';
 import { getPartitionKey } from '@postybirb/utils/electron';
@@ -8,6 +8,8 @@ import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { ILoginState } from './models/login-state.interface';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
+import { WebsiteData } from './entities/website-data.entity';
+import { Repository } from 'typeorm';
 
 export type UnknownWebsite = Website<SafeObject>;
 
@@ -22,7 +24,7 @@ export abstract class Website<D extends SafeObject> {
   /**
    * Data store for website data that is persisted to dick and read on initialization.
    */
-  protected readonly websiteDataStore: WebsiteData<D>;
+  protected readonly websiteDataStore: WebsiteDataManager<D>;
 
   /**
    * Tracks the login state of a website.
@@ -70,11 +72,8 @@ export abstract class Website<D extends SafeObject> {
 
   constructor(userAccount: Account) {
     this.account = userAccount;
-    const { id, website } = userAccount;
-    const alias = `${website}-${id}`;
-
     this.logger = new Logger(this.id);
-    this.websiteDataStore = new WebsiteData(alias);
+    this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();
   }
 
@@ -118,10 +117,12 @@ export abstract class Website<D extends SafeObject> {
   /**
    * Method that runs once on initialization of the Website class.
    */
-  public async onInitialize(): Promise<void> {
+  public async onInitialize(
+    websiteDataRepository: Repository<WebsiteData<D>>
+  ): Promise<void> {
     this.logger.log('onInitialize');
 
-    await this.websiteDataStore.initialize();
+    await this.websiteDataStore.initialize(websiteDataRepository);
 
     this.logger.log('Done onInitialize');
   }
