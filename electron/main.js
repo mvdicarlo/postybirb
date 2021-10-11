@@ -20,6 +20,9 @@ if (!hasLock) {
   return;
 }
 
+// Weasyl fix
+app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
+
 app.on('second-instance', () => {
   if (win) {
     win.closeAfterPost = false;

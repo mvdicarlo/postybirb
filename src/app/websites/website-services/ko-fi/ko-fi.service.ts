@@ -18,7 +18,7 @@ import { fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { Folder } from '../../interfaces/folder.interface';
 
-const ACCEPTED_FILES = ['jpeg', 'jpg', 'png'];
+const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'gif'];
 
 function submissionValidate(submission: Submission, formData: SubmissionFormData): any[] {
   const problems: any[] = [];
