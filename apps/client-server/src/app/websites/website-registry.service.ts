@@ -104,9 +104,13 @@ export class WebsiteRegistryService {
    * @param {Ctor<UnknownWebsite>} website
    */
   public getInstancesOf(website: Ctor<UnknownWebsite>): UnknownWebsite[] {
-    return Object.values(
-      this.websiteInstances[website.prototype.metadata.name]
-    );
+    if (this.websiteInstances[website.prototype.metadata.name]) {
+      return Object.values(
+        this.websiteInstances[website.prototype.metadata.name]
+      );
+    }
+
+    return [];
   }
 
   /**
