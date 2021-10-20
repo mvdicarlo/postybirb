@@ -20,6 +20,7 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
 import { wait } from '../utils/wait.util';
+import { IWebsiteMetadata } from '@postybirb/website-metadata';
 
 /**
  * Service responsible for returning Account data.
@@ -60,13 +61,14 @@ export class AccountService implements OnModuleInit {
     // Initialize website login check timers
     const availableWebsites = this.websiteRegistry.getAvailableWebsites();
     availableWebsites.forEach((website) => {
-      const interval =
-        website.prototype.metadata.refreshInterval ?? 60_000 * 60;
+      const interval: number =
+        (website.prototype.metadata as IWebsiteMetadata).refreshInterval ??
+        60_000 * 60;
       if (!this.loginRefreshTimers[interval]) {
         this.loginRefreshTimers[interval] = {
           websites: [],
           timer: setInterval(() => {
-            this.executeOnLogin(interval);
+            this.executeOnLoginForInterval(interval);
           }, interval),
         };
       }
@@ -100,15 +102,15 @@ export class AccountService implements OnModuleInit {
    *
    * @param {string} interval
    */
-  private async executeOnLoginForInterval(interval: string) {
+  private async executeOnLoginForInterval(interval: string | number) {
     const { websites } = this.loginRefreshTimers[interval];
     this.logger.log(
       `Running login check on interval ${interval} for ${websites.length} websites`
     );
     websites.forEach((website) => {
-      this.websiteRegistry
-        .getInstancesOf(website)
-        .forEach((instance) => this.executeOnLogin(instance));
+      this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
+        this.executeOnLogin(instance);
+      });
     });
   }
 

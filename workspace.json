@@ -32,7 +32,9 @@
         "serve": {
           "executor": "@nrwl/node:execute",
           "options": {
-            "buildTarget": "client-server:build"
+            "buildTarget": "client-server:build",
+            "inspect": true,
+            "port": 9229
           }
         },
         "lint": {
@@ -124,7 +126,9 @@
         "serve": {
           "executor": "nx-electron:execute",
           "options": {
-            "buildTarget": "postybirb:build"
+            "buildTarget": "postybirb:build",
+            "inspect": true,
+            "port": 9229
           }
         },
         "package": {
