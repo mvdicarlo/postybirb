@@ -7,6 +7,7 @@ import {
   writeFile,
   readFile,
   unlink,
+  rmSync,
 } from 'fs';
 import { promisify } from 'util';
 import { POSTYBIRB_DIRECTORY } from './directories';
@@ -26,6 +27,15 @@ export function ensureDirSync(path: string) {
     accessSync(path);
   } catch {
     mkdirSync(path, { recursive: true });
+  }
+}
+
+export function deleteDirSync(path: string) {
+  validatePath(path);
+  try {
+    rmSync(path, { recursive: true });
+  } catch {
+    // Nothing
   }
 }
 

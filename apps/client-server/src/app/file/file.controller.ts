@@ -54,16 +54,8 @@ export class FileController {
   @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
   async uploadFile(@UploadedFiles() files: Express.Multer.File[]) {
     const results = await Promise.all(
-      files.map((file) => this.service.createFile(file))
+      files.map((file) => this.service.create(file))
     );
-    const filesz = await Promise.all(
-      results.map((file) => this.service.findFile(file.id))
-    );
-    for (const f of filesz) {
-      console.log(f)
-      console.log(await f.data);
-      console.log(await f.thumbnail);
-    }
 
     return await Promise.all(
       results.map((file) => this.service.findFile(file.id))

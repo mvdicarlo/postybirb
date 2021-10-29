@@ -13,9 +13,12 @@ import { extname } from 'path';
   imports: [
     DatabaseModule,
     MulterModule.register({
+      limits: {
+        fileSize: 3e8, // Max 300MB
+      },
       storage: diskStorage({
         destination: function (req, file, cb) {
-          cb(null, PostyBirbDirectories.FILE_DIRECTORY);
+          cb(null, PostyBirbDirectories.TEMP_DIRECTORY);
         },
         filename: function (req, file, cb) {
           cb(null, Date.now() + extname(file.originalname)); //Appending extension

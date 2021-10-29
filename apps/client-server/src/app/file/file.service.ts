@@ -9,10 +9,26 @@ import { Express } from 'express';
 import { v4 as uuid } from 'uuid';
 import { removeFile, read } from '@postybirb/fs';
 import { nativeImage } from 'electron';
+import * as fastq from 'fastq';
+import type { queueAsPromised, done } from 'fastq';
 
+type Task = {
+  file: Express.Multer.File;
+};
+
+/**
+ * Service that handles storing file data into database.
+ * @todo need to clean up leftover tmp files
+ *
+ * @class FileService
+ */
 @Injectable()
 export class FileService {
   private readonly logger: Logger = new Logger(FileService.name);
+  private readonly queue: queueAsPromised<Task, File> = fastq.promise<
+    this,
+    Task
+  >(this, this.createTask, 1);
 
   constructor(
     @Inject(FILE_REPOSITORY)
@@ -41,6 +57,14 @@ export class FileService {
     }
   }
 
+  public async create(file: Express.Multer.File): Promise<File> {
+    return await this.queue.push({ file });
+  }
+
+  private async createTask(task: Task): Promise<File> {
+    return await this.createFile(task.file);
+  }
+
   /**
    * Creates file entity and stores it.
    * @todo extra data (image resize per website)
@@ -50,7 +74,7 @@ export class FileService {
    * @param {Express.Multer.File} file
    * @return {*}  {Promise<File>}
    */
-  public async createFile(file: Express.Multer.File): Promise<File> {
+  private async createFile(file: Express.Multer.File): Promise<File> {
     console.log(file);
     try {
       this.logger.log(`Creating file ${file.originalname} (${file.mimetype})`);

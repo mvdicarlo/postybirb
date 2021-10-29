@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { join } from 'path';
-import { ensureDirSync } from './fs';
+import { ensureDirSync, deleteDirSync } from './fs';
 
 const IS_TEST_DIRECTORY = process.env.NODE_ENV === 'Test';
 
@@ -23,18 +23,24 @@ const DATA_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'data');
 const WEBSITE_DATA_DIRECTORY = join(DATA_DIRECTORY, 'website-data');
 
 /** Directory used for storing uploaded files. */
-const FILE_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'files');
+const TEMP_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'temp');
 
 function initializeDirectories() {
   ensureDirSync(DATA_DIRECTORY);
   ensureDirSync(WEBSITE_DATA_DIRECTORY);
-  ensureDirSync(FILE_DIRECTORY);
+  clearTempDirectory();
+}
+
+function clearTempDirectory() {
+  deleteDirSync(TEMP_DIRECTORY);
+  ensureDirSync(TEMP_DIRECTORY);
 }
 
 export {
   POSTYBIRB_DIRECTORY,
   DATA_DIRECTORY,
   WEBSITE_DATA_DIRECTORY,
-  FILE_DIRECTORY,
+  TEMP_DIRECTORY,
   initializeDirectories,
+  clearTempDirectory,
 };
