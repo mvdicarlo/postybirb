@@ -5,7 +5,7 @@ import { DATABASE_CONNECTION } from '../constants';
 import { getTestDatabaseProvider } from '../database/typeorm.providers';
 import { WebsiteData } from './entities/website-data.entity';
 import TestWebsite from './implementations/test/test.website';
-import { websiteDataProvider } from './providers/website-data.provider';
+import { WebsiteDataProvider } from './providers/website-data.provider';
 
 describe('Website', () => {
   let repository: Repository<WebsiteData<any>>;
@@ -13,7 +13,7 @@ describe('Website', () => {
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
-      providers: [getTestDatabaseProvider([WebsiteData]), websiteDataProvider],
+      providers: [getTestDatabaseProvider([WebsiteData]), WebsiteDataProvider],
     }).compile();
 
     repository = getRepository(WebsiteData, DATABASE_CONNECTION);

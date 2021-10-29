@@ -6,7 +6,7 @@ import { getTestDatabaseProvider } from '../database/typeorm.providers';
 import { WebsiteData } from './entities/website-data.entity';
 import { websiteImplementationProvider } from './implementations';
 import TestWebsite from './implementations/test/test.website';
-import { websiteDataProvider } from './providers/website-data.provider';
+import { WebsiteDataProvider } from './providers/website-data.provider';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('WebsiteRegistryService', () => {
@@ -18,7 +18,7 @@ describe('WebsiteRegistryService', () => {
     testingModule = await Test.createTestingModule({
       providers: [
         getTestDatabaseProvider([WebsiteData]),
-        websiteDataProvider,
+        WebsiteDataProvider,
         WebsiteRegistryService,
         websiteImplementationProvider,
       ],

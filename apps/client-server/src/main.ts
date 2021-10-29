@@ -7,6 +7,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
+import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
 
 async function bootstrap(appPort?: number) {
@@ -35,6 +36,7 @@ async function bootstrap(appPort?: number) {
 
   // PostyBirb Initialization
   PostyBirbDirectories.initializeDirectories();
+  sharp.cache({ files: 0 });
 
   const port = process.env.PORT || appPort || 3333;
   await app.listen(port, () => {

@@ -15,14 +15,14 @@ const exists = existsSync(DATABASE_PATH);
  * TypeORM Database Provider
  * https://docs.nestjs.com/recipes/sql-typeorm
  */
-export const typeormDatabaseProviders: Provider[] = [
+export const TypeormDatabaseProviders: Provider[] = [
   {
     provide: DATABASE_CONNECTION,
     useFactory: async () => {
       return await createConnection({
         type: 'sqlite',
         database: DATABASE_PATH,
-        synchronize: !exists,
+        synchronize: true,//!exists,
         entities,
       });
     },
