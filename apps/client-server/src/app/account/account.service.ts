@@ -19,7 +19,7 @@ import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
-import { wait } from '../utils/wait.util';
+import { waitUntil } from '../utils/wait.util';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 
 /**
@@ -157,9 +157,7 @@ export class AccountService implements OnModuleInit {
    * @param {UnknownWebsite} website
    */
   private async awaitPendingLogin(website: UnknownWebsite): Promise<void> {
-    while (website.getLoginState().pending) {
-      await wait(1000);
-    }
+    await waitUntil(() => website.getLoginState().pending, 1000);
   }
 
   /**
