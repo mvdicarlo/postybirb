@@ -1,16 +1,16 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { read, removeFile } from '@postybirb/fs';
+import { nativeImage } from 'electron';
+import { Express } from 'express';
+import type { queueAsPromised } from 'fastq';
+import * as fastq from 'fastq';
 import 'multer';
 import { Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
 import { FILE_DATA_REPOSITORY, FILE_REPOSITORY } from '../constants';
 import { FileData } from './entities/file-data.entity';
 import { File } from './entities/file.entity';
 import { ImageUtil } from './utils/image.util';
-import { Express } from 'express';
-import { v4 as uuid } from 'uuid';
-import { removeFile, read } from '@postybirb/fs';
-import { nativeImage } from 'electron';
-import * as fastq from 'fastq';
-import type { queueAsPromised, done } from 'fastq';
 
 type Task = {
   file: Express.Multer.File;
@@ -18,7 +18,6 @@ type Task = {
 
 /**
  * Service that handles storing file data into database.
- * @todo need to clean up leftover tmp files
  *
  * @class FileService
  */
@@ -57,6 +56,22 @@ export class FileService {
     }
   }
 
+  /**
+   * Deletes a file.
+   *
+   * @param {string} id
+   * @return {*}
+   */
+  public async remove(id: string) {
+    return await this.fileRepository.delete(id);
+  }
+
+  /**
+   * Queues a file to create a database record.
+   *
+   * @param {Express.Multer.File} file
+   * @return {*}  {Promise<File>}
+   */
   public async create(file: Express.Multer.File): Promise<File> {
     return await this.queue.push({ file });
   }
@@ -87,17 +102,17 @@ export class FileService {
       });
 
       const buf: Buffer = await read(file.path);
+      let thumbnail: FileData;
       if (ImageUtil.isImage(file.mimetype, true)) {
         const { height, width } = await ImageUtil.getMetadata(buf);
         fileEntity.width = width;
         fileEntity.height = height;
+
+        thumbnail = await this.createFileThumbnail(fileEntity, file);
       }
 
       const data = this.createFileDataEntity(fileEntity, buf);
-      fileEntity.data = Promise.resolve(data);
-
-      const thumbnail = await this.createFileThumbnail(fileEntity, file);
-      fileEntity.thumbnail = Promise.resolve(thumbnail);
+      fileEntity.data = Promise.resolve(thumbnail ? [data, thumbnail] : [data]);
 
       const savedEntity = await this.fileRepository.save(fileEntity);
       return savedEntity;
@@ -114,24 +129,18 @@ export class FileService {
    *
    * @param {File} fileEntity
    * @param {Express.Multer.File} file
-   * @return {*}  {Promise<File>}
+   * @return {*}  {Promise<FileData>}
    */
   private async createFileThumbnail(
     fileEntity: File,
     file: Express.Multer.File
-  ): Promise<File> {
-    const fileThumbnailEntity = this.fileRepository.create({
-      id: uuid(),
-      filename: `thumb_${fileEntity.filename}.jpg`,
-      mimetype: 'image/jpeg',
-    });
-
-    const preferredDimension = 400;
+  ): Promise<FileData> {
+    const preferredDimension = 300;
 
     let width = preferredDimension;
     let height = Math.floor(
       fileEntity.height
-        ? (fileEntity.width / fileEntity.height) * preferredDimension
+        ? (fileEntity.height / fileEntity.width) * preferredDimension
         : preferredDimension
     );
 
@@ -150,14 +159,14 @@ export class FileService {
 
     const thumbnailBuf = thumbnail.toJPEG(99);
 
-    fileThumbnailEntity.height = height;
-    fileThumbnailEntity.width = width;
-    fileThumbnailEntity.size = thumbnailBuf.length;
+    const thumbnailEntity = this.createFileDataEntity(fileEntity, thumbnailBuf);
 
-    const data = this.createFileDataEntity(fileThumbnailEntity, thumbnailBuf);
-    fileThumbnailEntity.data = Promise.resolve(data);
+    thumbnailEntity.height = height;
+    thumbnailEntity.width = width;
+    thumbnailEntity.filename = `thumbnail_${thumbnailEntity.filename}.jpg`;
+    thumbnailEntity.mimetype = 'image/jpeg';
 
-    return fileThumbnailEntity;
+    return thumbnailEntity;
   }
 
   /**
@@ -168,9 +177,15 @@ export class FileService {
    * @return {*}  {FileData}
    */
   private createFileDataEntity(fileEntity: File, buf: Buffer): FileData {
+    const { mimetype, height, width, filename } = fileEntity;
     const fileDataEntity = this.fileDataRepository.create({
-      id: fileEntity.id,
-      data: buf,
+      id: uuid(),
+      buffer: buf,
+      file: fileEntity,
+      height,
+      width,
+      filename,
+      mimetype,
     });
     return fileDataEntity;
   }

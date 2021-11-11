@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Headers,
   Param,
@@ -31,11 +32,11 @@ export class FileController {
     return this.service.findFile(id);
   }
 
-  @Get('thumbnail/:id')
+  @Delete(':id')
   @ApiOkResponse()
   @ApiNotFoundResponse()
-  getThumbnail(@Param('id') id: string) {
-    return this.service.findFile(id);
+  delete(@Param('id') id: string) {
+    return this.service.remove(id);
   }
 
   @Post('upload')

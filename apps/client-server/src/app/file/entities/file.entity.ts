@@ -1,16 +1,8 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn,
-  Unique,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { IFile } from '../models/file.interface';
 import { FileData } from './file-data.entity';
 
 @Entity()
-@Unique(['id'])
 export class File implements IFile {
   @PrimaryColumn('uuid', { unique: true })
   id: string;
@@ -33,18 +25,16 @@ export class File implements IFile {
   @Column({ type: 'simple-array', nullable: false })
   modifiers: any[] = [];
 
-  @OneToOne(() => File, (file) => file.id, {
+  @OneToMany(() => FileData, (fileData) => fileData.file, {
     cascade: true,
-    lazy: true,
-    createForeignKeyConstraints: false
   })
-  @JoinColumn({ referencedColumnName: 'id' })
-  thumbnail: Promise<File | undefined>;
+  data: Promise<FileData[]>;
 
-  @OneToOne(() => FileData, {
-    cascade: true,
-    lazy: true,
-  })
-  @JoinColumn()
-  data: Promise<FileData>;
+  get file(): Promise<FileData | undefined> {
+    return this.data?.then((files) => files[0]);
+  }
+
+  get thumbnail(): Promise<FileData | undefined> {
+    return this.data?.then((files) => files[1]);
+  }
 }

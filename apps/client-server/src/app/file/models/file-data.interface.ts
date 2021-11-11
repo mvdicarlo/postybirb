@@ -1,4 +1,11 @@
+import { IFile } from './file.interface';
+
 export interface IFileData {
   id: string;
-  data: Buffer;
+  buffer: Buffer;
+  file: IFile;
+  height: number;
+  width: number;
+  mimetype: string;
+  filename: string;
 }

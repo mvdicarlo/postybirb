@@ -9,6 +9,5 @@ export interface IFile {
   width: number;
   // @todo figure out types
   modifiers: any[];
-  thumbnail: Promise<IFile | undefined>;
-  data: Promise<FileData>; // Promise for lazy loading
+  data: Promise<FileData[]>; // Promise for lazy loading
 }
