@@ -1,20 +1,13 @@
 import {
-  mkdirSync,
   accessSync,
+  mkdirSync,
   readFileSync,
-  writeFileSync,
-  unlinkSync,
-  writeFile,
-  readFile,
-  unlink,
   rmSync,
+  unlinkSync,
+  writeFileSync,
 } from 'fs';
-import { promisify } from 'util';
+import { readFile, unlink, writeFile } from 'fs/promises';
 import { POSTYBIRB_DIRECTORY } from './directories';
-
-const writeFilePromise = promisify(writeFile);
-const readFilePromise = promisify(readFile);
-const unlinkPromise = promisify(unlink);
 
 function validatePath(path: string) {
   if (!path.startsWith(POSTYBIRB_DIRECTORY)) {
@@ -46,7 +39,7 @@ export function writeSync(path: string, data: string | Buffer) {
 
 export function write(path: string, data: string | Buffer) {
   validatePath(path);
-  return writeFilePromise(path, data);
+  return writeFile(path, data);
 }
 
 export function writeJson(path: string, data: Record<string, unknown>) {
@@ -59,7 +52,7 @@ export function writeJsonSync(path: string, data: Record<string, unknown>) {
 
 export function read(path: string) {
   validatePath(path);
-  return readFilePromise(path);
+  return readFile(path);
 }
 
 export function readSync(path: string): Buffer {
@@ -81,7 +74,7 @@ export function readJsonSync<T extends Record<string, unknown>>(
 
 export function removeFile(path: string) {
   validatePath(path);
-  return unlinkPromise(path);
+  return unlink(path);
 }
 
 export function removeFileSync(path: string) {
