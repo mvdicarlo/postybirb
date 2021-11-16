@@ -3,12 +3,12 @@ import { Logger } from '@postybirb/logger';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
 import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { Ctor } from '../shared/interfaces/constructor.interface';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteData } from './entities/website-data.entity';
 import { OAuthWebsite } from './models/oauth-website.interface';
 import { UnknownWebsite } from './website';
+import { Class } from 'type-fest';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 
@@ -20,7 +20,8 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 export class WebsiteRegistryService {
   private readonly logger = Logger(WebsiteRegistryService.name);
 
-  private readonly availableWebsites: Record<string, Ctor<UnknownWebsite>> = {};
+  private readonly availableWebsites: Record<string, Class<UnknownWebsite>> =
+    {};
 
   private readonly websiteInstances: WebsiteInstances = {};
 
@@ -28,10 +29,10 @@ export class WebsiteRegistryService {
     @Inject(WEBSITE_DATA_REPOSITORY)
     private readonly websiteDataRepository: Repository<WebsiteData<SafeObject>>,
     @Inject(WEBSITE_IMPLEMENTATIONS)
-    private readonly websiteImplementations: Ctor<UnknownWebsite>[]
+    private readonly websiteImplementations: Class<UnknownWebsite>[]
   ) {
     Object.values({ ...this.websiteImplementations }).forEach(
-      (website: Ctor<UnknownWebsite>) => {
+      (website: Class<UnknownWebsite>) => {
         if (!website.prototype.metadata.name) {
           throw new Error(`${website.name} is missing metadata field "name"`);
         }
@@ -67,7 +68,7 @@ export class WebsiteRegistryService {
       }
 
       if (!this.websiteInstances[website][id]) {
-        this.logger.log(`Creating instance of "${website}" with id "${id}"`);
+        this.logger.info(`Creating instance of "${website}" with id "${id}"`);
         this.websiteInstances[website][id] = new websiteCtor(account);
         await this.websiteInstances[website][id].onInitialize(
           this.websiteDataRepository
@@ -97,9 +98,9 @@ export class WebsiteRegistryService {
 
   /**
    * Returns all created instances of a website.
-   * @param {Ctor<UnknownWebsite>} website
+   * @param {Class<UnknownWebsite>} website
    */
-  public getInstancesOf(website: Ctor<UnknownWebsite>): UnknownWebsite[] {
+  public getInstancesOf(website: Class<UnknownWebsite>): UnknownWebsite[] {
     if (this.websiteInstances[website.prototype.metadata.name]) {
       return Object.values(
         this.websiteInstances[website.prototype.metadata.name]
@@ -112,7 +113,7 @@ export class WebsiteRegistryService {
   /**
    * Returns a list of all available websites.
    */
-  public getAvailableWebsites(): Ctor<UnknownWebsite>[] {
+  public getAvailableWebsites(): Class<UnknownWebsite>[] {
     return Object.values(this.availableWebsites);
   }
 
@@ -125,9 +126,7 @@ export class WebsiteRegistryService {
     const { name, id, website } = account;
     const instance = this.findInstance(account);
     if (instance) {
-      this.logger.verbose(
-        `Removing and cleaning up ${website} - ${name} - ${id}`
-      );
+      this.logger.info(`Removing and cleaning up ${website} - ${name} - ${id}`);
       await instance.clearLoginStateAndData();
       delete this.websiteInstances[website][id];
     }

@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  Logger,
   NotFoundException,
   OnModuleInit,
   Optional,
@@ -10,7 +9,6 @@ import {
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { DeleteResult, Repository } from 'typeorm';
 import { ACCOUNT_REPOSITORY } from '../constants';
-import { Ctor } from '../shared/interfaces/constructor.interface';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -21,6 +19,8 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
 import { waitUntil } from '../utils/wait.util';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { Log, Logger } from '@postybirb/logger';
+import { Class } from 'type-fest';
 
 /**
  * Service responsible for returning Account data.
@@ -28,13 +28,13 @@ import { IWebsiteMetadata } from '@postybirb/website-metadata';
  */
 @Injectable()
 export class AccountService implements OnModuleInit {
-  private readonly logger: Logger = new Logger(AccountService.name);
+  private readonly logger = Logger(AccountService.name);
 
   private readonly loginRefreshTimers: Record<
     string,
     {
       timer: NodeJS.Timeout;
-      websites: Ctor<UnknownWebsite>[];
+      websites: Class<UnknownWebsite>[];
     }
   > = {};
 
@@ -55,7 +55,7 @@ export class AccountService implements OnModuleInit {
     const instances = await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account))
     ).catch((err) => {
-      this.logger.error(err.message, err.stack, 'Account onModuleInit');
+      this.logger.error(err, 'onModuleInit');
     });
 
     // Initialize website login check timers
@@ -104,7 +104,7 @@ export class AccountService implements OnModuleInit {
    */
   private async executeOnLoginForInterval(interval: string | number) {
     const { websites } = this.loginRefreshTimers[interval];
-    this.logger.log(
+    this.logger.trace(
       `Running login check on interval ${interval} for ${websites.length} websites`
     );
     websites.forEach((website) => {
@@ -130,10 +130,7 @@ export class AccountService implements OnModuleInit {
     } catch (e) {
       // @consider Force login state logged out here
       if (e instanceof Error) {
-        this.logger.error(
-          `Website onLogin threw exception: ${e.message}`,
-          e.stack
-        );
+        this.logger.error(e);
       }
     } finally {
       website.onAfterLogin();
@@ -182,6 +179,7 @@ export class AccountService implements OnModuleInit {
    * @param {CreateAccountDto} createAccountDto
    * @return {*}  {Promise<Account>}
    */
+  @Log()
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
     if (!this.websiteRegistry.canCreate(createAccountDto.website)) {
       throw new BadRequestException(
@@ -189,7 +187,6 @@ export class AccountService implements OnModuleInit {
       );
     }
     const account = this.accountRepository.create(createAccountDto);
-    this.logger.log(`Creating account - ${JSON.stringify(account)}`);
     const createdAccount = await this.accountRepository.save(account);
     const website = await this.websiteRegistry.create(createdAccount);
     this.afterCreate(createdAccount, website);
@@ -239,9 +236,9 @@ export class AccountService implements OnModuleInit {
    * @param {string} id
    * @return {*}  {Promise<DeleteResult>}
    */
+  @Log()
   async remove(id: string): Promise<DeleteResult> {
     const account = await this.findOne(id);
-    this.logger.log(`Deleting account ${id}`);
     await this.websiteRegistry.remove(account);
     return await this.accountRepository.delete(id).then((result) => {
       this.emit();
@@ -256,14 +253,12 @@ export class AccountService implements OnModuleInit {
    * @param {UpdateAccountDto} updateAccountDto
    * @return {*}  {Promise<boolean>}
    */
+  @Log()
   async update(
     id: string,
     updateAccountDto: UpdateAccountDto
   ): Promise<boolean> {
     await this.findOne(id);
-    this.logger.log(
-      `Updating account ${id} - ${JSON.stringify(updateAccountDto)}`
-    );
     return await this.accountRepository
       .update(id, updateAccountDto)
       .then(() => this.emit())
@@ -278,6 +273,7 @@ export class AccountService implements OnModuleInit {
    *
    * @param {string} id
    */
+  @Log()
   async clearAccountData(id: string) {
     const account = await this.findOne(id);
     const instance = this.websiteRegistry.findInstance(account);

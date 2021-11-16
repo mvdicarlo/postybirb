@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import { LoginState } from './models/login-state.model';
 import WebsiteDataManager from './website-data-manager';
 import { session } from 'electron';
@@ -10,11 +9,12 @@ import { SafeObject } from '../shared/types/safe-object.type';
 import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
 import { WebsiteData } from './entities/website-data.entity';
 import { Repository } from 'typeorm';
+import { Logger } from '@postybirb/logger';
 
 export type UnknownWebsite = Website<SafeObject>;
 
 export abstract class Website<D extends SafeObject> {
-  protected readonly logger: Logger;
+  protected readonly logger;
 
   /**
    * User account info for reference primarily during posting and login.
@@ -72,7 +72,7 @@ export abstract class Website<D extends SafeObject> {
 
   constructor(userAccount: Account) {
     this.account = userAccount;
-    this.logger = new Logger(this.id);
+    this.logger = Logger(this.id);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();
   }
@@ -81,7 +81,7 @@ export abstract class Website<D extends SafeObject> {
   // Methods intended to be executed to be run by consumers of a Website
 
   public async clearLoginStateAndData() {
-    this.logger.log('Clearing login state and data');
+    this.logger.info('Clearing login state and data');
     await session
       .fromPartition(getPartitionKey(this.account.id))
       .clearStorageData();
@@ -120,33 +120,33 @@ export abstract class Website<D extends SafeObject> {
   public async onInitialize(
     websiteDataRepository: Repository<WebsiteData<D>>
   ): Promise<void> {
-    this.logger.log('onInitialize');
+    this.logger.trace('onInitialize');
 
     await this.websiteDataStore.initialize(websiteDataRepository);
 
-    this.logger.log('Done onInitialize');
+    this.logger.trace('Done onInitialize');
   }
 
   /**
    * Method that runs before onLogin to set pending flag.
    */
   public onBeforeLogin() {
-    this.logger.verbose('onBeforeLogin');
+    this.logger.trace('onBeforeLogin');
 
     this.loginState.pending = true;
 
-    this.logger.verbose('Done onBeforeLogin');
+    this.logger.trace('Done onBeforeLogin');
   }
 
   /**
    * Method that runs after onLogin completes to remove pending flag.
    */
   public onAfterLogin() {
-    this.logger.verbose('onAfterLogin');
+    this.logger.trace('onAfterLogin');
 
     this.loginState.pending = false;
 
-    this.logger.verbose('Done onAfterLogin');
+    this.logger.trace('Done onAfterLogin');
   }
 
   /**

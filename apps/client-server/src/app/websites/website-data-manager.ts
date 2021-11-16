@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger } from '@postybirb/logger';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
 import { SafeObject } from '../shared/types/safe-object.type';
@@ -10,7 +10,7 @@ import { WebsiteData } from './entities/website-data.entity';
  * @class WebsiteDataManager
  */
 export default class WebsiteDataManager<T extends SafeObject> {
-  private readonly logger: Logger;
+  private readonly logger;
 
   private readonly account: Account;
   private entity: WebsiteData<T>;
@@ -19,7 +19,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
 
   constructor(userAccount: Account) {
     this.account = userAccount;
-    this.logger = new Logger(
+    this.logger = Logger(
       `WebsiteData[${userAccount.website}:${userAccount.id}]`
     );
     this.initialized = false;
@@ -54,7 +54,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
   }
 
   public async clearData() {
-    this.logger.log('Clearing website data');
+    this.logger.info('Clearing website data');
     await this.repository.delete(this.account.id);
 
     // Do a reload to recreate an object that hasn't been saved.

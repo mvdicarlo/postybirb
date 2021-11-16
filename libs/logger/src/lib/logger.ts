@@ -71,7 +71,9 @@ export function Log(level?: P.Level): MethodDecorator {
         if (ret instanceof Promise) {
           return ret
             .then((result) => {
-              l[level](processResult(result));
+              if (result) {
+                l[level](processResult(result));
+              }
               return result;
             })
             .catch((err) => {
@@ -80,7 +82,9 @@ export function Log(level?: P.Level): MethodDecorator {
             });
         }
 
-        l[level](processResult(ret));
+        if (ret) {
+          l[level](processResult(ret));
+        }
         return ret;
       } catch (err) {
         l.error(err);

@@ -1,5 +1,4 @@
 import { TestMetadata } from '@postybirb/website-metadata';
-import { Ctor } from '../../../shared/interfaces/constructor.interface';
 import BaseWebsiteOptions from '../../../submission/models/base-website-options.model';
 import FileSubmission from '../../../submission/models/file-submission.model';
 import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
@@ -11,7 +10,7 @@ import { MessageWebsite } from '../../models/message-website.interface';
 import { OAuthWebsite } from '../../models/oauth-website.interface';
 import { Website } from '../../website';
 import { WebsiteMetadata } from '../../website-metadata.decorator';
-
+import { Class } from 'type-fest';
 class FileModel implements FileWebsiteOptions {
   useThumbnail = true;
   allowResize = true;
@@ -33,8 +32,8 @@ export default class TestWebsite
   extends Website<{ test: string }>
   implements FileWebsite<FileModel>, MessageWebsite<MessageModel>, OAuthWebsite
 {
-  fileModel: Ctor<FileModel> = FileModel;
-  messageModel: Ctor<MessageModel> = MessageModel;
+  fileModel: Class<FileModel> = FileModel;
+  messageModel: Class<MessageModel> = MessageModel;
   supportsAdditionalFiles = false;
   supportsFile: true = true;
   supportsMessage: true = true;

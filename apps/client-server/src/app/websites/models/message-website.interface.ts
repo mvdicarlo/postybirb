@@ -1,10 +1,10 @@
 import BaseWebsiteOptions from '../../submission/models/base-website-options.model';
 import MessageSubmission from '../../submission/models/message-submission.model';
 import PostData from '../../submission/models/post-data.model';
-import { Ctor } from '../../shared/interfaces/constructor.interface';
+import { Class } from 'type-fest';
 
 export interface MessageWebsite<T extends BaseWebsiteOptions> {
-  messageModel: Ctor<T>;
+  messageModel: Class<T>;
   supportsMessage: true;
 
   createMessageModel(): T;

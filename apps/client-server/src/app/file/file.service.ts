@@ -1,12 +1,6 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
-import { Log } from '@postybirb/logger';
+import { Log, Logger } from '@postybirb/logger';
 import { nativeImage } from 'electron';
 import { Express } from 'express';
 import type { queueAsPromised } from 'fastq';
@@ -30,7 +24,7 @@ type Task = {
  */
 @Injectable()
 export class FileService {
-  private readonly logger: Logger = new Logger(FileService.name);
+  private readonly logger = Logger(FileService.name);
   private readonly queue: queueAsPromised<Task, File> = fastq.promise<
     this,
     Task
@@ -69,6 +63,7 @@ export class FileService {
    * @param {string} id
    * @return {*}
    */
+  @Log()
   public async remove(id: string) {
     return await this.fileRepository.delete(id);
   }
@@ -98,7 +93,6 @@ export class FileService {
    * @return {*}  {Promise<File>}
    */
   private async createFile(file: Express.Multer.File): Promise<File> {
-    console.log(file);
     try {
       this.logger.log(`Creating file ${file.originalname} (${file.mimetype})`);
       const { mimetype, originalname, size } = file;

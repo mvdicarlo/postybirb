@@ -1,11 +1,14 @@
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  ValidationPipe,
+  Logger,
+} from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
-import { initialize as initializeLogger, Logger } from '@postybirb/logger';
 
 async function bootstrap(appPort?: number) {
   const app = await NestFactory.create(AppModule);
@@ -35,11 +38,9 @@ async function bootstrap(appPort?: number) {
   PostyBirbDirectories.initializeDirectories();
   sharp.cache({ files: 0 });
 
-  const logger = Logger('ClientServer');
-
   const port = process.env.PORT || appPort || 3333;
   await app.listen(port, () => {
-    logger.info('Listening at http://localhost:' + port + '/' + globalPrefix);
+    Logger.log('Listening at http://localhost:' + port + '/' + globalPrefix);
   });
 }
 
