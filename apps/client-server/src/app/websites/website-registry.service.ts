@@ -1,9 +1,5 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Logger } from '@postybirb/logger';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
 import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
@@ -22,7 +18,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  */
 @Injectable()
 export class WebsiteRegistryService {
-  private readonly logger: Logger = new Logger(WebsiteRegistryService.name);
+  private readonly logger = Logger(WebsiteRegistryService.name);
 
   private readonly availableWebsites: Record<string, Ctor<UnknownWebsite>> = {};
 
@@ -40,7 +36,7 @@ export class WebsiteRegistryService {
           throw new Error(`${website.name} is missing metadata field "name"`);
         }
 
-        this.logger.verbose(
+        this.logger.debug(
           `Registering website: ${website.prototype.metadata.name}`
         );
         this.availableWebsites[website.prototype.metadata.name] = website;

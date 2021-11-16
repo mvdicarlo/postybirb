@@ -22,12 +22,16 @@ const DATA_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'data');
  */
 const WEBSITE_DATA_DIRECTORY = join(DATA_DIRECTORY, 'website-data');
 
+/** Directory that stores application logs. */
+const LOGS_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'logs');
+
 /** Directory used for storing uploaded files. */
 const TEMP_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'temp');
 
 function initializeDirectories() {
   ensureDirSync(DATA_DIRECTORY);
   ensureDirSync(WEBSITE_DATA_DIRECTORY);
+  ensureDirSync(LOGS_DIRECTORY);
   clearTempDirectory();
 }
 
@@ -41,6 +45,7 @@ export {
   DATA_DIRECTORY,
   WEBSITE_DATA_DIRECTORY,
   TEMP_DIRECTORY,
+  LOGS_DIRECTORY,
   initializeDirectories,
   clearTempDirectory,
 };

@@ -157,6 +157,10 @@ export class AccountService implements OnModuleInit {
    * @param {UnknownWebsite} website
    */
   private async awaitPendingLogin(website: UnknownWebsite): Promise<void> {
+    if (!website.getLoginState().pending) {
+      return;
+    }
+
     await waitUntil(() => website.getLoginState().pending, 1000);
   }
 

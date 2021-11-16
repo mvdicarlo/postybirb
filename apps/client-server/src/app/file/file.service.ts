@@ -1,5 +1,12 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
+import { Log } from '@postybirb/logger';
 import { nativeImage } from 'electron';
 import { Express } from 'express';
 import type { queueAsPromised } from 'fastq';
@@ -72,6 +79,7 @@ export class FileService {
    * @param {Express.Multer.File} file
    * @return {*}  {Promise<File>}
    */
+  @Log()
   public async create(file: Express.Multer.File): Promise<File> {
     return await this.queue.push({ file });
   }

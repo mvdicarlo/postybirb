@@ -36,6 +36,9 @@
     "http": {
       "tags": []
     },
+    "logger": {
+      "tags": []
+    },
     "postybirb": {
       "tags": []
     },
