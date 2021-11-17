@@ -12,6 +12,7 @@ import { FileData } from './entities/file-data.entity';
 import { File } from './entities/file.entity';
 import { ImageUtil } from './utils/image.util';
 import { Sharp } from 'sharp';
+import { cpus } from 'os';
 
 type Task = {
   file: Express.Multer.File;
@@ -28,7 +29,7 @@ export class FileService {
   private readonly queue: queueAsPromised<Task, File> = fastq.promise<
     this,
     Task
-  >(this, this.createTask, 1);
+  >(this, this.createTask, Math.min(cpus().length, 2));
 
   constructor(
     @Inject(FILE_REPOSITORY)
@@ -74,7 +75,6 @@ export class FileService {
    * @param {Express.Multer.File} file
    * @return {*}  {Promise<File>}
    */
-  @Log()
   public async create(file: Express.Multer.File): Promise<File> {
     return await this.queue.push({ file });
   }
@@ -92,6 +92,7 @@ export class FileService {
    * @param {Express.Multer.File} file
    * @return {*}  {Promise<File>}
    */
+   @Log()
   private async createFile(file: Express.Multer.File): Promise<File> {
     try {
       const { mimetype, originalname, size } = file;
