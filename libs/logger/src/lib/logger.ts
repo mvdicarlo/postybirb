@@ -29,7 +29,7 @@ export function initialize(): void {
         verbose: false,
         max_logs: '7d',
         audit_file: join(PostyBirbDirectories.LOGS_DIRECTORY, 'audit.txt'),
-        date_format: 'YYYY-MM-DD'
+        date_format: 'YYYY-MM-DD',
       })
     );
   }
@@ -98,11 +98,11 @@ function processResult(result: any) {
   return JSON.parse(
     JSON.stringify(result, (key, value) => {
       if (value instanceof Buffer) {
-        return `<Buffer ${value.slice(0, 25).join(' ')}>`;
+        return `<Buffer ${value.length}>`;
       }
 
       if (value instanceof Array && value.length >= 50) {
-        return `<Array ${value.slice(0, 50).join(' ')}>`;
+        return `<Array ${value.length}>`;
       }
 
       return value;

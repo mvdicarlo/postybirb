@@ -1,7 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
 import { Log, Logger } from '@postybirb/logger';
-import { nativeImage } from 'electron';
 import { Express } from 'express';
 import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
@@ -12,6 +11,7 @@ import { FILE_DATA_REPOSITORY, FILE_REPOSITORY } from '../constants';
 import { FileData } from './entities/file-data.entity';
 import { File } from './entities/file.entity';
 import { ImageUtil } from './utils/image.util';
+import { Sharp } from 'sharp';
 
 type Task = {
   file: Express.Multer.File;
@@ -105,11 +105,16 @@ export class FileService {
       const buf: Buffer = await read(file.path);
       let thumbnail: FileData;
       if (ImageUtil.isImage(file.mimetype, true)) {
-        const { height, width } = await ImageUtil.getMetadata(buf);
+        const sharpInstance = ImageUtil.load(buf);
+        const { height, width } = await sharpInstance.metadata();
         fileEntity.width = width;
         fileEntity.height = height;
 
-        thumbnail = await this.createFileThumbnail(fileEntity, file);
+        thumbnail = await this.createFileThumbnail(
+          fileEntity,
+          file,
+          sharpInstance
+        );
       }
 
       const data = this.createFileDataEntity(fileEntity, buf);
@@ -134,7 +139,8 @@ export class FileService {
    */
   private async createFileThumbnail(
     fileEntity: File,
-    file: Express.Multer.File
+    file: Express.Multer.File,
+    sharpInstance: Sharp
   ): Promise<FileData> {
     const preferredDimension = 300;
 
@@ -153,12 +159,10 @@ export class FileService {
       width = Math.min(fileEntity.width, width);
     }
 
-    const thumbnail = await nativeImage.createThumbnailFromPath(file.path, {
-      width,
-      height,
-    });
-
-    const thumbnailBuf = thumbnail.toJPEG(99);
+    const thumbnailBuf = await sharpInstance
+      .resize(width, height)
+      .jpeg({ quality: 90, force: true })
+      .toBuffer();
 
     const thumbnailEntity = this.createFileDataEntity(fileEntity, thumbnailBuf);
 

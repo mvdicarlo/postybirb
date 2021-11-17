@@ -13,4 +13,8 @@ export class ImageUtil {
     const image = sharp(bufferOrPath);
     return image.metadata();
   }
+
+  static load(bufferOrPath: Buffer | string) {
+    return sharp(bufferOrPath);
+  }
 }
