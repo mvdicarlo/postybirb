@@ -94,7 +94,6 @@ export class FileService {
    */
   private async createFile(file: Express.Multer.File): Promise<File> {
     try {
-      this.logger.log(`Creating file ${file.originalname} (${file.mimetype})`);
       const { mimetype, originalname, size } = file;
       const fileEntity = this.fileRepository.create({
         id: uuid(),

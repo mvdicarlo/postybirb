@@ -1,6 +1,6 @@
 import * as pinoms from 'pino-multi-stream';
 import P, { pino } from 'pino';
-import * as rfs from 'rotating-file-stream';
+import * as rotator from 'file-stream-rotator';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { join } from 'path';
 import { v4 as uuid } from 'uuid';
@@ -22,16 +22,16 @@ export function initialize(): void {
   }
 
   if (!isTest) {
-    streams.push({
-      stream: rfs.createStream(
-        join(PostyBirbDirectories.LOGS_DIRECTORY, 'app.log'),
-        {
-          interval: '1d',
-          compress: 'gzip',
-          maxFiles: 7,
-        }
-      ),
-    });
+    streams.push(
+      rotator.getStream({
+        filename: join(PostyBirbDirectories.LOGS_DIRECTORY, 'pb-%DATE%.log'),
+        frequency: '1m',
+        verbose: false,
+        max_logs: '7d',
+        audit_file: join(PostyBirbDirectories.LOGS_DIRECTORY, 'audit.txt'),
+        date_format: 'YYYY-MM-DD'
+      })
+    );
   }
 
   logger = pinoms({ streams });
