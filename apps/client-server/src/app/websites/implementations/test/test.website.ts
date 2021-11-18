@@ -1,9 +1,9 @@
 import { TestMetadata } from '@postybirb/website-metadata';
-import BaseWebsiteOptions from '../../../submission/models/base-website-options.model';
-import FileSubmission from '../../../submission/models/file-submission.model';
-import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
-import messageSubmissionModel from '../../../submission/models/message-submission.model';
-import PostData from '../../../submission/models/post-data.model';
+import BaseWebsiteOptions from '../../../submission/models_maybe/base-website-options.model';
+import FileSubmission from '../../../submission/models_maybe/file-submission.model';
+import FileWebsiteOptions from '../../../submission/models_maybe/file-website-options.model';
+import messageSubmissionModel from '../../../submission/models_maybe/message-submission.model';
+import PostData from '../../../submission/models_maybe/post-data.model';
 import { FileWebsite } from '../../models/file-website.interface';
 import { ILoginState } from '../../models/login-state.interface';
 import { MessageWebsite } from '../../models/message-website.interface';

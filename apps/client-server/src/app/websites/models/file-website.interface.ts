@@ -1,6 +1,6 @@
-import FileSubmission from '../../submission/models/file-submission.model';
-import FileWebsiteOptions from '../../submission/models/file-website-options.model';
-import PostData from '../../submission/models/post-data.model';
+import FileSubmission from '../../submission/models_maybe/file-submission.model';
+import FileWebsiteOptions from '../../submission/models_maybe/file-website-options.model';
+import PostData from '../../submission/models_maybe/post-data.model';
 import { Class } from 'type-fest';
 
 export interface FileWebsite<T extends FileWebsiteOptions> {

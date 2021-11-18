@@ -6,9 +6,16 @@ import { AccountModule } from './account/account.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
 import { FileModule } from './file/file.module';
+import { SubmissionModule } from './submission/submission.module';
 
 @Module({
-  imports: [AccountModule, WebSocketModule, WebsitesModule, FileModule],
+  imports: [
+    AccountModule,
+    WebSocketModule,
+    WebsitesModule,
+    FileModule,
+    SubmissionModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

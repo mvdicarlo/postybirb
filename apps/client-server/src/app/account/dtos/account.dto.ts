@@ -1,5 +1,5 @@
 import { ILoginState } from '../../websites/models/login-state.interface';
-import { IAccount } from '../interfaces/account.interface';
+import { IAccount } from '../models/account.interface';
 import { IsString, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { SafeObject } from '../../shared/types/safe-object.type';

@@ -1,4 +1,4 @@
-import { IAccount } from '../interfaces/account.interface';
+import { IAccount } from '../models/account.interface';
 import { IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
