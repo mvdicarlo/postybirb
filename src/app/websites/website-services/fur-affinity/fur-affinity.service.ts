@@ -296,7 +296,11 @@ export class FurAffinity extends BaseWebsiteService implements WebsiteService {
   private processForError(body: string): string | undefined {
     if (body.includes('redirect-message')) {
       const body$ = $.parseHTML(body);
-      const msg = $(body$).find('.redirect-message').first().text();
+      let msg = $(body$).find('.redirect-message').first().text();
+      if (msg && msg.includes('CAPTCHA')) {
+        msg =
+          'You need at least 11+ posts on your account before you can use PostyBirb with Fur Affinity.';
+      }
       return msg;
     }
 
