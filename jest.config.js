@@ -7,5 +7,6 @@ module.exports = {
     '<rootDir>/libs/fs',
     '<rootDir>/libs/utils/electron',
     '<rootDir>/libs/website-metadata',
+    '<rootDir>/libs/form-builder',
   ],
 };
