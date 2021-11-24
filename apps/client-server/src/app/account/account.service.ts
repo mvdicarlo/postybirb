@@ -121,7 +121,7 @@ export class AccountService implements OnModuleInit {
    * @param {UnknownWebsite} website
    */
   private async executeOnLogin(website: UnknownWebsite) {
-    this.logger.log(`Running onLogin on ${website.id}`);
+    this.logger.trace(`Running onLogin on ${website.id}`);
     try {
       await this.awaitPendingLogin(website);
       website.onBeforeLogin();
@@ -158,7 +158,7 @@ export class AccountService implements OnModuleInit {
       return;
     }
 
-    await waitUntil(() => website.getLoginState().pending, 1000);
+    await waitUntil(() => !website.getLoginState().pending, 500);
   }
 
   /**
