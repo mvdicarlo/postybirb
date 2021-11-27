@@ -1,6 +1,6 @@
 {
   "name": "postybirb",
-  "version": "2.3.39",
+  "version": "2.3.40",
   "description": "PostyBirb is an application that helps artists post art and other multimedia to multiple websites more quickly.",
   "main": "main.js",
   "scripts": {
@@ -87,7 +87,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
-    "electron": "12.2.1",
+    "electron": "^12.2.3",
     "electron-builder": "22.11.11",
     "eslint": "^4.19.1",
     "eslint-config-airbnb": "^15.0.2",

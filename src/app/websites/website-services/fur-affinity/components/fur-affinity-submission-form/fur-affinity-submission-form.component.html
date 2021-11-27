@@ -59,9 +59,9 @@
         <div class="row no-gutters">
           <div class="col-md col-lg col-xl">
             <mat-form-field color="accent" class="w-100">
-              <mat-select formControlName="species" [placeholder]="'Species' | translate">
+              <mat-select formControlName="category" [placeholder]="'Category' | translate">
                 <mat-optgroup label="Visual Art">
-                  <mat-option value="1" selected="selected">All</mat-option>
+                  <mat-option value="1">All</mat-option>
                   <mat-option value="2">Artwork (Digital)</mat-option>
                   <mat-option value="3">Artwork (Traditional)</mat-option>
                   <mat-option value="4">Cellshading</mat-option>
@@ -168,7 +168,7 @@
           <div class="col-md col-lg col-xl">
             <mat-form-field color="accent" class="w-100">
               <mat-select formControlName="species" [placeholder]="'Species' | translate">
-                <mat-option value="1" selected="selected">Unspecified / Any</mat-option>
+                <mat-option value="1" selected>Unspecified / Any</mat-option>
                 <mat-optgroup label="General">
                   <mat-option value="10001">Airborne Vehicle</mat-option>
                   <mat-option value="5001">Alien (Other)</mat-option>
