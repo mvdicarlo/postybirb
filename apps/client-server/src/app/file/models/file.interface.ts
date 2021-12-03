@@ -10,4 +10,5 @@ export interface IFile {
   // @todo figure out types
   modifiers: any[];
   data: Promise<FileData[]>; // Promise for lazy loading
+  hash: string;
 }

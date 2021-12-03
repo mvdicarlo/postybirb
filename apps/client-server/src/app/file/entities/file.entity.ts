@@ -25,6 +25,9 @@ export class File implements IFile {
   @Column({ type: 'simple-array', nullable: false })
   modifiers: any[] = [];
 
+  @Column({ nullable: false })
+  hash: string;
+
   @OneToMany(() => FileData, (fileData) => fileData.file, {
     cascade: true,
   })

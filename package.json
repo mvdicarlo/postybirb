@@ -44,6 +44,7 @@
     "file-stream-rotator": "^0.5.7",
     "form-data": "^4.0.0",
     "form-urlencoded": "^6.0.4",
+    "hasha": "^5.2.2",
     "moment": "^2.29.1",
     "multer": "^1.4.3",
     "pino": "^7.2.0",

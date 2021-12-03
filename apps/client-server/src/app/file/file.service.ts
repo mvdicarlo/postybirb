@@ -13,6 +13,7 @@ import { File } from './entities/file.entity';
 import { ImageUtil } from './utils/image.util';
 import { Sharp } from 'sharp';
 import { cpus } from 'os';
+import { async as hash } from 'hasha';
 
 type Task = {
   file: Express.Multer.File;
@@ -92,7 +93,7 @@ export class FileService {
    * @param {Express.Multer.File} file
    * @return {*}  {Promise<File>}
    */
-   @Log()
+  @Log()
   private async createFile(file: Express.Multer.File): Promise<File> {
     try {
       const { mimetype, originalname, size } = file;
@@ -120,6 +121,7 @@ export class FileService {
 
       const data = this.createFileDataEntity(fileEntity, buf);
       fileEntity.data = Promise.resolve(thumbnail ? [data, thumbnail] : [data]);
+      fileEntity.hash = await hash(buf, { algorithm: 'md5' });
 
       const savedEntity = await this.fileRepository.save(fileEntity);
       return savedEntity;
