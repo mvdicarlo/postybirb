@@ -37,7 +37,7 @@ export class AccountController {
 
   @Get(':id')
   @ApiOkResponse({ description: 'The requested Account.' })
-  @ApiNotFoundResponse({ description: 'Account Id not found.' })
+  @ApiNotFoundResponse({ description: 'Account not found.' })
   async findOne(@Param('id') id: string, @Query('refresh') refresh: boolean) {
     if (Coerce.boolean(refresh)) {
       await this.service.manuallyExecuteOnLogin(id);

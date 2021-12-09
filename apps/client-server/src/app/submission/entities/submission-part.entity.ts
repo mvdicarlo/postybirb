@@ -1,22 +1,26 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Account } from '../../account/entities/account.entity';
-import { IAccount } from '../../account/models/account.interface';
 import { SafeObject } from '../../shared/types/safe-object.type';
 import { ISubmissionPart } from '../models/submission-part.interface';
-import { ISubmission } from '../models/submission.interface';
 import { Submission } from './submission.entity';
 
 @Entity()
 export class SubmissionPart<T extends SafeObject>
   implements ISubmissionPart<T>
 {
-  @PrimaryColumn('uuid', { unique: true })
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ManyToOne(() => Submission, (submission) => submission.parts, {
     onDelete: 'CASCADE',
     nullable: false,
-    eager: true,
+    eager: false,
   })
   @JoinColumn()
   submission: Submission<SafeObject>;
@@ -26,7 +30,7 @@ export class SubmissionPart<T extends SafeObject>
 
   @ManyToOne(() => Account, {
     onDelete: 'CASCADE',
-    nullable: false,
+    nullable: true,
     eager: true,
   })
   @JoinColumn()

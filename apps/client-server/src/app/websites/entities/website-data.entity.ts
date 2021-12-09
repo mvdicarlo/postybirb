@@ -3,9 +3,9 @@ import { SafeObject } from '../../shared/types/safe-object.type';
 
 @Entity()
 export class WebsiteData<T extends SafeObject> {
-    @PrimaryColumn()
-    id: string; 
+  @PrimaryColumn()
+  id: string;
 
-    @Column("simple-json")
-    data: T;
+  @Column('simple-json')
+  data: T;
 }

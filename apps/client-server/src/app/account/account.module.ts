@@ -9,5 +9,6 @@ import { WebsitesModule } from '../websites/websites.module';
   imports: [DatabaseModule, WebsitesModule],
   providers: [AccountProvider, AccountService],
   controllers: [AccountController],
+  exports: [AccountService],
 })
 export class AccountModule {}

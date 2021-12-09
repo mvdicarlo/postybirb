@@ -1,11 +1,11 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-      {
-        "name": "Debug Node App",
-        "type": "node",
-        "request": "attach",
-        "port": 9229
-      }
-    ]
-  }
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Node App",
+      "type": "node",
+      "request": "attach",
+      "port": 9229
+    }
+  ]
+}

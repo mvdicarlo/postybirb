@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { SafeObject } from '../../shared/types/safe-object.type';
-import { ScheduleType } from '../enums/schedule-type.enum';
 import SubmissionType from '../enums/submission-type.enum';
 import { ISubmissionPart } from '../models/submission-part.interface';
+import { ISubmissionScheduleInfo } from '../models/submission-schedule-info.interface';
 import { ISubmission } from '../models/submission.interface';
 import { SubmissionPart } from './submission-part.entity';
 
@@ -19,18 +19,16 @@ export class Submission<T extends SafeObject> implements ISubmission<T> {
     (submissionPart) => submissionPart.submission,
     {
       cascade: true,
+      eager: true,
     }
   )
   parts: ISubmissionPart<SafeObject>[];
 
-  @Column({ type: 'varchar', nullable: false })
-  scheduleType: ScheduleType;
-
   @Column({ type: 'boolean', nullable: false })
   isScheduled: boolean;
 
-  @Column({ nullable: true })
-  scheduledFor: string;
+  @Column({ type: 'simple-json', nullable: false })
+  schedule: ISubmissionScheduleInfo;
 
   @Column({ type: 'simple-json', nullable: false })
   metadata: T;

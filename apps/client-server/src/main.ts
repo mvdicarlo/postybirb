@@ -28,8 +28,9 @@ async function bootstrap(appPort?: number) {
     .setDescription('PostyBirb API')
     .setVersion('1.0')
     .addTag('account')
-    .addTag('websites')
     .addTag('file')
+    .addTag('submission')
+    .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

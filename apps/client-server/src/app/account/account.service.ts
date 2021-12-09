@@ -226,6 +226,23 @@ export class AccountService implements OnModuleInit {
         data: instance.getWebsiteData(),
       };
     } catch (e) {
+      this.logger.error(e);
+      throw new NotFoundException(id);
+    }
+  }
+
+  /**
+   * Finds an account matching the Id provided.
+   * Does not return additional login data.
+   *
+   * @param {string} id
+   * @return {*}  {Promise<Account>}
+   */
+  async findAccount(id: string): Promise<Account> {
+    try {
+      return await this.accountRepository.findOneOrFail(id);
+    } catch (e) {
+      this.logger.error(e);
       throw new NotFoundException(id);
     }
   }

@@ -22,7 +22,7 @@ export const TypeormDatabaseProviders: Provider[] = [
       return await createConnection({
         type: 'sqlite',
         database: DATABASE_PATH,
-        synchronize: true,//!exists,
+        synchronize: true, //!exists,
         entities,
       });
     },
