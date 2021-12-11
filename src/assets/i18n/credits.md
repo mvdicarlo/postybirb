@@ -40,3 +40,6 @@ DZ-Aladan (Discord)
 
 TH / Thai
 Fenrirwolfen
+
+CS / Czech
+Just Dery (Discord)
