@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -19,6 +20,7 @@ import {
 import { Express } from 'express';
 import 'multer';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { SubmissionService } from '../services/submission.service';
 
 /**
@@ -50,22 +52,34 @@ export class SubmissionController {
     if (files.length) {
       const results = await Promise.allSettled(
         files.map((file, index) => {
-          const createSubmission = new CreateSubmissionDto();
-          createSubmissionDto.type = createSubmissionDto.type;
+          const createFileSubmission = new CreateSubmissionDto();
+          Object.assign(createFileSubmission, createSubmissionDto);
           if (!createSubmissionDto.name) {
-            createSubmission.name = file.originalname;
+            createFileSubmission.name = file.originalname;
           } else {
-            createSubmission.name = `${createSubmissionDto.name} - ${index}`;
+            createFileSubmission.name = `${createSubmissionDto.name} - ${index}`;
           }
 
-          return this.service.create(createSubmission);
+          return this.service.create(createFileSubmission, file);
         })
       );
-      console.log(results);
+
       return results;
     } else {
-      return await this.service.create(createSubmissionDto);
+      return Promise.allSettled([
+        await this.service.create(createSubmissionDto),
+      ]);
     }
+  }
+
+  @Patch(':id')
+  @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  update(
+    @Param('id') id: string,
+    @Body() updateSubmissionDto: UpdateSubmissionDto
+  ) {
+    return this.service.update(id, updateSubmissionDto);
   }
 
   @Delete(':id')

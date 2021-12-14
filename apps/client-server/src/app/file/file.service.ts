@@ -21,6 +21,7 @@ type Task = {
 
 /**
  * Service that handles storing file data into database.
+ * @todo text encoding parsing and file name conversion (no periods)
  *
  * @class FileService
  */
@@ -87,7 +88,6 @@ export class FileService {
   /**
    * Creates file entity and stores it.
    * @todo extra data (image resize per website)
-   * @todo isLinux check
    * @todo figure out what to do about non-image
    *
    * @param {Express.Multer.File} file

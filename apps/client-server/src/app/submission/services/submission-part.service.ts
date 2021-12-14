@@ -6,6 +6,7 @@ import { SafeObject } from '../../shared/types/safe-object.type';
 import { SubmissionPart } from '../entities/submission-part.entity';
 import { Submission } from '../entities/submission.entity';
 import { v4 as uuid } from 'uuid';
+import { IBaseSubmissionMetadata } from '../models/base-submission-metadata.model';
 
 @Injectable()
 export class SubmissionPartService {
@@ -19,7 +20,7 @@ export class SubmissionPartService {
   ) {}
 
   createDefaultSubmissionPart(
-    submission: Submission<SafeObject>
+    submission: Submission<IBaseSubmissionMetadata>
   ): SubmissionPart<SafeObject> {
     const submissionPart = this.submissionRepository.create({
       id: uuid(),

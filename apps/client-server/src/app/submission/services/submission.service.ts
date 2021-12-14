@@ -11,11 +11,19 @@ import { DeleteResult, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
 import { SUBMISSION_REPOSITORY } from '../../constants';
-import { SafeObject } from '../../shared/types/safe-object.type';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { Submission } from '../entities/submission.entity';
 import { ScheduleType } from '../enums/schedule-type.enum';
 import SubmissionType from '../enums/submission-type.enum';
+import {
+  FileSubmission,
+  isFileSubmission,
+} from '../models/file-submission.model';
+import { MessageSubmission } from '../models/message-submission.model';
+import { SubmissionMetadataType } from '../models/submission-metadata-types.model';
+import { FileSubmissionService } from './file-submission.service';
+import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionPartService } from './submission-part.service';
 
 @Injectable()
@@ -24,17 +32,29 @@ export class SubmissionService {
 
   constructor(
     @Inject(SUBMISSION_REPOSITORY)
-    private readonly submissionRepository: Repository<Submission<SafeObject>>,
+    private readonly submissionRepository: Repository<
+      Submission<SubmissionMetadataType>
+    >,
     private readonly accountService: AccountService,
-    private readonly submissionPartService: SubmissionPartService
+    private readonly submissionPartService: SubmissionPartService,
+    private readonly fileSubmissionService: FileSubmissionService,
+    private readonly messageSubmissionService: MessageSubmissionService
   ) {}
 
+  /**
+   * Creates a submission.
+   * @todo need to make transactional
+   *
+   * @param {CreateSubmissionDto} createSubmissionDto
+   * @param {Express.Multer.File} [file]
+   * @return {*}  {Promise<Submission<SubmissionMetadataType>>}
+   */
   @Log()
   async create(
     createSubmissionDto: CreateSubmissionDto,
     file?: Express.Multer.File
-  ): Promise<Submission<SafeObject>> {
-    const submission = this.submissionRepository.create({
+  ): Promise<Submission<SubmissionMetadataType>> {
+    let submission = this.submissionRepository.create({
       id: uuid(),
       ...createSubmissionDto,
       isScheduled: false,
@@ -48,7 +68,16 @@ export class SubmissionService {
 
     switch (createSubmissionDto.type) {
       case SubmissionType.MESSAGE: {
-        // TODO
+        if (file) {
+          throw new BadRequestException(
+            'A file was provided for SubmissionType Message.'
+          );
+        }
+
+        await this.messageSubmissionService.populate(
+          submission as MessageSubmission,
+          createSubmissionDto
+        );
         break;
       }
 
@@ -59,7 +88,11 @@ export class SubmissionService {
           );
         }
 
-        // TODO
+        await this.fileSubmissionService.populate(
+          submission as FileSubmission,
+          createSubmissionDto,
+          file
+        );
         break;
       }
 
@@ -83,13 +116,40 @@ export class SubmissionService {
    * @param {string} id
    * @return {*}  {Promise<Submission<SafeObject>>}
    */
-  async findOne(id: string): Promise<Submission<SafeObject>> {
+  async findOne(id: string): Promise<Submission<any>> {
     try {
       return await this.submissionRepository.findOneOrFail(id);
     } catch (e) {
       this.logger.error(e);
       throw new NotFoundException(id);
     }
+  }
+
+  /**
+   * Update a Submission matching the Id provided.
+   *
+   * @param {string} id
+   * @param {UpdateSubmissionDto} updateSubmissionDto
+   * @return {*}  {Promise<boolean>}
+   */
+  async update(
+    id: string,
+    updateSubmissionDto: UpdateSubmissionDto
+  ): Promise<boolean> {
+    const submission = await this.findOne(id);
+
+    submission.isScheduled = updateSubmissionDto.isSchduled;
+    submission.schedule = {
+      scheduledFor: updateSubmissionDto.scheduledFor,
+      scheduleType: updateSubmissionDto.scheduleType,
+    };
+
+    return await this.submissionRepository
+      .save(submission)
+      .then(() => true)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
   }
 
   /**
@@ -100,7 +160,12 @@ export class SubmissionService {
    */
   @Log()
   async remove(id: string): Promise<DeleteResult> {
-    await this.findOne(id);
+    const submission = await this.findOne(id);
+
+    if (isFileSubmission(submission)) {
+      await this.fileSubmissionService.remove(submission);
+    }
+
     return await this.submissionRepository.delete(id).then((result) => {
       return result;
     });

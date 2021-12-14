@@ -28,5 +28,6 @@ import { extname } from 'path';
   ],
   controllers: [FileController],
   providers: [FileProvider, FileDataProvider, FileService],
+  exports: [FileService],
 })
 export class FileModule {}
