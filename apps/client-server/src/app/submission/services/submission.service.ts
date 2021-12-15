@@ -5,12 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
-import { Express } from 'express';
-import 'multer';
 import { DeleteResult, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
 import { SUBMISSION_REPOSITORY } from '../../constants';
+import { MulterFileInfo } from '../../file/models/multer-file-info.interface';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { Submission } from '../entities/submission.entity';
@@ -26,6 +25,11 @@ import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionPartService } from './submission-part.service';
 
+/**
+ * Service that handles the vast majority of submission management logic.
+ *
+ * @class SubmissionService
+ */
 @Injectable()
 export class SubmissionService {
   private readonly logger = Logger(SubmissionService.name);
@@ -46,13 +50,13 @@ export class SubmissionService {
    * @todo need to make transactional
    *
    * @param {CreateSubmissionDto} createSubmissionDto
-   * @param {Express.Multer.File} [file]
+   * @param {MulterFileInfo} [file]
    * @return {*}  {Promise<Submission<SubmissionMetadataType>>}
    */
   @Log()
   async create(
     createSubmissionDto: CreateSubmissionDto,
-    file?: Express.Multer.File
+    file?: MulterFileInfo
   ): Promise<Submission<SubmissionMetadataType>> {
     let submission = this.submissionRepository.create({
       id: uuid(),
@@ -170,4 +174,97 @@ export class SubmissionService {
       return result;
     });
   }
+
+  /** File Actions */
+
+  /**
+   * Adds a file to a submission.
+   *
+   * @param {string} id
+   * @param {MulterFileInfo} file
+   */
+  async appendFile(id: string, file: MulterFileInfo) {
+    const submission = await this.findOne(id);
+
+    if (isFileSubmission(submission)) {
+      await this.fileSubmissionService.appendFile(submission, file);
+      return this.submissionRepository.save(submission);
+    }
+
+    throw new BadRequestException('Submission is not a FILE submission.');
+  }
+
+  /**
+   * Appends a thumbnail file to the associated fileId
+   *
+   * @param {string} id
+   * @param {string} fileId
+   * @param {MulterFileInfo} file
+   */
+  async appendThumbnail(id: string, fileId: string, file: MulterFileInfo) {
+    const submission = await this.findOne(id);
+
+    if (isFileSubmission(submission)) {
+      await this.fileSubmissionService.appendThumbnailFile(
+        submission,
+        fileId,
+        file
+      );
+      return this.submissionRepository.save(submission);
+    }
+
+    throw new BadRequestException('Submission is not a FILE submission.');
+  }
+
+  async replaceFile(id: string, fileId: string, file: MulterFileInfo) {
+    const submission = await this.findOne(id);
+
+    if (isFileSubmission(submission)) {
+      await this.fileSubmissionService.replaceFile(submission, fileId, file);
+      return this.submissionRepository.save(submission);
+    }
+
+    throw new BadRequestException('Submission is not a FILE submission.');
+  }
+
+  /**
+   * Replaces a thumbnail file.
+   *
+   * @param {string} id
+   * @param {string} fileId
+   * @param {MulterFileInfo} file
+   */
+  async replaceThumbnail(id: string, fileId: string, file: MulterFileInfo) {
+    const submission = await this.findOne(id);
+
+    if (isFileSubmission(submission)) {
+      await this.fileSubmissionService.replaceThumbnailFile(
+        submission,
+        fileId,
+        file
+      );
+      return this.submissionRepository.save(submission);
+    }
+
+    throw new BadRequestException('Submission is not a FILE submission.');
+  }
+
+  /**
+   * Removes a file of thumbnail that matches file id.
+   *
+   * @param {string} id
+   * @param {string} fileId
+   */
+  async removeFile(id: string, fileId: string) {
+    const submission = await this.findOne(id);
+
+    if (isFileSubmission(submission)) {
+      await this.fileSubmissionService.removeFile(submission, fileId);
+      return this.submissionRepository.save(submission);
+    }
+
+    throw new BadRequestException('Submission is not a FILE submission.');
+  }
+
+  /** End of File Actions */
 }

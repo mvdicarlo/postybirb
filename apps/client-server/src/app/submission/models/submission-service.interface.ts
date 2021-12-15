@@ -1,8 +1,7 @@
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { Submission } from '../entities/submission.entity';
 import { SubmissionMetadataType } from './submission-metadata-types.model';
-import { Express } from 'express';
-import 'multer';
+import { MulterFileInfo } from '../../file/models/multer-file-info.interface';
 
 export interface ISubmissionService<
   T extends Submission<SubmissionMetadataType>
@@ -10,7 +9,7 @@ export interface ISubmissionService<
   populate(
     submission: T,
     createSubmissionDto: CreateSubmissionDto,
-    file?: Express.Multer.File
+    file?: MulterFileInfo
   ): Promise<void>;
 
   remove?(submission: T): Promise<void>;

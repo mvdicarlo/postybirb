@@ -1,10 +1,8 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
 import { Log, Logger } from '@postybirb/logger';
-import { Express } from 'express';
 import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
-import 'multer';
 import { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { FILE_DATA_REPOSITORY, FILE_REPOSITORY } from '../constants';
@@ -14,9 +12,10 @@ import { ImageUtil } from './utils/image.util';
 import { Sharp } from 'sharp';
 import { cpus } from 'os';
 import { async as hash } from 'hasha';
+import { MulterFileInfo } from './models/multer-file-info.interface';
 
 type Task = {
-  file: Express.Multer.File;
+  file: MulterFileInfo;
 };
 
 /**
@@ -74,10 +73,10 @@ export class FileService {
   /**
    * Queues a file to create a database record.
    *
-   * @param {Express.Multer.File} file
+   * @param {MulterFileInfo} file
    * @return {*}  {Promise<File>}
    */
-  public async create(file: Express.Multer.File): Promise<File> {
+  public async create(file: MulterFileInfo): Promise<File> {
     return await this.queue.push({ file });
   }
 
@@ -90,11 +89,11 @@ export class FileService {
    * @todo extra data (image resize per website)
    * @todo figure out what to do about non-image
    *
-   * @param {Express.Multer.File} file
+   * @param {MulterFileInfo} file
    * @return {*}  {Promise<File>}
    */
   @Log()
-  private async createFile(file: Express.Multer.File): Promise<File> {
+  private async createFile(file: MulterFileInfo): Promise<File> {
     try {
       const { mimetype, originalname, size } = file;
       const fileEntity = this.fileRepository.create({
@@ -137,12 +136,12 @@ export class FileService {
    * Returns a thumbnail entity for a file.
    *
    * @param {File} fileEntity
-   * @param {Express.Multer.File} file
+   * @param {MulterFileInfo} file
    * @return {*}  {Promise<FileData>}
    */
   private async createFileThumbnail(
     fileEntity: File,
-    file: Express.Multer.File,
+    file: MulterFileInfo,
     sharpInstance: Sharp
   ): Promise<FileData> {
     const preferredDimension = 300;

@@ -6,19 +6,20 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
+  ApiBody,
   ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Express } from 'express';
-import 'multer';
+import { MulterFileInfo } from '../../file/models/multer-file-info.interface';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { SubmissionService } from '../services/submission.service';
@@ -47,7 +48,7 @@ export class SubmissionController {
   @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
   async create(
     @Body() createSubmissionDto: CreateSubmissionDto,
-    @UploadedFiles() files: Express.Multer.File[]
+    @UploadedFiles() files: MulterFileInfo[]
   ) {
     if (files.length) {
       const results = await Promise.allSettled(
@@ -70,6 +71,108 @@ export class SubmissionController {
         await this.service.create(createSubmissionDto),
       ]);
     }
+  }
+
+  @Post('file/add/:id')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({ description: 'File appended.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  async appendFile(
+    @Param('id') id: string,
+    @UploadedFile() file: MulterFileInfo
+  ) {
+    return this.service.appendFile(id, file);
+  }
+
+  @Post('file/replace/:id/:fileId')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({ description: 'File replaced.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  async replaceFile(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+    @UploadedFile() file: MulterFileInfo
+  ) {
+    return this.service.replaceFile(id, fileId, file);
+  }
+
+  @Post('thumbnail/add/:id/:fileId')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({ description: 'Thumbnail file appended.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  async appendThumbnail(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+    @UploadedFile() file: MulterFileInfo
+  ) {
+    return this.service.appendThumbnail(id, fileId, file);
+  }
+
+  @Post('thumbnail/append/:id/:fileId')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @ApiOkResponse({ description: 'Thumbnail file replaced.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  async replaceThumbnail(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+    @UploadedFile() file: MulterFileInfo
+  ) {
+    return this.service.replaceThumbnail(id, fileId, file);
+  }
+
+  @Delete('file/remove/:id/:fileId')
+  @ApiOkResponse({ description: 'File removed.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  async removeFile(@Param('id') id: string, @Param('fileId') fileId: string) {
+    return this.service.removeFile(id, fileId);
   }
 
   @Patch(':id')

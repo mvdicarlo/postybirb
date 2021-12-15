@@ -15,9 +15,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Express } from 'express';
-import 'multer';
 import { FileService } from './file.service';
+import { MulterFileInfo } from './models/multer-file-info.interface';
 
 @ApiTags('file')
 @Controller('file')
@@ -52,7 +51,7 @@ export class FileController {
     },
   })
   @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
-  async uploadFile(@UploadedFiles() files: Express.Multer.File[]) {
+  async uploadFile(@UploadedFiles() files: MulterFileInfo[]) {
     const results = await Promise.all(
       files.map((file) => this.service.create(file))
     );
