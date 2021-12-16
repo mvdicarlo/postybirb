@@ -21,3 +21,6 @@ export function formBuilder<T extends Record<string, Primitive>>(
 
   return metadata;
 }
+
+export * from './decorators';
+export * from './types';

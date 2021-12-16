@@ -6,7 +6,7 @@ import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteData } from './entities/website-data.entity';
-import { OAuthWebsite } from './models/oauth-website.interface';
+import { OAuthWebsite } from './models/website-modifier-interfaces/oauth-website.interface';
 import { UnknownWebsite } from './website';
 import { Class } from 'type-fest';
 
