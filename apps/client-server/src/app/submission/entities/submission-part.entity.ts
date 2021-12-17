@@ -8,10 +8,11 @@ import {
 import { Account } from '../../account/entities/account.entity';
 import { SafeObject } from '../../shared/types/safe-object.type';
 import { ISubmissionPart } from '../models/submission-part.interface';
+import BaseWebsiteOptions from '../models_maybe/base-website-options.model';
 import { Submission } from './submission.entity';
 
 @Entity()
-export class SubmissionPart<T extends SafeObject>
+export class SubmissionPart<T extends BaseWebsiteOptions>
   implements ISubmissionPart<T>
 {
   @PrimaryGeneratedColumn('uuid')

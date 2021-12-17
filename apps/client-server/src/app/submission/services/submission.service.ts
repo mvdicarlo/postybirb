@@ -142,7 +142,7 @@ export class SubmissionService {
   ): Promise<boolean> {
     const submission = await this.findOne(id);
 
-    submission.isScheduled = updateSubmissionDto.isSchduled;
+    submission.isScheduled = updateSubmissionDto.isScheduled;
     submission.schedule = {
       scheduledFor: updateSubmissionDto.scheduledFor,
       scheduleType: updateSubmissionDto.scheduleType,

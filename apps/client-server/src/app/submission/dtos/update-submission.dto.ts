@@ -5,7 +5,7 @@ import { ScheduleType } from '../enums/schedule-type.enum';
 export class UpdateSubmissionDto {
   @ApiProperty()
   @IsBoolean()
-  isSchduled: boolean;
+  isScheduled: boolean;
 
   @ApiProperty()
   @IsString()

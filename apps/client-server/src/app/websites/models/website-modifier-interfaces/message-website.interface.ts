@@ -2,6 +2,7 @@ import BaseWebsiteOptions from '../../../submission/models_maybe/base-website-op
 import MessageSubmission from '../../../submission/models_maybe/message-submission.model';
 import PostData from '../../../submission/models_maybe/post-data.model';
 import { Class } from 'type-fest';
+import { UnknownWebsite } from '../../website';
 
 export interface MessageWebsite<T extends BaseWebsiteOptions> {
   messageModel: Class<T>;
@@ -18,4 +19,13 @@ export interface MessageWebsite<T extends BaseWebsiteOptions> {
     submissionData: MessageSubmission,
     postData: PostData<T>
   ): Promise<unknown>;
+}
+
+export function isMessageWebsite(
+  websiteInstance: UnknownWebsite
+): websiteInstance is MessageWebsite<BaseWebsiteOptions> & UnknownWebsite {
+  return Boolean(
+    (websiteInstance as MessageWebsite<BaseWebsiteOptions> & UnknownWebsite)
+      .supportsMessage
+  );
 }

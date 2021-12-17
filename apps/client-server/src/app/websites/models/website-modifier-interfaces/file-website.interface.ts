@@ -1,7 +1,8 @@
+import { Class } from 'type-fest';
 import FileSubmission from '../../../submission/models_maybe/file-submission.model';
 import FileWebsiteOptions from '../../../submission/models_maybe/file-website-options.model';
 import PostData from '../../../submission/models_maybe/post-data.model';
-import { Class } from 'type-fest';
+import { UnknownWebsite } from '../../website';
 
 export interface FileWebsite<T extends FileWebsiteOptions> {
   fileModel: Class<T>;
@@ -19,4 +20,13 @@ export interface FileWebsite<T extends FileWebsiteOptions> {
     submissionData: FileSubmission,
     postData: PostData<T>
   ): Promise<unknown>;
+}
+
+export function isFileWebsite(
+  websiteInstance: UnknownWebsite
+): websiteInstance is FileWebsite<FileWebsiteOptions> & UnknownWebsite {
+  return Boolean(
+    (websiteInstance as FileWebsite<FileWebsiteOptions> & UnknownWebsite)
+      .supportsFile
+  );
 }

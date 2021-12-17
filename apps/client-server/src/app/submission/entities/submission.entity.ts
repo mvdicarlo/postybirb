@@ -6,12 +6,12 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { SafeObject } from '../../shared/types/safe-object.type';
 import SubmissionType from '../enums/submission-type.enum';
 import { IBaseSubmissionMetadata } from '../models/base-submission-metadata.model';
 import { ISubmissionPart } from '../models/submission-part.interface';
 import { ISubmissionScheduleInfo } from '../models/submission-schedule-info.interface';
 import { ISubmission } from '../models/submission.interface';
+import BaseWebsiteOptions from '../models_maybe/base-website-options.model';
 import { SubmissionPart } from './submission-part.entity';
 
 @Entity()
@@ -32,7 +32,7 @@ export class Submission<T extends IBaseSubmissionMetadata>
       eager: true,
     }
   )
-  parts: ISubmissionPart<SafeObject>[];
+  parts: ISubmissionPart<BaseWebsiteOptions>[];
 
   @Column({ type: 'boolean', nullable: false })
   isScheduled: boolean;

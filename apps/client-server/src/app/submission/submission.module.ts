@@ -14,6 +14,7 @@ import { FileSubmissionService } from './services/file-submission.service';
 import { MessageSubmissionService } from './services/message-submission.service';
 import { SubmissionPartService } from './services/submission-part.service';
 import { SubmissionService } from './services/submission.service';
+import { SubmissionPartController } from './controllers/submission-part.controller';
 
 @Module({
   imports: [
@@ -43,6 +44,6 @@ import { SubmissionService } from './services/submission.service';
     MessageSubmissionService,
     FileSubmissionService,
   ],
-  controllers: [SubmissionController],
+  controllers: [SubmissionController, SubmissionPartController],
 })
 export class SubmissionModule {}

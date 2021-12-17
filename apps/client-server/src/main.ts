@@ -30,6 +30,7 @@ async function bootstrap(appPort?: number) {
     .addTag('account')
     .addTag('file')
     .addTag('submission')
+    .addTag('submission-part')
     .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);
