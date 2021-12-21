@@ -2,6 +2,7 @@ import {
   ClassSerializerInterceptor,
   ValidationPipe,
   Logger,
+  INestApplication,
 } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -9,9 +10,23 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
+import { SSL } from './app/security-and-authentication/ssl';
 
 async function bootstrap(appPort?: number) {
-  const app = await NestFactory.create(AppModule);
+  let app: INestApplication;
+  if (process.env.NODE_ENV !== 'Test') {
+    // TLS/SSL on non-test
+    const { cert, key } = await SSL.getOrCreateSSL();
+    app = await NestFactory.create(AppModule, {
+      httpsOptions: {
+        key,
+        cert,
+      },
+    });
+  } else {
+    app = await NestFactory.create(AppModule);
+  }
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
