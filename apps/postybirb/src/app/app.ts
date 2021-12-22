@@ -1,8 +1,18 @@
-import { BrowserWindow, shell, screen } from 'electron';
+import {
+  BrowserWindow,
+  shell,
+  screen,
+  nativeImage,
+  Tray,
+  Menu,
+} from 'electron';
 import { rendererAppName, rendererAppPort } from './constants';
 import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
+import { isOSX } from '@postybirb/utils/electron';
+
+const appIcon = join(__dirname, 'assets/app-icon.png');
 
 export default class App {
   // Keep a global reference of the window object, if you don't, the window will
@@ -10,6 +20,7 @@ export default class App {
   static mainWindow: Electron.BrowserWindow;
   static application: Electron.App;
   static BrowserWindow;
+  static appTray: Tray;
 
   public static isDevelopmentMode() {
     const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
@@ -20,9 +31,9 @@ export default class App {
   }
 
   private static onWindowAllClosed() {
-    if (process.platform !== 'darwin') {
-      App.application.quit();
-    }
+    // if (process.platform !== 'darwin') {
+    //   App.application.quit();
+    // }
   }
 
   private static onClose() {
@@ -44,6 +55,7 @@ export default class App {
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
+    App.initAppTray();
     App.initMainWindow();
     App.loadMainWindow();
   }
@@ -56,6 +68,10 @@ export default class App {
     }
   }
 
+  private static onQuit() {
+    process.exit();
+  }
+
   private static initMainWindow() {
     const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
     const width = Math.min(1280, workAreaSize.width || 1280);
@@ -66,10 +82,14 @@ export default class App {
       width: width,
       height: height,
       show: false,
+      icon: appIcon,
       webPreferences: {
         contextIsolation: true,
         backgroundThrottling: false,
         preload: join(__dirname, 'preload.js'),
+        webviewTag: true,
+        spellcheck: true,
+        devTools: true,
       },
     });
     App.mainWindow.setMenu(null);
@@ -78,6 +98,10 @@ export default class App {
     // if main window is ready to show, close the splash window and show the main window
     App.mainWindow.once('ready-to-show', () => {
       App.mainWindow.show();
+
+      if (App.isDevelopmentMode()) {
+        App.mainWindow.webContents.openDevTools();
+      }
     });
 
     // handle all external redirects in a new browser window
@@ -88,10 +112,7 @@ export default class App {
 
     // Emitted when the window is closed.
     App.mainWindow.on('closed', () => {
-      // Dereference the window object, usually you would store windows
-      // in an array if your app supports multi windows, this is the time
-      // when you should delete the corresponding element.
-      App.mainWindow = null;
+      App.onClose();
     });
   }
 
@@ -110,6 +131,54 @@ export default class App {
     }
   }
 
+  private static initAppTray() {
+    if (!App.appTray) {
+      const trayItems: Array<
+        Electron.MenuItem | Electron.MenuItemConstructorOptions
+      > = [
+        {
+          label: 'Open',
+          click() {
+            App.showMainWindow();
+          },
+        },
+        {
+          label: 'Quit',
+          click() {
+            App.application.quit();
+          },
+        },
+      ];
+
+      let image = nativeImage.createFromPath(appIcon);
+      if (isOSX()) {
+        image = image.resize({
+          width: 16,
+          height: 16,
+        });
+      }
+
+      const tray = new Tray(image);
+      tray.setContextMenu(Menu.buildFromTemplate(trayItems));
+      tray.setToolTip('PostyBirb');
+      tray.on('click', () => App.showMainWindow());
+
+      App.appTray = tray;
+    }
+  }
+
+  private static showMainWindow() {
+    if (!App.mainWindow) {
+      App.onReady();
+    } else {
+      if (App.mainWindow.isMinimized()) {
+        App.mainWindow.show();
+      }
+
+      App.mainWindow.focus();
+    }
+  }
+
   static main(app: Electron.App, browserWindow: typeof BrowserWindow) {
     // we pass the Electron.App object and the
     // Electron.BrowserWindow into this function
@@ -122,5 +191,15 @@ export default class App {
     App.application.on('window-all-closed', App.onWindowAllClosed); // Quit when all windows are closed.
     App.application.on('ready', App.onReady); // App is ready to load data
     App.application.on('activate', App.onActivate); // App is activated
+    App.application.on('second-instance', () => {
+      if (App.application.isReady()) {
+        App.onReady();
+      }
+    });
+    App.application.on('quit', App.onQuit);
+
+    if (App.application.isReady()) {
+      App.onReady();
+    }
   }
 }

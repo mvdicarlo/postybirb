@@ -4,9 +4,9 @@
   "license": "MIT",
   "scripts": {
     "nx": "nx",
-    "start": "nx serve",
-    "start:all": "nx run-many --target=serve --projects=postybirb,ui --parallel",
-    "build": "nx build",
+    "start": "nx run-many --target=serve --projects=postybirb,ui --parallel",
+    "build": "nx run-many --target=build --projects=postybirb,ui --parallel",
+    "package": "nx run postybirb:package",
     "test": "nx test",
     "lint": "nx workspace-lint && nx lint",
     "e2e": "nx e2e",

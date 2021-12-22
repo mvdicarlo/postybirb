@@ -1,7 +1,7 @@
 {
   "/api": {
-    "target": "http://localhost:3333",
-    "secure": false
+    "target": "https://localhost:3333",
+    "secure": true
   },
   "/client-server-api": {
     "target": "http://localhost:3333",
