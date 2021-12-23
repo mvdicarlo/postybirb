@@ -1,10 +1,11 @@
 import { Provider } from '@nestjs/common';
-import { createConnection } from 'typeorm';
 import { PostyBirbDirectories } from '@postybirb/fs';
-import { join } from 'path';
 import { existsSync } from 'fs';
+import { join } from 'path';
+import { createConnection } from 'typeorm';
 import { DATABASE_CONNECTION } from '../constants';
 import { entities } from './entities';
+import { Migrations } from './migrations';
 
 // Only need to run a synchronize on first initialization.
 // Any schema changes afterwards should be handled by migrations.
@@ -24,6 +25,8 @@ export const TypeormDatabaseProviders: Provider[] = [
         database: DATABASE_PATH,
         synchronize: true, //!exists,
         entities,
+        migrations: [...Migrations],
+        migrationsRun: true,
       });
     },
   },
