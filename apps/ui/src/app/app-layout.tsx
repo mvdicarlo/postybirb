@@ -1,5 +1,5 @@
-import { EuiPage } from '@elastic/eui/src/components/page/page';
-import { EuiPageSideBar } from '@elastic/eui/src/components/page/page_side_bar/page_side_bar';
+import { EuiPage } from '@elastic/eui';
+import { EuiPageSideBar } from '@elastic/eui';
 
 export default function AppLayout() {
   return (
