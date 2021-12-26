@@ -1,7 +1,4 @@
-import styles from './app.module.css';
-import { ReactComponent as Logo } from './logo.svg';
-import star from './star.svg';
-import { EuiProvider } from '@elastic/eui';
+import { EuiProvider, EuiThemeProvider } from '@elastic/eui';
 import AppLayout from './app-layout';
 
 export function App() {

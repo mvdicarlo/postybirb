@@ -1,10 +1,18 @@
-import { EuiPage } from '@elastic/eui';
+import { EuiPage, EuiPageContent, EuiPageContentBody } from '@elastic/eui';
 import { EuiPageSideBar } from '@elastic/eui';
 
 export default function AppLayout() {
   return (
-    <EuiPage paddingSize="none">
+    <EuiPage paddingSize="none" className="w-screen h-screen">
       <EuiPageSideBar sticky></EuiPageSideBar>
+      <EuiPageContent
+        hasBorder={false}
+        hasShadow={false}
+        paddingSize="none"
+        borderRadius="none"
+      >
+        <EuiPageContentBody restrictWidth>Hello</EuiPageContentBody>
+      </EuiPageContent>
     </EuiPage>
   );
 }
