@@ -1,4 +1,4 @@
-import { EuiPage, EuiPageContent, EuiPageContentBody } from '@elastic/eui';
+import { EuiButton, EuiPage, EuiPageContent, EuiPageContentBody } from '@elastic/eui';
 import { EuiPageSideBar } from '@elastic/eui';
 
 export default function AppLayout() {
@@ -11,7 +11,7 @@ export default function AppLayout() {
         paddingSize="none"
         borderRadius="none"
       >
-        <EuiPageContentBody restrictWidth>Hello</EuiPageContentBody>
+        <EuiPageContentBody restrictWidth><EuiButton>Test</EuiButton></EuiPageContentBody>
       </EuiPageContent>
     </EuiPage>
   );
