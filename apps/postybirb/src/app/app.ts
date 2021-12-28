@@ -5,6 +5,7 @@ import {
   nativeImage,
   Tray,
   Menu,
+  globalShortcut,
 } from 'electron';
 import { rendererAppName, rendererAppPort } from './constants';
 import { environment } from '../environments/environment';
@@ -83,6 +84,7 @@ export default class App {
       height: height,
       show: false,
       icon: appIcon,
+      autoHideMenuBar: true,
       webPreferences: {
         contextIsolation: true,
         backgroundThrottling: false,
@@ -180,10 +182,11 @@ export default class App {
   }
 
   static main(app: Electron.App, browserWindow: typeof BrowserWindow) {
-    // we pass the Electron.App object and the
-    // Electron.BrowserWindow into this function
-    // so this class has no dependencies. This
-    // makes the code easier to write tests for
+    globalShortcut.registerAll(['f5', 'CommandOrControl+R'], () => {
+      if (App.mainWindow) {
+        App.mainWindow.reload();
+      }
+    });
 
     App.BrowserWindow = browserWindow;
     App.application = app;
