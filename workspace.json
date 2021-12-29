@@ -218,6 +218,20 @@
         }
       }
     },
+    "translations": {
+      "root": "libs/translations",
+      "sourceRoot": "libs/translations/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/translations/**/*.ts"]
+          }
+        }
+      }
+    },
     "ui": {
       "root": "apps/ui",
       "sourceRoot": "apps/ui/src",

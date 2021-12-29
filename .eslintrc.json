@@ -2,7 +2,7 @@
   "root": true,
   "ignorePatterns": ["**/*"],
   "extends": ["plugin:prettier/recommended"],
-  "plugins": ["@nrwl/nx", "prettier"],
+  "plugins": ["@nrwl/nx", "prettier", "formatjs"],
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
@@ -33,5 +33,8 @@
       "extends": ["plugin:@nrwl/nx/javascript"],
       "rules": {}
     }
-  ]
+  ],
+  "rules": {
+    "formatjs/no-offset": "error"
+  }
 }

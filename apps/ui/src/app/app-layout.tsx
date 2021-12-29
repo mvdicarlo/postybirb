@@ -7,6 +7,7 @@ import {
   EuiHeader,
   EuiHeaderLogo,
 } from '@elastic/eui';
+import { FormattedMessage } from 'react-intl';
 
 export default function AppLayout() {
   return (
@@ -32,7 +33,9 @@ export default function AppLayout() {
           paddingSize="none"
           borderRadius="none"
         >
-          <EuiPageContentBody restrictWidth></EuiPageContentBody>
+          <EuiPageContentBody restrictWidth>
+            <FormattedMessage id="message" defaultMessage="testing" />
+          </EuiPageContentBody>
         </EuiPageContent>
       </EuiPage>
     </>

@@ -1,7 +1,8 @@
 import { useState, createContext, PropsWithChildren } from 'react';
+import { LS_THEME_KEY } from '../constants';
 
 const themeOnStart =
-  localStorage.getItem('theme') ??
+  localStorage.getItem(LS_THEME_KEY) ??
   window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
@@ -30,6 +31,7 @@ function useTheme(props: UseThemeProps): AppThemeProviderContext {
   function setTheme(changeTo: ThemeColors) {
     if (theme !== changeTo) {
       setThemeState(changeTo);
+      localStorage.setItem(LS_THEME_KEY, changeTo);
       const themeEl = document.getElementById('dark_theme');
       if (themeEl) {
         (themeEl as HTMLLinkElement).disabled = changeTo !== 'dark';

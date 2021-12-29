@@ -20,6 +20,7 @@
       "@postybirb/http": ["libs/http/src/index.ts"],
       "@postybirb/logger": ["libs/logger/src/index.ts"],
       "@postybirb/socket-events": ["libs/socket-events/src/index.ts"],
+      "@postybirb/translations": ["libs/translations/src/index.ts"],
       "@postybirb/utils/electron": ["libs/utils/electron/src/index.ts"],
       "@postybirb/website-metadata": ["libs/website-metadata/src/index.ts"]
     }
