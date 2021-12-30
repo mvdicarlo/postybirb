@@ -15,3 +15,13 @@ ReactDOM.render(
   </StrictMode>,
   document.getElementById('root')
 );
+
+declare global {
+  interface Window {
+    electron: {
+      getAppVersion(): Promise<string>;
+      platform: string;
+      app_port: string;
+    };
+  }
+}

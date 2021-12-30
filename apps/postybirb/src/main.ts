@@ -39,6 +39,8 @@ app.on(
   }
 );
 
+process.env.APP_PORT = process.env.APP_PORT ?? '9487';
+
 export default class Main {
   static initialize() {
     if (SquirrelEvents.handleEvents()) {

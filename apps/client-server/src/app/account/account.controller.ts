@@ -12,7 +12,6 @@ import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Coerce } from '../utils/coerce.util';

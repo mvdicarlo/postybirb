@@ -190,6 +190,7 @@ export class AccountService implements OnModuleInit {
     const createdAccount = await this.accountRepository.save(account);
     const website = await this.websiteRegistry.create(createdAccount);
     this.afterCreate(createdAccount, website);
+    this.emit();
     return createdAccount;
   }
 

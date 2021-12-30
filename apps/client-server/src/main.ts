@@ -11,6 +11,7 @@ import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { SSL } from './app/security-and-authentication/ssl';
+import { WebSocketAdapter } from './app/web-socket/web-socket.adapter';
 
 async function bootstrap(appPort?: number) {
   let app: INestApplication;
@@ -28,6 +29,8 @@ async function bootstrap(appPort?: number) {
   }
 
   const globalPrefix = 'api';
+  app.enableCors();
+  app.useWebSocketAdapter(new WebSocketAdapter(app));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(
@@ -55,7 +58,7 @@ async function bootstrap(appPort?: number) {
   PostyBirbDirectories.initializeDirectories();
   sharp.cache({ files: 0 });
 
-  const port = process.env.PORT || appPort || 3333;
+  const port = process.env.APP_PORT || appPort || 3333;
   await app.listen(port, () => {
     Logger.log('Listening at http://localhost:' + port + '/' + globalPrefix);
   });
