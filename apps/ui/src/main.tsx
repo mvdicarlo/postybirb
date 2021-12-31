@@ -22,6 +22,7 @@ declare global {
       getAppVersion(): Promise<string>;
       platform: string;
       app_port: string;
+      app_version: string;
     };
   }
 }

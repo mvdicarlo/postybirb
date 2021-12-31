@@ -1,45 +1,34 @@
-import './app.css';
 import {
   EuiPage,
   EuiPageContent,
   EuiPageContentBody,
   EuiPageSideBar,
-  EuiHeader,
-  EuiHeaderLogo,
+  EuiCollapsibleNav,
 } from '@elastic/eui';
+import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import StoreManager from '../stores/store-manager';
-import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
-import useStore from '../stores/use-store';
-
-const getAccountData = async () => {
-  const res = await fetch('https://localhost:9487/api/account');
-  return await res.json();
-};
-
-const AccountStore = new StoreManager<{}>(ACCOUNT_UPDATES, getAccountData);
+import AppHeader from './app-header';
+import './app.css';
 
 export default function AppLayout() {
-  const { isLoading, state, reload } = useStore(AccountStore);
+  const [showNavbar, setShowNavbar] = useState<boolean>(false);
 
-  console.log(isLoading, state, reload);
+  const toggleNavbar = () => setShowNavbar(!showNavbar);
+
   return (
     <>
-      <EuiHeader>
-        <EuiHeaderLogo
-          iconTitle="PostyBirb"
-          iconType={() => (
-            <img
-              className="euiIcon euiIcon--large euiHeaderLogo__icon"
-              src="/assets/app-icon.png"
-            />
-          )}
-        >
-          PostyBirb
-        </EuiHeaderLogo>
-      </EuiHeader>
+      <AppHeader onMenuClick={toggleNavbar} />
       <EuiPage paddingSize="none">
-        <EuiPageSideBar sticky></EuiPageSideBar>
+        {/* <EuiPageSideBar sticky></EuiPageSideBar> */}
+        <EuiCollapsibleNav
+          isOpen={showNavbar}
+          onClose={toggleNavbar}
+          maskProps={{
+            className: 'main-nav-mask',
+          }}
+        >
+          Info
+        </EuiCollapsibleNav>
         <EuiPageContent
           hasBorder={false}
           hasShadow={false}

@@ -4,6 +4,7 @@ import UpdateEvents from './app/events/update.events';
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 import App from './app/app';
 import { bootstrapClientServer } from 'apps/client-server/src/main';
+import { environment } from './environments/environment';
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
@@ -40,6 +41,7 @@ app.on(
 );
 
 process.env.APP_PORT = process.env.APP_PORT ?? '9487';
+process.env.APP_VERSION = environment.version;
 
 export default class Main {
   static initialize() {

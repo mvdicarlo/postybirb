@@ -2,3 +2,13 @@
   width: 100vw;
   height: calc(100vh - 48px);
 }
+
+.euiFlyout {
+  top: 48px;
+  height: calc(100vh - 48px);
+}
+
+.main-nav-mask {
+  top: 48px;
+  height: calc(100vh - 48px);
+}
