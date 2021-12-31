@@ -3,8 +3,11 @@ import { IAccount } from '../models/account.interface';
 import { IsString, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { SafeObject } from '../../shared/types/safe-object.type';
+import { IAccountDto } from '@postybirb/dto';
 
-export class AccountDto<T extends SafeObject> implements IAccount {
+export class AccountDto<T extends SafeObject>
+  implements IAccount, IAccountDto<T>
+{
   /**
    * Id of an account and the session partition key.
    * @type {string}

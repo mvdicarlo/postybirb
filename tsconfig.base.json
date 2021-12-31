@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@postybirb/dto": ["libs/dto/src/index.ts"],
       "@postybirb/form-builder": ["libs/form-builder/src/index.ts"],
       "@postybirb/fs": ["libs/fs/src/index.ts"],
       "@postybirb/http": ["libs/http/src/index.ts"],

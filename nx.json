@@ -30,6 +30,9 @@
     "client-server": {
       "tags": []
     },
+    "dto": {
+      "tags": []
+    },
     "form-builder": {
       "tags": []
     },
