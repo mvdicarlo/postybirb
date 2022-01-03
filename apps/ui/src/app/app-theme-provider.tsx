@@ -1,11 +1,15 @@
-import { useState, createContext, PropsWithChildren } from 'react';
+import { useState, createContext, PropsWithChildren, useCallback } from 'react';
 import { LS_THEME_KEY } from '../constants';
 
-const themeOnStart =
-  localStorage.getItem(LS_THEME_KEY) ??
-  window.matchMedia('(prefers-color-scheme: dark)').matches
+let themeOnStart: ThemeColors = localStorage.getItem(
+  LS_THEME_KEY
+) as ThemeColors;
+
+if (!themeOnStart) {
+  themeOnStart = window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
+}
 
 if (themeOnStart !== 'dark') {
   const themeEl = document.getElementById('dark_theme');
@@ -28,7 +32,7 @@ export type UseThemeProps = {
 function useTheme(props: UseThemeProps): AppThemeProviderContext {
   const [theme, setThemeState] = useState<ThemeColors>(props.theme);
 
-  function setTheme(changeTo: ThemeColors) {
+  const setTheme = useCallback((changeTo: ThemeColors) => {
     if (theme !== changeTo) {
       setThemeState(changeTo);
       localStorage.setItem(LS_THEME_KEY, changeTo);
@@ -37,7 +41,7 @@ function useTheme(props: UseThemeProps): AppThemeProviderContext {
         (themeEl as HTMLLinkElement).disabled = changeTo !== 'dark';
       }
     }
-  }
+  }, []);
 
   return [theme, setTheme];
 }

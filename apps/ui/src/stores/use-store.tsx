@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import StoreManager from './store-manager';
 
 function useStore<S>(store: StoreManager<S>) {
@@ -12,12 +12,12 @@ function useStore<S>(store: StoreManager<S>) {
     };
   }, []);
 
-  function reload() {
+  const reload = useCallback(() => {
     if (!isLoading) {
       setIsLoading(true);
       store.refresh().finally(() => setIsLoading(false));
     }
-  }
+  }, []);
 
   return { isLoading, state, reload };
 }

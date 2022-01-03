@@ -2,7 +2,6 @@ import {
   EuiPage,
   EuiPageContent,
   EuiPageContentBody,
-  EuiPageSideBar,
   EuiCollapsibleNav,
 } from '@elastic/eui';
 import { useState } from 'react';
@@ -19,7 +18,6 @@ export default function AppLayout() {
     <>
       <AppHeader onMenuClick={toggleNavbar} />
       <EuiPage paddingSize="none">
-        {/* <EuiPageSideBar sticky></EuiPageSideBar> */}
         <EuiCollapsibleNav
           isOpen={showNavbar}
           onClose={toggleNavbar}

@@ -1,10 +1,11 @@
 import {
+  EuiButtonIcon,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderSectionItem,
-  EuiButtonIcon,
 } from '@elastic/eui';
 import { useContext } from 'react';
+import AppSettings from './app-settings';
 import { AppThemeContext } from './app-theme-provider';
 
 type AppHeaderProps = {
@@ -14,7 +15,7 @@ type AppHeaderProps = {
 export default function AppHeader(props: AppHeaderProps) {
   const [theme, setTheme] = useContext(AppThemeContext);
   return (
-    <EuiHeader>
+    <EuiHeader theme="dark">
       <EuiHeaderSectionItem>
         <EuiButtonIcon
           iconType="menu"
@@ -35,7 +36,9 @@ export default function AppHeader(props: AppHeaderProps) {
           <span className="text-xs">{window.electron.app_version}</span>
         </EuiHeaderLogo>
       </EuiHeaderSectionItem>
-      <EuiHeaderSectionItem>Test</EuiHeaderSectionItem>
+      <EuiHeaderSectionItem>
+        <AppSettings />
+      </EuiHeaderSectionItem>
     </EuiHeader>
   );
 }
