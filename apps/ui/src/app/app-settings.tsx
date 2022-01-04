@@ -1,9 +1,10 @@
 import {
-  EuiButtonIcon,
-  EuiCode,
   EuiForm,
   EuiFormRow,
+  EuiHeaderSectionItemButton,
+  EuiIcon,
   EuiPopover,
+  EuiPopoverTitle,
   EuiSwitch,
 } from '@elastic/eui';
 import { useContext, useState } from 'react';
@@ -16,29 +17,50 @@ export default function AppSettings() {
   return (
     <>
       <EuiPopover
+        panelClassName="app-settings"
         button={
-          <EuiButtonIcon
-            iconType="gear"
+          <EuiHeaderSectionItemButton
+            aria-haspopup="true"
+            aria-aria-expanded={isOpen}
             aria-label="Settings"
-            color="ghost"
+            isSelected={isOpen}
             onClick={() => setOpen(!isOpen)}
-          />
+          >
+            <EuiIcon type="gear" />
+          </EuiHeaderSectionItemButton>
         }
         isOpen={isOpen}
         closePopover={() => setOpen(false)}
       >
+        <EuiPopoverTitle paddingSize="s">
+          <FormattedMessage id="settings" defaultMessage="Settings" />
+          <span className="ml-1">
+            <kbd>Alt</kbd>+<kbd>S</kbd>
+          </span>
+        </EuiPopoverTitle>
         <EuiForm component="form">
           <EuiFormRow
-            label={<FormattedMessage id="theme" defaultMessage="Theme" />}
+            label={
+              <FormattedMessage
+                id="settings.theme-label"
+                defaultMessage="Theme"
+              />
+            }
             hasChildLabel={false}
           >
             <EuiSwitch
               name="switch"
               label={
                 theme === 'light' ? (
-                  <FormattedMessage id="dark-theme" defaultMessage="Light" />
+                  <FormattedMessage
+                    id="settings.light-theme"
+                    defaultMessage="Light"
+                  />
                 ) : (
-                  <FormattedMessage id="dark-theme" defaultMessage="Dark" />
+                  <FormattedMessage
+                    id="settings.dark-theme"
+                    defaultMessage="Dark"
+                  />
                 )
               }
               onChange={() => {

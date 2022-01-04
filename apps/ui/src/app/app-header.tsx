@@ -1,10 +1,11 @@
 import {
-  EuiButtonIcon,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderSectionItem,
+  EuiHeaderSectionItemButton,
+  EuiIcon,
 } from '@elastic/eui';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import AppSettings from './app-settings';
 import { AppThemeContext } from './app-theme-provider';
 
@@ -14,15 +15,23 @@ type AppHeaderProps = {
 
 export default function AppHeader(props: AppHeaderProps) {
   const [theme, setTheme] = useContext(AppThemeContext);
+  const [isFlyoutOpen, setFlyoutOpen] = useState<boolean>(false);
+
   return (
-    <EuiHeader theme="dark">
+    <EuiHeader theme="default" style={{ backgroundColor: '#07C' }}>
       <EuiHeaderSectionItem>
-        <EuiButtonIcon
-          iconType="menu"
-          color="ghost"
-          aria-label="menu"
-          onClick={props.onMenuClick}
-        />
+        <EuiHeaderSectionItemButton
+          aria-haspopup="true"
+          aria-aria-expanded={isFlyoutOpen}
+          aria-label="Sidebar opener"
+          isSelected={isFlyoutOpen}
+          onClick={() => {
+            setFlyoutOpen(!isFlyoutOpen);
+            props.onMenuClick();
+          }}
+        >
+          <EuiIcon type="menu" />
+        </EuiHeaderSectionItemButton>
         <EuiHeaderLogo
           iconTitle="PostyBirb"
           iconType={() => (

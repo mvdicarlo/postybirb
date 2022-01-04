@@ -33,13 +33,11 @@ function useTheme(props: UseThemeProps): AppThemeProviderContext {
   const [theme, setThemeState] = useState<ThemeColors>(props.theme);
 
   const setTheme = useCallback((changeTo: ThemeColors) => {
-    if (theme !== changeTo) {
-      setThemeState(changeTo);
-      localStorage.setItem(LS_THEME_KEY, changeTo);
-      const themeEl = document.getElementById('dark_theme');
-      if (themeEl) {
-        (themeEl as HTMLLinkElement).disabled = changeTo !== 'dark';
-      }
+    setThemeState(changeTo);
+    localStorage.setItem(LS_THEME_KEY, changeTo);
+    const themeEl = document.getElementById('dark_theme');
+    if (themeEl) {
+      (themeEl as HTMLLinkElement).disabled = changeTo !== 'dark';
     }
   }, []);
 

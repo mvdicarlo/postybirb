@@ -3,9 +3,10 @@ import {
   EuiPageContent,
   EuiPageContentBody,
   EuiCollapsibleNav,
+  EuiErrorBoundary,
 } from '@elastic/eui';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import Routes from '../pages/routes';
 import AppHeader from './app-header';
 import './app.css';
 
@@ -34,7 +35,9 @@ export default function AppLayout() {
           borderRadius="none"
         >
           <EuiPageContentBody restrictWidth>
-            <FormattedMessage id="message" defaultMessage="testing" />
+            <EuiErrorBoundary>
+              <Routes />
+            </EuiErrorBoundary>
           </EuiPageContentBody>
         </EuiPageContent>
       </EuiPage>
