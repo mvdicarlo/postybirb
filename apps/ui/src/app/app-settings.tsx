@@ -9,11 +9,25 @@ import {
 } from '@elastic/eui';
 import { useContext, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import Keybinding, {
+  KeybindingProps,
+  useKeybinding,
+} from '../components/app/keybinding/keybinding';
 import { AppThemeContext } from './app-theme-provider';
 
 export default function AppSettings() {
   const [isOpen, setOpen] = useState<boolean>(false);
   const [theme, setTheme] = useContext(AppThemeContext);
+
+  const toggleOpen = () => setOpen(!isOpen);
+
+  const keybindingProps: KeybindingProps = {
+    keybinding: 'Alt+S',
+    onActivate: toggleOpen,
+  };
+
+  useKeybinding(keybindingProps);
+
   return (
     <>
       <EuiPopover
@@ -24,7 +38,7 @@ export default function AppSettings() {
             aria-aria-expanded={isOpen}
             aria-label="Settings"
             isSelected={isOpen}
-            onClick={() => setOpen(!isOpen)}
+            onClick={toggleOpen}
           >
             <EuiIcon type="gear" />
           </EuiHeaderSectionItemButton>
@@ -33,10 +47,9 @@ export default function AppSettings() {
         closePopover={() => setOpen(false)}
       >
         <EuiPopoverTitle paddingSize="s">
-          <FormattedMessage id="settings" defaultMessage="Settings" />
-          <span className="ml-1">
-            <kbd>Alt</kbd>+<kbd>S</kbd>
-          </span>
+          <Keybinding displayOnly {...keybindingProps}>
+            <FormattedMessage id="settings" defaultMessage="Settings" />
+          </Keybinding>
         </EuiPopoverTitle>
         <EuiForm component="form">
           <EuiFormRow

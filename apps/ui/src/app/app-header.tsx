@@ -6,6 +6,7 @@ import {
   EuiIcon,
 } from '@elastic/eui';
 import { useContext, useState } from 'react';
+import { useKeybinding } from '../components/app/keybinding/keybinding';
 import AppSettings from './app-settings';
 import { AppThemeContext } from './app-theme-provider';
 
@@ -17,6 +18,16 @@ export default function AppHeader(props: AppHeaderProps) {
   const [theme, setTheme] = useContext(AppThemeContext);
   const [isFlyoutOpen, setFlyoutOpen] = useState<boolean>(false);
 
+  const toggleFlyout = () => {
+    setFlyoutOpen(!isFlyoutOpen);
+    props.onMenuClick();
+  };
+
+  useKeybinding({
+    onActivate: toggleFlyout,
+    keybinding: 'Alt+A',
+  });
+
   return (
     <EuiHeader theme="default" style={{ backgroundColor: '#07C' }}>
       <EuiHeaderSectionItem>
@@ -25,12 +36,9 @@ export default function AppHeader(props: AppHeaderProps) {
           aria-aria-expanded={isFlyoutOpen}
           aria-label="Sidebar opener"
           isSelected={isFlyoutOpen}
-          onClick={() => {
-            setFlyoutOpen(!isFlyoutOpen);
-            props.onMenuClick();
-          }}
+          onClick={toggleFlyout}
         >
-          <EuiIcon type="menu" />
+          <EuiIcon type="menu" title="Shortcut: Alt+A" />
         </EuiHeaderSectionItemButton>
         <EuiHeaderLogo
           iconTitle="PostyBirb"
