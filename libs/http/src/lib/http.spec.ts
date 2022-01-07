@@ -1,5 +1,5 @@
-import { Http } from './http';
 import * as http from 'http';
+import { Http } from './http';
 
 class TestServer {
   private server: http.Server;
@@ -23,7 +23,6 @@ class TestServer {
       if (req.url === '/json') {
         res.setHeader('Content-Type', 'application/json');
         res.end(JSON.stringify({ test: 'hello' }));
-        return;
       }
     });
   }

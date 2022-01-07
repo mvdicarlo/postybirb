@@ -2,6 +2,7 @@ import { Provider } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { Class } from 'type-fest';
 import { createConnection } from 'typeorm';
 import { DATABASE_CONNECTION } from '../constants';
 import { entities } from './entities';
@@ -19,32 +20,30 @@ const exists = existsSync(DATABASE_PATH);
 export const TypeormDatabaseProviders: Provider[] = [
   {
     provide: DATABASE_CONNECTION,
-    useFactory: async () => {
-      return await createConnection({
+    useFactory: async () =>
+      createConnection({
         type: 'sqlite',
         database: DATABASE_PATH,
-        synchronize: true, //!exists,
+        synchronize: true, //! exists,
         entities,
         migrations: [...Migrations],
         migrationsRun: true,
-      });
-    },
+      }),
   },
 ];
 
-export function getTestDatabaseProvider(entities: any[]): Provider {
+export function getTestDatabaseProvider(entityModels: Class[]): Provider {
   return {
     provide: DATABASE_CONNECTION,
-    useFactory: async () => {
-      return await createConnection({
+    useFactory: async () =>
+      createConnection({
         type: 'sqlite',
         database: ':memory:',
         dropSchema: true,
         synchronize: true,
         logging: false,
-        entities,
+        entities: entityModels,
         name: DATABASE_CONNECTION,
-      });
-    },
+      }),
   };
 }

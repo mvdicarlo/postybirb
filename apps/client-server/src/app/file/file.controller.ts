@@ -56,8 +56,6 @@ export class FileController {
       files.map((file) => this.service.create(file))
     );
 
-    return await Promise.all(
-      results.map((file) => this.service.findFile(file.id))
-    );
+    return Promise.all(results.map((file) => this.service.findFile(file.id)));
   }
 }

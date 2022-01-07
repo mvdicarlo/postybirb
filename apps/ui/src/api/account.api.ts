@@ -12,7 +12,7 @@ export default class AccountApi {
     return AccountApi.request.get<IAccountDto[]>();
   }
 
-  static get(id: string, refresh: boolean = false) {
+  static get(id: string, refresh = false) {
     return AccountApi.request.get<IAccountDto>(id, { refresh });
   }
 

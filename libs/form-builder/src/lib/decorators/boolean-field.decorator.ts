@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import 'reflect-metadata';
 import { Primitive } from 'type-fest';
 import { FieldType } from '../types/field.type';
@@ -12,7 +13,7 @@ export type BooleanFieldType<T extends Record<string, Primitive>> = FieldType<
   BooleanFormField
 >;
 
-export function BooleanField<T extends Record<string, Primitive>>(
+export function BooleanField<T extends Record<string, any>>(
   options: BooleanFieldType<T>
 ): PropertyDecorator {
   options.type = TYPE_KEY;

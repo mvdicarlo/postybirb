@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';

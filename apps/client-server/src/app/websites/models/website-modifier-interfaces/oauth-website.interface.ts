@@ -1,3 +1,6 @@
 export interface OAuthWebsite {
-  onAuthorize(data: Record<string, unknown>, state: string): Promise<any>;
+  onAuthorize(
+    data: Record<string, unknown>,
+    state: string
+  ): Promise<Record<string, unknown>>;
 }

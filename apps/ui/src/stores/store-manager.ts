@@ -1,5 +1,5 @@
-import AppSocket from '../transports/websocket';
 import { Subject, Observable } from 'rxjs';
+import AppSocket from '../transports/websocket';
 
 /**
  * Manages keeping data in sync with backend database.
@@ -9,7 +9,9 @@ import { Subject, Observable } from 'rxjs';
  */
 export default class StoreManager<T> {
   private data: T[];
+
   private readonly subject: Subject<T[]>;
+
   public readonly updates: Observable<T[]>;
 
   constructor(

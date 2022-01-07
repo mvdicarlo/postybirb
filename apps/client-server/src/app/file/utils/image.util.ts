@@ -1,7 +1,7 @@
 import * as sharp from 'sharp';
 
 export class ImageUtil {
-  static isImage(mimetype: string, includeGIF: boolean = false): boolean {
+  static isImage(mimetype: string, includeGIF = false): boolean {
     if (includeGIF && mimetype === 'image/gif') {
       return true;
     }

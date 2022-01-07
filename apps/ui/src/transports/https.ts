@@ -52,12 +52,12 @@ export default class Https {
 
   async delete(path?: string, search?: Record<string, Primitive>) {
     const res = await fetch(this.createUrl(path, search), { method: 'DELETE' });
-    return await this.processResponse(res);
+    return this.processResponse(res);
   }
 
   async get<T = any>(path?: string, search?: Record<string, Primitive>) {
     const res = await fetch(this.createUrl(path, search), { method: 'GET' });
-    return await this.processResponse<T>(res);
+    return this.processResponse<T>(res);
   }
 
   async patch<T = any, U = any>(
@@ -78,7 +78,7 @@ export default class Https {
           : undefined,
       method: 'PATCH',
     });
-    return await this.processResponse<T>(res);
+    return this.processResponse<T>(res);
   }
 
   async post<T = any, U = any>(
@@ -99,6 +99,6 @@ export default class Https {
           : undefined,
       method: 'POST',
     });
-    return await this.processResponse<T>(res);
+    return this.processResponse<T>(res);
   }
 }

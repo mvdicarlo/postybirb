@@ -1,4 +1,4 @@
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { IWebsiteMetadata } from '../website-metadata';
 
 export const TestMetadata: IWebsiteMetadata = {
   name: 'test',

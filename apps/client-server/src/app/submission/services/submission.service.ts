@@ -58,7 +58,7 @@ export class SubmissionService {
     createSubmissionDto: CreateSubmissionDto,
     file?: MulterFileInfo
   ): Promise<Submission<SubmissionMetadataType>> {
-    let submission = this.submissionRepository.create({
+    const submission = this.submissionRepository.create({
       id: uuid(),
       ...createSubmissionDto,
       isScheduled: false,
@@ -111,16 +111,16 @@ export class SubmissionService {
       this.submissionPartService.createDefaultSubmissionPart(submission)
     );
 
-    return await this.submissionRepository.save(submission);
+    return this.submissionRepository.save(submission);
   }
 
   /**
    * Find a Submission matching the Id provided.
    *
    * @param {string} id
-   * @return {*}  {Promise<Submission<SafeObject>>}
+   * @return {*}  {Promise<Submission<SubmissionMetadataType>>}
    */
-  async findOne(id: string): Promise<Submission<any>> {
+  async findOne(id: string): Promise<Submission<SubmissionMetadataType>> {
     try {
       return await this.submissionRepository.findOneOrFail(id);
     } catch (e) {
@@ -148,7 +148,7 @@ export class SubmissionService {
       scheduleType: updateSubmissionDto.scheduleType,
     };
 
-    return await this.submissionRepository
+    return this.submissionRepository
       .save(submission)
       .then(() => true)
       .catch((err) => {
@@ -170,9 +170,7 @@ export class SubmissionService {
       await this.fileSubmissionService.remove(submission);
     }
 
-    return await this.submissionRepository.delete(id).then((result) => {
-      return result;
-    });
+    return this.submissionRepository.delete(id).then((result) => result);
   }
 
   /** File Actions */

@@ -1,9 +1,9 @@
-import { ILoginState } from '../../websites/models/login-state.interface';
-import { IAccount } from '../models/account.interface';
 import { IsString, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { SafeObject } from '../../shared/types/safe-object.type';
 import { IAccountDto } from '@postybirb/dto';
+import { ILoginState } from '../../websites/models/login-state.interface';
+import { IAccount } from '../models/account.interface';
+import { SafeObject } from '../../shared/types/safe-object.type';
 
 export class AccountDto<T extends SafeObject>
   implements IAccount, IAccountDto<T>

@@ -8,6 +8,9 @@ import {
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { DeleteResult, Repository } from 'typeorm';
+import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { Log, Logger } from '@postybirb/logger';
+import { Class } from 'type-fest';
 import { ACCOUNT_REPOSITORY } from '../constants';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { UnknownWebsite } from '../websites/website';
@@ -18,9 +21,6 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
 import { waitUntil } from '../utils/wait.util';
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
-import { Log, Logger } from '@postybirb/logger';
-import { Class } from 'type-fest';
 
 /**
  * Service responsible for returning Account data.
@@ -52,7 +52,7 @@ export class AccountService implements OnModuleInit {
     const accounts = await this.accountRepository.find();
 
     // Assumes that no error is thrown, otherwise there will be a big issue here.
-    const instances = await Promise.all(
+    await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account))
     ).catch((err) => {
       this.logger.error(err, 'onModuleInit');
@@ -258,7 +258,7 @@ export class AccountService implements OnModuleInit {
   async remove(id: string): Promise<DeleteResult> {
     const account = await this.findOne(id);
     await this.websiteRegistry.remove(account);
-    return await this.accountRepository.delete(id).then((result) => {
+    return this.accountRepository.delete(id).then((result) => {
       this.emit();
       return result;
     });
@@ -277,7 +277,7 @@ export class AccountService implements OnModuleInit {
     updateAccountDto: UpdateAccountDto
   ): Promise<boolean> {
     await this.findOne(id);
-    return await this.accountRepository
+    return this.accountRepository
       .update(id, updateAccountDto)
       .then(() => this.emit())
       .then(() => true)

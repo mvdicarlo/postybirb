@@ -29,61 +29,59 @@ export default function AppSettings() {
   useKeybinding(keybindingProps);
 
   return (
-    <>
-      <EuiPopover
-        panelClassName="app-settings"
-        button={
-          <EuiHeaderSectionItemButton
-            aria-haspopup="true"
-            aria-aria-expanded={isOpen}
-            aria-label="Settings"
-            isSelected={isOpen}
-            onClick={toggleOpen}
-          >
-            <EuiIcon type="gear" />
-          </EuiHeaderSectionItemButton>
-        }
-        isOpen={isOpen}
-        closePopover={() => setOpen(false)}
-      >
-        <EuiPopoverTitle paddingSize="s">
-          <Keybinding displayOnly {...keybindingProps}>
-            <FormattedMessage id="settings" defaultMessage="Settings" />
-          </Keybinding>
-        </EuiPopoverTitle>
-        <EuiForm component="form">
-          <EuiFormRow
-            label={
-              <FormattedMessage
-                id="settings.theme-label"
-                defaultMessage="Theme"
-              />
-            }
-            hasChildLabel={false}
-          >
-            <EuiSwitch
-              name="switch"
-              label={
-                theme === 'light' ? (
-                  <FormattedMessage
-                    id="settings.light-theme"
-                    defaultMessage="Light"
-                  />
-                ) : (
-                  <FormattedMessage
-                    id="settings.dark-theme"
-                    defaultMessage="Dark"
-                  />
-                )
-              }
-              onChange={() => {
-                setTheme(theme === 'light' ? 'dark' : 'light');
-              }}
-              checked={theme === 'light'}
+    <EuiPopover
+      panelClassName="app-settings"
+      button={
+        <EuiHeaderSectionItemButton
+          aria-haspopup="true"
+          aria-aria-expanded={isOpen}
+          aria-label="Settings"
+          isSelected={isOpen}
+          onClick={toggleOpen}
+        >
+          <EuiIcon type="gear" />
+        </EuiHeaderSectionItemButton>
+      }
+      isOpen={isOpen}
+      closePopover={() => setOpen(false)}
+    >
+      <EuiPopoverTitle paddingSize="s">
+        <Keybinding displayOnly {...keybindingProps}>
+          <FormattedMessage id="settings" defaultMessage="Settings" />
+        </Keybinding>
+      </EuiPopoverTitle>
+      <EuiForm component="form">
+        <EuiFormRow
+          label={
+            <FormattedMessage
+              id="settings.theme-label"
+              defaultMessage="Theme"
             />
-          </EuiFormRow>
-        </EuiForm>
-      </EuiPopover>
-    </>
+          }
+          hasChildLabel={false}
+        >
+          <EuiSwitch
+            name="switch"
+            label={
+              theme === 'light' ? (
+                <FormattedMessage
+                  id="settings.light-theme"
+                  defaultMessage="Light"
+                />
+              ) : (
+                <FormattedMessage
+                  id="settings.dark-theme"
+                  defaultMessage="Dark"
+                />
+              )
+            }
+            onChange={() => {
+              setTheme(theme === 'light' ? 'dark' : 'light');
+            }}
+            checked={theme === 'light'}
+          />
+        </EuiFormRow>
+      </EuiForm>
+    </EuiPopover>
   );
 }

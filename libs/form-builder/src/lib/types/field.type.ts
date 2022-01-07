@@ -1,7 +1,8 @@
 import { Primitive } from 'type-fest';
 
 export type FieldType<
-  T extends Record<string, Primitive>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<string, any>,
   V extends Primitive,
   F extends string
 > = {

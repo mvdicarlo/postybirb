@@ -15,6 +15,7 @@ export function formBuilder<T extends Record<string, Primitive>>(
     value
       .filter((v) => Boolean(v.defaultFrom))
       .forEach((v) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-param-reassign
         v.defaultValue = (data[v.defaultFrom] ?? v.defaultValue) as any;
       });
   });

@@ -5,13 +5,13 @@ import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
 import { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
+import { Sharp } from 'sharp';
+import { cpus } from 'os';
+import { async as hash } from 'hasha';
 import { FILE_DATA_REPOSITORY, FILE_REPOSITORY } from '../constants';
 import { FileData } from './entities/file-data.entity';
 import { File } from './entities/file.entity';
 import { ImageUtil } from './utils/image.util';
-import { Sharp } from 'sharp';
-import { cpus } from 'os';
-import { async as hash } from 'hasha';
 import { MulterFileInfo } from './models/multer-file-info.interface';
 
 type Task = {
@@ -27,6 +27,7 @@ type Task = {
 @Injectable()
 export class FileService {
   private readonly logger = Logger(FileService.name);
+
   private readonly queue: queueAsPromised<Task, File> = fastq.promise<
     this,
     Task
@@ -44,7 +45,7 @@ export class FileService {
    *
    * @param {string} id
    */
-  async findFile(id: string, loadData: boolean = false) {
+  async findFile(id: string, loadData = false) {
     try {
       const entity = await this.fileRepository.findOneOrFail(id);
 
@@ -67,7 +68,7 @@ export class FileService {
    */
   @Log()
   public async remove(id: string) {
-    return await this.fileRepository.delete(id);
+    return this.fileRepository.delete(id);
   }
 
   /**
@@ -77,11 +78,11 @@ export class FileService {
    * @return {*}  {Promise<File>}
    */
   public async create(file: MulterFileInfo): Promise<File> {
-    return await this.queue.push({ file });
+    return this.queue.push({ file });
   }
 
   private async createTask(task: Task): Promise<File> {
-    return await this.createFile(task.file);
+    return this.createFile(task.file);
   }
 
   /**
@@ -126,7 +127,7 @@ export class FileService {
       return savedEntity;
     } catch (err) {
       this.logger.error(err.message, err.stack);
-      return Promise.reject(err);
+      return await Promise.reject(err);
     } finally {
       await removeFile(file.path);
     }

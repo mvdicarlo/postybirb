@@ -1,9 +1,10 @@
+import { app, BrowserWindow, powerSaveBlocker } from 'electron';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { bootstrapClientServer } from 'apps/client-server/src/main';
 import SquirrelEvents from './app/events/squirrel.events';
 import ElectronEvents from './app/events/electron.events';
 import UpdateEvents from './app/events/update.events';
-import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 import App from './app/app';
-import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { environment } from './environments/environment';
 
 const isOnlyInstance = app.requestSingleInstanceLock();
@@ -16,6 +17,7 @@ app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const psbId = powerSaveBlocker.start('prevent-app-suspension');
 
 app.on(

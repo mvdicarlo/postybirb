@@ -8,6 +8,7 @@ import TestWebsite from './implementations/test/test.website';
 import { WebsiteDataProvider } from './providers/website-data.provider';
 
 describe('Website', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let repository: Repository<WebsiteData<any>>;
   let testingModule: TestingModule;
 

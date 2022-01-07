@@ -60,7 +60,7 @@ async function bootstrap(appPort?: number) {
 
   const port = process.env.APP_PORT || appPort || 3333;
   await app.listen(port, () => {
-    Logger.log('Listening at http://localhost:' + port + '/' + globalPrefix);
+    Logger.log(`Listening at http://localhost:${port}/${globalPrefix}`);
   });
 }
 

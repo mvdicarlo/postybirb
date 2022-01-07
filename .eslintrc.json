@@ -1,13 +1,26 @@
 {
   "root": true,
   "ignorePatterns": ["**/*"],
-  "extends": ["plugin:prettier/recommended"],
+  "extends": [
+    "plugin:prettier/recommended",
+    "airbnb",
+    "airbnb/hooks",
+    "airbnb-typescript"
+  ],
   "plugins": ["@nrwl/nx", "prettier", "formatjs"],
+  "parserOptions": {
+    "project": "./tsconfig.base.json"
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
-        "prettier/prettier": "error",
+        "prettier/prettier": [
+          "error",
+          {
+            "endOfLine": "crlf"
+          }
+        ],
         "@nrwl/nx/enforce-module-boundaries": [
           "error",
           {
@@ -35,6 +48,11 @@
     }
   ],
   "rules": {
-    "formatjs/no-offset": "error"
+    "formatjs/no-offset": "error",
+    "react/react-in-jsx-scope": "off",
+    "import/prefer-default-export": "off",
+    "class-methods-use-this": "off",
+    "@typescript-eslint/ban-types": "warn",
+    "import/no-cycle": "off"
   }
 }

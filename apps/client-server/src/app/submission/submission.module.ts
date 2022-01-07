@@ -27,11 +27,11 @@ import { SubmissionPartController } from './controllers/submission-part.controll
         fileSize: 3e8, // Max 300MB
       },
       storage: diskStorage({
-        destination: function (req, file, cb) {
+        destination(req, file, cb) {
           cb(null, PostyBirbDirectories.TEMP_DIRECTORY);
         },
-        filename: function (req, file, cb) {
-          cb(null, Date.now() + extname(file.originalname)); //Appending extension
+        filename(req, file, cb) {
+          cb(null, Date.now() + extname(file.originalname)); // Appending extension
         },
       }),
     }),

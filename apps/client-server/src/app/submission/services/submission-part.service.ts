@@ -97,7 +97,7 @@ export class SubmissionPartService {
   @Log()
   async remove(id: string): Promise<DeleteResult> {
     await this.findOne(id);
-    return await this.submissionPartRepository.delete(id);
+    return this.submissionPartRepository.delete(id);
   }
 
   /**
@@ -112,7 +112,7 @@ export class SubmissionPartService {
     updateSubmissionPartDto: UpdateSubmissionPartDto<BaseWebsiteOptions>
   ): Promise<boolean> {
     await this.findOne(updateSubmissionPartDto.id);
-    return await this.submissionPartRepository
+    return this.submissionPartRepository
       .update(updateSubmissionPartDto.id, updateSubmissionPartDto)
       .then(() => true)
       .catch((err) => {

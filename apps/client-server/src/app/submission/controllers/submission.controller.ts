@@ -38,7 +38,7 @@ export class SubmissionController {
   @ApiOkResponse({ description: 'The requested Submission.' })
   @ApiNotFoundResponse({ description: 'Submission not found.' })
   async findOne(@Param('id') id: string) {
-    return await this.service.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Post()
@@ -66,11 +66,8 @@ export class SubmissionController {
       );
 
       return results;
-    } else {
-      return Promise.allSettled([
-        await this.service.create(createSubmissionDto),
-      ]);
     }
+    return Promise.allSettled([await this.service.create(createSubmissionDto)]);
   }
 
   @Post('file/add/:id')

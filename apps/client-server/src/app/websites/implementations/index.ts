@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
+import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { UnknownWebsite } from '../website';
 import TestWebsite from './test/test.website';
-import { Class } from 'type-fest';
 
 const useValue: Class<UnknownWebsite>[] = [TestWebsite];
 

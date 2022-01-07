@@ -5,7 +5,7 @@ import PostData from '../../../submission/models_maybe/post-data.model';
 import { UnknownWebsite } from '../../website';
 
 export interface FileWebsite<T extends FileWebsiteOptions> {
-  fileModel: Class<T>;
+  FileModel: Class<T>;
   supportsFile: true;
   supportsAdditionalFiles: boolean;
 

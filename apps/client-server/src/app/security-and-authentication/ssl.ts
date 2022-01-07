@@ -2,10 +2,14 @@ import * as forge from 'node-forge';
 import { app } from 'electron';
 import { join } from 'path';
 import { stat, readFile, writeFile, mkdir } from 'fs/promises';
+import { Logger } from '@postybirb/logger';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (forge as any).options.usePureJavaScript = true;
 
 export class SSL {
+  private static readonly logger = Logger(SSL.name);
+
   static async getOrCreateSSL(): Promise<{ key: string; cert: string }> {
     const path = join(app.getPath('userData'), 'auth');
     const keyPath = join(path, 'key.pem');
@@ -21,7 +25,7 @@ export class SSL {
         await mkdir(path);
       } catch (err) {
         if (err.code !== 'EEXIST') {
-          console.error(err);
+          SSL.logger.error(err);
         }
       }
     }
@@ -33,7 +37,7 @@ export class SSL {
       };
     }
 
-    console.log('Creating certs...');
+    SSL.logger.info('Creating SSL certs...');
     const { pki } = forge;
 
     const keys = pki.rsa.generateKeyPair(2048);
@@ -64,7 +68,7 @@ export class SSL {
 
     await Promise.all([writeFile(keyPath, pkey), writeFile(certPath, pcert)]);
 
-    console.log('Certs created');
+    SSL.logger.info('SSL Certs created');
     return { cert: pcert, key: pkey };
   }
 }

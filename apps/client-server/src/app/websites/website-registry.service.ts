@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { Repository } from 'typeorm';
+import { Class } from 'type-fest';
 import { Account } from '../account/entities/account.entity';
 import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { SafeObject } from '../shared/types/safe-object.type';
@@ -8,7 +9,6 @@ import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteData } from './entities/website-data.entity';
 import { OAuthWebsite } from './models/website-modifier-interfaces/oauth-website.interface';
 import { UnknownWebsite } from './website';
-import { Class } from 'type-fest';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 
@@ -62,14 +62,14 @@ export class WebsiteRegistryService {
   public async create(account: Account): Promise<UnknownWebsite | undefined> {
     const { website, id } = account;
     if (this.canCreate(account.website)) {
-      const websiteCtor = this.availableWebsites[website];
+      const WebsiteCtor = this.availableWebsites[website];
       if (!this.websiteInstances[website]) {
         this.websiteInstances[website] = {};
       }
 
       if (!this.websiteInstances[website][id]) {
         this.logger.info(`Creating instance of "${website}" with id "${id}"`);
-        this.websiteInstances[website][id] = new websiteCtor(account);
+        this.websiteInstances[website][id] = new WebsiteCtor(account);
         await this.websiteInstances[website][id].onInitialize(
           this.websiteDataRepository
         );
@@ -80,9 +80,10 @@ export class WebsiteRegistryService {
       }
 
       return this.websiteInstances[website][id];
-    } else {
-      this.logger.error(`Unable to find website "${website}"`);
     }
+
+    this.logger.error(`Unable to find website "${website}"`);
+    return undefined;
   }
 
   /**
@@ -94,6 +95,8 @@ export class WebsiteRegistryService {
     if (this.websiteInstances[website] && this.websiteInstances[website][id]) {
       return this.websiteInstances[website][id];
     }
+
+    return undefined;
   }
 
   /**

@@ -1,15 +1,15 @@
-import { LoginState } from './models/login-state.model';
-import WebsiteDataManager from './website-data-manager';
 import { session } from 'electron';
-import { Account } from '../account/entities/account.entity';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { Repository } from 'typeorm';
+import { Logger } from '@postybirb/logger';
+import { LoginState } from './models/login-state.model';
+import WebsiteDataManager from './website-data-manager';
+import { Account } from '../account/entities/account.entity';
 import { ILoginState } from './models/login-state.interface';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
 import { WebsiteData } from './entities/website-data.entity';
-import { Repository } from 'typeorm';
-import { Logger } from '@postybirb/logger';
 
 export type UnknownWebsite = Website<SafeObject>;
 
@@ -98,7 +98,7 @@ export abstract class Website<D extends SafeObject> {
 
     // Filter any property marked false
     Object.entries(this.externallyAccessibleWebsiteDataProperties)
-      .filter(([key, value]) => !value)
+      .filter(([, value]) => !value)
       .forEach(([key]) => {
         delete data[key];
       });

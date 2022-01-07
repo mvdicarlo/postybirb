@@ -29,7 +29,9 @@ export class SubmissionPartController {
   @ApiNotFoundResponse({
     description: 'Account or website instance not found.',
   })
-  create(@Body() createSubmissionPartDto: CreateSubmissionPartDto<any>) {
+  create(
+    @Body() createSubmissionPartDto: CreateSubmissionPartDto<BaseWebsiteOptions>
+  ) {
     return this.service.create(createSubmissionPartDto);
   }
 

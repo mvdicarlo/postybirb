@@ -1,5 +1,5 @@
 import { TestMetadata } from '@postybirb/website-metadata';
-import BaseWebsiteOptions from '../../../submission/models_maybe/base-website-options.model';
+import { Class } from 'type-fest';
 import FileSubmission from '../../../submission/models_maybe/file-submission.model';
 import FileWebsiteOptions from '../../../submission/models_maybe/file-website-options.model';
 import messageSubmissionModel from '../../../submission/models_maybe/message-submission.model';
@@ -10,7 +10,6 @@ import { MessageWebsite } from '../../models/website-modifier-interfaces/message
 import { OAuthWebsite } from '../../models/website-modifier-interfaces/oauth-website.interface';
 import { Website } from '../../website';
 import { WebsiteMetadata } from '../../website-metadata.decorator';
-import { Class } from 'type-fest';
 import { TestFileSubmission } from './models/test-file-submission.model';
 import { TestMessageSubmission } from './models/test-message-submission.model';
 import { UserLoginWebsite } from '../../models/website-modifier-interfaces/user-login-website.interface';
@@ -24,10 +23,14 @@ export default class TestWebsite
     OAuthWebsite,
     UserLoginWebsite
 {
-  fileModel: Class<TestFileSubmission> = TestFileSubmission;
-  messageModel: Class<TestMessageSubmission> = TestMessageSubmission;
+  FileModel: Class<TestFileSubmission> = TestFileSubmission;
+
+  MessageModel: Class<TestMessageSubmission> = TestMessageSubmission;
+
   supportsAdditionalFiles = false;
+
   supportsFile: true = true;
+
   supportsMessage: true = true;
 
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
@@ -35,6 +38,7 @@ export default class TestWebsite
   };
 
   protected BASE_URL = 'http://localhost:3000';
+
   loginUrl: string = `${this.BASE_URL}/login`;
 
   public async onLogin(): Promise<ILoginState> {
@@ -47,11 +51,11 @@ export default class TestWebsite
   }
 
   createFileModel(): TestFileSubmission {
-    return new this.fileModel();
+    return new this.FileModel();
   }
 
   createMessageModel(): TestMessageSubmission {
-    return new this.messageModel();
+    return new this.MessageModel();
   }
 
   onPostFileSubmission(
@@ -85,11 +89,11 @@ export default class TestWebsite
   async onAuthorize(
     data: Record<string, unknown>,
     state: string
-  ): Promise<any> {
+  ): Promise<Record<string, boolean>> {
     if (state === 'authorize') {
-      return true;
+      return { result: true };
     }
 
-    return false;
+    return { result: false };
   }
 }

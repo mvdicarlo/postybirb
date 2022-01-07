@@ -7,11 +7,11 @@ import {
   Menu,
   globalShortcut,
 } from 'electron';
-import { rendererAppName, rendererAppPort } from './constants';
-import { environment } from '../environments/environment';
 import { join } from 'path';
 import { format } from 'url';
 import { isOSX } from '@postybirb/utils/electron';
+import { environment } from '../environments/environment';
+import { rendererAppName, rendererAppPort } from './constants';
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
@@ -19,8 +19,11 @@ export default class App {
   // Keep a global reference of the window object, if you don't, the window will
   // be closed automatically when the JavaScript object is garbage collected.
   static mainWindow: Electron.BrowserWindow;
+
   static application: Electron.App;
+
   static BrowserWindow;
+
   static appTray: Tray;
 
   public static isDevelopmentMode() {
@@ -44,7 +47,7 @@ export default class App {
     App.mainWindow = null;
   }
 
-  private static onRedirect(event: any, url: string) {
+  private static onRedirect(event: Event, url: string) {
     if (url !== App.mainWindow.webContents.getURL()) {
       // this is a normal external redirect, open it in a new browser window
       event.preventDefault();
@@ -74,14 +77,14 @@ export default class App {
   }
 
   private static initMainWindow() {
-    const workAreaSize = screen.getPrimaryDisplay().workAreaSize;
+    const { workAreaSize } = screen.getPrimaryDisplay();
     const width = Math.min(1280, workAreaSize.width || 1280);
     const height = Math.min(720, workAreaSize.height || 720);
 
     // Create the browser window.
     App.mainWindow = new BrowserWindow({
-      width: width,
-      height: height,
+      width,
+      height,
       show: false,
       icon: appIcon,
       autoHideMenuBar: true,

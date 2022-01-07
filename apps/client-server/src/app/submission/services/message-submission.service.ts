@@ -12,6 +12,5 @@ export class MessageSubmissionService
     createSubmissionDto: CreateSubmissionDto
   ): Promise<void> {
     // Do nothing for now
-    return;
   }
 }

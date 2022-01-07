@@ -5,7 +5,9 @@ import { ILoginState } from './login-state.interface';
  */
 export class LoginState implements ILoginState {
   pending: boolean = false;
+
   isLoggedIn = false;
+
   username: string | null = null;
 
   public logout(): LoginState {

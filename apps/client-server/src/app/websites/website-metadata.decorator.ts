@@ -1,7 +1,8 @@
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { Class } from 'type-fest';
 
 export function WebsiteMetadata(metadata: IWebsiteMetadata) {
-  return function (constructor: Function) {
+  return function website(constructor: Class) {
     const m = { ...metadata };
     // Determine default login refresh
     if (!metadata.refreshInterval) {
@@ -14,6 +15,7 @@ export function WebsiteMetadata(metadata: IWebsiteMetadata) {
       m.refreshInterval = 60 * 60_000;
     }
 
+    // eslint-disable-next-line no-param-reassign
     constructor.prototype.metadata = { ...m };
   };
 }

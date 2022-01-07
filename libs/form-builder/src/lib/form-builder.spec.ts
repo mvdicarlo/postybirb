@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import { formBuilder } from './form-builder';
 import { BooleanField, TextField } from './decorators';
 

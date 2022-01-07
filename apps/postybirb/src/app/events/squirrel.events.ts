@@ -12,14 +12,17 @@ export default class SquirrelEvents {
 
   // app paths
   private static appFolder = resolve(process.execPath, '..');
+
   private static appRootFolder = resolve(SquirrelEvents.appFolder, '..');
+
   private static updateExe = resolve(
     join(SquirrelEvents.appRootFolder, 'Update.exe')
   );
+
   private static exeName = resolve(
     join(
       SquirrelEvents.appRootFolder,
-      'app-' + environment.version,
+      `app-${environment.version}`,
       basename(process.execPath)
     )
   );
@@ -29,6 +32,7 @@ export default class SquirrelEvents {
       return false;
     }
 
+    // eslint-disable-next-line default-case
     switch (process.argv[1]) {
       case '--squirrel-install':
       case '--squirrel-updated':

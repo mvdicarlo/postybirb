@@ -88,12 +88,14 @@ export class FileSubmissionService
   }
 
   async removeFile(submission: FileSubmission, fileId: string) {
+    // eslint-disable-next-line no-param-reassign
     submission.metadata.files = submission.metadata.files.filter(
       (f) => f.primary !== fileId
     );
 
     submission.metadata.files.forEach((f) => {
       if (f.thumbnail === fileId) {
+        // eslint-disable-next-line no-param-reassign
         f.thumbnail = undefined;
       }
     });

@@ -1,8 +1,8 @@
 import { IntlProvider } from 'react-intl';
 import { createContext, useState } from 'react';
 import { PropsWithChildren } from 'react-virtualized-auto-sizer/node_modules/@types/react';
-import { LS_LANGUAGE_KEY } from '../constants';
 import locales from '@postybirb/translations';
+import { LS_LANGUAGE_KEY } from '../constants';
 
 function getLocaleData(locale: string) {
   return locales[locale] ?? locales[locale.split('-')[0]] ?? locales.en;
@@ -15,7 +15,7 @@ export type AppIntlContext = {
 
 const Context = createContext<AppIntlContext>({} as AppIntlContext);
 
-const AppIntlProvider = ({ children }: PropsWithChildren<any>): JSX.Element => {
+function AppIntlProvider({ children }: PropsWithChildren<any>): JSX.Element {
   const [locale, setLocale] = useState<string>(
     localStorage.getItem(LS_LANGUAGE_KEY) ?? navigator.language
   );
@@ -37,6 +37,6 @@ const AppIntlProvider = ({ children }: PropsWithChildren<any>): JSX.Element => {
       </IntlProvider>
     </Context.Provider>
   );
-};
+}
 
 export default AppIntlProvider;

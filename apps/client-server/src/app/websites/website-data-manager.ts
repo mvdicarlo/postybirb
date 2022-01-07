@@ -13,8 +13,11 @@ export default class WebsiteDataManager<T extends SafeObject> {
   private readonly logger;
 
   private readonly account: Account;
+
   private entity: WebsiteData<T>;
+
   private initialized: boolean;
+
   private repository: Repository<WebsiteData<T>>;
 
   constructor(userAccount: Account) {
@@ -38,6 +41,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
   }
 
   private async saveData() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await this.repository.save<WebsiteData<any>>(this.entity);
   }
 

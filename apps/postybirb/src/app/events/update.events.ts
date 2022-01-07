@@ -6,11 +6,11 @@ import App from '../app';
 export default class UpdateEvents {
   // initialize auto update service - most be invoked only in production
   static initAutoUpdateService() {
-    const platform_arch =
-      platform() === 'win32' ? platform() : platform() + '_' + arch();
+    const platformArch =
+      platform() === 'win32' ? platform() : `${platform()}_${arch()}`;
     const version = app.getVersion();
     const feed: Electron.FeedURLOptions = {
-      url: `${updateServerUrl}/update/${platform_arch}/${version}`,
+      url: `${updateServerUrl}/update/${platformArch}/${version}`,
     };
 
     if (!App.isDevelopmentMode()) {

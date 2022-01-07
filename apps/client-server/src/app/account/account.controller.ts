@@ -41,7 +41,7 @@ export class AccountController {
     if (Coerce.boolean(refresh)) {
       await this.service.manuallyExecuteOnLogin(id);
     }
-    return await this.service.findOne(id);
+    return this.service.findOne(id);
   }
 
   @Post()

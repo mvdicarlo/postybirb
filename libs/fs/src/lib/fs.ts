@@ -61,9 +61,7 @@ export function readSync(path: string): Buffer {
 }
 
 export function readJson<T extends Record<string, unknown>>(path: string) {
-  return read(path).then((buffer) => {
-    return JSON.parse(buffer.toString()) as T;
-  });
+  return read(path).then((buffer) => JSON.parse(buffer.toString()) as T);
 }
 
 export function readJsonSync<T extends Record<string, unknown>>(

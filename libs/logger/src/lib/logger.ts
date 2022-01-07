@@ -16,7 +16,7 @@ export function initialize(): void {
     throw new Error('Logger already initialized.');
   }
 
-  const streams: any[] = [];
+  const streams: unknown[] = [];
   if (isDev || isTest) {
     streams.push({ stream: pinoms.prettyStream() });
   }
@@ -56,45 +56,7 @@ process.on('uncaughtException', (err) => {
   Logger('Process:uncaughtException').error(err);
 });
 
-export function Log(level?: P.Level): MethodDecorator {
-  level = level ?? 'info';
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-    const l = Logger(target.constructor.name, {
-      function: propertyKey,
-      logId: uuid(),
-    });
-    const originalValue = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-      l[level](args);
-      try {
-        const ret = originalValue.apply(this, args);
-        if (ret instanceof Promise) {
-          return ret
-            .then((result) => {
-              if (result) {
-                l[level](processResult(result));
-              }
-              return result;
-            })
-            .catch((err) => {
-              l.error(err);
-              throw err;
-            });
-        }
-
-        if (ret) {
-          l[level](processResult(ret));
-        }
-        return ret;
-      } catch (err) {
-        l.error(err);
-        throw err;
-      }
-    };
-  };
-}
-
-function processResult(result: any) {
+function processResult(result: unknown) {
   return JSON.parse(
     JSON.stringify(result, (key, value) => {
       if (value instanceof Buffer) {
@@ -108,4 +70,47 @@ function processResult(result: any) {
       return value;
     })
   );
+}
+
+export function Log(level?: P.Level): MethodDecorator {
+  const assignedLevel = level ?? 'info';
+  return (
+    target: unknown,
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) => {
+    const l = Logger(target.constructor.name, {
+      function: propertyKey,
+      logId: uuid(),
+    });
+    const originalValue = descriptor.value;
+    // eslint-disable-next-line no-param-reassign
+    descriptor.value = function value(...args: unknown[]) {
+      l[level](args);
+      try {
+        const ret = originalValue.apply(this, args);
+        if (ret instanceof Promise) {
+          return ret
+            .then((result) => {
+              if (result) {
+                l[assignedLevel](processResult(result));
+              }
+              return result;
+            })
+            .catch((err) => {
+              l.error(err);
+              throw err;
+            });
+        }
+
+        if (ret) {
+          l[assignedLevel](processResult(ret));
+        }
+        return ret;
+      } catch (err) {
+        l.error(err);
+        throw err;
+      }
+    };
+  };
 }
