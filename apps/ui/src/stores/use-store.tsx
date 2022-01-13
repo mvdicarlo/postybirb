@@ -10,6 +10,7 @@ function useStore<S>(store: StoreManager<S>) {
     return () => {
       observer.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const reload = useCallback(() => {
@@ -17,7 +18,8 @@ function useStore<S>(store: StoreManager<S>) {
       setIsLoading(true);
       store.refresh().finally(() => setIsLoading(false));
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   return { isLoading, state, reload };
 }

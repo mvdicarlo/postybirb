@@ -34,6 +34,7 @@ export default function AppSettings() {
       button={
         <EuiHeaderSectionItemButton
           aria-haspopup="true"
+          // eslint-disable-next-line jsx-a11y/aria-props
           aria-aria-expanded={isOpen}
           aria-label="Settings"
           isSelected={isOpen}

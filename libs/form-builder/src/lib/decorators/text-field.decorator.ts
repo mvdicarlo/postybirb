@@ -2,7 +2,7 @@
 import 'reflect-metadata';
 import { FieldType } from '../types/field';
 import { PrimitiveRecord } from '../types/primitive-record';
-import { assignMetadata } from '../utils/assign-metadata.util';
+import { assignMetadata } from '../utils/assign-metadata';
 
 type TextFormField = 'input' | 'textarea';
 const TYPE_KEY = 'text';

@@ -29,6 +29,24 @@ export default class Https {
     return url.toString();
   }
 
+  private processBody<U>(body: U | BodyInit | undefined) {
+    if (body) {
+      if (body instanceof FormData) {
+        return body;
+      }
+
+      if (body instanceof Object) {
+        return JSON.stringify(body);
+      }
+
+      if (typeof body === 'string') {
+        return body;
+      }
+    }
+
+    return undefined;
+  }
+
   private async processResponse<T>(res: Response): Promise<FetchResult<T>> {
     if (res.status > 201) {
       const result: FetchResult<undefined> = {
@@ -55,12 +73,12 @@ export default class Https {
     return this.processResponse(res);
   }
 
-  async get<T = any>(path?: string, search?: Record<string, Primitive>) {
+  async get<T>(path?: string, search?: Record<string, Primitive>) {
     const res = await fetch(this.createUrl(path, search), { method: 'GET' });
     return this.processResponse<T>(res);
   }
 
-  async patch<T = any, U = any>(
+  async patch<T, U>(
     path?: string,
     body?: U | BodyInit,
     search?: Record<string, Primitive>
@@ -70,18 +88,13 @@ export default class Https {
         'Content-Type':
           body instanceof FormData ? 'multipart/form-data' : 'application/json',
       },
-      body:
-        body && body instanceof FormData
-          ? body
-          : body && body instanceof Object
-          ? JSON.stringify(body)
-          : undefined,
+      body: this.processBody(body),
       method: 'PATCH',
     });
     return this.processResponse<T>(res);
   }
 
-  async post<T = any, U = any>(
+  async post<T, U>(
     path?: string,
     body?: U | FormData,
     search?: Record<string, Primitive>
@@ -91,12 +104,7 @@ export default class Https {
         'Content-Type':
           body instanceof FormData ? 'multipart/form-data' : 'application/json',
       },
-      body:
-        body && body instanceof FormData
-          ? body
-          : body && body instanceof Object
-          ? JSON.stringify(body)
-          : undefined,
+      body: this.processBody<U>(body),
       method: 'POST',
     });
     return this.processResponse<T>(res);

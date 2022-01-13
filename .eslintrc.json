@@ -48,11 +48,12 @@
     }
   ],
   "rules": {
-    "formatjs/no-offset": "error",
-    "react/react-in-jsx-scope": "off",
-    "import/prefer-default-export": "off",
-    "class-methods-use-this": "off",
     "@typescript-eslint/ban-types": "warn",
-    "import/no-cycle": "off"
+    "class-methods-use-this": "off",
+    "formatjs/no-offset": "error",
+    "import/no-cycle": "off",
+    "import/prefer-default-export": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/react-in-jsx-scope": "off"
   }
 }

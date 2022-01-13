@@ -1,5 +1,5 @@
 import { IntlProvider } from 'react-intl';
-import { createContext, useState } from 'react';
+import { createContext, useMemo, useState } from 'react';
 import { PropsWithChildren } from 'react-virtualized-auto-sizer/node_modules/@types/react';
 import locales from '@postybirb/translations';
 import { LS_LANGUAGE_KEY } from '../constants';
@@ -15,6 +15,7 @@ export type AppIntlContext = {
 
 const Context = createContext<AppIntlContext>({} as AppIntlContext);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function AppIntlProvider({ children }: PropsWithChildren<any>): JSX.Element {
   const [locale, setLocale] = useState<string>(
     localStorage.getItem(LS_LANGUAGE_KEY) ?? navigator.language
@@ -25,8 +26,10 @@ function AppIntlProvider({ children }: PropsWithChildren<any>): JSX.Element {
     localStorage.setItem(LS_LANGUAGE_KEY, value);
   }
 
+  const contextValue = useMemo(() => ({ locale, changeLocale }), [locale]);
+
   return (
-    <Context.Provider value={{ locale, changeLocale }}>
+    <Context.Provider value={contextValue}>
       <IntlProvider
         key={locale}
         locale={locale}
