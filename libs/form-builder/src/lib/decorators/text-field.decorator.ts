@@ -1,18 +1,19 @@
+/* eslint-disable no-param-reassign */
 import 'reflect-metadata';
-import { Primitive } from 'type-fest';
-import { FieldType } from '../types/field.type';
+import { FieldType } from '../types/field';
+import { PrimitiveRecord } from '../types/primitive-record';
 import { assignMetadata } from '../utils/assign-metadata.util';
 
 type TextFormField = 'input' | 'textarea';
 const TYPE_KEY = 'text';
 
-export type TextFieldType<T extends Record<string, Primitive>> = FieldType<
+export type TextFieldType<T extends PrimitiveRecord> = FieldType<
   T,
   string,
   TextFormField
 >;
 
-export function TextField<T extends Record<string, Primitive>>(
+export function TextField<T extends PrimitiveRecord>(
   options: TextFieldType<T>
 ): PropertyDecorator {
   options.type = TYPE_KEY;

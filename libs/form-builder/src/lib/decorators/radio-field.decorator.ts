@@ -1,6 +1,8 @@
+/* eslint-disable no-param-reassign */
 import 'reflect-metadata';
 import { Primitive } from 'type-fest';
-import { FieldType } from '../types/field.type';
+import { FieldType } from '../types/field';
+import { PrimitiveRecord } from '../types/primitive-record';
 import { assignMetadata } from '../utils/assign-metadata.util';
 
 type RadioFormField = 'radio';
@@ -11,7 +13,7 @@ export type RadioOption = {
   value: Primitive;
 };
 
-export type RadioFieldType<T extends Record<string, Primitive>> = FieldType<
+export type RadioFieldType<T extends PrimitiveRecord> = FieldType<
   T,
   string,
   RadioFormField
@@ -19,7 +21,7 @@ export type RadioFieldType<T extends Record<string, Primitive>> = FieldType<
   options: RadioOption[];
 };
 
-export function RadioField<T extends Record<string, Primitive>>(
+export function RadioField<T extends PrimitiveRecord>(
   options: RadioFieldType<T>
 ): PropertyDecorator {
   options.type = TYPE_KEY;

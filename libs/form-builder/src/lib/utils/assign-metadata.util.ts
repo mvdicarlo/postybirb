@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { METADATA_KEY } from '../../constants';
-import { FieldAggregateType } from '../types/field-aggregate.type';
-import { FormBuilderMetadata } from '../types/form-builder-metadata.type';
+import { FieldAggregateType } from '../types/field-aggregate';
+import { FormBuilderMetadata } from '../types/form-builder-metadata';
 
 export function assignMetadata<T extends FieldAggregateType>(
   target: object,

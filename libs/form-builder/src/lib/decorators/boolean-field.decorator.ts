@@ -1,19 +1,19 @@
 /* eslint-disable no-param-reassign */
 import 'reflect-metadata';
-import { Primitive } from 'type-fest';
-import { FieldType } from '../types/field.type';
+import { FieldType } from '../types/field';
+import { PrimitiveRecord } from '../types/primitive-record';
 import { assignMetadata } from '../utils/assign-metadata.util';
 
 type BooleanFormField = 'switch' | 'checkbox';
 const TYPE_KEY = 'boolean';
 
-export type BooleanFieldType<T extends Record<string, Primitive>> = FieldType<
+export type BooleanFieldType<T extends PrimitiveRecord> = FieldType<
   T,
   boolean,
   BooleanFormField
 >;
 
-export function BooleanField<T extends Record<string, any>>(
+export function BooleanField<T extends PrimitiveRecord>(
   options: BooleanFieldType<T>
 ): PropertyDecorator {
   options.type = TYPE_KEY;

@@ -1,9 +1,9 @@
 import 'reflect-metadata';
-import { Primitive } from 'type-fest';
 import { METADATA_KEY } from '../constants';
-import { FormBuilderMetadata } from './types/form-builder-metadata.type';
+import { FormBuilderMetadata } from './types/form-builder-metadata';
+import { PrimitiveRecord } from './types/primitive-record';
 
-export function formBuilder<T extends Record<string, Primitive>>(
+export function formBuilder<T extends PrimitiveRecord>(
   target: object,
   data: T
 ): FormBuilderMetadata<T> {

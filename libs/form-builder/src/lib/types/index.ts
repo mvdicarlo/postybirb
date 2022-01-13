@@ -1,3 +1,3 @@
-export * from './field-aggregate.type';
-export * from './field.type';
-export * from './form-builder-metadata.type';
+export * from './field-aggregate';
+export * from './field';
+export * from './form-builder-metadata';
