@@ -1,5 +1,5 @@
 import SubmissionType from '../enums/submission-type.enum';
-import BaseWebsiteOptions from '../models_maybe/base-website-options.model';
+import BaseWebsiteOptions from './base-website-options.model';
 import { IBaseSubmissionMetadata } from './base-submission-metadata.model';
 import { ISubmissionPart } from './submission-part.interface';
 import { ISubmissionScheduleInfo } from './submission-schedule-info.interface';

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsObject, IsString } from 'class-validator';
-import BaseWebsiteOptions from '../models_maybe/base-website-options.model';
+import BaseWebsiteOptions from '../models/base-website-options.model';
 
 export class CreateSubmissionPartDto<T extends BaseWebsiteOptions> {
   @ApiProperty()

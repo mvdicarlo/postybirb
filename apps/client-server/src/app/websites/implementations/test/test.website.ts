@@ -1,9 +1,7 @@
 import { TestMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import FileSubmission from '../../../submission/models_maybe/file-submission.model';
-import FileWebsiteOptions from '../../../submission/models_maybe/file-website-options.model';
-import messageSubmissionModel from '../../../submission/models_maybe/message-submission.model';
-import PostData from '../../../submission/models_maybe/post-data.model';
+import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
+import PostData from '../../../submission/models/post-data.model';
 import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
 import { ILoginState } from '../../models/login-state.interface';
 import { MessageWebsite } from '../../models/website-modifier-interfaces/message-website.interface';
@@ -13,6 +11,8 @@ import { WebsiteMetadata } from '../../website-metadata.decorator';
 import { TestFileSubmission } from './models/test-file-submission.model';
 import { TestMessageSubmission } from './models/test-message-submission.model';
 import { UserLoginWebsite } from '../../models/website-modifier-interfaces/user-login-website.interface';
+import { FileSubmission } from '../../../submission/models/file-submission.model';
+import { MessageSubmission } from '../../../submission/models/message-submission.model';
 
 @WebsiteMetadata(TestMetadata)
 export default class TestWebsite
@@ -80,7 +80,7 @@ export default class TestWebsite
   }
 
   onValidateMessageSubmission(
-    submissionData: messageSubmissionModel,
+    submissionData: MessageSubmission,
     postData: PostData<TestMessageSubmission>
   ): Promise<unknown> {
     throw new Error('Method not implemented.');

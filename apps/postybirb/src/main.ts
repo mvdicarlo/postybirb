@@ -77,8 +77,8 @@ Main.initialize();
 // bootstrap app
 Main.bootstrapClientServer()
   .then(() => {
-    Main.bootstrapApp();
-    Main.bootstrapAppEvents();
+    // Main.bootstrapApp();
+    // Main.bootstrapAppEvents();
   })
   .catch((err) => {
     console.error(err);

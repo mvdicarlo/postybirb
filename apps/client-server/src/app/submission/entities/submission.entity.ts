@@ -11,7 +11,7 @@ import { IBaseSubmissionMetadata } from '../models/base-submission-metadata.mode
 import { ISubmissionPart } from '../models/submission-part.interface';
 import { ISubmissionScheduleInfo } from '../models/submission-schedule-info.interface';
 import { ISubmission } from '../models/submission.interface';
-import BaseWebsiteOptions from '../models_maybe/base-website-options.model';
+import BaseWebsiteOptions from '../models/base-website-options.model';
 import { SubmissionPart } from './submission-part.entity';
 
 @Entity()

@@ -26,7 +26,7 @@ import { Submission } from '../entities/submission.entity';
 import SubmissionType from '../enums/submission-type.enum';
 import { IBaseSubmissionMetadata } from '../models/base-submission-metadata.model';
 import { SubmissionMetadataType } from '../models/submission-metadata-types.model';
-import BaseWebsiteOptions from '../models_maybe/base-website-options.model';
+import BaseWebsiteOptions from '../models/base-website-options.model';
 
 @Injectable()
 export class SubmissionPartService {

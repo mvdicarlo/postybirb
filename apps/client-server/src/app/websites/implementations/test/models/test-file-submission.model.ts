@@ -1,5 +1,5 @@
 import { BooleanField, RadioField, TextField } from '@postybirb/form-builder';
-import FileWebsiteOptions from '../../../../submission/models_maybe/file-website-options.model';
+import FileWebsiteOptions from '../../../../submission/models/file-website-options.model';
 
 export class TestFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })

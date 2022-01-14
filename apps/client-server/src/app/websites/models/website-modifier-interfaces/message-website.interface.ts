@@ -1,7 +1,7 @@
 import { Class } from 'type-fest';
-import BaseWebsiteOptions from '../../../submission/models_maybe/base-website-options.model';
-import MessageSubmission from '../../../submission/models_maybe/message-submission.model';
-import PostData from '../../../submission/models_maybe/post-data.model';
+import BaseWebsiteOptions from '../../../submission/models/base-website-options.model';
+import { MessageSubmission } from '../../../submission/models/message-submission.model';
+import PostData from '../../../submission/models/post-data.model';
 import { UnknownWebsite } from '../../website';
 
 export interface MessageWebsite<T extends BaseWebsiteOptions> {
