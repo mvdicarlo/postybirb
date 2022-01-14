@@ -1,6 +1,7 @@
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
+import * as contextMenu from 'electron-context-menu';
 import SquirrelEvents from './app/events/squirrel.events';
 import ElectronEvents from './app/events/electron.events';
 import UpdateEvents from './app/events/update.events';
@@ -45,6 +46,8 @@ app.on(
 process.env.APP_PORT = process.env.APP_PORT ?? '9487';
 process.env.APP_VERSION = environment.version;
 
+contextMenu();
+
 export default class Main {
   static initialize() {
     if (SquirrelEvents.handleEvents()) {
@@ -77,8 +80,8 @@ Main.initialize();
 // bootstrap app
 Main.bootstrapClientServer()
   .then(() => {
-    // Main.bootstrapApp();
-    // Main.bootstrapAppEvents();
+    Main.bootstrapApp();
+    Main.bootstrapAppEvents();
   })
   .catch((err) => {
     console.error(err);

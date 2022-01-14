@@ -22,7 +22,7 @@ export default function AppSettings() {
   const toggleOpen = () => setOpen(!isOpen);
 
   const keybindingProps: KeybindingProps = {
-    keybinding: 'Alt+S',
+    keybinding: 'Control+Alt+S',
     onActivate: toggleOpen,
   };
 

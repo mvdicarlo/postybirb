@@ -28,10 +28,16 @@ export default function Keybinding(props: PropsWithChildren<KeybindingProps>) {
 
   const bindings: JSX.Element[] = [];
   keybinding.split('+').forEach((binding, i) => {
+    let keyName = binding;
+    if (keyName === 'Control') {
+      keyName = 'Ctrl';
+    }
+
     if (i > 0) {
       bindings.push(<span>+</span>);
     }
-    bindings.push(<kbd>{binding}</kbd>);
+
+    bindings.push(<kbd>{keyName}</kbd>);
   });
 
   return (

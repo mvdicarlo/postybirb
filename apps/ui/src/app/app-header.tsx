@@ -37,7 +37,7 @@ export default function AppHeader(props: AppHeaderProps) {
 
   useKeybinding({
     onActivate: toggleFlyout,
-    keybinding: 'Alt+A',
+    keybinding: 'Control+Alt+A',
   });
 
   return (
@@ -51,7 +51,7 @@ export default function AppHeader(props: AppHeaderProps) {
           isSelected={isFlyoutOpen}
           onClick={toggleFlyout}
         >
-          <EuiIcon type="menu" title="Shortcut: Alt+A" />
+          <EuiIcon type="menu" title="Shortcut: Ctrl+Alt+A" />
         </EuiHeaderSectionItemButton>
         <EuiHeaderLogo iconTitle="PostyBirb" iconType={AppImage}>
           PostyBirb{' '}
