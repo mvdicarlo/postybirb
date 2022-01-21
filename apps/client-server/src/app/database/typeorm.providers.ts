@@ -10,7 +10,7 @@ import { Migrations } from './migrations';
 
 // Only need to run a synchronize on first initialization.
 // Any schema changes afterwards should be handled by migrations.
-const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.sql');
+const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
 const exists = existsSync(DATABASE_PATH);
 
 /*

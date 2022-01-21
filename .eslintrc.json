@@ -5,9 +5,11 @@
     "plugin:prettier/recommended",
     "airbnb",
     "airbnb/hooks",
-    "airbnb-typescript"
+    "airbnb-typescript",
+    "plugin:jest/recommended",
+    "plugin:testing-library/react"
   ],
-  "plugins": ["@nrwl/nx", "prettier", "formatjs"],
+  "plugins": ["@nrwl/nx", "prettier", "formatjs", "jest", "testing-library"],
   "parserOptions": {
     "project": "./tsconfig.base.json"
   },

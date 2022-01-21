@@ -83,6 +83,11 @@ export function Log(level?: P.Level): MethodDecorator {
       function: propertyKey,
       logId: uuid(),
     });
+
+    if (process.env.NODE_ENV === 'Test') {
+      return;
+    }
+
     const originalValue = descriptor.value;
     // eslint-disable-next-line no-param-reassign
     descriptor.value = function value(...args: unknown[]) {

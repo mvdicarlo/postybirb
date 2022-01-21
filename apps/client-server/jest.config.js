@@ -12,5 +12,5 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/client-server',
-  runner: '@jest-runner/electron/main',
+  runner: '@kayahr/jest-electron-runner/main',
 };
