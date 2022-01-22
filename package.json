@@ -35,7 +35,7 @@
     "hammerjs": "^2.0.8",
     "jquery": "^3.5.0",
     "jsstore": "^3.7.3",
-    "nanoid": "^2.0.1",
+    "nanoid": "^3.1.31",
     "ng-pick-datetime": "^7.0.0",
     "ng-snotify": "^4.3.1",
     "ngx-image-cropper": "^2.1.0",
