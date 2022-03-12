@@ -51,7 +51,6 @@ import { AfterDarkSubmissionForm } from './website-services/afterdark/components
 import { AryionSubmissionForm } from './website-services/aryion/components/aryion-submission-form/aryion-submission-form.component';
 import { BaseWebsiteSubmissionForm } from './components/base-website-submission-form/base-website-submission-form.component';
 import { DerpibooruSubmissionForm } from './website-services/derpibooru/components/derpibooru-submission-form/derpibooru-submission-form.component';
-import { DeviantArtCategorySelectComponent } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-category-select/deviant-art-category-select.component';
 import { DeviantArtLoginDialog } from './website-services/deviant-art/components/deviant-art-login-dialog/deviant-art-login-dialog.component';
 import { DeviantArtSubmissionForm } from './website-services/deviant-art/components/deviant-art-submission-form/deviant-art-submission-form.component';
 import { E621SubmissionForm } from './website-services/e621/components/e621-submission-form/e621-submission-form.component';
@@ -103,7 +102,6 @@ export function INIT_WEBSITE_REGISTRY() {
     AryionSubmissionForm,
     BaseWebsiteSubmissionForm,
     DerpibooruSubmissionForm,
-    DeviantArtCategorySelectComponent,
     DeviantArtLoginDialog,
     DeviantArtSubmissionForm,
     E621SubmissionForm,
