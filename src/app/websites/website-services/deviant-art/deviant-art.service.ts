@@ -229,13 +229,6 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
     }
   }
 
-  private getDefaultCategoryType(type: TypeOfSubmission): string {
-    if (type === TypeOfSubmission.ART) return 'digitalart/paintings/other';
-    if (type === TypeOfSubmission.ANIMATION) return 'flash/animations'
-    if (type === TypeOfSubmission.STORY) return 'literature/prose/fiction/general/shortstory';
-    return 'digitalart/paintings/other';
-  }
-
   private async postSubmission(submission: Submission, postData: SubmissionPostData): Promise<PostResult> {
     const authData = this._profileManager.getData(postData.profileId, DeviantArt.name);
     const data: any = {
@@ -267,7 +260,6 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
       agree_tos: '1',
       agree_submission: '1',
       is_mature: postData.rating !== SubmissionRating.GENERAL ? 'true' : 'false',
-      catpath: this.getDefaultCategoryType(postData.typeOfSubmission),
       display_resolution: '0',
     };
 
@@ -289,7 +281,6 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
       }
     }
 
-    if (options.category) submitData.catpath = options.category;
     if (options.disableComments) submitData.allow_comments = 'no';
     if (options.critique) submitData.request_critique = 'yes';
     if (options.freeDownload) submitData.allow_free_download = 'no';
@@ -297,12 +288,8 @@ export class DeviantArt extends BaseWebsiteService implements WebsiteService {
     if (options.displayResolution) submitData.display_resolution = options.displayResolution;
 
     if ((options.folders || []).length > 0) {
-      if (options.category && options.category.includes('scraps')) {
-        // skip folders when set to scraps
-      } else {
-        for (let i = 0; i < options.folders.length; i++) {
-          submitData[`galleryids[${i}]`] = options.folders[i];
-        }
+      for (let i = 0; i < options.folders.length; i++) {
+        submitData[`galleryids[${i}]`] = options.folders[i];
       }
     }
 

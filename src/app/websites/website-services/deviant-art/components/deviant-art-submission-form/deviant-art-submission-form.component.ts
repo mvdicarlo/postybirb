@@ -17,7 +17,6 @@ export class DeviantArtSubmissionForm extends BaseWebsiteSubmissionForm implemen
     critique: [false],
     freeDownload: [false],
     folders: [[]],
-    category: [],
     matureClassification: [[]],
     matureLevel: [''],
     displayResolution: ['0']
