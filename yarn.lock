@@ -1376,6 +1376,11 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@base2/pretty-print-object@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@base2/pretty-print-object/-/pretty-print-object-1.0.1.tgz#371ba8be66d556812dc7fb169ebc3c08378f69d4"
+  integrity sha512-4iri8i1AqYHJE2DstZYkyEprg6Pq6sKx3xn5FpySk9sNhH7qN2LLlHJCfDTZRILNwQNPD7mATWM0TBui7uC1pA==
+
 "@bcoe/v8-coverage@^0.2.3":
   version "0.2.3"
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
@@ -1440,18 +1445,18 @@
   dependencies:
     tslib "^1.9.3"
 
-"@elastic/eui@^43.1.1":
-  version "43.1.1"
-  resolved "https://registry.yarnpkg.com/@elastic/eui/-/eui-43.1.1.tgz#5a4526c0a3fad45dcbe470dc33d1d9b701904494"
-  integrity sha512-ilVAfhM2QtrA8RiG5vgVBOW5xqyjpDeMTH2c/Nf8vEYVgebmTnDAJuaDj5lHpk01oqt2jEEelZkD40XKY2376w==
+"@elastic/eui@^53.0.1":
+  version "53.0.1"
+  resolved "https://registry.yarnpkg.com/@elastic/eui/-/eui-53.0.1.tgz#82359460ae4edab3a538846b6915518cb1214848"
+  integrity sha512-fPOuDyc7adjHBp+UHOtIJTHdZVKi8MGzyuYxTRN8ZYLHbzcNTaCsogdk+0eb6u4ISRqhk3tudG8Q0znksVHt1w==
   dependencies:
     "@types/chroma-js" "^2.0.0"
     "@types/lodash" "^4.14.160"
     "@types/numeral" "^0.0.28"
-    "@types/react-beautiful-dnd" "^13.0.0"
-    "@types/react-input-autosize" "^2.2.0"
-    "@types/react-virtualized-auto-sizer" "^1.0.0"
-    "@types/react-window" "^1.8.2"
+    "@types/react-beautiful-dnd" "^13.1.2"
+    "@types/react-input-autosize" "^2.2.1"
+    "@types/react-virtualized-auto-sizer" "^1.0.1"
+    "@types/react-window" "^1.8.5"
     "@types/refractor" "^3.0.0"
     "@types/resize-observer-browser" "^0.1.5"
     "@types/vfile-message" "^2.0.0"
@@ -1461,13 +1466,14 @@
     mdast-util-to-hast "^10.0.0"
     numeral "^2.0.6"
     prop-types "^15.6.0"
-    react-beautiful-dnd "^13.0.0"
-    react-dropzone "^11.2.0"
-    react-focus-on "^3.5.0"
-    react-input-autosize "^2.2.2"
-    react-is "~16.3.0"
-    react-virtualized-auto-sizer "^1.0.2"
-    react-window "^1.8.5"
+    react-beautiful-dnd "^13.1.0"
+    react-dropzone "^11.5.3"
+    react-element-to-jsx-string "^14.3.4"
+    react-focus-on "^3.5.4"
+    react-input-autosize "^3.0.0"
+    react-is "^17.0.2"
+    react-virtualized-auto-sizer "^1.0.6"
+    react-window "^1.8.6"
     refractor "^3.5.0"
     rehype-raw "^5.0.0"
     rehype-react "^6.0.0"
@@ -1480,7 +1486,7 @@
     text-diff "^1.0.1"
     unified "^9.2.0"
     unist-util-visit "^2.0.3"
-    url-parse "^1.5.3"
+    url-parse "^1.5.10"
     uuid "^8.3.0"
     vfile "^4.2.0"
 
@@ -3323,7 +3329,7 @@
   resolved "https://registry.yarnpkg.com/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-beautiful-dnd@^13.0.0":
+"@types/react-beautiful-dnd@^13.1.2":
   version "13.1.2"
   resolved "https://registry.yarnpkg.com/@types/react-beautiful-dnd/-/react-beautiful-dnd-13.1.2.tgz#510405abb09f493afdfd898bf83995dc6385c130"
   integrity sha512-+OvPkB8CdE/bGdXKyIhc/Lm2U7UAYCCJgsqmopFmh9gbAudmslkI8eOrPDjg4JhwSE6wytz4a3/wRjKtovHVJg==
@@ -3337,7 +3343,7 @@
   dependencies:
     "@types/react" "^16"
 
-"@types/react-input-autosize@^2.2.0":
+"@types/react-input-autosize@^2.2.1":
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/@types/react-input-autosize/-/react-input-autosize-2.2.1.tgz#6a335212e7fce1e1a4da56ae2095c8c5c35fbfe6"
   integrity sha512-RxzEjd4gbLAAdLQ92Q68/AC+TfsAKTc4evsArUH1aIShIMqQMIMjsxoSnwyjtbFTO/AGIW/RQI94XSdvOxCz/w==
@@ -3371,14 +3377,14 @@
     "@types/history" "*"
     "@types/react" "*"
 
-"@types/react-virtualized-auto-sizer@^1.0.0":
+"@types/react-virtualized-auto-sizer@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@types/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.1.tgz#b3187dae1dfc4c15880c9cfc5b45f2719ea6ebd4"
   integrity sha512-GH8sAnBEM5GV9LTeiz56r4ZhMOUSrP43tAQNSRVxNexDjcNKLCEtnxusAItg1owFUFE6k0NslV26gqVClVvong==
   dependencies:
     "@types/react" "*"
 
-"@types/react-window@^1.8.2":
+"@types/react-window@^1.8.5":
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/@types/react-window/-/react-window-1.8.5.tgz#285fcc5cea703eef78d90f499e1457e9b5c02fc1"
   integrity sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==
@@ -4628,7 +4634,7 @@ atomic-sleep@^1.0.0:
   resolved "https://registry.yarnpkg.com/atomic-sleep/-/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
   integrity sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==
 
-attr-accept@^2.2.1:
+attr-accept@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/attr-accept/-/attr-accept-2.2.2.tgz#646613809660110749e92f2c10833b70968d929b"
   integrity sha512-7prDjvt9HmqiZ0cl5CRjtS84sEyhsHP2coDkaZKRKVfCDo9s7iw7ChVmar78Gu9pC4SoR/28wFu/G5JJhTnqEg==
@@ -5654,7 +5660,7 @@ class-validator@^0.13.1:
     libphonenumber-js "^1.9.43"
     validator "^13.7.0"
 
-classnames@^2.2.6:
+classnames@^2.2.6, classnames@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
   integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
@@ -8134,10 +8140,10 @@ file-loader@4.2.0:
     loader-utils "^1.2.3"
     schema-utils "^2.0.0"
 
-file-selector@^0.2.2:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/file-selector/-/file-selector-0.2.4.tgz#7b98286f9dbb9925f420130ea5ed0a69238d4d80"
-  integrity sha512-ZDsQNbrv6qRi1YTDOEWzf5J2KjZ9KMI1Q2SGeTkCJmNNW25Jg4TW4UMcmoqcg4WrAyKRcpBXdbWRxkfrOzVRbA==
+file-selector@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/file-selector/-/file-selector-0.4.0.tgz#59ec4f27aa5baf0841e9c6385c8386bef4d18b17"
+  integrity sha512-iACCiXeMYOvZqlF1kTiYINzgepRBymz1wwjiuup9u9nayhb6g4fSwiyJ/6adli+EPwrWtpgQAh2PoS7HukEGEg==
   dependencies:
     tslib "^2.0.3"
 
@@ -9844,6 +9850,11 @@ is-plain-obj@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/is-plain-obj/-/is-plain-obj-3.0.0.tgz#af6f2ea14ac5a646183a5bbdb5baabbc156ad9d7"
   integrity sha512-gwsOE28k+23GP1B6vFl1oVh/WOzmawBrKwo5Ev6wMKzPkaXaCDIQKzLnvsA42DRlbVTWorkgTKIviAKCWkfUwA==
+
+is-plain-object@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/is-plain-object/-/is-plain-object-5.0.0.tgz#4427f50ab3429e9025ea7d52e9043a9ef4159344"
+  integrity sha512-VRSzKkbMm5jMDoKLbltAkFQ5Qr7VDiTFGXxYFXXowVj387GeGNOCsOH6Msy00SGZ3Fp84b1Naa1psqgcCIEP5Q==
 
 is-plain-object@^2.0.3, is-plain-object@^2.0.4:
   version "2.0.4"
@@ -13798,6 +13809,15 @@ prop-types@^15.5.8, prop-types@^15.6.0, prop-types@^15.6.2, prop-types@^15.7.2, 
     object-assign "^4.1.1"
     react-is "^16.13.1"
 
+prop-types@^15.8.1:
+  version "15.8.1"
+  resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
+  integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
+  dependencies:
+    loose-envify "^1.4.0"
+    object-assign "^4.1.1"
+    react-is "^16.13.1"
+
 property-information@^5.0.0, property-information@^5.3.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/property-information/-/property-information-5.6.0.tgz#61675545fb23002f245c6540ec46077d4da3ed69"
@@ -14005,7 +14025,7 @@ rc@^1.2.7, rc@^1.2.8:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-react-beautiful-dnd@^13.0.0:
+react-beautiful-dnd@^13.1.0:
   version "13.1.0"
   resolved "https://registry.yarnpkg.com/react-beautiful-dnd/-/react-beautiful-dnd-13.1.0.tgz#ec97c81093593526454b0de69852ae433783844d"
   integrity sha512-aGvblPZTJowOWUNiwd6tNfEpgkX5OxmpqxHKNW/4VmvZTNTbeiq7bA3bn5T+QSF2uibXB0D1DmJsb1aC/+3cUA==
@@ -14035,14 +14055,23 @@ react-dom@^16.14.0:
     prop-types "^15.6.2"
     scheduler "^0.19.1"
 
-react-dropzone@^11.2.0:
-  version "11.4.2"
-  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-11.4.2.tgz#1eb99e9def4cc7520f4f58e85c853ce52c483d56"
-  integrity sha512-ocYzYn7Qgp0tFc1gQtUTOaHHSzVTwhWHxxY+r7cj2jJTPfMTZB5GWSJHdIVoxsl+EQENpjJ/6Zvcw0BqKZQ+Eg==
+react-dropzone@^11.5.3:
+  version "11.7.1"
+  resolved "https://registry.yarnpkg.com/react-dropzone/-/react-dropzone-11.7.1.tgz#3851bb75b26af0bf1b17ce1449fd980e643b9356"
+  integrity sha512-zxCMwhfPy1olUEbw3FLNPLhAm/HnaYH5aELIEglRbqabizKAdHs0h+WuyOpmA+v1JXn0++fpQDdNfUagWt5hJQ==
   dependencies:
-    attr-accept "^2.2.1"
-    file-selector "^0.2.2"
-    prop-types "^15.7.2"
+    attr-accept "^2.2.2"
+    file-selector "^0.4.0"
+    prop-types "^15.8.1"
+
+react-element-to-jsx-string@^14.3.4:
+  version "14.3.4"
+  resolved "https://registry.yarnpkg.com/react-element-to-jsx-string/-/react-element-to-jsx-string-14.3.4.tgz#709125bc72f06800b68f9f4db485f2c7d31218a8"
+  integrity sha512-t4ZwvV6vwNxzujDQ+37bspnLwA4JlgUPWhLjBJWsNIDceAf6ZKUTCjdm08cN6WeZ5pTMKiCJkmAYnpmR4Bm+dg==
+  dependencies:
+    "@base2/pretty-print-object" "1.0.1"
+    is-plain-object "5.0.0"
+    react-is "17.0.2"
 
 react-focus-lock@^2.6.0:
   version "2.7.1"
@@ -14056,7 +14085,7 @@ react-focus-lock@^2.6.0:
     use-callback-ref "^1.2.5"
     use-sidecar "^1.0.5"
 
-react-focus-on@^3.5.0:
+react-focus-on@^3.5.4:
   version "3.5.4"
   resolved "https://registry.yarnpkg.com/react-focus-on/-/react-focus-on-3.5.4.tgz#be45a9d0495f3bb6f5249704c85362df94980ecf"
   integrity sha512-HnU0YGKhNSUsC4k6K8L+2wk8mC/qdg+CsS7A1bWLMgK7UuBphdECs2esnS6cLmBoVNjsFnCm/vMypeezKOdK3A==
@@ -14069,10 +14098,10 @@ react-focus-on@^3.5.0:
     use-callback-ref "^1.2.5"
     use-sidecar "^1.0.5"
 
-react-input-autosize@^2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-2.2.2.tgz#fcaa7020568ec206bc04be36f4eb68e647c4d8c2"
-  integrity sha512-jQJgYCA3S0j+cuOwzuCd1OjmBmnZLdqQdiLKRYrsMMzbjUrVDS5RvJUDwJqA7sKuksDuzFtm6hZGKFu7Mjk5aw==
+react-input-autosize@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-input-autosize/-/react-input-autosize-3.0.0.tgz#6b5898c790d4478d69420b55441fcc31d5c50a85"
+  integrity sha512-nL9uS7jEs/zu8sqwFE5MAPx6pPkNAriACQ2rGLlqmKr2sPGtN7TXTyDdQt4lbNXVx7Uzadb40x8qotIuru6Rhg==
   dependencies:
     prop-types "^15.5.8"
 
@@ -14092,20 +14121,15 @@ react-intl@^5.24.0:
     intl-messageformat "9.11.0"
     tslib "^2.1.0"
 
-react-is@^16.13.1, react-is@^16.6.0, react-is@^16.7.0:
-  version "16.13.1"
-  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
-  integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
-
-react-is@^17.0.1, react-is@^17.0.2:
+react-is@17.0.2, react-is@^17.0.1, react-is@^17.0.2:
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-17.0.2.tgz#e691d4a8e9c789365655539ab372762b0efb54f0"
   integrity sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==
 
-react-is@~16.3.0:
-  version "16.3.2"
-  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.3.2.tgz#f4d3d0e2f5fbb6ac46450641eb2e25bf05d36b22"
-  integrity sha512-ybEM7YOr4yBgFd6w8dJqwxegqZGJNBZl6U27HnGKuTZmDvVrD5quWOK/wAnMywiZzW+Qsk+l4X2c70+thp/A8Q==
+react-is@^16.13.1, react-is@^16.6.0, react-is@^16.7.0:
+  version "16.13.1"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.13.1.tgz#789729a4dc36de2999dc156dd6c1d9c18cea56a4"
+  integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
 react-redux@^7.2.0:
   version "7.2.6"
@@ -14181,12 +14205,12 @@ react-style-singleton@^2.1.0, react-style-singleton@^2.1.1:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react-virtualized-auto-sizer@^1.0.2:
+react-virtualized-auto-sizer@^1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/react-virtualized-auto-sizer/-/react-virtualized-auto-sizer-1.0.6.tgz#66c5b1c9278064c5ef1699ed40a29c11518f97ca"
   integrity sha512-7tQ0BmZqfVF6YYEWcIGuoR3OdYe8I/ZFbNclFlGOC3pMqunkYF/oL30NCjSGl9sMEb17AnzixDz98Kqc3N76HQ==
 
-react-window@^1.8.5:
+react-window@^1.8.6:
   version "1.8.6"
   resolved "https://registry.yarnpkg.com/react-window/-/react-window-1.8.6.tgz#d011950ac643a994118632665aad0c6382e2a112"
   integrity sha512-8VwEEYyjz6DCnGBsd+MgkD0KJ2/OXFULyDtorIiTz+QzwoP94tBoA7CnbtyXMm+cCeAUER5KJcPtWl9cpKbOBg==
@@ -16931,6 +16955,14 @@ url-parse@^1.4.3, url-parse@^1.5.3:
   version "1.5.3"
   resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.3.tgz#71c1303d38fb6639ade183c2992c8cc0686df862"
   integrity sha512-IIORyIQD9rvj0A4CLWsHkBBJuNqWpFQe224b6j9t/ABmquIS0qDU2pY6kl6AuOrL5OkCXHMCFNe1jBcuAggjvQ==
+  dependencies:
+    querystringify "^2.1.1"
+    requires-port "^1.0.0"
+
+url-parse@^1.5.10:
+  version "1.5.10"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.10.tgz#9d3c2f736c1d75dd3bd2be507dcc111f1e2ea9c1"
+  integrity sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"

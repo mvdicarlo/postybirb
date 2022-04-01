@@ -4,10 +4,10 @@ body {
 
 .euiPage {
   width: 100vw;
-  height: calc(100vh - 48px);
+  height: 100vh;
 }
 
-.euiFlyout {
+/* .euiFlyout {
   top: 48px;
   height: calc(100vh - 48px);
 }
@@ -19,4 +19,4 @@ body {
 
 .app-settings {
   min-width: 300px;
-}
+} */

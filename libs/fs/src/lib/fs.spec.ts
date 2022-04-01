@@ -57,7 +57,7 @@ describe('PostyBirbFS', () => {
   });
 
   describe('removeFile', () => {
-    it('should not remove file outside of ', () => {
+    it('should not remove file outside of', () => {
       let err: Error;
       try {
         removeFileSync(`./test/file.txt`);
