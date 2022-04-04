@@ -12,17 +12,16 @@ import { FormattedMessage } from 'react-intl';
 import Keybinding, {
   KeybindingProps,
 } from '../components/app/keybinding/keybinding';
+import { ModalProperties } from '../shared/common-properties/modal.properties';
+import { SettingsKeybinding } from '../shared/keybindings';
 import { AppThemeContext } from './app-theme-provider';
 
-type AppSettingsProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+type AppSettingsProps = ModalProperties;
 
 export default function AppSettings(props: AppSettingsProps) {
   const { onClose, isOpen } = props;
   const keybindingProps: KeybindingProps = {
-    keybinding: 'Control+Alt+S',
+    keybinding: SettingsKeybinding,
     onActivate: () => {},
   };
 
