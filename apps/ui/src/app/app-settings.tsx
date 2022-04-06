@@ -35,9 +35,11 @@ export default function AppSettings(props: AppSettingsProps) {
     <EuiFlyout ownFocus onClose={onClose}>
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="m">
-          <Keybinding displayOnly {...keybindingProps}>
-            <FormattedMessage id="settings" defaultMessage="Settings" />
-          </Keybinding>
+          <div>
+            <Keybinding displayOnly {...keybindingProps}>
+              <FormattedMessage id="settings" defaultMessage="Settings" />
+            </Keybinding>
+          </div>
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>

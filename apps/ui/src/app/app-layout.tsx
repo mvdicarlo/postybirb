@@ -8,6 +8,8 @@ import {
   EuiPage,
   EuiPageContent,
   EuiPageContentBody,
+  EuiPageSideBar,
+  EuiSideNav,
   EuiSpacer,
   EuiToolTip,
 } from '@elastic/eui';
@@ -67,12 +69,17 @@ export default function AppLayout() {
 
   return (
     <EuiPage paddingSize="none">
-      <EuiCollapsibleNav
+      {/* <EuiCollapsibleNav
         paddingSize="l"
         aria-label="Main navigation"
         isDocked
         isOpen
         onClose={() => {}}
+      > */}
+      <EuiPageSideBar
+        aria-label="Main navigation"
+        sticky
+        className="euiFlyout euiFlyout--push euiFlyout--left"
       >
         <EuiCollapsibleNavGroup
           className="eui-yScroll"
@@ -100,26 +107,29 @@ export default function AppLayout() {
           >
             <FormattedMessage id="update" defaultMessage="Update" />
           </EuiButton>
-          <EuiButton
-            color="primary"
-            aria-label="PostyBirb login accounts"
-            fullWidth
-            iconType="users"
-            onClick={toggleAccountLogin}
-          >
-            <EuiToolTip
-              position="right"
-              content={
-                <Keybinding {...accountKeybinding}>
-                  <FormattedMessage id="accounts" defaultMessage="Accounts" />
-                </Keybinding>
-              }
-            >
-              <FormattedMessage id="accounts" defaultMessage="Accounts" />
-            </EuiToolTip>
-          </EuiButton>
-          <EuiSpacer size="s" />
           <EuiListGroup maxWidth="none" color="text" gutterSize="none" size="s">
+            <EuiListGroupItem
+              aria-label="PostyBirb login accounts"
+              color="primary"
+              size="s"
+              iconType="users"
+              onClick={toggleAccountLogin}
+              label={
+                <EuiToolTip
+                  position="right"
+                  content={
+                    <Keybinding {...accountKeybinding}>
+                      <FormattedMessage
+                        id="accounts"
+                        defaultMessage="Accounts"
+                      />
+                    </Keybinding>
+                  }
+                >
+                  <FormattedMessage id="accounts" defaultMessage="Accounts" />
+                </EuiToolTip>
+              }
+            />
             <EuiListGroupItem
               size="s"
               aria-label="PostyBirb home"
@@ -184,7 +194,8 @@ export default function AppLayout() {
             </EuiListGroup>
           </EuiCollapsibleNavGroup>
           </EuiFlexItem> */}
-      </EuiCollapsibleNav>
+      </EuiPageSideBar>
+      {/* </EuiCollapsibleNav> */}
 
       <AppSettings
         onClose={() => setSettingsVisible(false)}
@@ -200,6 +211,7 @@ export default function AppLayout() {
         hasShadow={false}
         paddingSize="none"
         borderRadius="none"
+        className="px-4"
       >
         <EuiSpacer />
 

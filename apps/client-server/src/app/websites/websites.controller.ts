@@ -1,5 +1,6 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { IWebsiteLoginInfo } from '@postybirb/dto';
 import { SafeObject } from '../shared/types/safe-object.type';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -24,5 +25,20 @@ export class WebsitesController {
   })
   getWebsiteData(@Body() oauthRequestDto: OAuthWebsiteRequestDto<SafeObject>) {
     return this.websiteRegistryService.performOAuthStep(oauthRequestDto);
+  }
+
+  @Get('/login-info')
+  @ApiResponse({ status: 200 })
+  getWebsiteLoginInfo() {
+    return this.websiteRegistryService.getAvailableWebsites().map((website) => {
+      const resObj: IWebsiteLoginInfo = {
+        loginType: undefined,
+        loginUrl: website.prototype.loginUrl,
+        id: website.prototype.metadata.name,
+        displayName: website.prototype.metadata.displayName,
+      };
+
+      return resObj;
+    });
   }
 }
