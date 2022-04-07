@@ -1,4 +1,4 @@
-import { IsString, IsObject } from 'class-validator';
+import { IsString, IsObject, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IAccountDto } from '@postybirb/dto';
 import { ILoginState } from '../../websites/models/login-state.interface';
@@ -31,6 +31,24 @@ export class AccountDto<T extends SafeObject>
   @ApiProperty()
   @IsString()
   website: string;
+
+  /**
+   * Favorite status of an Account.
+   * @type {boolean}
+   */
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  favorite: boolean;
+
+  /**
+   * User hidden status of an Account.
+   * @type {boolean}
+   */
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  hidden: boolean;
 
   /**
    * Current login state of website instance.

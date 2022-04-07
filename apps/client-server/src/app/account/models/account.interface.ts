@@ -16,4 +16,16 @@ export interface IAccount {
    * @type {string}
    */
   website: string;
+
+  /**
+   * Favorite status of an Account.
+   * @type {boolean}
+   */
+  favorite: boolean;
+
+  /**
+   * User hidden status of an Account.
+   * @type {boolean}
+   */
+  hidden: boolean;
 }
