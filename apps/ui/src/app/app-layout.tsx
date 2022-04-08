@@ -20,6 +20,7 @@ import Keybinding, {
   KeybindingProps,
   useKeybinding,
 } from '../components/app/keybinding/keybinding';
+import { useGlobalState } from '../global-state';
 import Routes from '../pages/routes';
 import {
   AccountKeybinding,
@@ -41,16 +42,22 @@ function AppImage() {
 }
 
 export default function AppLayout() {
-  const [accountLoginVisible, setAccountLoginVisible] =
-    useState<boolean>(false);
-  const [settingsVisible, setSettingsVisible] = useState<boolean>(false);
+  const [globalState, setGlobalState] = useGlobalState();
+  const toggleAccountLogin = (value?: boolean) =>
+    setGlobalState({
+      ...globalState,
+      accountFlyoutVisible: value ?? !globalState.accountFlyoutVisible,
+    });
 
-  const toggleAccountLogin = () => setAccountLoginVisible(!accountLoginVisible);
-  const toggleSettings = () => setSettingsVisible(!settingsVisible);
+  const toggleSettings = (value?: boolean) =>
+    setGlobalState({
+      ...globalState,
+      settingsVisible: value ?? !globalState.settingsVisible,
+    });
 
   const settingsKeybinding = {
     keybinding: SettingsKeybinding,
-    onActivate: toggleSettings,
+    onActivate: () => toggleSettings(),
   };
 
   const homeKeybinding = {
@@ -60,7 +67,7 @@ export default function AppLayout() {
 
   const accountKeybinding = {
     keybinding: AccountKeybinding,
-    onActivate: toggleAccountLogin,
+    onActivate: () => toggleAccountLogin(),
   };
 
   useKeybinding(settingsKeybinding);
@@ -113,7 +120,7 @@ export default function AppLayout() {
               color="primary"
               size="s"
               iconType="users"
-              onClick={toggleAccountLogin}
+              onClick={() => toggleAccountLogin()}
               label={
                 <EuiToolTip
                   position="right"
@@ -153,7 +160,7 @@ export default function AppLayout() {
               size="s"
               aria-label="PostyBirb settings"
               iconType="gear"
-              onClick={() => setSettingsVisible(!settingsVisible)}
+              onClick={() => toggleSettings()}
               showToolTip={false}
               label={
                 <EuiToolTip
@@ -198,12 +205,12 @@ export default function AppLayout() {
       {/* </EuiCollapsibleNav> */}
 
       <AppSettings
-        onClose={() => setSettingsVisible(false)}
-        isOpen={settingsVisible}
+        onClose={() => toggleSettings(false)}
+        isOpen={globalState.settingsVisible}
       />
       <AccountLoginFlyout
-        onClose={() => setAccountLoginVisible(false)}
-        isOpen={accountLoginVisible}
+        onClose={() => toggleAccountLogin(false)}
+        isOpen={globalState.accountFlyoutVisible}
       />
 
       <EuiPageContent

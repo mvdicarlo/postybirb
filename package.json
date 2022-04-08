@@ -76,6 +76,7 @@
     "react-query": "^3.34.19",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
+    "react-use": "^17.3.2",
     "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "0.13.7",
     "rxjs": "^7.3.0",
