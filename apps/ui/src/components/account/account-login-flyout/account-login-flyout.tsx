@@ -2,21 +2,28 @@ import {
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
-  EuiTitle,
-  EuiTabs,
   EuiTab,
-  EuiSpacer,
+  EuiTabs,
+  EuiTitle,
 } from '@elastic/eui';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { ModalProperties } from '../../shared/common-properties/modal.properties';
-import { AccountKeybinding } from '../../shared/keybindings';
-import Keybinding, { KeybindingProps } from '../app/keybinding/keybinding';
-import { AccountLoginContainer } from './account-login-container';
+import { useQuery } from 'react-query';
+import WebsitesApi from '../../../api/websites.api';
+import { ModalProperties } from '../../../shared/common-properties/modal.properties';
+import { AccountKeybinding } from '../../../shared/keybindings';
+import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
+import SwitchComponent from '../../shared/switch-component/switch-component';
+import { AccountLoginContainer } from '../account-login-container/account-login-container';
 
 type AccountLoginFlyoutProps = ModalProperties;
 
 export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
+  const { isLoading, data: availableWebsites } = useQuery(
+    'available-websites',
+    WebsitesApi.getLoginInfo
+  );
+
   const { onClose, isOpen } = props;
   const keybindingProps: KeybindingProps = {
     keybinding: AccountKeybinding,
@@ -33,11 +40,11 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
   const tabs = [
     {
       id: 'accounts',
-      name: 'Login',
+      name: <FormattedMessage id="account.login" defaultMessage="Login" />,
     },
     {
       id: 'account-groups',
-      name: 'Groups',
+      name: <FormattedMessage id="account.groups" defaultMessage="Groups" />,
     },
   ];
 
@@ -61,13 +68,22 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
             </Keybinding>
           </div>
         </EuiTitle>
-        <EuiSpacer size="s" />
         <EuiTabs bottomBorder={false} style={{ marginBottom: '-24px' }}>
           {renderTabs}
         </EuiTabs>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <AccountLoginContainer />
+        <SwitchComponent
+          selected={selectedTabId}
+          options={{
+            accounts: (
+              <AccountLoginContainer
+                availableWebsites={availableWebsites?.body || []}
+              />
+            ),
+            'account-groups': null,
+          }}
+        />
       </EuiFlyoutBody>
     </EuiFlyout>
   );

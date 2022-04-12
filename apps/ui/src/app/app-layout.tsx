@@ -15,7 +15,7 @@ import {
 } from '@elastic/eui';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { AccountLoginFlyout } from '../components/account/account-login-flyout';
+import { AccountLoginFlyout } from '../components/account/account-login-flyout/account-login-flyout';
 import Keybinding, {
   KeybindingProps,
   useKeybinding,

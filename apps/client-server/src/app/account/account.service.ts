@@ -277,13 +277,6 @@ export class AccountService implements OnModuleInit {
     updateAccountDto: UpdateAccountDto
   ): Promise<boolean> {
     await this.findOne(id);
-
-    // Protect against having both display flags active
-    if (updateAccountDto.favorite && updateAccountDto.hidden) {
-      // eslint-disable-next-line no-param-reassign
-      updateAccountDto.hidden = false;
-    }
-
     return this.accountRepository
       .update(id, updateAccountDto)
       .then(() => this.emit())

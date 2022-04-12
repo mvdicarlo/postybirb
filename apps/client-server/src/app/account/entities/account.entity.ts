@@ -27,20 +27,6 @@ export class Account implements IAccount {
   @Column({ nullable: false, update: false })
   website: string;
 
-  /**
-   * Favorite status of an Account.
-   * @type {boolean}
-   */
-  @Column({ nullable: true, type: 'boolean', default: false })
-  favorite: boolean;
-
-  /**
-   * User hidden status of an Account.
-   * @type {boolean}
-   */
-  @Column({ nullable: true, type: 'boolean', default: false })
-  hidden: boolean;
-
   constructor(account?: Partial<IAccount>) {
     if (account) {
       Object.assign(this, account);

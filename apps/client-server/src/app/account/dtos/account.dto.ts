@@ -33,24 +33,6 @@ export class AccountDto<T extends SafeObject>
   website: string;
 
   /**
-   * Favorite status of an Account.
-   * @type {boolean}
-   */
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  favorite: boolean;
-
-  /**
-   * User hidden status of an Account.
-   * @type {boolean}
-   */
-  @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  hidden: boolean;
-
-  /**
    * Current login state of website instance.
    * @type {ILoginState}
    */
