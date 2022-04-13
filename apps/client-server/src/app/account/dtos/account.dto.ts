@@ -1,9 +1,9 @@
-import { IsString, IsObject, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IAccountDto } from '@postybirb/dto';
+import { IsObject, IsString } from 'class-validator';
+import { SafeObject } from '../../shared/types/safe-object.type';
 import { ILoginState } from '../../websites/models/login-state.interface';
 import { IAccount } from '../models/account.interface';
-import { SafeObject } from '../../shared/types/safe-object.type';
 
 export class AccountDto<T extends SafeObject>
   implements IAccount, IAccountDto<T>

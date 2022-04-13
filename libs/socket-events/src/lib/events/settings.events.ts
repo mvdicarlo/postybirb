@@ -1,0 +1,1 @@
+export const SETTINGS_UPDATES = 'SETTINGS_UPDATES';

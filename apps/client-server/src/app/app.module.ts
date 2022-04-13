@@ -7,6 +7,7 @@ import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
 import { FileModule } from './file/file.module';
 import { SubmissionModule } from './submission/submission.module';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SubmissionModule } from './submission/submission.module';
     WebsitesModule,
     FileModule,
     SubmissionModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
