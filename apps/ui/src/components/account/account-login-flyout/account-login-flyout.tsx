@@ -12,7 +12,10 @@ import { useQuery } from 'react-query';
 import WebsitesApi from '../../../api/websites.api';
 import { ModalProperties } from '../../../shared/common-properties/modal.properties';
 import { AccountKeybinding } from '../../../shared/keybindings';
+import { SettingsStore } from '../../../stores/settings.store';
+import useStore from '../../../stores/use-store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
+import Loading from '../../shared/loading/loading';
 import SwitchComponent from '../../shared/switch-component/switch-component';
 import { AccountLoginContainer } from '../account-login-container/account-login-container';
 
@@ -23,6 +26,9 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
     'available-websites',
     WebsitesApi.getLoginInfo
   );
+
+  const { isLoading: isLoadingStore, state: settingsState } =
+    useStore(SettingsStore);
 
   const { onClose, isOpen } = props;
   const keybindingProps: KeybindingProps = {
@@ -73,17 +79,20 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
         </EuiTabs>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <SwitchComponent
-          selected={selectedTabId}
-          options={{
-            accounts: (
-              <AccountLoginContainer
-                availableWebsites={availableWebsites?.body || []}
-              />
-            ),
-            'account-groups': null,
-          }}
-        />
+        <Loading isLoading={isLoading && isLoadingStore}>
+          <SwitchComponent
+            selected={selectedTabId}
+            options={{
+              accounts: (
+                <AccountLoginContainer
+                  settings={settingsState[0]}
+                  availableWebsites={availableWebsites?.body || []}
+                />
+              ),
+              'account-groups': null,
+            }}
+          />
+        </Loading>
       </EuiFlyoutBody>
     </EuiFlyout>
   );

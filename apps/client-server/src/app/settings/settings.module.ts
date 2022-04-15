@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
-import { SettingsService } from './settings.service';
+import { DatabaseModule } from '../database/database.module';
+import { SettingsProvider } from './providers/settings.provider';
 import { SettingsController } from './settings.controller';
-import { AccountProvider } from '../account/providers/account.provider';
+import { SettingsService } from './settings.service';
 
 @Module({
-  providers: [SettingsService, AccountProvider],
+  imports: [DatabaseModule],
+  providers: [SettingsProvider, SettingsService],
   controllers: [SettingsController],
 })
 export class SettingsModule {}

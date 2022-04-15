@@ -1,7 +1,8 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ISettings, ISettingsOptions } from '../models/settings.interface';
 import { SettingsConstants } from '../settings.constants';
 
+@Entity()
 export class Settings implements ISettings {
   /**
    * Id of settings record.
