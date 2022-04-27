@@ -1,13 +1,7 @@
 <form [formGroup]="formGroup">
   <div class="section">
     <mat-form-field color="accent">
-      <input
-        #titleInput
-        matInput
-        [placeholder]="'Title' | translate"
-        formControlName="title"
-        maxlength="50"
-      />
+      <input #titleInput matInput [placeholder]="'Title' | translate" formControlName="title" maxlength="50" />
       <mat-hint align="end">{{ (titleInput.value || '').length }} / {{ 50 }}</mat-hint>
     </mat-form-field>
   </div>
@@ -26,21 +20,14 @@
 
   <div class="section">
     <h6>{{ 'Description' | translate }}</h6>
-    <description-input
-      formControlName="description"
-      [defaultDescriptionProvider]="parentForm.defaultDescription.changes"
-      class="w-100"
-    ></description-input>
+    <description-input formControlName="description"
+      [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
   </div>
 
   <div class="section">
     <h6>{{ 'Tags' | translate }}</h6>
-    <tag-input
-      formControlName="tags"
-      class="w-100"
-      [config]="tagConfig"
-      [defaultTagProvider]="parentForm.defaultTags.changes"
-    ></tag-input>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig"
+      [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
   </div>
 
   <div formGroupName="options" class="row no-gutters section">
@@ -48,10 +35,10 @@
       <div class="col-md-5 col-lg-4 col-xl-3">
         <mat-checkbox formControlName="disableComments">{{
           'Disable Comments' | translate
-        }}</mat-checkbox>
+          }}</mat-checkbox>
         <mat-checkbox formControlName="reupload">{{
           'Reupload better quality image' | translate
-        }}</mat-checkbox>
+          }}</mat-checkbox>
         <mat-checkbox formControlName="scraps">{{ 'Scraps' | translate }}</mat-checkbox>
       </div>
 
@@ -201,17 +188,22 @@
                 <mat-optgroup label="Fandom Creations">
                   <mat-option value="11001">Aeromorph</mat-option>
                   <mat-option value="11002">Angel Dragon</mat-option>
+                  <mat-option value="11012">Avali</mat-option>
                   <mat-option value="5003">Chakat</mat-option>
                   <mat-option value="5005">Citra</mat-option>
                   <mat-option value="5006">Crux</mat-option>
                   <mat-option value="5009">Dracat</mat-option>
                   <mat-option value="11003">Dutch Angel Dragon</mat-option>
+                  <mat-option value="11011">Felkin</mat-option>
                   <mat-option value="11004">Ferrin</mat-option>
                   <mat-option value="11005">Jogauni</mat-option>
                   <mat-option value="5014">Langurhali</mat-option>
                   <mat-option value="11006">Nevrean</mat-option>
                   <mat-option value="11007">Protogen</mat-option>
                   <mat-option value="5021">Sergal</mat-option>
+                  <mat-option value="11010">Synx</mat-option>
+                  <mat-option value="11013">Wickerbeast</mat-option>
+                  <mat-option value="11009">Yinglet</mat-option>
                   <mat-option value="11008">Zorgoia</mat-option>
                 </mat-optgroup>
                 <mat-optgroup label="Mythological / Fantasy">
@@ -582,11 +574,7 @@
             </mat-form-field>
           </div>
           <div class="col-md col-lg col-xl">
-            <folder-select
-              formControlName="folders"
-              [folders]="folders"
-              [multiple]="true"
-            ></folder-select>
+            <folder-select formControlName="folders" [folders]="folders" [multiple]="true"></folder-select>
           </div>
         </div>
       </div>
