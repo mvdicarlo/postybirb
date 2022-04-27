@@ -9,6 +9,6 @@ export default class SettingsApi {
   }
 
   static update(dto: IUpdateSettingsDto) {
-    return SettingsApi.request.patch('/', dto);
+    return SettingsApi.request.patch('', dto);
   }
 }

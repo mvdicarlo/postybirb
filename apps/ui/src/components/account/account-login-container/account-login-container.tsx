@@ -2,6 +2,8 @@ import { EuiFilterButton, EuiFilterGroup, EuiSpacer } from '@elastic/eui';
 import { ISettingsDto, IWebsiteLoginInfo } from '@postybirb/dto';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
+import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
+import SettingsApi from '../../../api/settings.api';
 import { AccountStore } from '../../../stores/account.store';
 import useStore from '../../../stores/use-store';
 import AccountLoginCard from './account-login-card';
@@ -15,7 +17,7 @@ function filterWebsites(
   availableWebsites: IWebsiteLoginInfo[],
   hiddenWebsites: string[],
   filters: { showHidden: boolean }
-): IWebsiteLoginInfo[] {
+): DisplayableWebsiteLoginInfo[] {
   let filteredWebsites = availableWebsites;
   if (!filters.showHidden) {
     filteredWebsites = filteredWebsites.filter(
@@ -23,7 +25,10 @@ function filterWebsites(
     );
   }
 
-  return filteredWebsites;
+  return filteredWebsites.map((w) => ({
+    ...w,
+    isHidden: !hiddenWebsites.includes(w.id),
+  }));
 }
 
 export function AccountLoginContainer(
@@ -68,8 +73,26 @@ export function AccountLoginContainer(
           <AccountLoginCard
             key={website.id}
             website={website}
-            onHide={() => {
-              // TODO
+            onHide={(websiteInfo) => {
+              let hiddenWebsites = [...settings.hiddenWebsites];
+              if (settings.hiddenWebsites.includes(websiteInfo.id)) {
+                // Show
+                hiddenWebsites = [...settings.hiddenWebsites].filter(
+                  (w) => w !== websiteInfo.id
+                );
+              } else {
+                // Hide
+                hiddenWebsites.push(websiteInfo.id);
+              }
+
+              // eslint-disable-next-line react/destructuring-assignment
+              const updatedSettings = { ...props.settings };
+              updatedSettings.settings = {
+                ...updatedSettings.settings,
+                hiddenWebsites,
+              };
+
+              SettingsApi.update(updatedSettings);
             }}
           />
         ))}
