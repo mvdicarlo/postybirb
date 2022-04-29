@@ -6,7 +6,7 @@ import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website
 import SettingsApi from '../../../api/settings.api';
 import { AccountStore } from '../../../stores/account.store';
 import useStore from '../../../stores/use-store';
-import AccountLoginCard from './account-login-card';
+import AccountLoginCard from '../account-login-card/account-login-card';
 
 type AccountLoginContainerProps = {
   availableWebsites: IWebsiteLoginInfo[];
@@ -42,7 +42,7 @@ export function AccountLoginContainer(
   // eslint-disable-next-line react/destructuring-assignment
   const { settings } = props.settings;
 
-  const { isLoading, state, reload } = useStore(AccountStore);
+  const { isLoading, state: accounts, reload } = useStore(AccountStore);
   const { availableWebsites } = props;
 
   const toggleHiddenFilter = () => setHiddenFilter(!isHiddenFilterOn);
@@ -53,9 +53,17 @@ export function AccountLoginContainer(
 
   return (
     <div className="account-login-container">
-      <div className="account-login-filters">
+      <div
+        className="account-login-filters"
+        style={{
+          display: settings.hiddenWebsites.length ? undefined : 'none',
+        }}
+      >
         <EuiFilterGroup compressed>
           <EuiFilterButton
+            style={{
+              display: settings.hiddenWebsites.length ? undefined : 'none',
+            }}
             aria-label="Show hidden accounts filter"
             hasActiveFilters={isHiddenFilterOn}
             onClick={toggleHiddenFilter}
@@ -73,6 +81,9 @@ export function AccountLoginContainer(
           <AccountLoginCard
             key={website.id}
             website={website}
+            instances={accounts
+              .filter((account) => account.website === website.id)
+              .sort((a, b) => a.name.localeCompare(b.name))}
             onHide={(websiteInfo) => {
               let hiddenWebsites = [...settings.hiddenWebsites];
               if (settings.hiddenWebsites.includes(websiteInfo.id)) {

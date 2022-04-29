@@ -1,8 +1,16 @@
-import { IAccountDto, IUpdateAccountDto } from '@postybirb/dto';
+import {
+  IAccountDto,
+  ICreateAccountDto,
+  IUpdateAccountDto,
+} from '@postybirb/dto';
 import Https from '../transports/https';
 
 export default class AccountApi {
   private static readonly request: Https = new Https('account');
+
+  static create(createAccountDto: ICreateAccountDto) {
+    return AccountApi.request.post('', createAccountDto);
+  }
 
   static delete(id: string) {
     return AccountApi.request.delete(id);

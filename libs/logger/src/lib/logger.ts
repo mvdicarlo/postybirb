@@ -91,7 +91,7 @@ export function Log(level?: P.Level): MethodDecorator {
     const originalValue = descriptor.value;
     // eslint-disable-next-line no-param-reassign
     descriptor.value = function value(...args: unknown[]) {
-      l[level](args);
+      // l[assignedLevel](args);
       try {
         const ret = originalValue.apply(this, args);
         if (ret instanceof Promise) {
