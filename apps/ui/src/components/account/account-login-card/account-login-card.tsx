@@ -17,7 +17,7 @@ import {
   EuiPopover,
   EuiPopoverFooter,
   EuiText,
-  EuiTextColor,
+  EuiToolTip,
 } from '@elastic/eui';
 import { IAccountDto, ILoginState } from '@postybirb/dto';
 import { useToast } from 'apps/ui/src/app/app-toast-provider';
@@ -188,11 +188,15 @@ function DeleteAccountPopover(props: { id: string }) {
       isOpen={isOpen}
       closePopover={() => setOpen(false)}
       button={
-        <EuiButtonIcon
-          iconType="trash"
-          color="danger"
-          onClick={() => setOpen(true)}
-        />
+        <EuiToolTip
+          content={<FormattedMessage id="delete" defaultMessage="Delete" />}
+        >
+          <EuiButtonIcon
+            iconType="trash"
+            color="danger"
+            onClick={() => setOpen(true)}
+          />
+        </EuiToolTip>
       }
     >
       <div style={{ width: '300px' }}>
@@ -246,6 +250,83 @@ function DeleteAccountPopover(props: { id: string }) {
   );
 }
 
+function ClearAccountDataPopover(props: { id: string }) {
+  const { id } = props;
+  const [isOpen, setOpen] = useState<boolean>(false);
+  const { addToast } = useToast();
+
+  return (
+    <EuiPopover
+      isOpen={isOpen}
+      closePopover={() => setOpen(false)}
+      button={
+        <EuiToolTip
+          content={
+            <FormattedMessage
+              id="login.clear-data"
+              defaultMessage="Clear account data"
+            />
+          }
+        >
+          <EuiButtonIcon
+            iconType="flag"
+            color="warning"
+            onClick={() => setOpen(true)}
+          />
+        </EuiToolTip>
+      }
+    >
+      <div style={{ width: '300px' }}>
+        <EuiText size="s">
+          <p>
+            <FormattedMessage
+              id="action.cannot-be-undone"
+              defaultMessage="This action cannot be undone."
+            />
+          </p>
+        </EuiText>
+      </div>
+      <EuiPopoverFooter>
+        <EuiButton
+          fullWidth
+          color="warning"
+          iconType="flag"
+          onClick={() => {
+            setOpen(false);
+            AccountApi.clear(id)
+              .then(() => {
+                addToast({
+                  id,
+                  color: 'success',
+                  text: (
+                    <FormattedMessage
+                      id="login.account-data-cleared"
+                      defaultMessage="Account data cleared"
+                    />
+                  ),
+                });
+              })
+              .catch(({ error }: { error: HttpErrorResponse }) => {
+                addToast({
+                  id,
+                  text: <span>{error.message}</span>,
+                  title: (
+                    <span>
+                      {error.statusCode} {error.error}
+                    </span>
+                  ),
+                  color: 'danger',
+                });
+              });
+          }}
+        >
+          <FormattedMessage id="login.clear-data" defaultMessage="Clear data" />
+        </EuiButton>
+      </EuiPopoverFooter>
+    </EuiPopover>
+  );
+}
+
 function LoginCardAccountTable(props: { instances: IAccountDto[] }) {
   const { instances } = props;
 
@@ -289,6 +370,10 @@ function LoginCardAccountTable(props: { instances: IAccountDto[] }) {
       name: <FormattedMessage id="actions" defaultMessage="Actions" />,
       render: (id: string) => (
         <span>
+          <EuiButton color="primary" className="mr-2" size="s">
+            <FormattedMessage id="login" defaultMessage="Login" />
+          </EuiButton>
+          <ClearAccountDataPopover id={id} />
           <DeleteAccountPopover id={id} />
         </span>
       ),
@@ -316,7 +401,6 @@ export default function AccountLoginCard(
     <EuiCard
       hasBorder
       textAlign="left"
-      // display="subdued"
       title={<LoginCardTitle {...props} onAddClick={onAddClicked} />}
     >
       <LoginCardAccountTable instances={instances} />
