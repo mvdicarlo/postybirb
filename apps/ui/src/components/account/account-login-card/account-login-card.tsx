@@ -20,6 +20,8 @@ import {
   EuiTextColor,
 } from '@elastic/eui';
 import { IAccountDto, ILoginState } from '@postybirb/dto';
+import { useToast } from 'apps/ui/src/app/app-toast-provider';
+import HttpErrorResponse from 'apps/ui/src/models/http-error-response';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
@@ -179,6 +181,8 @@ function LoginCardTitle(
 function DeleteAccountPopover(props: { id: string }) {
   const { id } = props;
   const [isOpen, setOpen] = useState<boolean>(false);
+  const { addToast } = useToast();
+
   return (
     <EuiPopover
       isOpen={isOpen}
@@ -208,9 +212,31 @@ function DeleteAccountPopover(props: { id: string }) {
           iconType="trash"
           onClick={() => {
             setOpen(false);
-            AccountApi.delete(id).then(() => {
-              // TODO create global toast feature
-            });
+            AccountApi.delete(id)
+              .then(() => {
+                addToast({
+                  id,
+                  color: 'success',
+                  text: (
+                    <FormattedMessage
+                      id="login.account-removed"
+                      defaultMessage="Account removed"
+                    />
+                  ),
+                });
+              })
+              .catch(({ error }: { error: HttpErrorResponse }) => {
+                addToast({
+                  id,
+                  text: <span>{error.message}</span>,
+                  title: (
+                    <span>
+                      {error.statusCode} {error.error}
+                    </span>
+                  ),
+                  color: 'danger',
+                });
+              });
           }}
         >
           <FormattedMessage id="delete" defaultMessage="Delete" />
@@ -269,23 +295,11 @@ function LoginCardAccountTable(props: { instances: IAccountDto[] }) {
     },
   ];
 
-  const getRowProps = (item: IAccountDto) => {
-    const { id } = item;
-    return {
-      'data-id': id,
-      onClick: () => {
-        console.log(item);
-      },
-    };
-  };
-
   if (!instances.length) {
     return null;
   }
 
-  return (
-    <EuiBasicTable items={instances} columns={columns} rowProps={getRowProps} />
-  );
+  return <EuiBasicTable items={instances} columns={columns} />;
 }
 
 export default function AccountLoginCard(
