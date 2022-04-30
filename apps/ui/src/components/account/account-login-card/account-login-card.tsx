@@ -8,13 +8,18 @@ import {
   EuiFieldText,
   EuiForm,
   EuiFormRow,
+  EuiHealth,
   EuiModal,
   EuiModalBody,
   EuiModalFooter,
   EuiModalHeader,
   EuiModalHeaderTitle,
+  EuiPopover,
+  EuiPopoverFooter,
+  EuiText,
+  EuiTextColor,
 } from '@elastic/eui';
-import { IAccountDto } from '@postybirb/dto';
+import { IAccountDto, ILoginState } from '@postybirb/dto';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
@@ -171,6 +176,50 @@ function LoginCardTitle(
   );
 }
 
+function DeleteAccountPopover(props: { id: string }) {
+  const { id } = props;
+  const [isOpen, setOpen] = useState<boolean>(false);
+  return (
+    <EuiPopover
+      isOpen={isOpen}
+      closePopover={() => setOpen(false)}
+      button={
+        <EuiButtonIcon
+          iconType="trash"
+          color="danger"
+          onClick={() => setOpen(true)}
+        />
+      }
+    >
+      <div style={{ width: '300px' }}>
+        <EuiText size="s">
+          <p>
+            <FormattedMessage
+              id="action.cannot-be-undone"
+              defaultMessage="This action cannot be undone."
+            />
+          </p>
+        </EuiText>
+      </div>
+      <EuiPopoverFooter>
+        <EuiButton
+          fullWidth
+          color="danger"
+          iconType="trash"
+          onClick={() => {
+            setOpen(false);
+            AccountApi.delete(id).then(() => {
+              // TODO create global toast feature
+            });
+          }}
+        >
+          <FormattedMessage id="delete" defaultMessage="Delete" />
+        </EuiButton>
+      </EuiPopoverFooter>
+    </EuiPopover>
+  );
+}
+
 function LoginCardAccountTable(props: { instances: IAccountDto[] }) {
   const { instances } = props;
 
@@ -178,6 +227,45 @@ function LoginCardAccountTable(props: { instances: IAccountDto[] }) {
     {
       field: 'name',
       name: <FormattedMessage id="name" defaultMessage="Name" />,
+    },
+    {
+      field: 'loginState',
+      name: <FormattedMessage id="status" defaultMessage="Status" />,
+      render: (item: unknown) => {
+        const { isLoggedIn, username, pending } = item as ILoginState;
+        if (isLoggedIn) {
+          return <EuiHealth color="success">{username}</EuiHealth>;
+        }
+
+        if (pending) {
+          return (
+            <EuiHealth color="primary">
+              <FormattedMessage
+                id="login.pending-login"
+                defaultMessage="Checking..."
+              />
+            </EuiHealth>
+          );
+        }
+
+        return (
+          <EuiHealth color="danger">
+            <FormattedMessage
+              id="login.not-logged-in"
+              defaultMessage="Not logged in"
+            />
+          </EuiHealth>
+        );
+      },
+    },
+    {
+      field: 'id',
+      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      render: (id: string) => (
+        <span>
+          <DeleteAccountPopover id={id} />
+        </span>
+      ),
     },
   ];
 
