@@ -59,10 +59,17 @@ export default class Https {
       return Promise.reject(result);
     }
 
+    let resBody: T = {} as T;
+    try {
+      resBody = (await res.json()) as T;
+    } catch {
+      // Do nothing
+    }
+
     const result: FetchResult<T> = {
       status: res.status,
       statusText: res.statusText,
-      body: (await res.json()) as T,
+      body: resBody,
     };
 
     return result;

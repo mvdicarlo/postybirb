@@ -1,10 +1,13 @@
 import {
+  EuiBadge,
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButton,
   EuiButtonEmpty,
   EuiButtonIcon,
   EuiCard,
+  EuiComboBox,
+  EuiComboBoxOptionOption,
   EuiFieldText,
   EuiForm,
   EuiFormRow,
@@ -58,6 +61,12 @@ function CreateAccountModal(props: {
 }) {
   const { isVisible, website, onClose } = props;
   const [accountName, setAccountName] = useState<string>('');
+  const [tagOptions, setTagOptions] = useState<
+    EuiComboBoxOptionOption<string>[]
+  >([]);
+  const [selectedTags, setSelectedTags] = useState<
+    EuiComboBoxOptionOption<string>[]
+  >([]);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [responseError, setResponseError] = useState<string>();
 
@@ -90,6 +99,9 @@ function CreateAccountModal(props: {
             AccountApi.create({
               name: accountName,
               website: website.id,
+              groups: selectedTags
+                .filter((tag) => !!tag.value)
+                .map((tag) => tag.value as string),
             })
               .then(() => {
                 onCloseModal();
@@ -111,6 +123,27 @@ function CreateAccountModal(props: {
               maxLength={64}
               onChange={(event) => {
                 setAccountName(event.target.value);
+              }}
+            />
+          </EuiFormRow>
+          <EuiFormRow
+            label={<FormattedMessage id="tags" defaultMessage="Tags" />}
+          >
+            <EuiComboBox
+              isClearable
+              options={tagOptions}
+              selectedOptions={selectedTags}
+              onCreateOption={(value) => {
+                const tag = {
+                  label: value,
+                  key: value,
+                  value,
+                };
+                setTagOptions([...tagOptions, tag]);
+                setSelectedTags([...selectedTags, tag]);
+              }}
+              onChange={(values) => {
+                setSelectedTags(values);
               }}
             />
           </EuiFormRow>
@@ -364,6 +397,19 @@ function LoginCardAccountTable(props: { instances: IAccountDto[] }) {
           </EuiHealth>
         );
       },
+    },
+    {
+      field: 'tags',
+      name: <FormattedMessage id="groups" defaultMessage="Groups" />,
+      render: (tags: string[]) => (
+        <>
+          {tags.map((tag) => (
+            <EuiBadge key={tag} color="primary">
+              {tag}
+            </EuiBadge>
+          ))}
+        </>
+      ),
     },
     {
       field: 'id',

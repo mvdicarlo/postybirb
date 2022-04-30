@@ -16,4 +16,10 @@ export interface IAccount {
    * @type {string}
    */
   website: string;
+
+  /**
+   * Tags that the account is listed under.
+   * @type {string}
+   */
+  groups: string[];
 }

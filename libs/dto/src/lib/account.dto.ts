@@ -10,4 +10,5 @@ export interface IAccountDto<T = any> {
   website: string;
   loginState: ILoginState;
   data: T;
+  groups: string[];
 }

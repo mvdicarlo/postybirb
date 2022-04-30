@@ -27,6 +27,9 @@ export class Account implements IAccount {
   @Column({ nullable: false, update: false })
   website: string;
 
+  @Column({ type: 'simple-array', nullable: false })
+  groups: string[];
+
   constructor(account?: Partial<IAccount>) {
     if (account) {
       Object.assign(this, account);
