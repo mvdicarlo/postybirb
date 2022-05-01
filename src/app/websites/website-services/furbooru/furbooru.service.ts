@@ -6,13 +6,13 @@ import { getTags, supportsFileType } from '../../helpers/website-validator.helpe
 import { getTypeOfSubmission, TypeOfSubmission } from 'src/app/utils/enums/type-of-submission.enum';
 import { MBtoBytes, fileAsFormDataObject } from 'src/app/utils/helpers/file.helper';
 import { Website } from '../../decorators/website-decorator';
-import { PlaintextParser } from 'src/app/utils/helpers/description-parsers/plaintext.parser';
 import { BaseWebsiteService } from '../base-website-service';
 import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../../interfaces/website-service.interface';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
 import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 import { Promisify } from 'src/app/utils/helpers/promisify.helper';
 import { FurbooruSubmissionForm } from './components/furbooru-submission-form/furbooru-submission-form.component';
+import { MarkdownParser } from 'src/app/utils/helpers/description-parsers/markdown.parser';
 
 const ACCEPTED_FILES = ['jpeg', 'jpg', 'png', 'svg', 'gif', 'webm']
 
@@ -36,30 +36,30 @@ function validate(submission: Submission, formData: SubmissionFormData): any[] {
   return problems;
 }
 
-function descriptionPreparser(html: string): string {
-  if (!html) return '';
+// function descriptionPreparser(html: string): string {
+//   if (!html) return '';
 
-  html = html.replace(/<b>/gi, '*');
-  html = html.replace(/<i>/gi, '_');
-  html = html.replace(/<u>/gi, '+');
-  html = html.replace(/<s>/gi, '-');
-  html = html.replace(/<\/b>/gi, '*');
-  html = html.replace(/<\/i>/gi, '_');
-  html = html.replace(/<\/u>/gi, '+');
-  html = html.replace(/<\/s>/gi, '-');
-  html = html.replace(/<em>/gi, '_');
-  html = html.replace(/<\/em>/gi, '_');
-  html = html.replace(/<strong>/gi, '*');
-  html = html.replace(/<\/strong>/gi, '*');
-  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+//   html = html.replace(/<b>/gi, '*');
+//   html = html.replace(/<i>/gi, '_');
+//   html = html.replace(/<u>/gi, '+');
+//   html = html.replace(/<s>/gi, '-');
+//   html = html.replace(/<\/b>/gi, '*');
+//   html = html.replace(/<\/i>/gi, '_');
+//   html = html.replace(/<\/u>/gi, '+');
+//   html = html.replace(/<\/s>/gi, '-');
+//   html = html.replace(/<em>/gi, '_');
+//   html = html.replace(/<\/em>/gi, '_');
+//   html = html.replace(/<strong>/gi, '*');
+//   html = html.replace(/<\/strong>/gi, '*');
+//   html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
 
-  return html;
-}
+//   return html;
+// }
 
-function descriptionParser(html: string): string {
-  html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
-  return html;
-}
+// function descriptionParser(html: string): string {
+//   html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
+//   return html;
+// }
 
 @Injectable({
   providedIn: 'root'
@@ -77,11 +77,8 @@ function descriptionParser(html: string): string {
   validators: {
     submission: validate
   },
-  preparsers: {
-    description: [descriptionPreparser]
-  },
   parsers: {
-    description: [descriptionParser, PlaintextParser.parse],
+    description: [MarkdownParser.parse],
     disableAdvertise: true,
     usernameShortcut: {
       code: 'furb',
