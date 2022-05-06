@@ -7,6 +7,7 @@ import SettingsApi from '../../../api/settings.api';
 import { AccountStore } from '../../../stores/account.store';
 import useStore from '../../../stores/use-store';
 import AccountLoginCard from '../account-login-card/account-login-card';
+import { ArrayHelper } from 'apps/ui/src/helpers/array.helper';
 
 type AccountLoginContainerProps = {
   availableWebsites: IWebsiteLoginInfo[];
@@ -42,7 +43,7 @@ export function AccountLoginContainer(
   // eslint-disable-next-line react/destructuring-assignment
   const { settings } = props.settings;
 
-  const { isLoading, state: accounts, reload } = useStore(AccountStore);
+  const { state: accounts, reload } = useStore(AccountStore);
   const { availableWebsites } = props;
 
   const toggleHiddenFilter = () => setHiddenFilter(!isHiddenFilterOn);
@@ -50,6 +51,10 @@ export function AccountLoginContainer(
   const websites = filterWebsites(availableWebsites, settings.hiddenWebsites, {
     showHidden: isHiddenFilterOn || false,
   });
+
+  const groups = ArrayHelper.unique(
+    accounts.flatMap((account) => account.groups)
+  );
 
   return (
     <div className="account-login-container">
@@ -81,6 +86,7 @@ export function AccountLoginContainer(
           <AccountLoginCard
             key={website.id}
             website={website}
+            groups={groups}
             instances={accounts
               .filter((account) => account.website === website.id)
               .sort((a, b) => a.name.localeCompare(b.name))}
