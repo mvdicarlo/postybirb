@@ -3,10 +3,17 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButton,
+  EuiButtonEmpty,
+  EuiButtonIcon,
+  EuiFieldText,
   EuiHealth,
+  EuiToolTip,
 } from '@elastic/eui';
 import { IAccountDto, ILoginState } from '@postybirb/dto';
+import AccountApi from 'apps/ui/src/api/account.api';
+import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { useToggle } from 'react-use';
 import {
   ClearAccountDataPopover,
   DeleteAccountPopover,
@@ -15,6 +22,54 @@ import {
 type AccountLoginCardAccountTableProps = {
   instances: IAccountDto[];
 };
+
+function NameColumn(props: {
+  name: string;
+  onNameUpdate: (name: string) => void;
+}) {
+  const { name, onNameUpdate } = props;
+  const [isEditing, toggleEditing] = useToggle(false);
+  const [editedName, setEditedName] = useState<string>(name);
+
+  if (isEditing) {
+    const isNameEditValid = !!editedName && editedName.trim().length > 0;
+    return (
+      <EuiFieldText
+        placeholder={name}
+        defaultValue={editedName}
+        value={editedName}
+        onChange={(event) => setEditedName(event.target.value)}
+        onKeyPress={(event) => {
+          if (event.key === 'Enter' && isNameEditValid) {
+            onNameUpdate(editedName.trim());
+            toggleEditing(false);
+          }
+        }}
+        append={
+          <EuiButtonIcon
+            iconType="save"
+            onClick={() => {
+              onNameUpdate(editedName.trim());
+              toggleEditing(false);
+            }}
+            disabled={!isNameEditValid}
+          />
+        }
+      />
+    );
+  }
+
+  return (
+    <>
+      <span>{name}</span>
+      <EuiToolTip
+        content={<FormattedMessage id="edit" defaultMessage="Edit" />}
+      >
+        <EuiButtonIcon iconType="pencil" onClick={() => toggleEditing(true)} />
+      </EuiToolTip>
+    </>
+  );
+}
 
 export default function AccountLoginCardAccountTable(
   props: AccountLoginCardAccountTableProps
@@ -25,6 +80,17 @@ export default function AccountLoginCardAccountTable(
     {
       field: 'name',
       name: <FormattedMessage id="name" defaultMessage="Name" />,
+      render: (name: string, record: IAccountDto<unknown>) => (
+        <NameColumn
+          key={name}
+          name={name}
+          onNameUpdate={(updatedName: string) => {
+            AccountApi.update(record.id, {
+              name: updatedName,
+            });
+          }}
+        />
+      ),
     },
     {
       field: 'loginState',

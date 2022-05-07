@@ -28,7 +28,7 @@ export default class AccountApi {
     return AccountApi.request.post(`clear/${id}`);
   }
 
-  static updateName(id: string, update: IUpdateAccountDto) {
+  static update(id: string, update: IUpdateAccountDto) {
     return AccountApi.request.patch(id, update);
   }
 }
