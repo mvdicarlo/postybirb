@@ -1,4 +1,9 @@
-import { EuiFilterButton, EuiFilterGroup, EuiSpacer } from '@elastic/eui';
+import {
+  EuiFilterButton,
+  EuiFilterGroup,
+  EuiSpacer,
+  EuiTitle,
+} from '@elastic/eui';
 import { ISettingsDto, IWebsiteLoginInfo } from '@postybirb/dto';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
@@ -43,10 +48,8 @@ export function AccountLoginContainer(
   // eslint-disable-next-line react/destructuring-assignment
   const { settings } = props.settings;
 
-  const { state: accounts, reload } = useStore(AccountStore);
+  const { state: accounts } = useStore(AccountStore);
   const { availableWebsites } = props;
-
-  const toggleHiddenFilter = () => setHiddenFilter(!isHiddenFilterOn);
 
   const websites = filterWebsites(availableWebsites, settings.hiddenWebsites, {
     showHidden: isHiddenFilterOn || false,
@@ -58,25 +61,39 @@ export function AccountLoginContainer(
 
   return (
     <div className="account-login-container">
-      <div
-        className="account-login-filters"
-        style={{
-          display: settings.hiddenWebsites.length ? undefined : 'none',
-        }}
-      >
+      <div className="account-login-filters">
+        <div>
+          <EuiTitle size="xs">
+            <h1>
+              <FormattedMessage id="filters" defaultMessage="Filters" />
+            </h1>
+          </EuiTitle>
+        </div>
         <EuiFilterGroup compressed>
           <EuiFilterButton
-            style={{
-              display: settings.hiddenWebsites.length ? undefined : 'none',
-            }}
             aria-label="Show hidden accounts filter"
-            hasActiveFilters={isHiddenFilterOn}
-            onClick={toggleHiddenFilter}
+            onClick={() => setHiddenFilter(!isHiddenFilterOn)}
           >
             <FormattedMessage
               id="account.login.hidden-filter"
               defaultMessage="Show hidden"
             />
+          </EuiFilterButton>
+          <EuiFilterButton
+            aria-label="Show hidden accounts filter on"
+            color={isHiddenFilterOn ? 'primary' : undefined}
+            hasActiveFilters={isHiddenFilterOn}
+            onClick={() => setHiddenFilter(true)}
+          >
+            <FormattedMessage id="on" defaultMessage="On" />
+          </EuiFilterButton>
+          <EuiFilterButton
+            aria-label="Show hidden accounts filter off"
+            hasActiveFilters={!isHiddenFilterOn}
+            color={!isHiddenFilterOn ? 'primary' : undefined}
+            onClick={() => setHiddenFilter(false)}
+          >
+            <FormattedMessage id="off" defaultMessage="Off" />
           </EuiFilterButton>
         </EuiFilterGroup>
       </div>
