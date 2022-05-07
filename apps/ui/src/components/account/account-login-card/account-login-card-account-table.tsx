@@ -3,17 +3,18 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiButton,
-  EuiButtonEmpty,
   EuiButtonIcon,
+  EuiComboBox,
+  EuiComboBoxOptionOption,
   EuiFieldText,
   EuiHealth,
   EuiToolTip,
 } from '@elastic/eui';
 import { IAccountDto, ILoginState } from '@postybirb/dto';
-import AccountApi from 'apps/ui/src/api/account.api';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
+import AccountApi from '../../../api/account.api';
 import {
   ClearAccountDataPopover,
   DeleteAccountPopover,
@@ -21,6 +22,7 @@ import {
 
 type AccountLoginCardAccountTableProps = {
   instances: IAccountDto[];
+  groups: string[];
 };
 
 function NameColumn(props: {
@@ -71,10 +73,92 @@ function NameColumn(props: {
   );
 }
 
+function GroupsColumn(props: {
+  groups: string[];
+  allGroups: string[];
+  onGroupsUpdate: (groups: string[]) => void;
+}) {
+  const { groups, allGroups, onGroupsUpdate } = props;
+  const [groupOptions, setGroupOptions] = useState<
+    EuiComboBoxOptionOption<string>[]
+  >(
+    allGroups.map((group) => ({
+      value: group,
+      label: group,
+      key: group,
+    }))
+  );
+  const [selectedGroups, setSelectedGroups] = useState<
+    EuiComboBoxOptionOption<string>[]
+  >(
+    groups.map((group) => ({
+      value: group,
+      label: group,
+      key: group,
+    }))
+  );
+  const [isEditing, toggleEditing] = useToggle(false);
+
+  if (isEditing) {
+    const onGroupCreate = (value: string) => {
+      const foundTag = groupOptions.find((t) => t.value === value);
+      if (foundTag) {
+        setSelectedGroups([...selectedGroups, foundTag]);
+      } else {
+        const group = {
+          label: value,
+          key: value,
+          value,
+        };
+        setGroupOptions([...groupOptions, group]);
+        setSelectedGroups([...selectedGroups, group]);
+      }
+    };
+
+    return (
+      <>
+        <EuiComboBox
+          style={{ padding: '0.25em' }}
+          isClearable
+          options={groupOptions}
+          selectedOptions={selectedGroups}
+          onCreateOption={onGroupCreate}
+          onChange={(values) => {
+            setSelectedGroups(values);
+          }}
+        />
+        <EuiButtonIcon
+          style={{ marginLeft: '4px' }}
+          iconType="save"
+          onClick={() => {
+            onGroupsUpdate(selectedGroups.map((g) => g.value as string));
+            toggleEditing(false);
+          }}
+        />
+      </>
+    );
+  }
+
+  return (
+    <span className="flex-wrap">
+      {groups.map((group) => (
+        <EuiBadge key={group} color="primary">
+          {group}
+        </EuiBadge>
+      ))}
+      <EuiButtonIcon
+        style={{ marginLeft: '4px' }}
+        iconType="pencil"
+        onClick={() => toggleEditing(true)}
+      />
+    </span>
+  );
+}
+
 export default function AccountLoginCardAccountTable(
   props: AccountLoginCardAccountTableProps
 ) {
-  const { instances } = props;
+  const { instances, groups } = props;
 
   const columns: EuiBasicTableColumn<IAccountDto>[] = [
     {
@@ -87,6 +171,7 @@ export default function AccountLoginCardAccountTable(
           onNameUpdate={(updatedName: string) => {
             AccountApi.update(record.id, {
               name: updatedName,
+              groups: record.groups,
             });
           }}
         />
@@ -125,14 +210,17 @@ export default function AccountLoginCardAccountTable(
     {
       field: 'groups',
       name: <FormattedMessage id="groups" defaultMessage="Groups" />,
-      render: (groups: string[]) => (
-        <>
-          {groups.map((group) => (
-            <EuiBadge key={group} color="primary">
-              {group}
-            </EuiBadge>
-          ))}
-        </>
+      render: (accountGroups: string[], record: IAccountDto<unknown>) => (
+        <GroupsColumn
+          groups={accountGroups}
+          allGroups={groups}
+          onGroupsUpdate={(updatedGroups: string[]) => {
+            AccountApi.update(record.id, {
+              name: record.name,
+              groups: updatedGroups,
+            });
+          }}
+        />
       ),
     },
     {

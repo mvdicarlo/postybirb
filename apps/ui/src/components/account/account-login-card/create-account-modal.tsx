@@ -125,7 +125,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
             />
           </EuiFormRow>
           <EuiFormRow
-            label={<FormattedMessage id="tags" defaultMessage="Tags" />}
+            label={<FormattedMessage id="groups" defaultMessage="Groups" />}
           >
             <EuiComboBox
               isClearable

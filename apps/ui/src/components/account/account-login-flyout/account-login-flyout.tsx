@@ -65,7 +65,7 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
   ));
 
   return (
-    <EuiFlyout ownFocus onClose={onClose}>
+    <EuiFlyout ownFocus onClose={onClose} style={{ minWidth: '75vw' }}>
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="m">
           <div>

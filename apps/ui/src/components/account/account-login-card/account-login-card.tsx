@@ -40,7 +40,7 @@ export default function AccountLoginCard(
       textAlign="left"
       title={<AccountLoginCardTitle {...props} onAddClick={onAddClicked} />}
     >
-      <AccountLoginCardAccountTable instances={instances} />
+      <AccountLoginCardAccountTable instances={instances} groups={groups} />
       {createAccountModalForm}
     </EuiCard>
   );
