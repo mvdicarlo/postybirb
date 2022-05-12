@@ -16,6 +16,7 @@ import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
 import AccountApi from '../../../api/account.api';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
+import AccountLoginWebview from '../account-login-webview/account-login-webview';
 import {
   ClearAccountDataPopover,
   DeleteAccountPopover,
@@ -165,13 +166,18 @@ function AccountLoginAction(props: {
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
   // TODO determine real modal type to return
-  const loginMethod = <div>Hello</div>;
+  const loginMethod = (
+    <AccountLoginWebview src="https://furaffinity.net" id={account.id} />
+  );
 
   const modal = isVisible ? (
     <AccountLoginModal
       account={account}
       website={website}
-      onClose={() => setIsVisible(false)}
+      onClose={() => {
+        setIsVisible(false);
+        AccountApi.refreshLogin(account.id);
+      }}
     >
       {loginMethod}
     </AccountLoginModal>

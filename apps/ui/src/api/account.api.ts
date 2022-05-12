@@ -31,4 +31,8 @@ export default class AccountApi {
   static update(id: string, update: IUpdateAccountDto) {
     return AccountApi.request.patch(id, update);
   }
+
+  static refreshLogin(id: string) {
+    return AccountApi.request.get(`refresh/${id}`);
+  }
 }

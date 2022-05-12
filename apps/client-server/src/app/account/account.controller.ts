@@ -59,6 +59,12 @@ export class AccountController {
     return this.service.manuallyExecuteOnLogin(id);
   }
 
+  @Get('/refresh/:id')
+  @ApiOkResponse({ description: 'Account login check queued.' })
+  async refresh(@Param('id') id: string) {
+    this.service.manuallyExecuteOnLogin(id);
+  }
+
   @Patch(':id')
   @ApiOkResponse({ description: 'Account updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Account Id not found.' })
