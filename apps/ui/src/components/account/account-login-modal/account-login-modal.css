@@ -1,0 +1,13 @@
+.postybirb-login-modal-overlay {
+  width: 100vw;
+  height: 100vh;
+  padding: 0 !important;
+  margin: 0 !important;
+  visibility: hidden;
+}
+
+/* This is more of a hack to be able to modify the mask of the modal */
+.postybirb-login-modal-overlay + .euiOverlayMask {
+  padding: 0 !important;
+  margin: 0 !important;
+}

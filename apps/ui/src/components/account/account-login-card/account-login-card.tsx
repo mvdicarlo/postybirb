@@ -2,7 +2,7 @@ import { EuiCard } from '@elastic/eui';
 import { IAccountDto } from '@postybirb/dto';
 import { useToggle } from 'react-use';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
-import AccountLoginCardAccountTable from './account-login-card-account-table';
+import AccountLoginCardTable from './account-login-card-table';
 import AccountLoginCardTitle from './account-login-card-title';
 import './account-login-card.css';
 import CreateAccountModal from './create-account-modal';
@@ -40,7 +40,11 @@ export default function AccountLoginCard(
       textAlign="left"
       title={<AccountLoginCardTitle {...props} onAddClick={onAddClicked} />}
     >
-      <AccountLoginCardAccountTable instances={instances} groups={groups} />
+      <AccountLoginCardTable
+        instances={instances}
+        groups={groups}
+        website={website}
+      />
       {createAccountModalForm}
     </EuiCard>
   );

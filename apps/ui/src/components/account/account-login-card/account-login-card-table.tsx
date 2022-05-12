@@ -10,11 +10,12 @@ import {
   EuiHealth,
   EuiToolTip,
 } from '@elastic/eui';
-import { IAccountDto, ILoginState } from '@postybirb/dto';
+import { IAccountDto, ILoginState, IWebsiteLoginInfo } from '@postybirb/dto';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
 import AccountApi from '../../../api/account.api';
+import AccountLoginModal from '../account-login-modal/account-login-modal';
 import {
   ClearAccountDataPopover,
   DeleteAccountPopover,
@@ -23,6 +24,7 @@ import {
 type AccountLoginCardAccountTableProps = {
   instances: IAccountDto[];
   groups: string[];
+  website: IWebsiteLoginInfo;
 };
 
 function NameColumn(props: {
@@ -155,10 +157,62 @@ function GroupsColumn(props: {
   );
 }
 
-export default function AccountLoginCardAccountTable(
+function AccountLoginAction(props: {
+  account: IAccountDto<unknown>;
+  website: IWebsiteLoginInfo;
+}) {
+  const { account, website } = props;
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  // TODO determine real modal type to return
+  const loginMethod = <div>Hello</div>;
+
+  const modal = isVisible ? (
+    <AccountLoginModal
+      account={account}
+      website={website}
+      onClose={() => setIsVisible(false)}
+    >
+      {loginMethod}
+    </AccountLoginModal>
+  ) : null;
+
+  return (
+    <>
+      <EuiButton
+        color="primary"
+        className="mr-2"
+        size="s"
+        onClick={() => {
+          setIsVisible(true);
+        }}
+      >
+        <FormattedMessage id="login" defaultMessage="Login" />
+      </EuiButton>
+      {modal}
+    </>
+  );
+}
+
+function AccountActions(props: {
+  account: IAccountDto<unknown>;
+  website: IWebsiteLoginInfo;
+}) {
+  const { account, website } = props;
+  const { id } = account;
+  return (
+    <span>
+      <AccountLoginAction account={account} website={website} />
+      <ClearAccountDataPopover id={id} />
+      <DeleteAccountPopover id={id} />
+    </span>
+  );
+}
+
+export default function AccountLoginCardTable(
   props: AccountLoginCardAccountTableProps
 ) {
-  const { instances, groups } = props;
+  const { instances, groups, website } = props;
 
   const columns: EuiBasicTableColumn<IAccountDto>[] = [
     {
@@ -226,14 +280,8 @@ export default function AccountLoginCardAccountTable(
     {
       field: 'id',
       name: <FormattedMessage id="actions" defaultMessage="Actions" />,
-      render: (id: string) => (
-        <span>
-          <EuiButton color="primary" className="mr-2" size="s">
-            <FormattedMessage id="login" defaultMessage="Login" />
-          </EuiButton>
-          <ClearAccountDataPopover id={id} />
-          <DeleteAccountPopover id={id} />
-        </span>
+      render: (id: string, record: IAccountDto<unknown>) => (
+        <AccountActions account={record} website={website} />
       ),
     },
   ];
