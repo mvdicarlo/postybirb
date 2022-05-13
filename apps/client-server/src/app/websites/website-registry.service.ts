@@ -37,6 +37,15 @@ export class WebsiteRegistryService {
           throw new Error(`${website.name} is missing metadata field "name"`);
         }
 
+        if (
+          !website.prototype.loginUrl &&
+          !website.prototype.loginComponentName
+        ) {
+          this.logger.error(
+            `${website.name} is missing a login method. Please apply the UserLoginWebsite or CustomLoginWebsite interface.`
+          );
+        }
+
         this.logger.debug(
           `Registering website: ${website.prototype.metadata.name}`
         );

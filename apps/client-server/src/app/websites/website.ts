@@ -1,15 +1,16 @@
-import { session } from 'electron';
+import { WebsiteLoginType } from '@postybirb/dto';
+import { Logger } from '@postybirb/logger';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { session } from 'electron';
 import { Repository } from 'typeorm';
-import { Logger } from '@postybirb/logger';
+import { Account } from '../account/entities/account.entity';
+import { SafeObject } from '../shared/types/safe-object.type';
+import { WebsiteData } from './entities/website-data.entity';
+import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
+import { ILoginState } from './models/login-state.interface';
 import { LoginState } from './models/login-state.model';
 import WebsiteDataManager from './website-data-manager';
-import { Account } from '../account/entities/account.entity';
-import { ILoginState } from './models/login-state.interface';
-import { SafeObject } from '../shared/types/safe-object.type';
-import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
-import { WebsiteData } from './entities/website-data.entity';
 
 export type UnknownWebsite = Website<SafeObject>;
 
@@ -36,6 +37,15 @@ export abstract class Website<D extends SafeObject> {
    * This property is filled with the {WebsiteMetadata} decorator.
    */
   public readonly metadata: IWebsiteMetadata;
+
+  /**
+   * Do not set this manually. Apply with @LoginType decorator
+   * A property used to define how a user will login through the UI.
+   * @type {UserLoginType} - User will login through a webview using the provided url.
+   * @type {CustomLoginType} - User will login through a custom login flow created by the implementer.
+   * @type {WebsiteLoginType}
+   */
+  public readonly loginType: WebsiteLoginType;
 
   /**
    * Base website URL user for reference during website calls.

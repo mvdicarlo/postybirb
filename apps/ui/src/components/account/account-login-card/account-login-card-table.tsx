@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
 import AccountApi from '../../../api/account.api';
+import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
 import AccountLoginWebview from '../account-login-webview/account-login-webview';
 import {
@@ -165,10 +166,23 @@ function AccountLoginAction(props: {
   const { account, website } = props;
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  // TODO determine real modal type to return
-  const loginMethod = (
-    <AccountLoginWebview src="https://furaffinity.net" id={account.id} />
-  );
+  let loginMethod: JSX.Element = <div>No login component found.</div>;
+
+  if (website.loginType.type === 'user') {
+    loginMethod = (
+      <AccountLoginWebview src={website.loginType.url} id={account.id} />
+    );
+  } else if (website.loginType.type === 'custom') {
+    const CustomLoginComponent = getCustomLoginComponent(
+      website.loginType.loginComponentName
+    );
+
+    if (CustomLoginComponent !== undefined) {
+      loginMethod = (
+        <CustomLoginComponent account={account} website={website} />
+      );
+    }
+  }
 
   const modal = isVisible ? (
     <AccountLoginModal

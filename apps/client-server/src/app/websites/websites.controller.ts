@@ -32,8 +32,7 @@ export class WebsitesController {
   getWebsiteLoginInfo() {
     return this.websiteRegistryService.getAvailableWebsites().map((website) => {
       const resObj: IWebsiteLoginInfo = {
-        loginType: undefined,
-        loginUrl: website.prototype.loginUrl,
+        loginType: website.prototype.loginType,
         id: website.prototype.metadata.name,
         displayName: website.prototype.metadata.displayName,
       };

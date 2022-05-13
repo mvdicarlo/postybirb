@@ -1,27 +1,27 @@
 import { TestMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
+import { FileSubmission } from '../../../submission/models/file-submission.model';
 import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
+import { MessageSubmission } from '../../../submission/models/message-submission.model';
 import PostData from '../../../submission/models/post-data.model';
-import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
+import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { ILoginState } from '../../models/login-state.interface';
+import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
 import { MessageWebsite } from '../../models/website-modifier-interfaces/message-website.interface';
 import { OAuthWebsite } from '../../models/website-modifier-interfaces/oauth-website.interface';
 import { Website } from '../../website';
-import { WebsiteMetadata } from '../../website-metadata.decorator';
 import { TestFileSubmission } from './models/test-file-submission.model';
 import { TestMessageSubmission } from './models/test-message-submission.model';
-import { UserLoginWebsite } from '../../models/website-modifier-interfaces/user-login-website.interface';
-import { FileSubmission } from '../../../submission/models/file-submission.model';
-import { MessageSubmission } from '../../../submission/models/message-submission.model';
 
 @WebsiteMetadata(TestMetadata)
+@UserLoginFlow('https://furaffinity.net')
 export default class TestWebsite
   extends Website<{ test: string }>
   implements
     FileWebsite<TestFileSubmission>,
     MessageWebsite<TestMessageSubmission>,
-    OAuthWebsite,
-    UserLoginWebsite
+    OAuthWebsite
 {
   FileModel: Class<TestFileSubmission> = TestFileSubmission;
 
@@ -38,8 +38,6 @@ export default class TestWebsite
   };
 
   protected BASE_URL = 'http://localhost:3000';
-
-  loginUrl: string = `${this.BASE_URL}/login`;
 
   public async onLogin(): Promise<ILoginState> {
     if (this.account.id === 'FAIL') {

@@ -4,6 +4,11 @@ import FileWebsiteOptions from '../../../submission/models/file-website-options.
 import PostData from '../../../submission/models/post-data.model';
 import { UnknownWebsite } from '../../website';
 
+/**
+ * Defines methods for allowing file based posting.
+ * Generally this will always be used by each supported website.
+ * @interface FileWebsite
+ */
 export interface FileWebsite<T extends FileWebsiteOptions> {
   FileModel: Class<T>;
   supportsFile: true;

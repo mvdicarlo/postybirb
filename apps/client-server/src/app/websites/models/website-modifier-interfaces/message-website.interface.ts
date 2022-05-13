@@ -4,6 +4,10 @@ import { MessageSubmission } from '../../../submission/models/message-submission
 import PostData from '../../../submission/models/post-data.model';
 import { UnknownWebsite } from '../../website';
 
+/**
+ * Defines methods for allowing message (notification, journal, blob, etc.) based posting.
+ * @interface MessageWebsite
+ */
 export interface MessageWebsite<T extends BaseWebsiteOptions> {
   MessageModel: Class<T>;
   supportsMessage: true;

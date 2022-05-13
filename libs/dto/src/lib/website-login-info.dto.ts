@@ -1,6 +1,7 @@
+import { WebsiteLoginType } from './website-login-type.dto';
+
 export interface IWebsiteLoginInfo {
   id: string;
   displayName: string;
-  loginUrl: string;
-  loginType: undefined;
+  loginType: WebsiteLoginType;
 }
