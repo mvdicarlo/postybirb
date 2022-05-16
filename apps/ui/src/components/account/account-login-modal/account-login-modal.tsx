@@ -28,7 +28,7 @@ export default function AccountLoginModal(props: AccountLoginModalProps) {
       <EuiModal
         initialFocus={initialFocus}
         maxWidth={false}
-        className="w-screen h-screen"
+        className="postybirb-login-modal w-screen h-screen"
         onClose={onClose}
       >
         <EuiModalHeader>

@@ -36,6 +36,7 @@ export default function AccountLoginCard(
 
   return (
     <EuiCard
+      className="postybirb-login-card"
       hasBorder
       textAlign="left"
       title={<AccountLoginCardTitle {...props} onAddClick={onAddClicked} />}

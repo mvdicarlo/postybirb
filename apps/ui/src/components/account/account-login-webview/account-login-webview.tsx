@@ -4,7 +4,7 @@ import { WebviewTag } from './webview-tag';
 
 type AccountLoginWebviewProps = {
   src: string;
-  id: string;
+  id: string; // Account Id
 };
 
 export default function AccountLoginWebview(props: AccountLoginWebviewProps) {

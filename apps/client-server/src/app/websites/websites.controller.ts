@@ -30,14 +30,17 @@ export class WebsitesController {
   @Get('/login-info')
   @ApiResponse({ status: 200 })
   getWebsiteLoginInfo() {
-    return this.websiteRegistryService.getAvailableWebsites().map((website) => {
-      const resObj: IWebsiteLoginInfo = {
-        loginType: website.prototype.loginType,
-        id: website.prototype.metadata.name,
-        displayName: website.prototype.metadata.displayName,
-      };
+    return this.websiteRegistryService
+      .getAvailableWebsites()
+      .map((website) => {
+        const resObj: IWebsiteLoginInfo = {
+          loginType: website.prototype.loginType,
+          id: website.prototype.metadata.name,
+          displayName: website.prototype.metadata.displayName,
+        };
 
-      return resObj;
-    });
+        return resObj;
+      })
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
   }
 }

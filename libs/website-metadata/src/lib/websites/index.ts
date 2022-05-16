@@ -1,1 +1,2 @@
-export * from './test.website';
+export * from './test.metadata';
+export * from './fur-affinity.metadata';

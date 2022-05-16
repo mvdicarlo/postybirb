@@ -3,6 +3,7 @@ import { Logger } from '@postybirb/logger';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { session } from 'electron';
+import { Logger as PinoLogger } from 'pino';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
 import { SafeObject } from '../shared/types/safe-object.type';
@@ -15,7 +16,7 @@ import WebsiteDataManager from './website-data-manager';
 export type UnknownWebsite = Website<SafeObject>;
 
 export abstract class Website<D extends SafeObject> {
-  protected readonly logger;
+  protected readonly logger: PinoLogger;
 
   /**
    * User account info for reference primarily during posting and login.

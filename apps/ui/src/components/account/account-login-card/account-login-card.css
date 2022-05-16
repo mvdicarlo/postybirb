@@ -4,3 +4,7 @@
   border-top-left-radius: 6px;
   box-shadow: none;
 }
+
+.postybirb-login-card + .postybirb-login-card {
+  margin-top: 1em;
+}

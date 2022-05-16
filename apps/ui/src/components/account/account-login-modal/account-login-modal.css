@@ -11,3 +11,8 @@
   padding: 0 !important;
   margin: 0 !important;
 }
+
+.postybirb-login-modal .euiModal__flex {
+  height: 100vh;
+  max-height: 100vh;
+}
