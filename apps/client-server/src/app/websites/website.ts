@@ -121,6 +121,14 @@ export abstract class Website<D extends SafeObject> {
     return this.loginState.getState();
   }
 
+  /**
+   * Sets the website data provided by user or other means.
+   * @param {D} data
+   */
+  public async setWebsiteData(data: D) {
+    await this.websiteDataStore.setData(data);
+  }
+
   // -------------- End Externally Accessed Methods --------------
 
   // -------------- Event Methods --------------

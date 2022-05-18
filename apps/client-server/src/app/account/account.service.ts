@@ -21,6 +21,7 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 import { Account } from './entities/account.entity';
 import { waitUntil } from '../utils/wait.util';
+import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 
 /**
  * Service responsible for returning Account data.
@@ -296,5 +297,16 @@ export class AccountService implements OnModuleInit {
     const account = await this.findOne(id);
     const instance = this.websiteRegistry.findInstance(account);
     await instance.clearLoginStateAndData();
+  }
+
+  /**
+   * Sets the data saved to an account's website.
+   *
+   * @param {SetWebsiteDataRequestDto} setWebsiteDataRequestDto
+   */
+  async setAccountData(setWebsiteDataRequestDto: SetWebsiteDataRequestDto) {
+    const account = await this.findOne(setWebsiteDataRequestDto.id);
+    const instance = this.websiteRegistry.findInstance(account);
+    await instance.setWebsiteData(setWebsiteDataRequestDto.data);
   }
 }

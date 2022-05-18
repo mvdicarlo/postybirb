@@ -1,6 +1,7 @@
 import {
   IAccountDto,
   ICreateAccountDto,
+  ISetWebsiteDataRequestDto,
   IUpdateAccountDto,
 } from '@postybirb/dto';
 import Https from '../transports/https';
@@ -26,6 +27,10 @@ export default class AccountApi {
 
   static clear(id: string) {
     return AccountApi.request.post(`clear/${id}`);
+  }
+
+  static setWebsiteData<T>(request: ISetWebsiteDataRequestDto<T>) {
+    return AccountApi.request.post('account-data', request);
   }
 
   static update(id: string, update: IUpdateAccountDto) {

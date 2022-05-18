@@ -17,6 +17,7 @@ import {
 import { Coerce } from '../utils/coerce.util';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
 /**
@@ -80,5 +81,11 @@ export class AccountController {
   @ApiNotFoundResponse({ description: 'Account Id not found.' })
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  @Post('/account-data')
+  @ApiOkResponse({ description: 'Account data set.' })
+  setWebsiteData(@Body() oauthRequestDto: SetWebsiteDataRequestDto) {
+    return this.service.setAccountData(oauthRequestDto);
   }
 }

@@ -12,7 +12,7 @@ import { ILoginState } from '../../models/login-state.interface';
 import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
 import { MessageWebsite } from '../../models/website-modifier-interfaces/message-website.interface';
 import { Website } from '../../website';
-import { FurAffinityData } from './models/fur-affinity-data';
+import { FurAffinityAccountData } from './models/fur-affinity-account-data';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission.model';
 import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission.model';
 
@@ -20,7 +20,7 @@ import { FurAffinityMessageSubmission } from './models/fur-affinity-message-subm
 @WebsiteMetadata(FurAffinityMetadata)
 @UserLoginFlow('https://furaffinity.net/login')
 export default class FurAffinity
-  extends Website<FurAffinityData>
+  extends Website<FurAffinityAccountData>
   implements
     FileWebsite<FurAffinityFileSubmission>,
     MessageWebsite<FurAffinityMessageSubmission>
@@ -37,7 +37,7 @@ export default class FurAffinity
 
   protected BASE_URL: string = 'https://furaffinity.net';
 
-  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FurAffinityData> =
+  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FurAffinityAccountData> =
     {
       folders: true,
     };

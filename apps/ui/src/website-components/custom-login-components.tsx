@@ -1,14 +1,16 @@
-import { LoginComponentProps } from '../models/login-component-props';
+import { CustomLoginComponentProvider } from '../models/custom-login-component-provider';
+import DiscordLoginView from './discord/discord-login-view';
 
-type CustomLoginComponentProviderFn = (
-  props: LoginComponentProps
-) => JSX.Element;
-
-const CustomLoginComponents: Record<string, CustomLoginComponentProviderFn> =
-  Object.freeze({});
+const CustomLoginComponents: Record<
+  string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  CustomLoginComponentProvider<any>
+> = Object.freeze({
+  Discord: DiscordLoginView,
+});
 
 export function getCustomLoginComponent(
   loginComponentName: string
-): CustomLoginComponentProviderFn | undefined {
+): CustomLoginComponentProvider<unknown> | undefined {
   return CustomLoginComponents[loginComponentName];
 }

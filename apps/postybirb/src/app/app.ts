@@ -119,6 +119,8 @@ export default class App {
     App.mainWindow.on('closed', () => {
       App.onClose();
     });
+
+    App.mainWindow.webContents.on('will-navigate', App.onRedirect);
   }
 
   private static loadMainWindow() {

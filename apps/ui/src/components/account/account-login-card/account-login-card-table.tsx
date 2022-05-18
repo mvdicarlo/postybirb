@@ -8,6 +8,7 @@ import {
   EuiComboBoxOptionOption,
   EuiFieldText,
   EuiHealth,
+  EuiIcon,
   EuiToolTip,
 } from '@elastic/eui';
 import { IAccountDto, ILoginState, IWebsiteLoginInfo } from '@postybirb/dto';
@@ -257,7 +258,11 @@ export default function AccountLoginCardTable(
       render: (item: unknown) => {
         const { isLoggedIn, username, pending } = item as ILoginState;
         if (isLoggedIn) {
-          return <EuiHealth color="success">{username}</EuiHealth>;
+          return (
+            <EuiHealth color="success">
+              {username || <EuiIcon type="check" />}
+            </EuiHealth>
+          );
         }
 
         if (pending) {
