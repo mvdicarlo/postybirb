@@ -6,6 +6,7 @@ import { FileSubmission } from '../../../submission/models/file-submission';
 import { MessageSubmission } from '../../../submission/models/message-submission';
 import PostData from '../../../submission/models/post-data';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcuts.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { ILoginState } from '../../models/login-state';
@@ -16,9 +17,12 @@ import { FurAffinityAccountData } from './models/fur-affinity-account-data';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
 import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission';
 
-// ? Should I make the file website and message website a decorator?
 @WebsiteMetadata(FurAffinityMetadata)
 @UserLoginFlow('https://furaffinity.net/login')
+@SupportsUsernameShortcut({
+  id: 'fa',
+  url: 'https://furaffinity.net/user/$1',
+})
 export default class FurAffinity
   extends Website<FurAffinityAccountData>
   implements

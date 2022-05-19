@@ -6,3 +6,4 @@ export * from './lib/update-settings.dto';
 export * from './lib/website-login-info.dto';
 export * from './lib/website-login-type.dto';
 export * from './lib/set-website-data-request.dto';
+export * from './lib/username-shortcut.dto';

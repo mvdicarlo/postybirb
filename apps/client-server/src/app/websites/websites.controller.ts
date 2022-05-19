@@ -37,6 +37,7 @@ export class WebsitesController {
           loginType: website.prototype.loginType,
           id: website.prototype.metadata.name,
           displayName: website.prototype.metadata.displayName,
+          usernameShortcut: website.prototype.usernameShortcut,
         };
 
         return resObj;

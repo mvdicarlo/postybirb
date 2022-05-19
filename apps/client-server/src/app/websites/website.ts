@@ -11,6 +11,7 @@ import { WebsiteData } from './entities/website-data.entity';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import { ILoginState } from './models/login-state';
 import { LoginState } from './models/login-state';
+import { UsernameShortcut } from './models/username-shortcut';
 import WebsiteDataManager from './website-data-manager';
 
 export type UnknownWebsite = Website<SafeObject>;
@@ -60,6 +61,8 @@ export abstract class Website<D extends SafeObject> {
    * Just an extra protection to reduce unnecessary passing of sensitive keys.
    */
   public abstract readonly externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<D>;
+
+  public readonly usernameShortcut: UsernameShortcut;
 
   /**
    * Reference Id of a website instance.
