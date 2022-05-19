@@ -1,5 +1,5 @@
 import { Global, Module } from '@nestjs/common';
-import { WSGateway } from './web-socket.gateway';
+import { WSGateway } from './web-socket-gateway';
 
 @Global()
 @Module({

@@ -8,7 +8,7 @@ import {
 import { CreateSubmissionPartDto } from '../dtos/create-submission-part.dto';
 import { SubmissionPartModelRequestDto } from '../dtos/submission-part-model-request.dto';
 import { UpdateSubmissionPartDto } from '../dtos/update-submission-part.dto';
-import BaseWebsiteOptions from '../models/base-website-options.model';
+import BaseWebsiteOptions from '../models/base-website-options';
 import { SubmissionPartService } from '../services/submission-part.service';
 
 /**

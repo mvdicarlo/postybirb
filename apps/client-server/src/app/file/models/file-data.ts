@@ -1,4 +1,4 @@
-import { IFile } from './file.interface';
+import { IFile } from './file';
 
 export interface IFileData {
   id: string;

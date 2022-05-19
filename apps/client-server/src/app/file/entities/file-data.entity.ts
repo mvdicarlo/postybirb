@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { IFileData } from '../models/file-data.interface';
+import { IFileData } from '../models/file-data';
 import { File } from './file.entity';
 
 @Entity()

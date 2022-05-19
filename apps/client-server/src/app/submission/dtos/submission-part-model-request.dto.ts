@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString } from 'class-validator';
-import SubmissionType from '../enums/submission-type.enum';
+import SubmissionType from '../enums/submission-type';
 
 export class SubmissionPartModelRequestDto {
   @ApiProperty()

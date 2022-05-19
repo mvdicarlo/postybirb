@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { IFile } from '../models/file.interface';
+import { IFile } from '../models/file';
 import { FileData } from './file-data.entity';
 
 @Entity()

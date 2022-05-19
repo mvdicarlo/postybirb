@@ -1,6 +1,6 @@
 import { ParsedPath } from 'path';
-import FileMetadata from './file-metadata.model';
-import FileType from '../enums/file-type.enum';
+import FileMetadata from './file-metadata';
+import FileType from '../enums/file-type';
 
 export default interface FileReference {
   id: string;

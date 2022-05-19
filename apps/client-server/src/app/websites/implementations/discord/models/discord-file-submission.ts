@@ -1,5 +1,5 @@
 import { BooleanField, RadioField, TextField } from '@postybirb/form-builder';
-import FileWebsiteOptions from '../../../../submission/models/file-website-options.model';
+import FileWebsiteOptions from '../../../../submission/models/file-website-options';
 
 // TODO real model
 export class DiscordFileSubmission implements FileWebsiteOptions {

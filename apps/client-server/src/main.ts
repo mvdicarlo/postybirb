@@ -11,7 +11,7 @@ import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { SSL } from './app/security-and-authentication/ssl';
-import { WebSocketAdapter } from './app/web-socket/web-socket.adapter';
+import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 async function bootstrap(appPort?: number) {
   let app: INestApplication;

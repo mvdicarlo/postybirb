@@ -1,14 +1,7 @@
-import { BooleanField, RadioField, TextField } from '@postybirb/form-builder';
-import FileWebsiteOptions from '../../../../submission/models/file-website-options.model';
+import { RadioField, TextField } from '@postybirb/form-builder';
+import BaseWebsiteOptions from '../../../../submission/models/base-website-options';
 
-// TODO real model
-export class FurAffinityFileSubmission implements FileWebsiteOptions {
-  @BooleanField({ label: 'Use thumbnail', defaultValue: true })
-  useThumbnail: boolean = true;
-
-  @BooleanField({ label: 'Allow resizing image', defaultValue: true })
-  allowResize: boolean = true;
-
+export class TestMessageSubmission implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;
 

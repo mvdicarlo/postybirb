@@ -1,18 +1,18 @@
 import { TestMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import { FileSubmission } from '../../../submission/models/file-submission.model';
-import FileWebsiteOptions from '../../../submission/models/file-website-options.model';
-import { MessageSubmission } from '../../../submission/models/message-submission.model';
-import PostData from '../../../submission/models/post-data.model';
+import { FileSubmission } from '../../../submission/models/file-submission';
+import FileWebsiteOptions from '../../../submission/models/file-website-options';
+import { MessageSubmission } from '../../../submission/models/message-submission';
+import PostData from '../../../submission/models/post-data';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
-import { ILoginState } from '../../models/login-state.interface';
-import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
-import { MessageWebsite } from '../../models/website-modifier-interfaces/message-website.interface';
-import { OAuthWebsite } from '../../models/website-modifier-interfaces/oauth-website.interface';
+import { ILoginState } from '../../models/login-state';
+import { FileWebsite } from '../../models/website-modifiers/file-website';
+import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
-import { TestFileSubmission } from './models/test-file-submission.model';
-import { TestMessageSubmission } from './models/test-message-submission.model';
+import { TestFileSubmission } from './models/test-file-submission';
+import { TestMessageSubmission } from './models/test-message-submission';
 
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')

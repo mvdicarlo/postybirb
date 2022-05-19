@@ -9,18 +9,18 @@ import { DeleteResult, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
 import { SUBMISSION_REPOSITORY } from '../../constants';
-import { MulterFileInfo } from '../../file/models/multer-file-info.interface';
+import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { Submission } from '../entities/submission.entity';
-import { ScheduleType } from '../enums/schedule-type.enum';
-import SubmissionType from '../enums/submission-type.enum';
+import { ScheduleType } from '../enums/schedule-type';
+import SubmissionType from '../enums/submission-type';
 import {
   FileSubmission,
   isFileSubmission,
-} from '../models/file-submission.model';
-import { MessageSubmission } from '../models/message-submission.model';
-import { SubmissionMetadataType } from '../models/submission-metadata-types.model';
+} from '../models/file-submission';
+import { MessageSubmission } from '../models/message-submission';
+import { SubmissionMetadataType } from '../models/submission-metadata-types';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionPartService } from './submission-part.service';

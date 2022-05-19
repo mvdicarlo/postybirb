@@ -3,7 +3,7 @@ import { getRepository, Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
 import { DATABASE_CONNECTION } from '../constants';
 import { getTestDatabaseProvider } from '../database/typeorm.providers';
-import { SafeObject } from '../shared/types/safe-object.type';
+import { SafeObject } from '../shared/types/safe-object';
 import { WebsiteData } from './entities/website-data.entity';
 import { websiteImplementationProvider } from './implementations';
 import TestWebsite from './implementations/test/test.website';

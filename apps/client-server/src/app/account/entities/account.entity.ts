@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { IAccount } from '../models/account.interface';
+import { IAccount } from '../models/account';
 
 /**
  * Account entity.

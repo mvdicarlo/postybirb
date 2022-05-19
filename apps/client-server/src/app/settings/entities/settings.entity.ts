@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { ISettings, ISettingsOptions } from '../models/settings.interface';
+import { ISettings, ISettingsOptions } from '../models/settings';
 import { SettingsConstants } from '../settings.constants';
 
 @Entity()

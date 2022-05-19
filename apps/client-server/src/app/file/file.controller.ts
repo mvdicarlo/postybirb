@@ -16,7 +16,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileService } from './file.service';
-import { MulterFileInfo } from './models/multer-file-info.interface';
+import { MulterFileInfo } from './models/multer-file-info';
 
 @ApiTags('file')
 @Controller('file')

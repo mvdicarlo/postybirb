@@ -1,4 +1,8 @@
-import { ILoginState } from './login-state.interface';
+export interface ILoginState {
+  isLoggedIn: boolean;
+  username: string | null;
+  pending: boolean;
+}
 
 /**
  * A class used for tracking the login state of a website.

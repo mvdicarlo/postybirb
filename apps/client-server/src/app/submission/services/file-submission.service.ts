@@ -3,10 +3,10 @@ import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import {
   FileSubmission,
   FileSubmissionFileReference,
-} from '../models/file-submission.model';
-import { ISubmissionService } from '../models/submission-service.interface';
+} from '../models/file-submission';
+import { ISubmissionService } from '../models/submission-service';
 import { FileService } from '../../file/file.service';
-import { MulterFileInfo } from '../../file/models/multer-file-info.interface';
+import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { File } from '../../file/entities/file.entity';
 
 /**

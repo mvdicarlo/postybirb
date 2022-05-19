@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import { Class } from 'type-fest';
 import { Account } from '../account/entities/account.entity';
 import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { SafeObject } from '../shared/types/safe-object.type';
+import { SafeObject } from '../shared/types/safe-object';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteData } from './entities/website-data.entity';
-import { OAuthWebsite } from './models/website-modifier-interfaces/oauth-website.interface';
+import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;

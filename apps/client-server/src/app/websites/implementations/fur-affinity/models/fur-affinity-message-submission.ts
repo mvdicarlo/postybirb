@@ -1,7 +1,8 @@
 import { RadioField, TextField } from '@postybirb/form-builder';
-import BaseWebsiteOptions from '../../../../submission/models/base-website-options.model';
+import BaseWebsiteOptions from '../../../../submission/models/base-website-options';
 
-export class TestMessageSubmission implements BaseWebsiteOptions {
+// TODO replace placeholders
+export class FurAffinityMessageSubmission implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;
 

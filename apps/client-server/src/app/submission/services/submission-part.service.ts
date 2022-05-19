@@ -14,8 +14,8 @@ import {
   SUBMISSION_PART_REPOSITORY,
   SUBMISSION_REPOSITORY,
 } from '../../constants';
-import { isFileWebsite } from '../../websites/models/website-modifier-interfaces/file-website.interface';
-import { isMessageWebsite } from '../../websites/models/website-modifier-interfaces/message-website.interface';
+import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
+import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../websites/website';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { CreateSubmissionPartDto } from '../dtos/create-submission-part.dto';
@@ -23,10 +23,10 @@ import { SubmissionPartModelRequestDto } from '../dtos/submission-part-model-req
 import { UpdateSubmissionPartDto } from '../dtos/update-submission-part.dto';
 import { SubmissionPart } from '../entities/submission-part.entity';
 import { Submission } from '../entities/submission.entity';
-import SubmissionType from '../enums/submission-type.enum';
-import { IBaseSubmissionMetadata } from '../models/base-submission-metadata.model';
-import { SubmissionMetadataType } from '../models/submission-metadata-types.model';
-import BaseWebsiteOptions from '../models/base-website-options.model';
+import SubmissionType from '../enums/submission-type';
+import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
+import { SubmissionMetadataType } from '../models/submission-metadata-types';
+import BaseWebsiteOptions from '../models/base-website-options';
 
 @Injectable()
 export class SubmissionPartService {

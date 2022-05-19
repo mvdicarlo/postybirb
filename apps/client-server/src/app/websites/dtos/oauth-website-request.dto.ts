@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsObject, IsString } from 'class-validator';
-import { SafeObject } from '../../shared/types/safe-object.type';
+import { SafeObject } from '../../shared/types/safe-object';
 
 export class OAuthWebsiteRequestDto<T extends SafeObject> {
   @ApiProperty()

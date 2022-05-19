@@ -2,19 +2,19 @@ import { Http } from '@postybirb/http';
 import { FurAffinityMetadata } from '@postybirb/website-metadata';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
-import { FileSubmission } from '../../../submission/models/file-submission.model';
-import { MessageSubmission } from '../../../submission/models/message-submission.model';
-import PostData from '../../../submission/models/post-data.model';
+import { FileSubmission } from '../../../submission/models/file-submission';
+import { MessageSubmission } from '../../../submission/models/message-submission';
+import PostData from '../../../submission/models/post-data';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
-import { DataPropertyAccessibility } from '../../models/data-property-accessibility.type';
-import { ILoginState } from '../../models/login-state.interface';
-import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
-import { MessageWebsite } from '../../models/website-modifier-interfaces/message-website.interface';
+import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
+import { ILoginState } from '../../models/login-state';
+import { FileWebsite } from '../../models/website-modifiers/file-website';
+import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { Website } from '../../website';
 import { FurAffinityAccountData } from './models/fur-affinity-account-data';
-import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission.model';
-import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission.model';
+import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
+import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission';
 
 // ? Should I make the file website and message website a decorator?
 @WebsiteMetadata(FurAffinityMetadata)

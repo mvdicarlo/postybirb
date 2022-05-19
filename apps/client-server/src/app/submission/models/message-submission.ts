@@ -1,5 +1,5 @@
 import { Submission } from '../entities/submission.entity';
-import { IBaseSubmissionMetadata } from './base-submission-metadata.model';
+import { IBaseSubmissionMetadata } from './base-submission-metadata';
 
 export type MessageSubmissionMetadata = IBaseSubmissionMetadata;
 

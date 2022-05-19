@@ -6,11 +6,11 @@ import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
-import { SafeObject } from '../shared/types/safe-object.type';
+import { SafeObject } from '../shared/types/safe-object';
 import { WebsiteData } from './entities/website-data.entity';
-import { DataPropertyAccessibility } from './models/data-property-accessibility.type';
-import { ILoginState } from './models/login-state.interface';
-import { LoginState } from './models/login-state.model';
+import { DataPropertyAccessibility } from './models/data-property-accessibility';
+import { ILoginState } from './models/login-state';
+import { LoginState } from './models/login-state';
 import WebsiteDataManager from './website-data-manager';
 
 export type UnknownWebsite = Website<SafeObject>;

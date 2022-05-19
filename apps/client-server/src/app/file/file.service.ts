@@ -12,7 +12,7 @@ import { FILE_DATA_REPOSITORY, FILE_REPOSITORY } from '../constants';
 import { FileData } from './entities/file-data.entity';
 import { File } from './entities/file.entity';
 import { ImageUtil } from './utils/image.util';
-import { MulterFileInfo } from './models/multer-file-info.interface';
+import { MulterFileInfo } from './models/multer-file-info';
 
 type Task = {
   file: MulterFileInfo;

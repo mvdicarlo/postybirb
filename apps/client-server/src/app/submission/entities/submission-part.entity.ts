@@ -6,9 +6,9 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Account } from '../../account/entities/account.entity';
-import { SafeObject } from '../../shared/types/safe-object.type';
-import { ISubmissionPart } from '../models/submission-part.interface';
-import BaseWebsiteOptions from '../models/base-website-options.model';
+import { SafeObject } from '../../shared/types/safe-object';
+import { ISubmissionPart } from '../models/submission-part';
+import BaseWebsiteOptions from '../models/base-website-options';
 import { Submission } from './submission.entity';
 
 @Entity()

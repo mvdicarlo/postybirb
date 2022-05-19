@@ -1,18 +1,18 @@
 import { DiscordMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import { FileSubmission } from '../../../submission/models/file-submission.model';
-import { MessageSubmission } from '../../../submission/models/message-submission.model';
-import PostData from '../../../submission/models/post-data.model';
+import { FileSubmission } from '../../../submission/models/file-submission';
+import { MessageSubmission } from '../../../submission/models/message-submission';
+import PostData from '../../../submission/models/post-data';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
-import { DataPropertyAccessibility } from '../../models/data-property-accessibility.type';
-import { ILoginState } from '../../models/login-state.interface';
-import { FileWebsite } from '../../models/website-modifier-interfaces/file-website.interface';
-import { MessageWebsite } from '../../models/website-modifier-interfaces/message-website.interface';
+import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
+import { ILoginState } from '../../models/login-state';
+import { FileWebsite } from '../../models/website-modifiers/file-website';
+import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { Website } from '../../website';
 import { DiscordAccountData } from './models/discord-account-data';
-import { DiscordFileSubmission } from './models/discord-file-submission.model';
-import { DiscordMessageSubmission } from './models/discord-message-submission.model';
+import { DiscordFileSubmission } from './models/discord-file-submission';
+import { DiscordMessageSubmission } from './models/discord-message-submission';
 
 @WebsiteMetadata(DiscordMetadata)
 @CustomLoginFlow()

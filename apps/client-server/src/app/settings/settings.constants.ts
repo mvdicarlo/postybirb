@@ -1,4 +1,4 @@
-import { ISettingsOptions } from './models/settings.interface';
+import { ISettingsOptions } from './models/settings';
 
 export class SettingsConstants {
   static readonly DEFAULT_PROFILE_NAME = 'default';

@@ -10,7 +10,7 @@ import { Logger } from '@postybirb/logger';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { Repository } from 'typeorm';
 import { SETTINGS_REPOSITORY } from '../constants';
-import { WSGateway } from '../web-socket/web-socket.gateway';
+import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { Settings } from './entities/settings.entity';
 import { SettingsConstants } from './settings.constants';

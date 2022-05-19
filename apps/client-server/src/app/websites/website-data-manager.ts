@@ -1,7 +1,7 @@
 import { Logger } from '@postybirb/logger';
 import { Repository } from 'typeorm';
 import { Account } from '../account/entities/account.entity';
-import { SafeObject } from '../shared/types/safe-object.type';
+import { SafeObject } from '../shared/types/safe-object';
 import { WebsiteData } from './entities/website-data.entity';
 
 /**
