@@ -22,6 +22,7 @@ import {
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+import SubmissionType from '../enums/submission-type';
 import { SubmissionService } from '../services/submission.service';
 
 /**
@@ -61,6 +62,7 @@ export class SubmissionController {
             createFileSubmission.name = `${createSubmissionDto.name} - ${index}`;
           }
 
+          createFileSubmission.type = SubmissionType.FILE;
           return this.service.create(createFileSubmission, file);
         })
       );

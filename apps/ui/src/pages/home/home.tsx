@@ -1,5 +1,6 @@
 import { EuiPageHeader, EuiSpacer } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
+import Uploader from '../../components/shared/uploader/uploader';
 
 export default function Home() {
   return (
@@ -12,7 +13,7 @@ export default function Home() {
         }
       />
       <EuiSpacer />
-      <div>Home</div>
+      <Uploader />
     </>
   );
 }

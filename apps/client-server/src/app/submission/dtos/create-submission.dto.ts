@@ -9,6 +9,7 @@ export class CreateSubmissionDto {
   name: string;
 
   @ApiProperty({ enum: SubmissionType })
+  @IsOptional()
   @IsEnum(SubmissionType)
   type: SubmissionType;
 }

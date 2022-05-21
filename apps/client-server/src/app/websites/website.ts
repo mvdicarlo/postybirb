@@ -1,4 +1,8 @@
-import { WebsiteLoginType } from '@postybirb/dto';
+import {
+  ILoginState,
+  UsernameShortcut,
+  WebsiteLoginType,
+} from '@postybirb/dto';
 import { Logger } from '@postybirb/logger';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
@@ -9,9 +13,7 @@ import { Account } from '../account/entities/account.entity';
 import { SafeObject } from '../shared/types/safe-object';
 import { WebsiteData } from './entities/website-data.entity';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
-import { ILoginState } from './models/login-state';
 import { LoginState } from './models/login-state';
-import { UsernameShortcut } from './models/username-shortcut';
 import WebsiteDataManager from './website-data-manager';
 
 export type UnknownWebsite = Website<SafeObject>;

@@ -1,13 +1,16 @@
 import {
   ClassSerializerInterceptor,
-  ValidationPipe,
-  Logger,
   INestApplication,
+  Logger,
+  ValidationPipe,
 } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
+import companion from '@uppy/companion';
+import bodyParser from 'body-parser';
 import * as compression from 'compression';
+import session from 'express-session';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { SSL } from './app/security-and-authentication/ssl';
@@ -59,6 +62,42 @@ async function bootstrap(appPort?: number) {
   sharp.cache({ files: 0 });
 
   const port = process.env.APP_PORT || appPort || 3333;
+
+  // process.env.COMPANION_CLIENT_ORIGINS_REGEX = '*';
+
+  app.use(bodyParser.json());
+  app.use(session({ secret: 'secret' }));
+
+  // const corsOptions = {
+  //   origin: '*',
+  //   credentials: true,
+  //   allowedHeaders: [
+  //     'Authorization',
+  //     'Origin',
+  //     'Content-Type',
+  //     'Accept',
+  //     'uppy-auth-token',
+  //   ], // 'uppy-auth-token' is required!
+  //   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'], // make sure OPTIONS is included
+  //   optionsSuccessStatus: 200,
+  // };
+
+  // app.use(cors(corsOptions));
+
+  app.use(
+    '/companion',
+    companion.app({
+      filePath: PostyBirbDirectories.TEMP_DIRECTORY,
+      secret: 'secret',
+      server: {
+        protocol: 'https',
+        host: `localhost:${port}`,
+        path: '/companion',
+      },
+      corsOrigin: true,
+    })
+  );
+
   await app.listen(port, () => {
     Logger.log(`Listening at http://localhost:${port}/${globalPrefix}`);
   });
