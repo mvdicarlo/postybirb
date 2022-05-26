@@ -16,6 +16,7 @@ import { FurryNetwork } from './website-services/furry-network/furry-network.ser
 import { HentaiFoundry } from './website-services/hentai-foundry/hentai-foundry.service';
 import { InkBunny } from './website-services/inkbunny/inkbunny.service';
 import { KoFi } from './website-services/ko-fi/ko-fi.service';
+import { Manebooru } from './website-services/manebooru/manebooru.service';
 import { Mastodon } from './website-services/mastodon/mastodon.service';
 import { Newgrounds } from './website-services/newgrounds/newgrounds.service';
 import { NewTumbl } from './website-services/new-tumbl/new-tumbl.service';
@@ -65,6 +66,7 @@ import { HentaiFoundrySubmissionForm } from './website-services/hentai-foundry/c
 import { InkbunnyLoginDialog } from './website-services/inkbunny/components/inkbunny-login-dialog/inkbunny-login-dialog.component';
 import { InkbunnySubmissionForm } from './website-services/inkbunny/components/inkbunny-submission-form/inkbunny-submission-form.component';
 import { KoFiSubmissionForm } from './website-services/ko-fi/components/ko-fi-submission-form/ko-fi-submission-form.component';
+import { ManebooruSubmissionForm } from './website-services/manebooru/components/manebooru-submission-form/manebooru-submission-form.component';
 import { MastodonLoginDialog } from './website-services/mastodon/components/mastodon-login-dialog/mastodon-login-dialog.component';
 import { MastodonSubmissionForm } from './website-services/mastodon/components/mastodon-submission-form/mastodon-submission-form.component';
 import { NewgroundsSubmissionForm } from './website-services/newgrounds/components/newgrounds-submission-form/newgrounds-submission-form.component';
@@ -117,6 +119,7 @@ export function INIT_WEBSITE_REGISTRY() {
     InkbunnyLoginDialog,
     InkbunnySubmissionForm,
     KoFiSubmissionForm,
+    ManebooruSubmissionForm,
     MastodonLoginDialog,
     MastodonSubmissionForm,
     NewgroundsSubmissionForm,
@@ -189,6 +192,7 @@ export function INIT_WEBSITE_REGISTRY() {
     InkbunnyLoginDialog,
     InkbunnySubmissionForm,
     KoFiSubmissionForm,
+    ManebooruSubmissionForm,
     MastodonLoginDialog,
     MastodonSubmissionForm,
     NewgroundsSubmissionForm,
@@ -225,6 +229,7 @@ export function INIT_WEBSITE_REGISTRY() {
         HentaiFoundry,
         InkBunny,
         KoFi,
+        Manebooru,
         Mastodon,
         Newgrounds,
         NewTumbl,
