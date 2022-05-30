@@ -1,7 +1,7 @@
 import Uppy from '@uppy/core';
+import DropTarget from '@uppy/drop-target';
 import ImageEditor from '@uppy/image-editor';
 import { Dashboard } from '@uppy/react';
-import Url from '@uppy/url';
 import Webcam from '@uppy/webcam';
 import XHRUpload from '@uppy/xhr-upload';
 import { useContext, useEffect, useMemo } from 'react';
@@ -16,8 +16,6 @@ export default function Uploader() {
       autoProceed: false,
     });
 
-    // TODO socket conncetion on url upload?
-    // TODO delete temp stored file
     u.use(Webcam)
       .use(ImageEditor, {
         id: 'ImageEditor',
@@ -41,21 +39,17 @@ export default function Uploader() {
           cropWidescreenVertical: true,
         },
       })
-      .use(Url, {
-        companionUrl: `${getUrlSource()}/companion`,
-        companionHeaders: {
+      .use(XHRUpload, {
+        endpoint: `${getUrlSource()}/api/submissions`,
+        fieldName: 'files',
+        metaFields: ['name'],
+        headers: {
           'Access-Control-Allow-Origin': '*',
         },
       })
-      .use(XHRUpload, {
-        endpoint: `${getUrlSource()}/api/submission`,
-        fieldName: 'files',
-        metaFields: ['name'],
+      .use(DropTarget, {
+        target: document.body,
       });
-
-    u.on('complete', (result: any) => {
-      console.log(result);
-    });
 
     return u;
   }, []);
@@ -63,10 +57,6 @@ export default function Uploader() {
   useEffect(() => () => uppy.close(), [uppy]);
 
   return (
-    <Dashboard
-      uppy={uppy}
-      theme={theme}
-      plugins={['Webcam', 'Url', 'ImageEditor']}
-    />
+    <Dashboard uppy={uppy} theme={theme} plugins={['Webcam', 'ImageEditor']} />
   );
 }
