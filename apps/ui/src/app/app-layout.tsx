@@ -1,6 +1,5 @@
 import {
   EuiButton,
-  EuiCollapsibleNav,
   EuiCollapsibleNavGroup,
   EuiErrorBoundary,
   EuiListGroup,
@@ -9,23 +8,23 @@ import {
   EuiPageContent,
   EuiPageContentBody,
   EuiPageSideBar,
-  EuiSideNav,
   EuiSpacer,
   EuiToolTip,
 } from '@elastic/eui';
-import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { useHistory } from 'react-router';
 import { AccountLoginFlyout } from '../components/account/account-login-flyout/account-login-flyout';
 import Keybinding, {
-  KeybindingProps,
   useKeybinding,
 } from '../components/app/keybinding/keybinding';
 import { useGlobalState } from '../global-state';
+import { HomePath, SubmissionsPath } from '../pages/route-paths';
 import Routes from '../pages/routes';
 import {
   AccountKeybinding,
   HomeKeybinding,
   SettingsKeybinding,
+  SubmissionsKeybinding,
 } from '../shared/keybindings';
 import AppSearch from './app-search';
 import AppSettings from './app-settings';
@@ -42,6 +41,7 @@ function AppImage() {
 }
 
 export default function AppLayout() {
+  const history = useHistory();
   const [globalState, setGlobalState] = useGlobalState();
   const toggleAccountLogin = (value?: boolean) =>
     setGlobalState({
@@ -62,7 +62,16 @@ export default function AppLayout() {
 
   const homeKeybinding = {
     keybinding: HomeKeybinding,
-    onActivate: () => {},
+    onActivate: () => {
+      history.push(HomePath);
+    },
+  };
+
+  const submissionsKeybinding = {
+    keybinding: SubmissionsKeybinding,
+    onActivate: () => {
+      history.push(SubmissionsPath);
+    },
   };
 
   const accountKeybinding = {
@@ -76,13 +85,6 @@ export default function AppLayout() {
 
   return (
     <EuiPage paddingSize="none">
-      {/* <EuiCollapsibleNav
-        paddingSize="l"
-        aria-label="Main navigation"
-        isDocked
-        isOpen
-        onClose={() => {}}
-      > */}
       <EuiPageSideBar
         aria-label="Main navigation"
         sticky
@@ -141,7 +143,7 @@ export default function AppLayout() {
               size="s"
               aria-label="PostyBirb home"
               iconType="home"
-              onClick={() => undefined}
+              onClick={() => homeKeybinding.onActivate()}
               showToolTip={false}
               label={
                 <EuiToolTip
@@ -153,6 +155,31 @@ export default function AppLayout() {
                   }
                 >
                   <FormattedMessage id="home" defaultMessage="Home" />
+                </EuiToolTip>
+              }
+            />
+            <EuiListGroupItem
+              size="s"
+              aria-label="PostyBirb submissions"
+              iconType="documents"
+              onClick={() => submissionsKeybinding.onActivate()}
+              showToolTip={false}
+              label={
+                <EuiToolTip
+                  position="right"
+                  content={
+                    <Keybinding {...submissionsKeybinding}>
+                      <FormattedMessage
+                        id="submissions"
+                        defaultMessage="Submissions"
+                      />
+                    </Keybinding>
+                  }
+                >
+                  <FormattedMessage
+                    id="submissions"
+                    defaultMessage="Submissions"
+                  />
                 </EuiToolTip>
               }
             />
@@ -180,29 +207,7 @@ export default function AppLayout() {
             />
           </EuiListGroup>
         </EuiCollapsibleNavGroup>
-
-        {/* <EuiFlexItem grow={false} style={{ flexShrink: 0 }}>
-          <EuiCollapsibleNavGroup background="light" className="eui-yScroll">
-            <EuiListGroup
-              maxWidth="none"
-              color="text"
-              gutterSize="none"
-              size="s"
-            >
-              <EuiListGroupItem
-                size="s"
-                aria-label="PostyBirb settings"
-                iconType="gear"
-                onClick={() => {}}
-                label={
-                  <FormattedMessage id="settings" defaultMessage="Settings" />
-                }
-              />
-            </EuiListGroup>
-          </EuiCollapsibleNavGroup>
-          </EuiFlexItem> */}
       </EuiPageSideBar>
-      {/* </EuiCollapsibleNav> */}
 
       <AppSettings
         onClose={() => toggleSettings(false)}
