@@ -106,7 +106,7 @@
     "form-data": "^2.3.3",
     "form-urlencoded": "^4.0.0",
     "fs-extra": "^7.0.1",
-    "got": "^9.6.0",
+    "got": "^11.8.5",
     "html-entities": "^1.2.1",
     "iconv-lite": "^0.5.0",
     "lowdb": "^1.0.0",
