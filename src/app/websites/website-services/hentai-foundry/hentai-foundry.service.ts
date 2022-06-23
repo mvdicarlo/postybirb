@@ -126,7 +126,7 @@ export class HentaiFoundry extends BaseWebsiteService {
       'Pictures[fileupload]': fileAsFormDataObject(postData.primary),
       'Pictures[submissionPolicyAgree]': '1',
       'yt0': 'Create',
-      'Pictures[keywords]': this.formatTags(postData.tags, []),
+      'Pictures[edit_tags]': this.formatTags(postData.tags, []),
       'Pictures[is_scrap]': options.scraps ? '1' : '0',
       'Pictures[comments_type]': options.disableComments ? '-1' : '0',
       'Pictures[categoryHier]': options.category || '',
@@ -170,11 +170,11 @@ export class HentaiFoundry extends BaseWebsiteService {
   }
 
   formatTags(defaultTags: string[] = [], other: string[] = []): any {
-    const maxLength = 75;
+    const maxLength = 500;
     const tags = super.formatTags(defaultTags, other);
-    let tagString = tags.join(' ').trim();
+    let tagString = tags.join(', ').trim();
 
-    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(' ').filter(tag => tag.length >= 3).join(' ') : tagString;
+    return tagString.length > maxLength ? tagString.substring(0, maxLength).split(', ').filter(tag => tag.length >= 3).join(', ') : tagString;
   }
 
 }

@@ -42,7 +42,7 @@ export class HentaiFoundrySubmissionForm  extends BaseWebsiteSubmissionForm impl
     };
 
   public tagConfig: TagConfig = {
-    maxStringLength: 75
+    maxStringLength: 500
   };
 
   constructor(injector: Injector) {
