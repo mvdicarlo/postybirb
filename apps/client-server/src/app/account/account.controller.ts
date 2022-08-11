@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseBoolPipe,
   Patch,
   Post,
   Query,
@@ -14,7 +15,6 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Coerce } from '../utils/coerce.util';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
@@ -38,8 +38,11 @@ export class AccountController {
   @Get(':id')
   @ApiOkResponse({ description: 'The requested Account.' })
   @ApiNotFoundResponse({ description: 'Account not found.' })
-  async findOne(@Param('id') id: string, @Query('refresh') refresh: boolean) {
-    if (Coerce.boolean(refresh)) {
+  async findOne(
+    @Param('id') id: string,
+    @Query('refresh', ParseBoolPipe) refresh: boolean
+  ) {
+    if (refresh) {
       await this.service.manuallyExecuteOnLogin(id);
     }
     return this.service.findOne(id);
