@@ -1,6 +1,6 @@
 import { EuiLink, EuiLinkProps } from '@elastic/eui';
 import React from 'react';
-import { useHistory } from 'react-router';
+import { useNavigate, createPath } from 'react-router';
 
 const isModifiedEvent = (event: React.MouseEvent) =>
   !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
@@ -17,7 +17,7 @@ export function useCustomLinkRouting(to: string): {
   href: any;
   onClick: (event: React.MouseEvent) => void;
 } {
-  const history = useHistory();
+  const history = useNavigate();
 
   function onClick(event: React.MouseEvent): void {
     if (event.defaultPrevented) {
@@ -37,11 +37,11 @@ export function useCustomLinkRouting(to: string): {
     event.preventDefault();
 
     // Push the route to the history.
-    history.push(to);
+    history(to);
   }
 
   // Generate the correct link href (with basename accounted for)
-  const href = history.createHref({ pathname: to });
+  const href = createPath({ pathname: to });
 
   return { href, onClick };
 }

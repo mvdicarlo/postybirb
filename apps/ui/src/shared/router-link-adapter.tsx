@@ -1,5 +1,4 @@
 import { PropsWithChildren } from 'react';
-import { useHistory } from 'react-router';
 import { useCustomLinkRouting } from './EuiCustomLink';
 
 type RouterLinkAdapterProps = {

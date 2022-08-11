@@ -29,7 +29,7 @@ export default function ErrorAlert(props: {
       iconType="alert"
       color="danger"
     >
-      <div style={{ whiteSpace: 'break-spaces' }}>{error}</div>
+      <div style={{ whiteSpace: 'break-spaces' }}>{error as string}</div>
     </EuiCallOut>
   );
 }

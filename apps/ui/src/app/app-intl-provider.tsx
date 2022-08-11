@@ -5,7 +5,9 @@ import locales from '@postybirb/translations';
 import { LS_LANGUAGE_KEY } from '../constants';
 
 function getLocaleData(locale: string) {
-  return locales[locale] ?? locales[locale.split('-')[0]] ?? locales.en;
+  return (
+    locales[locale] ?? locales[locale.split('-')[0]] ?? (locales as any).en
+  );
 }
 
 export type AppIntlContext = {

@@ -1,9 +1,9 @@
 import { EuiButton, EuiButtonEmpty, EuiEmptyPrompt } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 
 export default function NotFound() {
-  const history = useHistory();
+  const history = useNavigate();
   return (
     <EuiEmptyPrompt
       title={
@@ -25,7 +25,7 @@ export default function NotFound() {
         </p>
       }
       actions={[
-        <EuiButton color="primary" fill onClick={() => history.push('/')}>
+        <EuiButton color="primary" fill onClick={() => history('/')}>
           <FormattedMessage
             id="page-not-found.go-home"
             defaultMessage="Go home"
@@ -34,7 +34,7 @@ export default function NotFound() {
         <EuiButtonEmpty
           iconType="arrowLeft"
           flush="left"
-          onClick={history.goBack}
+          onClick={() => history(-1)}
         >
           <FormattedMessage
             id="page-not-found.go-back"

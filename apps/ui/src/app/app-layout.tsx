@@ -5,14 +5,14 @@ import {
   EuiListGroup,
   EuiListGroupItem,
   EuiPage,
-  EuiPageContent,
-  EuiPageContentBody,
-  EuiPageSideBar,
+  EuiPageBody,
+  EuiPageSection,
+  EuiPageSidebar,
   EuiSpacer,
   EuiToolTip,
 } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import { AccountLoginFlyout } from '../components/account/account-login-flyout/account-login-flyout';
 import Keybinding, {
   useKeybinding,
@@ -41,7 +41,7 @@ function AppImage() {
 }
 
 export default function AppLayout() {
-  const history = useHistory();
+  const history = useNavigate();
   const [globalState, setGlobalState] = useGlobalState();
   const toggleAccountLogin = (value?: boolean) =>
     setGlobalState({
@@ -63,14 +63,14 @@ export default function AppLayout() {
   const homeKeybinding = {
     keybinding: HomeKeybinding,
     onActivate: () => {
-      history.push(HomePath);
+      history(HomePath);
     },
   };
 
   const submissionsKeybinding = {
     keybinding: SubmissionsKeybinding,
     onActivate: () => {
-      history.push(SubmissionsPath);
+      history(SubmissionsPath);
     },
   };
 
@@ -85,7 +85,7 @@ export default function AppLayout() {
 
   return (
     <EuiPage paddingSize="none">
-      <EuiPageSideBar
+      <EuiPageSidebar
         aria-label="Main navigation"
         sticky
         className="euiFlyout euiFlyout--push euiFlyout--left"
@@ -207,7 +207,7 @@ export default function AppLayout() {
             />
           </EuiListGroup>
         </EuiCollapsibleNavGroup>
-      </EuiPageSideBar>
+      </EuiPageSidebar>
 
       <AppSettings
         onClose={() => toggleSettings(false)}
@@ -218,7 +218,7 @@ export default function AppLayout() {
         isOpen={globalState.accountFlyoutVisible}
       />
 
-      <EuiPageContent
+      <EuiPageBody
         hasBorder={false}
         hasShadow={false}
         paddingSize="none"
@@ -227,12 +227,12 @@ export default function AppLayout() {
       >
         <EuiSpacer />
 
-        <EuiPageContentBody color="transparent" className="container mx-auto">
+        <EuiPageSection color="transparent" className="container mx-auto">
           <EuiErrorBoundary>
             <Routes />
           </EuiErrorBoundary>
-        </EuiPageContentBody>
-      </EuiPageContent>
+        </EuiPageSection>
+      </EuiPageBody>
     </EuiPage>
   );
 }
