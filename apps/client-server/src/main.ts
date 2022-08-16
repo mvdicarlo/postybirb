@@ -10,10 +10,13 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
+import { initializeDatabase } from './app/database/mikroorm.providers';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 async function bootstrap(appPort?: number) {
+  await initializeDatabase();
+
   let app: INestApplication;
   if (process.env.NODE_ENV !== 'Test') {
     // TLS/SSL on non-test
@@ -63,7 +66,6 @@ async function bootstrap(appPort?: number) {
   await app.listen(port, () => {
     Logger.log(`Listening at https://localhost:${port}/${globalPrefix}`);
   });
-
 }
 
 export { bootstrap as bootstrapClientServer };
