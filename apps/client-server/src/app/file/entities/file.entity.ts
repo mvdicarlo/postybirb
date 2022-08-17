@@ -1,9 +1,9 @@
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
-import { IFile } from '../models/file';
+import { IFileTypeOrm } from '../models/file';
 import { FileData } from './file-data.entity';
 
 @Entity()
-export class File implements IFile {
+export class File implements IFileTypeOrm {
   @PrimaryColumn('uuid', { unique: true })
   id: string;
 

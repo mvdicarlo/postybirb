@@ -4,12 +4,16 @@ import {
   Property,
 } from '@mikro-orm/core';
 import { v4 } from 'uuid';
+import { BaseEntityType } from '../models/base-entity';
 
 export abstract class BaseEntity<
-  T,
-  PK extends keyof T,
-  P extends string = never
-> extends BaseMikroOrmEntity<T, PK, P> {
+    T,
+    PK extends keyof T,
+    P extends string = never
+  >
+  extends BaseMikroOrmEntity<T, PK, P>
+  implements BaseEntityType
+{
   @PrimaryKey()
   id: string = v4();
 

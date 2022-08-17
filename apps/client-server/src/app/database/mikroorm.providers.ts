@@ -2,11 +2,17 @@ import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule, MikroOrmModuleSyncOptions } from '@mikro-orm/nestjs';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { join } from 'path';
-import { Account } from './entities/';
+import {
+  Account,
+  AltFile,
+  SubmissionFile,
+  PrimaryFile,
+  ThumbnailFile,
+} from './entities/';
 
-const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
+const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database2.db');
 
-const entities = [Account];
+const entities = [Account, SubmissionFile, AltFile, PrimaryFile, ThumbnailFile];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {
   entities,

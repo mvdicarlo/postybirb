@@ -1,18 +1,27 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
 import { Log, Logger } from '@postybirb/logger';
 import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
-import { Repository } from 'typeorm';
-import { v4 as uuid } from 'uuid';
-import { Sharp } from 'sharp';
-import { cpus } from 'os';
 import { async as hash } from 'hasha';
-import { FILE_DATA_REPOSITORY, FILE_REPOSITORY } from '../constants';
-import { FileData } from './entities/file-data.entity';
-import { File } from './entities/file.entity';
-import { ImageUtil } from './utils/image.util';
+import { cpus } from 'os';
+import { Sharp } from 'sharp';
+import { v4 as uuid } from 'uuid';
+import {
+  AltFile,
+  PrimaryFile,
+  SubmissionFile,
+  ThumbnailFile,
+} from '../database/entities/';
+import { IFileBuffer } from './models/file-buffer';
 import { MulterFileInfo } from './models/multer-file-info';
+import { ImageUtil } from './utils/image.util';
 
 type Task = {
   file: MulterFileInfo;
@@ -28,16 +37,20 @@ type Task = {
 export class FileService {
   private readonly logger = Logger(FileService.name);
 
-  private readonly queue: queueAsPromised<Task, File> = fastq.promise<
+  private readonly queue: queueAsPromised<Task, SubmissionFile> = fastq.promise<
     this,
     Task
   >(this, this.createTask, Math.min(cpus().length, 2));
 
   constructor(
-    @Inject(FILE_REPOSITORY)
-    private readonly fileRepository: Repository<File>,
-    @Inject(FILE_DATA_REPOSITORY)
-    private readonly fileDataRepository: Repository<FileData>
+    @InjectRepository(SubmissionFile)
+    private readonly fileRepository: EntityRepository<SubmissionFile>,
+    @InjectRepository(PrimaryFile)
+    private readonly primaryFileRepository: EntityRepository<PrimaryFile>,
+    @InjectRepository(AltFile)
+    private readonly altFileRepository: EntityRepository<AltFile>,
+    @InjectRepository(ThumbnailFile)
+    private readonly thumbnailRepository: EntityRepository<ThumbnailFile>
   ) {}
 
   /**
@@ -45,13 +58,12 @@ export class FileService {
    *
    * @param {string} id
    */
-  async findFile(id: string, loadData = false) {
+  async findFile(id: string, loadData = false): Promise<SubmissionFile> {
     try {
-      const entity = await this.fileRepository.findOneOrFail(id);
-
-      if (loadData) {
-        await entity.data;
-      }
+      const entity = await this.fileRepository.findOneOrFail(
+        { id },
+        { populate: loadData ? ['altFile', 'thumbnail', 'file'] : false }
+      );
 
       return entity;
     } catch (e) {
@@ -68,20 +80,20 @@ export class FileService {
    */
   @Log()
   public async remove(id: string) {
-    return this.fileRepository.delete(id);
+    return this.fileRepository.removeAndFlush(await this.findFile(id));
   }
 
   /**
    * Queues a file to create a database record.
    *
    * @param {MulterFileInfo} file
-   * @return {*}  {Promise<File>}
+   * @return {*}  {Promise<SubmissionFile>}
    */
-  public async create(file: MulterFileInfo): Promise<File> {
+  public async create(file: MulterFileInfo): Promise<SubmissionFile> {
     return this.queue.push({ file });
   }
 
-  private async createTask(task: Task): Promise<File> {
+  private async createTask(task: Task): Promise<SubmissionFile> {
     return this.createFile(task.file);
   }
 
@@ -91,21 +103,21 @@ export class FileService {
    * @todo figure out what to do about non-image
    *
    * @param {MulterFileInfo} file
-   * @return {*}  {Promise<File>}
+   * @return {*}  {Promise<SubmissionFile>}
    */
   @Log()
-  private async createFile(file: MulterFileInfo): Promise<File> {
+  private async createFile(file: MulterFileInfo): Promise<SubmissionFile> {
     try {
-      const { mimetype, originalname, size } = file;
+      const { mimetype: mimeType, originalname, size } = file;
       const fileEntity = this.fileRepository.create({
         id: uuid(),
-        mimetype,
-        filename: originalname,
+        mimeType,
+        fileName: originalname,
         size,
       });
 
       const buf: Buffer = await read(file.path);
-      let thumbnail: FileData;
+      let thumbnail: IFileBuffer;
       if (ImageUtil.isImage(file.mimetype, true)) {
         const sharpInstance = ImageUtil.load(buf);
         const { height, width } = await sharpInstance.metadata();
@@ -119,12 +131,12 @@ export class FileService {
         );
       }
 
-      const data = this.createFileDataEntity(fileEntity, buf);
-      fileEntity.data = Promise.resolve(thumbnail ? [data, thumbnail] : [data]);
+      fileEntity.file = this.createFileBufferEntity(fileEntity, buf, 'primary');
+      fileEntity.thumbnail = thumbnail;
       fileEntity.hash = await hash(buf, { algorithm: 'md5' });
 
-      const savedEntity = await this.fileRepository.save(fileEntity);
-      return savedEntity;
+      await this.fileRepository.persistAndFlush(fileEntity);
+      return await this.findFile(fileEntity.id);
     } catch (err) {
       this.logger.error(err.message, err.stack);
       return await Promise.reject(err);
@@ -138,13 +150,13 @@ export class FileService {
    *
    * @param {File} fileEntity
    * @param {MulterFileInfo} file
-   * @return {*}  {Promise<FileData>}
+   * @return {*}  {Promise<IFileBuffer>}
    */
   private async createFileThumbnail(
-    fileEntity: File,
+    fileEntity: SubmissionFile,
     file: MulterFileInfo,
     sharpInstance: Sharp
-  ): Promise<FileData> {
+  ): Promise<IFileBuffer> {
     const preferredDimension = 300;
 
     let width = preferredDimension;
@@ -164,37 +176,57 @@ export class FileService {
 
     const thumbnailBuf = await sharpInstance
       .resize(width, height)
-      .jpeg({ quality: 90, force: true })
+      .jpeg({ quality: 88, force: true })
       .toBuffer();
 
-    const thumbnailEntity = this.createFileDataEntity(fileEntity, thumbnailBuf);
+    const thumbnailEntity = this.createFileBufferEntity(
+      fileEntity,
+      thumbnailBuf,
+      'thumbnail'
+    );
 
     thumbnailEntity.height = height;
     thumbnailEntity.width = width;
-    thumbnailEntity.filename = `thumbnail_${thumbnailEntity.filename}.jpg`;
-    thumbnailEntity.mimetype = 'image/jpeg';
+    thumbnailEntity.fileName = `thumbnail_${thumbnailEntity.fileName}.jpg`;
+    thumbnailEntity.mimeType = 'image/jpeg';
 
     return thumbnailEntity;
   }
 
   /**
-   * Creates a file data entity for storing blob data of a file.
+   * Creates a file buffer entity for storing blob data of a file.
    *
    * @param {File} fileEntity
    * @param {Buffer} buf
-   * @return {*}  {FileData}
+   * @param {string} type - thumbnail/alt/primary
+   * @return {*}  {IFileBuffer}
    */
-  private createFileDataEntity(fileEntity: File, buf: Buffer): FileData {
-    const { mimetype, height, width, filename } = fileEntity;
-    const fileDataEntity = this.fileDataRepository.create({
+  private createFileBufferEntity(
+    fileEntity: SubmissionFile,
+    buf: Buffer,
+    type: 'thumbnail' | 'alt' | 'primary'
+  ): IFileBuffer {
+    const { mimeType, height, width, fileName } = fileEntity;
+    const data: Partial<IFileBuffer> = {
       id: uuid(),
       buffer: buf,
-      file: fileEntity,
+      parent: fileEntity,
       height,
       width,
-      filename,
-      mimetype,
-    });
-    return fileDataEntity;
+      fileName,
+      mimeType,
+      size: buf.length,
+    };
+
+    switch (type) {
+      case 'primary':
+        return this.primaryFileRepository.create(data);
+      case 'alt':
+        return this.altFileRepository.create(data);
+      case 'thumbnail':
+        return this.thumbnailRepository.create(data);
+      default:
+        throw new BadRequestException(`${type} is not a valid option`);
+    }
   }
 }

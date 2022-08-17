@@ -1,6 +1,19 @@
 import { FileData } from '../entities/file-data.entity';
+import { IFileBuffer } from './file-buffer';
+import { FileDimensions } from './file-dimensions';
 
-export interface IFile {
+export interface ISubmissionFile extends FileDimensions {
+  id: string;
+  fileName: string;
+  hash: string;
+  mimeType: string;
+  file: IFileBuffer;
+  thumbnail: IFileBuffer;
+  altFile: IFileBuffer | undefined;
+}
+
+// @deprecated
+export interface IFileTypeOrm {
   id: string;
   filename: string;
   mimetype: string;

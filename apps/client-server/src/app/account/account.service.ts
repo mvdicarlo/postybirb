@@ -11,7 +11,6 @@ import { Log, Logger } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import { DeleteResult } from 'typeorm';
 import { Account } from '../database/entities/';
 import { SafeObject } from '../shared/types/safe-object';
 import { waitUntil } from '../utils/wait.util';
@@ -40,8 +39,6 @@ export class AccountService implements OnModuleInit {
   > = {};
 
   constructor(
-    // @Inject(ACCOUNT_REPOSITORY)
-    // private readonly accountRepository: Repository<Account>,
     @InjectRepository(Account)
     private readonly accountRepository: EntityRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,

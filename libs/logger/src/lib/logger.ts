@@ -103,7 +103,7 @@ export function Log(level?: P.Level): MethodDecorator {
               return result;
             })
             .catch((err) => {
-              l.error(err);
+              l.error(processResult(err));
               throw err;
             });
         }

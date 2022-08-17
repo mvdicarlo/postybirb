@@ -56,6 +56,14 @@ export class FileController {
       files.map((file) => this.service.create(file))
     );
 
-    return Promise.all(results.map((file) => this.service.findFile(file.id)));
+    const result = results.map((r) => r.toJSON());
+    result.forEach((res) => {
+      // ! Janky need to delete since lazy is getting ignored and the data is recursive on parent
+      delete res.altFile;
+      delete res.file;
+      delete res.thumbnail;
+    });
+
+    return result;
   }
 }

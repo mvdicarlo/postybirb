@@ -1,9 +1,9 @@
-import { IFile } from './file';
+import { IFileTypeOrm } from './file';
 
 export interface IFileData {
   id: string;
   buffer: Buffer;
-  file: IFile;
+  file: IFileTypeOrm;
   height: number;
   width: number;
   mimetype: string;
