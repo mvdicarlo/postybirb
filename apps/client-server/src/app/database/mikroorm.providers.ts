@@ -8,11 +8,19 @@ import {
   SubmissionFile,
   PrimaryFile,
   ThumbnailFile,
+  WebsiteData,
 } from './entities/';
 
 const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database2.db');
 
-const entities = [Account, SubmissionFile, AltFile, PrimaryFile, ThumbnailFile];
+const entities = [
+  Account,
+  SubmissionFile,
+  AltFile,
+  PrimaryFile,
+  ThumbnailFile,
+  WebsiteData,
+];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {
   entities,

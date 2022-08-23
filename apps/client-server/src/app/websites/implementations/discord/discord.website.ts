@@ -26,7 +26,7 @@ export default class Discord
 
   supportsMessage: true = true;
 
-  supportsAdditionalFiles: boolean = true;
+  supportsAdditionalFiles = true;
 
   FileModel: Class<DiscordFileSubmission> = DiscordFileSubmission;
 

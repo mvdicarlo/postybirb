@@ -1,12 +1,13 @@
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { Repository } from 'typeorm';
 import { Class } from 'type-fest';
-import { Account } from '../account/entities/account.entity';
-import { WEBSITE_DATA_REPOSITORY, WEBSITE_IMPLEMENTATIONS } from '../constants';
+import { IAccount } from '../account/models/account';
+import { WEBSITE_IMPLEMENTATIONS } from '../constants';
+import { WebsiteData } from '../database/entities/';
 import { SafeObject } from '../shared/types/safe-object';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
-import { WebsiteData } from './entities/website-data.entity';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
 
@@ -26,8 +27,10 @@ export class WebsiteRegistryService {
   private readonly websiteInstances: WebsiteInstances = {};
 
   constructor(
-    @Inject(WEBSITE_DATA_REPOSITORY)
-    private readonly websiteDataRepository: Repository<WebsiteData<SafeObject>>,
+    @InjectRepository(WebsiteData)
+    private readonly websiteDataRepository: EntityRepository<
+      WebsiteData<SafeObject>
+    >,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[]
   ) {
@@ -68,7 +71,7 @@ export class WebsiteRegistryService {
    * Creates an instance of a Website associated with an Account.
    * @param {Account} account
    */
-  public async create(account: Account): Promise<UnknownWebsite | undefined> {
+  public async create(account: IAccount): Promise<UnknownWebsite | undefined> {
     const { website, id } = account;
     if (this.canCreate(account.website)) {
       const WebsiteCtor = this.availableWebsites[website];
@@ -99,7 +102,7 @@ export class WebsiteRegistryService {
    * Finds an existing Website instance.
    * @param {Account} account
    */
-  public findInstance(account: Account): UnknownWebsite | undefined {
+  public findInstance(account: IAccount): UnknownWebsite | undefined {
     const { website, id } = account;
     if (this.websiteInstances[website] && this.websiteInstances[website][id]) {
       return this.websiteInstances[website][id];
@@ -134,7 +137,7 @@ export class WebsiteRegistryService {
    * Cleans up login, stored, and cache data.
    * @param {Account} account
    */
-  public async remove(account: Account): Promise<void> {
+  public async remove(account: IAccount): Promise<void> {
     const { name, id, website } = account;
     const instance = this.findInstance(account);
     if (instance) {
@@ -150,7 +153,7 @@ export class WebsiteRegistryService {
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
   public performOAuthStep(oauthRequestDto: OAuthWebsiteRequestDto<SafeObject>) {
-    const instance = this.findInstance(oauthRequestDto as unknown as Account);
+    const instance = this.findInstance(oauthRequestDto as unknown as IAccount);
     if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
       return (instance as unknown as OAuthWebsite).onAuthorize(
         oauthRequestDto.data,

@@ -1,8 +1,8 @@
+import { EntityRepository } from '@mikro-orm/core';
 import { Logger } from '@postybirb/logger';
-import { Repository } from 'typeorm';
-import { Account } from '../account/entities/account.entity';
+import { IAccount } from '../account/models/account';
+import { WebsiteData } from '../database/entities/';
 import { SafeObject } from '../shared/types/safe-object';
-import { WebsiteData } from './entities/website-data.entity';
 
 /**
  * Saves website specific data associated with an account.
@@ -12,15 +12,15 @@ import { WebsiteData } from './entities/website-data.entity';
 export default class WebsiteDataManager<T extends SafeObject> {
   private readonly logger;
 
-  private readonly account: Account;
+  private readonly account: IAccount;
 
   private entity: WebsiteData<T>;
 
   private initialized: boolean;
 
-  private repository: Repository<WebsiteData<T>>;
+  private repository: EntityRepository<WebsiteData<T>>;
 
-  constructor(userAccount: Account) {
+  constructor(userAccount: IAccount) {
     this.account = userAccount;
     this.logger = Logger(
       `WebsiteData[${userAccount.website}:${userAccount.id}]`
@@ -42,10 +42,10 @@ export default class WebsiteDataManager<T extends SafeObject> {
 
   private async saveData() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await this.repository.save<WebsiteData<any>>(this.entity);
+    await this.repository.persistAndFlush(this.entity);
   }
 
-  public async initialize(repository: Repository<WebsiteData<T>>) {
+  public async initialize(repository: EntityRepository<WebsiteData<T>>) {
     if (!this.initialized) {
       this.repository = repository;
       this.initialized = true;
@@ -59,7 +59,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
 
   public async clearData() {
     this.logger.info('Clearing website data');
-    await this.repository.delete(this.account.id);
+    await this.repository.removeAndFlush(this.entity);
 
     // Do a reload to recreate an object that hasn't been saved.
     await this.loadData();
