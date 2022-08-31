@@ -1,4 +1,5 @@
 import * as forge from 'node-forge';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 import { join } from 'path';
 import { stat, readFile, writeFile, mkdir } from 'fs/promises';
