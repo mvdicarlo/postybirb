@@ -32,7 +32,7 @@ export class AccountController {
   @Get()
   @ApiOkResponse({ description: 'A list of all account records.' })
   findAll() {
-    return this.service.findAll();
+    return this.service.findAllAccountDto();
   }
 
   @Get(':id')
@@ -45,7 +45,7 @@ export class AccountController {
     if (refresh) {
       await this.service.manuallyExecuteOnLogin(id);
     }
-    return this.service.findOne(id);
+    return this.service.findAccountDto(id);
   }
 
   @Post()

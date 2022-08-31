@@ -91,7 +91,7 @@ export class AccountService implements OnModuleInit {
     if (this.webSocket) {
       this.webSocket.emit({
         event: ACCOUNT_UPDATES,
-        data: await this.findAll(),
+        data: await this.findAllAccountDto(),
       });
     }
   }
@@ -199,13 +199,13 @@ export class AccountService implements OnModuleInit {
    *
    * @return {*}  {Promise<AccountDto<SafeObject>[]>}
    */
-  async findAll(): Promise<AccountDto<SafeObject>[]> {
+  async findAllAccountDto(): Promise<AccountDto<SafeObject>[]> {
     const accounts = await this.accountRepository.find({});
     return accounts.map((account) => {
       const instance = this.websiteRegistry.findInstance(account);
       if (!instance) {
         throw new BadRequestException(
-          `No instance found for account: ${account.id}`
+          `No instance found for account: ${account.id} ${account.website}`
         );
       }
       return {
@@ -222,7 +222,7 @@ export class AccountService implements OnModuleInit {
    * @param {string} id
    * @return {*}  {Promise<AccountDto<SafeObject>>}
    */
-  async findOne(id: string): Promise<AccountDto<SafeObject>> {
+  async findAccountDto(id: string): Promise<AccountDto<SafeObject>> {
     try {
       const account = await this.accountRepository.findOneOrFail({ id });
       const instance = this.websiteRegistry.findInstance(account);
@@ -244,7 +244,7 @@ export class AccountService implements OnModuleInit {
    * @param {string} id
    * @return {*}  {Promise<Account>}
    */
-  async findAccount(id: string): Promise<Account> {
+  async findOne(id: string): Promise<Account> {
     try {
       return await this.accountRepository.findOneOrFail({ id });
     } catch (e) {
@@ -282,7 +282,8 @@ export class AccountService implements OnModuleInit {
     updateAccountDto: UpdateAccountDto
   ): Promise<boolean> {
     const account = await this.findOne(id);
-    Object.apply(account, updateAccountDto);
+    account.name = updateAccountDto.name || account.name;
+    account.groups = updateAccountDto.groups || account.groups;
     return this.accountRepository
       .flush()
       .then(() => this.emit())

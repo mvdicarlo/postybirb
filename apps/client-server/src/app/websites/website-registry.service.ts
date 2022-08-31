@@ -71,7 +71,7 @@ export class WebsiteRegistryService {
    * Creates an instance of a Website associated with an Account.
    * @param {Account} account
    */
-  public async create(account: IAccount): Promise<UnknownWebsite | undefined> {
+  public async create(account: IAccount): Promise<UnknownWebsite> {
     const { website, id } = account;
     if (this.canCreate(account.website)) {
       const WebsiteCtor = this.availableWebsites[website];
@@ -95,7 +95,7 @@ export class WebsiteRegistryService {
     }
 
     this.logger.error(`Unable to find website "${website}"`);
-    return undefined;
+    throw new BadRequestException(`Unable to find website "${website}"`);
   }
 
   /**

@@ -1,4 +1,6 @@
-export interface IAccount {
+import { BaseEntityType } from '../../database/models/base-entity';
+
+export interface IAccount extends BaseEntityType {
   /**
    * Id of an account and the session partition key.
    * @type {string}

@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule, MikroOrmModuleSyncOptions } from '@mikro-orm/nestjs';
 import { PostyBirbDirectories } from '@postybirb/fs';
+import { unlinkSync } from 'fs';
 import { join } from 'path';
 import {
   Account,
@@ -14,7 +15,7 @@ import {
   Settings,
 } from './entities';
 
-const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database2.db');
+const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
 
 const entities = [
   Account,
@@ -43,6 +44,15 @@ export async function initializeDatabase(): Promise<void> {
   // await generator.createSchema();
   await generator.updateSchema();
   await orm.close();
+}
+
+export function cleanTestDatabase(): void {
+  try {
+    unlinkSync(DATABASE_PATH);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err);
+  }
 }
 
 export const getDatabaseProvider = () => [

@@ -43,7 +43,7 @@ export class SubmissionOptionsService {
   async create<T extends BaseOptions>(
     createSubmissionOptions: CreateSubmissionOptionsDto<T>
   ) {
-    const account = await this.accountService.findAccount(
+    const account = await this.accountService.findOne(
       createSubmissionOptions.accountId
     );
 
@@ -147,7 +147,7 @@ export class SubmissionOptionsService {
   async generateSubmissionOptionsFormModel(
     requestModelDto: SubmissionOptionsModelRequestDto
   ): Promise<FormBuilderMetadata<Record<string, Primitive>>> {
-    const account = await this.accountService.findAccount(
+    const account = await this.accountService.findOne(
       requestModelDto.accountId
     );
 

@@ -3,7 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TestMetadata } from '@postybirb/website-metadata';
 import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
-import { initializeDatabase } from '../database/mikroorm.providers';
+import {
+  cleanTestDatabase,
+  initializeDatabase,
+} from '../database/mikroorm.providers';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteDataService } from './website-data.service';
 
@@ -31,12 +34,18 @@ describe('Website', () => {
     await testingModule.close();
   });
 
+  afterAll(() => {
+    cleanTestDatabase();
+  });
+
   it('should store data', async () => {
     const website = new TestWebsite({
       id: 'store',
       name: 'test',
       website: 'test',
       groups: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     await website.onInitialize(repository);

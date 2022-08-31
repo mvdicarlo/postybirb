@@ -1,6 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
-import { initializeDatabase } from '../database/mikroorm.providers';
+import {
+  cleanTestDatabase,
+  initializeDatabase,
+} from '../database/mikroorm.providers';
 import { websiteImplementationProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';
@@ -31,6 +34,10 @@ describe('AccountsService', () => {
     await testingModule.close();
   });
 
+  afterAll(() => {
+    cleanTestDatabase();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
@@ -42,14 +49,16 @@ describe('AccountsService', () => {
 
     const account = await service.create(createAccount);
     expect(account).toBeDefined();
-    expect(await service.findAll()).toHaveLength(1);
-    expect(await service.findOne(account.id)).toBeDefined();
+    expect(await service.findAllAccountDto()).toHaveLength(1);
+    expect(await service.findAccountDto(account.id)).toBeDefined();
 
     await service.update(account.id, { name: 'Updated', groups: [] });
-    expect(await (await service.findOne(account.id)).name).toEqual('Updated');
+    expect(await (await service.findAccountDto(account.id)).name).toEqual(
+      'Updated'
+    );
 
     await service.remove(account.id);
-    expect(await service.findAll()).toHaveLength(0);
+    expect(await service.findAllAccountDto()).toHaveLength(0);
   });
 
   it('should return login state', async () => {
@@ -59,31 +68,27 @@ describe('AccountsService', () => {
 
     const account = await service.create(createAccount);
     await service.manuallyExecuteOnLogin(account.id);
-    expect(await service.findOne(account.id)).toEqual({
+    expect(await service.findAccountDto(account.id)).toEqual({
+      ...account,
       data: {
         test: 'test-mode',
       },
-      id: account.id,
       loginState: {
         isLoggedIn: true,
         pending: false,
         username: 'TestUser',
       },
-      name: 'test',
-      website: 'test',
     });
 
     await service.clearAccountData(account.id);
-    expect(await service.findOne(account.id)).toEqual({
+    expect(await service.findAccountDto(account.id)).toEqual({
+      ...account,
       data: {},
-      id: account.id,
       loginState: {
         isLoggedIn: false,
         pending: false,
         username: null,
       },
-      name: 'test',
-      website: 'test',
     });
   });
 });
