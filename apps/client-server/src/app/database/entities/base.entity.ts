@@ -24,4 +24,11 @@ export abstract class BaseEntity<
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
+
+  constructor(props?: Partial<T>) {
+    super();
+    if (props) {
+      Object.assign(this, props);
+    }
+  }
 }

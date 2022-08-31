@@ -1,6 +1,6 @@
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
+import { Settings } from '../../database/entities';
 import { WebsocketEvent } from '../../web-socket/models/web-socket-event';
-import { Settings } from '../entities/settings.entity';
 
 export type SettingsEventTypes = SettingsUpdateEvent;
 

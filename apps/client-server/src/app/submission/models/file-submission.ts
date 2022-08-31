@@ -1,4 +1,4 @@
-import { Submission } from '../entities/submission.entity';
+import { Submission } from '../../database/entities';
 import SubmissionType from '../enums/submission-type';
 import { IBaseSubmissionMetadata } from './base-submission-metadata';
 

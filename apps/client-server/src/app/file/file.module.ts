@@ -6,8 +6,6 @@ import { extname } from 'path';
 import { DatabaseModule } from '../database/database.module';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';
-import { FileDataProvider } from './providers/file-data.provider';
-import { FileProvider } from './providers/file.provider';
 
 @Module({
   imports: [
@@ -27,7 +25,7 @@ import { FileProvider } from './providers/file.provider';
     }),
   ],
   controllers: [FileController],
-  providers: [FileProvider, FileDataProvider, FileService],
+  providers: [FileService],
   exports: [FileService],
 })
 export class FileModule {}

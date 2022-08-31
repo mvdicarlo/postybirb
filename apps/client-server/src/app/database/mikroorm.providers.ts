@@ -11,7 +11,8 @@ import {
   WebsiteData,
   SubmissionWebsiteOptions,
   Submission,
-} from './entities/';
+  Settings,
+} from './entities';
 
 const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database2.db');
 
@@ -24,6 +25,7 @@ const entities = [
   WebsiteData,
   SubmissionWebsiteOptions,
   Submission,
+  Settings,
 ];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {

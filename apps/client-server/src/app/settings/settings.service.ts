@@ -1,6 +1,7 @@
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
   OnModuleInit,
@@ -8,11 +9,9 @@ import {
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
-import { Repository } from 'typeorm';
-import { SETTINGS_REPOSITORY } from '../constants';
+import { Settings } from '../database/entities';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
-import { Settings } from './entities/settings.entity';
 import { SettingsConstants } from './settings.constants';
 
 @Injectable()
@@ -20,8 +19,8 @@ export class SettingsService implements OnModuleInit {
   private readonly logger = Logger(SettingsService.name);
 
   constructor(
-    @Inject(SETTINGS_REPOSITORY)
-    private readonly settingsRepository: Repository<Settings>,
+    @InjectRepository(Settings)
+    private readonly settingsRepository: EntityRepository<Settings>,
     @Optional() private readonly webSocket: WSGateway
   ) {}
 
@@ -48,7 +47,7 @@ export class SettingsService implements OnModuleInit {
     });
 
     this.settingsRepository
-      .save(entity)
+      .persistAndFlush(entity)
       .then(() => {
         this.logger.debug(entity, 'Default settings created');
       })
@@ -74,7 +73,7 @@ export class SettingsService implements OnModuleInit {
    * @return {*}  {Promise<Settings[]>}
    */
   async findAll(): Promise<Settings[]> {
-    const settings = await this.settingsRepository.find();
+    const settings = await this.settingsRepository.find({});
     return settings;
   }
 
@@ -100,11 +99,10 @@ export class SettingsService implements OnModuleInit {
    * @param {UpdateSettingsDto} updateSettingsDto
    */
   async update(updateSettingsDto: UpdateSettingsDto): Promise<boolean> {
-    await this.findOne(updateSettingsDto.id);
+    const settingObj = await this.findOne(updateSettingsDto.id);
+    settingObj.settings = updateSettingsDto.settings;
     return this.settingsRepository
-      .update(updateSettingsDto.id, {
-        settings: updateSettingsDto.settings,
-      })
+      .flush()
       .then(() => this.emit())
       .then(() => true)
       .catch((err) => {

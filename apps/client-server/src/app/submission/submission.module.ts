@@ -8,8 +8,6 @@ import { DatabaseModule } from '../database/database.module';
 import { FileModule } from '../file/file.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { SubmissionController } from './controllers/submission.controller';
-import { SubmissionPartProvider } from './providers/submission-part.provider';
-import { SubmissionProvider } from './providers/submission.provider';
 import { FileSubmissionService } from './services/file-submission.service';
 import { MessageSubmissionService } from './services/message-submission.service';
 import { SubmissionPartService } from './services/submission-part.service';
@@ -37,8 +35,6 @@ import { SubmissionPartController } from './controllers/submission-part.controll
     }),
   ],
   providers: [
-    SubmissionProvider,
-    SubmissionPartProvider,
     SubmissionService,
     SubmissionPartService,
     MessageSubmissionService,
