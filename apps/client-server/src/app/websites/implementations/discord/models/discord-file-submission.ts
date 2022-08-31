@@ -4,10 +4,10 @@ import FileWebsiteOptions from '../../../../submission/models/file-website-optio
 // TODO real model
 export class DiscordFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
-  useThumbnail: boolean = true;
+  useThumbnail = true;
 
   @BooleanField({ label: 'Allow resizing image', defaultValue: true })
-  allowResize: boolean = true;
+  allowResize = true;
 
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;

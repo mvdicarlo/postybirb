@@ -1,27 +1,33 @@
+import { EntityRepository } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TestMetadata } from '@postybirb/website-metadata';
-import { getRepository, Repository } from 'typeorm';
-import { DATABASE_CONNECTION } from '../constants';
-import { getTestDatabaseProvider } from '../database/typeorm.providers';
-import { WebsiteData } from './entities/website-data.entity';
+import { DatabaseModule } from '../database/database.module';
+import { WebsiteData } from '../database/entities';
+import { initializeDatabase } from '../database/mikroorm.providers';
 import TestWebsite from './implementations/test/test.website';
-import { WebsiteDataProvider } from './providers/website-data.provider';
+import { WebsiteDataService } from './website-data.service';
 
 describe('Website', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let repository: Repository<WebsiteData<any>>;
   let testingModule: TestingModule;
+  let service: WebsiteDataService;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let repository: EntityRepository<WebsiteData<any>>;
+
+  beforeAll(async () => {
+    await initializeDatabase();
+  });
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
-      providers: [getTestDatabaseProvider([WebsiteData]), WebsiteDataProvider],
+      imports: [DatabaseModule],
+      providers: [WebsiteDataService],
     }).compile();
 
-    repository = getRepository(WebsiteData, DATABASE_CONNECTION);
+    service = testingModule.get(WebsiteDataService);
+    repository = service.getRepository();
   });
 
   afterEach(async () => {
-    await repository.manager.connection.close();
     await testingModule.close();
   });
 
@@ -30,6 +36,7 @@ describe('Website', () => {
       id: 'store',
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     await website.onInitialize(repository);

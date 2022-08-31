@@ -1,6 +1,6 @@
-import BaseWebsiteOptions from './base-website-options';
+import { BaseOptions } from './base-website-options';
 
-export default interface FileWebsiteOptions extends BaseWebsiteOptions {
+export default interface FileWebsiteOptions extends BaseOptions {
   useThumbnail: boolean;
   allowResize: boolean;
 }

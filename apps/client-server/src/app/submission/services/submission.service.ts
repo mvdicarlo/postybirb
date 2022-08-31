@@ -1,29 +1,25 @@
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
-import { DeleteResult, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
-import { SUBMISSION_REPOSITORY } from '../../constants';
+import { Submission } from '../../database/entities';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
-import { Submission } from '../entities/submission.entity';
 import { ScheduleType } from '../enums/schedule-type';
 import SubmissionType from '../enums/submission-type';
-import {
-  FileSubmission,
-  isFileSubmission,
-} from '../models/file-submission';
+import { FileSubmission, isFileSubmission } from '../models/file-submission';
 import { MessageSubmission } from '../models/message-submission';
 import { SubmissionMetadataType } from '../models/submission-metadata-types';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionPartService } from './submission-part.service';
+import { SubmissionOptionsService } from './submission-options.service';
 
 /**
  * Service that handles the vast majority of submission management logic.
@@ -35,12 +31,12 @@ export class SubmissionService {
   private readonly logger = Logger(SubmissionService.name);
 
   constructor(
-    @Inject(SUBMISSION_REPOSITORY)
-    private readonly submissionRepository: Repository<
+    @InjectRepository(Submission)
+    private readonly submissionRepository: EntityRepository<
       Submission<SubmissionMetadataType>
     >,
     private readonly accountService: AccountService,
-    private readonly submissionPartService: SubmissionPartService,
+    private readonly submissionOptionsService: SubmissionOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService
   ) {}
@@ -66,7 +62,7 @@ export class SubmissionService {
         scheduledFor: undefined,
         scheduleType: ScheduleType.SINGLE,
       },
-      parts: [],
+      options: [],
       metadata: {},
     });
 
@@ -107,11 +103,13 @@ export class SubmissionService {
       }
     }
 
-    submission.parts.push(
-      this.submissionPartService.createDefaultSubmissionPart(submission)
+    submission.options.push(
+      this.submissionOptionsService.createDefaultSubmissionOptions(submission)
     );
 
-    return this.submissionRepository.save(submission);
+    await this.submissionRepository.persistAndFlush(submission);
+
+    return submission;
   }
 
   /**
@@ -149,7 +147,7 @@ export class SubmissionService {
     };
 
     return this.submissionRepository
-      .save(submission)
+      .flush()
       .then(() => true)
       .catch((err) => {
         throw new BadRequestException(err);
@@ -163,14 +161,8 @@ export class SubmissionService {
    * @return {*}  {Promise<DeleteResult>}
    */
   @Log()
-  async remove(id: string): Promise<DeleteResult> {
-    const submission = await this.findOne(id);
-
-    if (isFileSubmission(submission)) {
-      await this.fileSubmissionService.remove(submission);
-    }
-
-    return this.submissionRepository.delete(id).then((result) => result);
+  async remove(id: string): Promise<void> {
+    await this.submissionRepository.remove(await this.findOne(id));
   }
 
   /** File Actions */
@@ -186,7 +178,8 @@ export class SubmissionService {
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.appendFile(submission, file);
-      return this.submissionRepository.save(submission);
+      await this.submissionRepository.persistAndFlush(submission);
+      return submission;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');
@@ -208,7 +201,8 @@ export class SubmissionService {
         fileId,
         file
       );
-      return this.submissionRepository.save(submission);
+      await this.submissionRepository.persistAndFlush(submission);
+      return submission;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');
@@ -219,7 +213,8 @@ export class SubmissionService {
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.replaceFile(submission, fileId, file);
-      return this.submissionRepository.save(submission);
+      await this.submissionRepository.persistAndFlush(submission);
+      return submission;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');
@@ -241,7 +236,8 @@ export class SubmissionService {
         fileId,
         file
       );
-      return this.submissionRepository.save(submission);
+      await this.submissionRepository.persistAndFlush(submission);
+      return submission;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');
@@ -258,7 +254,7 @@ export class SubmissionService {
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.removeFile(submission, fileId);
-      return this.submissionRepository.save(submission);
+      this.submissionRepository.persistAndFlush(submission);
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');

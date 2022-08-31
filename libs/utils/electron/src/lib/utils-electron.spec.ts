@@ -1,7 +1,7 @@
-import { utilsElectron } from './utils-electron';
+import * as utilsElectron from './utils-electron';
 
 describe('utilsElectron', () => {
   it('should work', () => {
-    expect(utilsElectron()).toEqual('utils-electron');
+    expect(utilsElectron).toBeDefined();
   });
 });

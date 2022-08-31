@@ -8,13 +8,11 @@ import { DatabaseModule } from '../database/database.module';
 import { FileModule } from '../file/file.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { SubmissionController } from './controllers/submission.controller';
-import { SubmissionPartProvider } from './providers/submission-part.provider';
-import { SubmissionProvider } from './providers/submission.provider';
 import { FileSubmissionService } from './services/file-submission.service';
 import { MessageSubmissionService } from './services/message-submission.service';
-import { SubmissionPartService } from './services/submission-part.service';
+import { SubmissionOptionsService } from './services/submission-options.service';
 import { SubmissionService } from './services/submission.service';
-import { SubmissionPartController } from './controllers/submission-part.controller';
+import { SubmissionOptionsController } from './controllers/submission-options.controller';
 
 @Module({
   imports: [
@@ -37,13 +35,11 @@ import { SubmissionPartController } from './controllers/submission-part.controll
     }),
   ],
   providers: [
-    SubmissionProvider,
-    SubmissionPartProvider,
     SubmissionService,
-    SubmissionPartService,
+    SubmissionOptionsService,
     MessageSubmissionService,
     FileSubmissionService,
   ],
-  controllers: [SubmissionController, SubmissionPartController],
+  controllers: [SubmissionController, SubmissionOptionsController],
 })
 export class SubmissionModule {}

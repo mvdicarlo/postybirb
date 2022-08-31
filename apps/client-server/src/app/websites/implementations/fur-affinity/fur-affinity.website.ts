@@ -35,11 +35,11 @@ export default class FurAffinity
 
   supportsFile: true;
 
-  supportsAdditionalFiles: boolean = false;
+  supportsAdditionalFiles = false;
 
   supportsMessage: true = true;
 
-  protected BASE_URL: string = 'https://furaffinity.net';
+  protected BASE_URL = 'https://furaffinity.net';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FurAffinityAccountData> =
     {

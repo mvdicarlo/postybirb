@@ -1,27 +1,26 @@
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
-import { DeleteResult, Repository } from 'typeorm';
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Log, Logger } from '@postybirb/logger';
+import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
+import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import { ACCOUNT_REPOSITORY } from '../constants';
+import { Account } from '../database/entities';
 import { SafeObject } from '../shared/types/safe-object';
+import { waitUntil } from '../utils/wait.util';
+import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
-import { UpdateAccountDto } from './dtos/update-account.dto';
-import { Account } from './entities/account.entity';
-import { waitUntil } from '../utils/wait.util';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
+import { UpdateAccountDto } from './dtos/update-account.dto';
 
 /**
  * Service responsible for returning Account data.
@@ -40,8 +39,8 @@ export class AccountService implements OnModuleInit {
   > = {};
 
   constructor(
-    @Inject(ACCOUNT_REPOSITORY)
-    private readonly accountRepository: Repository<Account>,
+    @InjectRepository(Account)
+    private readonly accountRepository: EntityRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() private readonly webSocket: WSGateway
   ) {}
@@ -50,7 +49,7 @@ export class AccountService implements OnModuleInit {
    * Initializes all website login timers and creates instances for known accounts.
    */
   async onModuleInit() {
-    const accounts = await this.accountRepository.find();
+    const accounts = await this.accountRepository.find({});
 
     // Assumes that no error is thrown, otherwise there will be a big issue here.
     await Promise.all(
@@ -188,11 +187,11 @@ export class AccountService implements OnModuleInit {
       );
     }
     const account = this.accountRepository.create(createAccountDto);
-    const createdAccount = await this.accountRepository.save(account);
-    const website = await this.websiteRegistry.create(createdAccount);
-    this.afterCreate(createdAccount, website);
+    await this.accountRepository.persistAndFlush(account);
+    const website = await this.websiteRegistry.create(account);
+    this.afterCreate(account, website);
     this.emit();
-    return createdAccount;
+    return account;
   }
 
   /**
@@ -201,9 +200,14 @@ export class AccountService implements OnModuleInit {
    * @return {*}  {Promise<AccountDto<SafeObject>[]>}
    */
   async findAll(): Promise<AccountDto<SafeObject>[]> {
-    const accounts = await this.accountRepository.find();
+    const accounts = await this.accountRepository.find({});
     return accounts.map((account) => {
       const instance = this.websiteRegistry.findInstance(account);
+      if (!instance) {
+        throw new BadRequestException(
+          `No instance found for account: ${account.id}`
+        );
+      }
       return {
         ...account,
         loginState: instance.getLoginState(),
@@ -220,7 +224,7 @@ export class AccountService implements OnModuleInit {
    */
   async findOne(id: string): Promise<AccountDto<SafeObject>> {
     try {
-      const account = await this.accountRepository.findOneOrFail(id);
+      const account = await this.accountRepository.findOneOrFail({ id });
       const instance = this.websiteRegistry.findInstance(account);
       return {
         ...account,
@@ -242,7 +246,7 @@ export class AccountService implements OnModuleInit {
    */
   async findAccount(id: string): Promise<Account> {
     try {
-      return await this.accountRepository.findOneOrFail(id);
+      return await this.accountRepository.findOneOrFail({ id });
     } catch (e) {
       this.logger.error(e);
       throw new NotFoundException(id);
@@ -253,13 +257,13 @@ export class AccountService implements OnModuleInit {
    * Deleted an Account matching the Id provided.
    *
    * @param {string} id
-   * @return {*}  {Promise<DeleteResult>}
+   * @return {*}  {Promise<void>}
    */
   @Log()
-  async remove(id: string): Promise<DeleteResult> {
+  async remove(id: string): Promise<void> {
     const account = await this.findOne(id);
     await this.websiteRegistry.remove(account);
-    return this.accountRepository.delete(id).then((result) => {
+    return this.accountRepository.removeAndFlush(account).then((result) => {
       this.emit();
       return result;
     });
@@ -277,9 +281,10 @@ export class AccountService implements OnModuleInit {
     id: string,
     updateAccountDto: UpdateAccountDto
   ): Promise<boolean> {
-    await this.findOne(id);
+    const account = await this.findOne(id);
+    Object.apply(account, updateAccountDto);
     return this.accountRepository
-      .update(id, updateAccountDto)
+      .flush()
       .then(() => this.emit())
       .then(() => true)
       .catch((err) => {

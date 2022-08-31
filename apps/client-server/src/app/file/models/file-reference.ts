@@ -1,11 +1,11 @@
 import { ParsedPath } from 'path';
-import FileMetadata from './file-metadata';
+import MulterFileMetadata from './multer-file-metadata';
 import FileType from '../enums/file-type';
 
 export default interface FileReference {
   id: string;
   localPath: string;
-  metadata: FileMetadata;
+  metadata: MulterFileMetadata;
   path: ParsedPath;
   type: FileType;
 }

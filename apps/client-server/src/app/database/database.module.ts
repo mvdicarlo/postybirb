@@ -1,8 +1,9 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import { TypeormDatabaseProviders } from './typeorm.providers';
+import { getDatabaseProvider } from './mikroorm.providers';
 
 @Module({
-  providers: [...TypeormDatabaseProviders],
-  exports: [...TypeormDatabaseProviders],
+  imports: [...getDatabaseProvider()],
+  exports: [MikroOrmModule],
 })
 export class DatabaseModule {}

@@ -1,39 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepository, Repository } from 'typeorm';
-import { DATABASE_CONNECTION } from '../constants';
-import { getTestDatabaseProvider } from '../database/typeorm.providers';
-import { WebsiteData } from '../websites/entities/website-data.entity';
+import { DatabaseModule } from '../database/database.module';
+import { initializeDatabase } from '../database/mikroorm.providers';
 import { websiteImplementationProvider } from '../websites/implementations';
-import { WebsiteDataProvider } from '../websites/providers/website-data.provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
-import { Account } from './entities/account.entity';
-import { AccountProvider } from './providers/account.provider';
 
 describe('AccountsService', () => {
   let service: AccountService;
-  let repository: Repository<Account>;
   let testingModule: TestingModule;
+
+  beforeAll(async () => {
+    await initializeDatabase();
+  });
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
+      imports: [DatabaseModule],
       providers: [
-        getTestDatabaseProvider([Account, WebsiteData]),
-        AccountProvider,
         AccountService,
-        WebsiteDataProvider,
         WebsiteRegistryService,
         websiteImplementationProvider,
       ],
     }).compile();
 
     service = testingModule.get<AccountService>(AccountService);
-    repository = getRepository(Account, DATABASE_CONNECTION);
   });
 
   afterEach(async () => {
-    await repository.manager.connection.close();
     await testingModule.close();
   });
 
@@ -51,7 +45,7 @@ describe('AccountsService', () => {
     expect(await service.findAll()).toHaveLength(1);
     expect(await service.findOne(account.id)).toBeDefined();
 
-    await service.update(account.id, { name: 'Updated' });
+    await service.update(account.id, { name: 'Updated', groups: [] });
     expect(await (await service.findOne(account.id)).name).toEqual('Updated');
 
     await service.remove(account.id);

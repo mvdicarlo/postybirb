@@ -1,3 +1,4 @@
+import { EntityRepository } from '@mikro-orm/core';
 import {
   ILoginState,
   UsernameShortcut,
@@ -6,17 +7,17 @@ import {
 import { Logger } from '@postybirb/logger';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
-import { Repository } from 'typeorm';
-import { Account } from '../account/entities/account.entity';
+import { IAccount } from '../account/models/account';
+import { WebsiteData } from '../database/entities';
 import { SafeObject } from '../shared/types/safe-object';
-import { WebsiteData } from './entities/website-data.entity';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import { LoginState } from './models/login-state';
 import WebsiteDataManager from './website-data-manager';
 
-export type UnknownWebsite = Website<SafeObject>;
+export type UnknownWebsite = Website<any>;
 
 export abstract class Website<D extends SafeObject> {
   protected readonly logger: PinoLogger;
@@ -24,7 +25,7 @@ export abstract class Website<D extends SafeObject> {
   /**
    * User account info for reference primarily during posting and login.
    */
-  protected readonly account: Account;
+  protected readonly account: IAccount;
 
   /**
    * Data store for website data that is persisted to dick and read on initialization.
@@ -86,7 +87,7 @@ export abstract class Website<D extends SafeObject> {
     return this.account.id;
   }
 
-  constructor(userAccount: Account) {
+  constructor(userAccount: IAccount) {
     this.account = userAccount;
     this.logger = Logger(this.id);
     this.websiteDataStore = new WebsiteDataManager(userAccount);
@@ -142,7 +143,7 @@ export abstract class Website<D extends SafeObject> {
    * Method that runs once on initialization of the Website class.
    */
   public async onInitialize(
-    websiteDataRepository: Repository<WebsiteData<D>>
+    websiteDataRepository: EntityRepository<WebsiteData<D>>
   ): Promise<void> {
     this.logger.trace('onInitialize');
 

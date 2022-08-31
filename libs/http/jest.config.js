@@ -11,7 +11,7 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/http',
-  runner: '@jest-runner/electron/main',
+  runner: '@kayahr/jest-electron-runner/main',
   testEnvironment: 'node',
   verbose: false,
 };

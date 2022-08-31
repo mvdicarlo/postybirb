@@ -3,10 +3,10 @@ import FileWebsiteOptions from '../../../../submission/models/file-website-optio
 
 export class TestFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
-  useThumbnail: boolean = true;
+  useThumbnail = true;
 
   @BooleanField({ label: 'Allow resizing image', defaultValue: true })
-  allowResize: boolean = true;
+  allowResize = true;
 
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;

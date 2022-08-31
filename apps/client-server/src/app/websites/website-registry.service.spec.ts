@@ -1,36 +1,40 @@
+import { EntityRepository } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepository, Repository } from 'typeorm';
-import { Account } from '../account/entities/account.entity';
-import { DATABASE_CONNECTION } from '../constants';
-import { getTestDatabaseProvider } from '../database/typeorm.providers';
-import { SafeObject } from '../shared/types/safe-object';
-import { WebsiteData } from './entities/website-data.entity';
+import { DatabaseModule } from '../database/database.module';
+import { Account, WebsiteData } from '../database/entities';
+import { initializeDatabase } from '../database/mikroorm.providers';
 import { websiteImplementationProvider } from './implementations';
 import TestWebsite from './implementations/test/test.website';
-import { WebsiteDataProvider } from './providers/website-data.provider';
+import { WebsiteDataService } from './website-data.service';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
-  let repository: Repository<WebsiteData<SafeObject>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let repository: EntityRepository<WebsiteData<any>>;
   let testingModule: TestingModule;
+
+  beforeAll(async () => {
+    await initializeDatabase();
+  });
 
   beforeEach(async () => {
     testingModule = await Test.createTestingModule({
+      imports: [DatabaseModule],
       providers: [
-        getTestDatabaseProvider([WebsiteData]),
-        WebsiteDataProvider,
+        WebsiteDataService,
         WebsiteRegistryService,
         websiteImplementationProvider,
       ],
     }).compile();
 
     service = testingModule.get<WebsiteRegistryService>(WebsiteRegistryService);
-    repository = getRepository(WebsiteData, DATABASE_CONNECTION);
+    repository = testingModule
+      .get<WebsiteDataService>(WebsiteDataService)
+      .getRepository();
   });
 
   afterEach(async () => {
-    await repository.manager.connection.close();
     await testingModule.close();
   });
 

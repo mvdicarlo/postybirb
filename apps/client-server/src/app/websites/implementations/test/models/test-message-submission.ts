@@ -1,7 +1,7 @@
 import { RadioField, TextField } from '@postybirb/form-builder';
-import BaseWebsiteOptions from '../../../../submission/models/base-website-options';
+import { BaseOptions } from '../../../../submission/models/base-website-options';
 
-export class TestMessageSubmission implements BaseWebsiteOptions {
+export class TestMessageSubmission implements BaseOptions {
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;
 
