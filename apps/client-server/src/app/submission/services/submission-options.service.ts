@@ -10,22 +10,22 @@ import { Log, Logger } from '@postybirb/logger';
 import { Primitive } from 'type-fest';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
-import { Submission, SubmissionWebsiteOptions } from '../../database/entities/';
+import { Submission, SubmissionOptions } from '../../database/entities';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../websites/website';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
-import { CreateSubmissionPartDto } from '../dtos/create-submission-part.dto';
-import { SubmissionPartModelRequestDto } from '../dtos/submission-part-model-request.dto';
-import { UpdateSubmissionPartDto } from '../dtos/update-submission-part.dto';
+import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
+import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-model-request.dto';
+import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
 import SubmissionType from '../enums/submission-type';
 import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
-import { BaseWebsiteOptions } from '../models/base-website-options';
+import { BaseOptions } from '../models/base-website-options';
 import { SubmissionMetadataType } from '../models/submission-metadata-types';
 
 @Injectable()
-export class SubmissionPartService {
-  private readonly logger = Logger(SubmissionPartService.name);
+export class SubmissionOptionsService {
+  private readonly logger = Logger(SubmissionOptionsService.name);
 
   constructor(
     @InjectRepository(Submission)
@@ -33,84 +33,84 @@ export class SubmissionPartService {
       Submission<SubmissionMetadataType>
     >,
     @InjectRepository(Submission)
-    private readonly submissionPartRepository: EntityRepository<
-      SubmissionWebsiteOptions<BaseWebsiteOptions>
+    private readonly submissionOptionsRepository: EntityRepository<
+      SubmissionOptions<BaseOptions>
     >,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService
   ) {}
 
-  async create<T extends BaseWebsiteOptions>(
-    createSubmissionPart: CreateSubmissionPartDto<T>
+  async create<T extends BaseOptions>(
+    createSubmissionOptions: CreateSubmissionOptionsDto<T>
   ) {
     const account = await this.accountService.findAccount(
-      createSubmissionPart.accountId
+      createSubmissionOptions.accountId
     );
 
     let submission: Submission<IBaseSubmissionMetadata>;
     try {
       submission = await this.submissionRepository.findOneOrFail(
-        createSubmissionPart.submissionId
+        createSubmissionOptions.submissionId
       );
     } catch {
       throw new NotFoundException(
-        `Submission ${createSubmissionPart.submissionId} not found.`
+        `Submission ${createSubmissionOptions.submissionId} not found.`
       );
     }
 
-    if (submission.parts.some((part) => part.account?.id === account.id)) {
+    if (
+      submission.options.some((option) => option.account?.id === account.id)
+    ) {
       throw new BadRequestException(
-        `Submission part with account id ${account.id} already exists on ${submission.id}. Use update operation instead.`
+        `Submission option with account id ${account.id} already exists on ${submission.id}. Use update operation instead.`
       );
     }
 
-    const submissionPart = this.submissionPartRepository.create({
+    const submissionOptions = this.submissionOptionsRepository.create({
       submission,
-      data: createSubmissionPart.data,
+      data: createSubmissionOptions.data,
       account,
     });
 
-    await this.submissionPartRepository.persistAndFlush(submissionPart);
+    await this.submissionOptionsRepository.persistAndFlush(submissionOptions);
 
-    return submissionPart;
+    return submissionOptions;
   }
 
-  async findOne(
-    id: string
-  ): Promise<SubmissionWebsiteOptions<BaseWebsiteOptions>> {
+  async findOne(id: string): Promise<SubmissionOptions<BaseOptions>> {
     try {
-      return await this.submissionPartRepository.findOneOrFail(id);
+      return await this.submissionOptionsRepository.findOneOrFail(id);
     } catch {
       throw new NotFoundException(id);
     }
   }
 
   /**
-   * Deleted a submission part matching the Id provided.
+   * Deleted a submission option matching the Id provided.
    *
    * @param {string} id
    * @return {*}  {Promise<DeleteResult>}
    */
   @Log()
   async remove(id: string): Promise<void> {
-    await this.submissionPartRepository.remove(await this.findOne(id));
+    await this.submissionOptionsRepository.remove(await this.findOne(id));
   }
 
   /**
-   * Updates a submission part matching the Id provided.
+   * Updates a submission option matching the Id provided.
    *
    * @param {string} id
-   * @param {UpdateSubmissionPartDto} updateSubmissionPartDto
+   * @param {UpdateSubmissionOptionsDto} updateSubmissionOptionsDto
    * @return {*}  {Promise<boolean>}
    */
   @Log()
   async update(
-    updateSubmissionPartDto: UpdateSubmissionPartDto<BaseWebsiteOptions>
+    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<BaseOptions>
   ): Promise<boolean> {
     try {
-      const options = await this.findOne(updateSubmissionPartDto.id);
-      options.data = updateSubmissionPartDto.data;
-      await this.submissionPartRepository.flush();
+      const options = await this.findOne(updateSubmissionOptionsDto.id);
+      options.data = updateSubmissionOptionsDto.data;
+      await this.submissionOptionsRepository.flush();
 
       return true;
     } catch (err) {
@@ -119,33 +119,33 @@ export class SubmissionPartService {
   }
 
   /**
-   * Creates the default submission part that stores shared data
-   * across multiple submission parts.
+   * Creates the default submission option that stores shared data
+   * across multiple submission options.
    *
    * @param {Submission<IBaseSubmissionMetadata>} submission
-   * @return {*}  {SubmissionPart<SafeObject>}
+   * @return {*}  {SubmissionOptions<SafeObject>}
    */
-  createDefaultSubmissionPart(
+  createDefaultSubmissionOptions(
     submission: Submission<IBaseSubmissionMetadata>
-  ): SubmissionWebsiteOptions<BaseWebsiteOptions> {
-    const submissionPart = this.submissionPartRepository.create({
+  ): SubmissionOptions<BaseOptions> {
+    const submissionOptions = this.submissionOptionsRepository.create({
       id: uuid(),
       submission,
       data: {},
     });
 
-    return submissionPart;
+    return submissionOptions;
   }
 
   /**
-   * Generates the form properties for a submission part.
+   * Generates the form properties for a submission option.
    * Form properties are used for form generation in UI.
    *
-   * @param {SubmissionPartModelRequestDto} requestModelDto
+   * @param {SubmissionOptionsModelRequestDto} requestModelDto
    * @return {*}  {Promise<FormBuilderMetadata<Record<string, Primitive>>>}
    */
-  async generateSubmissionPartFormModel(
-    requestModelDto: SubmissionPartModelRequestDto
+  async generateSubmissionOptionsFormModel(
+    requestModelDto: SubmissionOptionsModelRequestDto
   ): Promise<FormBuilderMetadata<Record<string, Primitive>>> {
     const account = await this.accountService.findAccount(
       requestModelDto.accountId

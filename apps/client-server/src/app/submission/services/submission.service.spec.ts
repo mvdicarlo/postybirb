@@ -10,7 +10,7 @@ import { SubmissionPart } from '../entities/submission-part.entity';
 import { Submission } from '../entities/submission.entity';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionPartService } from './submission-part.service';
+import { SubmissionOptionsService } from './submission-options.service';
 import { SubmissionService } from './submission.service';
 import { SubmissionProvider } from '../providers/submission.provider';
 import { SubmissionPartProvider } from '../providers/submission-part.provider';
@@ -47,7 +47,7 @@ describe('SubmissionService', () => {
         MessageSubmissionService,
         AccountService,
         WebsiteRegistryService,
-        SubmissionPartService,
+        SubmissionOptionsService,
         websiteImplementationProvider,
       ],
     }).compile();

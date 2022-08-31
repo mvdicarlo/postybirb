@@ -1,14 +1,14 @@
 import SubmissionType from '../enums/submission-type';
-import { BaseWebsiteOptions } from './base-website-options';
+import { BaseOptions } from './base-website-options';
 import { IBaseSubmissionMetadata } from './base-submission-metadata';
-import { ISubmissionPart } from './submission-part';
+import { ISubmissionOptions } from './submission-options';
 import { ISubmissionScheduleInfo } from './submission-schedule-info';
 import { ISubmissionFile } from '../../file/models/file';
 
 export interface ISubmission<T extends IBaseSubmissionMetadata> {
   id: string;
   type: SubmissionType;
-  parts: ISubmissionPart<BaseWebsiteOptions>[];
+  options: ISubmissionOptions<BaseOptions>[];
   isScheduled: boolean;
   schedule: ISubmissionScheduleInfo;
   files: ISubmissionFile[];

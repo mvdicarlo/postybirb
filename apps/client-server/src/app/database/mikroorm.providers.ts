@@ -9,7 +9,7 @@ import {
   PrimaryFile,
   ThumbnailFile,
   WebsiteData,
-  SubmissionWebsiteOptions,
+  SubmissionOptions,
   Submission,
   Settings,
 } from './entities';
@@ -23,7 +23,7 @@ const entities = [
   PrimaryFile,
   ThumbnailFile,
   WebsiteData,
-  SubmissionWebsiteOptions,
+  SubmissionOptions,
   Submission,
   Settings,
 ];

@@ -1,8 +1,8 @@
 import SubmissionType from '../enums/submission-type';
-import { BaseWebsiteOptions } from './base-website-options';
+import { BaseOptions } from './base-website-options';
 
 // TODO need a real model for this when posting happens
-type PostData<T extends BaseWebsiteOptions> = {
+type PostData<T extends BaseOptions> = {
   type: SubmissionType;
 } & T;
 

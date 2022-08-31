@@ -19,7 +19,7 @@ import { MessageSubmission } from '../models/message-submission';
 import { SubmissionMetadataType } from '../models/submission-metadata-types';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionPartService } from './submission-part.service';
+import { SubmissionOptionsService } from './submission-options.service';
 
 /**
  * Service that handles the vast majority of submission management logic.
@@ -36,7 +36,7 @@ export class SubmissionService {
       Submission<SubmissionMetadataType>
     >,
     private readonly accountService: AccountService,
-    private readonly submissionPartService: SubmissionPartService,
+    private readonly submissionOptionsService: SubmissionOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService
   ) {}
@@ -62,7 +62,7 @@ export class SubmissionService {
         scheduledFor: undefined,
         scheduleType: ScheduleType.SINGLE,
       },
-      parts: [],
+      options: [],
       metadata: {},
     });
 
@@ -103,8 +103,8 @@ export class SubmissionService {
       }
     }
 
-    submission.parts.push(
-      this.submissionPartService.createDefaultSubmissionPart(submission)
+    submission.options.push(
+      this.submissionOptionsService.createDefaultSubmissionOptions(submission)
     );
 
     await this.submissionRepository.persistAndFlush(submission);

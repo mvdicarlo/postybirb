@@ -18,11 +18,11 @@ import { SubmissionPartProvider } from '../providers/submission-part.provider';
 import { SubmissionProvider } from '../providers/submission.provider';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionPartService } from './submission-part.service';
+import { SubmissionOptionsService } from './submission-options.service';
 import { SubmissionService } from './submission.service';
 
 describe('SubmissionPartService', () => {
-  let service: SubmissionPartService;
+  let service: SubmissionOptionsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,12 +48,12 @@ describe('SubmissionPartService', () => {
         MessageSubmissionService,
         AccountService,
         WebsiteRegistryService,
-        SubmissionPartService,
+        SubmissionOptionsService,
         websiteImplementationProvider,
       ],
     }).compile();
 
-    service = module.get<SubmissionPartService>(SubmissionPartService);
+    service = module.get<SubmissionOptionsService>(SubmissionOptionsService);
   });
 
   it('should be defined', () => {
