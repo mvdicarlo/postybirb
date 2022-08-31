@@ -8,7 +8,7 @@ import {
 import { Account } from '../../account/entities/account.entity';
 import { SafeObject } from '../../shared/types/safe-object';
 import { ISubmissionPart } from '../models/submission-part';
-import BaseWebsiteOptions from '../models/base-website-options';
+import { BaseWebsiteOptions } from '../models/base-website-options';
 import { Submission } from './submission.entity';
 
 @Entity()

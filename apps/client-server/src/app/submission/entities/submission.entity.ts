@@ -11,13 +11,16 @@ import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
 import { ISubmissionPart } from '../models/submission-part';
 import { ISubmissionScheduleInfo } from '../models/submission-schedule-info';
 import { ISubmission } from '../models/submission';
-import BaseWebsiteOptions from '../models/base-website-options';
+import { BaseWebsiteOptions } from '../models/base-website-options';
 import { SubmissionPart } from './submission-part.entity';
+import { ISubmissionFile } from '../../file/models/file';
 
 @Entity()
 export class Submission<T extends IBaseSubmissionMetadata>
   implements ISubmission<T>
 {
+  files: ISubmissionFile[];
+
   @PrimaryColumn('uuid', { unique: true })
   id: string;
 
@@ -44,8 +47,8 @@ export class Submission<T extends IBaseSubmissionMetadata>
   metadata: T;
 
   @CreateDateColumn()
-  created: Date;
+  createdAt: Date;
 
   @UpdateDateColumn()
-  lastUpdated: Date;
+  updatedAt: Date;
 }

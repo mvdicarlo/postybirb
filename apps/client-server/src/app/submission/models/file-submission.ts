@@ -1,4 +1,5 @@
 import { Submission } from '../entities/submission.entity';
+import SubmissionType from '../enums/submission-type';
 import { IBaseSubmissionMetadata } from './base-submission-metadata';
 
 export type FileSubmissionFileReference = {
@@ -9,7 +10,7 @@ export type FileSubmissionFileReference = {
 };
 
 export interface FileSubmissionMetadata extends IBaseSubmissionMetadata {
-  files: FileSubmissionFileReference[];
+  thumbnail?: string; // The Id of the file
 }
 
 export type FileSubmission = Submission<FileSubmissionMetadata>;
@@ -17,7 +18,5 @@ export type FileSubmission = Submission<FileSubmissionMetadata>;
 export function isFileSubmission(
   submission: Submission<IBaseSubmissionMetadata>
 ): submission is FileSubmission {
-  return (
-    submission && (submission as FileSubmission).metadata?.files !== undefined
-  );
+  return submission && submission.type === SubmissionType.FILE;
 }

@@ -2,6 +2,7 @@ import {
   BaseEntity as BaseMikroOrmEntity,
   PrimaryKey,
   Property,
+  Unique,
 } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { BaseEntityType } from '../models/base-entity';
@@ -15,6 +16,7 @@ export abstract class BaseEntity<
   implements BaseEntityType
 {
   @PrimaryKey()
+  @Unique()
   id: string = v4();
 
   @Property()

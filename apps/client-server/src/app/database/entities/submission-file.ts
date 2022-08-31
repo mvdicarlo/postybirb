@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable max-classes-per-file */
-import { Entity, OneToOne, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/core';
 import { ISubmissionFile } from '../../file/models/file';
 import { IFileBuffer } from '../../file/models/file-buffer';
+import { FileSubmissionMetadata } from '../../submission/models/file-submission';
+import { ISubmission } from '../../submission/models/submission';
 import { BaseEntity } from './base.entity';
+import { Submission } from './submission.entity';
 
 @Entity()
 export class SubmissionFile
@@ -26,6 +29,9 @@ export class SubmissionFile
     lazy: true,
   })
   file: IFileBuffer;
+
+  @ManyToOne(() => Submission, { nullable: false })
+  submission: ISubmission<FileSubmissionMetadata>;
 
   @OneToOne({
     entity: () => ThumbnailFile,

@@ -1,19 +1,16 @@
+import { EntityRepository } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { formBuilder, FormBuilderMetadata } from '@postybirb/form-builder';
 import { Log, Logger } from '@postybirb/logger';
 import { Primitive } from 'type-fest';
-import { DeleteResult, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
-import {
-  SUBMISSION_PART_REPOSITORY,
-  SUBMISSION_REPOSITORY,
-} from '../../constants';
+import { Submission, SubmissionWebsiteOptions } from '../../database/entities/';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../websites/website';
@@ -21,25 +18,23 @@ import { WebsiteRegistryService } from '../../websites/website-registry.service'
 import { CreateSubmissionPartDto } from '../dtos/create-submission-part.dto';
 import { SubmissionPartModelRequestDto } from '../dtos/submission-part-model-request.dto';
 import { UpdateSubmissionPartDto } from '../dtos/update-submission-part.dto';
-import { SubmissionPart } from '../entities/submission-part.entity';
-import { Submission } from '../entities/submission.entity';
 import SubmissionType from '../enums/submission-type';
 import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
+import { BaseWebsiteOptions } from '../models/base-website-options';
 import { SubmissionMetadataType } from '../models/submission-metadata-types';
-import BaseWebsiteOptions from '../models/base-website-options';
 
 @Injectable()
 export class SubmissionPartService {
   private readonly logger = Logger(SubmissionPartService.name);
 
   constructor(
-    @Inject(SUBMISSION_REPOSITORY)
-    private readonly submissionRepository: Repository<
+    @InjectRepository(Submission)
+    private readonly submissionRepository: EntityRepository<
       Submission<SubmissionMetadataType>
     >,
-    @Inject(SUBMISSION_PART_REPOSITORY)
-    private readonly submissionPartRepository: Repository<
-      SubmissionPart<BaseWebsiteOptions>
+    @InjectRepository(Submission)
+    private readonly submissionPartRepository: EntityRepository<
+      SubmissionWebsiteOptions<BaseWebsiteOptions>
     >,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService
@@ -75,12 +70,14 @@ export class SubmissionPartService {
       account,
     });
 
-    return this.submissionPartRepository
-      .save(submissionPart)
-      .then(({ id }) => this.findOne(id));
+    await this.submissionPartRepository.persistAndFlush(submissionPart);
+
+    return submissionPart;
   }
 
-  async findOne(id: string): Promise<SubmissionPart<BaseWebsiteOptions>> {
+  async findOne(
+    id: string
+  ): Promise<SubmissionWebsiteOptions<BaseWebsiteOptions>> {
     try {
       return await this.submissionPartRepository.findOneOrFail(id);
     } catch {
@@ -95,9 +92,8 @@ export class SubmissionPartService {
    * @return {*}  {Promise<DeleteResult>}
    */
   @Log()
-  async remove(id: string): Promise<DeleteResult> {
-    await this.findOne(id);
-    return this.submissionPartRepository.delete(id);
+  async remove(id: string): Promise<void> {
+    await this.submissionPartRepository.remove(await this.findOne(id));
   }
 
   /**
@@ -111,13 +107,15 @@ export class SubmissionPartService {
   async update(
     updateSubmissionPartDto: UpdateSubmissionPartDto<BaseWebsiteOptions>
   ): Promise<boolean> {
-    await this.findOne(updateSubmissionPartDto.id);
-    return this.submissionPartRepository
-      .update(updateSubmissionPartDto.id, updateSubmissionPartDto)
-      .then(() => true)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+    try {
+      const options = await this.findOne(updateSubmissionPartDto.id);
+      options.data = updateSubmissionPartDto.data;
+      await this.submissionPartRepository.flush();
+
+      return true;
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 
   /**
@@ -129,7 +127,7 @@ export class SubmissionPartService {
    */
   createDefaultSubmissionPart(
     submission: Submission<IBaseSubmissionMetadata>
-  ): SubmissionPart<BaseWebsiteOptions> {
+  ): SubmissionWebsiteOptions<BaseWebsiteOptions> {
     const submissionPart = this.submissionPartRepository.create({
       id: uuid(),
       submission,

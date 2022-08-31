@@ -19,12 +19,14 @@ import {
   SubmissionFile,
   ThumbnailFile,
 } from '../database/entities/';
+import { FileSubmission } from '../submission/models/file-submission';
 import { IFileBuffer } from './models/file-buffer';
 import { MulterFileInfo } from './models/multer-file-info';
 import { ImageUtil } from './utils/image.util';
 
 type Task = {
   file: MulterFileInfo;
+  submission?: FileSubmission;
 };
 
 /**
@@ -89,12 +91,15 @@ export class FileService {
    * @param {MulterFileInfo} file
    * @return {*}  {Promise<SubmissionFile>}
    */
-  public async create(file: MulterFileInfo): Promise<SubmissionFile> {
-    return this.queue.push({ file });
+  public async create(
+    file: MulterFileInfo,
+    submission?: FileSubmission
+  ): Promise<SubmissionFile> {
+    return this.queue.push({ file, submission });
   }
 
   private async createTask(task: Task): Promise<SubmissionFile> {
-    return this.createFile(task.file);
+    return this.createFile(task.file, task.submission);
   }
 
   /**
@@ -106,7 +111,10 @@ export class FileService {
    * @return {*}  {Promise<SubmissionFile>}
    */
   @Log()
-  private async createFile(file: MulterFileInfo): Promise<SubmissionFile> {
+  private async createFile(
+    file: MulterFileInfo,
+    submission?: FileSubmission
+  ): Promise<SubmissionFile> {
     try {
       const { mimetype: mimeType, originalname, size } = file;
       const fileEntity = this.fileRepository.create({
@@ -114,6 +122,7 @@ export class FileService {
         mimeType,
         fileName: originalname,
         size,
+        submission,
       });
 
       const buf: Buffer = await read(file.path);

@@ -1,5 +1,5 @@
 import { Class } from 'type-fest';
-import BaseWebsiteOptions from '../../../submission/models/base-website-options';
+import { BaseWebsiteOptions } from '../../../submission/models/base-website-options';
 import { MessageSubmission } from '../../../submission/models/message-submission';
 import PostData from '../../../submission/models/post-data';
 import { UnknownWebsite } from '../../website';

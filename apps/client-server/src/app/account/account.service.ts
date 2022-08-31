@@ -252,7 +252,7 @@ export class AccountService implements OnModuleInit {
    * Deleted an Account matching the Id provided.
    *
    * @param {string} id
-   * @return {*}  {Promise<DeleteResult>}
+   * @return {*}  {Promise<void>}
    */
   @Log()
   async remove(id: string): Promise<void> {
