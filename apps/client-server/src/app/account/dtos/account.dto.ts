@@ -3,11 +3,8 @@ import { IAccountDto } from '@postybirb/dto';
 import { IsArray, IsObject, IsString } from 'class-validator';
 import { SafeObject } from '../../shared/types/safe-object';
 import { ILoginState } from '../../websites/models/login-state';
-import { IAccount } from '../models/account';
 
-export class AccountDto<T extends SafeObject>
-  implements IAccount, IAccountDto<T>
-{
+export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
   /**
    * Id of an account and the session partition key.
    * @type {string}

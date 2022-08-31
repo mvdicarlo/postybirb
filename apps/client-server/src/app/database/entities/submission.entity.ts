@@ -1,4 +1,4 @@
-import { Entity, Enum, OneToMany, Property } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
 import { ISubmissionFile } from '../../file/models/file';
 import SubmissionType from '../../submission/enums/submission-type';
 import { IBaseSubmissionMetadata } from '../../submission/models/base-submission-metadata';
@@ -15,21 +15,20 @@ export class Submission<T extends IBaseSubmissionMetadata>
   extends BaseEntity<Submission<T>, 'id'>
   implements ISubmission<T>
 {
-  @Property({ nullable: false })
-  @Enum(() => SubmissionType)
+  @Property({ type: 'string', nullable: false })
   type: SubmissionType;
 
-  @OneToMany(() => SubmissionOptions, (swo) => swo.submission, {
+  @OneToMany({
+    entity: () => SubmissionOptions,
+    mappedBy: 'submission',
     orphanRemoval: true,
-    nullable: false,
   })
-  options: ISubmissionOptions<BaseOptions>[];
+  options = new Collection<ISubmissionOptions<BaseOptions>>(this);
 
   @OneToMany(() => SubmissionFile, (sf) => sf.submission, {
     orphanRemoval: true,
-    nullable: false,
   })
-  files: ISubmissionFile[] = [];
+  files = new Collection<ISubmissionFile>(this);
 
   @Property({ type: 'boolean', nullable: false })
   isScheduled: boolean;

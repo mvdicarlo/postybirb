@@ -51,8 +51,12 @@ export class SubmissionController {
     @Body() createSubmissionDto: CreateSubmissionDto,
     @UploadedFiles() files: MulterFileInfo[]
   ) {
+    const mapper = (res) => {
+      const obj = res.toJSON();
+      return obj;
+    };
     if (files.length) {
-      const results = await Promise.allSettled(
+      const results = await Promise.all(
         files.map((file, index) => {
           const createFileSubmission = new CreateSubmissionDto();
           Object.assign(createFileSubmission, createSubmissionDto);
@@ -67,9 +71,11 @@ export class SubmissionController {
         })
       );
 
-      return results;
+      return results.map(mapper);
     }
-    return Promise.allSettled([await this.service.create(createSubmissionDto)]);
+    return (
+      await Promise.all([await this.service.create(createSubmissionDto)])
+    ).map(mapper);
   }
 
   @Post('file/add/:id')

@@ -23,7 +23,7 @@ export class FileSubmissionService
     createSubmissionDto: CreateSubmissionDto,
     file: MulterFileInfo
   ): Promise<void> {
-    submission.files.push(await this.fileService.create(file));
+    submission.files.add(await this.fileService.create(file));
   }
 
   async remove(submission: FileSubmission) {
@@ -31,7 +31,7 @@ export class FileSubmissionService
   }
 
   async appendFile(submission: FileSubmission, file: MulterFileInfo) {
-    submission.files.push(await this.fileService.create(file));
+    submission.files.add(await this.fileService.create(file));
   }
 
   async appendThumbnailFile(
@@ -65,7 +65,9 @@ export class FileSubmissionService
 
   async removeFile(submission: FileSubmission, fileId: string) {
     // eslint-disable-next-line no-param-reassign
-    submission.files = submission.files.filter((f) => f.id !== fileId);
+    submission.files.remove(
+      submission.files.getItems().find((f) => f.id !== fileId)
+    );
     await this.fileService.remove(fileId);
   }
 
@@ -76,6 +78,6 @@ export class FileSubmissionService
   ) {
     // TODO in-place replacement
     await this.removeFile(submission, fileId);
-    submission.files.push(await this.fileService.create(file));
+    submission.files.add(await this.fileService.create(file));
   }
 }

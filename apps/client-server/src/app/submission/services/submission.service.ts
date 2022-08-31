@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
-import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
 import { Submission } from '../../database/entities';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -55,7 +54,6 @@ export class SubmissionService {
     file?: MulterFileInfo
   ): Promise<Submission<SubmissionMetadataType>> {
     const submission = this.submissionRepository.create({
-      id: uuid(),
       ...createSubmissionDto,
       isScheduled: false,
       schedule: {
@@ -103,10 +101,11 @@ export class SubmissionService {
       }
     }
 
-    submission.options.push(
-      this.submissionOptionsService.createDefaultSubmissionOptions(submission)
+    submission.options.add(
+      await this.submissionOptionsService.createDefaultSubmissionOptions(
+        submission
+      )
     );
-
     await this.submissionRepository.persistAndFlush(submission);
 
     return submission;

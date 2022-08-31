@@ -30,7 +30,7 @@ export class SubmissionFile
   })
   file: IFileBuffer;
 
-  @ManyToOne(() => Submission, { nullable: false })
+  @ManyToOne(() => Submission, { nullable: false, inversedBy: 'files' })
   submission: ISubmission<FileSubmissionMetadata>;
 
   @OneToOne({

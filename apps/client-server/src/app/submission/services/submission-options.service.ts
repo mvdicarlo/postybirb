@@ -8,7 +8,6 @@ import {
 import { formBuilder, FormBuilderMetadata } from '@postybirb/form-builder';
 import { Log, Logger } from '@postybirb/logger';
 import { Primitive } from 'type-fest';
-import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
 import { Submission, SubmissionOptions } from '../../database/entities';
 import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
@@ -32,7 +31,7 @@ export class SubmissionOptionsService {
     private readonly submissionRepository: EntityRepository<
       Submission<SubmissionMetadataType>
     >,
-    @InjectRepository(Submission)
+    @InjectRepository(SubmissionOptions)
     private readonly submissionOptionsRepository: EntityRepository<
       SubmissionOptions<BaseOptions>
     >,
@@ -59,7 +58,9 @@ export class SubmissionOptionsService {
     }
 
     if (
-      submission.options.some((option) => option.account?.id === account.id)
+      submission.options
+        .toArray()
+        .some((option) => option.account?.id === account.id)
     ) {
       throw new BadRequestException(
         `Submission option with account id ${account.id} already exists on ${submission.id}. Use update operation instead.`
@@ -129,7 +130,6 @@ export class SubmissionOptionsService {
     submission: Submission<IBaseSubmissionMetadata>
   ): SubmissionOptions<BaseOptions> {
     const submissionOptions = this.submissionOptionsRepository.create({
-      id: uuid(),
       submission,
       data: {},
     });
