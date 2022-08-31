@@ -8,7 +8,7 @@ export interface ILoginState {
  * A class used for tracking the login state of a website.
  */
 export class LoginState implements ILoginState {
-  pending: boolean = false;
+  pending = false;
 
   isLoggedIn = false;
 

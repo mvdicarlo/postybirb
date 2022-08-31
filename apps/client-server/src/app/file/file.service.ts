@@ -18,7 +18,7 @@ import {
   PrimaryFile,
   SubmissionFile,
   ThumbnailFile,
-} from '../database/entities/';
+} from '../database/entities';
 import { FileSubmission } from '../submission/models/file-submission';
 import { IFileBuffer } from './models/file-buffer';
 import { MulterFileInfo } from './models/multer-file-info';

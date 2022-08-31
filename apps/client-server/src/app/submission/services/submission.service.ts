@@ -8,7 +8,7 @@ import {
 import { Log, Logger } from '@postybirb/logger';
 import { v4 as uuid } from 'uuid';
 import { AccountService } from '../../account/account.service';
-import { Submission } from '../../database/entities/';
+import { Submission } from '../../database/entities';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';

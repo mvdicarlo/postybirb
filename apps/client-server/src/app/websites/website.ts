@@ -11,7 +11,7 @@ import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
 import { IAccount } from '../account/models/account';
-import { WebsiteData } from '../database/entities/';
+import { WebsiteData } from '../database/entities';
 import { SafeObject } from '../shared/types/safe-object';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import { LoginState } from './models/login-state';

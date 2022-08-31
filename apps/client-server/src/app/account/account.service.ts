@@ -11,7 +11,7 @@ import { Log, Logger } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import { Account } from '../database/entities/';
+import { Account } from '../database/entities';
 import { SafeObject } from '../shared/types/safe-object';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
@@ -203,6 +203,11 @@ export class AccountService implements OnModuleInit {
     const accounts = await this.accountRepository.find({});
     return accounts.map((account) => {
       const instance = this.websiteRegistry.findInstance(account);
+      if (!instance) {
+        throw new BadRequestException(
+          `No instance found for account: ${account.id}`
+        );
+      }
       return {
         ...account,
         loginState: instance.getLoginState(),

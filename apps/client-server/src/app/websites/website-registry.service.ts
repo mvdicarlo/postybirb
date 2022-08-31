@@ -5,7 +5,7 @@ import { Logger } from '@postybirb/logger';
 import { Class } from 'type-fest';
 import { IAccount } from '../account/models/account';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { WebsiteData } from '../database/entities/';
+import { WebsiteData } from '../database/entities';
 import { SafeObject } from '../shared/types/safe-object';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
