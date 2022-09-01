@@ -144,8 +144,11 @@ export class FileService {
       fileEntity.thumbnail = thumbnail;
       fileEntity.hash = await hash(buf, { algorithm: 'md5' });
 
-      await this.fileRepository.persistAndFlush(fileEntity);
-      return await this.findFile(fileEntity.id);
+      if (!submission) {
+        await this.fileRepository.persistAndFlush(fileEntity);
+      }
+
+      return fileEntity;
     } catch (err) {
       this.logger.error(err.message, err.stack);
       return await Promise.reject(err);

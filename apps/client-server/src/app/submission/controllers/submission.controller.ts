@@ -143,10 +143,9 @@ export class SubmissionController {
   @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
   async appendThumbnail(
     @Param('id') id: string,
-    @Param('fileId') fileId: string,
     @UploadedFile() file: MulterFileInfo
   ) {
-    return this.service.appendThumbnail(id, fileId, file);
+    return this.service.appendThumbnail(id, file);
   }
 
   @Post('thumbnail/append/:id/:fileId')

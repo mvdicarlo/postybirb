@@ -11,6 +11,7 @@ export type FileSubmissionFileReference = {
 
 export interface FileSubmissionMetadata extends IBaseSubmissionMetadata {
   thumbnail?: string; // The Id of the file
+  order: string[];
 }
 
 export type FileSubmission = Submission<FileSubmissionMetadata>;

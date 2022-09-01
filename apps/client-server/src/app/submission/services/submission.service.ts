@@ -188,18 +188,13 @@ export class SubmissionService {
    * Appends a thumbnail file to the associated fileId
    *
    * @param {string} id
-   * @param {string} fileId
    * @param {MulterFileInfo} file
    */
-  async appendThumbnail(id: string, fileId: string, file: MulterFileInfo) {
+  async appendThumbnail(id: string, file: MulterFileInfo) {
     const submission = await this.findOne(id);
 
     if (isFileSubmission(submission)) {
-      await this.fileSubmissionService.appendThumbnailFile(
-        submission,
-        fileId,
-        file
-      );
+      await this.fileSubmissionService.appendThumbnailFile(submission, file);
       await this.submissionRepository.persistAndFlush(submission);
       return submission;
     }

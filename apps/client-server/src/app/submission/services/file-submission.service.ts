@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
@@ -23,28 +27,44 @@ export class FileSubmissionService
     createSubmissionDto: CreateSubmissionDto,
     file: MulterFileInfo
   ): Promise<void> {
-    submission.files.add(await this.fileService.create(file));
+    // eslint-disable-next-line no-param-reassign
+    submission.metadata = {
+      ...submission.metadata,
+      thumbnail: undefined,
+      order: [],
+    };
+
+    await this.appendFile(submission, file);
   }
 
   async remove(submission: FileSubmission) {
     // Nothing yet
   }
 
-  async appendFile(submission: FileSubmission, file: MulterFileInfo) {
-    submission.files.add(await this.fileService.create(file));
-  }
-
-  async appendThumbnailFile(
+  async appendFile(
     submission: FileSubmission,
-    fileId: string,
-    file: MulterFileInfo
+    file: MulterFileInfo,
+    append = true
   ) {
-    const fileEntity = await this.fileService.create(file);
-    // eslint-disable-next-line no-param-reassign
-    submission.metadata.thumbnail = fileEntity.id;
+    const createdFile = await this.fileService.create(file, submission);
+    submission.files.add(createdFile);
+    if (append) {
+      submission.metadata.order.push(createdFile.id);
+    }
+    return createdFile;
   }
 
-  // TODO test
+  async appendThumbnailFile(submission: FileSubmission, file: MulterFileInfo) {
+    if (submission.metadata.thumbnail) {
+      throw new BadRequestException(
+        'Submission already has a thumbnail file associated with it'
+      );
+    }
+    const createdFile = await this.appendFile(submission, file);
+    // eslint-disable-next-line no-param-reassign
+    submission.metadata.thumbnail = createdFile.id;
+  }
+
   async replaceThumbnailFile(
     submission: FileSubmission,
     fileId: string,
@@ -52,23 +72,27 @@ export class FileSubmissionService
   ) {
     const thumbnailReference = submission.metadata.thumbnail;
     if (!thumbnailReference) {
-      throw new NotFoundException(`File ${fileId} not found.`);
+      throw new NotFoundException(`No thumbnail to replace`);
     }
 
-    if (thumbnailReference) {
-      await this.removeFile(submission, fileId);
-      const fileEntity = await this.fileService.create(file);
-      // eslint-disable-next-line no-param-reassign
-      submission.metadata.thumbnail = fileEntity.id;
-    }
+    const newFile = await this.replaceFile(submission, fileId, file);
+    // eslint-disable-next-line no-param-reassign
+    submission.metadata.thumbnail = newFile.id;
   }
 
   async removeFile(submission: FileSubmission, fileId: string) {
-    // eslint-disable-next-line no-param-reassign
-    submission.files.remove(
-      submission.files.getItems().find((f) => f.id !== fileId)
-    );
     await this.fileService.remove(fileId);
+    // eslint-disable-next-line no-param-reassign
+    submission.metadata.order = submission.metadata.order.filter(
+      (id) => id !== fileId
+    );
+    if (
+      submission.metadata.thumbnail &&
+      submission.metadata.thumbnail === fileId
+    ) {
+      // eslint-disable-next-line no-param-reassign
+      submission.metadata.thumbnail = undefined;
+    }
   }
 
   async replaceFile(
@@ -76,8 +100,21 @@ export class FileSubmissionService
     fileId: string,
     file: MulterFileInfo
   ) {
-    // TODO in-place replacement
+    if (!submission.metadata.order.some((id) => id === fileId)) {
+      throw new BadRequestException('File not found on submission');
+    }
+
     await this.removeFile(submission, fileId);
-    submission.files.add(await this.fileService.create(file));
+    const newFile = await this.appendFile(submission, file, false);
+    const replaceIndex = submission.metadata.order.findIndex(
+      (id) => id === fileId
+    );
+
+    if (replaceIndex > -1) {
+      // eslint-disable-next-line no-param-reassign
+      submission.metadata.order[replaceIndex] = newFile.id;
+    }
+
+    return newFile;
   }
 }
