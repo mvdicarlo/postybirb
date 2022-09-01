@@ -1,5 +1,5 @@
-export type BaseEntityType = {
+export interface IBaseEntity {
   id: string;
   createdAt: Date;
   updatedAt: Date;
-};
+}

@@ -5,7 +5,7 @@ import {
   Unique,
 } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import { BaseEntityType } from '../models/base-entity';
+import { IBaseEntity } from '../models/base-entity';
 
 export abstract class BaseEntity<
     T,
@@ -13,7 +13,7 @@ export abstract class BaseEntity<
     P extends string = never
   >
   extends BaseMikroOrmEntity<T, PK, P>
-  implements BaseEntityType
+  implements IBaseEntity
 {
   @PrimaryKey()
   @Unique()

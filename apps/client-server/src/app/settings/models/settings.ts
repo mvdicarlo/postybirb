@@ -1,8 +1,10 @@
+import { IBaseEntity } from '../../database/models/base-entity';
+
 /**
  * User settings entity.
  * @interface ISettings
  */
-export interface ISettings {
+export interface ISettings extends IBaseEntity {
   /**
    * Account profile (on the off change the app supports multiple settings profile in the future)
    * @type {string}

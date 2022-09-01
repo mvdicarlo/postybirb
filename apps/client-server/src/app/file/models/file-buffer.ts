@@ -1,9 +1,9 @@
-import { BaseEntityType } from '../../database/models/base-entity';
+import { IBaseEntity } from '../../database/models/base-entity';
 import { ISubmissionFile } from './file';
 import { FileDimensions } from './file-dimensions';
 
 export type IFileBuffer = FileDimensions &
-  BaseEntityType & {
+  IBaseEntity & {
     id: string;
     buffer: Buffer;
     parent: ISubmissionFile;
