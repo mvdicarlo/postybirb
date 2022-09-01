@@ -1,8 +1,8 @@
 import { RadioField, TextField } from '@postybirb/form-builder';
-import { BaseOptions } from '../../../../submission/models/base-website-options';
+import { BaseWebsiteOptions } from '../../../../submission/models/base-website-options';
 
 // TODO replace placeholders
-export class DiscordMessageSubmission implements BaseOptions {
+export class DiscordMessageSubmission implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;
 

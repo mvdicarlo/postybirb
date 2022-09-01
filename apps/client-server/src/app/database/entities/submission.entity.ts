@@ -2,9 +2,8 @@ import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
 import { ISubmissionFile } from '../../file/models/file';
 import SubmissionType from '../../submission/enums/submission-type';
 import { IBaseSubmissionMetadata } from '../../submission/models/base-submission-metadata';
-import { BaseOptions } from '../../submission/models/base-website-options';
+import { BaseWebsiteOptions } from '../../submission/models/base-website-options';
 import { ISubmission } from '../../submission/models/submission';
-import { ISubmissionOptions } from '../../submission/models/submission-options';
 import { ISubmissionScheduleInfo } from '../../submission/models/submission-schedule-info';
 import { BaseEntity } from './base.entity';
 import { SubmissionFile } from './submission-file.entity';
@@ -23,7 +22,10 @@ export class Submission<T extends IBaseSubmissionMetadata>
     mappedBy: 'submission',
     orphanRemoval: true,
   })
-  options = new Collection<ISubmissionOptions<BaseOptions>>(this);
+  options = new Collection<
+    SubmissionOptions<BaseWebsiteOptions>,
+    ISubmission<T>
+  >(this);
 
   @OneToMany(() => SubmissionFile, (sf) => sf.submission, {
     orphanRemoval: true,

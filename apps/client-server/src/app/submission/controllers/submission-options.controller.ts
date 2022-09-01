@@ -8,7 +8,7 @@ import {
 import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
 import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-model-request.dto';
 import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
-import { BaseOptions } from '../models/base-website-options';
+import { BaseWebsiteOptions } from '../models/base-website-options';
 import { SubmissionOptionsService } from '../services/submission-options.service';
 
 /**
@@ -30,7 +30,7 @@ export class SubmissionOptionsController {
     description: 'Account or website instance not found.',
   })
   create(
-    @Body() createSubmissionOptionsDto: CreateSubmissionOptionsDto<BaseOptions>
+    @Body() createSubmissionOptionsDto: CreateSubmissionOptionsDto<BaseWebsiteOptions>
   ) {
     return this.service.create(createSubmissionOptionsDto);
   }
@@ -53,7 +53,7 @@ export class SubmissionOptionsController {
   @ApiOkResponse({ description: 'Submission option updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Submission option Id not found.' })
   update(
-    @Body() updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<BaseOptions>
+    @Body() updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<BaseWebsiteOptions>
   ) {
     return this.service.update(updateSubmissionOptionsDto);
   }

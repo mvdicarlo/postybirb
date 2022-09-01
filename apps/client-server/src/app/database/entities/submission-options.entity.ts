@@ -1,15 +1,14 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { IAccount } from '../../account/models/account';
-import { SafeObject } from '../../shared/types/safe-object';
-import { BaseOptions } from '../../submission/models/base-website-options';
-import { ISubmission } from '../../submission/models/submission';
+import { IBaseSubmissionMetadata } from '../../submission/models/base-submission-metadata';
+import { BaseWebsiteOptions } from '../../submission/models/base-website-options';
 import { ISubmissionOptions } from '../../submission/models/submission-options';
 import { Account } from './account.entity';
 import { BaseEntity } from './base.entity';
 import { Submission } from './submission.entity';
 
 @Entity()
-export class SubmissionOptions<T extends BaseOptions>
+export class SubmissionOptions<T extends BaseWebsiteOptions>
   extends BaseEntity<SubmissionOptions<T>, 'id'>
   implements ISubmissionOptions<T>
 {
@@ -19,7 +18,7 @@ export class SubmissionOptions<T extends BaseOptions>
     inversedBy: 'options',
     nullable: true,
   })
-  submission: ISubmission<SafeObject>;
+  submission: Submission<IBaseSubmissionMetadata>;
 
   @Property({ type: 'json', nullable: false })
   data: T;

@@ -19,7 +19,7 @@ import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-mod
 import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
 import SubmissionType from '../enums/submission-type';
 import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
-import { BaseOptions } from '../models/base-website-options';
+import { BaseWebsiteOptions } from '../models/base-website-options';
 import { SubmissionMetadataType } from '../models/submission-metadata-types';
 
 @Injectable()
@@ -33,13 +33,13 @@ export class SubmissionOptionsService {
     >,
     @InjectRepository(SubmissionOptions)
     private readonly submissionOptionsRepository: EntityRepository<
-      SubmissionOptions<BaseOptions>
+      SubmissionOptions<BaseWebsiteOptions>
     >,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService
   ) {}
 
-  async create<T extends BaseOptions>(
+  async create<T extends BaseWebsiteOptions>(
     createSubmissionOptions: CreateSubmissionOptionsDto<T>
   ) {
     const account = await this.accountService.findOne(
@@ -78,7 +78,7 @@ export class SubmissionOptionsService {
     return submissionOptions;
   }
 
-  async findOne(id: string): Promise<SubmissionOptions<BaseOptions>> {
+  async findOne(id: string): Promise<SubmissionOptions<BaseWebsiteOptions>> {
     try {
       return await this.submissionOptionsRepository.findOneOrFail(id);
     } catch {
@@ -106,7 +106,7 @@ export class SubmissionOptionsService {
    */
   @Log()
   async update(
-    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<BaseOptions>
+    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<BaseWebsiteOptions>
   ): Promise<boolean> {
     try {
       const options = await this.findOne(updateSubmissionOptionsDto.id);
@@ -128,7 +128,7 @@ export class SubmissionOptionsService {
    */
   createDefaultSubmissionOptions(
     submission: Submission<IBaseSubmissionMetadata>
-  ): SubmissionOptions<BaseOptions> {
+  ): SubmissionOptions<BaseWebsiteOptions> {
     const submissionOptions = this.submissionOptionsRepository.create({
       submission,
       data: {},

@@ -1,5 +1,5 @@
 import { Class } from 'type-fest';
-import { BaseOptions } from '../../../submission/models/base-website-options';
+import { BaseWebsiteOptions } from '../../../submission/models/base-website-options';
 import { MessageSubmission } from '../../../submission/models/message-submission';
 import PostData from '../../../submission/models/post-data';
 import { UnknownWebsite } from '../../website';
@@ -8,7 +8,7 @@ import { UnknownWebsite } from '../../website';
  * Defines methods for allowing message (notification, journal, blob, etc.) based posting.
  * @interface MessageWebsite
  */
-export interface MessageWebsite<T extends BaseOptions> {
+export interface MessageWebsite<T extends BaseWebsiteOptions> {
   MessageModel: Class<T>;
   supportsMessage: true;
 
@@ -27,9 +27,9 @@ export interface MessageWebsite<T extends BaseOptions> {
 
 export function isMessageWebsite(
   websiteInstance: UnknownWebsite
-): websiteInstance is MessageWebsite<BaseOptions> & UnknownWebsite {
+): websiteInstance is MessageWebsite<BaseWebsiteOptions> & UnknownWebsite {
   return Boolean(
-    (websiteInstance as MessageWebsite<BaseOptions> & UnknownWebsite)
+    (websiteInstance as MessageWebsite<BaseWebsiteOptions> & UnknownWebsite)
       .supportsMessage
   );
 }

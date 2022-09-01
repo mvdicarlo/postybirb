@@ -1,6 +1,6 @@
 import { Entity, OneToMany, Property } from '@mikro-orm/core';
 import { IAccount } from '../../account/models/account';
-import { BaseOptions } from '../../submission/models/base-website-options';
+import { BaseWebsiteOptions } from '../../submission/models/base-website-options';
 import { BaseEntity } from './base.entity';
 import { SubmissionOptions } from './submission-options.entity';
 
@@ -18,5 +18,5 @@ export class Account extends BaseEntity<Account, 'id'> implements IAccount {
   @OneToMany(() => SubmissionOptions, (so) => so.account, {
     orphanRemoval: true,
   })
-  submissionOptions: SubmissionOptions<BaseOptions>;
+  submissionOptions: SubmissionOptions<BaseWebsiteOptions>;
 }
