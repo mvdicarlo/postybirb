@@ -11,6 +11,7 @@ import {
   EuiSpacer,
   EuiToolTip,
 } from '@elastic/eui';
+import { useContext } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
 import { AccountLoginFlyout } from '../components/account/account-login-flyout/account-login-flyout';
@@ -28,6 +29,7 @@ import {
 } from '../shared/keybindings';
 import AppSearch from './app-search';
 import AppSettings from './app-settings';
+import { AppThemeContext } from './app-theme-provider';
 import './app.css';
 
 function AppImage() {
@@ -43,6 +45,8 @@ function AppImage() {
 export default function AppLayout() {
   const history = useNavigate();
   const [globalState, setGlobalState] = useGlobalState();
+  const [theme] = useContext(AppThemeContext);
+
   const toggleAccountLogin = (value?: boolean) =>
     setGlobalState({
       ...globalState,
@@ -82,6 +86,7 @@ export default function AppLayout() {
   useKeybinding(settingsKeybinding);
   useKeybinding(accountKeybinding);
   useKeybinding(homeKeybinding);
+  useKeybinding(submissionsKeybinding);
 
   return (
     <EuiPage paddingSize="none">
@@ -223,11 +228,9 @@ export default function AppLayout() {
         hasShadow={false}
         paddingSize="none"
         borderRadius="none"
-        className="px-4"
+        className={`postybirb__page-body ${theme}`}
       >
-        <EuiSpacer />
-
-        <EuiPageSection color="transparent" className="container mx-auto">
+        <EuiPageSection color="transparent">
           <EuiErrorBoundary>
             <Routes />
           </EuiErrorBoundary>

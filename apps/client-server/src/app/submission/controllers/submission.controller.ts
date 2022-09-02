@@ -42,6 +42,12 @@ export class SubmissionController {
     return this.service.findOne(id);
   }
 
+  @Get()
+  @ApiOkResponse({ description: 'A list of all submission records.' })
+  findAll() {
+    return this.service.findAllSubmissionDto();
+  }
+
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({ description: 'Submission created.' })

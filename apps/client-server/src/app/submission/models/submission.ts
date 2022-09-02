@@ -7,8 +7,9 @@ import { BaseWebsiteOptions } from './base-website-options';
 import { ISubmissionOptions } from './submission-options';
 import { ISubmissionScheduleInfo } from './submission-schedule-info';
 
-export interface ISubmission<T extends IBaseSubmissionMetadata>
-  extends IBaseEntity {
+export interface ISubmission<
+  T extends IBaseSubmissionMetadata = IBaseSubmissionMetadata
+> extends IBaseEntity {
   type: SubmissionType;
   options: Collection<ISubmissionOptions<BaseWebsiteOptions>, ISubmission<T>>;
   isScheduled: boolean;

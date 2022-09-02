@@ -16,7 +16,9 @@ export default function SubmissionManagementPage() {
         }
       />
       <EuiSpacer />
-      <Uploader />
+      <div>
+        <Uploader />
+      </div>
     </>
   );
 }

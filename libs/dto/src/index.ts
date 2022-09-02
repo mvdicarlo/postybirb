@@ -7,3 +7,4 @@ export * from './lib/website-login-info.dto';
 export * from './lib/website-login-type.dto';
 export * from './lib/set-website-data-request.dto';
 export * from './lib/username-shortcut.dto';
+export * from './lib/submission.dto';

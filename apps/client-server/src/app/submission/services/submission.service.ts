@@ -4,15 +4,20 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
+import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import { AccountService } from '../../account/account.service';
 import { Submission } from '../../database/entities';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { SubmissionDto } from '../dtos/submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { ScheduleType } from '../enums/schedule-type';
 import SubmissionType from '../enums/submission-type';
+import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
 import { FileSubmission, isFileSubmission } from '../models/file-submission';
 import { MessageSubmission } from '../models/message-submission';
 import { SubmissionMetadataType } from '../models/submission-metadata-types';
@@ -37,8 +42,21 @@ export class SubmissionService {
     private readonly accountService: AccountService,
     private readonly submissionOptionsService: SubmissionOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
-    private readonly messageSubmissionService: MessageSubmissionService
+    private readonly messageSubmissionService: MessageSubmissionService,
+    @Optional() private readonly webSocket: WSGateway
   ) {}
+
+  /**
+   * Emits submissions onto websocket.
+   */
+  private async emit() {
+    if (this.webSocket) {
+      this.webSocket.emit({
+        event: SUBMISSION_UPDATES,
+        data: await this.findAllSubmissionDto(),
+      });
+    }
+  }
 
   /**
    * Creates a submission.
@@ -108,6 +126,7 @@ export class SubmissionService {
     );
     await this.submissionRepository.persistAndFlush(submission);
 
+    this.emit();
     return submission;
   }
 
@@ -119,11 +138,31 @@ export class SubmissionService {
    */
   async findOne(id: string): Promise<Submission<SubmissionMetadataType>> {
     try {
-      return await this.submissionRepository.findOneOrFail(id);
+      return await this.submissionRepository.findOneOrFail(id, {
+        populate: ['options', 'files'],
+      });
     } catch (e) {
       this.logger.error(e);
       throw new NotFoundException(id);
     }
+  }
+
+  /**
+   * Finds all submissions and returns their Dto.
+   *
+   * @return {*}  {Promise<
+   *     SubmissionDto<IBaseSubmissionMetadata>[]
+   *   >}
+   */
+  async findAllSubmissionDto(): Promise<
+    SubmissionDto<IBaseSubmissionMetadata>[]
+  > {
+    const submissions = await this.submissionRepository.findAll({
+      populate: ['options', 'files'],
+    });
+    return submissions.map(
+      (s) => s.toJSON() as unknown as SubmissionDto<IBaseSubmissionMetadata>
+    );
   }
 
   /**
@@ -150,7 +189,8 @@ export class SubmissionService {
       .then(() => true)
       .catch((err) => {
         throw new BadRequestException(err);
-      });
+      })
+      .finally(this.emit);
   }
 
   /**
@@ -162,6 +202,7 @@ export class SubmissionService {
   @Log()
   async remove(id: string): Promise<void> {
     await this.submissionRepository.remove(await this.findOne(id));
+    this.emit();
   }
 
   /** File Actions */
@@ -178,6 +219,7 @@ export class SubmissionService {
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.appendFile(submission, file);
       await this.submissionRepository.persistAndFlush(submission);
+      this.emit();
       return submission;
     }
 
@@ -196,6 +238,7 @@ export class SubmissionService {
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.appendThumbnailFile(submission, file);
       await this.submissionRepository.persistAndFlush(submission);
+      this.emit();
       return submission;
     }
 
@@ -208,6 +251,7 @@ export class SubmissionService {
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.replaceFile(submission, fileId, file);
       await this.submissionRepository.persistAndFlush(submission);
+      this.emit();
       return submission;
     }
 
@@ -231,6 +275,7 @@ export class SubmissionService {
         file
       );
       await this.submissionRepository.persistAndFlush(submission);
+      this.emit();
       return submission;
     }
 
@@ -248,7 +293,8 @@ export class SubmissionService {
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.removeFile(submission, fileId);
-      this.submissionRepository.persistAndFlush(submission);
+      await this.submissionRepository.persistAndFlush(submission);
+      this.emit();
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');

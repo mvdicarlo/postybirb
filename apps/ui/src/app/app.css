@@ -6,3 +6,25 @@ body {
   width: 100vw;
   height: 100vh;
 }
+
+.postybirb__page-body {
+  height: 100%;
+  overflow: auto;
+}
+
+.postybirb__page-body > div > div {
+  padding-top: 0 !important;
+}
+
+.postybirb__page-body .euiPageHeader {
+  position: sticky;
+  z-index: 100;
+  top: 0;
+  background: inherit;
+  padding-top: 24px;
+  background-color: #f7f8fc;
+}
+
+.postybirb__page-body.dark .euiPageHeader {
+  background-color: #141519;
+}
