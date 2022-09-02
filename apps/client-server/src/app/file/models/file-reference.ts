@@ -1,8 +1,8 @@
+import { FileType } from '@postybirb/types';
 import { ParsedPath } from 'path';
-import MulterFileMetadata from './multer-file-metadata';
-import FileType from '../enums/file-type';
+import { MulterFileMetadata } from './multer-file-metadata';
 
-export default interface FileReference {
+export interface FileReference {
   id: string;
   localPath: string;
   metadata: MulterFileMetadata;

@@ -1,6 +1,5 @@
 import { Entity, OneToMany, Property } from '@mikro-orm/core';
-import { IAccount } from '../../account/models/account';
-import { BaseWebsiteOptions } from '../../submission/models/base-website-options';
+import { BaseWebsiteOptions, IAccount } from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 import { SubmissionOptions } from './submission-options.entity';
 

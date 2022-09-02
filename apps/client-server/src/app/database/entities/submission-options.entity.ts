@@ -1,8 +1,10 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
-import { IAccount } from '../../account/models/account';
-import { IBaseSubmissionMetadata } from '../../submission/models/base-submission-metadata';
-import { BaseWebsiteOptions } from '../../submission/models/base-website-options';
-import { ISubmissionOptions } from '../../submission/models/submission-options';
+import {
+  BaseWebsiteOptions,
+  ISubmissionOptions,
+  IBaseSubmissionMetadata,
+  IAccount,
+} from '@postybirb/types';
 import { Account } from './account.entity';
 import { BaseEntity } from './base.entity';
 import { Submission } from './submission.entity';

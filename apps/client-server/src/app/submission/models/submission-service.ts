@@ -1,10 +1,9 @@
-import { Submission } from '../../database/entities';
+import { ISubmission, SubmissionMetadataType } from '@postybirb/types';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { SubmissionMetadataType } from './submission-metadata-types';
 
 export interface ISubmissionService<
-  T extends Submission<SubmissionMetadataType>
+  T extends ISubmission<SubmissionMetadataType>
 > {
   populate(
     submission: T,

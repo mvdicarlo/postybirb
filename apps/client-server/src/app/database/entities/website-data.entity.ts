@@ -1,6 +1,5 @@
 import { Entity, Property } from '@mikro-orm/core';
-import { SafeObject } from '../../shared/types/safe-object';
-import { IWebsiteData } from '../../websites/models/website-data';
+import { IWebsiteData, SafeObject } from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 
 @Entity()

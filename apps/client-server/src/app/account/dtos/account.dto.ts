@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IAccountDto } from '@postybirb/dto';
+import { SafeObject, ILoginState } from '@postybirb/types';
 import { IsArray, IsObject, IsString } from 'class-validator';
-import { SafeObject } from '../../shared/types/safe-object';
-import { ILoginState } from '../../websites/models/login-state';
 
 export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
   /**

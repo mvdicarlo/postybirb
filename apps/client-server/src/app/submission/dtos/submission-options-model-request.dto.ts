@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { SubmissionType } from '@postybirb/types';
 import { IsEnum, IsString } from 'class-validator';
-import SubmissionType from '../enums/submission-type';
 
 export class SubmissionOptionsModelRequestDto {
   @ApiProperty()

@@ -1,4 +1,4 @@
-import { ISettingsOptions } from './models/settings';
+import { ISettingsOptions } from '@postybirb/types';
 
 export class SettingsConstants {
   static readonly DEFAULT_PROFILE_NAME = 'default';

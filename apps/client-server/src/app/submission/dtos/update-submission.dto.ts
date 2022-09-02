@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ScheduleType } from '@postybirb/types';
 import { IsBoolean, IsEnum, IsString } from 'class-validator';
-import { ScheduleType } from '../enums/schedule-type';
 
 export class UpdateSubmissionDto {
   @ApiProperty()

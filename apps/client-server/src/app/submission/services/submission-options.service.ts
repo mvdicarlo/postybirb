@@ -7,6 +7,12 @@ import {
 } from '@nestjs/common';
 import { formBuilder, FormBuilderMetadata } from '@postybirb/form-builder';
 import { Log, Logger } from '@postybirb/logger';
+import {
+  SubmissionMetadataType,
+  BaseWebsiteOptions,
+  IBaseSubmissionMetadata,
+  SubmissionType,
+} from '@postybirb/types';
 import { Primitive } from 'type-fest';
 import { AccountService } from '../../account/account.service';
 import { Submission, SubmissionOptions } from '../../database/entities';
@@ -17,10 +23,6 @@ import { WebsiteRegistryService } from '../../websites/website-registry.service'
 import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
 import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-model-request.dto';
 import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
-import SubmissionType from '../enums/submission-type';
-import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
-import { BaseWebsiteOptions } from '../models/base-website-options';
-import { SubmissionMetadataType } from '../models/submission-metadata-types';
 
 @Injectable()
 export class SubmissionOptionsService {

@@ -5,16 +5,14 @@ import {
   WebsiteLoginType,
 } from '@postybirb/dto';
 import { Logger } from '@postybirb/logger';
+import { SafeObject, IAccount, LoginState } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
-import { IAccount } from '../account/models/account';
 import { WebsiteData } from '../database/entities';
-import { SafeObject } from '../shared/types/safe-object';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
-import { LoginState } from './models/login-state';
 import WebsiteDataManager from './website-data-manager';
 
 export type UnknownWebsite = Website<any>;

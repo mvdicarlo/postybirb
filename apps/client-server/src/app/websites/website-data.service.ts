@@ -2,8 +2,8 @@ import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { SafeObject } from '@postybirb/types';
 import { WebsiteData } from '../database/entities';
-import { SafeObject } from '../shared/types/safe-object';
 
 /**
  * Simple WebsiteData service (for testing)

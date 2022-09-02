@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable max-classes-per-file */
 import { Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/core';
-import { ISubmissionFile } from '../../file/models/file';
-import { IFileBuffer } from '../../file/models/file-buffer';
-import { FileSubmissionMetadata } from '../../submission/models/file-submission';
-import { ISubmission } from '../../submission/models/submission';
+import {
+  ISubmissionFile,
+  IFileBuffer,
+  ISubmission,
+  FileSubmissionMetadata,
+} from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 import { Submission } from './submission.entity';
 

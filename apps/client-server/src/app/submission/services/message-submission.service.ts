@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { MessageSubmission } from '@postybirb/types';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { MessageSubmission } from '../models/message-submission';
 import { ISubmissionService } from '../models/submission-service';
 
 @Injectable()

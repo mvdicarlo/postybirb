@@ -1,4 +1,4 @@
-export default interface MulterFileMetadata {
+export interface MulterFileMetadata {
   mimeType: string;
   name: string;
   size: number;

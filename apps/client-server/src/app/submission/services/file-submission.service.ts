@@ -3,10 +3,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { FileSubmission } from '@postybirb/types';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { FileSubmission } from '../models/file-submission';
 import { ISubmissionService } from '../models/submission-service';
 
 /**

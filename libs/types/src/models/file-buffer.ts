@@ -1,4 +1,4 @@
-import { IBaseEntity } from '../../database/models/base-entity';
+import { IBaseEntity } from './base-entity';
 import { ISubmissionFile } from './file';
 import { FileDimensions } from './file-dimensions';
 

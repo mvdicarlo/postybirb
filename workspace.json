@@ -255,6 +255,21 @@
       },
       "tags": []
     },
+    "types": {
+      "root": "libs/types",
+      "sourceRoot": "libs/types/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/types/**/*.ts"]
+          }
+        }
+      },
+      "tags": []
+    },
     "ui": {
       "root": "apps/ui",
       "sourceRoot": "apps/ui/src",

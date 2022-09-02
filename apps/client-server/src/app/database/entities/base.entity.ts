@@ -4,8 +4,8 @@ import {
   Property,
   Unique,
 } from '@mikro-orm/core';
+import { IBaseEntity } from '@postybirb/types';
 import { v4 } from 'uuid';
-import { IBaseEntity } from '../models/base-entity';
 
 export abstract class BaseEntity<
     T,

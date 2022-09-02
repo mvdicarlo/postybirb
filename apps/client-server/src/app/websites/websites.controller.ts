@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IWebsiteLoginInfo } from '@postybirb/dto';
-import { SafeObject } from '../shared/types/safe-object';
+import { SafeObject } from '@postybirb/types';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteRegistryService } from './website-registry.service';
 

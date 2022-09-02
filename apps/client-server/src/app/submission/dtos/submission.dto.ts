@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ISubmissionDto } from '@postybirb/dto';
+import {
+  IBaseSubmissionMetadata,
+  SubmissionType,
+  ISubmissionOptions,
+  BaseWebsiteOptions,
+  ISubmissionScheduleInfo,
+  ISubmissionFile,
+} from '@postybirb/types';
 import { IsArray, IsBoolean, IsObject, IsString } from 'class-validator';
-import { ISubmissionFile } from '../../file/models/file';
-import SubmissionType from '../enums/submission-type';
-import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
-import { BaseWebsiteOptions } from '../models/base-website-options';
-import { ISubmissionOptions } from '../models/submission-options';
-import { ISubmissionScheduleInfo } from '../models/submission-schedule-info';
 
 export class SubmissionDto<T extends IBaseSubmissionMetadata>
   implements ISubmissionDto<T>

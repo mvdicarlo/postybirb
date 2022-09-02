@@ -1,5 +1,5 @@
 import { Entity, Property } from '@mikro-orm/core';
-import { ISettings, ISettingsOptions } from '../../settings/models/settings';
+import { ISettings, ISettingsOptions } from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 
 @Entity()

@@ -1,7 +1,5 @@
+import { FileWebsiteOptions, FileSubmission, PostData } from '@postybirb/types';
 import { Class } from 'type-fest';
-import { FileSubmission } from '../../../submission/models/file-submission';
-import FileWebsiteOptions from '../../../submission/models/file-website-options';
-import PostData from '../../../submission/models/post-data';
 import { UnknownWebsite } from '../../website';
 
 /**

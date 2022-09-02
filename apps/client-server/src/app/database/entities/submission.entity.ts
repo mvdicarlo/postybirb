@@ -1,10 +1,13 @@
 import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
-import { ISubmissionFile } from '../../file/models/file';
-import SubmissionType from '../../submission/enums/submission-type';
-import { IBaseSubmissionMetadata } from '../../submission/models/base-submission-metadata';
-import { BaseWebsiteOptions } from '../../submission/models/base-website-options';
-import { ISubmission } from '../../submission/models/submission';
-import { ISubmissionScheduleInfo } from '../../submission/models/submission-schedule-info';
+import {
+  IBaseSubmissionMetadata,
+  ISubmission,
+  SubmissionType,
+  BaseWebsiteOptions,
+  ISubmissionFile,
+  ISubmissionScheduleInfo,
+} from '@postybirb/types';
+
 import { BaseEntity } from './base.entity';
 import { SubmissionFile } from './submission-file.entity';
 import { SubmissionOptions } from './submission-options.entity';

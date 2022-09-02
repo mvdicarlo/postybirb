@@ -1,8 +1,7 @@
 import { EntityRepository } from '@mikro-orm/core';
 import { Logger } from '@postybirb/logger';
-import { IAccount } from '../account/models/account';
+import { SafeObject, IAccount } from '@postybirb/types';
 import { WebsiteData } from '../database/entities';
-import { SafeObject } from '../shared/types/safe-object';
 
 /**
  * Saves website specific data associated with an account.

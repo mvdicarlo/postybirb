@@ -1,4 +1,4 @@
-import { IBaseEntity } from '../../database/models/base-entity';
+import { IBaseEntity } from './base-entity';
 
 export interface IAccount extends IBaseEntity {
   /**

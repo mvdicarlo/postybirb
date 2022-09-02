@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
 import { Log, Logger } from '@postybirb/logger';
+import { FileSubmission, IFileBuffer } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
 import { async as hash } from 'hasha';
@@ -19,8 +20,6 @@ import {
   SubmissionFile,
   ThumbnailFile,
 } from '../database/entities';
-import { FileSubmission } from '../submission/models/file-submission';
-import { IFileBuffer } from './models/file-buffer';
 import { MulterFileInfo } from './models/multer-file-info';
 import { ImageUtil } from './utils/image.util';
 

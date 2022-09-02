@@ -19,10 +19,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { SubmissionType } from '@postybirb/types';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
-import SubmissionType from '../enums/submission-type';
 import { SubmissionService } from '../services/submission.service';
 
 /**

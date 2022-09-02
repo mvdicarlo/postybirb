@@ -1,12 +1,14 @@
+import {
+  ILoginState,
+  FileWebsiteOptions,
+  FileSubmission,
+  MessageSubmission,
+  PostData,
+} from '@postybirb/types';
 import { TestMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
-import { FileSubmission } from '../../../submission/models/file-submission';
-import FileWebsiteOptions from '../../../submission/models/file-website-options';
-import { MessageSubmission } from '../../../submission/models/message-submission';
-import PostData from '../../../submission/models/post-data';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
-import { ILoginState } from '../../models/login-state';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';

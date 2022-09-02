@@ -8,6 +8,15 @@ import {
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
+import {
+  SubmissionMetadataType,
+  ScheduleType,
+  SubmissionType,
+  MessageSubmission,
+  FileSubmission,
+  IBaseSubmissionMetadata,
+  isFileSubmission,
+} from '@postybirb/types';
 import { AccountService } from '../../account/account.service';
 import { Submission } from '../../database/entities';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -15,12 +24,6 @@ import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { SubmissionDto } from '../dtos/submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
-import { ScheduleType } from '../enums/schedule-type';
-import SubmissionType from '../enums/submission-type';
-import { IBaseSubmissionMetadata } from '../models/base-submission-metadata';
-import { FileSubmission, isFileSubmission } from '../models/file-submission';
-import { MessageSubmission } from '../models/message-submission';
-import { SubmissionMetadataType } from '../models/submission-metadata-types';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionOptionsService } from './submission-options.service';

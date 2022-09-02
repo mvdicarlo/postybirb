@@ -1,8 +1,8 @@
-import { IBaseEntity } from '../../database/models/base-entity';
-import { FileSubmissionMetadata } from '../../submission/models/file-submission';
-import { ISubmission } from '../../submission/models/submission';
+import { IBaseEntity } from './base-entity';
 import { IFileBuffer } from './file-buffer';
 import { FileDimensions } from './file-dimensions';
+import { FileSubmissionMetadata } from './file-submission';
+import { ISubmission } from './submission';
 
 export interface ISubmissionFile extends FileDimensions, IBaseEntity {
   id: string;

@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
+import { SafeObject } from '@postybirb/types';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { Account } from '../database/entities';
-import { SafeObject } from '../shared/types/safe-object';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
