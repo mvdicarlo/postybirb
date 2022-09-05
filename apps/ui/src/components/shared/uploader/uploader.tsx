@@ -57,12 +57,14 @@ export default function Uploader() {
   useEffect(() => () => uppy.close(), [uppy]);
 
   return (
-    <Dashboard
-      uppy={uppy}
-      theme={theme}
-      plugins={['Webcam', 'ImageEditor']}
-      width="100%"
-      height="350px"
-    />
+    <div className="postybirb__uploader">
+      <Dashboard
+        uppy={uppy}
+        theme={theme}
+        plugins={['Webcam', 'ImageEditor']}
+        width="100%"
+        height="350px"
+      />
+    </div>
   );
 }

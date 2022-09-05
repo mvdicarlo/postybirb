@@ -11,7 +11,7 @@ import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import SettingsApi from '../../../api/settings.api';
 import { AccountStore } from '../../../stores/account.store';
-import useStore from '../../../stores/use-store';
+import { useStore } from '../../../stores/use-store';
 import AccountLoginCard from '../account-login-card/account-login-card';
 
 type AccountLoginContainerProps = {

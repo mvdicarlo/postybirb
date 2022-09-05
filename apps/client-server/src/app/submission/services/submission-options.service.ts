@@ -129,11 +129,14 @@ export class SubmissionOptionsService {
    * @return {*}  {SubmissionOptions<SafeObject>}
    */
   createDefaultSubmissionOptions(
-    submission: Submission<IBaseSubmissionMetadata>
+    submission: Submission<IBaseSubmissionMetadata>,
+    title: string
   ): SubmissionOptions<BaseWebsiteOptions> {
     const submissionOptions = this.submissionOptionsRepository.create({
       submission,
-      data: {},
+      data: {
+        title,
+      },
     });
 
     return submissionOptions;

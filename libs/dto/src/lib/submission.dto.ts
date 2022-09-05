@@ -1,22 +1,21 @@
-// TODO fill in better
-export interface ISubmissionDto<T> {
+import {
+  ISubmissionFile,
+  IBaseSubmissionMetadata,
+  ISubmissionOptions,
+  ISubmissionScheduleInfo,
+  BaseWebsiteOptions,
+} from '@postybirb/types';
+
+export interface ISubmissionDto<
+  T extends IBaseSubmissionMetadata = IBaseSubmissionMetadata
+> {
   createdAt: Date;
-  files: any[];
+  files: ISubmissionFile[];
   id: string;
   isScheduled: boolean;
   metadata: T;
-  options: any[];
-  schedule: ISubmissionScheduleInfoDto;
+  options: ISubmissionOptions<BaseWebsiteOptions>[];
+  schedule: ISubmissionScheduleInfo;
   type: 'MESSAGE' | 'FILE';
   updatedAt: Date;
-}
-
-export interface ISubmissionScheduleInfoDto {
-  scheduledFor?: string; // CRON string or Date string
-  scheduleType: ScheduleType;
-}
-
-export enum ScheduleType {
-  SINGLE = 'single',
-  RECURRING = 'recurring',
 }

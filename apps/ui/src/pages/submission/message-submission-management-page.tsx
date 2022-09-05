@@ -1,24 +1,20 @@
 import { EuiPageHeader, EuiSpacer } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
-import Uploader from '../../components/shared/uploader/uploader';
 
-export default function SubmissionManagementPage() {
+export default function MessageSubmissionManagementPage() {
   return (
     <>
       <EuiPageHeader
         bottomBorder
-        iconType="documents"
+        iconType="quote"
         pageTitle={
           <FormattedMessage
-            id="submissions.page-header"
-            defaultMessage="Submissions"
+            id="submissions.message-page-header"
+            defaultMessage="Message Submissions"
           />
         }
       />
       <EuiSpacer />
-      <div>
-        <Uploader />
-      </div>
     </>
   );
 }

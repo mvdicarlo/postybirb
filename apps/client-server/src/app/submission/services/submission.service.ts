@@ -124,7 +124,8 @@ export class SubmissionService {
 
     submission.options.add(
       await this.submissionOptionsService.createDefaultSubmissionOptions(
-        submission
+        submission,
+        file ? file.filename : 'New submission'
       )
     );
     await this.submissionRepository.persistAndFlush(submission);

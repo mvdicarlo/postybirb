@@ -13,7 +13,7 @@ import WebsitesApi from '../../../api/websites.api';
 import { ModalProperties } from '../../../shared/common-properties/modal.properties';
 import { AccountKeybinding } from '../../../shared/keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
-import useStore from '../../../stores/use-store';
+import { useStore } from '../../../stores/use-store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
 import Loading from '../../shared/loading/loading';
 import SwitchComponent from '../../shared/switch-component/switch-component';

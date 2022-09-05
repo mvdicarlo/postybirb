@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import StoreManager from './store-manager';
 
-function useStore<S>(store: StoreManager<S>) {
+export function useStore<S>(store: StoreManager<S>) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [state, setState] = useState<S[]>(store.getData());
 
@@ -23,5 +23,3 @@ function useStore<S>(store: StoreManager<S>) {
 
   return { isLoading, state, reload };
 }
-
-export default useStore;

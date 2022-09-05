@@ -19,13 +19,19 @@ import Keybinding, {
   useKeybinding,
 } from '../components/app/keybinding/keybinding';
 import { useGlobalState } from '../global-state';
-import { HomePath, SubmissionsPath } from '../pages/route-paths';
+import {
+  FileSubmissionPath,
+  HomePath,
+  MessageSubmissionPath,
+  SubmissionsPath,
+} from '../pages/route-paths';
 import Routes from '../pages/routes';
 import {
   AccountKeybinding,
   HomeKeybinding,
   SettingsKeybinding,
-  SubmissionsKeybinding,
+  MessageSubmissionsKeybinding,
+  FileSubmissionsKeybinding,
 } from '../shared/keybindings';
 import AppSearch from './app-search';
 import AppSettings from './app-settings';
@@ -71,10 +77,17 @@ export default function AppLayout() {
     },
   };
 
-  const submissionsKeybinding = {
-    keybinding: SubmissionsKeybinding,
+  const messageSubmissionsKeybinding = {
+    keybinding: MessageSubmissionsKeybinding,
     onActivate: () => {
-      history(SubmissionsPath);
+      history(MessageSubmissionPath);
+    },
+  };
+
+  const fileSubmissionsKeybinding = {
+    keybinding: FileSubmissionsKeybinding,
+    onActivate: () => {
+      history(FileSubmissionPath);
     },
   };
 
@@ -86,7 +99,8 @@ export default function AppLayout() {
   useKeybinding(settingsKeybinding);
   useKeybinding(accountKeybinding);
   useKeybinding(homeKeybinding);
-  useKeybinding(submissionsKeybinding);
+  useKeybinding(messageSubmissionsKeybinding);
+  useKeybinding(fileSubmissionsKeybinding);
 
   return (
     <EuiPage paddingSize="none">
@@ -124,7 +138,6 @@ export default function AppLayout() {
           <EuiListGroup maxWidth="none" color="text" gutterSize="none" size="s">
             <EuiListGroupItem
               aria-label="PostyBirb login accounts"
-              color="primary"
               size="s"
               iconType="users"
               onClick={() => toggleAccountLogin()}
@@ -165,25 +178,50 @@ export default function AppLayout() {
             />
             <EuiListGroupItem
               size="s"
-              aria-label="PostyBirb submissions"
+              aria-label="PostyBirb file submissions"
               iconType="documents"
-              onClick={() => submissionsKeybinding.onActivate()}
+              onClick={() => fileSubmissionsKeybinding.onActivate()}
               showToolTip={false}
               label={
                 <EuiToolTip
                   position="right"
                   content={
-                    <Keybinding {...submissionsKeybinding}>
+                    <Keybinding {...fileSubmissionsKeybinding}>
                       <FormattedMessage
-                        id="submissions"
-                        defaultMessage="Submissions"
+                        id="file-submissions"
+                        defaultMessage="File Submissions"
                       />
                     </Keybinding>
                   }
                 >
                   <FormattedMessage
-                    id="submissions"
-                    defaultMessage="Submissions"
+                    id="file-submissions"
+                    defaultMessage="File Submissions"
+                  />
+                </EuiToolTip>
+              }
+            />
+            <EuiListGroupItem
+              size="s"
+              aria-label="PostyBirb message submissions"
+              iconType="quote"
+              onClick={() => messageSubmissionsKeybinding.onActivate()}
+              showToolTip={false}
+              label={
+                <EuiToolTip
+                  position="right"
+                  content={
+                    <Keybinding {...messageSubmissionsKeybinding}>
+                      <FormattedMessage
+                        id="message-submissions"
+                        defaultMessage="Message Submissions"
+                      />
+                    </Keybinding>
+                  }
+                >
+                  <FormattedMessage
+                    id="message-submissions"
+                    defaultMessage="Message Submissions"
                   />
                 </EuiToolTip>
               }
