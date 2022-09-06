@@ -63,7 +63,7 @@ export default function Uploader() {
         theme={theme}
         plugins={['Webcam', 'ImageEditor']}
         width="100%"
-        height="350px"
+        height="250px"
       />
     </div>
   );

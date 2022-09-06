@@ -13,8 +13,6 @@ export default function FileSubmissionManagementPage() {
     (submission) => submission.type === SubmissionType.FILE
   );
 
-  console.log(fileSubmissions);
-
   return (
     <>
       <EuiPageHeader

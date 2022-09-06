@@ -1,8 +1,15 @@
-import { EuiFieldSearch, EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
+import {
+  EuiButtonIcon,
+  EuiFieldText,
+  EuiFlexGroup,
+  EuiFlexItem,
+  EuiSpacer,
+} from '@elastic/eui';
 import { ISubmissionDto } from '@postybirb/dto';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { SubmissionCardTable } from './submission-card-table';
+import { SubmissionGridTable } from './submission-grid-table';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type SubmissionTableProps = {
   submissions: ISubmissionDto[];
 };
@@ -13,25 +20,66 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
   const [searchValue, setSearchValue] = useState<string>();
 
   const lowerCaseSearch = searchValue?.toLowerCase().trim() || '';
-  const filteredSubmissions = submissions.filter((submission) =>
-    submission.options.some((option) =>
-      option.data.title?.toLowerCase()?.includes(lowerCaseSearch)
-    )
+  const filteredSubmissions = useMemo(
+    () =>
+      submissions.filter((submission) =>
+        submission.options.some(
+          (option) =>
+            option.data.title?.toLowerCase()?.includes(lowerCaseSearch) ||
+            !option.data.title
+        )
+      ),
+    [lowerCaseSearch, submissions]
   );
 
-  console.log(filteredSubmissions);
+  const table = useMemo(
+    () =>
+      mode === 'table' ? (
+        <SubmissionGridTable submissions={filteredSubmissions} />
+      ) : (
+        <SubmissionCardTable submissions={filteredSubmissions} />
+      ),
+    [mode, filteredSubmissions]
+  );
 
   return (
     <div className="postybirb__submission-table-container">
-      <EuiFlexGroup gutterSize="m">
+      <EuiFlexGroup gutterSize="m" wrap={false}>
         <EuiFlexItem>
-          <EuiFieldSearch
+          <EuiFieldText
+            icon="search"
             fullWidth
             value={searchValue}
-            onSearch={setSearchValue}
+            aria-label="Submission table search field"
+            name="submission-table-search"
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+            }}
+          />
+        </EuiFlexItem>
+        <EuiFlexItem grow={false}>
+          <EuiButtonIcon
+            iconType="visTable"
+            size="m"
+            iconSize="l"
+            display={mode === 'table' ? 'fill' : 'empty'}
+            onClick={() => setTableMode('table')}
+            aria-label="Table mode"
+          />
+        </EuiFlexItem>
+        <EuiFlexItem grow={false}>
+          <EuiButtonIcon
+            iconType="grid"
+            size="m"
+            iconSize="l"
+            display={mode === 'card' ? 'fill' : 'empty'}
+            onClick={() => setTableMode('card')}
+            aria-label="Card mode"
           />
         </EuiFlexItem>
       </EuiFlexGroup>
+      <EuiSpacer size="m" />
+      {table}
     </div>
   );
 }
