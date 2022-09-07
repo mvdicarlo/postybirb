@@ -14,6 +14,8 @@ export default class StoreManager<T> {
 
   public readonly updates: Observable<T[]>;
 
+  public initLoadCompleted = false;
+
   constructor(
     private readonly websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>
@@ -24,7 +26,11 @@ export default class StoreManager<T> {
     AppSocket.on(websocketDomain, (messages: T[]) =>
       this.handleMessages(messages)
     );
-    refreshDataFn().then((messages: T[]) => this.handleMessages(messages));
+    refreshDataFn()
+      .then((messages: T[]) => this.handleMessages(messages))
+      .finally(() => {
+        this.initLoadCompleted = true;
+      });
   }
 
   private handleMessages(messages: T[]): void {

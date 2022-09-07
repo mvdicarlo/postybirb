@@ -1,4 +1,4 @@
-import { EuiPageHeader, EuiSpacer } from '@elastic/eui';
+import { EuiPageHeader, EuiSpacer, EuiLoadingSpinner } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import Uploader from '../../components/shared/uploader/uploader';
@@ -7,7 +7,15 @@ import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
 export default function FileSubmissionManagementPage() {
-  const { state } = useStore(SubmissionStore);
+  const { state, isLoading } = useStore(SubmissionStore);
+
+  if (isLoading) {
+    return (
+      <div>
+        <EuiLoadingSpinner size="m" />
+      </div>
+    );
+  }
 
   const fileSubmissions = state.filter(
     (submission) => submission.type === SubmissionType.FILE

@@ -23,15 +23,14 @@ import {
   FileSubmissionPath,
   HomePath,
   MessageSubmissionPath,
-  SubmissionsPath,
 } from '../pages/route-paths';
 import Routes from '../pages/routes';
 import {
   AccountKeybinding,
-  HomeKeybinding,
-  SettingsKeybinding,
-  MessageSubmissionsKeybinding,
   FileSubmissionsKeybinding,
+  HomeKeybinding,
+  MessageSubmissionsKeybinding,
+  SettingsKeybinding,
 } from '../shared/keybindings';
 import AppSearch from './app-search';
 import AppSettings from './app-settings';

@@ -9,6 +9,7 @@ import { ISubmissionDto } from '@postybirb/dto';
 import { useMemo, useState } from 'react';
 import { SubmissionCardTable } from './submission-card-table';
 import { SubmissionGridTable } from './submission-grid-table';
+import 'regenerator-runtime';
 
 type SubmissionTableProps = {
   submissions: ISubmissionDto[];
