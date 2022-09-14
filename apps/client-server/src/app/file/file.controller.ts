@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,6 +23,15 @@ import { MulterFileInfo } from './models/multer-file-info';
 @Controller('file')
 export class FileController {
   constructor(private readonly service: FileService) {}
+
+  @Get('thumbnail/:id')
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  async getThumbnail(@Param('id') id: string, @Res() response) {
+    const file = (await this.service.findFile(id, ['thumbnail'])).thumbnail;
+    response.contentType(file.mimeType);
+    response.send(file.buffer);
+  }
 
   @Get('entity/:id')
   @ApiOkResponse()

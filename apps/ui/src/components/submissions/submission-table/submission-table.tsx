@@ -1,5 +1,4 @@
 import {
-  EuiButtonIcon,
   EuiFieldText,
   EuiFlexGroup,
   EuiFlexItem,
@@ -7,9 +6,9 @@ import {
 } from '@elastic/eui';
 import { ISubmissionDto } from '@postybirb/dto';
 import { useMemo, useState } from 'react';
-import { SubmissionCardTable } from './submission-card-table';
-import { SubmissionGridTable } from './submission-grid-table';
 import 'regenerator-runtime';
+import { SubmissionCardTable } from './submission-card-table';
+import './submission-table.css';
 
 type SubmissionTableProps = {
   submissions: ISubmissionDto[];
@@ -17,7 +16,6 @@ type SubmissionTableProps = {
 
 export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
   const { submissions } = props;
-  const [mode, setTableMode] = useState<'table' | 'card'>('table');
   const [searchValue, setSearchValue] = useState<string>();
 
   const lowerCaseSearch = searchValue?.toLowerCase().trim() || '';
@@ -31,16 +29,6 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
         )
       ),
     [lowerCaseSearch, submissions]
-  );
-
-  const table = useMemo(
-    () =>
-      mode === 'table' ? (
-        <SubmissionGridTable submissions={filteredSubmissions} />
-      ) : (
-        <SubmissionCardTable submissions={filteredSubmissions} />
-      ),
-    [mode, filteredSubmissions]
   );
 
   return (
@@ -58,7 +46,7 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
             }}
           />
         </EuiFlexItem>
-        <EuiFlexItem grow={false}>
+        {/* <EuiFlexItem grow={false}>
           <EuiButtonIcon
             iconType="visTable"
             size="m"
@@ -77,10 +65,10 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
             onClick={() => setTableMode('card')}
             aria-label="Card mode"
           />
-        </EuiFlexItem>
+        </EuiFlexItem> */}
       </EuiFlexGroup>
       <EuiSpacer size="m" />
-      {table}
+      <SubmissionCardTable submissions={filteredSubmissions} />
     </div>
   );
 }

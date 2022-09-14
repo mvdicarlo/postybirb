@@ -2,6 +2,8 @@ import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   Optional,
@@ -43,6 +45,7 @@ export class SubmissionService {
       Submission<SubmissionMetadataType>
     >,
     private readonly accountService: AccountService,
+    @Inject(forwardRef(() => SubmissionOptionsService))
     private readonly submissionOptionsService: SubmissionOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
@@ -52,7 +55,7 @@ export class SubmissionService {
   /**
    * Emits submissions onto websocket.
    */
-  private async emit() {
+  public async emit() {
     if (this.webSocket) {
       this.webSocket.emit({
         event: SUBMISSION_UPDATES,

@@ -8,3 +8,4 @@ export * from './lib/website-login-type.dto';
 export * from './lib/set-website-data-request.dto';
 export * from './lib/username-shortcut.dto';
 export * from './lib/submission.dto';
+export * from './lib/update-submission-options.dto';

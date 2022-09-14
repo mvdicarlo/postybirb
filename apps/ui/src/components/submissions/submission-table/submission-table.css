@@ -1,0 +1,19 @@
+.postybirb__submission-table-container .postybirb__submission-card-table {
+  /* box-shadow: inset 16px 0px 16px -16px rgba(0, 0, 0, 0.45),
+    inset -16px 0px 16px -16px rgba(0, 0, 0, 0.45);
+  padding: 1em;
+  background-color: #1c1d22; */
+}
+
+/* TODO media queries for width */
+.postybirb__submission-card-table .postybirb__submission-card-item {
+  /* width: 23%; */
+}
+
+.postybirb__submission-card-table .postybirb__submission-card .euiCard__image {
+  width: calc(100% + 32px);
+}
+
+.postybirb__submission-card-table .postybirb__submission-card img {
+  max-height: 200px;
+}

@@ -2,6 +2,8 @@ import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -23,6 +25,7 @@ import { WebsiteRegistryService } from '../../websites/website-registry.service'
 import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
 import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-model-request.dto';
 import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
+import { SubmissionService } from './submission.service';
 
 @Injectable()
 export class SubmissionOptionsService {
@@ -37,6 +40,8 @@ export class SubmissionOptionsService {
     private readonly submissionOptionsRepository: EntityRepository<
       SubmissionOptions<BaseWebsiteOptions>
     >,
+    @Inject(forwardRef(() => SubmissionService))
+    private readonly submissionService: SubmissionService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService
   ) {}
@@ -114,7 +119,7 @@ export class SubmissionOptionsService {
       const options = await this.findOne(updateSubmissionOptionsDto.id);
       options.data = updateSubmissionOptionsDto.data;
       await this.submissionOptionsRepository.flush();
-
+      this.submissionService.emit();
       return true;
     } catch (err) {
       throw new BadRequestException(err);

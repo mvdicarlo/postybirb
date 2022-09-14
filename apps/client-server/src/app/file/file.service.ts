@@ -1,4 +1,5 @@
 import { EntityRepository } from '@mikro-orm/core';
+import { AutoPath } from '@mikro-orm/core/typings';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -59,11 +60,15 @@ export class FileService {
    *
    * @param {string} id
    */
-  async findFile(id: string, loadData = false): Promise<SubmissionFile> {
+  async findFile(
+    id: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    populate: readonly (keyof SubmissionFile)[] | boolean = false
+  ): Promise<SubmissionFile> {
     try {
       const entity = await this.fileRepository.findOneOrFail(
         { id },
-        { populate: loadData ? ['altFile', 'thumbnail', 'file'] : false }
+        { populate }
       );
 
       return entity;
