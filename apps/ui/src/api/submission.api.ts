@@ -1,4 +1,4 @@
-import { ISubmissionDto } from '@postybirb/dto';
+import { ISubmissionDto, IUpdateSubmissionDto } from '@postybirb/dto';
 import Https from '../transports/https';
 
 export default class SubmissionsApi {
@@ -6,5 +6,9 @@ export default class SubmissionsApi {
 
   static getAll() {
     return SubmissionsApi.request.get<ISubmissionDto[]>();
+  }
+
+  static update(id: string, update: IUpdateSubmissionDto) {
+    return SubmissionsApi.request.patch(id, update);
   }
 }

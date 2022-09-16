@@ -7,7 +7,7 @@ import {
 import { ISubmissionDto } from '@postybirb/dto';
 import { useMemo, useState } from 'react';
 import 'regenerator-runtime';
-import { SubmissionCardTable } from './submission-card-table';
+import { SubmissionCardTable } from './submission-card-table/submission-card-table';
 import './submission-table.css';
 
 type SubmissionTableProps = {

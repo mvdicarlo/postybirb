@@ -197,7 +197,7 @@ export class SubmissionService {
       .catch((err) => {
         throw new BadRequestException(err);
       })
-      .finally(this.emit);
+      .finally(() => this.emit());
   }
 
   /**
