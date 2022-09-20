@@ -1,8 +1,9 @@
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
+import { UnknownWebsite } from '../website';
 
 export function WebsiteMetadata(metadata: IWebsiteMetadata) {
-  return function website(constructor: Class) {
+  return function website(constructor: Class<UnknownWebsite>) {
     const m = { ...metadata };
     // Determine default login refresh
     if (!metadata.refreshInterval) {

@@ -15,6 +15,7 @@ import { WebsiteData } from '../database/entities';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import WebsiteDataManager from './website-data-manager';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnknownWebsite = Website<any>;
 
 export abstract class Website<D extends SafeObject> {

@@ -1,10 +1,10 @@
 import { EuiSpacer } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { DefaultSubmissionNameField } from './default-submission-name-field';
 import { DefaultSubmissionScheduleField } from './default-submission-schedule-field';
 
 type SubmissionTableCardTitleProps = {
-  submission: ISubmissionDto;
+  submission: SubmissionDto;
 };
 
 export function SubmissionTableCardTitle(

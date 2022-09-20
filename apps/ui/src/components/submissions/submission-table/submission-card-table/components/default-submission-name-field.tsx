@@ -1,26 +1,20 @@
 import { EuiFieldText } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
-import { BaseWebsiteOptions, ISubmissionOptions } from '@postybirb/types';
+import { BaseWebsiteOptions } from '@postybirb/types';
 import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import SubmissionOptionsApi from '../../../../../api/submission-options.api';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 
 type DefaultSubmissionNameFieldProps = {
-  submission: ISubmissionDto;
+  submission: SubmissionDto;
 };
-
-function getDefaultOptions<T extends BaseWebsiteOptions>(
-  submission: ISubmissionDto
-): ISubmissionOptions<T> {
-  return submission.options.find((o) => !o.account) as ISubmissionOptions<T>;
-}
 
 export function DefaultSubmissionNameField(
   props: DefaultSubmissionNameFieldProps
 ): JSX.Element {
   const { submission } = props;
   const { id: defaultOptionId, data: defaultOptions } =
-    getDefaultOptions(submission);
+    submission.getDefaultOptions(submission);
 
   const submitDefaultOptionChanges = useCallback(
     (options: BaseWebsiteOptions) => {

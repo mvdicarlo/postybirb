@@ -1,9 +1,9 @@
 import { EuiCard } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { getUrlSource } from '../../../../../transports/https';
 import { SubmissionTableCardTitle } from './submission-table-card-title';
 
-type SubmissionTableCardProps = { submission: ISubmissionDto };
+type SubmissionTableCardProps = { submission: SubmissionDto };
 
 export function SubmissionTableCard(
   props: SubmissionTableCardProps

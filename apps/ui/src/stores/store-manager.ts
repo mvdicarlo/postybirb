@@ -1,4 +1,5 @@
-import { Subject, Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { Constructor } from 'type-fest';
 import AppSocket from '../transports/websocket';
 
 /**
@@ -18,7 +19,8 @@ export default class StoreManager<T> {
 
   constructor(
     private readonly websocketDomain: string,
-    private readonly refreshDataFn: () => Promise<T[]>
+    private readonly refreshDataFn: () => Promise<T[]>,
+    private readonly ModelConstructor?: Constructor<T>
   ) {
     this.data = [];
     this.subject = new Subject<T[]>();
@@ -35,6 +37,10 @@ export default class StoreManager<T> {
 
   private handleMessages(messages: T[]): void {
     this.data = messages ?? [];
+    if (this.ModelConstructor) {
+      const { ModelConstructor } = this;
+      this.data = this.data.map((d) => new ModelConstructor(d));
+    }
     this.subject.next([...this.data]);
   }
 

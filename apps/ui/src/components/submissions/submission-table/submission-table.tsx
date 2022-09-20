@@ -4,14 +4,14 @@ import {
   EuiFlexItem,
   EuiSpacer,
 } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
 import { useMemo, useState } from 'react';
 import 'regenerator-runtime';
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionCardTable } from './submission-card-table/submission-card-table';
 import './submission-table.css';
 
 type SubmissionTableProps = {
-  submissions: ISubmissionDto[];
+  submissions: SubmissionDto[];
 };
 
 export function SubmissionTable(props: SubmissionTableProps): JSX.Element {

@@ -1,5 +1,6 @@
 import { CustomLoginType, UserLoginType } from '@postybirb/dto';
 import { Class } from 'type-fest';
+import { UnknownWebsite } from '../website';
 
 /**
  * Identifies the website as having a user login flow.
@@ -7,7 +8,7 @@ import { Class } from 'type-fest';
  * @param {string} url
  */
 export function UserLoginFlow(url: string) {
-  return function website(constructor: Class) {
+  return function website(constructor: Class<UnknownWebsite>) {
     const loginType: UserLoginType = {
       type: 'user',
       url,
@@ -25,7 +26,7 @@ export function UserLoginFlow(url: string) {
  * @param {string} [loginComponentName]
  */
 export function CustomLoginFlow(loginComponentName?: string) {
-  return function website(constructor: Class) {
+  return function website(constructor: Class<UnknownWebsite>) {
     const loginType: CustomLoginType = {
       type: 'custom',
       loginComponentName: loginComponentName ?? constructor.name,

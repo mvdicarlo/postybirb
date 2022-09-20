@@ -1,10 +1,10 @@
 import { EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
 import { useMemo } from 'react';
+import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { SubmissionTableCard } from './components/submission-table-card';
 
 type SubmissionCardTableProps = {
-  submissions: ISubmissionDto[];
+  submissions: SubmissionDto[];
 };
 
 export function SubmissionCardTable({
