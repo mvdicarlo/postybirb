@@ -7,7 +7,7 @@
 
 /* TODO media queries for width */
 .postybirb__submission-card-table .postybirb__submission-card-item {
-  /* width: 23%; */
+  width: min(23%, 250px);
 }
 
 .postybirb__submission-card-table .postybirb__submission-card .euiCard__image {

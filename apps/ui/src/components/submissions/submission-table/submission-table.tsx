@@ -1,13 +1,18 @@
 import {
   EuiFieldText,
-  EuiFlexGroup,
-  EuiFlexItem,
+  EuiHeader,
+  EuiHeaderSection,
+  EuiHeaderSectionItem,
+  EuiHeaderSectionItemButton,
+  EuiIcon,
   EuiSpacer,
 } from '@elastic/eui';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import 'regenerator-runtime';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
-import { SubmissionCardTable } from './submission-card-table/submission-card-table';
+import { SubmissionCardTable } from './components/submission-card-table/submission-card-table';
+import { SubmissionTableActions } from './components/submission-table-actions/submission-table-actions';
 import './submission-table.css';
 
 type SubmissionTableProps = {
@@ -17,6 +22,25 @@ type SubmissionTableProps = {
 export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
   const { submissions } = props;
   const [searchValue, setSearchValue] = useState<string>();
+  const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<string[]>(
+    []
+  );
+
+  const onSelect = useCallback(
+    (id: string) => {
+      const copy = [...selectedSubmissionIds];
+
+      const index = selectedSubmissionIds.indexOf(id);
+      if (index === -1) {
+        copy.push(id);
+      } else {
+        copy.splice(index, 1);
+      }
+
+      setSelectedSubmissionIds(copy);
+    },
+    [selectedSubmissionIds]
+  );
 
   const lowerCaseSearch = searchValue?.toLowerCase().trim() || '';
   const filteredSubmissions = useMemo(
@@ -33,42 +57,48 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
 
   return (
     <div className="postybirb__submission-table-container">
-      <EuiFlexGroup gutterSize="m" wrap={false}>
-        <EuiFlexItem>
-          <EuiFieldText
-            icon="search"
-            fullWidth
-            value={searchValue}
-            aria-label="Submission table search field"
-            name="submission-table-search"
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-            }}
-          />
-        </EuiFlexItem>
-        {/* <EuiFlexItem grow={false}>
-          <EuiButtonIcon
-            iconType="visTable"
-            size="m"
-            iconSize="l"
-            display={mode === 'table' ? 'fill' : 'empty'}
-            onClick={() => setTableMode('table')}
-            aria-label="Table mode"
-          />
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiButtonIcon
-            iconType="grid"
-            size="m"
-            iconSize="l"
-            display={mode === 'card' ? 'fill' : 'empty'}
-            onClick={() => setTableMode('card')}
-            aria-label="Card mode"
-          />
-        </EuiFlexItem> */}
-      </EuiFlexGroup>
+      <EuiHeader style={{ position: 'sticky', top: 64 }}>
+        <EuiHeaderSection style={{ marginRight: '1em' }}>
+          <EuiHeaderSectionItem>
+            <SubmissionTableActions
+              onSelectAll={() => {
+                setSelectedSubmissionIds(
+                  submissions.map((submission) => submission.id)
+                );
+              }}
+              selected={submissions.filter((submission) =>
+                selectedSubmissionIds.includes(submission.id)
+              )}
+            />
+          </EuiHeaderSectionItem>
+        </EuiHeaderSection>
+        <EuiHeaderSection grow>
+          <EuiHeaderSectionItem className="w-full">
+            <EuiFieldText
+              icon="search"
+              fullWidth
+              compressed
+              value={searchValue}
+              aria-label="Submission table search field"
+              name="submission-table-search"
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+              }}
+            />
+          </EuiHeaderSectionItem>
+        </EuiHeaderSection>
+        <EuiHeaderSection style={{ marginLeft: '.50em' }}>
+          <EuiHeaderSectionItem>
+            {filteredSubmissions.length} / {submissions.length}
+          </EuiHeaderSectionItem>
+        </EuiHeaderSection>
+      </EuiHeader>
       <EuiSpacer size="m" />
-      <SubmissionCardTable submissions={filteredSubmissions} />
+      <SubmissionCardTable
+        submissions={filteredSubmissions}
+        selectedSubmissionIds={selectedSubmissionIds}
+        onSelect={onSelect}
+      />
     </div>
   );
 }

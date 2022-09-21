@@ -1,7 +1,7 @@
 import { EuiDatePicker } from '@elastic/eui';
 import moment, { Moment } from 'moment';
 import { useEffect, useState } from 'react';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 
 type DefaultSubmissionScheduleFieldProps = {
   submission: SubmissionDto;

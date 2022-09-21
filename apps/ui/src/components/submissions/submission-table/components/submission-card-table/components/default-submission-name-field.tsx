@@ -2,8 +2,8 @@ import { EuiFieldText } from '@elastic/eui';
 import { BaseWebsiteOptions } from '@postybirb/types';
 import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import SubmissionOptionsApi from '../../../../../api/submission-options.api';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import SubmissionOptionsApi from '../../../../../../api/submission-options.api';
+import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 
 type DefaultSubmissionNameFieldProps = {
   submission: SubmissionDto;

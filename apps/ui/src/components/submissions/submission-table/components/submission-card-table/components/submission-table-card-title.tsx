@@ -1,5 +1,6 @@
 import { EuiSpacer } from '@elastic/eui';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import { stopEventPropagation } from '../../../../../../helpers/event-handlers.helper';
+import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { DefaultSubmissionNameField } from './default-submission-name-field';
 import { DefaultSubmissionScheduleField } from './default-submission-schedule-field';
 
@@ -11,7 +12,7 @@ export function SubmissionTableCardTitle(
   props: SubmissionTableCardTitleProps
 ): JSX.Element {
   return (
-    <div>
+    <div onClickCapture={stopEventPropagation}>
       <DefaultSubmissionNameField {...props} />
       <EuiSpacer size="xs" />
       <DefaultSubmissionScheduleField {...props} />
