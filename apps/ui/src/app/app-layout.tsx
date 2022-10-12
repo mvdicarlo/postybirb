@@ -26,6 +26,14 @@ import {
 } from '../pages/route-paths';
 import Routes from '../pages/routes';
 import {
+  ArrowUpIcon,
+  FileIcon,
+  GearIcon,
+  HomeIcon,
+  MessageIcon,
+  UserGroupIcon,
+} from '../shared/icons/Icons';
+import {
   AccountKeybinding,
   FileSubmissionsKeybinding,
   HomeKeybinding,
@@ -130,7 +138,7 @@ export default function AppLayout() {
             color="success"
             aria-label="Update PostyBirb"
             fullWidth
-            iconType="sortUp"
+            iconType={ArrowUpIcon}
           >
             <FormattedMessage id="update" defaultMessage="Update" />
           </EuiButton>
@@ -138,7 +146,7 @@ export default function AppLayout() {
             <EuiListGroupItem
               aria-label="PostyBirb login accounts"
               size="s"
-              iconType="users"
+              iconType={UserGroupIcon.GroupItem}
               onClick={() => toggleAccountLogin()}
               label={
                 <EuiToolTip
@@ -159,7 +167,7 @@ export default function AppLayout() {
             <EuiListGroupItem
               size="s"
               aria-label="PostyBirb home"
-              iconType="home"
+              iconType={HomeIcon.GroupItem}
               onClick={() => homeKeybinding.onActivate()}
               showToolTip={false}
               label={
@@ -178,7 +186,7 @@ export default function AppLayout() {
             <EuiListGroupItem
               size="s"
               aria-label="PostyBirb file submissions"
-              iconType="documents"
+              iconType={FileIcon.GroupItem}
               onClick={() => fileSubmissionsKeybinding.onActivate()}
               showToolTip={false}
               label={
@@ -203,7 +211,7 @@ export default function AppLayout() {
             <EuiListGroupItem
               size="s"
               aria-label="PostyBirb message submissions"
-              iconType="quote"
+              iconType={MessageIcon.GroupItem}
               onClick={() => messageSubmissionsKeybinding.onActivate()}
               showToolTip={false}
               label={
@@ -228,7 +236,7 @@ export default function AppLayout() {
             <EuiListGroupItem
               size="s"
               aria-label="PostyBirb settings"
-              iconType="gear"
+              iconType={GearIcon.GroupItem}
               onClick={() => toggleSettings()}
               showToolTip={false}
               label={

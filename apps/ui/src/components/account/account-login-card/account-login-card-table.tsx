@@ -15,6 +15,7 @@ import { IAccountDto, ILoginState, IWebsiteLoginInfo } from '@postybirb/dto';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
+import { PencilIcon, SaveIcon } from '../../../shared/icons/Icons';
 import AccountApi from '../../../api/account.api';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
@@ -54,7 +55,7 @@ function NameColumn(props: {
         }}
         append={
           <EuiButtonIcon
-            iconType="save"
+            iconType={SaveIcon}
             onClick={() => {
               onNameUpdate(editedName.trim());
               toggleEditing(false);
@@ -72,7 +73,10 @@ function NameColumn(props: {
       <EuiToolTip
         content={<FormattedMessage id="edit" defaultMessage="Edit" />}
       >
-        <EuiButtonIcon iconType="pencil" onClick={() => toggleEditing(true)} />
+        <EuiButtonIcon
+          iconType={PencilIcon}
+          onClick={() => toggleEditing(true)}
+        />
       </EuiToolTip>
     </>
   );
@@ -134,7 +138,7 @@ function GroupsColumn(props: {
         />
         <EuiButtonIcon
           style={{ marginLeft: '4px' }}
-          iconType="save"
+          iconType={SaveIcon}
           onClick={() => {
             onGroupsUpdate(selectedGroups.map((g) => g.value as string));
             toggleEditing(false);
@@ -153,7 +157,7 @@ function GroupsColumn(props: {
       ))}
       <EuiButtonIcon
         style={{ marginLeft: '4px' }}
-        iconType="pencil"
+        iconType={PencilIcon}
         onClick={() => toggleEditing(true)}
       />
     </span>

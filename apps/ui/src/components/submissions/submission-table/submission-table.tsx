@@ -3,12 +3,9 @@ import {
   EuiHeader,
   EuiHeaderSection,
   EuiHeaderSectionItem,
-  EuiHeaderSectionItemButton,
-  EuiIcon,
   EuiSpacer,
 } from '@elastic/eui';
 import { useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import 'regenerator-runtime';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionCardTable } from './components/submission-card-table/submission-card-table';
@@ -21,7 +18,7 @@ type SubmissionTableProps = {
 
 export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
   const { submissions } = props;
-  const [searchValue, setSearchValue] = useState<string>();
+  const [searchValue, setSearchValue] = useState<string>('');
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<string[]>(
     []
   );
@@ -42,7 +39,7 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
     [selectedSubmissionIds]
   );
 
-  const lowerCaseSearch = searchValue?.toLowerCase().trim() || '';
+  const lowerCaseSearch = searchValue.toLowerCase().trim();
   const filteredSubmissions = useMemo(
     () =>
       submissions.filter((submission) =>
@@ -61,6 +58,10 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
         <EuiHeaderSection style={{ marginRight: '1em' }}>
           <EuiHeaderSectionItem>
             <SubmissionTableActions
+              submissions={submissions}
+              onUnselectAll={() => {
+                setSelectedSubmissionIds([]);
+              }}
               onSelectAll={() => {
                 setSelectedSubmissionIds(
                   submissions.map((submission) => submission.id)

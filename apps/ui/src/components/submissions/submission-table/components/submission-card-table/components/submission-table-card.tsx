@@ -1,5 +1,9 @@
 import { EuiCard } from '@elastic/eui';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
+import {
+  SquareCheckedIcon,
+  SquareIcon,
+} from '../../../../../../shared/icons/Icons';
 import { getUrlSource } from '../../../../../../transports/https';
 import { SubmissionTableCardTitle } from './submission-table-card-title';
 
@@ -34,7 +38,7 @@ export function SubmissionTableCard(
         },
         isSelected: selected,
         children: <span>{}</span>,
-        iconType: selected ? 'stopFilled' : 'stop',
+        iconType: selected ? SquareCheckedIcon : SquareIcon,
       }}
     />
   );

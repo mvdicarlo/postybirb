@@ -3,6 +3,7 @@ import { SubmissionType } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import Uploader from '../../components/shared/uploader/uploader';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
+import { FileIcon } from '../../shared/icons/Icons';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
@@ -17,7 +18,7 @@ export default function FileSubmissionManagementPage() {
     <>
       <EuiPageHeader
         bottomBorder
-        iconType="documents"
+        iconType={FileIcon.Header}
         pageTitle={
           <FormattedMessage
             id="submissions.file-page-header"

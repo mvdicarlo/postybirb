@@ -209,7 +209,7 @@ export class AccountService implements OnModuleInit {
         );
       }
       return {
-        ...account,
+        ...account.toJSON(),
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
       };

@@ -32,6 +32,7 @@ export default function AccountLoginCardTitle(
         </EuiButton>
         {website.isHidden ? (
           <EuiButtonIcon
+            className="ml-1"
             iconType="eye"
             aria-label={`Hide ${displayName}`}
             onClick={() => {
@@ -40,6 +41,7 @@ export default function AccountLoginCardTitle(
           />
         ) : (
           <EuiButtonIcon
+            className="ml-1"
             iconType="eyeClosed"
             aria-label={`Unhide ${displayName}`}
             onClick={() => {

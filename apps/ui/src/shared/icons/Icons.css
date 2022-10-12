@@ -1,0 +1,33 @@
+.icon-xl-page-header-title {
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  -webkit-transform: translate(0, 0);
+  -moz-transform: translate(0, 0);
+  -ms-transform: translate(0, 0);
+  transform: translate(0, 0);
+  inline-size: 32px;
+  block-size: 32px;
+  position: relative;
+  inset-block-start: -4px;
+  -webkit-margin-end: 16px;
+  margin-inline-end: 16px;
+}
+
+.icon-m {
+  -webkit-flex-shrink: 0;
+  -ms-flex-negative: 0;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  -webkit-transform: translate(0, 0);
+  -moz-transform: translate(0, 0);
+  -ms-transform: translate(0, 0);
+  transform: translate(0, 0);
+  inline-size: 16px;
+  block-size: 16px;
+}

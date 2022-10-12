@@ -26,6 +26,7 @@ export function DeleteAccountPopover(props: { id: string }) {
           content={<FormattedMessage id="delete" defaultMessage="Delete" />}
         >
           <EuiButtonIcon
+            className="ml-1"
             iconType="trash"
             color="danger"
             onClick={() => setOpen(true)}
