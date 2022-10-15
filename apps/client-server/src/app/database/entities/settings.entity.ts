@@ -3,7 +3,7 @@ import { ISettings, ISettingsOptions } from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 
 @Entity()
-export class Settings extends BaseEntity<Settings, 'id'> implements ISettings {
+export class Settings extends BaseEntity<Settings> implements ISettings {
   @Property({ nullable: false })
   profile: string;
 

@@ -11,4 +11,8 @@ export default class SubmissionsApi {
   static update(id: string, update: IUpdateSubmissionDto) {
     return SubmissionsApi.request.patch(id, update);
   }
+
+  static remove(id: string) {
+    return SubmissionsApi.request.delete(id);
+  }
 }

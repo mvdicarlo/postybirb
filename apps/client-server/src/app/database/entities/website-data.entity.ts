@@ -4,7 +4,7 @@ import { BaseEntity } from './base.entity';
 
 @Entity()
 export class WebsiteData<T extends SafeObject>
-  extends BaseEntity<WebsiteData<T>, 'id'>
+  extends BaseEntity<WebsiteData<T>>
   implements IWebsiteData<T>
 {
   @Property({ type: 'json' })

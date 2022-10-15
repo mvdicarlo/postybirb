@@ -4,7 +4,7 @@ import { BaseEntity } from './base.entity';
 import { SubmissionOptions } from './submission-options.entity';
 
 @Entity()
-export class Account extends BaseEntity<Account, 'id'> implements IAccount {
+export class Account extends BaseEntity<Account> implements IAccount {
   @Property({ type: 'string', nullable: false })
   name: string;
 

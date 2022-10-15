@@ -11,7 +11,7 @@ import { Submission } from './submission.entity';
 
 @Entity()
 export class SubmissionOptions<T extends BaseWebsiteOptions>
-  extends BaseEntity<SubmissionOptions<T>, 'id'>
+  extends BaseEntity<SubmissionOptions<T>>
   implements ISubmissionOptions<T>
 {
   @ManyToOne({

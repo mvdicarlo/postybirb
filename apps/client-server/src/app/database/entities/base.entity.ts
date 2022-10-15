@@ -7,12 +7,8 @@ import {
 import { IBaseEntity } from '@postybirb/types';
 import { v4 } from 'uuid';
 
-export abstract class BaseEntity<
-    T,
-    PK extends keyof T,
-    P extends string = never
-  >
-  extends BaseMikroOrmEntity<T, PK, P>
+export abstract class BaseEntity<T extends IBaseEntity = IBaseEntity>
+  extends BaseMikroOrmEntity<T, 'id', never>
   implements IBaseEntity
 {
   @PrimaryKey()
@@ -24,6 +20,9 @@ export abstract class BaseEntity<
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
+
+  @Property({ nullable: true })
+  markedForDeletion = false;
 
   constructor(props?: Partial<T>) {
     super();

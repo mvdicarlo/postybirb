@@ -84,6 +84,26 @@ export class SubmissionController {
     ).map(mapper);
   }
 
+  @Patch(':id')
+  @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  update(
+    @Param('id') id: string,
+    @Body() updateSubmissionDto: UpdateSubmissionDto
+  ) {
+    return this.service.update(id, updateSubmissionDto);
+  }
+
+  @Delete(':id')
+  @ApiOkResponse({
+    description: 'Submission deleted successfully.',
+    type: Boolean,
+  })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
+  }
+
   @Post('file/add/:id')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -183,25 +203,5 @@ export class SubmissionController {
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   async removeFile(@Param('id') id: string, @Param('fileId') fileId: string) {
     return this.service.removeFile(id, fileId);
-  }
-
-  @Patch(':id')
-  @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
-  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  update(
-    @Param('id') id: string,
-    @Body() updateSubmissionDto: UpdateSubmissionDto
-  ) {
-    return this.service.update(id, updateSubmissionDto);
-  }
-
-  @Delete(':id')
-  @ApiOkResponse({
-    description: 'Submission deleted successfully.',
-    type: Boolean,
-  })
-  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
   }
 }

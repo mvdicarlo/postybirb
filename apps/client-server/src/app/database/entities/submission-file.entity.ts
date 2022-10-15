@@ -12,7 +12,7 @@ import { Submission } from './submission.entity';
 
 @Entity()
 export class SubmissionFile
-  extends BaseEntity<SubmissionFile, 'id'>
+  extends BaseEntity<SubmissionFile>
   implements ISubmissionFile
 {
   @Property({ nullable: false })
@@ -64,7 +64,7 @@ export class SubmissionFile
 
 @Entity()
 export class ThumbnailFile
-  extends BaseEntity<ThumbnailFile, 'id'>
+  extends BaseEntity<ThumbnailFile>
   implements IFileBuffer
 {
   @Property({ type: 'blob', nullable: false })
@@ -91,7 +91,7 @@ export class ThumbnailFile
 
 @Entity()
 export class PrimaryFile
-  extends BaseEntity<PrimaryFile, 'id'>
+  extends BaseEntity<PrimaryFile>
   implements IFileBuffer
 {
   @Property({ type: 'blob', nullable: false })
@@ -117,7 +117,7 @@ export class PrimaryFile
 }
 
 @Entity()
-export class AltFile extends BaseEntity<AltFile, 'id'> implements IFileBuffer {
+export class AltFile extends BaseEntity<AltFile> implements IFileBuffer {
   @Property({ type: 'blob', nullable: false })
   buffer: Buffer;
 

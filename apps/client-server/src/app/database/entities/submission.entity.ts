@@ -14,7 +14,7 @@ import { SubmissionOptions } from './submission-options.entity';
 
 @Entity()
 export class Submission<T extends IBaseSubmissionMetadata>
-  extends BaseEntity<Submission<T>, 'id'>
+  extends BaseEntity<Submission<T>>
   implements ISubmission<T>
 {
   @Property({ type: 'string', nullable: false })
