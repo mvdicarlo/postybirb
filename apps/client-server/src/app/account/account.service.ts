@@ -1,4 +1,4 @@
-import { EntityRepository } from '@mikro-orm/core';
+import { ChangeSetType, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -7,13 +7,22 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Log } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { SafeObject } from '@postybirb/types';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
-import { Class } from 'type-fest';
-import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { Class, Constructor } from 'type-fest';
+import {
+  OnDatabaseUpdate,
+  PostyBirbCRUDService,
+} from '../common/service/postybirb-crud-service';
 import { Account } from '../database/entities';
+import { BaseEntity } from '../database/entities/base.entity';
+import {
+  EntityUpdateRecord,
+  OnDatabaseUpdateCallback,
+} from '../database/subscribers/database.subscriber';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -30,7 +39,7 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
 @Injectable()
 export class AccountService
   extends PostyBirbCRUDService<Account>
-  implements OnModuleInit
+  implements OnModuleInit, OnDatabaseUpdate
 {
   private readonly loginRefreshTimers: Record<
     string,
@@ -41,12 +50,40 @@ export class AccountService
   > = {};
 
   constructor(
+    moduleRef: ModuleRef,
     @InjectRepository(Account)
     repository: EntityRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway
   ) {
-    super(repository, webSocket);
+    super(moduleRef, repository, webSocket);
+  }
+
+  getRegisteredEntities(): Constructor<BaseEntity>[] {
+    return [Account];
+  }
+
+  async onDatabaseUpdate(updates: EntityUpdateRecord<Account>[]) {
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < updates.length; i++) {
+      const [type, account] = updates[i];
+      // eslint-disable-next-line default-case
+      switch (type) {
+        case ChangeSetType.CREATE:
+          this.afterCreate(
+            account,
+            // eslint-disable-next-line no-await-in-loop
+            await this.websiteRegistry.create(account)
+          );
+          break;
+        case ChangeSetType.DELETE:
+          // eslint-disable-next-line no-await-in-loop
+          await this.websiteRegistry.remove(account);
+          break;
+      }
+    }
+
+    this.emit();
   }
 
   /**
@@ -191,9 +228,9 @@ export class AccountService
     }
     const account = this.repository.create(createAccountDto);
     await this.repository.persistAndFlush(account);
-    const website = await this.websiteRegistry.create(account);
-    this.afterCreate(account, website);
-    this.emit();
+    // const website = await this.websiteRegistry.create(account);
+    // this.afterCreate(account, website);
+    // this.emit();
     return account;
   }
 
@@ -238,38 +275,6 @@ export class AccountService
       this.logger.error(e);
       throw new NotFoundException(id);
     }
-  }
-
-  /**
-   * Finds an account matching the Id provided.
-   * Does not return additional login data.
-   *
-   * @param {string} id
-   * @return {*}  {Promise<Account>}
-   */
-  async findOne(id: string): Promise<Account> {
-    try {
-      return await this.repository.findOneOrFail({ id });
-    } catch (e) {
-      this.logger.error(e);
-      throw new NotFoundException(id);
-    }
-  }
-
-  /**
-   * Deleted an Account matching the Id provided.
-   *
-   * @param {string} id
-   * @return {*}  {Promise<void>}
-   */
-  @Log()
-  async remove(id: string): Promise<void> {
-    const account = await this.findOne(id);
-    await this.websiteRegistry.remove(account);
-    return this.repository.removeAndFlush(account).then((result) => {
-      this.emit();
-      return result;
-    });
   }
 
   /**

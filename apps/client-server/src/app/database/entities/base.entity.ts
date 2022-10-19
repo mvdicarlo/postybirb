@@ -1,4 +1,5 @@
 import {
+  AnyEntity,
   BaseEntity as BaseMikroOrmEntity,
   PrimaryKey,
   Property,
@@ -9,7 +10,7 @@ import { v4 } from 'uuid';
 
 export abstract class BaseEntity<T extends IBaseEntity = IBaseEntity>
   extends BaseMikroOrmEntity<T, 'id', never>
-  implements IBaseEntity
+  implements IBaseEntity, AnyEntity<IBaseEntity>
 {
   @PrimaryKey()
   @Unique()
