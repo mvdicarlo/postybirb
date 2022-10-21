@@ -13,16 +13,11 @@ import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { SafeObject } from '@postybirb/types';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class, Constructor } from 'type-fest';
-import {
-  OnDatabaseUpdate,
-  PostyBirbCRUDService,
-} from '../common/service/postybirb-crud-service';
+import { OnDatabaseUpdate } from '../common/service/modifiers/on-database-update';
+import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
 import { Account } from '../database/entities';
 import { BaseEntity } from '../database/entities/base.entity';
-import {
-  EntityUpdateRecord,
-  OnDatabaseUpdateCallback,
-} from '../database/subscribers/database.subscriber';
+import { EntityUpdateRecord } from '../database/subscribers/database.subscriber';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -228,9 +223,6 @@ export class AccountService
     }
     const account = this.repository.create(createAccountDto);
     await this.repository.persistAndFlush(account);
-    // const website = await this.websiteRegistry.create(account);
-    // this.afterCreate(account, website);
-    // this.emit();
     return account;
   }
 
@@ -289,12 +281,11 @@ export class AccountService
     id: string,
     updateAccountDto: UpdateAccountDto
   ): Promise<boolean> {
-    const account = await this.findOne(id);
+    const account: Account = await this.findOne(id);
     account.name = updateAccountDto.name || account.name;
     account.groups = updateAccountDto.groups || account.groups;
     return this.repository
       .flush()
-      .then(() => this.emit())
       .then(() => true)
       .catch((err) => {
         throw new BadRequestException(err);

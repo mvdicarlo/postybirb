@@ -1,19 +1,13 @@
 import { EntityRepository, FilterQuery, FindOptions } from '@mikro-orm/core';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { Constructor } from 'type-fest';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 import { BaseEntity } from '../../database/entities/base.entity';
-import {
-  DatabaseUpdateSubscriber,
-  OnDatabaseUpdateCallback,
-} from '../../database/subscribers/database.subscriber';
+import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
+import { isOnDatabaseQuery } from './modifiers/on-database-query';
+import { isOnDatabaseUpdate } from './modifiers/on-database-update';
 import { PostyBirbService } from './postybirb-service';
-
-export interface OnDatabaseUpdate {
-  getRegisteredEntities: () => Constructor<BaseEntity>[];
-  onDatabaseUpdate: OnDatabaseUpdateCallback;
-}
 
 /**
  * Abstract implementation of common CRUD service operations.
@@ -79,12 +73,11 @@ export abstract class PostyBirbCRUDService<
     const updater = this.moduleRef.get(DatabaseUpdateSubscriber, {
       strict: false,
     });
-    if ('getRegisteredEntities' in this) {
-      const me = this as OnDatabaseUpdate;
 
+    if (isOnDatabaseUpdate(this)) {
       updater.subscribe(
-        me.getRegisteredEntities(),
-        me.onDatabaseUpdate.bind(this)
+        this.getRegisteredEntities(),
+        this.onDatabaseUpdate.bind(this)
       );
     }
   }
@@ -103,15 +96,22 @@ export abstract class PostyBirbCRUDService<
     await this.repository.flush();
   }
 
+  private getQueryOptions(): FindOptions<T, string> {
+    return isOnDatabaseQuery(this) ? this.getDefaultQueryOptions() : {};
+  }
+
   /**
    * Returns a single record by id or throws exception.
    *
    * @param {string} id
    * @return {*}
    */
-  findOne(id: string) {
+  findOne(id: string, options?: FindOptions<T, string>) {
     try {
-      return this.repository.findOneOrFail({ id } as FilterQuery<T>);
+      return this.repository.findOneOrFail(
+        { id } as FilterQuery<T>,
+        options ?? this.getQueryOptions()
+      );
     } catch (e) {
       this.logger.error(e);
       throw new NotFoundException(id);
@@ -124,8 +124,8 @@ export abstract class PostyBirbCRUDService<
    * @param {FilterQuery<T>} query
    * @return {*}
    */
-  find(query: FilterQuery<T>) {
-    return this.repository.find(query);
+  find(query: FilterQuery<T>, options?: FindOptions<T, string>) {
+    return this.repository.find(query, options ?? this.getQueryOptions());
   }
 
   /**
@@ -134,8 +134,8 @@ export abstract class PostyBirbCRUDService<
    * @param {FindOptions<T>} [options]
    * @return {*}
    */
-  findAll(options?: FindOptions<T>) {
-    return this.repository.findAll(options);
+  findAll(options?: FindOptions<T, string>) {
+    return this.repository.findAll(options ?? this.getQueryOptions());
   }
 
   /**
@@ -159,5 +159,21 @@ export abstract class PostyBirbCRUDService<
     // eslint-disable-next-line no-param-reassign
     entity.markedForDeletion = false;
     await this.repository.flush();
+  }
+
+  // DTO Operations
+
+  async findAllAsDto<TClass>(
+    dtoClass?: ClassConstructor<unknown>
+  ): Promise<TClass[]> {
+    const records = await this.repository.findAll();
+
+    if (dtoClass) {
+      return records.map(
+        (record) => plainToClass(dtoClass, record.toJSON()) as TClass
+      );
+    }
+
+    return records.map((record) => record.toJSON() as unknown as TClass);
   }
 }

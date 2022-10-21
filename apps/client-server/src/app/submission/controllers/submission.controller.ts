@@ -22,6 +22,7 @@ import {
 import { SubmissionType } from '@postybirb/types';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { SubmissionDto } from '../dtos/submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { SubmissionService } from '../services/submission.service';
 
@@ -45,7 +46,7 @@ export class SubmissionController {
   @Get()
   @ApiOkResponse({ description: 'A list of all submission records.' })
   findAll() {
-    return this.service.findAllSubmissionDto();
+    return this.service.findAllAsDto(SubmissionDto);
   }
 
   @Post()
