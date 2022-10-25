@@ -1,5 +1,10 @@
-import { EntityRepository, FilterQuery, FindOptions } from '@mikro-orm/core';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  EntityRepository,
+  FilterQuery,
+  FindOptions,
+  ObjectQuery,
+} from '@mikro-orm/core';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { ClassConstructor, plainToClass } from 'class-transformer';
 import { BaseEntity } from '../../database/entities/base.entity';
@@ -18,17 +23,21 @@ import { PostyBirbService } from './postybirb-service';
  * @template T
  */
 @Injectable()
-export abstract class PostyBirbCRUDService<
-  T extends BaseEntity
-> extends PostyBirbService<T> {
+export abstract class PostyBirbCRUDService<T extends BaseEntity>
+  extends PostyBirbService<T>
+  implements OnModuleInit
+{
   constructor(
     private moduleRef: ModuleRef,
     repository: EntityRepository<T>,
     webSocket?: WSGateway
   ) {
     super(repository, webSocket);
-    this.removeMarkedEntities();
     this.registerToDatabaseUpdates();
+  }
+
+  onModuleInit() {
+    this.removeMarkedEntities();
   }
 
   /**
@@ -89,7 +98,7 @@ export abstract class PostyBirbCRUDService<
   private async removeMarkedEntities() {
     const markedEntities = await this.find({
       markedForDeletion: true,
-    } as FilterQuery<T>);
+    } as ObjectQuery<T>);
 
     markedEntities.forEach((entity) => this.repository.remove(entity));
     await this.repository.flush();
@@ -109,7 +118,7 @@ export abstract class PostyBirbCRUDService<
     try {
       return this.repository.findOneOrFail(
         { id } as FilterQuery<T>,
-        options ?? this.getQueryOptions()
+        options || this.getQueryOptions()
       );
     } catch (e) {
       this.logger.error(e);
@@ -123,8 +132,24 @@ export abstract class PostyBirbCRUDService<
    * @param {FilterQuery<T>} query
    * @return {*}
    */
-  find(query: FilterQuery<T>, options?: FindOptions<T, string>) {
-    return this.repository.find(query, options ?? this.getQueryOptions());
+  async find(
+    query: ObjectQuery<T>,
+    options?: FindOptions<T, string>,
+    includeMarkedForDeletion = false
+  ) {
+    const records = await this.repository.find(
+      query,
+      options || this.getQueryOptions()
+    );
+
+    if (query.markedForDeletion) {
+      // eslint-disable-next-line no-param-reassign
+      includeMarkedForDeletion = true;
+    }
+
+    return includeMarkedForDeletion
+      ? records
+      : this.filterMarkedEntities(records);
   }
 
   /**
@@ -133,8 +158,16 @@ export abstract class PostyBirbCRUDService<
    * @param {FindOptions<T>} [options]
    * @return {*}
    */
-  findAll(options?: FindOptions<T, string>) {
-    return this.repository.findAll(options ?? this.getQueryOptions());
+  async findAll(
+    options?: FindOptions<T, string>,
+    includeMarkedForDeletion = false
+  ) {
+    const records = await this.repository.findAll(
+      options || this.getQueryOptions()
+    );
+    return includeMarkedForDeletion
+      ? records
+      : this.filterMarkedEntities(records);
   }
 
   /**
@@ -160,12 +193,27 @@ export abstract class PostyBirbCRUDService<
     await this.repository.flush();
   }
 
+  async undoMarkForDeletion(): Promise<void> {
+    const markedEntities = await this.find({
+      markedForDeletion: true,
+    } as ObjectQuery<T>);
+
+    if (markedEntities.length) {
+      // Order by latest update
+      const orderedBy = markedEntities.sort(
+        (a: T, b: T) => b.updatedAt.getTime() - a.updatedAt.getTime()
+      );
+
+      this.unmarkForDeletion(orderedBy.shift());
+    }
+  }
+
   // DTO Operations
 
   async findAllAsDto<TClass>(
     dtoClass?: ClassConstructor<unknown>
   ): Promise<TClass[]> {
-    const records = await this.repository.findAll();
+    const records = this.filterMarkedEntities(await this.findAll());
 
     if (dtoClass) {
       return records.map(
@@ -174,5 +222,9 @@ export abstract class PostyBirbCRUDService<
     }
 
     return records.map((record) => record.toJSON() as unknown as TClass);
+  }
+
+  private filterMarkedEntities(records: T[]): T[] {
+    return records.filter((record) => !record.markedForDeletion);
   }
 }

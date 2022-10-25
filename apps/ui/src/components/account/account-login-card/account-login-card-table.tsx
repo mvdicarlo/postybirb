@@ -55,6 +55,7 @@ function NameColumn(props: {
         }}
         append={
           <EuiButtonIcon
+            aria-label="Save"
             iconType={SaveIcon}
             onClick={() => {
               onNameUpdate(editedName.trim());
@@ -74,6 +75,7 @@ function NameColumn(props: {
         content={<FormattedMessage id="edit" defaultMessage="Edit" />}
       >
         <EuiButtonIcon
+          aria-label="Edit"
           iconType={PencilIcon}
           onClick={() => toggleEditing(true)}
         />
@@ -137,6 +139,7 @@ function GroupsColumn(props: {
           }}
         />
         <EuiButtonIcon
+          aria-label="save"
           style={{ marginLeft: '4px' }}
           iconType={SaveIcon}
           onClick={() => {
@@ -156,6 +159,7 @@ function GroupsColumn(props: {
         </EuiBadge>
       ))}
       <EuiButtonIcon
+        aria-aria-label="edit"
         style={{ marginLeft: '4px' }}
         iconType={PencilIcon}
         onClick={() => toggleEditing(true)}

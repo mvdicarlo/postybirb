@@ -98,8 +98,13 @@ export class SubmissionController {
     type: Boolean,
   })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Param('id') id: string) {
+    return this.service.markForDeletion(await this.service.findOne(id));
+  }
+
+  @Patch('undo-remove')
+  undoRemove() {
+    return this.service.undoMarkForDeletion();
   }
 
   @Post('file/add/:id')
