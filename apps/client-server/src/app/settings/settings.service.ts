@@ -3,33 +3,42 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { Logger } from '@postybirb/logger';
+import { ModuleRef } from '@nestjs/core';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
-import { Settings } from '../database/entities';
+import { Constructor } from 'type-fest';
+import { OnDatabaseUpdate } from '../common/service/modifiers/on-database-update';
+import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { Account, Settings } from '../database/entities';
+import { BaseEntity } from '../database/entities/base.entity';
+import { EntityUpdateRecord } from '../database/subscribers/database.subscriber';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsConstants } from './settings.constants';
 
 @Injectable()
-export class SettingsService implements OnModuleInit {
-  private readonly logger = Logger(SettingsService.name);
-
+export class SettingsService
+  extends PostyBirbCRUDService<Settings>
+  implements OnModuleInit, OnDatabaseUpdate
+{
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(
+    moduleRef: ModuleRef,
     @InjectRepository(Settings)
-    private readonly settingsRepository: EntityRepository<Settings>,
-    @Optional() private readonly webSocket: WSGateway
-  ) {}
+    repository: EntityRepository<Settings>,
+    @Optional() webSocket: WSGateway
+  ) {
+    super(moduleRef, repository, webSocket);
+  }
 
   /**
    * Initializes default settings if required.
    */
   async onModuleInit() {
     if (
-      !(await this.settingsRepository.count({
+      !(await this.repository.count({
         profile: SettingsConstants.DEFAULT_PROFILE_NAME,
       }))
     ) {
@@ -37,16 +46,30 @@ export class SettingsService implements OnModuleInit {
     }
   }
 
+  getRegisteredEntities(): Constructor<BaseEntity>[] {
+    return [Settings];
+  }
+
+  async onDatabaseUpdate() {
+    this.emit();
+  }
+
+  // Not sure if we'll ever need this
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  create(createDto: unknown): Promise<Settings> {
+    throw new Error('Method not implemented.');
+  }
+
   /**
    * Creates the default settings record.
    */
   private createDefaultAccount() {
-    const entity = this.settingsRepository.create({
+    const entity = this.repository.create({
       profile: SettingsConstants.DEFAULT_PROFILE_NAME,
       settings: SettingsConstants.DEFAULT_SETTINGS,
     });
 
-    this.settingsRepository
+    this.repository
       .persistAndFlush(entity)
       .then(() => {
         this.logger.debug(entity, 'Default settings created');
@@ -59,38 +82,11 @@ export class SettingsService implements OnModuleInit {
   /**
    * Emits settings.
    */
-  private async emit() {
-    if (this.webSocket) {
-      this.webSocket.emit({
-        event: SETTINGS_UPDATES,
-        data: await this.findAll(),
-      });
-    }
-  }
-
-  /**
-   * Returns a list of all Settings profiles.
-   * @return {*}  {Promise<Settings[]>}
-   */
-  async findAll(): Promise<Settings[]> {
-    const settings = await this.settingsRepository.find({});
-    return settings;
-  }
-
-  /**
-   * Finds a settings profile matching the Id provided.
-   *
-   * @param {string} id
-   * @return {*}  {Promise<Settings>}
-   */
-  async findOne(id: string): Promise<Settings> {
-    try {
-      const settings = await this.settingsRepository.findOneOrFail(id);
-      return settings;
-    } catch (e) {
-      this.logger.error(e);
-      throw new NotFoundException(id);
-    }
+  async emit() {
+    super.emit({
+      event: SETTINGS_UPDATES,
+      data: await this.findAll(),
+    });
   }
 
   /**
@@ -101,9 +97,8 @@ export class SettingsService implements OnModuleInit {
   async update(updateSettingsDto: UpdateSettingsDto): Promise<boolean> {
     const settingObj = await this.findOne(updateSettingsDto.id);
     settingObj.settings = updateSettingsDto.settings;
-    return this.settingsRepository
+    return this.repository
       .flush()
-      .then(() => this.emit())
       .then(() => true)
       .catch((err) => {
         throw new BadRequestException(err);

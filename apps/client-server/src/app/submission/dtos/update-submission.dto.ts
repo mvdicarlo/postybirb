@@ -5,6 +5,10 @@ import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
+  @IsString()
+  id: string;
+
+  @ApiProperty()
   @IsBoolean()
   isScheduled: boolean;
 

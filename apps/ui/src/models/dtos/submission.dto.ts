@@ -50,7 +50,8 @@ export class SubmissionDto<
   }
 
   public updateSchedule(date: Moment | null) {
-    return SubmissionsApi.update(this.id, {
+    return SubmissionsApi.update({
+      id: this.id,
       isScheduled: this.isScheduled,
       scheduleType: ScheduleType.SINGLE,
       scheduledFor: date ? date.toISOString() : null,

@@ -166,11 +166,8 @@ export class SubmissionService
    * @param {UpdateSubmissionDto} updateSubmissionDto
    * @return {*}  {Promise<boolean>}
    */
-  async update(
-    id: string,
-    updateSubmissionDto: UpdateSubmissionDto
-  ): Promise<boolean> {
-    const submission = await this.findOne(id);
+  async update(updateSubmissionDto: UpdateSubmissionDto): Promise<boolean> {
+    const submission = await this.findOne(updateSubmissionDto.id);
 
     submission.isScheduled = updateSubmissionDto.isScheduled;
     submission.schedule = {

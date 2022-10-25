@@ -44,11 +44,10 @@ export abstract class PostyBirbCRUDService<
    * Updates an entity given an update value.
    *
    * @abstract
-   * @param {string} id
    * @param {unknown} update
    * @return {*}  {Promise<boolean>}
    */
-  abstract update(id: string, update: unknown): Promise<boolean>;
+  abstract update(update: unknown): Promise<boolean>;
 
   /**
    * Deletes an entity from the database.

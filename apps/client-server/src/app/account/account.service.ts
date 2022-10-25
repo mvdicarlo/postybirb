@@ -277,11 +277,8 @@ export class AccountService
    * @return {*}  {Promise<boolean>}
    */
   @Log()
-  async update(
-    id: string,
-    updateAccountDto: UpdateAccountDto
-  ): Promise<boolean> {
-    const account: Account = await this.findOne(id);
+  async update(updateAccountDto: UpdateAccountDto): Promise<boolean> {
+    const account: Account = await this.findOne(updateAccountDto.id);
     account.name = updateAccountDto.name || account.name;
     account.groups = updateAccountDto.groups || account.groups;
     return this.repository

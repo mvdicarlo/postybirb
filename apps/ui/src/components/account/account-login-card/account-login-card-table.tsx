@@ -248,7 +248,8 @@ export default function AccountLoginCardTable(
           key={name}
           name={name}
           onNameUpdate={(updatedName: string) => {
-            AccountApi.update(record.id, {
+            AccountApi.update({
+              id: record.id,
               name: updatedName,
               groups: record.groups,
             });
@@ -298,7 +299,8 @@ export default function AccountLoginCardTable(
           groups={accountGroups}
           allGroups={groups}
           onGroupsUpdate={(updatedGroups: string[]) => {
-            AccountApi.update(record.id, {
+            AccountApi.update({
+              id: record.id,
               name: record.name,
               groups: updatedGroups,
             });

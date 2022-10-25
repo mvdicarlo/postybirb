@@ -7,7 +7,7 @@ import { FileSubmission } from '@postybirb/types';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { ISubmissionService } from '../models/submission-service';
+import { ISubmissionService } from './submission-service';
 
 /**
  * Service that implements logic for manipulating a FileSubmission.

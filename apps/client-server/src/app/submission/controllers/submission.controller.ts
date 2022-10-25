@@ -85,14 +85,11 @@ export class SubmissionController {
     ).map(mapper);
   }
 
-  @Patch(':id')
+  @Patch()
   @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  update(
-    @Param('id') id: string,
-    @Body() updateSubmissionDto: UpdateSubmissionDto
-  ) {
-    return this.service.update(id, updateSubmissionDto);
+  update(@Body() updateSubmissionDto: UpdateSubmissionDto) {
+    return this.service.update(updateSubmissionDto);
   }
 
   @Delete(':id')

@@ -8,8 +8,8 @@ export default class SubmissionsApi {
     return SubmissionsApi.request.get<ISubmissionDto[]>();
   }
 
-  static update(id: string, update: IUpdateSubmissionDto) {
-    return SubmissionsApi.request.patch(id, update);
+  static update(update: IUpdateSubmissionDto) {
+    return SubmissionsApi.request.patch('', update);
   }
 
   static remove(id: string) {

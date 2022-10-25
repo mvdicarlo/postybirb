@@ -33,8 +33,8 @@ export default class AccountApi {
     return AccountApi.request.post('account-data', request);
   }
 
-  static update(id: string, update: IUpdateAccountDto) {
-    return AccountApi.request.patch(id, update);
+  static update(update: IUpdateAccountDto) {
+    return AccountApi.request.patch('', update);
   }
 
   static refreshLogin(id: string) {

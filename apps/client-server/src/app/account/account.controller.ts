@@ -69,11 +69,11 @@ export class AccountController {
     this.service.manuallyExecuteOnLogin(id);
   }
 
-  @Patch(':id')
+  @Patch()
   @ApiOkResponse({ description: 'Account updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Account Id not found.' })
-  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-    return this.service.update(id, updateAccountDto);
+  update(@Body() updateAccountDto: UpdateAccountDto) {
+    return this.service.update(updateAccountDto);
   }
 
   @Delete(':id')

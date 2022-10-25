@@ -8,6 +8,10 @@ import { IsArray, IsString } from 'class-validator';
 export class UpdateAccountDto implements IUpdateAccountDto {
   @ApiProperty()
   @IsString()
+  id: string;
+
+  @ApiProperty()
+  @IsString()
   name: string;
 
   @ApiProperty()
