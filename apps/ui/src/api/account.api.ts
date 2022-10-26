@@ -13,7 +13,7 @@ export default class AccountApi {
     return AccountApi.request.post('', createAccountDto);
   }
 
-  static delete(id: string) {
+  static remove(id: string) {
     return AccountApi.request.delete(id);
   }
 
