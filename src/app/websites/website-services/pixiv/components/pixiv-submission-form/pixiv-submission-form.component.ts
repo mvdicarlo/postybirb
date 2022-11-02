@@ -17,7 +17,8 @@ export class PixivSubmissionForm  extends BaseWebsiteSubmissionForm implements O
       content: [],
       original: [false],
       sexual: [false],
-      sexualTypes: []
+      sexualTypes: [],
+      aiGenerated: [false]
     };
 
   public tagConfig: TagConfig = {

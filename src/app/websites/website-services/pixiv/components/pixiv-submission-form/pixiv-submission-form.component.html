@@ -30,6 +30,7 @@
 
   <div formGroupName="options" class="row no-gutters section">
     <div class="col-md col-lg col-xl">
+      <mat-checkbox formControlName="aiGenerated">{{'AI Generated' | translate}}</mat-checkbox>
       <mat-checkbox formControlName="communityTags">{{'Allow Community Tags' | translate}}</mat-checkbox>
       <mat-checkbox formControlName="original">{{'Original Work' | translate}}</mat-checkbox>
       <mat-checkbox formControlName="sexual" *ngIf="formGroup.controls.options.value.restrictSexual === '0'">{{'Sexual Content' | translate}}</mat-checkbox>

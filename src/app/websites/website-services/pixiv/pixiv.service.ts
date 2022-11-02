@@ -11,7 +11,6 @@ import { WebsiteStatus, LoginStatus, SubmissionPostData, PostResult } from '../.
 import { PixivSubmissionForm } from './components/pixiv-submission-form/pixiv-submission-form.component';
 import { HTMLParser } from 'src/app/utils/helpers/html-parser.helper';
 import { SubmissionRating } from 'src/app/database/tables/submission.table';
-import { BrowserWindowHelper } from 'src/app/utils/helpers/browser-window.helper';
 
 const ACCEPTED_FILES = ['png', 'jpeg', 'jpg', 'gif'];
 
@@ -114,6 +113,7 @@ export class Pixiv extends BaseWebsiteService {
       'quality[]': '',
       quality_text: '',
       qropen: '',
+      ai_type: postData.options.aiGenerated ? '2' : '1',
       'files[]': filesToPost.map(f => fileAsFormDataObject(f)),
       'file_info[]': filesToPost.map(f => JSON.stringify(f.fileInfo)),
     };
