@@ -176,9 +176,15 @@ export abstract class PostyBirbCRUDService<T extends BaseEntity>
    *
    * @param {T} entity
    */
-  async markForDeletion(entity: T) {
-    // eslint-disable-next-line no-param-reassign
-    entity.markedForDeletion = true;
+  async markForDeletion(entity: T | T[]) {
+    if (Array.isArray(entity)) {
+      // eslint-disable-next-line no-return-assign
+      entity.forEach((e) => (e.markedForDeletion = true));
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      entity.markedForDeletion = true;
+    }
+
     await this.repository.flush();
   }
 
@@ -187,25 +193,16 @@ export abstract class PostyBirbCRUDService<T extends BaseEntity>
    *
    * @param {T} entity
    */
-  async unmarkForDeletion(entity: T) {
-    // eslint-disable-next-line no-param-reassign
-    entity.markedForDeletion = false;
-    await this.repository.flush();
-  }
-
-  async undoMarkForDeletion(): Promise<void> {
-    const markedEntities = await this.find({
-      markedForDeletion: true,
-    } as ObjectQuery<T>);
-
-    if (markedEntities.length) {
-      // Order by latest update
-      const orderedBy = markedEntities.sort(
-        (a: T, b: T) => b.updatedAt.getTime() - a.updatedAt.getTime()
-      );
-
-      this.unmarkForDeletion(orderedBy.shift());
+  async unmarkForDeletion(entity: T | T[]) {
+    if (Array.isArray(entity)) {
+      // eslint-disable-next-line no-return-assign
+      entity.forEach((e) => (e.markedForDeletion = false));
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      entity.markedForDeletion = false;
     }
+
+    await this.repository.flush();
   }
 
   // DTO Operations

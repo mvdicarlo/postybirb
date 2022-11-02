@@ -15,6 +15,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { DeleteQuery } from '../common/service/modifiers/delete-query';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
@@ -76,14 +77,13 @@ export class AccountController {
     return this.service.update(updateAccountDto);
   }
 
-  @Delete(':id')
+  @Delete()
   @ApiOkResponse({
     description: 'Account deleted successfully.',
     type: Boolean,
   })
-  @ApiNotFoundResponse({ description: 'Account Id not found.' })
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Query() query: DeleteQuery) {
+    return DeleteQuery.execute(query, this.service);
   }
 
   @Post('/account-data')

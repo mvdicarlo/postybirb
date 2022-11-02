@@ -52,7 +52,7 @@ export function DeleteAccountPopover(props: { id: string }) {
           iconType="trash"
           onClick={() => {
             setOpen(false);
-            AccountApi.remove(id)
+            AccountApi.remove([id], 'DELETE')
               .then(() => {
                 addToast({
                   id,

@@ -13,6 +13,8 @@ import {
   faSquare as faSquareFilled,
   faSquareMinus,
   faUserGroup,
+  faRotateRight,
+  faRotateBack,
 } from '@fortawesome/free-solid-svg-icons';
 import {
   FontAwesomeIcon,
@@ -72,3 +74,5 @@ export const SquareIcon = FaIcon({ icon: faSquare });
 export const SquareFilledIcon = FaIcon({ icon: faSquareFilled });
 export const SquareCheckedIcon = FaIcon({ icon: faSquareCheck });
 export const SquareMinusIcon = FaIcon({ icon: faSquareMinus });
+export const UndoIcon = FaIcon({ icon: faRotateBack });
+export const RedoIcon = FaIcon({ icon: faRotateRight });

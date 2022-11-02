@@ -232,7 +232,7 @@ export class AccountService
    * @return {*}  {Promise<AccountDto<SafeObject>[]>}
    */
   async findAllAccountDto(): Promise<AccountDto<SafeObject>[]> {
-    const accounts = await this.repository.find({});
+    const accounts = await this.find({});
     return accounts.map((account) => {
       const instance = this.websiteRegistry.findInstance(account);
       if (!instance) {

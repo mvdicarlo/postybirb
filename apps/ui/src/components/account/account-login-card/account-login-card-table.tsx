@@ -159,7 +159,7 @@ function GroupsColumn(props: {
         </EuiBadge>
       ))}
       <EuiButtonIcon
-        aria-aria-label="edit"
+        aria-label="edit"
         style={{ marginLeft: '4px' }}
         iconType={PencilIcon}
         onClick={() => toggleEditing(true)}

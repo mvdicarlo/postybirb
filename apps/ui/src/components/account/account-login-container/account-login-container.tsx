@@ -1,15 +1,21 @@
 import {
+  EuiButtonIcon,
   EuiFilterButton,
   EuiFilterGroup,
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
 import { ISettingsDto, IWebsiteLoginInfo } from '@postybirb/dto';
+import {
+  ActionEntityType,
+  ActionHistory,
+} from 'apps/ui/src/modules/action-history/action-history';
+import { RedoIcon, UndoIcon } from 'apps/ui/src/shared/icons/Icons';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
+import SettingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
-import SettingsApi from '../../../api/settings.api';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
 import AccountLoginCard from '../account-login-card/account-login-card';
@@ -44,6 +50,9 @@ export function AccountLoginContainer(
     'show-hidden-accounts',
     false
   );
+
+  const hasUndoAction = ActionHistory.hasUndoActions(ActionEntityType.ACCOUNT);
+  const hasRedoAction = ActionHistory.hasRedoActions(ActionEntityType.ACCOUNT);
 
   // eslint-disable-next-line react/destructuring-assignment
   const { settings } = props.settings;
@@ -98,6 +107,28 @@ export function AccountLoginContainer(
         </EuiFilterGroup>
       </div>
       <EuiSpacer />
+      {hasUndoAction || hasRedoAction ? (
+        <>
+          <div>
+            <EuiButtonIcon
+              className="mr-1"
+              title="Undo"
+              size="s"
+              iconType={UndoIcon}
+              disabled={!hasUndoAction}
+              onClick={() => ActionHistory.Undo(ActionEntityType.ACCOUNT)}
+            />
+            <EuiButtonIcon
+              title="Redo"
+              size="s"
+              iconType={RedoIcon}
+              disabled={!hasRedoAction}
+              onClick={() => ActionHistory.Redo(ActionEntityType.ACCOUNT)}
+            />
+          </div>
+          <EuiSpacer />
+        </>
+      ) : null}
       <div className="account-login-list">
         {websites.map((website) => (
           <AccountLoginCard

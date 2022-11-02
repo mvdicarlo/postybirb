@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import AccountApi from '../../api/account.api';
 import SubmissionsApi from '../../api/submission.api';
 import { FetchResult } from '../../transports/https';
@@ -15,13 +14,17 @@ export enum ActionType {
 export type Action = {
   type: ActionType;
   entity: ActionEntityType;
-  id: string;
+  ids: string[];
 };
 
-type ActionHistoryStorage = {
-  pointer: number; // Used for tracking undo position
-  actions: Action[]; // Action stack
+type MappedActionList = {
+  [property in ActionEntityType]: {
+    pointer: number; // Used for tracking undo position
+    actions: Action[]; // Action stack
+  };
 };
+
+type ActionHistoryStorage = MappedActionList;
 
 type MappedActions = {
   [property in ActionEntityType]: MappedActionTypes;
@@ -32,34 +35,30 @@ type MappedActionTypes = {
 };
 
 type PossibleActions = {
-  redo: (id: string) => Promise<FetchResult<unknown>>;
-  undo: (id: string) => Promise<FetchResult<unknown>>;
+  redo: (ids: string[]) => Promise<FetchResult<unknown>>;
+  undo: (ids: string[]) => Promise<FetchResult<unknown>>;
 };
 
 const ACTIONS_MAP: MappedActions = {
   SUBMISSION: {
     DELETE: {
-      undo: (id: string) => SubmissionsApi.remove(id),
-      redo: (id: string) => SubmissionsApi.remove(id),
+      undo: (ids: string[]) => SubmissionsApi.remove(ids, 'UNDO'),
+      redo: (ids: string[]) => SubmissionsApi.remove(ids, 'REDO'),
     },
   },
   ACCOUNT: {
     DELETE: {
-      undo: (id: string) => AccountApi.remove(id),
-      redo: (id: string) => AccountApi.remove(id),
+      undo: (ids: string[]) => AccountApi.remove(ids, 'UNDO'),
+      redo: (ids: string[]) => AccountApi.remove(ids, 'REDO'),
     },
   },
 };
 
-const KEY = 'ActionHistory'; // localStorage accessor
+const KEY = 'ActionHistory'; // storage accessor
 
-// TODO return expected error for catch and handle
-// TODO handle failed actions by removing from array
-// TODO fix error returns
-// TODO actual usage
 export class ActionHistory {
   private static GetActionHistory(): ActionHistoryStorage {
-    const value = localStorage.getItem(KEY);
+    const value = sessionStorage.getItem(KEY);
     if (typeof value === 'string') {
       try {
         return JSON.parse(value) as ActionHistoryStorage;
@@ -69,11 +68,14 @@ export class ActionHistory {
       }
     }
 
-    return { pointer: -1, actions: [] };
+    return {
+      [ActionEntityType.ACCOUNT]: { actions: [], pointer: -1 },
+      [ActionEntityType.SUBMISSION]: { actions: [], pointer: -1 },
+    };
   }
 
   private static SetActionHistory(history: ActionHistoryStorage): void {
-    localStorage.setItem(KEY, JSON.stringify(history));
+    sessionStorage.setItem(KEY, JSON.stringify(history));
   }
 
   private static GetActionToExecute(
@@ -95,47 +97,86 @@ export class ActionHistory {
   static RecordAction(action: Action): void {
     const history = ActionHistory.GetActionHistory();
 
-    if (history.pointer !== history.actions.length - 1) {
+    const entityActions = history[action.entity] || {
+      pointer: -1,
+      actions: [],
+    };
+
+    if (entityActions.pointer !== entityActions.actions.length - 1) {
       // need to insert mid-array
-      history.actions.length = history.pointer + 1;
+      entityActions.actions.length = entityActions.pointer + 1;
     }
 
-    history.actions.push(action);
-    history.pointer = history.actions.length - 1;
+    entityActions.actions.push(action);
+    entityActions.pointer = entityActions.actions.length - 1;
+
+    history[action.entity] = entityActions;
 
     ActionHistory.SetActionHistory(history);
   }
 
-  static Redo(): void {
+  static Redo(entity: ActionEntityType): void {
     const history = ActionHistory.GetActionHistory();
-    history.pointer++;
-    const redoAction = history.actions[history.pointer];
+    const entityActions = history[entity] || {
+      pointer: -1,
+      actions: [],
+    };
+
+    // eslint-disable-next-line no-plusplus
+    entityActions.pointer++;
+    const redoAction = entityActions.actions[entityActions.pointer];
     if (redoAction) {
       ActionHistory.SetActionHistory(history);
       const executableActions = ActionHistory.GetActionToExecute(redoAction);
       if (executableActions) {
-        executableActions
-          .redo(redoAction.id)
-          .then(console.log)
-          .catch(console.error);
+        executableActions.redo(redoAction.ids);
       }
     }
   }
 
-  static Undo(): void {
+  static Undo(entity: ActionEntityType): void {
     const history = ActionHistory.GetActionHistory();
-    const undoAction = history.actions[history.pointer];
-    history.pointer--;
+    const entityActions = history[entity] || {
+      pointer: -1,
+      actions: [],
+    };
+
+    const undoAction = entityActions.actions[entityActions.pointer];
+    // eslint-disable-next-line no-plusplus
+    entityActions.pointer--;
     if (undoAction) {
       ActionHistory.SetActionHistory(history);
       const executableActions = ActionHistory.GetActionToExecute(undoAction);
       if (executableActions) {
-        executableActions
-          .undo(undoAction.id)
-          .then(console.log)
-          .catch(console.error);
+        executableActions.undo(undoAction.ids);
       }
     }
+  }
+
+  static hasRedoActions(entity: ActionEntityType): boolean {
+    const history = ActionHistory.GetActionHistory();
+    const entityActions = history[entity] || {
+      pointer: -1,
+      actions: [],
+    };
+
+    return (
+      !!entityActions.actions.length &&
+      entityActions.actions.length - 1 > entityActions.pointer
+    );
+  }
+
+  static hasUndoActions(entity: ActionEntityType): boolean {
+    const history = ActionHistory.GetActionHistory();
+    const entityActions = history[entity] || {
+      pointer: -1,
+      actions: [],
+    };
+
+    return (
+      !!entityActions.actions.length &&
+      entityActions.actions.length - 1 <= entityActions.pointer
+    );
   }
 }
 

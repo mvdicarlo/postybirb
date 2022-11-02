@@ -18,12 +18,27 @@ export default class Https {
 
   constructor(private readonly apiDomain: string) {}
 
-  private createUrl(path?: string, search?: Record<string, Primitive>): string {
+  private createUrl(
+    path?: string,
+    search?: Record<string, Primitive | Primitive[]>
+  ): string {
     const url = new URL(`${this.url}/${path ?? ''}`);
     if (search) {
-      Object.entries(search).forEach(([key, value]) =>
-        url.searchParams.append(key, JSON.stringify(value))
-      );
+      Object.entries(search).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((v) => {
+            url.searchParams.append(
+              key,
+              typeof v === 'string' ? v : JSON.stringify(v)
+            );
+          });
+        } else {
+          url.searchParams.append(
+            key,
+            typeof value === 'string' ? value : JSON.stringify(value)
+          );
+        }
+      });
     }
 
     return url.toString();
@@ -75,7 +90,10 @@ export default class Https {
     return result;
   }
 
-  async delete(path?: string, search?: Record<string, Primitive>) {
+  async delete(
+    path?: string,
+    search?: Record<string, Primitive | Primitive[]>
+  ) {
     const res = await fetch(this.createUrl(path, search), { method: 'DELETE' });
     return this.processResponse(res);
   }
@@ -88,7 +106,7 @@ export default class Https {
   async patch<T, U>(
     path?: string,
     body?: U | BodyInit,
-    search?: Record<string, Primitive>
+    search?: Record<string, Primitive | Primitive[]>
   ) {
     const res = await fetch(this.createUrl(path, search), {
       headers: {
@@ -104,7 +122,7 @@ export default class Https {
   async post<T, U>(
     path?: string,
     body?: U | FormData,
-    search?: Record<string, Primitive>
+    search?: Record<string, Primitive | Primitive[]>
   ) {
     const res = await fetch(this.createUrl(path, search), {
       headers: {

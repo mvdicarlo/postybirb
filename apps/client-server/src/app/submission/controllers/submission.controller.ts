@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
@@ -20,6 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SubmissionType } from '@postybirb/types';
+import { DeleteQuery } from '../../common/service/modifiers/delete-query';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { SubmissionDto } from '../dtos/submission.dto';
@@ -92,19 +94,13 @@ export class SubmissionController {
     return this.service.update(updateSubmissionDto);
   }
 
-  @Delete(':id')
+  @Delete()
   @ApiOkResponse({
     description: 'Submission deleted successfully.',
     type: Boolean,
   })
-  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  async remove(@Param('id') id: string) {
-    return this.service.markForDeletion(await this.service.findOne(id));
-  }
-
-  @Patch('undo-remove')
-  undoRemove() {
-    return this.service.undoMarkForDeletion();
+  async remove(@Query() query: DeleteQuery) {
+    return DeleteQuery.execute(query, this.service);
   }
 
   @Post('file/add/:id')

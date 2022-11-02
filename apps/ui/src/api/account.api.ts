@@ -4,6 +4,11 @@ import {
   ISetWebsiteDataRequestDto,
   IUpdateAccountDto,
 } from '@postybirb/dto';
+import {
+  ActionEntityType,
+  ActionHistory,
+  ActionType,
+} from '../modules/action-history/action-history';
 import Https from '../transports/https';
 
 export default class AccountApi {
@@ -13,8 +18,15 @@ export default class AccountApi {
     return AccountApi.request.post('', createAccountDto);
   }
 
-  static remove(id: string) {
-    return AccountApi.request.delete(id);
+  static remove(ids: string[], action: 'UNDO' | 'REDO' | 'DELETE') {
+    if (action === 'DELETE') {
+      ActionHistory.RecordAction({
+        entity: ActionEntityType.ACCOUNT,
+        type: ActionType.DELETE,
+        ids,
+      });
+    }
+    return AccountApi.request.delete('', { ids, action });
   }
 
   static getAll() {
