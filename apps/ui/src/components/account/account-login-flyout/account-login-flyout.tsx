@@ -11,7 +11,7 @@ import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import WebsitesApi from '../../../api/websites.api';
 import { ModalProperties } from '../../../shared/common-properties/modal.properties';
-import { AccountKeybinding } from '../../../shared/keybindings';
+import { AccountKeybinding } from '../../../shared/app-keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
 import { useStore } from '../../../stores/use-store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';

@@ -4,7 +4,9 @@ import './keybinding.css';
 
 export type KeybindingProps = {
   keybinding: string;
+  // eslint-disable-next-line react/no-unused-prop-types
   onActivate: (event: KeyboardEvent) => void;
+  // eslint-disable-next-line react/no-unused-prop-types, react/require-default-props
   displayOnly?: boolean;
 };
 

@@ -13,7 +13,7 @@ import Keybinding, {
   KeybindingProps,
 } from '../components/app/keybinding/keybinding';
 import { ModalProperties } from '../shared/common-properties/modal.properties';
-import { SettingsKeybinding } from '../shared/keybindings';
+import { SettingsKeybinding } from '../shared/app-keybindings';
 import { AppThemeContext } from './app-theme-provider';
 
 type AppSettingsProps = ModalProperties;

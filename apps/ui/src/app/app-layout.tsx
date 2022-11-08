@@ -39,7 +39,7 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
-} from '../shared/keybindings';
+} from '../shared/app-keybindings';
 import AppSearch from './app-search';
 import AppSettings from './app-settings';
 import { AppThemeContext } from './app-theme-provider';

@@ -82,6 +82,8 @@ async function bootstrap(appPort?: number) {
   await app.listen(port, () => {
     Logger.log(`Listening at https://localhost:${port}/${globalPrefix}`);
   });
+
+  return app;
 }
 
 export { bootstrap as bootstrapClientServer };

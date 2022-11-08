@@ -12,6 +12,7 @@ import { format } from 'url';
 import { isOSX } from '@postybirb/utils/electron';
 import { environment } from '../environments/environment';
 import { rendererAppName, rendererAppPort } from './constants';
+import { INestApplication } from '@nestjs/common';
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
@@ -25,6 +26,8 @@ export default class App {
   static BrowserWindow;
 
   static appTray: Tray;
+
+  static nestApp: INestApplication;
 
   public static isDevelopmentMode() {
     const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
@@ -72,7 +75,10 @@ export default class App {
     }
   }
 
-  private static onQuit() {
+  private static async onQuit() {
+    if (App.nestApp) {
+      await App.nestApp.close();
+    }
     process.exit();
   }
 
@@ -209,5 +215,9 @@ export default class App {
     if (App.application.isReady()) {
       App.onReady();
     }
+  }
+
+  static registerNestApp(nestApp: INestApplication) {
+    App.nestApp = nestApp;
   }
 }

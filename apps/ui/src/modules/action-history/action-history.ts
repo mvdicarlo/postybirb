@@ -17,6 +17,12 @@ export type Action = {
   ids: string[];
 };
 
+export enum HistoryAction {
+  UNDO = 'UNDO',
+  REDO = 'REDO',
+  DELETE = 'DELETE',
+}
+
 type MappedActionList = {
   [property in ActionEntityType]: {
     pointer: number; // Used for tracking undo position
@@ -42,14 +48,14 @@ type PossibleActions = {
 const ACTIONS_MAP: MappedActions = {
   SUBMISSION: {
     DELETE: {
-      undo: (ids: string[]) => SubmissionsApi.remove(ids, 'UNDO'),
-      redo: (ids: string[]) => SubmissionsApi.remove(ids, 'REDO'),
+      undo: (ids: string[]) => SubmissionsApi.remove(ids, HistoryAction.UNDO),
+      redo: (ids: string[]) => SubmissionsApi.remove(ids, HistoryAction.REDO),
     },
   },
   ACCOUNT: {
     DELETE: {
-      undo: (ids: string[]) => AccountApi.remove(ids, 'UNDO'),
-      redo: (ids: string[]) => AccountApi.remove(ids, 'REDO'),
+      undo: (ids: string[]) => AccountApi.remove(ids, HistoryAction.UNDO),
+      redo: (ids: string[]) => AccountApi.remove(ids, HistoryAction.REDO),
     },
   },
 };
@@ -63,8 +69,7 @@ export class ActionHistory {
       try {
         return JSON.parse(value) as ActionHistoryStorage;
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err);
+        // Nothing
       }
     }
 

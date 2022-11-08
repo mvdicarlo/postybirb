@@ -37,6 +37,7 @@ export abstract class PostyBirbCRUDService<T extends BaseEntity>
   }
 
   onModuleInit() {
+    // TODO call implementing class's cleanup method
     this.removeMarkedEntities();
   }
 

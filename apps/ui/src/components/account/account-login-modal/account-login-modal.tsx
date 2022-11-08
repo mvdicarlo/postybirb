@@ -1,4 +1,5 @@
 import {
+  EuiFocusTrap,
   EuiModal,
   EuiModalBody,
   EuiModalHeader,
@@ -25,17 +26,19 @@ export default function AccountLoginModal(props: AccountLoginModalProps) {
       className="postybirb-login-modal-overlay"
       headerZindexLocation="above"
     >
-      <EuiModal
-        initialFocus={initialFocus}
-        maxWidth={false}
-        className="postybirb-login-modal w-screen h-screen"
-        onClose={onClose}
-      >
-        <EuiModalHeader>
-          <EuiModalHeaderTitle>{website.displayName}</EuiModalHeaderTitle>
-        </EuiModalHeader>
-        <EuiModalBody>{children}</EuiModalBody>
-      </EuiModal>
+      <EuiFocusTrap>
+        <EuiModal
+          initialFocus={initialFocus}
+          maxWidth={false}
+          className="postybirb-login-modal w-screen h-screen"
+          onClose={onClose}
+        >
+          <EuiModalHeader>
+            <EuiModalHeaderTitle>{website.displayName}</EuiModalHeaderTitle>
+          </EuiModalHeader>
+          <EuiModalBody>{children}</EuiModalBody>
+        </EuiModal>
+      </EuiFocusTrap>
     </EuiOverlayMask>
   );
 }

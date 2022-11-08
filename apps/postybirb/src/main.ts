@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
@@ -7,6 +8,7 @@ import ElectronEvents from './app/events/electron.events';
 import UpdateEvents from './app/events/update.events';
 import App from './app/app';
 import { environment } from './environments/environment';
+import { INestApplication } from '@nestjs/common';
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
@@ -56,12 +58,13 @@ export default class Main {
     }
   }
 
-  static bootstrapClientServer(): Promise<void> {
+  static bootstrapClientServer(): Promise<INestApplication> {
     return bootstrapClientServer();
   }
 
-  static bootstrapApp() {
+  static bootstrapApp(nestApp: INestApplication) {
     App.main(app, BrowserWindow);
+    App.registerNestApp(nestApp);
   }
 
   static bootstrapAppEvents() {
@@ -79,8 +82,8 @@ Main.initialize();
 
 // bootstrap app
 Main.bootstrapClientServer()
-  .then(() => {
-    Main.bootstrapApp();
+  .then((nestApp) => {
+    Main.bootstrapApp(nestApp);
     Main.bootstrapAppEvents();
   })
   .catch((err) => {

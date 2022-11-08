@@ -8,6 +8,7 @@ import {
   ActionEntityType,
   ActionHistory,
   ActionType,
+  HistoryAction,
 } from '../modules/action-history/action-history';
 import Https from '../transports/https';
 
@@ -18,8 +19,8 @@ export default class AccountApi {
     return AccountApi.request.post('', createAccountDto);
   }
 
-  static remove(ids: string[], action: 'UNDO' | 'REDO' | 'DELETE') {
-    if (action === 'DELETE') {
+  static remove(ids: string[], action: HistoryAction = HistoryAction.DELETE) {
+    if (action === HistoryAction.DELETE) {
       ActionHistory.RecordAction({
         entity: ActionEntityType.ACCOUNT,
         type: ActionType.DELETE,

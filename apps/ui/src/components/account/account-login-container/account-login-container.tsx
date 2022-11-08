@@ -10,6 +10,10 @@ import {
   ActionEntityType,
   ActionHistory,
 } from 'apps/ui/src/modules/action-history/action-history';
+import {
+  RedoKeybinding,
+  UndoKeybinding,
+} from 'apps/ui/src/shared/app-keybindings';
 import { RedoIcon, UndoIcon } from 'apps/ui/src/shared/icons/Icons';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
@@ -18,6 +22,7 @@ import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
+import { useKeybinding } from '../../app/keybinding/keybinding';
 import AccountLoginCard from '../account-login-card/account-login-card';
 
 type AccountLoginContainerProps = {
@@ -53,6 +58,30 @@ export function AccountLoginContainer(
 
   const hasUndoAction = ActionHistory.hasUndoActions(ActionEntityType.ACCOUNT);
   const hasRedoAction = ActionHistory.hasRedoActions(ActionEntityType.ACCOUNT);
+
+  useKeybinding({
+    keybinding: UndoKeybinding,
+    onActivate(event) {
+      if (
+        !(event.target instanceof HTMLInputElement) &&
+        !document.querySelector('.euiModal')
+      ) {
+        ActionHistory.Undo(ActionEntityType.ACCOUNT);
+      }
+    },
+  });
+
+  useKeybinding({
+    keybinding: RedoKeybinding,
+    onActivate(event) {
+      if (
+        !(event.target instanceof HTMLInputElement) &&
+        !document.querySelector('.euiModal')
+      ) {
+        ActionHistory.Redo(ActionEntityType.ACCOUNT);
+      }
+    },
+  });
 
   // eslint-disable-next-line react/destructuring-assignment
   const { settings } = props.settings;
