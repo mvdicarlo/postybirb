@@ -1,28 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>PostyBirb</title>
-    <base href="./" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<head>
+  <meta charset="utf-8" />
+  <title>PostyBirb</title>
+  <base href="./" />
 
-    <link
-      id="light_theme"
-      rel="stylesheet"
-      href="/assets/eui_theme_light.min.css"
-    />
-    <link
-      id="dark_theme"
-      rel="stylesheet"
-      href="/assets/eui_theme_dark.min.css"
-    />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <script type="application/javascript">
-      global = globalThis;
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+  <link id="light_theme" rel="stylesheet" href="/assets/eui_theme_light.min.css" />
+  <link id="dark_theme" rel="stylesheet" href="/assets/eui_theme_dark.min.css" />
+
+  <script type="application/javascript">
+    global = globalThis;
+    window.electron = {
+      getAppVersion: () => '0',
+      platform: 'Web',
+      app_port: location.port,
+      app_version: '0.0'
+    };
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+
 </html>

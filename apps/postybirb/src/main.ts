@@ -1,14 +1,13 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { INestApplication } from '@nestjs/common';
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import * as contextMenu from 'electron-context-menu';
-import SquirrelEvents from './app/events/squirrel.events';
-import ElectronEvents from './app/events/electron.events';
-import UpdateEvents from './app/events/update.events';
 import App from './app/app';
+import ElectronEvents from './app/events/electron.events';
+import SquirrelEvents from './app/events/squirrel.events';
 import { environment } from './environments/environment';
-import { INestApplication } from '@nestjs/common';
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {

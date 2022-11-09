@@ -134,13 +134,7 @@ export default class App {
     if (!App.application.isPackaged) {
       App.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
     } else {
-      App.mainWindow.loadURL(
-        format({
-          pathname: join(__dirname, '..', rendererAppName, 'index.html'),
-          protocol: 'file:',
-          slashes: true,
-        })
-      );
+      App.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
     }
   }
 

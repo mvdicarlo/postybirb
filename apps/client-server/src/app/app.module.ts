@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AccountModule } from './account/account.module';
+import { FileModule } from './file/file.module';
+import { SettingsModule } from './settings/settings.module';
+import { SubmissionModule } from './submission/submission.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
-import { FileModule } from './file/file.module';
-import { SubmissionModule } from './submission/submission.module';
-import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -17,6 +19,10 @@ import { SettingsModule } from './settings/settings.module';
     FileModule,
     SubmissionModule,
     SettingsModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'ui'),
+      exclude: ['/api*'],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
