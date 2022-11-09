@@ -1,4 +1,4 @@
-import { EuiFlexGroup, EuiFlexItem } from '@elastic/eui';
+import { EuiFlexGrid, EuiFlexItem } from '@elastic/eui';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { SubmissionTableCard } from './components/submission-table-card';
@@ -19,11 +19,7 @@ export function SubmissionCardTable({
   const cards = useMemo(
     () =>
       submissions.map((s) => (
-        <EuiFlexItem
-          className="postybirb__submission-card-item"
-          grow={false}
-          key={s.id}
-        >
+        <EuiFlexItem className="postybirb__submission-card-item" key={s.id}>
           <SubmissionTableCard
             submission={s}
             selected={selectedSubmissionIds.includes(s.id)}
@@ -36,9 +32,7 @@ export function SubmissionCardTable({
 
   return (
     <div className="postybirb__submission-card-table">
-      <EuiFlexGroup gutterSize="l" wrap justifyContent="center">
-        {cards}
-      </EuiFlexGroup>
+      <EuiFlexGrid columns={2}>{cards}</EuiFlexGrid>
     </div>
   );
 }

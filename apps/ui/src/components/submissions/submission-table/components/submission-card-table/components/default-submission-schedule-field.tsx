@@ -26,6 +26,7 @@ export function DefaultSubmissionScheduleField({
     <EuiDatePicker
       className="euiFormControlLayout--compressed"
       showTimeSelect
+      fullWidth
       isInvalid={!submission.hasValidScheduleTime()}
       selected={scheduledFor}
       minDate={moment()}

@@ -4,15 +4,18 @@ import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { DefaultSubmissionNameField } from './default-submission-name-field';
 import { DefaultSubmissionScheduleField } from './default-submission-schedule-field';
 
-type SubmissionTableCardTitleProps = {
+type SubmissionTableCardEditableFieldsProps = {
   submission: SubmissionDto;
 };
 
-export function SubmissionTableCardTitle(
-  props: SubmissionTableCardTitleProps
+export function SubmissionTableCardEditableFields(
+  props: SubmissionTableCardEditableFieldsProps
 ): JSX.Element {
   return (
-    <div onClickCapture={stopEventPropagation}>
+    <div
+      className="postybirb__submission-card-editable-fields"
+      onClickCapture={stopEventPropagation}
+    >
       <DefaultSubmissionNameField {...props} />
       <EuiSpacer size="xs" />
       <DefaultSubmissionScheduleField {...props} />
