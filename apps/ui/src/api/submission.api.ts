@@ -21,7 +21,7 @@ export default class SubmissionsApi {
   static remove(ids: string[], action: HistoryAction = HistoryAction.DELETE) {
     if (action === HistoryAction.DELETE) {
       ActionHistory.RecordAction({
-        entity: ActionEntityType.ACCOUNT,
+        entity: ActionEntityType.SUBMISSION,
         type: ActionType.DELETE,
         ids,
       });

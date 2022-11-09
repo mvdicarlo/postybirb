@@ -5,7 +5,11 @@ import {
   EuiHeaderSectionItem,
   EuiSpacer,
 } from '@elastic/eui';
+import SubmissionsApi from 'apps/ui/src/api/submission.api';
+import { useToast } from 'apps/ui/src/app/app-toast-provider';
+import HttpErrorResponse from 'apps/ui/src/models/http-error-response';
 import { useCallback, useMemo, useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import 'regenerator-runtime';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionCardTable } from './components/submission-card-table/submission-card-table';
@@ -18,6 +22,7 @@ type SubmissionTableProps = {
 
 export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
   const { submissions } = props;
+  const { addToast } = useToast();
   const [searchValue, setSearchValue] = useState<string>('');
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<string[]>(
     []
@@ -52,27 +57,63 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
     [lowerCaseSearch, submissions]
   );
 
+  const tableActions = useMemo(
+    () => (
+      <EuiHeaderSection style={{ marginRight: '1em' }}>
+        <EuiHeaderSectionItem>
+          <SubmissionTableActions
+            submissions={submissions}
+            onUnselectAll={() => {
+              setSelectedSubmissionIds([]);
+            }}
+            onSelectAll={() => {
+              setSelectedSubmissionIds(
+                submissions.map((submission) => submission.id)
+              );
+            }}
+            selected={submissions.filter((submission) =>
+              selectedSubmissionIds.includes(submission.id)
+            )}
+            onDeleteSelected={(selected) => {
+              SubmissionsApi.remove(selected.map((s) => s.id))
+                .then(() => {
+                  addToast({
+                    id: Date.now().toString(),
+                    color: 'success',
+                    text: (
+                      <FormattedMessage
+                        id="login.account-removed"
+                        defaultMessage="Account removed"
+                      />
+                    ),
+                  });
+                  setSelectedSubmissionIds([]);
+                })
+                .catch(({ error }: { error: HttpErrorResponse }) => {
+                  addToast({
+                    id: Date.now().toString(),
+                    text: <span>{error.message}</span>,
+                    title: (
+                      <span>
+                        {error.statusCode} {error.error}
+                      </span>
+                    ),
+                    color: 'danger',
+                  });
+                });
+            }}
+          />
+        </EuiHeaderSectionItem>
+      </EuiHeaderSection>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedSubmissionIds, submissions]
+  );
+
   return (
     <div className="postybirb__submission-table-container">
       <EuiHeader style={{ position: 'sticky', top: 64 }}>
-        <EuiHeaderSection style={{ marginRight: '1em' }}>
-          <EuiHeaderSectionItem>
-            <SubmissionTableActions
-              submissions={submissions}
-              onUnselectAll={() => {
-                setSelectedSubmissionIds([]);
-              }}
-              onSelectAll={() => {
-                setSelectedSubmissionIds(
-                  submissions.map((submission) => submission.id)
-                );
-              }}
-              selected={submissions.filter((submission) =>
-                selectedSubmissionIds.includes(submission.id)
-              )}
-            />
-          </EuiHeaderSectionItem>
-        </EuiHeaderSection>
+        {tableActions}
         <EuiHeaderSection grow>
           <EuiHeaderSectionItem className="w-full">
             <EuiFieldText

@@ -14,7 +14,6 @@ import {
   RedoKeybinding,
   UndoKeybinding,
 } from 'apps/ui/src/shared/app-keybindings';
-import { RedoIcon, UndoIcon } from 'apps/ui/src/shared/icons/Icons';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
 import SettingsApi from '../../../api/settings.api';
@@ -143,14 +142,14 @@ export function AccountLoginContainer(
               className="mr-1"
               title="Undo"
               size="s"
-              iconType={UndoIcon}
+              iconType="editorUndo"
               disabled={!hasUndoAction}
               onClick={() => ActionHistory.Undo(ActionEntityType.ACCOUNT)}
             />
             <EuiButtonIcon
               title="Redo"
               size="s"
-              iconType={RedoIcon}
+              iconType="editorRedo"
               disabled={!hasRedoAction}
               onClick={() => ActionHistory.Redo(ActionEntityType.ACCOUNT)}
             />
