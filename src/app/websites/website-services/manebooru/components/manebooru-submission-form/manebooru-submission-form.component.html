@@ -1,0 +1,31 @@
+<form [formGroup]="formGroup">
+  <div class="section">
+    <mat-form-field color="accent">
+      <mat-select formControlName="rating" [placeholder]="'Rating' | translate">
+        <mat-option [value]="null">{{ 'Default' | translate }}</mat-option>
+        <mat-option value="General">{{ 'General' | translate }}</mat-option>
+        <mat-option value="Mature">{{ 'Mature' | translate }}</mat-option>
+        <mat-option value="Adult">{{ 'Adult' | translate }}</mat-option>
+        <mat-option value="Extreme">{{ 'Extreme' | translate }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Description' | translate }}</h6>
+    <description-input formControlName="description" [defaultDescriptionProvider]="parentForm.defaultDescription.changes" class="w-100"></description-input>
+  </div>
+
+  <div class="section">
+    <h6>{{ 'Tags' | translate }}</h6>
+    <tag-input formControlName="tags" class="w-100" [config]="tagConfig" [defaultTagProvider]="parentForm.defaultTags.changes"></tag-input>
+  </div>
+
+  <div formGroupName="options" class="row no-gutters section">
+    <div class="col-md col-lg col-xl">
+      <mat-form-field color="accent">
+        <input matInput placeholder="{{'Source URL' | translate}}" formControlName="sourceURL">
+      </mat-form-field>
+    </div>
+  </div>
+</form>
