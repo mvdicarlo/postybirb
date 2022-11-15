@@ -148,10 +148,17 @@ export class SubmissionService
       }
     }
 
+    let name = 'New submission';
+    if (createSubmissionDto.name) {
+      name = createSubmissionDto.name;
+    } else if (file) {
+      name = file.filename;
+    }
+
     submission.options.add(
       await this.submissionOptionsService.createDefaultSubmissionOptions(
         submission,
-        file ? file.filename : 'New submission'
+        name
       )
     );
 

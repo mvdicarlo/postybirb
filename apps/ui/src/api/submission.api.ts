@@ -1,4 +1,5 @@
 import { ISubmissionDto, IUpdateSubmissionDto } from '@postybirb/dto';
+import { SubmissionType } from '@postybirb/types';
 import {
   ActionEntityType,
   ActionHistory,
@@ -12,6 +13,13 @@ export default class SubmissionsApi {
 
   static getAll() {
     return SubmissionsApi.request.get<ISubmissionDto[]>();
+  }
+
+  static createMessageSubmission(name: string) {
+    SubmissionsApi.request.post('', {
+      name,
+      type: SubmissionType.MESSAGE,
+    });
   }
 
   static update(update: IUpdateSubmissionDto) {

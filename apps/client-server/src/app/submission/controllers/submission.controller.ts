@@ -64,7 +64,7 @@ export class SubmissionController {
       const obj = res.toJSON();
       return obj;
     };
-    if (files.length) {
+    if ((files || []).length) {
       const results = await Promise.all(
         files.map((file, index) => {
           const createFileSubmission = new CreateSubmissionDto();
