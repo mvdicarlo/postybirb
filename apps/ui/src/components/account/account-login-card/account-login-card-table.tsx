@@ -15,9 +15,9 @@ import { IAccountDto, ILoginState, IWebsiteLoginInfo } from '@postybirb/dto';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
-import { PencilIcon, SaveIcon } from '../../../shared/icons/Icons';
 import AccountApi from '../../../api/account.api';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
+import { PencilIcon, SaveIcon } from '../../shared/icons/Icons';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
 import AccountLoginWebview from '../account-login-webview/account-login-webview';
 import {

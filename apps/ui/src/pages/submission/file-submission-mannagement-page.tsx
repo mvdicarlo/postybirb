@@ -1,9 +1,9 @@
 import { EuiPageHeader, EuiProgress, EuiSpacer } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
+import { FileIcon } from '../../components/shared/icons/Icons';
 import Uploader from '../../components/shared/uploader/uploader';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
-import { FileIcon } from '../../shared/icons/Icons';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 

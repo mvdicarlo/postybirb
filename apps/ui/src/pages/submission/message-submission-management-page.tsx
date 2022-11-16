@@ -10,8 +10,8 @@ import { SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import SubmissionsApi from '../../api/submission.api';
+import { MessageIcon } from '../../components/shared/icons/Icons';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
-import { MessageIcon } from '../../shared/icons/Icons';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 

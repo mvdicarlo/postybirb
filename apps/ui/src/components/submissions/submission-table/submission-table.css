@@ -23,6 +23,13 @@
 
 .postybirb__submission-card-table
   .postybirb__submission-card
+  .postybirb__submission-card-actions {
+  display: flex;
+  align-items: center;
+}
+
+.postybirb__submission-card-table
+  .postybirb__submission-card
   .postybirb__submission-card-editable-fields {
   padding-top: 6px;
   padding-bottom: 6px;

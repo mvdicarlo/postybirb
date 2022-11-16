@@ -18,13 +18,6 @@ import { AccountLoginFlyout } from '../components/account/account-login-flyout/a
 import Keybinding, {
   useKeybinding,
 } from '../components/app/keybinding/keybinding';
-import { useGlobalState } from '../global-state';
-import {
-  FileSubmissionPath,
-  HomePath,
-  MessageSubmissionPath,
-} from '../pages/route-paths';
-import Routes from '../pages/routes';
 import {
   ArrowUpIcon,
   FileIcon,
@@ -32,7 +25,14 @@ import {
   HomeIcon,
   MessageIcon,
   UserGroupIcon,
-} from '../shared/icons/Icons';
+} from '../components/shared/icons/Icons';
+import { useGlobalState } from '../global-state';
+import {
+  FileSubmissionPath,
+  HomePath,
+  MessageSubmissionPath,
+} from '../pages/route-paths';
+import Routes from '../pages/routes';
 import {
   AccountKeybinding,
   FileSubmissionsKeybinding,

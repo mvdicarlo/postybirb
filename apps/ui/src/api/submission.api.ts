@@ -11,6 +11,10 @@ import Https from '../transports/https';
 export default class SubmissionsApi {
   private static readonly request: Https = new Https('submission');
 
+  static get(id: string) {
+    return SubmissionsApi.request.get<ISubmissionDto>(id);
+  }
+
   static getAll() {
     return SubmissionsApi.request.get<ISubmissionDto[]>();
   }

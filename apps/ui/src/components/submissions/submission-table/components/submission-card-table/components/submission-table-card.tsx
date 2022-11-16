@@ -1,17 +1,22 @@
 import {
-  EuiCard,
+  EuiButtonIcon,
   EuiFlexGroup,
   EuiFlexItem,
   EuiIcon,
   EuiImage,
-  EuiPanel,
   EuiSplitPanel,
+  EuiToolTip,
 } from '@elastic/eui';
+import { useCallback } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { useNavigate } from 'react-router';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
+import { EditSubmissionPath } from '../../../../../../pages/route-paths';
 import {
   SquareCheckedIcon,
   SquareIcon,
-} from '../../../../../../shared/icons/Icons';
+} from '../../../../../shared/icons/Icons';
+
 import { getUrlSource } from '../../../../../../transports/https';
 import { SubmissionTableCardEditableFields } from './submission-table-card-editable-fields';
 
@@ -28,11 +33,20 @@ export function SubmissionTableCard(
 ): JSX.Element {
   const { submission, selected, onSelect } = props;
   const { files } = submission;
+  const history = useNavigate();
 
   let img: string | undefined;
   if (files.length) {
     img = `${getUrlSource()}/api/file/thumbnail/${files[0].id}`;
   }
+
+  const navToEdit = useCallback(
+    (id: string) => {
+      history(`${EditSubmissionPath}/${id}`);
+    },
+    [history]
+  );
+
   return (
     <EuiSplitPanel.Outer
       className="postybirb__submission-card"
@@ -70,6 +84,22 @@ export function SubmissionTableCard(
             <SubmissionTableCardEditableFields submission={submission} />
           </EuiFlexItem>
         </EuiFlexGroup>
+      </EuiSplitPanel.Inner>
+      <EuiSplitPanel.Inner
+        grow={false}
+        className="postybirb__submission-card-actions"
+      >
+        <EuiToolTip
+          content={<FormattedMessage id="edit" defaultMessage="Edit" />}
+        >
+          <EuiButtonIcon
+            iconType="documentEdit"
+            aria-label="Edit submission"
+            onClick={() => {
+              navToEdit(submission.id);
+            }}
+          />
+        </EuiToolTip>
       </EuiSplitPanel.Inner>
     </EuiSplitPanel.Outer>
   );

@@ -1,6 +1,6 @@
 import { EuiPageHeader, EuiSpacer } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
-import { HomeIcon } from '../../shared/icons/Icons';
+import { HomeIcon } from '../../components/shared/icons/Icons';
 
 export default function HomePage() {
   return (

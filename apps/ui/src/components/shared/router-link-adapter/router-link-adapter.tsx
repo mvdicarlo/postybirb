@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react';
-import { useCustomLinkRouting } from './EuiCustomLink';
+import { useCustomLinkRouting } from '../eui-custom-link/eui-custom-link';
 
 type RouterLinkAdapterProps = {
   to: string;

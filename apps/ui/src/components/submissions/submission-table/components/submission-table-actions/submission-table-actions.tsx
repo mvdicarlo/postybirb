@@ -1,19 +1,19 @@
 import { EuiHeaderSectionItemButton, EuiIcon } from '@elastic/eui';
-import { useKeybinding } from 'apps/ui/src/components/app/keybinding/keybinding';
-import {
-  ActionEntityType,
-  ActionHistory,
-} from 'apps/ui/src/modules/action-history/action-history';
-import {
-  RedoKeybinding,
-  UndoKeybinding,
-} from 'apps/ui/src/shared/app-keybindings';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import {
   SquareFilledIcon,
   SquareIcon,
   SquareMinusIcon,
-} from '../../../../../shared/icons/Icons';
+} from '../../../../shared/icons/Icons';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import {
+  ActionEntityType,
+  ActionHistory,
+} from '../../../../../modules/action-history/action-history';
+import {
+  RedoKeybinding,
+  UndoKeybinding,
+} from '../../../../../shared/app-keybindings';
+import { useKeybinding } from '../../../../app/keybinding/keybinding';
 
 type SubmissionTableActionsProps = {
   selected: SubmissionDto[];

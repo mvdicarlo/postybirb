@@ -5,13 +5,13 @@ import {
   EuiHeaderSectionItem,
   EuiSpacer,
 } from '@elastic/eui';
-import SubmissionsApi from 'apps/ui/src/api/submission.api';
-import { useToast } from 'apps/ui/src/app/app-toast-provider';
-import HttpErrorResponse from 'apps/ui/src/models/http-error-response';
 import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import 'regenerator-runtime';
+import SubmissionsApi from '../../../api/submission.api';
+import { useToast } from '../../../app/app-toast-provider';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import HttpErrorResponse from '../../../models/http-error-response';
 import { SubmissionCardTable } from './components/submission-card-table/submission-card-table';
 import { SubmissionTableActions } from './components/submission-table-actions/submission-table-actions';
 import './submission-table.css';

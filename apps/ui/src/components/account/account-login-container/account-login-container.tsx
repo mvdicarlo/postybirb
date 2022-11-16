@@ -6,19 +6,19 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { ISettingsDto, IWebsiteLoginInfo } from '@postybirb/dto';
-import {
-  ActionEntityType,
-  ActionHistory,
-} from 'apps/ui/src/modules/action-history/action-history';
-import {
-  RedoKeybinding,
-  UndoKeybinding,
-} from 'apps/ui/src/shared/app-keybindings';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
 import SettingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
+import {
+  ActionEntityType,
+  ActionHistory,
+} from '../../../modules/action-history/action-history';
+import {
+  RedoKeybinding,
+  UndoKeybinding,
+} from '../../../shared/app-keybindings';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
 import { useKeybinding } from '../../app/keybinding/keybinding';
