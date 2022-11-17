@@ -10,6 +10,7 @@ import { SettingsModule } from './settings/settings.module';
 import { SubmissionModule } from './submission/submission.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
+import { FormGeneratorModule } from './form-generator/form-generator.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { WebsitesModule } from './websites/websites.module';
       rootPath: join(__dirname, '..', 'ui'),
       exclude: ['/api*'],
     }),
+    FormGeneratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

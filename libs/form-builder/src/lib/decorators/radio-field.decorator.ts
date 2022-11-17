@@ -26,7 +26,7 @@ export function RadioField<T extends PrimitiveRecord>(
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   options.formField = 'radio';
-  return (target, propertyKey: string) => {
+  return (target, propertyKey: any) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }

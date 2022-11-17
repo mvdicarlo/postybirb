@@ -20,7 +20,7 @@ export function BooleanField<T extends PrimitiveRecord>(
   if (!options.formField) {
     options.formField = 'switch';
   }
-  return (target, propertyKey: string) => {
+  return (target, propertyKey: any) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }

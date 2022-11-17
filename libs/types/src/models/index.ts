@@ -20,3 +20,4 @@ export * from './submission-metadata-types';
 export * from './submission-options';
 export * from './submission-schedule-info';
 export * from './website-data';
+export * from './tag-value';

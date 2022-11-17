@@ -15,8 +15,10 @@ export function formBuilder<T extends PrimitiveRecord>(
     value
       .filter((v) => Boolean(v.defaultFrom))
       .forEach((v) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-param-reassign
-        v.defaultValue = (data[v.defaultFrom] ?? v.defaultValue) as any;
+        if (v.defaultFrom) {
+          // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+          v.defaultValue = data[v.defaultFrom] as any;
+        }
       });
   });
 

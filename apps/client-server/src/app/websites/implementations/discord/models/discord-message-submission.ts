@@ -1,5 +1,5 @@
 import { RadioField, TextField } from '@postybirb/form-builder';
-import { BaseWebsiteOptions } from '@postybirb/types';
+import { BaseWebsiteOptions, TagValue } from '@postybirb/types';
 
 // TODO replace placeholders
 export class DiscordMessageSubmission implements BaseWebsiteOptions {
@@ -7,7 +7,7 @@ export class DiscordMessageSubmission implements BaseWebsiteOptions {
   title?: string;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
-  tags: unknown;
+  tags: TagValue;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
   description: unknown;

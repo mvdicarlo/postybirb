@@ -1,12 +1,12 @@
 import { RadioField, TextField } from '@postybirb/form-builder';
-import { BaseWebsiteOptions } from '@postybirb/types';
+import { BaseWebsiteOptions, TagValue } from '@postybirb/types';
 
 export class TestMessageSubmission implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: undefined })
   title?: string;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
-  tags: unknown;
+  tags: TagValue;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
   description: unknown;

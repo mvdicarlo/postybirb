@@ -1,24 +1,28 @@
 /* eslint-disable no-param-reassign */
+import { TagValue } from '@postybirb/types';
 import 'reflect-metadata';
 import { FieldType } from '../types/field';
 import { PrimitiveRecord } from '../types/primitive-record';
 import { assignMetadata } from '../utils/assign-metadata';
 
-type TextFormField = 'input' | 'textarea';
-const TYPE_KEY = 'text';
+type TagFormField = 'tag';
+const TYPE_KEY = 'tag';
 
-export type TextFieldType<T extends PrimitiveRecord> = FieldType<
+export type TagFieldType<T extends PrimitiveRecord> = FieldType<
   T,
-  string,
-  TextFormField
+  TagValue,
+  TagFormField
 >;
 
-export function TextField<T extends PrimitiveRecord>(
-  options: TextFieldType<T>
+export function TagField<T extends PrimitiveRecord>(
+  options: TagFieldType<T>
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   if (!options.formField) {
-    options.formField = 'input';
+    options.formField = 'tag';
+  }
+  if (!options.i18nLabel) {
+    options.i18nLabel = 'form.tags';
   }
   return (target, propertyKey: any) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);

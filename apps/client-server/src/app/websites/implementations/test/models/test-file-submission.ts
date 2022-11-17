@@ -1,5 +1,5 @@
 import { BooleanField, RadioField, TextField } from '@postybirb/form-builder';
-import { FileWebsiteOptions } from '@postybirb/types';
+import { FileWebsiteOptions, TagValue } from '@postybirb/types';
 
 export class TestFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
@@ -12,7 +12,7 @@ export class TestFileSubmission implements FileWebsiteOptions {
   title?: string;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
-  tags: unknown;
+  tags: TagValue;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
   description: unknown;

@@ -66,6 +66,7 @@ async function bootstrap(appPort?: number) {
     .setVersion('1.0')
     .addTag('account')
     .addTag('file')
+    .addTag('form-generator')
     .addTag('submission')
     .addTag('submission-option')
     .addTag('websites')

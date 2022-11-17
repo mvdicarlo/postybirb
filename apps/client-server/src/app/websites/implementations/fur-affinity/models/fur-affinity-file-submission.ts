@@ -1,5 +1,5 @@
 import { BooleanField, RadioField, TextField } from '@postybirb/form-builder';
-import { FileWebsiteOptions } from '@postybirb/types';
+import { FileWebsiteOptions, TagValue } from '@postybirb/types';
 
 // TODO real model
 export class FurAffinityFileSubmission implements FileWebsiteOptions {
@@ -13,7 +13,7 @@ export class FurAffinityFileSubmission implements FileWebsiteOptions {
   title?: string;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
-  tags: unknown;
+  tags: TagValue;
 
   @TextField({ label: 'placeholder', defaultValue: '' })
   description: unknown;
