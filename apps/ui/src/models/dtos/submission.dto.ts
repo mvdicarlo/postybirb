@@ -6,6 +6,7 @@ import {
   ISubmissionOptions,
   ISubmissionScheduleInfo,
   ScheduleType,
+  SubmissionType,
 } from '@postybirb/types';
 import { Moment } from 'moment';
 import SubmissionsApi from '../../api/submission.api';
@@ -29,7 +30,7 @@ export class SubmissionDto<
 
   schedule!: ISubmissionScheduleInfo;
 
-  type!: 'MESSAGE' | 'FILE';
+  type!: SubmissionType;
 
   updatedAt!: Date;
 
@@ -44,9 +45,11 @@ export class SubmissionDto<
   }
 
   public getDefaultOptions(
-    submission: SubmissionDto<T, O>
+    submission?: SubmissionDto<T, O>
   ): ISubmissionOptions<O> {
-    return submission.options.find((o) => !o.account) as ISubmissionOptions<O>;
+    return (submission || this).options.find(
+      (o) => !o.account
+    ) as ISubmissionOptions<O>;
   }
 
   public updateSchedule(date: Moment | null) {
@@ -56,5 +59,9 @@ export class SubmissionDto<
       scheduleType: ScheduleType.SINGLE,
       scheduledFor: date ? date.toISOString() : null,
     });
+  }
+
+  public copy(): SubmissionDto<T, O> {
+    return JSON.parse(JSON.stringify(this));
   }
 }
