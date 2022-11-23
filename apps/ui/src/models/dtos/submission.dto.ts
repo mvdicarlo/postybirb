@@ -62,6 +62,11 @@ export class SubmissionDto<
   }
 
   public copy(): SubmissionDto<T, O> {
-    return JSON.parse(JSON.stringify(this));
+    return new SubmissionDto(JSON.parse(JSON.stringify(this)));
+  }
+
+  public overwrite(from: SubmissionDto<T, O>) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Object.apply(this, from.copy() as any);
   }
 }

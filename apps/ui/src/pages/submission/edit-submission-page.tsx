@@ -1,30 +1,44 @@
 /* eslint-disable no-nested-ternary */
 import {
   EuiBreadcrumb,
+  EuiButton,
+  EuiButtonEmpty,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderSection,
+  EuiHeaderSectionItem,
   EuiLoadingSpinner,
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
-import { useMemo } from 'react';
+import { useMemo, useReducer } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
+import SubmissionsApi from '../../api/submission.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
-import { SubmissionStore } from '../../stores/submission.store';
-import { useStore } from '../../stores/use-store';
+import { SubmissionDto } from '../../models/dtos/submission.dto';
 import NotFound from '../not-found/not-found';
 import { MessageSubmissionPath } from '../route-paths';
 
 export default function EditSubmissionPage() {
   const { id } = useParams();
-  const { state, isLoading } = useStore(SubmissionStore);
   const history = useNavigate();
-  const data = state.find((s) => s.id === id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars
-  const original = useMemo(() => data, [data?.id]);
+  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+
+  const { data, isLoading, isFetching, refetch } = useQuery(
+    [`submission-${id}`],
+    () =>
+      SubmissionsApi.get(id as string).then(
+        (value) => new SubmissionDto(value.body)
+      ),
+    {
+      refetchOnWindowFocus: false,
+      cacheTime: 0,
+    }
+  );
+  const original = useMemo(() => data?.copy(), [data]);
 
   const breadcrumbs: EuiBreadcrumb[] = [
     {
@@ -62,6 +76,7 @@ export default function EditSubmissionPage() {
   return (
     <>
       <EuiHeader
+        style={{ position: 'sticky', top: 0 }}
         sections={[
           {
             items: [
@@ -82,15 +97,46 @@ export default function EditSubmissionPage() {
               lastBreadcrumbIsCurrentPage: true,
             },
           },
+          {
+            items: [
+              <EuiHeaderSection>
+                <EuiHeaderSectionItem className="mr-1">
+                  <EuiButtonEmpty
+                    size="s"
+                    color="ghost"
+                    onClick={() => refetch()}
+                  >
+                    <FormattedMessage id="undo" defaultMessage="Undo" />
+                  </EuiButtonEmpty>
+                </EuiHeaderSectionItem>
+                <EuiHeaderSectionItem>
+                  <EuiButton
+                    size="s"
+                    disabled={JSON.stringify(data) === JSON.stringify(original)}
+                  >
+                    <FormattedMessage
+                      id="submission.save"
+                      defaultMessage="Save"
+                    />
+                  </EuiButton>
+                </EuiHeaderSectionItem>
+              </EuiHeaderSection>,
+            ],
+          },
         ]}
       />
       <EuiSpacer />
-      {isLoading ? (
+      {isLoading || isFetching ? (
         <div className="w-full text-center">
           <EuiLoadingSpinner size="xxl" />
         </div>
       ) : data ? (
-        <SubmissionEditForm submission={data} />
+        <SubmissionEditForm
+          submission={data}
+          onUpdate={() => {
+            forceUpdate();
+          }}
+        />
       ) : (
         <NotFound />
       )}

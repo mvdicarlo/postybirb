@@ -8,12 +8,13 @@ import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 type SubmissionOptionsSectionProps = {
   option: ISubmissionOptions<BaseWebsiteOptions>;
   submission: SubmissionDto;
+  onUpdate: () => void;
 };
 
 export default function SubmissionOptionsSection(
   props: SubmissionOptionsSectionProps
 ) {
-  const { option, submission } = props;
+  const { option, submission, onUpdate } = props;
   const { isLoading, data } = useQuery(
     [option.id],
     async () =>
