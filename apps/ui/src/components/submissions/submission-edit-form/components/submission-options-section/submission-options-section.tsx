@@ -4,6 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import FormGeneratorApi from '../../../../../api/form-generator.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import SubmissionFormGenerator from '../submission-form-generator/submission-form-generator';
 
 type SubmissionOptionsSectionProps = {
   option: ISubmissionOptions<BaseWebsiteOptions>;
@@ -47,7 +48,15 @@ export default function SubmissionOptionsSection(
         </h4>
       </EuiTitle>
       <EuiSpacer />
-      {isLoading ? <EuiLoadingSpinner /> : null}
+      {isLoading ? (
+        <EuiLoadingSpinner />
+      ) : (
+        <SubmissionFormGenerator
+          metadata={data}
+          option={option}
+          onUpdate={onUpdate}
+        />
+      )}
     </div>
   );
 }

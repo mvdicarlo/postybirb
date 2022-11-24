@@ -2,7 +2,6 @@
 import {
   EuiBreadcrumb,
   EuiButton,
-  EuiButtonEmpty,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderSection,
@@ -12,7 +11,8 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
-import { useMemo, useReducer } from 'react';
+import { debounce } from 'lodash';
+import { useCallback, useMemo, useReducer } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
@@ -27,7 +27,7 @@ export default function EditSubmissionPage() {
   const history = useNavigate();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
-  const { data, isLoading, isFetching, refetch } = useQuery(
+  const { data, isLoading, isFetching } = useQuery(
     [`submission-${id}`],
     () =>
       SubmissionsApi.get(id as string).then(
@@ -39,6 +39,13 @@ export default function EditSubmissionPage() {
     }
   );
   const original = useMemo(() => data?.copy(), [data]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onUpdate = useCallback(
+    debounce(() => {
+      forceUpdate();
+    }, 300),
+    []
+  );
 
   const breadcrumbs: EuiBreadcrumb[] = [
     {
@@ -100,15 +107,6 @@ export default function EditSubmissionPage() {
           {
             items: [
               <EuiHeaderSection>
-                <EuiHeaderSectionItem className="mr-1">
-                  <EuiButtonEmpty
-                    size="s"
-                    color="ghost"
-                    onClick={() => refetch()}
-                  >
-                    <FormattedMessage id="undo" defaultMessage="Undo" />
-                  </EuiButtonEmpty>
-                </EuiHeaderSectionItem>
                 <EuiHeaderSectionItem>
                   <EuiButton
                     size="s"
@@ -131,12 +129,7 @@ export default function EditSubmissionPage() {
           <EuiLoadingSpinner size="xxl" />
         </div>
       ) : data ? (
-        <SubmissionEditForm
-          submission={data}
-          onUpdate={() => {
-            forceUpdate();
-          }}
-        />
+        <SubmissionEditForm submission={data} onUpdate={onUpdate} />
       ) : (
         <NotFound />
       )}
