@@ -1,16 +1,11 @@
 import { EuiLoadingSpinner, EuiSpacer, EuiTitle } from '@elastic/eui';
-import { BaseWebsiteOptions, ISubmissionOptions } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import FormGeneratorApi from '../../../../../api/form-generator.api';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import { SubmissionSectionProps } from '../../submission-form-props';
 import SubmissionFormGenerator from '../submission-form-generator/submission-form-generator';
 
-type SubmissionOptionsSectionProps = {
-  option: ISubmissionOptions<BaseWebsiteOptions>;
-  submission: SubmissionDto;
-  onUpdate: () => void;
-};
+type SubmissionOptionsSectionProps = SubmissionSectionProps;
 
 export default function SubmissionOptionsSection(
   props: SubmissionOptionsSectionProps
@@ -52,6 +47,7 @@ export default function SubmissionOptionsSection(
         <EuiLoadingSpinner />
       ) : (
         <SubmissionFormGenerator
+          submission={submission}
           metadata={data}
           option={option}
           onUpdate={onUpdate}

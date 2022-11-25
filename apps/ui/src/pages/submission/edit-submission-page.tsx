@@ -11,7 +11,6 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
-import { debounce } from 'lodash';
 import { useCallback, useMemo, useReducer } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
@@ -40,12 +39,9 @@ export default function EditSubmissionPage() {
   );
   const original = useMemo(() => data?.copy(), [data]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onUpdate = useCallback(
-    debounce(() => {
-      forceUpdate();
-    }, 300),
-    []
-  );
+  const onUpdate = useCallback(() => {
+    forceUpdate();
+  }, []);
 
   const breadcrumbs: EuiBreadcrumb[] = [
     {

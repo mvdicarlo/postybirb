@@ -1,13 +1,10 @@
 import { useMemo } from 'react';
-import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import SubmissionFormSection from './components/submission-form-section/submission-form-section';
 import SubmissionOptionsSection from './components/submission-options-section/submission-options-section';
 import './submission-edit-form.css';
+import { SubmissionFormProps } from './submission-form-props';
 
-type SubmissionEditFormProps = {
-  submission: SubmissionDto;
-  onUpdate: () => void;
-};
+type SubmissionEditFormProps = SubmissionFormProps;
 
 export default function SubmissionEditForm(props: SubmissionEditFormProps) {
   const { submission, onUpdate } = props;

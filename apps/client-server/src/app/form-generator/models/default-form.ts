@@ -1,11 +1,36 @@
-import { TagField, TextField } from '@postybirb/form-builder';
+import {
+  RadioField,
+  RadioOption,
+  TagField,
+  TextField,
+} from '@postybirb/form-builder';
 import {
   BaseWebsiteOptions,
   DefaultTagValue,
+  SubmissionRating,
   TagValue,
 } from '@postybirb/types';
 
-export class DefualtForm implements BaseWebsiteOptions {
+export const DefaultRatingOptions: RadioOption[] = [
+  {
+    label: 'General',
+    value: SubmissionRating.GENERAL,
+  },
+  {
+    label: 'Mature',
+    value: SubmissionRating.MATURE,
+  },
+  {
+    label: 'Adult',
+    value: SubmissionRating.ADULT,
+  },
+  {
+    label: 'Extreme',
+    value: SubmissionRating.EXTREME,
+  },
+];
+
+export class DefaultForm implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
@@ -15,6 +40,10 @@ export class DefualtForm implements BaseWebsiteOptions {
   @TextField({ label: 'placeholder', defaultValue: '' })
   description: unknown;
 
-  @TextField({ label: 'placeholder', defaultValue: '' })
-  rating: unknown;
+  @RadioField({
+    label: 'Rating',
+    defaultValue: SubmissionRating.GENERAL,
+    options: DefaultRatingOptions,
+  })
+  rating: SubmissionRating;
 }
