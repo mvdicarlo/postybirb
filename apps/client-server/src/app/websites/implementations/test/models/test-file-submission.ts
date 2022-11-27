@@ -1,5 +1,16 @@
-import { BooleanField, RadioField, TextField } from '@postybirb/form-builder';
-import { FileWebsiteOptions, TagValue } from '@postybirb/types';
+import {
+  BooleanField,
+  RadioField,
+  TagField,
+  TextField,
+} from '@postybirb/form-builder';
+import {
+  DefaultTagValue,
+  FileWebsiteOptions,
+  SubmissionRating,
+  TagValue,
+} from '@postybirb/types';
+import { DefaultRatingOptions } from '../../../models/default-website-data';
 
 export class TestFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
@@ -8,28 +19,19 @@ export class TestFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Allow resizing image', defaultValue: true })
   allowResize = true;
 
-  @TextField({ label: 'Title', defaultValue: undefined })
+  @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
-  @TextField({ label: 'placeholder', defaultValue: '' })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
   tags: TagValue;
 
-  @TextField({ label: 'placeholder', defaultValue: '' })
+  @TextField({ label: 'Description', defaultValue: '' })
   description: unknown;
 
   @RadioField({
-    label: 'placeholder',
-    defaultValue: '',
-    options: [
-      {
-        value: 'general',
-        label: 'General',
-      },
-      {
-        value: 'mature',
-        label: 'Mature',
-      },
-    ],
+    label: 'Rating',
+    defaultValue: SubmissionRating.GENERAL,
+    options: DefaultRatingOptions,
   })
-  rating: unknown;
+  rating: SubmissionRating;
 }

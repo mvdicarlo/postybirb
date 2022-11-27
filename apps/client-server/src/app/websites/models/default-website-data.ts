@@ -30,14 +30,14 @@ export const DefaultRatingOptions: RadioOption[] = [
   },
 ];
 
-export class DefaultForm implements BaseWebsiteOptions {
+export class DefaultWebsiteOptions implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
   @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
   tags: TagValue;
 
-  @TextField({ label: 'placeholder', defaultValue: '' })
+  @TextField({ label: 'Description', defaultValue: '' })
   description: unknown;
 
   @RadioField({

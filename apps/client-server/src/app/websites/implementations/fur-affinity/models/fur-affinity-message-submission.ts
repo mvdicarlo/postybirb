@@ -1,30 +1,26 @@
-import { RadioField, TextField } from '@postybirb/form-builder';
-import { BaseWebsiteOptions, TagValue } from '@postybirb/types';
+import { TextField, TagField, RadioField } from '@postybirb/form-builder';
+import {
+  BaseWebsiteOptions,
+  DefaultTagValue,
+  SubmissionRating,
+  TagValue,
+} from '@postybirb/types';
+import { DefaultRatingOptions } from '../../../models/default-website-data';
 
-// TODO replace placeholders
 export class FurAffinityMessageSubmission implements BaseWebsiteOptions {
-  @TextField({ label: 'Title', defaultValue: undefined })
+  @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
-  @TextField({ label: 'placeholder', defaultValue: '' })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
   tags: TagValue;
 
-  @TextField({ label: 'placeholder', defaultValue: '' })
+  @TextField({ label: 'Description', defaultValue: '' })
   description: unknown;
 
   @RadioField({
-    label: 'placeholder',
-    defaultValue: '',
-    options: [
-      {
-        value: 'general',
-        label: 'General',
-      },
-      {
-        value: 'mature',
-        label: 'Mature',
-      },
-    ],
+    label: 'Rating',
+    defaultValue: SubmissionRating.GENERAL,
+    options: DefaultRatingOptions,
   })
-  rating: unknown;
+  rating: SubmissionRating;
 }

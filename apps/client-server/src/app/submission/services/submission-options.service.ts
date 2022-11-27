@@ -14,6 +14,7 @@ import {
   BaseWebsiteOptions,
   IBaseSubmissionMetadata,
   SubmissionType,
+  SubmissionRating,
 } from '@postybirb/types';
 import { Primitive } from 'type-fest';
 import { AccountService } from '../../account/account.service';
@@ -141,6 +142,11 @@ export class SubmissionOptionsService {
       submission,
       data: {
         title,
+        rating: SubmissionRating.GENERAL,
+        tags: {
+          tags: [],
+          overrideDefault: false,
+        },
       },
     });
 
