@@ -31,8 +31,8 @@ export const DefaultRatingOptions: RadioOption[] = [
 ];
 
 export class DefaultWebsiteOptions implements BaseWebsiteOptions {
-  @TextField({ label: 'Title', defaultValue: '' })
-  title?: string;
+  @TextField({ label: 'Title', defaultValue: '', required: true })
+  title: string;
 
   @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
   tags: TagValue;
@@ -44,6 +44,7 @@ export class DefaultWebsiteOptions implements BaseWebsiteOptions {
     label: 'Rating',
     defaultValue: SubmissionRating.GENERAL,
     options: DefaultRatingOptions,
+    required: true,
   })
   rating: SubmissionRating;
 }

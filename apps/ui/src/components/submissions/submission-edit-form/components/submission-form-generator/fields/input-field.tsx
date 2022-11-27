@@ -14,6 +14,7 @@ export default function InputField(props: InputFieldProps) {
 
   return (
     <EuiFormRow
+      aria-required={field.required}
       fullWidth={!option.account}
       id={`option-${option.id}-${propKey}`}
       label={field.label}
@@ -21,6 +22,7 @@ export default function InputField(props: InputFieldProps) {
     >
       {field.formField === 'input' ? (
         <EuiFieldText
+          required={field.required}
           fullWidth={!option.account}
           compressed
           value={value}
@@ -35,6 +37,7 @@ export default function InputField(props: InputFieldProps) {
         />
       ) : (
         <EuiTextArea
+          required={field.required}
           fullWidth={!option.account}
           compressed
           value={value}

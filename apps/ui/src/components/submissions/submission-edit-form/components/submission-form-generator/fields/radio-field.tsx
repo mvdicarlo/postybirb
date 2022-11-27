@@ -14,12 +14,14 @@ export default function RadioField(props: RadioFieldProps) {
 
   return (
     <EuiFormRow
+      aria-required={field.required}
       fullWidth={!option.account}
       id={`option-${option.id}-${propKey}`}
       label={field.label}
       aria-label={field.label}
     >
       <EuiRadioGroup
+        aria-required={field.required}
         style={{
           display: 'flex',
           gap: '1em',
