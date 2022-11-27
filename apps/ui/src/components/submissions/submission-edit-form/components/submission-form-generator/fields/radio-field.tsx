@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RadioFieldProps = SubmissionGeneratedFieldProps<RadioFieldType<any>>;
+type RadioFieldProps = SubmissionGeneratedFieldProps<RadioFieldType>;
 
 export default function RadioField(props: RadioFieldProps) {
   const { propKey, field, option, onUpdate } = props;

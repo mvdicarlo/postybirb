@@ -22,15 +22,13 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
     case 'textarea':
       return (
         <InputField
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...(props as SubmissionGeneratedFieldProps<TextFieldType<any>>)}
+          {...(props as SubmissionGeneratedFieldProps<TextFieldType>)}
         />
       );
     case 'radio':
       return (
         <RadioField
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...(props as SubmissionGeneratedFieldProps<RadioFieldType<any>>)}
+          {...(props as SubmissionGeneratedFieldProps<RadioFieldType>)}
         />
       );
     default:

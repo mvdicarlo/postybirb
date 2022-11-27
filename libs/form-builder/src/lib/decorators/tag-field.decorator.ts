@@ -8,11 +8,8 @@ import { assignMetadata } from '../utils/assign-metadata';
 type TagFormField = 'tag';
 const TYPE_KEY = 'tag';
 
-export type TagFieldType<T extends PrimitiveRecord> = FieldType<
-  T,
-  TagValue,
-  TagFormField
->;
+export type TagFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
+  FieldType<T, TagValue, TagFormField>;
 
 export function TagField<T extends PrimitiveRecord>(
   options: TagFieldType<T>

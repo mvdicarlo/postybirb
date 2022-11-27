@@ -7,11 +7,8 @@ import { assignMetadata } from '../utils/assign-metadata';
 type BooleanFormField = 'switch' | 'checkbox';
 const TYPE_KEY = 'boolean';
 
-export type BooleanFieldType<T extends PrimitiveRecord> = FieldType<
-  T,
-  boolean,
-  BooleanFormField
->;
+export type BooleanFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
+  FieldType<T, boolean, BooleanFormField>;
 
 export function BooleanField<T extends PrimitiveRecord>(
   options: BooleanFieldType<T>

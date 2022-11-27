@@ -13,13 +13,10 @@ export type RadioOption = {
   value: Primitive;
 };
 
-export type RadioFieldType<T extends PrimitiveRecord> = FieldType<
-  T,
-  string,
-  RadioFormField
-> & {
-  options: RadioOption[];
-};
+export type RadioFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
+  FieldType<T, string, RadioFormField> & {
+    options: RadioOption[];
+  };
 
 export function RadioField<T extends PrimitiveRecord>(
   options: RadioFieldType<T>
