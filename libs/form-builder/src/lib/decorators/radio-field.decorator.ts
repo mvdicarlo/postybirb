@@ -16,6 +16,7 @@ export type RadioOption = {
 export type RadioFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   FieldType<T, string, RadioFormField> & {
     options: RadioOption[];
+    layout?: 'vertical' | 'horizontal';
   };
 
 export function RadioField<T extends PrimitiveRecord>(
@@ -23,6 +24,7 @@ export function RadioField<T extends PrimitiveRecord>(
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   options.formField = 'radio';
+  options.layout = options.layout ?? 'horizontal';
   return (target, propertyKey: any) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };

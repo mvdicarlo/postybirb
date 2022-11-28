@@ -10,7 +10,7 @@ import { isFileWebsite } from '../websites/models/website-modifiers/file-website
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
-import { DefaultWebsiteOptions } from '../websites/models/default-website-data';
+import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 
 @Injectable()
 export class FormGeneratorService {

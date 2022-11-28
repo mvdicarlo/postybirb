@@ -5,7 +5,7 @@ import {
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
-import { DefaultRatingOptions } from '../../../models/default-website-data';
+import { DefaultRatingOptions } from '../../../models/default-website-options';
 
 export class DiscordMessageSubmission implements BaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: '' })

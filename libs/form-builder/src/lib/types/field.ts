@@ -55,4 +55,9 @@ export type FieldType<T extends PrimitiveRecord, V, F extends string> = {
    * Display column.
    */
   column?: number;
+
+  /**
+   * Whether or not the field should grow in side for display purposes.
+   */
+  grow?: boolean;
 };

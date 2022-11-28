@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import 'reflect-metadata';
 import { METADATA_KEY } from '../../constants';
 import { FieldAggregateType } from '../types';
@@ -16,6 +17,14 @@ export function assignMetadata<T extends PrimitiveRecord>(
 
   if (!fields[propertyKey]) {
     fields[propertyKey] = [];
+  }
+
+  if (options.column === undefined) {
+    options.column = 0;
+  }
+
+  if (options.row === undefined) {
+    options.row = 1000;
   }
 
   if (!fields[propertyKey].some((f) => f.type === fieldKey)) {

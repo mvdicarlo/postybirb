@@ -1,6 +1,7 @@
 import { EuiRadioGroup } from '@elastic/eui';
 import { RadioFieldType } from '@postybirb/form-builder';
 import { useState } from 'react';
+import classNames from 'classnames';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 
@@ -17,10 +18,9 @@ export default function RadioField(props: RadioFieldProps) {
       <EuiRadioGroup
         aria-required={field.required}
         compressed
-        style={{
-          display: 'flex',
-          gap: '1em',
-        }}
+        className={classNames({
+          'postybirb__radio-horizontal': field.layout === 'horizontal',
+        })}
         options={field.options.map((o) => ({
           label: o.label,
           id: o.value?.toString() || 'undefined',

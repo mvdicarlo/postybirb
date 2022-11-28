@@ -31,13 +31,19 @@ export const DefaultRatingOptions: RadioOption[] = [
 ];
 
 export class DefaultWebsiteOptions implements BaseWebsiteOptions {
-  @TextField({ label: 'Title', defaultValue: '', required: true })
+  @TextField({
+    label: 'Title',
+    defaultValue: '',
+    required: true,
+    row: 0,
+    column: 1,
+  })
   title: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue, row: 2, column: 1 })
   tags: TagValue;
 
-  @TextField({ label: 'Description', defaultValue: '' })
+  @TextField({ label: 'Description', defaultValue: '', row: 3, column: 1 })
   description: unknown;
 
   @RadioField({
@@ -45,6 +51,9 @@ export class DefaultWebsiteOptions implements BaseWebsiteOptions {
     defaultValue: SubmissionRating.GENERAL,
     options: DefaultRatingOptions,
     required: true,
+    row: 0,
+    column: 0,
+    layout: 'vertical',
   })
   rating: SubmissionRating;
 }
