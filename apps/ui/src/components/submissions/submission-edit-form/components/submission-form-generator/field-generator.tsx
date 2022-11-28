@@ -1,8 +1,13 @@
-import { RadioFieldType, TextFieldType } from '@postybirb/form-builder';
+import {
+  RadioFieldType,
+  TagFieldType,
+  TextFieldType,
+} from '@postybirb/form-builder';
 import { useEffect } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
 import InputField from './fields/input-field';
 import RadioField from './fields/radio-field';
+import TagField from './fields/tag-field';
 
 type FieldGeneratorProps = SubmissionGeneratedFieldProps;
 
@@ -30,6 +35,10 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
         <RadioField
           {...(props as SubmissionGeneratedFieldProps<RadioFieldType>)}
         />
+      );
+    case 'tag':
+      return (
+        <TagField {...(props as SubmissionGeneratedFieldProps<TagFieldType>)} />
       );
     default:
       return <div>Unsupported field type.</div>;

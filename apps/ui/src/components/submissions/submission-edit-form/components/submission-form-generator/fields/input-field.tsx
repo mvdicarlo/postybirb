@@ -1,10 +1,10 @@
-import { EuiFormRow, EuiFieldText, EuiTextArea } from '@elastic/eui';
+import { EuiFieldText, EuiTextArea } from '@elastic/eui';
 import { TextFieldType } from '@postybirb/form-builder';
 import { useState } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
+import FormRow from '../form-row';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type InputFieldProps = SubmissionGeneratedFieldProps<TextFieldType<any>>;
+type InputFieldProps = SubmissionGeneratedFieldProps<TextFieldType>;
 
 export default function InputField(props: InputFieldProps) {
   const { propKey, field, option, onUpdate } = props;
@@ -13,13 +13,7 @@ export default function InputField(props: InputFieldProps) {
   );
 
   return (
-    <EuiFormRow
-      aria-required={field.required}
-      fullWidth={!option.account}
-      id={`option-${option.id}-${propKey}`}
-      label={field.label}
-      aria-label={field.label}
-    >
+    <FormRow {...props}>
       {field.formField === 'input' ? (
         <EuiFieldText
           required={field.required}
@@ -51,6 +45,6 @@ export default function InputField(props: InputFieldProps) {
           }}
         />
       )}
-    </EuiFormRow>
+    </FormRow>
   );
 }
