@@ -67,7 +67,11 @@ export default function SubmissionFormGenerator(
     <EuiForm>
       <EuiFlexGroup>
         {Object.entries(columns).map(([i, entry]) => (
-          <EuiFlexItem key={i} grow={shouldGrow(entry)}>
+          <EuiFlexItem
+            key={i}
+            grow={shouldGrow(entry)}
+            style={{ flexGrow: shouldGrow(entry) ? '1' : '0' }}
+          >
             {entry.map(({ key, value }) => (
               <FieldGenerator
                 key={key}

@@ -1,10 +1,12 @@
 import {
+  DescriptionFieldType,
   RadioFieldType,
   TagFieldType,
   TextFieldType,
 } from '@postybirb/form-builder';
 import { useEffect } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
+import DescriptionField from './fields/description-field';
 import InputField from './fields/input-field';
 import RadioField from './fields/radio-field';
 import TagField from './fields/tag-field';
@@ -39,6 +41,12 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
     case 'tag':
       return (
         <TagField {...(props as SubmissionGeneratedFieldProps<TagFieldType>)} />
+      );
+    case 'description':
+      return (
+        <DescriptionField
+          {...(props as SubmissionGeneratedFieldProps<DescriptionFieldType>)}
+        />
       );
     default:
       return <div>Unsupported field type.</div>;

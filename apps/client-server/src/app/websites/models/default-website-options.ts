@@ -1,4 +1,5 @@
 import {
+  DescriptionField,
   RadioField,
   RadioOption,
   TagField,
@@ -43,7 +44,15 @@ export class DefaultWebsiteOptions implements BaseWebsiteOptions {
   @TagField({ label: 'Tags', defaultValue: DefaultTagValue, row: 2, column: 1 })
   tags: TagValue;
 
-  @TextField({ label: 'Description', defaultValue: '', row: 3, column: 1 })
+  @DescriptionField({
+    label: 'Description',
+    defaultValue: {
+      overrideDefault: false,
+      description: {},
+    },
+    row: 3,
+    column: 1,
+  })
   description: unknown;
 
   @RadioField({
