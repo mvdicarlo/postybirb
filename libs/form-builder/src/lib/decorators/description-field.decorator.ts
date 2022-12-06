@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { DescriptionType } from '@postybirb/types';
+import { DescriptionValue } from '@postybirb/types';
 import 'reflect-metadata';
 import { FieldType } from '../types/field';
 import { PrimitiveRecord } from '../types/primitive-record';
@@ -9,7 +9,7 @@ type DescriptionFormField = 'description';
 const TYPE_KEY = 'description';
 
 export type DescriptionFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
-  FieldType<T, DescriptionType, DescriptionFormField>;
+  FieldType<T, DescriptionValue, DescriptionFormField>;
 
 export function DescriptionField<T extends PrimitiveRecord>(
   options: DescriptionFieldType<T>

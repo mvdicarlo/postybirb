@@ -48,7 +48,7 @@ export class DefaultWebsiteOptions implements BaseWebsiteOptions {
     label: 'Description',
     defaultValue: {
       overrideDefault: false,
-      description: {},
+      description: '',
     },
     row: 3,
     column: 1,
