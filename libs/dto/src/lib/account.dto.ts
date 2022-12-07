@@ -9,6 +9,7 @@ export interface IAccountDto<T = any> {
   id: string;
   name: string;
   website: string;
+  websiteDisplayName: string;
   loginState: ILoginState;
   data: T;
   groups: string[];

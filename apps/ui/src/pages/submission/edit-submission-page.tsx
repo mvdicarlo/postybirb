@@ -18,6 +18,8 @@ import { useNavigate, useParams } from 'react-router';
 import SubmissionsApi from '../../api/submission.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
+import { AccountStore } from '../../stores/account.store';
+import { useStore } from '../../stores/use-store';
 import NotFound from '../not-found/not-found';
 import { MessageSubmissionPath } from '../route-paths';
 
@@ -26,6 +28,8 @@ export default function EditSubmissionPage() {
   const history = useNavigate();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
+  const { state: accounts, isLoading: isLoadingAccounts } =
+    useStore(AccountStore);
   const { data, isLoading, isFetching } = useQuery(
     [`submission-${id}`],
     () =>
@@ -120,12 +124,16 @@ export default function EditSubmissionPage() {
         ]}
       />
       <EuiSpacer />
-      {isLoading || isFetching ? (
+      {isLoading || isFetching || isLoadingAccounts ? (
         <div className="w-full text-center">
           <EuiLoadingSpinner size="xxl" />
         </div>
       ) : data ? (
-        <SubmissionEditForm submission={data} onUpdate={onUpdate} />
+        <SubmissionEditForm
+          submission={data}
+          accounts={accounts}
+          onUpdate={onUpdate}
+        />
       ) : (
         <NotFound />
       )}

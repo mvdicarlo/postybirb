@@ -43,7 +43,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
       ) : null}
       <EuiTextArea
         required={field.required}
-        fullWidth={!option.account}
+        fullWidth
         compressed
         value={description}
         onChange={(e) => {

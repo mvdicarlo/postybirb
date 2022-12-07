@@ -244,6 +244,8 @@ export class AccountService
         ...account.toJSON(),
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
+        websiteDisplayName:
+          instance.metadata.displayName || instance.metadata.name,
       };
     });
   }

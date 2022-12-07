@@ -31,9 +31,7 @@ export default function SubmissionOptionsSection(
       <EuiTitle size="s">
         <h4>
           {option.account ? (
-            <span>
-              {option.account.name} - {option.account.name}
-            </span>
+            <span>{option.account.name}</span>
           ) : (
             <FormattedMessage
               id="default-options"
@@ -53,6 +51,7 @@ export default function SubmissionOptionsSection(
           onUpdate={onUpdate}
         />
       )}
+      <EuiSpacer />
     </div>
   );
 }

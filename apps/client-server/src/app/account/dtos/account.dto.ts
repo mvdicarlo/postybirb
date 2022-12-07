@@ -29,6 +29,15 @@ export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
   website: string;
 
   /**
+   * Display name of the website
+   *
+   * @type {string}
+   */
+  @ApiProperty()
+  @IsString()
+  websiteDisplayName: string;
+
+  /**
    * Current login state of website instance.
    * @type {ILoginState}
    */

@@ -67,7 +67,7 @@ export default function TagField(props: TagFieldProps) {
       ) : null}
       <EuiComboBox
         aria-required={field.required}
-        fullWidth={!option.account}
+        fullWidth
         compressed
         isClearable
         options={tags}

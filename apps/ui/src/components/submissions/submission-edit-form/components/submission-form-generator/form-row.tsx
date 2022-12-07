@@ -10,7 +10,7 @@ export default function FormRow(props: FormRowProps) {
   return (
     <EuiFormRow
       aria-required={field.required}
-      fullWidth={!option.account}
+      fullWidth
       id={`option-${option.id}-${propKey}`}
       label={field.label}
       aria-label={field.label}
