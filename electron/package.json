@@ -102,7 +102,7 @@
     "electron-log": "^4.0.6",
     "electron-updater": "^4.4.3",
     "electron-window-state": "^5.0.3",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "form-data": "^2.3.3",
     "form-urlencoded": "^4.0.0",
     "fs-extra": "^7.0.1",
