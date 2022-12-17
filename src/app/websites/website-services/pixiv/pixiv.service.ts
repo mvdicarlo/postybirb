@@ -72,12 +72,13 @@ export class Pixiv extends BaseWebsiteService {
     };
 
     const cookies = await getCookies(profileId, this.BASE_URL);
-    const response = await got.get(`${this.BASE_URL}/setting_user.php`, this.BASE_URL, cookies, profileId);
+    const response = await got.get(`${this.BASE_URL}`, this.BASE_URL, cookies, profileId);
     try {
       const body = response.body;
-      if (!body.includes('signup-form__submit--login')) {
+      const match = response.body.includes('signup-form');
+      if (!match) {
         returnValue.status = LoginStatus.LOGGED_IN;
-        returnValue.username = body.match(/"name":"(.*?)"/)[1];
+        returnValue.username = 'Logged In';
       }
     } catch (e) { /* No important error handling */ }
 
