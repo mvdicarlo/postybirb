@@ -30,9 +30,8 @@ export function SubmissionFormWebsiteSelect(
       )
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accounts]);
+  }, [accounts, submission.options.length]);
 
-  // TODO figure out what to do about a delete
   // TODO figure out how to filter on type (message/file)
   return (
     <EuiFormRow
@@ -50,6 +49,7 @@ export function SubmissionFormWebsiteSelect(
         selectedOptions={selectedOptions}
         onChange={(newOptions) => {
           newOptions.forEach((o) => {
+            // When new accounts are added
             if (!submission.options.some((opt) => opt.account?.id === o.key)) {
               const account = accounts.find(
                 (a) => a.id === o.key
@@ -73,6 +73,13 @@ export function SubmissionFormWebsiteSelect(
               submission.options.push(newSubmissionOptions);
             }
           });
+
+          submission.options
+            .filter((o) => !o.isDefault) // Ignore default record
+            .filter(
+              (o) => !newOptions.some((newOpt) => newOpt.key === o.account?.id)
+            )
+            .forEach((removedOption) => submission.removeOption(removedOption));
 
           setSelectedOptions(newOptions);
           onUpdate();

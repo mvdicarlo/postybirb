@@ -48,8 +48,15 @@ export class SubmissionDto<
     submission?: SubmissionDto<T, O>
   ): ISubmissionOptions<O> {
     return (submission || this).options.find(
-      (o) => !o.account
+      (o) => o.isDefault
     ) as ISubmissionOptions<O>;
+  }
+
+  public removeOption(option: ISubmissionOptions<O>) {
+    const index = this.options.indexOf(option);
+    if (index >= 0) {
+      this.options.splice(index, 1);
+    }
   }
 
   public updateSchedule(date: Moment | null) {

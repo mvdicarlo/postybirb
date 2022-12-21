@@ -37,7 +37,7 @@ function shouldGrow(entries: FieldEntry[]): boolean {
 export default function SubmissionFormGenerator(
   props: SubmissionFormGeneratorProps
 ) {
-  const { submission, metadata, option, onUpdate } = props;
+  const { metadata } = props;
 
   if (!metadata) {
     return <div>Unable to generate form.</div>;
@@ -75,11 +75,9 @@ export default function SubmissionFormGenerator(
             {entry.map(({ key, value }) => (
               <FieldGenerator
                 key={key}
-                submission={submission}
                 propKey={key}
                 field={value}
-                option={option}
-                onUpdate={onUpdate}
+                {...props}
               />
             ))}
           </EuiFlexItem>

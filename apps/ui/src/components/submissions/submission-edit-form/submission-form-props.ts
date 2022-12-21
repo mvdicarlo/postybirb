@@ -1,3 +1,4 @@
+import { IAccountDto } from '@postybirb/dto';
 import {
   FieldAggregateType,
   FormBuilderMetadata,
@@ -13,6 +14,7 @@ export type SubmissionFormProps = {
 export type SubmissionSectionProps = SubmissionFormProps & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   option: ISubmissionOptions<any>;
+  account?: IAccountDto;
 };
 
 export type SubmissionGeneratorProps = SubmissionSectionProps & {

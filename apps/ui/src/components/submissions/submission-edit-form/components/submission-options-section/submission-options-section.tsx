@@ -1,5 +1,4 @@
-import { EuiLoadingSpinner, EuiSpacer, EuiTitle } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { EuiAccordion, EuiButtonIcon, EuiTitle } from '@elastic/eui';
 import { useQuery } from 'react-query';
 import FormGeneratorApi from '../../../../../api/form-generator.api';
 import { SubmissionSectionProps } from '../../submission-form-props';
@@ -10,7 +9,7 @@ type SubmissionOptionsSectionProps = SubmissionSectionProps;
 export default function SubmissionOptionsSection(
   props: SubmissionOptionsSectionProps
 ) {
-  const { option, submission, onUpdate } = props;
+  const { account, option, submission, onUpdate } = props;
   const { isLoading, data } = useQuery(
     [option.id],
     async () =>
@@ -26,32 +25,39 @@ export default function SubmissionOptionsSection(
       refetchOnWindowFocus: false,
     }
   );
+
   return (
-    <div className="postybirb__submission-options-section">
-      <EuiTitle size="s">
-        <h4>
-          {option.account ? (
-            <span>{option.account.name}</span>
-          ) : (
-            <FormattedMessage
-              id="default-options"
-              defaultMessage="Default Options"
-            />
-          )}
-        </h4>
-      </EuiTitle>
-      <EuiSpacer />
-      {isLoading ? (
-        <EuiLoadingSpinner />
-      ) : (
-        <SubmissionFormGenerator
-          submission={submission}
-          metadata={data}
-          option={option}
-          onUpdate={onUpdate}
-        />
+    <EuiAccordion
+      initialIsOpen
+      id={option.id}
+      buttonContent={
+        <EuiTitle size="xs">
+          <h4>{account?.name}</h4>
+        </EuiTitle>
+      }
+      extraAction={
+        option.isDefault ? null : (
+          <EuiButtonIcon
+            color="danger"
+            iconType="trash"
+            style={{ verticalAlign: 'middle' }}
+            onClick={() => {
+              // Remove option
+              submission.removeOption(option);
+              onUpdate();
+            }}
+          />
+        )
+      }
+      paddingSize="l"
+      isLoading={isLoading}
+      className="euiAccordionForm"
+      element="fieldset"
+      buttonClassName="euiAccordionForm__button"
+    >
+      {isLoading ? null : (
+        <SubmissionFormGenerator metadata={data} {...props} />
       )}
-      <EuiSpacer />
-    </div>
+    </EuiAccordion>
   );
 }

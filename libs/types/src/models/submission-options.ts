@@ -11,4 +11,5 @@ export interface ISubmissionOptions<
   submission: ISubmission<IBaseSubmissionMetadata>;
   data: T;
   account?: IAccount;
+  isDefault: boolean;
 }

@@ -27,6 +27,8 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
+// TODO make sure that submission options are cleaned on delete and don't return when soft-deleted
+
 /**
  * Service responsible for returning Account data.
  * Also stores login refresh timers for initiating login checks.
@@ -264,6 +266,8 @@ export class AccountService
         ...account,
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
+        websiteDisplayName:
+          instance.metadata.displayName || instance.metadata.name,
       };
     } catch (e) {
       this.logger.error(e);

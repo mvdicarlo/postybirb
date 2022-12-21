@@ -139,6 +139,7 @@ export class SubmissionOptionsService {
     title: string
   ): SubmissionOptions<BaseWebsiteOptions> {
     const submissionOptions = this.submissionOptionsRepository.create({
+      isDefault: true,
       submission,
       data: {
         title,
