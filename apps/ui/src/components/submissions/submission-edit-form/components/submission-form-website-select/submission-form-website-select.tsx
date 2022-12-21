@@ -20,7 +20,7 @@ export function SubmissionFormWebsiteSelect(
 
   useEffect(() => {
     const opts: EuiComboBoxOptionOption[] = accounts.map((account) => ({
-      label: `${account.websiteDisplayName} - ${account.name}`,
+      label: `${account.websiteInfo.websiteDisplayName} - ${account.name}`,
       key: account.id,
     }));
     setOptions(opts.sort((a, b) => a.label.localeCompare(b.label)));
@@ -32,7 +32,6 @@ export function SubmissionFormWebsiteSelect(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accounts, submission.options.length]);
 
-  // TODO figure out how to filter on type (message/file)
   return (
     <EuiFormRow
       aria-required

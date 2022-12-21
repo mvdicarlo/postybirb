@@ -41,20 +41,22 @@ export default function DescriptionField(props: DescriptionFieldProps) {
           }}
         />
       ) : null}
-      <EuiTextArea
-        required={field.required}
-        fullWidth
-        compressed
-        value={description}
-        onChange={(e) => {
-          setDescription(e.target.value);
-        }}
-        onBlur={(e) => {
-          option.data[propKey] = e.target.value;
-          setDescription(e.target.value);
-          onUpdate();
-        }}
-      />
+      {overrideDefault ? (
+        <EuiTextArea
+          required={field.required}
+          fullWidth
+          compressed
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+          }}
+          onBlur={(e) => {
+            option.data[propKey] = e.target.value;
+            setDescription(e.target.value);
+            onUpdate();
+          }}
+        />
+      ) : null}
     </FormRow>
   );
 }

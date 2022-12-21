@@ -5,7 +5,12 @@ import {
   WebsiteLoginType,
 } from '@postybirb/dto';
 import { Logger } from '@postybirb/logger';
-import { SafeObject, IAccount, LoginState } from '@postybirb/types';
+import {
+  SafeObject,
+  IAccount,
+  LoginState,
+  SubmissionType,
+} from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -13,6 +18,8 @@ import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
 import { WebsiteData } from '../database/entities';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
+import { isFileWebsite } from './models/website-modifiers/file-website';
+import { isMessageWebsite } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -124,6 +131,23 @@ export abstract class Website<D extends SafeObject> {
 
   public getLoginState() {
     return this.loginState.getState();
+  }
+
+  /**
+   * Returns an array of supported SubmissionType based on implemented interfaces.
+   */
+  public getSupportedTypes(): SubmissionType[] {
+    const types: SubmissionType[] = [];
+
+    if (isMessageWebsite(this)) {
+      types.push(SubmissionType.MESSAGE);
+    }
+
+    if (isFileWebsite(this)) {
+      types.push(SubmissionType.FILE);
+    }
+
+    return types;
   }
 
   /**

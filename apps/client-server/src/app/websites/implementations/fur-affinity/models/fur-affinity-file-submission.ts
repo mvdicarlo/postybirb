@@ -1,5 +1,6 @@
 import {
   BooleanField,
+  DescriptionField,
   RadioField,
   TagField,
   TextField,
@@ -19,19 +20,37 @@ export class FurAffinityFileSubmission implements FileWebsiteOptions {
   @BooleanField({ label: 'Allow resizing image', defaultValue: true })
   allowResize = true;
 
-  @TextField({ label: 'Title', defaultValue: '' })
-  title?: string;
+  @TextField({
+    label: 'Title',
+    defaultValue: '',
+    required: true,
+    row: 0,
+    column: 1,
+  })
+  title: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue, row: 2, column: 1 })
   tags: TagValue;
 
-  @TextField({ label: 'Description', defaultValue: '' })
+  @DescriptionField({
+    label: 'Description',
+    defaultValue: {
+      overrideDefault: false,
+      description: '',
+    },
+    row: 3,
+    column: 1,
+  })
   description: unknown;
 
   @RadioField({
     label: 'Rating',
     defaultValue: SubmissionRating.GENERAL,
     options: DefaultRatingOptions,
+    required: true,
+    row: 0,
+    column: 0,
+    layout: 'vertical',
   })
   rating: SubmissionRating;
 }

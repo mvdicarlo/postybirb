@@ -31,9 +31,10 @@ export default class FurAffinity
     FileWebsite<FurAffinityFileSubmission>,
     MessageWebsite<FurAffinityMessageSubmission>
 {
-  FileModel: Class<FurAffinityFileSubmission>;
+  FileModel: Class<FurAffinityFileSubmission> = FurAffinityFileSubmission;
 
-  MessageModel: Class<FurAffinityMessageSubmission>;
+  MessageModel: Class<FurAffinityMessageSubmission> =
+    FurAffinityMessageSubmission;
 
   supportsFile: true;
 

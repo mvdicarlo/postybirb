@@ -1,3 +1,5 @@
+import { SubmissionType } from '@postybirb/types';
+
 export interface ILoginState {
   isLoggedIn: boolean;
   username: string | null;
@@ -9,8 +11,13 @@ export interface IAccountDto<T = any> {
   id: string;
   name: string;
   website: string;
-  websiteDisplayName: string;
   loginState: ILoginState;
   data: T;
   groups: string[];
+  websiteInfo: IWebsiteInfo;
+}
+
+export interface IWebsiteInfo {
+  websiteDisplayName: string;
+  supports: SubmissionType[];
 }

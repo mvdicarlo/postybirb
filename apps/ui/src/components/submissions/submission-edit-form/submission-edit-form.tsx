@@ -18,7 +18,6 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
   const defaultOptions = submission.getDefaultOptions();
   const websiteBasedOptions = submission.options.filter((o) => !!o.account);
 
-  // TODO group by account display name
   const websiteGroups: Record<
     string,
     { option: ISubmissionOptions; account: IAccountDto }[]
@@ -29,17 +28,16 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
       (a) => a.id === option.account?.id
     ) as IAccountDto;
 
-    if (!websiteGroups[account.websiteDisplayName]) {
-      websiteGroups[account.websiteDisplayName] = [];
+    if (!websiteGroups[account.websiteInfo.websiteDisplayName]) {
+      websiteGroups[account.websiteInfo.websiteDisplayName] = [];
     }
 
-    websiteGroups[account.websiteDisplayName].push({
+    websiteGroups[account.websiteInfo.websiteDisplayName].push({
       account,
       option,
     });
   });
 
-  // TODO put sections into accordion forms for individual options
   return (
     <div className="postybirb__submission-form">
       <SubmissionFormSection>

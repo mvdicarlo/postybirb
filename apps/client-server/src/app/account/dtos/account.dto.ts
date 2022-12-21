@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IAccountDto } from '@postybirb/dto';
-import { SafeObject, ILoginState } from '@postybirb/types';
+import { IAccountDto, IWebsiteInfo } from '@postybirb/dto';
+import { ILoginState, SafeObject } from '@postybirb/types';
 import { IsArray, IsObject, IsString } from 'class-validator';
 
 export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
@@ -29,13 +29,10 @@ export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
   website: string;
 
   /**
-   * Display name of the website
-   *
-   * @type {string}
+   * Website info
+   * @type {IWebsiteInfo}
    */
-  @ApiProperty()
-  @IsString()
-  websiteDisplayName: string;
+  websiteInfo: IWebsiteInfo;
 
   /**
    * Current login state of website instance.

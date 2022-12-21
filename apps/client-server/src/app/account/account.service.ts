@@ -246,8 +246,11 @@ export class AccountService
         ...account.toJSON(),
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
-        websiteDisplayName:
-          instance.metadata.displayName || instance.metadata.name,
+        websiteInfo: {
+          websiteDisplayName:
+            instance.metadata.displayName || instance.metadata.name,
+          supports: instance.getSupportedTypes(),
+        },
       };
     });
   }
@@ -266,8 +269,11 @@ export class AccountService
         ...account,
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
-        websiteDisplayName:
-          instance.metadata.displayName || instance.metadata.name,
+        websiteInfo: {
+          websiteDisplayName:
+            instance.metadata.displayName || instance.metadata.name,
+          supports: instance.getSupportedTypes(),
+        },
       };
     } catch (e) {
       this.logger.error(e);

@@ -131,7 +131,9 @@ export default function EditSubmissionPage() {
       ) : data ? (
         <SubmissionEditForm
           submission={data}
-          accounts={accounts}
+          accounts={accounts.filter((account) =>
+            account.websiteInfo.supports.includes(data.type)
+          )}
           onUpdate={onUpdate}
         />
       ) : (
