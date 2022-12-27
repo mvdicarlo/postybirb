@@ -32,7 +32,7 @@ export default function SubmissionOptionsSection(
       id={option.id}
       buttonContent={
         <EuiTitle size="xs">
-          <h4>{account?.name}</h4>
+          <h4 data-anchor={account?.id}>{account?.name}</h4>
         </EuiTitle>
       }
       extraAction={
