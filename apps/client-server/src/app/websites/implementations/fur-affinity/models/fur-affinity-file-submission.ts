@@ -1,7 +1,7 @@
 import {
   BooleanField,
   DescriptionField,
-  RadioField,
+  RatingField,
   TagField,
   TextField,
 } from '@postybirb/form-builder';
@@ -43,9 +43,9 @@ export class FurAffinityFileSubmission implements FileWebsiteOptions {
   })
   description: unknown;
 
-  @RadioField({
+  @RatingField({
     label: 'Rating',
-    defaultValue: SubmissionRating.GENERAL,
+    defaultValue: undefined,
     options: DefaultRatingOptions,
     required: true,
     row: 0,

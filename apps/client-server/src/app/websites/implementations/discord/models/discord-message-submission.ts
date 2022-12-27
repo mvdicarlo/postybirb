@@ -1,4 +1,4 @@
-import { RadioField, TagField, TextField } from '@postybirb/form-builder';
+import { RatingField, TagField, TextField } from '@postybirb/form-builder';
 import {
   BaseWebsiteOptions,
   DefaultTagValue,
@@ -17,9 +17,9 @@ export class DiscordMessageSubmission implements BaseWebsiteOptions {
   @TextField({ label: 'Description', defaultValue: '' })
   description: unknown;
 
-  @RadioField({
+  @RatingField({
     label: 'Rating',
-    defaultValue: SubmissionRating.GENERAL,
+    defaultValue: undefined,
     options: DefaultRatingOptions,
   })
   rating: SubmissionRating;

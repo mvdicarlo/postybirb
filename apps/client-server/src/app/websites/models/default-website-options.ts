@@ -1,7 +1,7 @@
 import {
   DescriptionField,
-  RadioField,
-  RadioOption,
+  RatingField,
+  RatingOption,
   TagField,
   TextField,
 } from '@postybirb/form-builder';
@@ -12,7 +12,7 @@ import {
   TagValue,
 } from '@postybirb/types';
 
-export const DefaultRatingOptions: RadioOption[] = [
+export const DefaultRatingOptions: RatingOption[] = [
   {
     label: 'General',
     value: SubmissionRating.GENERAL,
@@ -55,7 +55,7 @@ export class DefaultWebsiteOptions implements BaseWebsiteOptions {
   })
   description: unknown;
 
-  @RadioField({
+  @RatingField({
     label: 'Rating',
     defaultValue: SubmissionRating.GENERAL,
     options: DefaultRatingOptions,

@@ -1,6 +1,6 @@
 import {
   BooleanField,
-  RadioField,
+  RatingField,
   TagField,
   TextField,
 } from '@postybirb/form-builder';
@@ -28,9 +28,9 @@ export class DiscordFileSubmission implements FileWebsiteOptions {
   @TextField({ label: 'Description', defaultValue: '' })
   description: unknown;
 
-  @RadioField({
+  @RatingField({
     label: 'Rating',
-    defaultValue: SubmissionRating.GENERAL,
+    defaultValue: undefined,
     options: DefaultRatingOptions,
   })
   rating: SubmissionRating;

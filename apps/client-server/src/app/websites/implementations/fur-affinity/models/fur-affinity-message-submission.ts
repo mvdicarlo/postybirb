@@ -1,8 +1,8 @@
 import {
-  TextField,
-  TagField,
-  RadioField,
   DescriptionField,
+  RatingField,
+  TagField,
+  TextField,
 } from '@postybirb/form-builder';
 import {
   BaseWebsiteOptions,
@@ -35,9 +35,9 @@ export class FurAffinityMessageSubmission implements BaseWebsiteOptions {
   })
   description: unknown;
 
-  @RadioField({
+  @RatingField({
     label: 'Rating',
-    defaultValue: SubmissionRating.GENERAL,
+    defaultValue: undefined,
     options: DefaultRatingOptions,
     required: true,
     row: 0,

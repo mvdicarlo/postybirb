@@ -33,6 +33,7 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
         />
       );
     case 'radio':
+    case 'rating':
       return (
         <RadioField
           {...(props as SubmissionGeneratedFieldProps<RadioFieldType>)}
