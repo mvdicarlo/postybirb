@@ -1,5 +1,4 @@
 import {
-  EuiHorizontalRule,
   EuiSideNav,
   EuiSideNavItemType,
   EuiSpacer,
@@ -30,7 +29,7 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
   const { accounts, submission, onUpdate } = props;
 
   const defaultOptions = submission.getDefaultOptions();
-  const websiteBasedOptions = submission.options.filter((o) => !!o.account);
+  const websiteBasedOptions = submission.options.filter((o) => !o.isDefault);
 
   const websiteGroups: Record<
     string,

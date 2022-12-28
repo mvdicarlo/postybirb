@@ -41,7 +41,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
           }}
         />
       ) : null}
-      {overrideDefault ? (
+      {overrideDefault || option.isDefault ? (
         <EuiTextArea
           required={field.required}
           fullWidth

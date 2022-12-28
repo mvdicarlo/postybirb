@@ -47,38 +47,62 @@ export default function EditSubmissionPage() {
     forceUpdate();
   }, []);
 
-  const breadcrumbs: EuiBreadcrumb[] = [
-    {
-      text:
-        data && data.type === SubmissionType.FILE ? (
-          <FormattedMessage
-            id="file-submissions"
-            defaultMessage="File Submissions"
-          />
-        ) : (
-          <FormattedMessage
-            id="message-submissions"
-            defaultMessage="Message Submissions"
-          />
-        ),
-      href: '#',
-      onClick: (e) => {
-        e.preventDefault();
-        history(MessageSubmissionPath);
-      },
-    },
-    {
-      text: (
-        <div>
-          {data ? (
-            <span>{data.getDefaultOptions().data.title}</span>
+  const defaultOption = data?.getDefaultOptions();
+  const isLoadingData = isLoading || isFetching || isLoadingAccounts;
+
+  const breadcrumbs: EuiBreadcrumb[] = useMemo(
+    () => [
+      {
+        text:
+          data && data.type === SubmissionType.FILE ? (
+            <FormattedMessage
+              id="file-submissions"
+              defaultMessage="File Submissions"
+            />
           ) : (
-            <EuiLoadingSpinner />
-          )}
-        </div>
-      ),
-    },
-  ];
+            <FormattedMessage
+              id="message-submissions"
+              defaultMessage="Message Submissions"
+            />
+          ),
+        href: '#',
+        onClick: (e) => {
+          e.preventDefault();
+          history(MessageSubmissionPath);
+        },
+      },
+      {
+        text: (
+          <div>
+            {data ? (
+              <span>{defaultOption?.data.title}</span>
+            ) : (
+              <EuiLoadingSpinner />
+            )}
+          </div>
+        ),
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [defaultOption?.data.title]
+  );
+
+  const editForm = isLoadingData ? (
+    <div className="w-full text-center">
+      <EuiLoadingSpinner size="xxl" />
+    </div>
+  ) : data ? (
+    <SubmissionEditForm
+      key={data?.id}
+      submission={data}
+      accounts={accounts.filter((account) =>
+        account.websiteInfo.supports.includes(data.type)
+      )}
+      onUpdate={onUpdate}
+    />
+  ) : (
+    <NotFound />
+  );
 
   return (
     <>
@@ -124,21 +148,7 @@ export default function EditSubmissionPage() {
         ]}
       />
       <EuiSpacer />
-      {isLoading || isFetching || isLoadingAccounts ? (
-        <div className="w-full text-center">
-          <EuiLoadingSpinner size="xxl" />
-        </div>
-      ) : data ? (
-        <SubmissionEditForm
-          submission={data}
-          accounts={accounts.filter((account) =>
-            account.websiteInfo.supports.includes(data.type)
-          )}
-          onUpdate={onUpdate}
-        />
-      ) : (
-        <NotFound />
-      )}
+      {editForm}
     </>
   );
 }

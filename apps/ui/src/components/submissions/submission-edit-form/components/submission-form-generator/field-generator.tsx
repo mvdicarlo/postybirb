@@ -16,6 +16,7 @@ type FieldGeneratorProps = SubmissionGeneratedFieldProps;
 // TODO figure out translation
 export default function FieldGenerator(props: FieldGeneratorProps) {
   const { propKey, option, field } = props;
+  const key = `${option.id}-gen-${propKey}`;
 
   useEffect(() => {
     if (option.data[propKey] === undefined) {
@@ -29,6 +30,7 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
     case 'textarea':
       return (
         <InputField
+          key={key}
           {...(props as SubmissionGeneratedFieldProps<TextFieldType>)}
         />
       );
@@ -36,16 +38,21 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
     case 'rating':
       return (
         <RadioField
+          key={key}
           {...(props as SubmissionGeneratedFieldProps<RadioFieldType>)}
         />
       );
     case 'tag':
       return (
-        <TagField {...(props as SubmissionGeneratedFieldProps<TagFieldType>)} />
+        <TagField
+          key={key}
+          {...(props as SubmissionGeneratedFieldProps<TagFieldType>)}
+        />
       );
     case 'description':
       return (
         <DescriptionField
+          key={key}
           {...(props as SubmissionGeneratedFieldProps<DescriptionFieldType>)}
         />
       );

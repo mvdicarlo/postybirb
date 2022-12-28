@@ -37,7 +37,7 @@ function shouldGrow(entries: FieldEntry[]): boolean {
 export default function SubmissionFormGenerator(
   props: SubmissionFormGeneratorProps
 ) {
-  const { metadata } = props;
+  const { metadata, option } = props;
 
   if (!metadata) {
     return <div>Unable to generate form.</div>;
@@ -74,7 +74,7 @@ export default function SubmissionFormGenerator(
           >
             {entry.map(({ key, value }) => (
               <FieldGenerator
-                key={key}
+                key={`${key}-${option.id}`}
                 propKey={key}
                 field={value}
                 {...props}

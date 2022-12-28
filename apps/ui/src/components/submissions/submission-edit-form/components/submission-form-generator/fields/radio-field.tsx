@@ -1,13 +1,15 @@
 import { EuiRadioGroup } from '@elastic/eui';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 
 type RadioFieldProps =
-  | SubmissionGeneratedFieldProps<RadioFieldType>
-  | SubmissionGeneratedFieldProps<RatingFieldType>;
+  | (
+      | SubmissionGeneratedFieldProps<RadioFieldType>
+      | SubmissionGeneratedFieldProps<RatingFieldType>
+    ) & { key: string };
 
 export default function RadioField(props: RadioFieldProps) {
   const { propKey, field, option, onUpdate } = props;
@@ -23,6 +25,13 @@ export default function RadioField(props: RadioFieldProps) {
     [field.formField, field.options, option.isDefault]
   );
 
+  const onChange = useCallback((changeValue: string | undefined) => {
+    option.data[propKey] = changeValue;
+    setValue(changeValue);
+    onUpdate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <FormRow {...props}>
       <EuiRadioGroup
@@ -33,14 +42,12 @@ export default function RadioField(props: RadioFieldProps) {
         })}
         options={options.map((o) => ({
           label: o.label,
-          id: o.value?.toString() || 'undefined',
-          value: o.value?.toString(),
+          id: `${option.id}-${propKey}-${o.value?.toString() || 'undefined'}`,
+          value: o.value ? o.value.toString() : undefined,
         }))}
-        idSelected={value}
+        idSelected={`${option.id}-${propKey}-${value}`}
         onChange={(_, newValue) => {
-          option.data[propKey] = newValue;
-          setValue(newValue);
-          onUpdate();
+          onChange(newValue);
         }}
         name={`option-${option.id}-${propKey}`}
       />
