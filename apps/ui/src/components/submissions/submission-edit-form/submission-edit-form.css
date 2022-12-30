@@ -27,5 +27,15 @@
 
 .postybirb__radio-horizontal {
   display: 'flex';
-  gap: '1em';
+  gap: 1em;
+}
+
+.postybirb__submission-form .euiSideNavItem--trunk {
+  margin-left: 1em;
+}
+
+.postybirb__submission-form .euiSideNavItemButton,
+.postybirb__submission-form .euiSideNavItem {
+  margin-bottom: 0;
+  margin-top: 0;
 }

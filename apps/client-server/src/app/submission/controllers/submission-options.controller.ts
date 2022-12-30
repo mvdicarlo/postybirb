@@ -7,7 +7,6 @@ import {
 } from '@nestjs/swagger';
 import { BaseWebsiteOptions } from '@postybirb/types';
 import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
-import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-model-request.dto';
 import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
 import { SubmissionOptionsService } from '../services/submission-options.service';
 
@@ -34,20 +33,6 @@ export class SubmissionOptionsController {
     createSubmissionOptionsDto: CreateSubmissionOptionsDto<BaseWebsiteOptions>
   ) {
     return this.service.create(createSubmissionOptionsDto);
-  }
-
-  @Post('form')
-  @ApiOkResponse({ description: 'FormModel retrieved.' })
-  @ApiBadRequestResponse({
-    description: 'Website instance did not match request.',
-  })
-  @ApiNotFoundResponse({
-    description: 'Account or website instance not found.',
-  })
-  getSubmissionOptionsFormModel(
-    @Body() requestModelDto: SubmissionOptionsModelRequestDto
-  ) {
-    return this.service.generateSubmissionOptionsFormModel(requestModelDto);
   }
 
   @Patch()

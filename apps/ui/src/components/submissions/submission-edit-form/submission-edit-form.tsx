@@ -1,9 +1,4 @@
-import {
-  EuiSideNav,
-  EuiSideNavItemType,
-  EuiSpacer,
-  EuiTitle,
-} from '@elastic/eui';
+import { EuiSideNav, EuiSideNavItemType, EuiTitle } from '@elastic/eui';
 import { IAccountDto } from '@postybirb/dto';
 import { ISubmissionOptions } from '@postybirb/types';
 import { useMemo } from 'react';
@@ -115,7 +110,6 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
               <EuiTitle size="s">
                 <h4 data-anchor={websiteName}>{websiteName}</h4>
               </EuiTitle>
-              <EuiSpacer />
               {optionPairs.map((o) => (
                 <SubmissionOptionsSection
                   key={o.option.id}

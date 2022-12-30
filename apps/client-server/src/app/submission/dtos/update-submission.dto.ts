@@ -1,7 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUpdateSubmissionDto } from '@postybirb/dto';
-import { ScheduleType } from '@postybirb/types';
-import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  BaseWebsiteOptions,
+  ISubmissionOptions,
+  ScheduleType,
+} from '@postybirb/types';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
@@ -15,9 +25,19 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  scheduledFor: string | null;
+  scheduledFor: string | null | undefined;
 
   @ApiProperty({ enum: ScheduleType })
   @IsEnum(ScheduleType)
   scheduleType: ScheduleType;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsArray()
+  deletedOptions?: ISubmissionOptions<BaseWebsiteOptions>[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsArray()
+  newOrUpdatedOptions?: ISubmissionOptions<BaseWebsiteOptions>[];
 }

@@ -7,24 +7,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { formBuilder, FormBuilderMetadata } from '@postybirb/form-builder';
 import { Log, Logger } from '@postybirb/logger';
 import {
-  SubmissionMetadataType,
   BaseWebsiteOptions,
   IBaseSubmissionMetadata,
-  SubmissionType,
+  SubmissionMetadataType,
   SubmissionRating,
 } from '@postybirb/types';
-import { Primitive } from 'type-fest';
 import { AccountService } from '../../account/account.service';
 import { Submission, SubmissionOptions } from '../../database/entities';
-import { isFileWebsite } from '../../websites/models/website-modifiers/file-website';
-import { isMessageWebsite } from '../../websites/models/website-modifiers/message-website';
-import { UnknownWebsite } from '../../websites/website';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
-import { SubmissionOptionsModelRequestDto } from '../dtos/submission-options-model-request.dto';
 import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
 import { SubmissionService } from './submission.service';
 
@@ -152,70 +145,5 @@ export class SubmissionOptionsService {
     });
 
     return submissionOptions;
-  }
-
-  /**
-   * Generates the form properties for a submission option.
-   * Form properties are used for form generation in UI.
-   *
-   * @param {SubmissionOptionsModelRequestDto} requestModelDto
-   * @return {*}  {Promise<FormBuilderMetadata<Record<string, Primitive>>>}
-   */
-  async generateSubmissionOptionsFormModel(
-    requestModelDto: SubmissionOptionsModelRequestDto
-  ): Promise<FormBuilderMetadata<Record<string, Primitive>>> {
-    const account = await this.accountService.findOne(
-      requestModelDto.accountId
-    );
-
-    const websiteInstance = this.websiteRegistry.findInstance(account);
-    const model = this.getModel(requestModelDto.type, websiteInstance);
-
-    // NOTE: typecast with primitive is technically unsafe.
-    // Will cause issue if a defaultFrom points to a non-primitive (object) value.
-    const form = formBuilder(
-      model,
-      websiteInstance.getWebsiteData() as Record<string, Primitive>
-    );
-
-    return form;
-  }
-
-  /**
-   * Returns a model for the requested type on a website instance.
-   * Throws when type/instance pairing can not be found.
-   *
-   * @param {SubmissionType} type
-   * @param {UnknownWebsite} websiteInstance
-   * @return {*}
-   */
-  private getModel(type: SubmissionType, websiteInstance: UnknownWebsite) {
-    switch (type) {
-      case SubmissionType.FILE: {
-        if (isFileWebsite(websiteInstance)) {
-          return websiteInstance.createFileModel();
-        }
-
-        throw new BadRequestException(
-          `Website ${websiteInstance.metadata.name} does not support ${type}`
-        );
-      }
-
-      case SubmissionType.MESSAGE: {
-        if (isMessageWebsite(websiteInstance)) {
-          return websiteInstance.createMessageModel();
-        }
-
-        throw new BadRequestException(
-          `Website ${websiteInstance.metadata.name} does not support ${type}`
-        );
-      }
-
-      default: {
-        throw new BadRequestException(
-          `Website ${websiteInstance.metadata.name} does not support ${type}`
-        );
-      }
-    }
   }
 }

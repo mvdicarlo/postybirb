@@ -28,6 +28,6 @@ export class SubmissionOptions<T extends BaseWebsiteOptions>
   @ManyToOne(() => Account, { nullable: true })
   account?: IAccount;
 
-  @Property({ type: 'bool', nullable: false })
+  @Property({ type: 'boolean', nullable: false })
   isDefault = false;
 }

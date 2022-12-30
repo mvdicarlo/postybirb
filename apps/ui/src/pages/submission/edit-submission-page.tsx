@@ -11,6 +11,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
+import { useState } from 'react';
 import { useCallback, useMemo, useReducer } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
@@ -23,14 +24,34 @@ import { useStore } from '../../stores/use-store';
 import NotFound from '../not-found/not-found';
 import { MessageSubmissionPath } from '../route-paths';
 
+async function save(original: SubmissionDto, updated: SubmissionDto) {
+  const { id, isScheduled, schedule } = updated;
+  const deletedOptions = original.options.filter(
+    (originalOpt) =>
+      !updated.options.some((updatedOpt) => originalOpt.id === updatedOpt.id)
+  );
+
+  const newOrUpdatedOptions = updated.options;
+
+  return SubmissionsApi.update({
+    id,
+    isScheduled,
+    scheduledFor: schedule.scheduledFor,
+    scheduleType: schedule.scheduleType,
+    deletedOptions,
+    newOrUpdatedOptions,
+  });
+}
+
 export default function EditSubmissionPage() {
+  const [isSaving, setIsSaving] = useState(false);
   const { id } = useParams();
   const history = useNavigate();
   const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
 
   const { state: accounts, isLoading: isLoadingAccounts } =
     useStore(AccountStore);
-  const { data, isLoading, isFetching } = useQuery(
+  const { data, isLoading, isFetching, refetch } = useQuery(
     [`submission-${id}`],
     () =>
       SubmissionsApi.get(id as string).then(
@@ -134,7 +155,23 @@ export default function EditSubmissionPage() {
                 <EuiHeaderSectionItem>
                   <EuiButton
                     size="s"
-                    disabled={JSON.stringify(data) === JSON.stringify(original)}
+                    disabled={
+                      JSON.stringify(data) === JSON.stringify(original) ||
+                      isSaving
+                    }
+                    isLoading={isSaving}
+                    onClick={() => {
+                      if (data && original) {
+                        setIsSaving(true);
+                        save(original, data)
+                          .then(() => {
+                            refetch();
+                          })
+                          .finally(() => {
+                            setIsSaving(false);
+                          });
+                      }
+                    }}
                   >
                     <FormattedMessage
                       id="submission.save"
@@ -147,7 +184,7 @@ export default function EditSubmissionPage() {
           },
         ]}
       />
-      <EuiSpacer />
+      <EuiSpacer size="m" />
       {editForm}
     </>
   );

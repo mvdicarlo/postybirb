@@ -71,7 +71,9 @@ export class SubmissionService
 
   getDefaultQueryOptions(): FindOptions<SubmissionEntity, 'options' | 'files'> {
     return {
-      populate: ['options', 'files'],
+      // Typechecking is annoying here for nested types
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      populate: ['options', 'files', 'options.account' as any],
     };
   }
 
@@ -181,6 +183,38 @@ export class SubmissionService
       scheduledFor: updateSubmissionDto.scheduledFor,
       scheduleType: updateSubmissionDto.scheduleType,
     };
+
+    const optionChanges: Promise<unknown>[] = [];
+    if (updateSubmissionDto.deletedOptions?.length) {
+      updateSubmissionDto.deletedOptions.forEach((deletedOption) => {
+        optionChanges.push(
+          this.submissionOptionsService.remove(deletedOption.id)
+        );
+      });
+    }
+
+    if (updateSubmissionDto.newOrUpdatedOptions?.length) {
+      updateSubmissionDto.newOrUpdatedOptions.forEach((option) => {
+        if (option.createdAt) {
+          optionChanges.push(
+            this.submissionOptionsService.update({
+              id: option.id,
+              data: option.data,
+            })
+          );
+        } else {
+          optionChanges.push(
+            this.submissionOptionsService.create({
+              accountId: option.account.id,
+              data: option.data,
+              submissionId: submission.id,
+            })
+          );
+        }
+      });
+    }
+
+    await Promise.allSettled(optionChanges);
 
     return this.repository
       .flush()

@@ -21,6 +21,7 @@ function shouldGrow(entries: FieldEntry[]): boolean {
     switch (entry.value.formField) {
       case 'checkbox':
       case 'radio':
+      case 'rating':
       case 'switch':
         break;
       case 'input':

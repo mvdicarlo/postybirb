@@ -18,6 +18,13 @@ export class FormGeneratorService {
     private readonly websiteRegistryService: WebsiteRegistryService
   ) {}
 
+  /**
+   * Generates the form properties for a submission option.
+   * Form properties are used for form generation in UI.
+   *
+   * @param {FormGenerationRequestDto} request
+   * @return {*}
+   */
   async generateForm(request: FormGenerationRequestDto) {
     // Get instance for creation
     const instance = await this.websiteRegistryService.findInstance(
@@ -48,8 +55,6 @@ export class FormGeneratorService {
     }
 
     const form = formBuilder(new FormModel(), data);
-    console.log(form);
-
     return form;
   }
 

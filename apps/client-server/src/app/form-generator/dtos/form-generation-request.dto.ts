@@ -8,7 +8,6 @@ export class FormGenerationRequestDto implements IFormGenerationRequestDto {
   @IsObject()
   account: IAccount;
 
-  @ApiProperty()
   @ApiProperty({ enum: SubmissionType })
   @IsEnum(SubmissionType)
   type: SubmissionType;
