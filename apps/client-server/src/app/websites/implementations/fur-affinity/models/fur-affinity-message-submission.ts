@@ -1,4 +1,5 @@
 import {
+  BooleanField,
   DescriptionField,
   RatingField,
   TagField,
@@ -45,4 +46,7 @@ export class FurAffinityMessageSubmission implements BaseWebsiteOptions {
     layout: 'vertical',
   })
   rating: SubmissionRating;
+
+  @BooleanField({ label: 'Feature', defaultValue: true })
+  feature: boolean;
 }

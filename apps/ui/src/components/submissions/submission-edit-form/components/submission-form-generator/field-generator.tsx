@@ -2,6 +2,7 @@ import {
   BooleanFieldType,
   DescriptionFieldType,
   RadioFieldType,
+  SelectFieldType,
   TagFieldType,
   TextFieldType,
 } from '@postybirb/form-builder';
@@ -11,6 +12,7 @@ import BooleanField from './fields/boolean-field';
 import DescriptionField from './fields/description-field';
 import InputField from './fields/input-field';
 import RadioField from './fields/radio-field';
+import SelectField from './fields/select-field';
 import TagField from './fields/tag-field';
 
 type FieldGeneratorProps = SubmissionGeneratedFieldProps;
@@ -64,6 +66,13 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
         <BooleanField
           key={key}
           {...(props as SubmissionGeneratedFieldProps<BooleanFieldType>)}
+        />
+      );
+    case 'select':
+      return (
+        <SelectField
+          key={key}
+          {...(props as SubmissionGeneratedFieldProps<SelectFieldType>)}
         />
       );
     default:

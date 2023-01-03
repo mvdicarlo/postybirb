@@ -5,6 +5,7 @@ import {
   RatingFieldType,
   TextFieldType,
 } from '../decorators';
+import { SelectFieldType } from '../decorators/select-field.decorator';
 import { TagFieldType } from '../decorators/tag-field.decorator';
 import { PrimitiveRecord } from './primitive-record';
 
@@ -14,4 +15,5 @@ export type FieldAggregateType<T extends PrimitiveRecord = PrimitiveRecord> =
   | RadioFieldType<T>
   | RatingFieldType<T>
   | TagFieldType<T>
-  | DescriptionFieldType<T>;
+  | DescriptionFieldType<T>
+  | SelectFieldType<T>;
