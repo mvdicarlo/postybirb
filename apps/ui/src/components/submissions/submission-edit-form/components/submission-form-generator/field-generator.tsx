@@ -1,4 +1,5 @@
 import {
+  BooleanFieldType,
   DescriptionFieldType,
   RadioFieldType,
   TagFieldType,
@@ -6,6 +7,7 @@ import {
 } from '@postybirb/form-builder';
 import { useEffect } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
+import BooleanField from './fields/boolean-field';
 import DescriptionField from './fields/description-field';
 import InputField from './fields/input-field';
 import RadioField from './fields/radio-field';
@@ -54,6 +56,14 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
         <DescriptionField
           key={key}
           {...(props as SubmissionGeneratedFieldProps<DescriptionFieldType>)}
+        />
+      );
+    case 'checkbox':
+    case 'switch':
+      return (
+        <BooleanField
+          key={key}
+          {...(props as SubmissionGeneratedFieldProps<BooleanFieldType>)}
         />
       );
     default:
