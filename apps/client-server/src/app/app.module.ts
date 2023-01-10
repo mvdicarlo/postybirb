@@ -11,6 +11,7 @@ import { SubmissionModule } from './submission/submission.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
+import { SubmissionOptionsModule } from './submission-options/submission-options.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { FormGeneratorModule } from './form-generator/form-generator.module';
       exclude: ['/api*'],
     }),
     FormGeneratorModule,
+    SubmissionOptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

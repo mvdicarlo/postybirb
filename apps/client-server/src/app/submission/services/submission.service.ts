@@ -33,7 +33,7 @@ import { SubmissionDto } from '../dtos/submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionOptionsService } from './submission-options.service';
+import { SubmissionOptionsService } from '../../submission-options/submission-options.service';
 
 type SubmissionEntity = Submission<SubmissionMetadataType>;
 

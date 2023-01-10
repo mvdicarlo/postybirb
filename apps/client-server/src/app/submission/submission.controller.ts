@@ -21,12 +21,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { SubmissionType } from '@postybirb/types';
-import { DeleteQuery } from '../../common/service/modifiers/delete-query';
-import { MulterFileInfo } from '../../file/models/multer-file-info';
-import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { SubmissionDto } from '../dtos/submission.dto';
-import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
-import { SubmissionService } from '../services/submission.service';
+import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { MulterFileInfo } from '../file/models/multer-file-info';
+import { CreateSubmissionDto } from './dtos/create-submission.dto';
+import { SubmissionDto } from './dtos/submission.dto';
+import { UpdateSubmissionDto } from './dtos/update-submission.dto';
+import { SubmissionService } from './services/submission.service';
 
 /**
  * CRUD operations on Submission data.

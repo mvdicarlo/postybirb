@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { diskStorage } from 'multer';
@@ -6,13 +6,12 @@ import { extname } from 'path';
 import { AccountModule } from '../account/account.module';
 import { DatabaseModule } from '../database/database.module';
 import { FileModule } from '../file/file.module';
+import { SubmissionOptionsModule } from '../submission-options/submission-options.module';
 import { WebsitesModule } from '../websites/websites.module';
-import { SubmissionController } from './controllers/submission.controller';
 import { FileSubmissionService } from './services/file-submission.service';
 import { MessageSubmissionService } from './services/message-submission.service';
-import { SubmissionOptionsService } from './services/submission-options.service';
 import { SubmissionService } from './services/submission.service';
-import { SubmissionOptionsController } from './controllers/submission-options.controller';
+import { SubmissionController } from './submission.controller';
 
 @Module({
   imports: [
@@ -20,6 +19,7 @@ import { SubmissionOptionsController } from './controllers/submission-options.co
     WebsitesModule,
     AccountModule,
     FileModule,
+    forwardRef(() => SubmissionOptionsModule),
     MulterModule.register({
       limits: {
         fileSize: 3e8, // Max 300MB
@@ -36,10 +36,10 @@ import { SubmissionOptionsController } from './controllers/submission-options.co
   ],
   providers: [
     SubmissionService,
-    SubmissionOptionsService,
     MessageSubmissionService,
     FileSubmissionService,
   ],
-  controllers: [SubmissionController, SubmissionOptionsController],
+  controllers: [SubmissionController],
+  exports: [SubmissionService],
 })
 export class SubmissionModule {}

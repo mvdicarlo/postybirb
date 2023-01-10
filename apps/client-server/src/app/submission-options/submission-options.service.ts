@@ -14,12 +14,12 @@ import {
   SubmissionMetadataType,
   SubmissionRating,
 } from '@postybirb/types';
-import { AccountService } from '../../account/account.service';
-import { Submission, SubmissionOptions } from '../../database/entities';
-import { WebsiteRegistryService } from '../../websites/website-registry.service';
-import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
-import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
-import { SubmissionService } from './submission.service';
+import { AccountService } from '../account/account.service';
+import { Submission, SubmissionOptions } from '../database/entities';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
+import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
+import { SubmissionService } from '../submission/services/submission.service';
 
 @Injectable()
 export class SubmissionOptionsService {

@@ -6,9 +6,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { BaseWebsiteOptions } from '@postybirb/types';
-import { CreateSubmissionOptionsDto } from '../dtos/create-submission-options.dto';
-import { UpdateSubmissionOptionsDto } from '../dtos/update-submission-options.dto';
-import { SubmissionOptionsService } from '../services/submission-options.service';
+import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
+import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
+import { SubmissionOptionsService } from './submission-options.service';
 
 /**
  * CRUD operation on Submission options.
