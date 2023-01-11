@@ -8,6 +8,7 @@ import {
 import {
   BaseWebsiteOptions,
   DefaultTagValue,
+  DescriptionValue,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
@@ -34,7 +35,7 @@ export class FurAffinityMessageSubmission implements BaseWebsiteOptions {
     row: 3,
     column: 1,
   })
-  description: unknown;
+  description: DescriptionValue;
 
   @RatingField({
     label: 'Rating',

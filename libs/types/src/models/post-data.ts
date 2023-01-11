@@ -1,7 +1,7 @@
-import { SubmissionType } from '../enums';
 import { BaseWebsiteOptions } from './base-website-options';
+import { ISubmission } from './submission';
 
-// TODO need a real model for this when posting happens
-export type PostData<T extends BaseWebsiteOptions> = {
-  type: SubmissionType;
-} & T;
+export type PostData<S extends ISubmission, T extends BaseWebsiteOptions> = {
+  options: T;
+  submission: S;
+};

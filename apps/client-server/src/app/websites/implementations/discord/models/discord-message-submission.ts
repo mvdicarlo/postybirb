@@ -1,26 +1,43 @@
-import { RatingField, TagField, TextField } from '@postybirb/form-builder';
+import {
+  DescriptionField,
+  RatingField,
+  TextField,
+} from '@postybirb/form-builder';
 import {
   BaseWebsiteOptions,
-  DefaultTagValue,
+  DescriptionValue,
   SubmissionRating,
-  TagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
 export class DiscordMessageSubmission implements BaseWebsiteOptions {
-  @TextField({ label: 'Title', defaultValue: '' })
-  title?: string;
+  @TextField({
+    label: 'Title',
+    defaultValue: '',
+    row: 0,
+    column: 1,
+  })
+  title: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
-  tags: TagValue;
-
-  @TextField({ label: 'Description', defaultValue: '' })
-  description: unknown;
+  @DescriptionField({
+    label: 'Description',
+    defaultValue: {
+      overrideDefault: false,
+      description: '',
+    },
+    row: 3,
+    column: 1,
+  })
+  description: DescriptionValue;
 
   @RatingField({
     label: 'Rating',
     defaultValue: undefined,
     options: DefaultRatingOptions,
+    required: true,
+    row: 0,
+    column: 0,
+    layout: 'vertical',
   })
   rating: SubmissionRating;
 }

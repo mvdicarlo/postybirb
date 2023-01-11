@@ -22,3 +22,4 @@ export * from './submission-schedule-info';
 export * from './website-data';
 export * from './tag-value';
 export * from './description-value';
+export * from './validation-result';

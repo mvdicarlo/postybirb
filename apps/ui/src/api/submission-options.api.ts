@@ -1,5 +1,8 @@
-import { IUpdateSubmissionOptionsDto } from '@postybirb/dto';
-import { BaseWebsiteOptions } from '@postybirb/types';
+import {
+  IUpdateSubmissionOptionsDto,
+  IValidateSubmissionOptionsDto,
+} from '@postybirb/dto';
+import { BaseWebsiteOptions, ValidationResult } from '@postybirb/types';
 import Https from '../transports/https';
 
 export default class SubmissionOptionsApi {
@@ -9,5 +12,11 @@ export default class SubmissionOptionsApi {
     options: IUpdateSubmissionOptionsDto<T>
   ) {
     return SubmissionOptionsApi.request.patch('', options);
+  }
+
+  static validate(id: string, dto: IValidateSubmissionOptionsDto) {
+    return SubmissionOptionsApi.request
+      .post<ValidationResult, IValidateSubmissionOptionsDto>('validate', dto)
+      .then((res) => ({ id, result: res.body }));
   }
 }

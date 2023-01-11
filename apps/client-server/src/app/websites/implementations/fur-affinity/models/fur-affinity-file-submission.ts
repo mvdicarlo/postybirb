@@ -7,6 +7,7 @@ import {
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
+  DescriptionValue,
   FileWebsiteOptions,
   SubmissionRating,
   TagValue,
@@ -41,7 +42,7 @@ export class FurAffinityFileSubmission implements FileWebsiteOptions {
     row: 3,
     column: 1,
   })
-  description: unknown;
+  description: DescriptionValue;
 
   @RatingField({
     label: 'Rating',

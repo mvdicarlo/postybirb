@@ -10,12 +10,14 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { SubmissionType } from '@postybirb/types';
-import { useState } from 'react';
-import { useCallback, useMemo, useReducer } from 'react';
+import { IValidateSubmissionOptionsDto } from '@postybirb/dto';
+import { SubmissionType, ValidationResult } from '@postybirb/types';
+import { debounce } from 'lodash';
+import { useCallback, useMemo, useReducer, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
+import SubmissionOptionsApi from '../../api/submission-options.api';
 import SubmissionsApi from '../../api/submission.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
@@ -62,11 +64,53 @@ export default function EditSubmissionPage() {
       cacheTime: 0,
     }
   );
-  const original = useMemo(() => data?.copy(), [data]);
+
+  const { data: validationResults, refetch: refetchValidations } = useQuery(
+    `validation-${id}`,
+    () => {
+      if (data) {
+        console.log('calling');
+        return Promise.all(
+          data.options
+            .filter((o) => !o.isDefault)
+            .map((o) => {
+              const dto: IValidateSubmissionOptionsDto = {
+                submissionId: data.id,
+                options: o.data,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                accountId: o.account!.id!,
+              };
+              return SubmissionOptionsApi.validate(o.id, dto);
+            })
+        ) as Promise<
+          {
+            id: string;
+            result: ValidationResult<object>;
+          }[]
+        >;
+      }
+
+      return [];
+    },
+    {
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  // !BUG need to send default options and not rely on the backend's version
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedValidate = useCallback(
+    debounce(() => refetchValidations(), 2000),
+    [refetchValidations]
+  );
+
+  const original = useMemo(() => data?.copy(), [data]);
   const onUpdate = useCallback(() => {
     forceUpdate();
-  }, []);
+    debouncedValidate();
+  }, [debouncedValidate]);
+
+  console.log('validation', validationResults);
 
   const defaultOption = data?.getDefaultOptions();
   const isLoadingData = isLoading || isFetching || isLoadingAccounts;

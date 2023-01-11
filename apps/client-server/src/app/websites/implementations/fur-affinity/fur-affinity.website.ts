@@ -4,6 +4,7 @@ import {
   FileSubmission,
   MessageSubmission,
   PostData,
+  ValidationResult,
 } from '@postybirb/types';
 import { FurAffinityMetadata } from '@postybirb/website-metadata';
 import { load } from 'cheerio';
@@ -71,16 +72,15 @@ export default class FurAffinity
   }
 
   onPostFileSubmission(
-    postData: PostData<FurAffinityFileSubmission>,
+    postData: PostData<FileSubmission, FurAffinityFileSubmission>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
   onValidateFileSubmission(
-    submissionData: FileSubmission,
-    postData: PostData<FurAffinityFileSubmission>
-  ): Promise<unknown> {
+    postData: PostData<FileSubmission, FurAffinityFileSubmission>
+  ): Promise<ValidationResult> {
     throw new Error('Method not implemented.');
   }
 
@@ -89,16 +89,15 @@ export default class FurAffinity
   }
 
   onPostMessageSubmission(
-    postData: PostData<FurAffinityMessageSubmission>,
+    postData: PostData<FileSubmission, FurAffinityMessageSubmission>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
   onValidateMessageSubmission(
-    submissionData: MessageSubmission,
-    postData: PostData<FurAffinityMessageSubmission>
-  ): Promise<unknown> {
+    postData: PostData<MessageSubmission, FurAffinityMessageSubmission>
+  ): Promise<ValidationResult> {
     throw new Error('Method not implemented.');
   }
 }

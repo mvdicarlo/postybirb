@@ -1,14 +1,8 @@
+import { BooleanField, RatingField, TextField } from '@postybirb/form-builder';
 import {
-  BooleanField,
-  RatingField,
-  TagField,
-  TextField,
-} from '@postybirb/form-builder';
-import {
-  DefaultTagValue,
+  DescriptionValue,
   FileWebsiteOptions,
   SubmissionRating,
-  TagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
@@ -22,11 +16,8 @@ export class DiscordFileSubmission implements FileWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
-  tags: TagValue;
-
   @TextField({ label: 'Description', defaultValue: '' })
-  description: unknown;
+  description: DescriptionValue;
 
   @RatingField({
     label: 'Rating',

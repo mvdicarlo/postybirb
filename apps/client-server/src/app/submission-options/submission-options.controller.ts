@@ -8,6 +8,7 @@ import {
 import { BaseWebsiteOptions } from '@postybirb/types';
 import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
 import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
+import { ValidateSubmissionOptionsDto } from './dtos/validate-submission-options.dto';
 import { SubmissionOptionsService } from './submission-options.service';
 
 /**
@@ -53,5 +54,13 @@ export class SubmissionOptionsController {
   @ApiNotFoundResponse({ description: 'Submission option Id not found.' })
   remove(@Param('id') id: string) {
     return this.service.remove(id);
+  }
+
+  @Post('validate')
+  @ApiOkResponse({ description: 'Submission validation completed.' })
+  @ApiBadRequestResponse()
+  @ApiNotFoundResponse({ description: 'Submission not found.' })
+  validate(@Body() validateSubmissionOptionsDto: ValidateSubmissionOptionsDto) {
+    return this.service.validateSubmissionOption(validateSubmissionOptionsDto);
   }
 }

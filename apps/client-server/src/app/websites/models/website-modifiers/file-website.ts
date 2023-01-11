@@ -1,4 +1,9 @@
-import { FileWebsiteOptions, FileSubmission, PostData } from '@postybirb/types';
+import {
+  FileWebsiteOptions,
+  FileSubmission,
+  PostData,
+  ValidationResult,
+} from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../../website';
 
@@ -15,14 +20,13 @@ export interface FileWebsite<T extends FileWebsiteOptions> {
   createFileModel(): T;
 
   onPostFileSubmission(
-    postData: PostData<T>,
+    postData: PostData<FileSubmission, T>,
     cancellationToken: unknown
   ): Promise<unknown>;
 
   onValidateFileSubmission(
-    submissionData: FileSubmission,
-    postData: PostData<T>
-  ): Promise<unknown>;
+    postData: PostData<FileSubmission, T>
+  ): Promise<ValidationResult>;
 }
 
 export function isFileWebsite(

@@ -5,14 +5,22 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
 import {
   BaseWebsiteOptions,
+  FileSubmission,
+  FileWebsiteOptions,
   IBaseSubmissionMetadata,
+  ISubmission,
+  MessageSubmission,
+  PostData,
   SubmissionMetadataType,
   SubmissionRating,
+  SubmissionType,
+  ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { Submission, SubmissionOptions } from '../database/entities';
@@ -20,6 +28,9 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
 import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
 import { SubmissionService } from '../submission/services/submission.service';
+import { ValidateSubmissionOptionsDto } from './dtos/validate-submission-options.dto';
+import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
+import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 
 @Injectable()
 export class SubmissionOptionsService {
@@ -145,5 +156,97 @@ export class SubmissionOptionsService {
     });
 
     return submissionOptions;
+  }
+
+  /**
+   * Validates a submission option against a website instance.
+   * @todo create a validation return type
+   * @param {ValidateSubmissionOptionsDto} validate
+   * @return {Promise<ValidationResult>}
+   */
+  async validateSubmissionOption(
+    validate: ValidateSubmissionOptionsDto
+  ): Promise<ValidationResult<BaseWebsiteOptions>> {
+    const { options, accountId, submissionId } = validate;
+    const submission = await this.submissionService.findOne(submissionId);
+    const account = await this.accountService.findOne(accountId);
+    const websiteInstance = this.websiteRegistry.findInstance(account);
+
+    const postData = await this.getPostData(submission, options);
+    if (
+      submission.type === SubmissionType.FILE &&
+      isFileWebsite(websiteInstance)
+    ) {
+      return websiteInstance.onValidateFileSubmission(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        postData as unknown as PostData<FileSubmission, FileWebsiteOptions>
+      );
+    }
+
+    if (
+      submission.type === SubmissionType.MESSAGE &&
+      isMessageWebsite(websiteInstance)
+    ) {
+      return websiteInstance.onValidateMessageSubmission(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        postData as unknown as PostData<MessageSubmission, BaseWebsiteOptions>
+      );
+    }
+
+    throw new BadRequestException(
+      'Could not determine validation type or website does not support submission type.'
+    );
+  }
+
+  /**
+   * Creates the simple post data required to post and validate a submission.
+   * NOTE: this will probably be split out later as real posting is considered.
+   * @param {ISubmission} submission
+   * @param {BaseWebsiteOptions} options
+   * @return {*}  {Promise<
+   *     PostData<ISubmission<IBaseSubmissionMetadata>, BaseWebsiteOptions>
+   *   >}
+   */
+  private async getPostData(
+    submission: ISubmission,
+    options: BaseWebsiteOptions
+  ): Promise<
+    PostData<ISubmission<IBaseSubmissionMetadata>, BaseWebsiteOptions>
+  > {
+    const data: PostData<ISubmission, BaseWebsiteOptions> = {
+      submission,
+      options,
+    };
+
+    const defaultOptions = submission.options
+      .toArray()
+      .find((o) => o.isDefault);
+
+    if (defaultOptions) {
+      if (!data.options.description) {
+        data.options.description = defaultOptions.data.description;
+      }
+
+      // Override description
+      // TODO put description through parser once that is figured out
+      if (data.options.description?.overrideDefault === true) {
+        data.options.description = defaultOptions.data.description;
+      }
+
+      if (!data.options.tags) {
+        data.options.tags = defaultOptions.data.tags;
+      }
+
+      // Merge tags
+      if (data.options.tags?.overrideDefault === true) {
+        data.options.tags.tags.push(...defaultOptions.data.tags.tags);
+      }
+    } else {
+      throw new InternalServerErrorException(
+        `Default options not found for submission ${submission.id}`
+      );
+    }
+
+    return data;
   }
 }

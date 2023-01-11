@@ -6,6 +6,7 @@ import {
 } from '@postybirb/form-builder';
 import {
   DefaultTagValue,
+  DescriptionValue,
   FileWebsiteOptions,
   SubmissionRating,
   TagValue,
@@ -26,7 +27,7 @@ export class TestFileSubmission implements FileWebsiteOptions {
   tags: TagValue;
 
   @TextField({ label: 'Description', defaultValue: '' })
-  description: unknown;
+  description: DescriptionValue;
 
   @RatingField({
     label: 'Rating',

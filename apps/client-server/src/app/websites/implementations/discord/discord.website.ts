@@ -3,6 +3,7 @@ import {
   FileSubmission,
   MessageSubmission,
   PostData,
+  ValidationResult,
 } from '@postybirb/types';
 import { DiscordMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
@@ -59,30 +60,42 @@ export default class Discord
   }
 
   onPostFileSubmission(
-    postData: PostData<DiscordFileSubmission>,
+    postData: PostData<FileSubmission, DiscordFileSubmission>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
   onValidateFileSubmission(
-    submissionData: FileSubmission,
-    postData: PostData<DiscordFileSubmission>
-  ): Promise<unknown> {
+    postData: PostData<FileSubmission, DiscordFileSubmission>
+  ): Promise<ValidationResult> {
     throw new Error('Method not implemented.');
   }
 
   onPostMessageSubmission(
-    postData: PostData<DiscordMessageSubmission>,
+    postData: PostData<MessageSubmission, DiscordMessageSubmission>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
-  onValidateMessageSubmission(
-    submissionData: MessageSubmission,
-    postData: PostData<DiscordMessageSubmission>
-  ): Promise<unknown> {
-    throw new Error('Method not implemented.');
+  async onValidateMessageSubmission(
+    postData: PostData<MessageSubmission, DiscordMessageSubmission>
+  ): Promise<ValidationResult<DiscordMessageSubmission>> {
+    const result: ValidationResult<DiscordMessageSubmission> = {
+      warnings: [],
+    };
+
+    if (postData.options.description.description.trim().length > 2_000) {
+      result.warnings.push({
+        id: 'validation.description.max-length',
+        field: 'description',
+        values: {
+          maxLength: 2_000,
+        },
+      });
+    }
+
+    return result;
   }
 }

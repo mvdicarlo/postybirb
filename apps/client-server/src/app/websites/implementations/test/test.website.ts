@@ -4,6 +4,7 @@ import {
   FileSubmission,
   MessageSubmission,
   PostData,
+  ValidationResult,
 } from '@postybirb/types';
 import { TestMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
@@ -59,30 +60,28 @@ export default class TestWebsite
   }
 
   onPostFileSubmission(
-    postData: PostData<FileWebsiteOptions>,
+    postData: PostData<FileSubmission, FileWebsiteOptions>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
   onValidateFileSubmission(
-    submissionData: FileSubmission,
-    postData: PostData<TestFileSubmission>
-  ): Promise<unknown> {
+    postData: PostData<FileSubmission, TestFileSubmission>
+  ): Promise<ValidationResult> {
     throw new Error('Method not implemented.');
   }
 
   onPostMessageSubmission(
-    postData: PostData<TestMessageSubmission>,
+    postData: PostData<MessageSubmission, TestMessageSubmission>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');
   }
 
   onValidateMessageSubmission(
-    submissionData: MessageSubmission,
-    postData: PostData<TestMessageSubmission>
-  ): Promise<unknown> {
+    postData: PostData<MessageSubmission, TestMessageSubmission>
+  ): Promise<ValidationResult> {
     throw new Error('Method not implemented.');
   }
 

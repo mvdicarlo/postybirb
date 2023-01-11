@@ -11,3 +11,4 @@ export * from './lib/submission.dto';
 export * from './lib/update-submission-options.dto';
 export * from './lib/update-submission.dto';
 export * from './lib/form-generation-request.dto';
+export * from './lib/validate-submission-options.dto';

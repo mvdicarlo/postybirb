@@ -2,6 +2,7 @@ import { RatingField, TagField, TextField } from '@postybirb/form-builder';
 import {
   BaseWebsiteOptions,
   DefaultTagValue,
+  DescriptionValue,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
@@ -15,7 +16,7 @@ export class TestMessageSubmission implements BaseWebsiteOptions {
   tags: TagValue;
 
   @TextField({ label: 'Description', defaultValue: '' })
-  description: unknown;
+  description: DescriptionValue;
 
   @RatingField({
     label: 'Rating',

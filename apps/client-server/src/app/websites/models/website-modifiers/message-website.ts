@@ -2,6 +2,7 @@ import {
   BaseWebsiteOptions,
   MessageSubmission,
   PostData,
+  ValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 
@@ -18,14 +19,13 @@ export interface MessageWebsite<T extends BaseWebsiteOptions> {
   createMessageModel(): T;
 
   onPostMessageSubmission(
-    postData: PostData<T>,
+    postData: PostData<MessageSubmission, T>,
     cancellationToken: unknown
   ): Promise<unknown>;
 
   onValidateMessageSubmission(
-    submissionData: MessageSubmission,
-    postData: PostData<T>
-  ): Promise<unknown>;
+    postData: PostData<MessageSubmission, T>
+  ): Promise<ValidationResult<T>>;
 }
 
 export function isMessageWebsite(
