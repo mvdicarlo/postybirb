@@ -167,12 +167,16 @@ export class SubmissionOptionsService {
   async validateSubmissionOption(
     validate: ValidateSubmissionOptionsDto
   ): Promise<ValidationResult<BaseWebsiteOptions>> {
-    const { options, accountId, submissionId } = validate;
+    const { defaultOptions, options, accountId, submissionId } = validate;
     const submission = await this.submissionService.findOne(submissionId);
     const account = await this.accountService.findOne(accountId);
     const websiteInstance = this.websiteRegistry.findInstance(account);
 
-    const postData = await this.getPostData(submission, options);
+    const postData = await this.getPostData(
+      submission,
+      defaultOptions,
+      options
+    );
     if (
       submission.type === SubmissionType.FILE &&
       isFileWebsite(websiteInstance)
@@ -209,6 +213,7 @@ export class SubmissionOptionsService {
    */
   private async getPostData(
     submission: ISubmission,
+    defaultOptions: BaseWebsiteOptions,
     options: BaseWebsiteOptions
   ): Promise<
     PostData<ISubmission<IBaseSubmissionMetadata>, BaseWebsiteOptions>
@@ -218,28 +223,24 @@ export class SubmissionOptionsService {
       options,
     };
 
-    const defaultOptions = submission.options
-      .toArray()
-      .find((o) => o.isDefault);
-
     if (defaultOptions) {
       if (!data.options.description) {
-        data.options.description = defaultOptions.data.description;
+        data.options.description = defaultOptions.description;
       }
 
       // Override description
       // TODO put description through parser once that is figured out
-      if (data.options.description?.overrideDefault === true) {
-        data.options.description = defaultOptions.data.description;
+      if (data.options.description.overrideDefault === false) {
+        data.options.description = defaultOptions.description;
       }
 
       if (!data.options.tags) {
-        data.options.tags = defaultOptions.data.tags;
+        data.options.tags = defaultOptions.tags;
       }
 
       // Merge tags
-      if (data.options.tags?.overrideDefault === true) {
-        data.options.tags.tags.push(...defaultOptions.data.tags.tags);
+      if (data.options.tags.overrideDefault === false) {
+        data.options.tags.tags.push(...defaultOptions.tags.tags);
       }
     } else {
       throw new InternalServerErrorException(

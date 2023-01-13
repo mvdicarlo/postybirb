@@ -20,6 +20,7 @@ import { useNavigate, useParams } from 'react-router';
 import SubmissionOptionsApi from '../../api/submission-options.api';
 import SubmissionsApi from '../../api/submission.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
+import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { AccountStore } from '../../stores/account.store';
 import { useStore } from '../../stores/use-store';
@@ -69,7 +70,6 @@ export default function EditSubmissionPage() {
     `validation-${id}`,
     () => {
       if (data) {
-        console.log('calling');
         return Promise.all(
           data.options
             .filter((o) => !o.isDefault)
@@ -77,17 +77,13 @@ export default function EditSubmissionPage() {
               const dto: IValidateSubmissionOptionsDto = {
                 submissionId: data.id,
                 options: o.data,
+                defaultOptions: data.getDefaultOptions().data,
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 accountId: o.account!.id!,
               };
               return SubmissionOptionsApi.validate(o.id, dto);
             })
-        ) as Promise<
-          {
-            id: string;
-            result: ValidationResult<object>;
-          }[]
-        >;
+        ) as Promise<SubmissionValidationResult[]>;
       }
 
       return [];
@@ -97,10 +93,9 @@ export default function EditSubmissionPage() {
     }
   );
 
-  // !BUG need to send default options and not rely on the backend's version
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedValidate = useCallback(
-    debounce(() => refetchValidations(), 2000),
+    debounce(() => refetchValidations(), 1_500),
     [refetchValidations]
   );
 
@@ -109,8 +104,6 @@ export default function EditSubmissionPage() {
     forceUpdate();
     debouncedValidate();
   }, [debouncedValidate]);
-
-  console.log('validation', validationResults);
 
   const defaultOption = data?.getDefaultOptions();
   const isLoadingData = isLoading || isFetching || isLoadingAccounts;
@@ -160,6 +153,7 @@ export default function EditSubmissionPage() {
     <SubmissionEditForm
       key={data?.id}
       submission={data}
+      validation={validationResults ?? []}
       accounts={accounts.filter((account) =>
         account.websiteInfo.supports.includes(data.type)
       )}

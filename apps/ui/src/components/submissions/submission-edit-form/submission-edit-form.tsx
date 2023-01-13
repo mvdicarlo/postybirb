@@ -97,7 +97,9 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
             </h4>
           </EuiTitle>
           <SubmissionOptionsSection
+            {...props}
             option={defaultOptions}
+            defaultOptions={defaultOptions}
             submission={submission}
             onUpdate={onUpdate}
           />
@@ -112,8 +114,10 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
               </EuiTitle>
               {optionPairs.map((o) => (
                 <SubmissionOptionsSection
+                  {...props}
                   key={o.option.id}
                   option={o.option}
+                  defaultOptions={defaultOptions}
                   submission={submission}
                   onUpdate={onUpdate}
                   account={o.account}

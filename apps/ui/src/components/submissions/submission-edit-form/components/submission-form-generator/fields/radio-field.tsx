@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import classNames from 'classnames';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
+import { BaseWebsiteOptions } from '@postybirb/types';
 
 type RadioFieldProps =
   | (
@@ -12,7 +13,7 @@ type RadioFieldProps =
     ) & { key: string };
 
 export default function RadioField(props: RadioFieldProps) {
-  const { propKey, field, option, onUpdate } = props;
+  const { propKey, field, defaultOptions, option, onUpdate } = props;
   const [value, setValue] = useState(
     option.data[propKey] || field.defaultValue
   );
@@ -32,6 +33,12 @@ export default function RadioField(props: RadioFieldProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const defaultValue =
+    defaultOptions !== option &&
+    defaultOptions.data[propKey as keyof BaseWebsiteOptions] !== undefined
+      ? defaultOptions.data[propKey as keyof BaseWebsiteOptions]
+      : undefined;
+
   return (
     <FormRow {...props}>
       <EuiRadioGroup
@@ -41,7 +48,13 @@ export default function RadioField(props: RadioFieldProps) {
           'postybirb__radio-horizontal': field.layout === 'horizontal',
         })}
         options={options.map((o) => ({
-          label: o.label,
+          label: `${o.label}${
+            defaultValue !== undefined &&
+            o.value &&
+            o.value.toString() === defaultValue
+              ? ` *`
+              : ''
+          }`,
           id: `${option.id}-${propKey}-${o.value?.toString() || 'undefined'}`,
           value: o.value ? o.value.toString() : undefined,
         }))}

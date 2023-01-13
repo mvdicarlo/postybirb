@@ -17,4 +17,8 @@ export class ValidateSubmissionOptionsDto
   @ApiProperty({ type: Object })
   @IsObject()
   options: BaseWebsiteOptions;
+
+  @ApiProperty({ type: Object })
+  @IsObject()
+  defaultOptions: BaseWebsiteOptions;
 }

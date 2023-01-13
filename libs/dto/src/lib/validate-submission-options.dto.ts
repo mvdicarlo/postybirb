@@ -8,4 +8,6 @@ export interface IValidateSubmissionOptionsDto<
   accountId: string;
 
   options: T;
+
+  defaultOptions: BaseWebsiteOptions;
 }
