@@ -6,7 +6,7 @@ const translations: Record<string, (props: TranslationProps) => JSX.Element> = {
   ): JSX.Element => (
     <FormattedMessage
       {...props}
-      defaultMessage="Description is greater than {maxLength, number}"
+      defaultMessage="Description is greater than {maxLength, number} characters long"
     />
   ),
 };

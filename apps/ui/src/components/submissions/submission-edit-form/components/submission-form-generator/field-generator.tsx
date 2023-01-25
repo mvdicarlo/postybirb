@@ -6,11 +6,8 @@ import {
   TagFieldType,
   TextFieldType,
 } from '@postybirb/form-builder';
-import { useEffect, useMemo } from 'react';
-import {
-  SubmissionGeneratedFieldProps,
-  SubmissionValidationResult,
-} from '../../submission-form-props';
+import { useEffect } from 'react';
+import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
 import BooleanField from './fields/boolean-field';
 import DescriptionField from './fields/description-field';
 import InputField from './fields/input-field';
@@ -22,7 +19,7 @@ type FieldGeneratorProps = SubmissionGeneratedFieldProps;
 
 // TODO figure out translation
 export default function FieldGenerator(props: FieldGeneratorProps) {
-  const { validation, propKey, option, field } = props;
+  const { propKey, option, field } = props;
   const key = `${option.id}-gen-${propKey}`;
 
   useEffect(() => {
@@ -31,16 +28,6 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const validationMsgs = useMemo(
-    () => validation.find((v) => v.id === option.id),
-    [option.id, validation]
-  );
-
-  // let validationEl: JSX.Element | null = null;
-  if (validationMsgs) {
-    // TODO figure out validation display at field level
-  }
 
   switch (field.formField) {
     case 'input':

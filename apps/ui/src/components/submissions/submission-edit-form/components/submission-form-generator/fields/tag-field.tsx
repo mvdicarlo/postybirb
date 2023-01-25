@@ -9,11 +9,13 @@ import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
+import useValidations from './use-validations';
 
 type TagFieldProps = SubmissionGeneratedFieldProps<TagFieldType>;
 
 export default function TagField(props: TagFieldProps) {
   const { field, option, propKey, onUpdate } = props;
+  const validation = useValidations(props);
   const value: TagValue = option.data[propKey] ?? field.defaultValue;
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
     value.overrideDefault
@@ -44,7 +46,7 @@ export default function TagField(props: TagFieldProps) {
   };
 
   return (
-    <FormRow {...props}>
+    <FormRow {...props} validations={validation}>
       {option.account ? (
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
@@ -70,6 +72,7 @@ export default function TagField(props: TagFieldProps) {
         fullWidth
         compressed
         isClearable
+        isInvalid={validation.isInvalid}
         options={tags}
         selectedOptions={selectedTags}
         onCreateOption={onCreate}

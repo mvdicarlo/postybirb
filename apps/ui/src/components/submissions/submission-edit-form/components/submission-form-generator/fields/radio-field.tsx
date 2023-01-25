@@ -1,10 +1,11 @@
 import { EuiRadioGroup } from '@elastic/eui';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
-import { useCallback, useMemo, useState } from 'react';
 import classNames from 'classnames';
+import { useCallback, useMemo, useState } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
-import { BaseWebsiteOptions } from '@postybirb/types';
+import useValidations from './use-validations';
+import useDefaultOption from './useDefaultOption';
 
 type RadioFieldProps =
   | (
@@ -13,7 +14,9 @@ type RadioFieldProps =
     ) & { key: string };
 
 export default function RadioField(props: RadioFieldProps) {
-  const { propKey, field, defaultOptions, option, onUpdate } = props;
+  const { propKey, field, option, onUpdate } = props;
+  const validation = useValidations(props);
+  const defaultValue = useDefaultOption(props);
   const [value, setValue] = useState(
     option.data[propKey] || field.defaultValue
   );
@@ -33,14 +36,8 @@ export default function RadioField(props: RadioFieldProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const defaultValue =
-    defaultOptions !== option &&
-    defaultOptions.data[propKey as keyof BaseWebsiteOptions] !== undefined
-      ? defaultOptions.data[propKey as keyof BaseWebsiteOptions]
-      : undefined;
-
   return (
-    <FormRow {...props}>
+    <FormRow {...props} validations={validation}>
       <EuiRadioGroup
         aria-required={field.required}
         compressed

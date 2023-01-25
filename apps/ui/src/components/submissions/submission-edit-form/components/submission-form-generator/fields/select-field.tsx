@@ -3,11 +3,13 @@ import { SelectFieldType } from '@postybirb/form-builder';
 import { useCallback, useState } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
+import useValidations from './use-validations';
 
 type SelectFieldProps = SubmissionGeneratedFieldProps<SelectFieldType>;
 
 export default function SelectField(props: SelectFieldProps) {
   const { propKey, field, option, onUpdate } = props;
+  const validation = useValidations(props);
   const [value, setValue] = useState(
     option.data[propKey] || field.defaultValue
   );
@@ -24,11 +26,12 @@ export default function SelectField(props: SelectFieldProps) {
   );
 
   return (
-    <FormRow {...props}>
+    <FormRow {...props} validations={validation}>
       <EuiComboBox
         aria-required={field.required}
         compressed
         isClearable
+        isInvalid={validation.isInvalid}
         singleSelection={!field.allowMultiple}
         options={field.options.map((o) => ({
           label: o.label,

@@ -5,12 +5,14 @@ import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
+import useValidations from './use-validations';
 
 type DescriptionFieldProps =
   SubmissionGeneratedFieldProps<DescriptionFieldType>;
 
 export default function DescriptionField(props: DescriptionFieldProps) {
   const { propKey, field, defaultOptions, option, onUpdate } = props;
+  const validation = useValidations(props);
   const value: DescriptionValue = option.data[propKey] ?? field.defaultValue;
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
     value.overrideDefault
@@ -20,7 +22,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
   );
 
   return (
-    <FormRow {...props}>
+    <FormRow {...props} validations={validation}>
       {option.account ? (
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
@@ -50,6 +52,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
           required={field.required}
           fullWidth
           compressed
+          isInvalid={validation.isInvalid}
           value={description}
           onChange={(e) => {
             setDescription(e.target.value);
