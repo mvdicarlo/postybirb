@@ -12,6 +12,7 @@ import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { SubmissionOptionsModule } from './submission-options/submission-options.module';
+import { TagGroupsModule } from './tag-groups/tag-groups.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { SubmissionOptionsModule } from './submission-options/submission-options
     }),
     FormGeneratorModule,
     SubmissionOptionsModule,
+    TagGroupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

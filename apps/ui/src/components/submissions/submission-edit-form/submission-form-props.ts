@@ -5,7 +5,7 @@ import {
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   ISubmissionOptions,
   ValidationResult,
 } from '@postybirb/types';
@@ -19,7 +19,7 @@ export type SubmissionFormProps = {
 
 export type SubmissionSectionProps = SubmissionFormProps & {
   option: ISubmissionOptions<any>;
-  defaultOptions: ISubmissionOptions<BaseWebsiteOptions>;
+  defaultOptions: ISubmissionOptions<IBaseWebsiteOptions>;
   account?: IAccountDto;
 };
 

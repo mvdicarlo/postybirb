@@ -3,7 +3,7 @@ import {
   IBaseSubmissionMetadata,
   ISubmission,
   SubmissionType,
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   ISubmissionFile,
   ISubmissionScheduleInfo,
 } from '@postybirb/types';
@@ -26,7 +26,7 @@ export class Submission<T extends IBaseSubmissionMetadata>
     orphanRemoval: true,
   })
   options = new Collection<
-    SubmissionOptions<BaseWebsiteOptions>,
+    SubmissionOptions<IBaseWebsiteOptions>,
     ISubmission<T>
   >(this);
 

@@ -1,5 +1,5 @@
 import { Entity, OneToMany, Property } from '@mikro-orm/core';
-import { BaseWebsiteOptions, IAccount } from '@postybirb/types';
+import { IBaseWebsiteOptions, IAccount } from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 import { SubmissionOptions } from './submission-options.entity';
 
@@ -17,5 +17,5 @@ export class Account extends BaseEntity<Account> implements IAccount {
   @OneToMany(() => SubmissionOptions, (so) => so.account, {
     orphanRemoval: true,
   })
-  submissionOptions: SubmissionOptions<BaseWebsiteOptions>;
+  submissionOptions: SubmissionOptions<IBaseWebsiteOptions>;
 }

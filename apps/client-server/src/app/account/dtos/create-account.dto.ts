@@ -1,6 +1,6 @@
-import { IsArray, IsString, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ICreateAccountDto } from '@postybirb/dto';
+import { IsArray, IsString, Length } from 'class-validator';
 
 /**
  * Account creation request object.

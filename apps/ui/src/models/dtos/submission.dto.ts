@@ -1,6 +1,6 @@
 import { ISubmissionDto } from '@postybirb/dto';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   IBaseSubmissionMetadata,
   ISubmissionFile,
   ISubmissionOptions,
@@ -13,7 +13,7 @@ import SubmissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
   T extends IBaseSubmissionMetadata = IBaseSubmissionMetadata,
-  O extends BaseWebsiteOptions = BaseWebsiteOptions
+  O extends IBaseWebsiteOptions = IBaseWebsiteOptions
 > implements ISubmissionDto<T>
 {
   createdAt!: Date;
@@ -26,7 +26,7 @@ export class SubmissionDto<
 
   metadata!: T;
 
-  options!: ISubmissionOptions<BaseWebsiteOptions>[];
+  options!: ISubmissionOptions<IBaseWebsiteOptions>[];
 
   schedule!: ISubmissionScheduleInfo;
 

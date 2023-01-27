@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUpdateSubmissionOptionsDto } from '@postybirb/dto';
-import { BaseWebsiteOptions } from '@postybirb/types';
+import { IBaseWebsiteOptions } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
-export class UpdateSubmissionOptionsDto<T extends BaseWebsiteOptions>
+export class UpdateSubmissionOptionsDto<T extends IBaseWebsiteOptions>
   implements IUpdateSubmissionOptionsDto<T>
 {
   @ApiProperty()

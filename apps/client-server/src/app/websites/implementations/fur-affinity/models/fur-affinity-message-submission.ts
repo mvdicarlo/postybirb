@@ -6,7 +6,7 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   DefaultTagValue,
   DescriptionValue,
   SubmissionRating,
@@ -14,7 +14,7 @@ import {
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class FurAffinityMessageSubmission implements BaseWebsiteOptions {
+export class FurAffinityMessageSubmission implements IBaseWebsiteOptions {
   @TextField({
     label: 'Title',
     defaultValue: '',

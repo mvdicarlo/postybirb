@@ -1,6 +1,6 @@
-import { BaseWebsiteOptions } from '@postybirb/types';
+import { IBaseWebsiteOptions } from '@postybirb/types';
 
-export interface IUpdateSubmissionOptionsDto<T extends BaseWebsiteOptions> {
+export interface IUpdateSubmissionOptionsDto<T extends IBaseWebsiteOptions> {
   id: string;
   data: T;
 }

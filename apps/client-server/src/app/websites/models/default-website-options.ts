@@ -6,7 +6,7 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   DefaultTagValue,
   DescriptionValue,
   SubmissionRating,
@@ -32,7 +32,7 @@ export const DefaultRatingOptions: RatingOption[] = [
   },
 ];
 
-export class DefaultWebsiteOptions implements BaseWebsiteOptions {
+export class DefaultWebsiteOptions implements IBaseWebsiteOptions {
   @TextField({
     label: 'Title',
     defaultValue: '',

@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   ISubmissionOptions,
   IBaseSubmissionMetadata,
   IAccount,
@@ -10,7 +10,7 @@ import { BaseEntity } from './base.entity';
 import { Submission } from './submission.entity';
 
 @Entity()
-export class SubmissionOptions<T extends BaseWebsiteOptions>
+export class SubmissionOptions<T extends IBaseWebsiteOptions>
   extends BaseEntity<SubmissionOptions<T>>
   implements ISubmissionOptions<T>
 {

@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   FileSubmission,
   FileWebsiteOptions,
   IBaseSubmissionMetadata,
@@ -43,7 +43,7 @@ export class SubmissionOptionsService {
     >,
     @InjectRepository(SubmissionOptions)
     private readonly submissionOptionsRepository: EntityRepository<
-      SubmissionOptions<BaseWebsiteOptions>
+      SubmissionOptions<IBaseWebsiteOptions>
     >,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
@@ -51,7 +51,7 @@ export class SubmissionOptionsService {
     private readonly accountService: AccountService
   ) {}
 
-  async create<T extends BaseWebsiteOptions>(
+  async create<T extends IBaseWebsiteOptions>(
     createSubmissionOptions: CreateSubmissionOptionsDto<T>
   ) {
     const account = await this.accountService.findOne(
@@ -90,7 +90,7 @@ export class SubmissionOptionsService {
     return submissionOptions;
   }
 
-  async findOne(id: string): Promise<SubmissionOptions<BaseWebsiteOptions>> {
+  async findOne(id: string): Promise<SubmissionOptions<IBaseWebsiteOptions>> {
     try {
       return await this.submissionOptionsRepository.findOneOrFail(id);
     } catch {
@@ -118,7 +118,7 @@ export class SubmissionOptionsService {
    */
   @Log()
   async update(
-    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<BaseWebsiteOptions>
+    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<IBaseWebsiteOptions>
   ): Promise<boolean> {
     try {
       const options = await this.findOne(updateSubmissionOptionsDto.id);
@@ -141,7 +141,7 @@ export class SubmissionOptionsService {
   createDefaultSubmissionOptions(
     submission: Submission<IBaseSubmissionMetadata>,
     title: string
-  ): SubmissionOptions<BaseWebsiteOptions> {
+  ): SubmissionOptions<IBaseWebsiteOptions> {
     const submissionOptions = this.submissionOptionsRepository.create({
       isDefault: true,
       submission,
@@ -166,7 +166,7 @@ export class SubmissionOptionsService {
    */
   async validateSubmissionOption(
     validate: ValidateSubmissionOptionsDto
-  ): Promise<ValidationResult<BaseWebsiteOptions>> {
+  ): Promise<ValidationResult<IBaseWebsiteOptions>> {
     const { defaultOptions, options, accountId, submissionId } = validate;
     const submission = await this.submissionService.findOne(submissionId);
     const account = await this.accountService.findOne(accountId);
@@ -193,7 +193,7 @@ export class SubmissionOptionsService {
     ) {
       return websiteInstance.onValidateMessageSubmission(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        postData as unknown as PostData<MessageSubmission, BaseWebsiteOptions>
+        postData as unknown as PostData<MessageSubmission, IBaseWebsiteOptions>
       );
     }
 
@@ -206,19 +206,19 @@ export class SubmissionOptionsService {
    * Creates the simple post data required to post and validate a submission.
    * NOTE: this will probably be split out later as real posting is considered.
    * @param {ISubmission} submission
-   * @param {BaseWebsiteOptions} options
+   * @param {IBaseWebsiteOptions} options
    * @return {*}  {Promise<
-   *     PostData<ISubmission<IBaseSubmissionMetadata>, BaseWebsiteOptions>
+   *     PostData<ISubmission<IBaseSubmissionMetadata>, IBaseWebsiteOptions>
    *   >}
    */
   private async getPostData(
     submission: ISubmission,
-    defaultOptions: BaseWebsiteOptions,
-    options: BaseWebsiteOptions
+    defaultOptions: IBaseWebsiteOptions,
+    options: IBaseWebsiteOptions
   ): Promise<
-    PostData<ISubmission<IBaseSubmissionMetadata>, BaseWebsiteOptions>
+    PostData<ISubmission<IBaseSubmissionMetadata>, IBaseWebsiteOptions>
   > {
-    const data: PostData<ISubmission, BaseWebsiteOptions> = {
+    const data: PostData<ISubmission, IBaseWebsiteOptions> = {
       submission,
       options,
     };

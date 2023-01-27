@@ -1,5 +1,5 @@
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   ISubmissionOptions,
   ScheduleType,
 } from '@postybirb/types';
@@ -13,7 +13,7 @@ export interface IUpdateSubmissionDto {
 
   scheduleType: ScheduleType;
 
-  deletedOptions?: ISubmissionOptions<BaseWebsiteOptions>[];
+  deletedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
 
-  newOrUpdatedOptions?: ISubmissionOptions<BaseWebsiteOptions>[];
+  newOrUpdatedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
 }

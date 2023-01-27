@@ -1,6 +1,6 @@
 import { RatingField, TagField, TextField } from '@postybirb/form-builder';
 import {
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   DefaultTagValue,
   DescriptionValue,
   SubmissionRating,
@@ -8,7 +8,7 @@ import {
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class TestMessageSubmission implements BaseWebsiteOptions {
+export class TestMessageSubmission implements IBaseWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 

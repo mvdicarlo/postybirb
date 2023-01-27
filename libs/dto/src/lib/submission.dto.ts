@@ -3,7 +3,7 @@ import {
   IBaseSubmissionMetadata,
   ISubmissionOptions,
   ISubmissionScheduleInfo,
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
 } from '@postybirb/types';
 
 export interface ISubmissionDto<
@@ -14,7 +14,7 @@ export interface ISubmissionDto<
   id: string;
   isScheduled: boolean;
   metadata: T;
-  options: ISubmissionOptions<BaseWebsiteOptions>[];
+  options: ISubmissionOptions<IBaseWebsiteOptions>[];
   schedule: ISubmissionScheduleInfo;
   type: 'MESSAGE' | 'FILE';
   updatedAt: Date;

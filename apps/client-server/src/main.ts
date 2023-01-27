@@ -69,6 +69,7 @@ async function bootstrap(appPort?: number) {
     .addTag('form-generator')
     .addTag('submission')
     .addTag('submission-option')
+    .addTag('tag-groups')
     .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);

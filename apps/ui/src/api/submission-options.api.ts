@@ -2,13 +2,13 @@ import {
   IUpdateSubmissionOptionsDto,
   IValidateSubmissionOptionsDto,
 } from '@postybirb/dto';
-import { BaseWebsiteOptions, ValidationResult } from '@postybirb/types';
+import { IBaseWebsiteOptions, ValidationResult } from '@postybirb/types';
 import Https from '../transports/https';
 
 export default class SubmissionOptionsApi {
   private static readonly request: Https = new Https('submission-option');
 
-  static update<T extends BaseWebsiteOptions>(
+  static update<T extends IBaseWebsiteOptions>(
     options: IUpdateSubmissionOptionsDto<T>
   ) {
     return SubmissionOptionsApi.request.patch('', options);

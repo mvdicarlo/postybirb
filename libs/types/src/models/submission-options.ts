@@ -1,11 +1,11 @@
 import { IAccount } from './account';
 import { IBaseEntity } from './base-entity';
 import { IBaseSubmissionMetadata } from './base-submission-metadata';
-import { BaseWebsiteOptions } from './base-website-options';
+import { IBaseWebsiteOptions } from './base-website-options';
 import { ISubmission } from './submission';
 
 export interface ISubmissionOptions<
-  T extends BaseWebsiteOptions = BaseWebsiteOptions
+  T extends IBaseWebsiteOptions = IBaseWebsiteOptions
 > extends IBaseEntity {
   id: string;
   submission: ISubmission<IBaseSubmissionMetadata>;

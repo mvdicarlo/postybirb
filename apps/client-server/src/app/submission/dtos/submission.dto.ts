@@ -4,7 +4,7 @@ import {
   IBaseSubmissionMetadata,
   SubmissionType,
   ISubmissionOptions,
-  BaseWebsiteOptions,
+  IBaseWebsiteOptions,
   ISubmissionScheduleInfo,
   ISubmissionFile,
 } from '@postybirb/types';
@@ -24,12 +24,12 @@ export class SubmissionDto<T extends IBaseSubmissionMetadata>
   /**
    * Specific options for each website.
    *
-   * @type {ISubmissionOptions<BaseWebsiteOptions>[]}
+   * @type {ISubmissionOptions<IBaseWebsiteOptions>[]}
    * @memberof SubmissionDto
    */
   @ApiProperty()
   @IsArray()
-  options: ISubmissionOptions<BaseWebsiteOptions>[];
+  options: ISubmissionOptions<IBaseWebsiteOptions>[];
 
   /**
    * Whether or not the submission is actively scheduled.

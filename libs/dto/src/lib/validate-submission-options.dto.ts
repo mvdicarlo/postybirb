@@ -1,7 +1,7 @@
-import { BaseWebsiteOptions } from '@postybirb/types';
+import { IBaseWebsiteOptions } from '@postybirb/types';
 
 export interface IValidateSubmissionOptionsDto<
-  T extends BaseWebsiteOptions = BaseWebsiteOptions
+  T extends IBaseWebsiteOptions = IBaseWebsiteOptions
 > {
   submissionId: string;
 
@@ -9,5 +9,5 @@ export interface IValidateSubmissionOptionsDto<
 
   options: T;
 
-  defaultOptions: BaseWebsiteOptions;
+  defaultOptions: IBaseWebsiteOptions;
 }
