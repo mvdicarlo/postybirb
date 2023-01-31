@@ -7,14 +7,18 @@ import { TagFieldType } from '@postybirb/form-builder';
 import { TagValue } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { TagGroupStore } from '../../../../../../stores/tag-group-store';
+import { useStore } from '../../../../../../stores/use-store';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 import useValidations from './use-validations';
+import { uniq } from 'lodash';
 
 type TagFieldProps = SubmissionGeneratedFieldProps<TagFieldType>;
 
 export default function TagField(props: TagFieldProps) {
   const { field, option, propKey, onUpdate } = props;
+  const { state: tagGroupStore } = useStore(TagGroupStore);
   const validation = useValidations(props);
   const value: TagValue = option.data[propKey] ?? field.defaultValue;
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
@@ -45,6 +49,33 @@ export default function TagField(props: TagFieldProps) {
     }
   };
 
+  // TODO translate
+  const tagOptions: EuiComboBoxOptionOption<string> = {
+    label: 'Tags',
+    isGroupLabelOption: true,
+    options: tags,
+  };
+
+  const tagGroups = tagGroupStore.map((tagGroup) => {
+    const group: EuiComboBoxOptionOption<string[]> = {
+      label: `G:${tagGroup.name}`,
+      key: tagGroup.id,
+      value: tagGroup.tags,
+    };
+
+    return group;
+  });
+
+  // to satisfy component typing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tagGroupOptions: EuiComboBoxOptionOption<any> = {
+    label: 'Tag Group',
+    isGroupLabelOption: true,
+    options: tagGroups,
+  };
+
+  const options = [tagOptions, tagGroupOptions];
+
   return (
     <FormRow {...props} validations={validation}>
       {option.account ? (
@@ -73,14 +104,35 @@ export default function TagField(props: TagFieldProps) {
         compressed
         isClearable
         isInvalid={validation.isInvalid}
-        options={tags}
+        options={options}
         selectedOptions={selectedTags}
         onCreateOption={onCreate}
         onChange={(values) => {
-          setSelectedTags(values);
+          const extracted = uniq(
+            values
+              .map((tagValues) => {
+                if (Array.isArray(tagValues.value)) {
+                  return tagValues;
+                }
+
+                const opt = {
+                  ...tagValues,
+                  value: [tagValues.value],
+                };
+
+                return opt;
+              })
+              .flatMap((tagValues) => tagValues.value)
+          ).map((flattenedTagValue) => ({
+            key: flattenedTagValue,
+            value: flattenedTagValue,
+            label: flattenedTagValue,
+          }));
+
+          setSelectedTags(extracted);
           option.data[propKey] = {
             ...value,
-            tags: values.map((v) => v.label) || [],
+            tags: extracted.map((v) => v.label) || [],
           };
           onUpdate();
         }}
