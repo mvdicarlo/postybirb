@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { PostyBirbCRUDService } from '../postybirb-crud-service';
 
 type DeleteQueryActionType = 'REDO' | 'UNDO' | 'DELETE' | 'HARD_DELETE';
@@ -9,6 +9,7 @@ export class DeleteQuery {
   ids: string[] | string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
   action: DeleteQueryActionType;
 
@@ -29,15 +30,8 @@ export class DeleteQuery {
             true
           )
         );
-      case 'HARD_DELETE':
-        return Promise.all(
-          (Array.isArray(query.ids) ? query.ids : [query.ids]).map((id) =>
-            service.remove(id)
-          )
-        );
       case 'DELETE':
       case 'REDO':
-      default:
         return service.markForDeletion(
           await service.find(
             {
@@ -45,6 +39,13 @@ export class DeleteQuery {
             },
             undefined,
             true
+          )
+        );
+      case 'HARD_DELETE':
+      default:
+        return Promise.all(
+          (Array.isArray(query.ids) ? query.ids : [query.ids]).map((id) =>
+            service.remove(id)
           )
         );
     }

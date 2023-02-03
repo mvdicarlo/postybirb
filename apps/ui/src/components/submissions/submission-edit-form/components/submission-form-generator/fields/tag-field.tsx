@@ -5,6 +5,7 @@ import {
 } from '@elastic/eui';
 import { TagFieldType } from '@postybirb/form-builder';
 import { TagValue } from '@postybirb/types';
+import { uniq } from 'lodash';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { TagGroupStore } from '../../../../../../stores/tag-group-store';
@@ -12,7 +13,6 @@ import { useStore } from '../../../../../../stores/use-store';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 import useValidations from './use-validations';
-import { uniq } from 'lodash';
 
 type TagFieldProps = SubmissionGeneratedFieldProps<TagFieldType>;
 
@@ -58,9 +58,10 @@ export default function TagField(props: TagFieldProps) {
 
   const tagGroups = tagGroupStore.map((tagGroup) => {
     const group: EuiComboBoxOptionOption<string[]> = {
-      label: `G:${tagGroup.name}`,
+      label: `G: ${tagGroup.name}`,
       key: tagGroup.id,
       value: tagGroup.tags,
+      title: `Tags: ${tagGroup.tags.join()}`,
     };
 
     return group;

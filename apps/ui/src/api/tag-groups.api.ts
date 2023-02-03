@@ -10,7 +10,9 @@ export default class TagGroupsApi {
   }
 
   static remove(ids: string[]) {
-    return TagGroupsApi.request.delete('', { ids });
+    return TagGroupsApi.request.delete('', {
+      ids,
+    });
   }
 
   static getAll() {

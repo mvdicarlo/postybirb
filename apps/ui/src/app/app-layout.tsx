@@ -24,8 +24,10 @@ import {
   GearIcon,
   HomeIcon,
   MessageIcon,
+  TagsIcon,
   UserGroupIcon,
 } from '../components/shared/icons/Icons';
+import { TagGroupsFlyout } from '../components/tag-groups/tag-groups-flyout/tag-groups-flyout';
 import { useGlobalState } from '../global-state';
 import {
   FileSubmissionPath,
@@ -39,6 +41,7 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
+  TagGroupsKeybinding,
 } from '../shared/app-keybindings';
 import AppSearch from './app-search';
 import AppSettings from './app-settings';
@@ -64,6 +67,12 @@ export default function AppLayout() {
     setGlobalState({
       ...globalState,
       accountFlyoutVisible: value ?? !globalState.accountFlyoutVisible,
+    });
+
+  const toggleTagGroups = (value?: boolean) =>
+    setGlobalState({
+      ...globalState,
+      tagGroupsFlyoutVisible: value ?? !globalState.tagGroupsFlyoutVisible,
     });
 
   const toggleSettings = (value?: boolean) =>
@@ -103,11 +112,17 @@ export default function AppLayout() {
     onActivate: () => toggleAccountLogin(),
   };
 
+  const tagGroupsKeybinding = {
+    keybinding: TagGroupsKeybinding,
+    onActivate: () => toggleTagGroups(),
+  };
+
   useKeybinding(settingsKeybinding);
   useKeybinding(accountKeybinding);
   useKeybinding(homeKeybinding);
   useKeybinding(messageSubmissionsKeybinding);
   useKeybinding(fileSubmissionsKeybinding);
+  useKeybinding(tagGroupsKeybinding);
 
   return (
     <EuiPage paddingSize="none">
@@ -234,6 +249,30 @@ export default function AppLayout() {
               }
             />
             <EuiListGroupItem
+              aria-label="PostyBirb tag groups"
+              size="s"
+              iconType={TagsIcon.GroupItem}
+              onClick={() => toggleTagGroups()}
+              label={
+                <EuiToolTip
+                  position="right"
+                  content={
+                    <Keybinding {...tagGroupsKeybinding}>
+                      <FormattedMessage
+                        id="tag-groups"
+                        defaultMessage="Tag Groups"
+                      />
+                    </Keybinding>
+                  }
+                >
+                  <FormattedMessage
+                    id="tag-groups"
+                    defaultMessage="Tag Groups"
+                  />
+                </EuiToolTip>
+              }
+            />
+            <EuiListGroupItem
               size="s"
               aria-label="PostyBirb settings"
               iconType={GearIcon.GroupItem}
@@ -266,6 +305,10 @@ export default function AppLayout() {
       <AccountLoginFlyout
         onClose={() => toggleAccountLogin(false)}
         isOpen={globalState.accountFlyoutVisible}
+      />
+      <TagGroupsFlyout
+        onClose={() => toggleTagGroups(false)}
+        isOpen={globalState.tagGroupsFlyoutVisible}
       />
 
       <EuiPageBody

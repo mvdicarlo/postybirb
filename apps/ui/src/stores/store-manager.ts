@@ -37,11 +37,7 @@ export default class StoreManager<T> {
 
   private handleMessages(messages: T[]): void {
     this.data = messages ?? [];
-    if (this.ModelConstructor) {
-      const { ModelConstructor } = this;
-      this.data = this.data.map((d) => new ModelConstructor(d));
-    }
-    this.subject.next([...this.data]);
+    this.subject.next(this.getData());
   }
 
   public refresh() {
@@ -51,6 +47,10 @@ export default class StoreManager<T> {
   }
 
   public getData(): T[] {
-    return [...this.data];
+    const data = JSON.parse(JSON.stringify(this.data ?? []));
+    const { ModelConstructor } = this;
+    return ModelConstructor
+      ? data.map((d: unknown) => new ModelConstructor(d))
+      : data;
   }
 }

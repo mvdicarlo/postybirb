@@ -11,7 +11,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { IValidateSubmissionOptionsDto } from '@postybirb/dto';
-import { SubmissionType, ValidationResult } from '@postybirb/types';
+import { SubmissionType } from '@postybirb/types';
 import { debounce } from 'lodash';
 import { useCallback, useMemo, useReducer, useState } from 'react';
 import { FormattedMessage } from 'react-intl';

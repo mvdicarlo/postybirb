@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUpdateTagGroupDto } from '@postybirb/dto';
-import { IsString } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 
 export class UpdateTagGroupDto implements IUpdateTagGroupDto {
   @ApiProperty()
@@ -12,6 +12,6 @@ export class UpdateTagGroupDto implements IUpdateTagGroupDto {
   name: string;
 
   @ApiProperty()
-  @IsString()
+  @IsArray()
   tags: string[];
 }
