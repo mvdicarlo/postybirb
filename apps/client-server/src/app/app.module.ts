@@ -13,6 +13,7 @@ import { WebsitesModule } from './websites/websites.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { SubmissionOptionsModule } from './submission-options/submission-options.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
+import { TagConvertersModule } from './tag-converters/tag-converters.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TagGroupsModule } from './tag-groups/tag-groups.module';
     FormGeneratorModule,
     SubmissionOptionsModule,
     TagGroupsModule,
+    TagConvertersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
