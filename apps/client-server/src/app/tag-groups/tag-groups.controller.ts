@@ -43,8 +43,8 @@ export class TagGroupsController {
   @Patch()
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
-  update(@Body() updateAccountDto: UpdateTagGroupDto) {
-    return this.service.update(updateAccountDto);
+  update(@Body() updateTagGroupDto: UpdateTagGroupDto) {
+    return this.service.update(updateTagGroupDto);
   }
 
   @Delete()

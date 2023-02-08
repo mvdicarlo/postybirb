@@ -5,3 +5,4 @@ export * from './submission-options.entity';
 export * from './submission.entity';
 export * from './website-data.entity';
 export * from './tag-group.entity';
+export * from './tag-converter.entity';

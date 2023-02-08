@@ -55,7 +55,7 @@ export class TagGroupsService
   }
 
   /**
-   * Emits account state and data onto websocket.
+   * Emits tag group state and data onto websocket.
    */
   protected async emit() {
     super.emit({

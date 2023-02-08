@@ -1,11 +1,11 @@
-import { ICreateTagGroupDto, IUpdateTagGroupDto } from '@postybirb/dto';
-import { ITagGroup } from '@postybirb/types';
+import { ICreateTagConverterDto, IUpdateTagConverterDto } from '@postybirb/dto';
+import { ITagConverter, ITagGroup } from '@postybirb/types';
 import Https from '../transports/https';
 
 export default class TagConvertersApi {
   private static readonly request: Https = new Https('tag-converters');
 
-  static create(createTagConvertersDto: ICreateTagGroupDto) {
+  static create(createTagConvertersDto: ICreateTagConverterDto) {
     return TagConvertersApi.request.post('', createTagConvertersDto);
   }
 
@@ -16,14 +16,14 @@ export default class TagConvertersApi {
   }
 
   static getAll() {
-    return TagConvertersApi.request.get<ITagGroup[]>();
+    return TagConvertersApi.request.get<ITagConverter[]>();
   }
 
   static get(id: string, refresh = false) {
     return TagConvertersApi.request.get<ITagGroup>(id, { refresh });
   }
 
-  static update(update: IUpdateTagGroupDto) {
+  static update(update: IUpdateTagConverterDto) {
     return TagConvertersApi.request.patch('', update);
   }
 }

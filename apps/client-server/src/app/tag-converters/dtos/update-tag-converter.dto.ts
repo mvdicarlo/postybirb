@@ -1,0 +1,13 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IUpdateTagConverterDto } from '@postybirb/dto';
+import { IsObject, IsString } from 'class-validator';
+
+export class UpdateTagConverterDto implements IUpdateTagConverterDto {
+  @ApiProperty()
+  @IsString()
+  id: string;
+
+  @ApiProperty()
+  @IsObject()
+  convertTo: Record<string, string>;
+}

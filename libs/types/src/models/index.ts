@@ -24,3 +24,4 @@ export * from './tag-value';
 export * from './description-value';
 export * from './validation-result';
 export * from './tag-group';
+export * from './tag-converter';
