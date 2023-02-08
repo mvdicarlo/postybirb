@@ -8,6 +8,10 @@ export class UpdateTagConverterDto implements IUpdateTagConverterDto {
   id: string;
 
   @ApiProperty()
+  @IsString()
+  tag: string;
+
+  @ApiProperty()
   @IsObject()
   convertTo: Record<string, string>;
 }

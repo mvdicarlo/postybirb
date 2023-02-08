@@ -16,6 +16,7 @@ import {
   faRotateRight,
   faRotateBack,
   faTags,
+  faUserTag,
 } from '@fortawesome/free-solid-svg-icons';
 import {
   FontAwesomeIcon,
@@ -78,3 +79,4 @@ export const SquareMinusIcon = FaIcon({ icon: faSquareMinus });
 export const UndoIcon = FaIcon({ icon: faRotateBack });
 export const RedoIcon = FaIcon({ icon: faRotateRight });
 export const TagsIcon = FaIcon({ icon: faTags });
+export const UserTagIcon = FaIcon({ icon: faUserTag });

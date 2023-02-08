@@ -26,7 +26,9 @@ import {
   MessageIcon,
   TagsIcon,
   UserGroupIcon,
+  UserTagIcon,
 } from '../components/shared/icons/Icons';
+import { TagConvertersFlyout } from '../components/tag-converters/tag-converters-flyout/tag-converters-flyout';
 import { TagGroupsFlyout } from '../components/tag-groups/tag-groups-flyout/tag-groups-flyout';
 import { useGlobalState } from '../global-state';
 import {
@@ -41,6 +43,7 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
+  TagConvertersKeybinding,
   TagGroupsKeybinding,
 } from '../shared/app-keybindings';
 import AppSearch from './app-search';
@@ -73,6 +76,13 @@ export default function AppLayout() {
     setGlobalState({
       ...globalState,
       tagGroupsFlyoutVisible: value ?? !globalState.tagGroupsFlyoutVisible,
+    });
+
+  const toggleTagConverters = (value?: boolean) =>
+    setGlobalState({
+      ...globalState,
+      tagConvertersFlyoutVisible:
+        value ?? !globalState.tagConvertersFlyoutVisible,
     });
 
   const toggleSettings = (value?: boolean) =>
@@ -117,12 +127,18 @@ export default function AppLayout() {
     onActivate: () => toggleTagGroups(),
   };
 
+  const tagConvertersKeybinding = {
+    keybinding: TagConvertersKeybinding,
+    onActivate: () => toggleTagConverters(),
+  };
+
   useKeybinding(settingsKeybinding);
   useKeybinding(accountKeybinding);
   useKeybinding(homeKeybinding);
   useKeybinding(messageSubmissionsKeybinding);
   useKeybinding(fileSubmissionsKeybinding);
   useKeybinding(tagGroupsKeybinding);
+  useKeybinding(tagConvertersKeybinding);
 
   return (
     <EuiPage paddingSize="none">
@@ -273,6 +289,30 @@ export default function AppLayout() {
               }
             />
             <EuiListGroupItem
+              aria-label="PostyBirb tag converters"
+              size="s"
+              iconType={UserTagIcon.GroupItem}
+              onClick={() => toggleTagConverters()}
+              label={
+                <EuiToolTip
+                  position="right"
+                  content={
+                    <Keybinding {...tagConvertersKeybinding}>
+                      <FormattedMessage
+                        id="tag-converters"
+                        defaultMessage="Tag Converters"
+                      />
+                    </Keybinding>
+                  }
+                >
+                  <FormattedMessage
+                    id="tag-converters"
+                    defaultMessage="Tag Converters"
+                  />
+                </EuiToolTip>
+              }
+            />
+            <EuiListGroupItem
               size="s"
               aria-label="PostyBirb settings"
               iconType={GearIcon.GroupItem}
@@ -309,6 +349,10 @@ export default function AppLayout() {
       <TagGroupsFlyout
         onClose={() => toggleTagGroups(false)}
         isOpen={globalState.tagGroupsFlyoutVisible}
+      />
+      <TagConvertersFlyout
+        onClose={() => toggleTagConverters(false)}
+        isOpen={globalState.tagConvertersFlyoutVisible}
       />
 
       <EuiPageBody

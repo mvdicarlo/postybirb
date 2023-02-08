@@ -41,8 +41,9 @@ export class TagConvertersService
   }
 
   async update(update: UpdateTagConverterDto): Promise<boolean> {
-    const tagGroup: TagConverter = await this.findOne(update.id);
-    tagGroup.convertTo = update.convertTo;
+    const tagConverter: TagConverter = await this.findOne(update.id);
+    tagConverter.convertTo = update.convertTo;
+    tagConverter.tag = update.tag;
 
     return this.repository
       .flush()
