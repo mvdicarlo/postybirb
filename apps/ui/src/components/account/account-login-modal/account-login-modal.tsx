@@ -6,13 +6,13 @@ import {
   EuiModalHeaderTitle,
   EuiOverlayMask,
 } from '@elastic/eui';
-import { IAccountDto, IWebsiteLoginInfo } from '@postybirb/dto';
+import { IAccountDto, IWebsiteInfoDto } from '@postybirb/dto';
 import { ReactNode } from 'react';
 import './account-login-modal.css';
 
 type AccountLoginModalProps = {
   account: IAccountDto<unknown>;
-  website: IWebsiteLoginInfo;
+  website: IWebsiteInfoDto;
   // eslint-disable-next-line react/require-default-props
   initialFocus?: string;
   children: ReactNode;

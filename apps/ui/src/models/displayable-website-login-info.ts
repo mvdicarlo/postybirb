@@ -1,5 +1,5 @@
-import { IWebsiteLoginInfo } from '@postybirb/dto';
+import { IWebsiteInfoDto } from '@postybirb/dto';
 
-export type DisplayableWebsiteLoginInfo = IWebsiteLoginInfo & {
+export type DisplayableWebsiteLoginInfo = IWebsiteInfoDto & {
   isHidden: boolean;
 };

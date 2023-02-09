@@ -17,6 +17,7 @@ export interface IAccountDto<T = any> {
   websiteInfo: IWebsiteInfo;
 }
 
+// TODO this somewhat is confusing in conjunction with the similarly named dto
 export interface IWebsiteInfo {
   websiteDisplayName: string;
   supports: SubmissionType[];

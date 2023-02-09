@@ -38,6 +38,11 @@ export interface IWebsiteMetadata {
   allowAdditionalFiles?: boolean;
 
   /**
+   * Whether or not the website supports tags.
+   */
+  supportsTags?: boolean;
+
+  /**
    * How often in milliseconds login should be re-checked.
    */
   refreshInterval?: number;

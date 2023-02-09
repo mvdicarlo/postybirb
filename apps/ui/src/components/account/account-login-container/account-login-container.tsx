@@ -5,7 +5,7 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { ISettingsDto, IWebsiteLoginInfo } from '@postybirb/dto';
+import { ISettingsDto, IWebsiteInfoDto } from '@postybirb/dto';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
 import SettingsApi from '../../../api/settings.api';
@@ -25,12 +25,12 @@ import { useKeybinding } from '../../app/keybinding/keybinding';
 import AccountLoginCard from '../account-login-card/account-login-card';
 
 type AccountLoginContainerProps = {
-  availableWebsites: IWebsiteLoginInfo[];
+  availableWebsites: IWebsiteInfoDto[];
   settings: ISettingsDto;
 };
 
 function filterWebsites(
-  availableWebsites: IWebsiteLoginInfo[],
+  availableWebsites: IWebsiteInfoDto[],
   hiddenWebsites: string[],
   filters: { showHidden: boolean }
 ): DisplayableWebsiteLoginInfo[] {

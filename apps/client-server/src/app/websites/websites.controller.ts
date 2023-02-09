@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IWebsiteLoginInfo } from '@postybirb/dto';
+import { IWebsiteInfoDto } from '@postybirb/dto';
 import { SafeObject } from '@postybirb/types';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -27,17 +27,18 @@ export class WebsitesController {
     return this.websiteRegistryService.performOAuthStep(oauthRequestDto);
   }
 
-  @Get('/login-info')
+  @Get('/info')
   @ApiResponse({ status: 200 })
   getWebsiteLoginInfo() {
     return this.websiteRegistryService
       .getAvailableWebsites()
       .map((website) => {
-        const resObj: IWebsiteLoginInfo = {
+        const resObj: IWebsiteInfoDto = {
           loginType: website.prototype.loginType,
           id: website.prototype.metadata.name,
           displayName: website.prototype.metadata.displayName,
           usernameShortcut: website.prototype.usernameShortcut,
+          metadata: website.prototype.metadata,
         };
 
         return resObj;

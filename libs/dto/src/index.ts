@@ -14,5 +14,5 @@ export * from './lib/update-tag-converter.dto';
 export * from './lib/update-tag-group.dto';
 export * from './lib/username-shortcut.dto';
 export * from './lib/validate-submission-options.dto';
-export * from './lib/website-login-info.dto';
+export * from './lib/website-info.dto';
 export * from './lib/website-login-type.dto';

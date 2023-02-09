@@ -1,4 +1,5 @@
 import {
+  EuiButton,
   EuiButtonIcon,
   EuiFieldText,
   EuiFlyout,
@@ -9,10 +10,13 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
+import { IWebsiteInfoDto } from '@postybirb/dto';
 import { ITagConverter } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { useQuery } from 'react-query';
 import TagConvertersApi from '../../../api/tag-converters.api';
+import WebsitesApi from '../../../api/websites.api';
 import { TagConvertersKeybinding } from '../../../shared/app-keybindings';
 import { ModalProperties } from '../../../shared/common-properties/modal.properties';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
@@ -34,8 +38,11 @@ function updateTagConverter(updatedTagConverter: ITagConverter) {
   return TagConvertersApi.update({ id, tag, convertTo });
 }
 
-function TagConverterField(props: { converter: ITagConverter }) {
-  const { converter } = props;
+function TagConverterField(props: {
+  converter: ITagConverter;
+  websiteInfo: IWebsiteInfoDto[];
+}) {
+  const { converter, websiteInfo } = props;
   const [tagConverter, setTagConverter] = useState<ITagConverter>(converter);
 
   return (
@@ -45,28 +52,84 @@ function TagConverterField(props: { converter: ITagConverter }) {
         label={<FormattedMessage id="tag" defaultMessage="Tag" />}
       >
         <EuiFieldText
-          value={converter.tag}
-          onBlur={(event) => {
+          compressed
+          value={tagConverter.tag}
+          onChange={(event) => {
             setTagConverter({
               ...tagConverter,
               tag: event.target.value,
             });
           }}
+          onBlur={(event) => {
+            setTagConverter({
+              ...tagConverter,
+              tag: event.target.value.trim(),
+            });
+          }}
         />
       </EuiFormRow>
-      <EuiButtonIcon
-        iconType="save"
-        disabled={JSON.stringify(tagConverter) === JSON.stringify(converter)}
-        onClick={() => {
-          updateTagConverter(tagConverter);
-        }}
-      />
+      {websiteInfo.map((website) => (
+        <EuiFormRow fullWidth label={website.displayName}>
+          <EuiFieldText
+            compressed
+            value={tagConverter.convertTo[website.id] ?? ''}
+            onChange={(event) => {
+              setTagConverter({
+                ...tagConverter,
+                convertTo: {
+                  ...tagConverter.convertTo,
+                  [website.id]: event.target.value,
+                },
+              });
+            }}
+            onBlur={(event) => {
+              setTagConverter({
+                ...tagConverter,
+                convertTo: {
+                  ...tagConverter.convertTo,
+                  [website.id]: event.target.value.trim(),
+                },
+              });
+            }}
+          />
+        </EuiFormRow>
+      ))}
+      <div>
+        <EuiSpacer size="s" />
+        <EuiButtonIcon
+          size="m"
+          className="mr-1"
+          aria-label={`Save tag converter ${tagConverter.tag}`}
+          iconType="save"
+          disabled={JSON.stringify(tagConverter) === JSON.stringify(converter)}
+          onClick={() => {
+            updateTagConverter(tagConverter);
+          }}
+        />
+        <EuiButtonIcon
+          size="m"
+          aria-label={`Delete tag converter ${tagConverter.tag}`}
+          iconType="trash"
+          color="danger"
+          onClick={() => {
+            TagConvertersApi.remove([tagConverter.id]);
+          }}
+        />
+      </div>
     </EuiForm>
   );
 }
 
 export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
   const { state, isLoading } = useStore(TagConverterStore);
+  const { data: websiteInfo, isLoading: isLoadingWebsiteInfo } = useQuery(
+    'website-info',
+    WebsitesApi.getWebsiteInfo,
+    {
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const { onClose, isOpen } = props;
   const keybindingProps: KeybindingProps = {
@@ -76,6 +139,10 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
   if (!isOpen) {
     return null;
   }
+
+  const sortedWebsiteInfo = (websiteInfo ?? [])
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    .filter((website) => website.metadata.supportsTags !== false);
 
   return (
     <EuiFlyout ownFocus onClose={onClose} style={{ minWidth: '75vw' }}>
@@ -92,16 +159,24 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <Loading isLoading={isLoading}>
+        <Loading isLoading={isLoading || isLoadingWebsiteInfo}>
           <>
-            <EuiButtonIcon
+            <EuiButton
               iconType="plus"
               aria-label="Add new tag converter"
               onClick={createTagConverter}
-            />
-            <EuiSpacer />
+              size="s"
+            >
+              <FormattedMessage id="add" defaultMessage="Add" />
+            </EuiButton>
             {state.map((converter) => (
-              <TagConverterField converter={converter} />
+              <>
+                <EuiSpacer />
+                <TagConverterField
+                  converter={converter}
+                  websiteInfo={sortedWebsiteInfo}
+                />
+              </>
             ))}
           </>
         </Loading>

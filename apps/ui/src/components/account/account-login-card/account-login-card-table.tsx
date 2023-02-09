@@ -11,7 +11,7 @@ import {
   EuiIcon,
   EuiToolTip,
 } from '@elastic/eui';
-import { IAccountDto, ILoginState, IWebsiteLoginInfo } from '@postybirb/dto';
+import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/dto';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
@@ -28,7 +28,7 @@ import {
 type AccountLoginCardAccountTableProps = {
   instances: IAccountDto[];
   groups: string[];
-  website: IWebsiteLoginInfo;
+  website: IWebsiteInfoDto;
 };
 
 function NameColumn(props: {
@@ -170,7 +170,7 @@ function GroupsColumn(props: {
 
 function AccountLoginAction(props: {
   account: IAccountDto<unknown>;
-  website: IWebsiteLoginInfo;
+  website: IWebsiteInfoDto;
 }) {
   const { account, website } = props;
   const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -225,7 +225,7 @@ function AccountLoginAction(props: {
 
 function AccountActions(props: {
   account: IAccountDto<unknown>;
-  website: IWebsiteLoginInfo;
+  website: IWebsiteInfoDto;
 }) {
   const { account, website } = props;
   const { id } = account;

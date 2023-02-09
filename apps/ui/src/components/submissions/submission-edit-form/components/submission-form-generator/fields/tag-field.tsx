@@ -4,21 +4,25 @@ import {
   EuiComboBoxOptionOption,
 } from '@elastic/eui';
 import { TagFieldType } from '@postybirb/form-builder';
-import { TagValue } from '@postybirb/types';
+import { IBaseWebsiteOptions, TagValue } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { TagConverterStore } from '../../../../../../stores/tag-converter-store';
 import { TagGroupStore } from '../../../../../../stores/tag-group-store';
 import { useStore } from '../../../../../../stores/use-store';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 import useValidations from './use-validations';
+import useDefaultOption from './useDefaultOption';
 
 type TagFieldProps = SubmissionGeneratedFieldProps<TagFieldType>;
-
+// TODO display default tags if converting
 export default function TagField(props: TagFieldProps) {
-  const { field, option, propKey, onUpdate } = props;
-  const { state: tagGroupStore } = useStore(TagGroupStore);
+  const { account, field, option, propKey, onUpdate } = props;
+  const { state: tagGroups } = useStore(TagGroupStore);
+  const { state: tagConverters } = useStore(TagConverterStore);
+
   const validation = useValidations(props);
   const value: TagValue = option.data[propKey] ?? field.defaultValue;
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
@@ -35,44 +39,61 @@ export default function TagField(props: TagFieldProps) {
     useState<EuiComboBoxOptionOption<string>[]>(tags);
 
   const onCreate = (tagValue: string) => {
-    const foundTag = tags.find((t) => t.value === tagValue);
+    const trimmedValue = tagValue.trim();
+    const foundTag = tags.find((t) => t.value === trimmedValue);
+    const tagUpdate = [...selectedTags];
     if (foundTag) {
-      setSelectedTags([...selectedTags, foundTag]);
+      tagUpdate.push(foundTag);
     } else {
       const tag = {
-        label: tagValue,
-        key: tagValue,
-        value: tagValue,
+        label: trimmedValue,
+        key: trimmedValue,
+        value: trimmedValue,
       };
       setTags([...tags, tag]);
-      setSelectedTags([...selectedTags, tag]);
+      tagUpdate.push(tag);
     }
+
+    setSelectedTags(tagUpdate);
+    option.data[propKey] = {
+      ...value,
+      tags: tagUpdate.map((v) => v.value),
+    };
+    onUpdate();
   };
 
   // TODO translate
   const tagOptions: EuiComboBoxOptionOption<string> = {
     label: 'Tags',
     isGroupLabelOption: true,
-    options: tags,
+    options: tags.map((tag) => {
+      const converter = tagConverters.find((c) => c.tag === tag.value);
+      if (converter && converter.convertTo[account?.website ?? '']) {
+        // eslint-disable-next-line no-param-reassign
+        tag.label = `${tag.value} → ${
+          converter.convertTo[account?.website ?? '']
+        }`;
+      }
+
+      return tag;
+    }),
   };
-
-  const tagGroups = tagGroupStore.map((tagGroup) => {
-    const group: EuiComboBoxOptionOption<string[]> = {
-      label: `G: ${tagGroup.name}`,
-      key: tagGroup.id,
-      value: tagGroup.tags,
-      title: `Tags: ${tagGroup.tags.join()}`,
-    };
-
-    return group;
-  });
 
   // to satisfy component typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tagGroupOptions: EuiComboBoxOptionOption<any> = {
     label: 'Tag Group',
     isGroupLabelOption: true,
-    options: tagGroups,
+    options: tagGroups.map((tagGroup) => {
+      const group: EuiComboBoxOptionOption<string[]> = {
+        label: `G: ${tagGroup.name}`,
+        key: tagGroup.id,
+        value: tagGroup.tags,
+        title: `Tags: ${tagGroup.tags.join()}`,
+      };
+
+      return group;
+    }),
   };
 
   const options = [tagOptions, tagGroupOptions];
@@ -123,7 +144,7 @@ export default function TagField(props: TagFieldProps) {
 
                 return opt;
               })
-              .flatMap((tagValues) => tagValues.value)
+              .flatMap((tagValues) => tagValues.value.trim())
           ).map((flattenedTagValue) => ({
             key: flattenedTagValue,
             value: flattenedTagValue,
@@ -133,7 +154,7 @@ export default function TagField(props: TagFieldProps) {
           setSelectedTags(extracted);
           option.data[propKey] = {
             ...value,
-            tags: extracted.map((v) => v.label) || [],
+            tags: extracted.map((v) => v.value) || [],
           };
           onUpdate();
         }}

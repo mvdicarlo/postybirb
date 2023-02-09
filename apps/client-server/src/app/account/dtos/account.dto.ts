@@ -30,7 +30,7 @@ export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
 
   /**
    * Website info
-   * @type {IWebsiteInfo}
+   * @type {IWebsiteInfoDto}
    */
   websiteInfo: IWebsiteInfo;
 

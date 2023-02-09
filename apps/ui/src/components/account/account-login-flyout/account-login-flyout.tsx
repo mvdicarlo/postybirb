@@ -23,8 +23,8 @@ type AccountLoginFlyoutProps = ModalProperties;
 
 export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
   const { isLoading, data: availableWebsites } = useQuery(
-    'available-websites',
-    WebsitesApi.getLoginInfo
+    'website-info',
+    WebsitesApi.getWebsiteInfo
   );
 
   const { isLoading: isLoadingStore, state: settingsState } =
@@ -86,7 +86,7 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
               accounts: (
                 <AccountLoginContainer
                   settings={settingsState[0]}
-                  availableWebsites={availableWebsites?.body || []}
+                  availableWebsites={availableWebsites || []}
                 />
               ),
               'account-groups': null,
