@@ -4,7 +4,7 @@ import {
   EuiComboBoxOptionOption,
 } from '@elastic/eui';
 import { TagFieldType } from '@postybirb/form-builder';
-import { IBaseWebsiteOptions, TagValue } from '@postybirb/types';
+import { TagValue } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -17,11 +17,12 @@ import useValidations from './use-validations';
 import useDefaultOption from './useDefaultOption';
 
 type TagFieldProps = SubmissionGeneratedFieldProps<TagFieldType>;
-// TODO display default tags if converting
+
 export default function TagField(props: TagFieldProps) {
   const { account, field, option, propKey, onUpdate } = props;
   const { state: tagGroups } = useStore(TagGroupStore);
   const { state: tagConverters } = useStore(TagConverterStore);
+  const defaultOption = useDefaultOption<TagValue>(props);
 
   const validation = useValidations(props);
   const value: TagValue = option.data[propKey] ?? field.defaultValue;
@@ -96,7 +97,37 @@ export default function TagField(props: TagFieldProps) {
     }),
   };
 
-  const options = [tagOptions, tagGroupOptions];
+  let defaultGroupOptions: EuiComboBoxOptionOption<string> | undefined;
+  let defaultTags: EuiComboBoxOptionOption<string>[] = [];
+
+  if (!option.isDefault && !value.overrideDefault) {
+    defaultTags = defaultOption.tags.map((tag) => ({
+      value: tag,
+      label: `(Default) ${tag}`,
+      key: tag,
+    }));
+
+    defaultGroupOptions = {
+      label: 'Default Tags',
+      isGroupLabelOption: true,
+      options: defaultTags.map((tag) => {
+        const converter = tagConverters.find((c) => c.tag === tag.value);
+        if (converter && converter.convertTo[account?.website ?? '']) {
+          // eslint-disable-next-line no-param-reassign
+          tag.label = `(Default) ${tag.value} → ${
+            converter.convertTo[account?.website ?? '']
+          }`;
+        }
+
+        return tag;
+      }),
+    };
+  }
+
+  const allChosenTags = [...defaultTags, ...selectedTags];
+  const options = defaultGroupOptions
+    ? [defaultGroupOptions, tagOptions, tagGroupOptions]
+    : [tagOptions, tagGroupOptions];
 
   return (
     <FormRow {...props} validations={validation}>
@@ -127,7 +158,7 @@ export default function TagField(props: TagFieldProps) {
         isClearable
         isInvalid={validation.isInvalid}
         options={options}
-        selectedOptions={selectedTags}
+        selectedOptions={allChosenTags}
         onCreateOption={onCreate}
         onChange={(values) => {
           const extracted = uniq(
@@ -144,7 +175,7 @@ export default function TagField(props: TagFieldProps) {
 
                 return opt;
               })
-              .flatMap((tagValues) => tagValues.value.trim())
+              .flatMap((tagValues) => tagValues.value)
           ).map((flattenedTagValue) => ({
             key: flattenedTagValue,
             value: flattenedTagValue,
