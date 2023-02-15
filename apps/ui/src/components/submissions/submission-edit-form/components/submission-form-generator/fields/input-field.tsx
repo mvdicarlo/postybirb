@@ -17,7 +17,7 @@ export default function InputField(props: InputFieldProps) {
   );
 
   return (
-    <FormRow {...props} validations={validation}>
+    <FormRow {...props} validations={validation} copyValue={value}>
       {field.formField === 'input' ? (
         <EuiFieldText
           required={field.required}

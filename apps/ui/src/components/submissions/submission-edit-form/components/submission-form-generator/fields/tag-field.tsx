@@ -5,7 +5,7 @@ import {
 } from '@elastic/eui';
 import { TagFieldType } from '@postybirb/form-builder';
 import { TagValue } from '@postybirb/types';
-import { uniq } from 'lodash';
+import { uniq, uniqBy } from 'lodash';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { TagConverterStore } from '../../../../../../stores/tag-converter-store';
@@ -42,7 +42,7 @@ export default function TagField(props: TagFieldProps) {
   const onCreate = (tagValue: string) => {
     const trimmedValue = tagValue.trim();
     const foundTag = tags.find((t) => t.value === trimmedValue);
-    const tagUpdate = [...selectedTags];
+    const tagUpdate = selectedTags; // !WARN Allows mutation for paste purposes
     if (foundTag) {
       tagUpdate.push(foundTag);
     } else {
@@ -124,13 +124,17 @@ export default function TagField(props: TagFieldProps) {
     };
   }
 
-  const allChosenTags = [...defaultTags, ...selectedTags];
+  const allChosenTags = uniqBy([...defaultTags, ...selectedTags], 'value');
   const options = defaultGroupOptions
     ? [defaultGroupOptions, tagOptions, tagGroupOptions]
     : [tagOptions, tagGroupOptions];
 
   return (
-    <FormRow {...props} validations={validation}>
+    <FormRow
+      {...props}
+      validations={validation}
+      copyValue={value.tags.join(', ')}
+    >
       {option.account ? (
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
@@ -153,13 +157,16 @@ export default function TagField(props: TagFieldProps) {
       ) : null}
       <EuiComboBox
         aria-required={field.required}
-        fullWidth
         compressed
         isClearable
+        fullWidth
+        delimiter=","
         isInvalid={validation.isInvalid}
         options={options}
         selectedOptions={allChosenTags}
-        onCreateOption={onCreate}
+        onCreateOption={(searchValue) => {
+          searchValue.split(',').forEach((v) => onCreate(v.trim()));
+        }}
         onChange={(values) => {
           const extracted = uniq(
             values

@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-no-useless-fragment */
-import { EuiFormRow, EuiText } from '@elastic/eui';
-import { PropsWithChildren } from 'react';
+import { EuiButtonIcon, EuiCopy, EuiFormRow, EuiText } from '@elastic/eui';
+import { PropsWithChildren, useMemo } from 'react';
 import Translation from '../../../../translations/translation';
 import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
 import { UseValidationResult } from './fields/use-validations';
@@ -8,12 +8,33 @@ import { UseValidationResult } from './fields/use-validations';
 type FormRowProps = PropsWithChildren<SubmissionGeneratedFieldProps> & {
   // eslint-disable-next-line react/require-default-props
   validations?: UseValidationResult;
+  // eslint-disable-next-line react/require-default-props
+  copyValue?: string;
 };
 
 export default function FormRow(props: FormRowProps) {
-  const { validations, children, field, propKey, option } = props;
+  const { validations, children, field, propKey, option, copyValue } = props;
+
+  const copyBtn = useMemo(
+    () =>
+      copyValue ? (
+        <EuiCopy textToCopy={copyValue}>
+          {(copy) => (
+            <EuiButtonIcon
+              aria-label="Copy"
+              iconType="copy"
+              iconSize="s"
+              onClick={copy}
+            />
+          )}
+        </EuiCopy>
+      ) : null,
+    [copyValue]
+  );
+
   return (
     <EuiFormRow
+      labelAppend={copyBtn}
       aria-required={field.required}
       fullWidth
       id={`option-${option.id}-${propKey}`}
