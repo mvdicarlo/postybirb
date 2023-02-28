@@ -27,7 +27,7 @@ export default function FileSubmissionManagementPage() {
         }
       />
       <EuiSpacer />
-      <Uploader />
+      <Uploader endpointPath="api/submission" />
       <EuiSpacer />
       {isLoading ? (
         <EuiProgress size="xs" />

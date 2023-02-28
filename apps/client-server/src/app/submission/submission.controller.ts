@@ -105,25 +105,14 @@ export class SubmissionController {
 
   @Post('file/add/:id')
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
   @ApiOkResponse({ description: 'File appended.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
   async appendFile(
     @Param('id') id: string,
-    @UploadedFile() file: MulterFileInfo
+    @UploadedFiles() files: MulterFileInfo[]
   ) {
-    return this.service.appendFile(id, file);
+    await Promise.all(files.map((file) => this.service.appendFile(id, file)));
   }
 
   @Post('file/replace/:id/:fileId')

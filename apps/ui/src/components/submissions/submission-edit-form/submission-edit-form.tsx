@@ -1,8 +1,9 @@
 import { EuiSideNav, EuiSideNavItemType, EuiTitle } from '@elastic/eui';
 import { IAccountDto } from '@postybirb/dto';
-import { ISubmissionOptions } from '@postybirb/types';
+import { ISubmissionOptions, SubmissionType } from '@postybirb/types';
 import { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
+import SubmissionFileSection from './components/submission-file-section/submission-file-section';
 import SubmissionFormSection from './components/submission-form-section/submission-form-section';
 import { SubmissionFormWebsiteSelect } from './components/submission-form-website-select/submission-form-website-select';
 import SubmissionOptionsSection from './components/submission-options-section/submission-options-section';
@@ -84,6 +85,11 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
   return (
     <div className="postybirb__submission-form">
       <div className="postybirb__submission-form-sections">
+        {submission.type === SubmissionType.FILE ? (
+          <SubmissionFormSection>
+            <SubmissionFileSection {...props} />
+          </SubmissionFormSection>
+        ) : null}
         <SubmissionFormSection>
           <SubmissionFormWebsiteSelect {...props} />
         </SubmissionFormSection>

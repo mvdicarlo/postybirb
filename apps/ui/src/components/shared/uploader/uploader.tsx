@@ -8,8 +8,15 @@ import { useContext, useEffect, useMemo } from 'react';
 import { AppThemeContext } from '../../../app/app-theme-provider';
 import { getUrlSource } from '../../../transports/https';
 
-export default function Uploader() {
+type UploaderProps = {
+  endpointPath: string;
+  // eslint-disable-next-line react/require-default-props
+  onComplete?: () => void;
+};
+
+export default function Uploader(props: UploaderProps) {
   const [theme] = useContext(AppThemeContext);
+  const { endpointPath, onComplete } = props;
 
   const uppy = useMemo(() => {
     const u = new Uppy({
@@ -40,7 +47,7 @@ export default function Uploader() {
         },
       })
       .use(XHRUpload, {
-        endpoint: `${getUrlSource()}/api/submission`,
+        endpoint: `${getUrlSource()}/${endpointPath}`,
         fieldName: 'files',
         metaFields: ['name'],
         headers: {
@@ -51,8 +58,14 @@ export default function Uploader() {
         target: document.body,
       });
 
+    u.on('complete', () => {
+      if (onComplete) {
+        onComplete();
+      }
+    });
+
     return u;
-  }, []);
+  }, [endpointPath, onComplete]);
 
   useEffect(() => () => uppy.close(), [uppy]);
 
