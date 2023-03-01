@@ -1,0 +1,20 @@
+.postybirb__file-card-container {
+  width: 100%;
+  margin: 0;
+}
+
+.postybirb__file-card-container .postybirb__file-card-flex-item {
+  width: 100%;
+}
+
+.postybirb__file-card-container .postybirb__file-card {
+  height: 100%;
+}
+
+.postybirb__file-card .postybirb__file-card-info {
+  margin-top: 0.25em;
+}
+
+.postybirb__file-card .postybirb__file-card-display {
+  height: 90%;
+}

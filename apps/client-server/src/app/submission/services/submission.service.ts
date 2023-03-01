@@ -309,9 +309,9 @@ export class SubmissionService
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.removeFile(submission, fileId);
       await this.repository.persistAndFlush(submission);
+    } else {
+      throw new BadRequestException('Submission is not a FILE submission.');
     }
-
-    throw new BadRequestException('Submission is not a FILE submission.');
   }
 
   /** End of File Actions */

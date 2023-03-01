@@ -3,7 +3,7 @@ import HomePage from './home/home-page';
 import NotFound from './not-found/not-found';
 import { HomePath, SubmissionsPath } from './route-paths';
 import EditSubmissionPage from './submission/edit-submission-page';
-import FileSubmissionManagementPage from './submission/file-submission-mannagement-page';
+import FileSubmissionManagementPage from './submission/file-submission-management-page';
 import MessageSubmissionManagementPage from './submission/message-submission-management-page';
 import SubmissionOutletPage from './submission/submission-outlet-page';
 

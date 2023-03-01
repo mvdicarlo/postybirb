@@ -40,4 +40,10 @@ export default class SubmissionsApi {
     }
     return SubmissionsApi.request.delete('', { ids, action });
   }
+
+  static removeFile(submissionId: string, fileId: string) {
+    return SubmissionsApi.request.delete(
+      `file/remove/${submissionId}/${fileId}`
+    );
+  }
 }
