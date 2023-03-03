@@ -12,6 +12,7 @@ import { useMemo } from 'react';
 import SubmissionsApi from '../../../../../api/submission.api';
 import { getUrlSource } from '../../../../../transports/https';
 import { SubmissionFormProps } from '../../submission-form-props';
+import { FetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
 
 type SubmissionFileCardContainerProps = SubmissionFormProps;
@@ -28,6 +29,11 @@ function removeFile(submissionId: string, file: ISubmissionFile) {
 // TODO remove thumbnail
 // TODO display real image
 // TODO have display for files that aren't image based
+// TODO order by submission metadata order value
+// TODO reorder
+// TODO better layout
+// TODO dimensions
+// TODO ignore prop
 function FileCard(props: SubmissionFileCardProps) {
   const { submission, file, onUpdate } = props;
 
@@ -71,7 +77,9 @@ function FileCard(props: SubmissionFileCardProps) {
               color="danger"
               onClick={() => {
                 removeFile(submission.id, file).finally(() => {
-                  onUpdate();
+                  FetchAndMergeSubmission(submission, 'files').finally(() => {
+                    onUpdate();
+                  });
                 });
               }}
             />
@@ -90,17 +98,13 @@ export function SubmissionFileCardContainer(
   const fileCards = useMemo(
     () =>
       submission.files.map((file) => (
-        <EuiFlexItem className="postybirb__file-card-flex-item">
+        <div className="postybirb__file-card-flex-item my-2">
           <FileCard {...props} file={file} />
-        </EuiFlexItem>
+        </div>
       )),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [submission.files, onUpdate]
   );
 
-  return (
-    <EuiFlexGrid columns={4} className="postybirb__file-card-container">
-      {fileCards}
-    </EuiFlexGrid>
-  );
+  return <div className="postybirb__file-card-container">{fileCards}</div>;
 }
