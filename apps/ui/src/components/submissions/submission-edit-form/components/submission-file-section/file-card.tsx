@@ -1,44 +1,67 @@
 import {
+  DropResult,
   EuiButtonIcon,
-  EuiFlexGrid,
-  EuiFlexItem,
+  EuiDragDropContext,
+  euiDragDropReorder,
+  EuiDraggable,
+  EuiDroppable,
   EuiHorizontalRule,
   EuiImage,
   EuiSplitPanel,
   EuiTitle,
 } from '@elastic/eui';
-import { ISubmissionFile } from '@postybirb/types';
-import { useMemo } from 'react';
+import { FileSubmissionMetadata, ISubmissionFile } from '@postybirb/types';
 import SubmissionsApi from '../../../../../api/submission.api';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { getUrlSource } from '../../../../../transports/https';
 import { SubmissionFormProps } from '../../submission-form-props';
-import { FetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
+import { fetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
 
 type SubmissionFileCardContainerProps = SubmissionFormProps;
 
 type SubmissionFileCardProps = SubmissionFormProps & {
   file: ISubmissionFile;
+  index: number;
+  isDragging: boolean;
 };
 
 function removeFile(submissionId: string, file: ISubmissionFile) {
   return SubmissionsApi.removeFile(submissionId, file.id);
 }
 
+function orderFiles(
+  submission: SubmissionDto<FileSubmissionMetadata>
+): ISubmissionFile[] {
+  const { metadata, files } = submission;
+  const { order } = metadata;
+
+  const orderedFiles: ISubmissionFile[] = Array(order.length);
+  files.forEach((file) => {
+    const index = order.findIndex((id) => id === file.id);
+    if (index > -1) {
+      orderedFiles[index] = file;
+    }
+  });
+
+  return orderedFiles.filter((f) => !!f);
+}
+
 // TODO Add thumbnail
 // TODO remove thumbnail
 // TODO display real image
 // TODO have display for files that aren't image based
-// TODO order by submission metadata order value
-// TODO reorder
 // TODO better layout
 // TODO dimensions
 // TODO ignore prop
 function FileCard(props: SubmissionFileCardProps) {
-  const { submission, file, onUpdate } = props;
+  const { isDragging, index, submission, file, onUpdate } = props;
 
   return (
-    <EuiSplitPanel.Outer className="postybirb__file-card">
+    <EuiSplitPanel.Outer
+      className="postybirb__file-card"
+      hasShadow={isDragging}
+    >
       <EuiSplitPanel.Outer
         hasShadow={false}
         direction="row"
@@ -69,7 +92,8 @@ function FileCard(props: SubmissionFileCardProps) {
       <EuiSplitPanel.Inner className="postybirb__file-card-info">
         <EuiTitle size="xxxs" className="text-center">
           <h2>
-            {file.fileName}
+            <span>{index}.</span>
+            <span className="ml-1">{file.fileName}</span>
             <EuiButtonIcon
               className="ml-1"
               iconType="trash"
@@ -77,7 +101,7 @@ function FileCard(props: SubmissionFileCardProps) {
               color="danger"
               onClick={() => {
                 removeFile(submission.id, file).finally(() => {
-                  FetchAndMergeSubmission(submission, 'files').finally(() => {
+                  fetchAndMergeSubmission(submission, 'files').finally(() => {
                     onUpdate();
                   });
                 });
@@ -94,17 +118,48 @@ export function SubmissionFileCardContainer(
   props: SubmissionFileCardContainerProps
 ) {
   const { submission, onUpdate } = props;
-
-  const fileCards = useMemo(
-    () =>
-      submission.files.map((file) => (
-        <div className="postybirb__file-card-flex-item my-2">
-          <FileCard {...props} file={file} />
-        </div>
-      )),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [submission.files, onUpdate]
+  const orderedFiles = orderFiles(
+    submission as SubmissionDto<FileSubmissionMetadata>
   );
 
-  return <div className="postybirb__file-card-container">{fileCards}</div>;
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    if (source && destination) {
+      const list = [
+        ...(submission as SubmissionDto<FileSubmissionMetadata>).metadata.order,
+      ];
+      const items = euiDragDropReorder(list, source.index, destination.index);
+      (submission as SubmissionDto<FileSubmissionMetadata>).metadata.order =
+        items;
+
+      onUpdate();
+    }
+  };
+
+  return (
+    <div className="postybirb__file-card-container">
+      <EuiDragDropContext onDragEnd={onDragEnd}>
+        <EuiDroppable droppableId={submission.id}>
+          {orderedFiles.map((file, i) => (
+            <EuiDraggable key={file.id} index={i} draggableId={file.id}>
+              {(_, state) => (
+                <div
+                  className="postybirb__file-card-flex-item my-2"
+                  title={file.id}
+                >
+                  <FileCard
+                    key={`${file.id}`}
+                    {...props}
+                    file={file}
+                    index={i + 1}
+                    isDragging={state.isDragging}
+                  />
+                </div>
+              )}
+            </EuiDraggable>
+          ))}
+        </EuiDroppable>
+      </EuiDragDropContext>
+    </div>
+  );
 }

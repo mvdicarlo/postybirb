@@ -2,7 +2,7 @@ import { EuiSpacer } from '@elastic/eui';
 import Uploader from '../../../../shared/uploader/uploader';
 import { SubmissionFormProps } from '../../submission-form-props';
 import SubmissionFormSection from '../submission-form-section/submission-form-section';
-import { FetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
+import { fetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
 import { SubmissionFileCardContainer } from './file-card';
 
 type SubmissionFileSectionProps = SubmissionFormProps;
@@ -20,7 +20,7 @@ export default function SubmissionFileSection(
         <Uploader
           endpointPath={`api/submission/file/add/${submission.id}`}
           onComplete={() => {
-            FetchAndMergeSubmission(submission, 'files').finally(() => {
+            fetchAndMergeSubmission(submission, 'files').finally(() => {
               onUpdate();
             });
           }}

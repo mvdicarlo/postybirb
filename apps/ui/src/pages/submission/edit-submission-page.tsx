@@ -43,6 +43,7 @@ async function save(original: SubmissionDto, updated: SubmissionDto) {
     scheduleType: schedule.scheduleType,
     deletedOptions,
     newOrUpdatedOptions,
+    metadata: updated.metadata,
   });
 }
 

@@ -183,6 +183,10 @@ export class SubmissionService
       scheduledFor: updateSubmissionDto.scheduledFor,
       scheduleType: updateSubmissionDto.scheduleType,
     };
+    submission.metadata = {
+      ...submission.metadata,
+      ...updateSubmissionDto.metadata,
+    };
 
     const optionChanges: Promise<unknown>[] = [];
     if (updateSubmissionDto.deletedOptions?.length) {

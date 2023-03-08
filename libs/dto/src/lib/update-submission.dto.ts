@@ -1,4 +1,6 @@
 import {
+  FileSubmissionMetadata,
+  IBaseSubmissionMetadata,
   IBaseWebsiteOptions,
   ISubmissionOptions,
   ScheduleType,
@@ -16,4 +18,6 @@ export interface IUpdateSubmissionDto {
   deletedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
 
   newOrUpdatedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
+
+  metadata?: IBaseSubmissionMetadata | FileSubmissionMetadata;
 }

@@ -1,7 +1,7 @@
 import SubmissionsApi from '../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 
-export async function FetchAndMergeSubmission(
+export async function fetchAndMergeSubmission(
   submission: SubmissionDto,
   mergeField: keyof SubmissionDto
 ) {

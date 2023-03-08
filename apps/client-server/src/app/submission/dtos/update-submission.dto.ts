@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUpdateSubmissionDto } from '@postybirb/dto';
 import {
+  FileSubmissionMetadata,
+  IBaseSubmissionMetadata,
   IBaseWebsiteOptions,
   ISubmissionOptions,
   ScheduleType,
@@ -9,6 +11,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -40,4 +43,9 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @IsOptional()
   @IsArray()
   newOrUpdatedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsObject()
+  metadata?: IBaseSubmissionMetadata | FileSubmissionMetadata;
 }
