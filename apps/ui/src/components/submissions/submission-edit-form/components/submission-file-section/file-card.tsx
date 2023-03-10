@@ -71,6 +71,7 @@ function CardImageProvider(file: ISubmissionFile) {
 // TODO better layout
 // TODO dimensions
 // TODO ignore prop
+// !BUG onUpdate after adding a file not refreshing view
 function FileCard(props: SubmissionFileCardProps) {
   const { isDragging, index, submission, file, onUpdate } = props;
 
@@ -109,19 +110,21 @@ function FileCard(props: SubmissionFileCardProps) {
           <h2>
             <span>{index}.</span>
             <span className="ml-1">{file.fileName}</span>
-            <EuiButtonIcon
-              className="ml-1"
-              iconType="trash"
-              aria-label={`Remove ${file.fileName}`}
-              color="danger"
-              onClick={() => {
-                removeFile(submission.id, file).finally(() => {
-                  fetchAndMergeSubmission(submission, 'files').finally(() => {
-                    onUpdate();
+            {submission.files.length > 1 ? (
+              <EuiButtonIcon
+                className="ml-1"
+                iconType="trash"
+                aria-label={`Remove ${file.fileName}`}
+                color="danger"
+                onClick={() => {
+                  removeFile(submission.id, file).finally(() => {
+                    fetchAndMergeSubmission(submission, 'files').finally(() => {
+                      onUpdate();
+                    });
                   });
-                });
-              }}
-            />
+                }}
+              />
+            ) : null}
           </h2>
         </EuiTitle>
       </EuiSplitPanel.Inner>

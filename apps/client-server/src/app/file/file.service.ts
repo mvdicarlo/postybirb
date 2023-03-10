@@ -1,5 +1,4 @@
 import { EntityRepository } from '@mikro-orm/core';
-import { AutoPath } from '@mikro-orm/core/typings';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -95,6 +94,7 @@ export class FileService {
     submissionFile.thumbnail.width = thumbnailDetails.width;
     submissionFile.thumbnail.height = thumbnailDetails.height;
 
+    submissionFile.hasThumbnail = true;
     await this.fileRepository.persistAndFlush(submissionFile);
   }
 
@@ -182,6 +182,7 @@ export class FileService {
 
       fileEntity.file = this.createFileBufferEntity(fileEntity, buf, 'primary');
       fileEntity.thumbnail = thumbnail;
+      fileEntity.hasThumbnail = !!thumbnail;
       fileEntity.hash = await hash(buf, { algorithm: 'md5' });
 
       if (!submission) {

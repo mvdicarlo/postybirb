@@ -62,10 +62,8 @@ export class SubmissionFile
   @Property({ type: 'int', nullable: false, default: 0 })
   height: number;
 
-  @Property({ persist: true, type: 'boolean', nullable: true, default: false })
-  get hasThumbnail(): boolean {
-    return !!this.thumbnail;
-  }
+  @Property({ type: 'boolean', nullable: false, default: false })
+  hasThumbnail: boolean;
 }
 
 @Entity()
