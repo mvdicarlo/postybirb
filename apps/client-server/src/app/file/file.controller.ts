@@ -16,8 +16,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { IFileBuffer } from '@postybirb/types';
 import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
+import { ImageUtil } from './utils/image.util';
 
 @ApiTags('file')
 @Controller('file')
@@ -28,9 +30,26 @@ export class FileController {
   @ApiOkResponse()
   @ApiNotFoundResponse()
   async getThumbnail(@Param('id') id: string, @Res() response) {
-    const file = (await this.service.findFile(id, ['thumbnail'])).thumbnail;
-    response.contentType(file.mimeType);
-    response.send(file.buffer);
+    const file = await this.service.findFile(id, ['thumbnail']);
+    let imageProvidingEntity: IFileBuffer | null = null;
+    if (file.thumbnail) {
+      imageProvidingEntity = file.thumbnail;
+    }
+    response.contentType(imageProvidingEntity.mimeType);
+    response.send(imageProvidingEntity.buffer);
+  }
+
+  @Get('image/:id')
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  async getImage(@Param('id') id: string, @Res() response) {
+    const { file } = await this.service.findFile(id, ['file']);
+    if (ImageUtil.isImage(file.mimeType, true)) {
+      response.contentType(file.mimeType);
+      response.send(file.buffer);
+    } else {
+      response.send(Buffer.from([]));
+    }
   }
 
   @Get('entity/:id')

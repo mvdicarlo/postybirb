@@ -47,9 +47,26 @@ function orderFiles(
   return orderedFiles.filter((f) => !!f);
 }
 
+function CardImageProvider(file: ISubmissionFile) {
+  const { mimeType, fileName, id } = file;
+
+  if (mimeType.startsWith('image/')) {
+    return (
+      <EuiImage
+        size={100}
+        allowFullScreen
+        alt={fileName}
+        src={`${getUrlSource()}/api/file/image/${id}`}
+      />
+    );
+  }
+
+  // TODO support other mime types
+  return <div>TBD</div>;
+}
+
 // TODO Add thumbnail
 // TODO remove thumbnail
-// TODO display real image
 // TODO have display for files that aren't image based
 // TODO better layout
 // TODO dimensions
@@ -67,7 +84,12 @@ function FileCard(props: SubmissionFileCardProps) {
         direction="row"
         className="postybirb__file-card-display"
       >
-        <EuiSplitPanel.Inner className="w-1/2 postybirb__file-card-primary">
+        <EuiSplitPanel.Inner className="postybirb__file-card-primary">
+          <div className="text-center">
+            <CardImageProvider {...file} />
+          </div>
+        </EuiSplitPanel.Inner>
+        <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
           <div className="text-center">
             <EuiImage
               size={100}
@@ -77,15 +99,8 @@ function FileCard(props: SubmissionFileCardProps) {
             />
           </div>
         </EuiSplitPanel.Inner>
-        <EuiSplitPanel.Inner className="w-1/2 postybirb__file-card-thumbnail">
-          <div className="text-center">
-            <EuiImage
-              size={100}
-              allowFullScreen
-              alt={file.fileName}
-              src={`${getUrlSource()}/api/file/thumbnail/${file.id}`}
-            />
-          </div>
+        <EuiSplitPanel.Inner className="postybirb__file-card-details">
+          <div>Details TBD</div>
         </EuiSplitPanel.Inner>
       </EuiSplitPanel.Outer>
       <EuiHorizontalRule margin="none" />

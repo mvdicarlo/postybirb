@@ -11,6 +11,7 @@ export interface ISubmissionFile extends FileDimensions, IBaseEntity {
   hash: string;
   mimeType: string;
   file: IFileBuffer;
-  thumbnail: IFileBuffer;
+  thumbnail: IFileBuffer | undefined;
   altFile: IFileBuffer | undefined;
+  hasThumbnail: boolean;
 }

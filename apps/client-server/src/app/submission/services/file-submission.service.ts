@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { FileSubmission } from '@postybirb/types';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -30,7 +26,6 @@ export class FileSubmissionService
     // eslint-disable-next-line no-param-reassign
     submission.metadata = {
       ...submission.metadata,
-      thumbnail: undefined,
       order: [],
     };
 
@@ -54,30 +49,8 @@ export class FileSubmissionService
     return createdFile;
   }
 
-  async appendThumbnailFile(submission: FileSubmission, file: MulterFileInfo) {
-    if (submission.metadata.thumbnail) {
-      throw new BadRequestException(
-        'Submission already has a thumbnail file associated with it'
-      );
-    }
-    const createdFile = await this.appendFile(submission, file);
-    // eslint-disable-next-line no-param-reassign
-    submission.metadata.thumbnail = createdFile.id;
-  }
-
-  async replaceThumbnailFile(
-    submission: FileSubmission,
-    fileId: string,
-    file: MulterFileInfo
-  ) {
-    const thumbnailReference = submission.metadata.thumbnail;
-    if (!thumbnailReference) {
-      throw new NotFoundException(`No thumbnail to replace`);
-    }
-
-    const newFile = await this.replaceFile(submission, fileId, file);
-    // eslint-disable-next-line no-param-reassign
-    submission.metadata.thumbnail = newFile.id;
+  async replaceThumbnailFile(fileId: string, file: MulterFileInfo) {
+    return this.fileService.replaceFileThumbnail(fileId, file);
   }
 
   async removeFile(submission: FileSubmission, fileId: string) {
@@ -86,13 +59,6 @@ export class FileSubmissionService
     submission.metadata.order = submission.metadata.order.filter(
       (id) => id !== fileId
     );
-    if (
-      submission.metadata.thumbnail &&
-      submission.metadata.thumbnail === fileId
-    ) {
-      // eslint-disable-next-line no-param-reassign
-      submission.metadata.thumbnail = undefined;
-    }
   }
 
   async replaceFile(

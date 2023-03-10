@@ -139,29 +139,6 @@ export class SubmissionController {
     return this.service.replaceFile(id, fileId, file);
   }
 
-  @Post('thumbnail/add/:id/:fileId')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @ApiOkResponse({ description: 'Thumbnail file appended.' })
-  @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
-  async appendThumbnail(
-    @Param('id') id: string,
-    @UploadedFile() file: MulterFileInfo
-  ) {
-    return this.service.appendThumbnail(id, file);
-  }
-
   @Post('thumbnail/append/:id/:fileId')
   @ApiConsumes('multipart/form-data')
   @ApiBody({

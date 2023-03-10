@@ -78,6 +78,42 @@ export class FileService {
     }
   }
 
+  async replaceFileThumbnail(fileId: string, file: MulterFileInfo) {
+    const submissionFile = await this.findFile(fileId, ['thumbnail']);
+
+    const thumbnailDetails = await this.getImageDetails(file);
+    if (!submissionFile.thumbnail) {
+      submissionFile.thumbnail = this.createFileBufferEntity(
+        submissionFile,
+        thumbnailDetails.buffer,
+        'thumbnail'
+      );
+    }
+
+    submissionFile.thumbnail.buffer = thumbnailDetails.buffer;
+    submissionFile.thumbnail.mimeType = file.mimetype;
+    submissionFile.thumbnail.width = thumbnailDetails.width;
+    submissionFile.thumbnail.height = thumbnailDetails.height;
+
+    await this.fileRepository.persistAndFlush(submissionFile);
+  }
+
+  /**
+   * Details of a multer file.
+   *
+   * @param {MulterFileInfo} file
+   */
+  private async getImageDetails(file: MulterFileInfo) {
+    if (ImageUtil.isImage(file.mimetype, false)) {
+      const buf: Buffer = await read(file.path);
+      const sharpInstance = ImageUtil.load(buf);
+      const { height, width } = await sharpInstance.metadata();
+      return { buffer: buf, width, height };
+    }
+
+    throw new BadRequestException('File is not an image');
+  }
+
   /**
    * Deletes a file.
    *

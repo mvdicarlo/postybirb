@@ -3,7 +3,6 @@ import { IBaseSubmissionMetadata } from './base-submission-metadata';
 import { ISubmission } from './submission';
 
 export type FileSubmissionMetadata = IBaseSubmissionMetadata & {
-  thumbnail?: string; // The Id of the file
   order: string[];
 };
 

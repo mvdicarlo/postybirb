@@ -248,24 +248,6 @@ export class SubmissionService
     throw new BadRequestException('Submission is not a FILE submission.');
   }
 
-  /**
-   * Appends a thumbnail file to the associated fileId
-   *
-   * @param {string} id
-   * @param {MulterFileInfo} file
-   */
-  async appendThumbnail(id: string, file: MulterFileInfo) {
-    const submission = await this.findOne(id);
-
-    if (isFileSubmission(submission)) {
-      await this.fileSubmissionService.appendThumbnailFile(submission, file);
-      await this.repository.persistAndFlush(submission);
-      return submission;
-    }
-
-    throw new BadRequestException('Submission is not a FILE submission.');
-  }
-
   async replaceFile(id: string, fileId: string, file: MulterFileInfo) {
     const submission = await this.findOne(id);
 
@@ -289,13 +271,8 @@ export class SubmissionService
     const submission = await this.findOne(id);
 
     if (isFileSubmission(submission)) {
-      await this.fileSubmissionService.replaceThumbnailFile(
-        submission,
-        fileId,
-        file
-      );
+      await this.fileSubmissionService.replaceThumbnailFile(fileId, file);
       await this.repository.persistAndFlush(submission);
-      return submission;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');
