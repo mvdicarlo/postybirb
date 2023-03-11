@@ -21,6 +21,43 @@ function scrollToAnchor(anchorId: string): void {
   }
 }
 
+function getSideNav(
+  defaultOptionsId: string,
+  websiteGroups: Record<
+    string,
+    { option: ISubmissionOptions; account: IAccountDto }[]
+  >
+): EuiSideNavItemType<unknown>[] {
+  const sidenavOptions: EuiSideNavItemType<unknown>[] = [
+    {
+      name: 'Default Options',
+      id: defaultOptionsId,
+      onClick: () => {
+        scrollToAnchor(defaultOptionsId);
+      },
+    },
+  ];
+
+  Object.entries(websiteGroups)
+    .map(([key, value]) => ({
+      name: key,
+      id: key,
+      items: value.map((v) => ({
+        name: v.account.name,
+        id: v.account.id,
+        onClick: () => {
+          scrollToAnchor(v.account.id);
+        },
+      })),
+      onClick: () => {
+        scrollToAnchor(key);
+      },
+    }))
+    .forEach((record) => sidenavOptions.push(record));
+
+  return sidenavOptions;
+}
+
 export default function SubmissionEditForm(props: SubmissionEditFormProps) {
   const { accounts, submission, onUpdate } = props;
 
@@ -55,32 +92,10 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
     return groups;
   }, [accounts, websiteBasedOptions]);
 
-  const sidenavOptions: EuiSideNavItemType<unknown>[] = [
-    {
-      name: 'Default Options',
-      id: defaultOptions.id,
-      onClick: () => {
-        scrollToAnchor(defaultOptions.id);
-      },
-    },
-  ];
-
-  Object.entries(websiteGroups)
-    .map(([key, value]) => ({
-      name: key,
-      id: key,
-      items: value.map((v) => ({
-        name: v.account.name,
-        id: v.account.id,
-        onClick: () => {
-          scrollToAnchor(v.account.id);
-        },
-      })),
-      onClick: () => {
-        scrollToAnchor(key);
-      },
-    }))
-    .forEach((record) => sidenavOptions.push(record));
+  const sidenavOptions: EuiSideNavItemType<unknown>[] = getSideNav(
+    defaultOptions.id,
+    websiteGroups
+  );
 
   return (
     <div className="postybirb__submission-form">

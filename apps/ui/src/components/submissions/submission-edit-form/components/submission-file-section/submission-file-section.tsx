@@ -11,7 +11,6 @@ export default function SubmissionFileSection(
   props: SubmissionFileSectionProps
 ) {
   const { submission, onUpdate } = props;
-
   return (
     <SubmissionFormSection>
       <div className="postybirb__file-section">
@@ -20,9 +19,11 @@ export default function SubmissionFileSection(
         <Uploader
           endpointPath={`api/submission/file/add/${submission.id}`}
           onComplete={() => {
-            fetchAndMergeSubmission(submission, 'files').finally(() => {
-              onUpdate();
-            });
+            fetchAndMergeSubmission(submission, ['files', 'metadata']).finally(
+              () => {
+                onUpdate();
+              }
+            );
           }}
         />
       </div>

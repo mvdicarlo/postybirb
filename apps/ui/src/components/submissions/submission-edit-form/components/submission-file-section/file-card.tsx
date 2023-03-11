@@ -71,10 +71,8 @@ function CardImageProvider(file: ISubmissionFile) {
 // TODO better layout
 // TODO dimensions
 // TODO ignore prop
-// !BUG onUpdate after adding a file not refreshing view
 function FileCard(props: SubmissionFileCardProps) {
   const { isDragging, index, submission, file, onUpdate } = props;
-
   return (
     <EuiSplitPanel.Outer
       className="postybirb__file-card"
@@ -118,7 +116,10 @@ function FileCard(props: SubmissionFileCardProps) {
                 color="danger"
                 onClick={() => {
                   removeFile(submission.id, file).finally(() => {
-                    fetchAndMergeSubmission(submission, 'files').finally(() => {
+                    fetchAndMergeSubmission(submission, [
+                      'files',
+                      'metadata',
+                    ]).finally(() => {
                       onUpdate();
                     });
                   });
@@ -161,12 +162,9 @@ export function SubmissionFileCardContainer(
           {orderedFiles.map((file, i) => (
             <EuiDraggable key={file.id} index={i} draggableId={file.id}>
               {(_, state) => (
-                <div
-                  className="postybirb__file-card-flex-item my-2"
-                  title={file.id}
-                >
+                <div className="postybirb__file-card-flex-item my-2">
                   <FileCard
-                    key={`${file.id}`}
+                    key={`file-card-${file.id}`}
                     {...props}
                     file={file}
                     index={i + 1}
