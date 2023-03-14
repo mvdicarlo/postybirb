@@ -20,6 +20,7 @@ import { IFileBuffer } from '@postybirb/types';
 import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
 import { ImageUtil } from './utils/image.util';
+import { getType } from 'mime';
 
 @ApiTags('file')
 @Controller('file')
@@ -39,17 +40,13 @@ export class FileController {
     response.send(imageProvidingEntity.buffer);
   }
 
-  @Get('image/:id')
+  @Get('file/:id')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   async getImage(@Param('id') id: string, @Res() response) {
     const { file } = await this.service.findFile(id, ['file']);
-    if (ImageUtil.isImage(file.mimeType, true)) {
-      response.contentType(file.mimeType);
-      response.send(file.buffer);
-    } else {
-      response.send(Buffer.from([]));
-    }
+    response.contentType(getType(file.fileName));
+    response.send(file.buffer);
   }
 
   @Get('entity/:id')

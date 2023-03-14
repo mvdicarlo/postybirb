@@ -391,7 +391,21 @@
       },
       "tags": []
     },
-    "utils-file-type": "libs/utils/file-type",
+    "utils-file-type": {
+      "root": "libs/utils/file-type",
+      "sourceRoot": "libs/utils/file-type/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "options": {
+            "lintFilePatterns": ["libs/utils/file-type/**/*.ts"]
+          },
+          "outputs": ["{options.outputFile}"]
+        }
+      },
+      "tags": []
+    },
     "website-metadata": {
       "root": "libs/website-metadata",
       "sourceRoot": "libs/website-metadata/src",

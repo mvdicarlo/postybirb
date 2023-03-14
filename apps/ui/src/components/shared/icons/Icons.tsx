@@ -2,6 +2,7 @@ import {
   faFloppyDisk,
   faSquare,
   faSquareCheck,
+  faFileLines,
 } from '@fortawesome/free-regular-svg-icons';
 import {
   faArrowUp,
@@ -25,8 +26,14 @@ import {
 import './Icons.css';
 
 function FaIcon(props: FontAwesomeIconProps) {
-  const fn = function Default() {
-    return <FontAwesomeIcon {...props} className="euiIcon" />;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fn = function Default(extraProps: any) {
+    return (
+      <FontAwesomeIcon
+        {...{ ...props, ...(extraProps || {}) }}
+        className="euiIcon"
+      />
+    );
   };
 
   fn.GroupItem = function GroupItem() {
@@ -80,3 +87,4 @@ export const UndoIcon = FaIcon({ icon: faRotateBack });
 export const RedoIcon = FaIcon({ icon: faRotateRight });
 export const TagsIcon = FaIcon({ icon: faTags });
 export const UserTagIcon = FaIcon({ icon: faUserTag });
+export const TextFileIcon = FaIcon({ icon: faFileLines });

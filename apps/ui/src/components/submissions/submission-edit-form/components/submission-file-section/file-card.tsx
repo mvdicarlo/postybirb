@@ -6,14 +6,21 @@ import {
   EuiDraggable,
   EuiDroppable,
   EuiHorizontalRule,
+  EuiIcon,
   EuiImage,
   EuiSplitPanel,
   EuiTitle,
 } from '@elastic/eui';
-import { FileSubmissionMetadata, ISubmissionFile } from '@postybirb/types';
+import {
+  FileSubmissionMetadata,
+  FileType,
+  ISubmissionFile,
+} from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import SubmissionsApi from '../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { getUrlSource } from '../../../../../transports/https';
+import { TextFileIcon } from '../../../../shared/icons/Icons';
 import { SubmissionFormProps } from '../../submission-form-props';
 import { fetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
@@ -48,26 +55,47 @@ function orderFiles(
 }
 
 function CardImageProvider(file: ISubmissionFile) {
-  const { mimeType, fileName, id } = file;
-
-  if (mimeType.startsWith('image/')) {
-    return (
-      <EuiImage
-        size={100}
-        allowFullScreen
-        alt={fileName}
-        src={`${getUrlSource()}/api/file/image/${id}`}
-      />
-    );
+  const { fileName, id } = file;
+  const fileType = getFileType(fileName);
+  const src = `${getUrlSource()}/api/file/file/${id}`;
+  switch (fileType) {
+    case FileType.AUDIO:
+      return (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <audio controls style={{ height: '100px', width: '100px' }}>
+          <source src={src} type="audio/ogg" />
+          <source src={src} type="audio/mpeg" />
+          <source src={src} type="audio/mp3" />
+          <source src={src} type="audio/mpeg3" />
+          <source src={src} type="audio/wav" />
+          Your browser does not support the audio tag.
+        </audio>
+      );
+    case FileType.TEXT:
+      return (
+        <EuiIcon
+          style={{ height: '100px', width: '100px' }}
+          type={TextFileIcon}
+        />
+      );
+    case FileType.VIDEO:
+      return (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <video width="150" height="100" controls>
+          <source src={src} type="video/mp4" />
+          <source src={src} type="video/ogg" />
+          Your browser does not support the video tag.
+        </video>
+      );
+    case FileType.UNKNOWN:
+    case FileType.IMAGE:
+    default:
+      return <EuiImage size={100} allowFullScreen alt={fileName} src={src} />;
   }
-
-  // TODO support other mime types
-  return <div>TBD</div>;
 }
 
 // TODO Add thumbnail
 // TODO remove thumbnail
-// TODO have display for files that aren't image based
 // TODO better layout
 // TODO dimensions
 // TODO ignore prop
@@ -90,12 +118,16 @@ function FileCard(props: SubmissionFileCardProps) {
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
           <div className="text-center">
-            <EuiImage
-              size={100}
-              allowFullScreen
-              alt={file.fileName}
-              src={`${getUrlSource()}/api/file/thumbnail/${file.id}`}
-            />
+            {file.hasThumbnail ? (
+              <EuiImage
+                size={100}
+                allowFullScreen
+                alt={file.fileName}
+                src={`${getUrlSource()}/api/file/thumbnail/${file.id}`}
+              />
+            ) : (
+              <div>TBD</div>
+            )}
           </div>
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-details">
