@@ -391,6 +391,7 @@
       },
       "tags": []
     },
+    "utils-file-type": "libs/utils/file-type",
     "website-metadata": {
       "root": "libs/website-metadata",
       "sourceRoot": "libs/website-metadata/src",
