@@ -46,4 +46,13 @@ export default class SubmissionsApi {
       `file/remove/${submissionId}/${fileId}`
     );
   }
+
+  static changeFile(submissionId: string, fileId: string, file: Blob) {
+    const form = new FormData();
+    form.append('file', file);
+    return SubmissionsApi.request.post(
+      `file/replace/${submissionId}/${fileId}`,
+      form
+    );
+  }
 }

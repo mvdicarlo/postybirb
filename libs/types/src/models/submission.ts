@@ -3,7 +3,7 @@ import { SubmissionType } from '../enums';
 import { IBaseEntity } from './base-entity';
 import { IBaseSubmissionMetadata } from './base-submission-metadata';
 import { IBaseWebsiteOptions } from './base-website-options';
-import { ISubmissionFile } from './file';
+import { ISubmissionFile } from './submission-file';
 import { ISubmissionOptions } from './submission-options';
 import { ISubmissionScheduleInfo } from './submission-schedule-info';
 

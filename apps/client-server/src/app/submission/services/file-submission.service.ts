@@ -70,17 +70,6 @@ export class FileSubmissionService
       throw new BadRequestException('File not found on submission');
     }
 
-    await this.removeFile(submission, fileId);
-    const newFile = await this.appendFile(submission, file, false);
-    const replaceIndex = submission.metadata.order.findIndex(
-      (id) => id === fileId
-    );
-
-    if (replaceIndex > -1) {
-      // eslint-disable-next-line no-param-reassign
-      submission.metadata.order[replaceIndex] = newFile.id;
-    }
-
-    return newFile;
+    await this.fileService.replacePrimaryFile(fileId, file);
   }
 }

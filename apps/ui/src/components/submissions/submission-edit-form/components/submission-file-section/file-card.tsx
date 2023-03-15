@@ -24,6 +24,7 @@ import { TextFileIcon } from '../../../../shared/icons/Icons';
 import { SubmissionFormProps } from '../../submission-form-props';
 import { fetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
+import FileUploadButton from './file-upload-button';
 
 type SubmissionFileCardContainerProps = SubmissionFormProps;
 
@@ -114,6 +115,12 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-primary">
           <div className="text-center">
             <CardImageProvider {...file} />
+            <FileUploadButton
+              submission={submission}
+              submissionFile={file}
+              accept="*"
+              label="Change file"
+            />
           </div>
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">

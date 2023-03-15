@@ -6,6 +6,8 @@ import {
   IFileBuffer,
   ISubmission,
   FileSubmissionMetadata,
+  ISubmissionFileProps,
+  DefaultSubmissionFileProps,
 } from '@postybirb/types';
 import { BaseEntity } from './base.entity';
 import { Submission } from './submission.entity';
@@ -64,6 +66,12 @@ export class SubmissionFile
 
   @Property({ type: 'boolean', nullable: false, default: false })
   hasThumbnail: boolean;
+
+  @Property({
+    type: 'json',
+    nullable: false,
+  })
+  props: ISubmissionFileProps = DefaultSubmissionFileProps;
 }
 
 @Entity()
@@ -84,7 +92,9 @@ export class ThumbnailFile
   parent: SubmissionFile;
 
   @Property({ type: 'int', nullable: false, default: 0 })
-  size: number;
+  get size(): number {
+    return this.buffer?.length || 0;
+  }
 
   @Property({ type: 'int', nullable: false, default: 0 })
   width: number;
@@ -111,7 +121,9 @@ export class PrimaryFile
   parent: SubmissionFile;
 
   @Property({ type: 'int', nullable: false, default: 0 })
-  size: number;
+  get size(): number {
+    return this.buffer?.length || 0;
+  }
 
   @Property({ type: 'int', nullable: false, default: 0 })
   width: number;
@@ -135,7 +147,9 @@ export class AltFile extends BaseEntity<AltFile> implements IFileBuffer {
   parent: SubmissionFile;
 
   @Property({ type: 'int', nullable: false, default: 0 })
-  size: number;
+  get size(): number {
+    return this.buffer?.length || 0;
+  }
 
   @Property({ type: 'int', nullable: false, default: 0 })
   width: number;

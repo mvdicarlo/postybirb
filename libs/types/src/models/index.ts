@@ -2,7 +2,7 @@ export * from './account';
 export * from './base-entity';
 export * from './base-submission-metadata';
 export * from './base-website-options';
-export * from './file';
+export * from './submission-file';
 export * from './file-buffer';
 export * from './file-dimensions';
 export * from './file-metadata';

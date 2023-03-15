@@ -17,10 +17,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { IFileBuffer } from '@postybirb/types';
+import { getType } from 'mime';
 import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
-import { ImageUtil } from './utils/image.util';
-import { getType } from 'mime';
 
 @ApiTags('file')
 @Controller('file')

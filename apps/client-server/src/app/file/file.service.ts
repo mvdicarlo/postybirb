@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
@@ -7,7 +8,8 @@ import {
 } from '@nestjs/common';
 import { read, removeFile } from '@postybirb/fs';
 import { Log, Logger } from '@postybirb/logger';
-import { FileSubmission, IFileBuffer } from '@postybirb/types';
+import { FileSubmission, FileType, IFileBuffer } from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
 import { async as hash } from 'hasha';
@@ -95,7 +97,71 @@ export class FileService {
     submissionFile.thumbnail.height = thumbnailDetails.height;
 
     submissionFile.hasThumbnail = true;
+    submissionFile.props.hasCustomThumbnail = true;
     await this.fileRepository.persistAndFlush(submissionFile);
+  }
+
+  async replacePrimaryFile(submissionFileId: string, file: MulterFileInfo) {
+    const submissionFile = await this.findFile(submissionFileId, [
+      'file',
+      'thumbnail',
+    ]);
+    const buf: Buffer = await read(file.path);
+    await this.updateFileEntity(submissionFile, file, buf);
+    await this.fileRepository.persistAndFlush(submissionFile);
+  }
+
+  private async updateFileEntity(
+    submissionFile: SubmissionFile,
+    file: MulterFileInfo,
+    buffer: Buffer
+  ): Promise<void> {
+    const fileHash = await hash(buffer, { algorithm: 'sha256' });
+
+    // Only need to replace when unique file is given
+    if (submissionFile.hash !== fileHash) {
+      const fileType = getFileType(file.filename);
+      if (fileType === FileType.IMAGE) {
+        await this.updateImageFileProps(submissionFile, file);
+      }
+
+      // Update submission file entity
+      submissionFile.size = buffer.length;
+      submissionFile.fileName = file.filename;
+      submissionFile.mimeType = file.mimetype;
+      submissionFile.hash = fileHash;
+
+      // Duplicate props to primary file
+      submissionFile.file.buffer = buffer;
+      submissionFile.file.fileName = submissionFile.fileName;
+      submissionFile.file.mimeType = submissionFile.mimeType;
+      submissionFile.file.width = submissionFile.width;
+      submissionFile.file.height = submissionFile.height;
+    }
+  }
+
+  private async updateImageFileProps(
+    submissionFile: SubmissionFile,
+    file: MulterFileInfo
+  ) {
+    const { width, height, sharpInstance } = await this.getImageDetails(file);
+    submissionFile.width = width;
+    submissionFile.height = height;
+
+    if (
+      submissionFile.hasThumbnail &&
+      !submissionFile.props.hasCustomThumbnail
+    ) {
+      // Regenerate auto-thumbnail;
+      const {
+        buffer: thumbnailBuf,
+        width: thumbnailWidth,
+        height: thumbnailHeight,
+      } = await this.generateThumbnail(sharpInstance, height, width);
+      submissionFile.thumbnail.buffer = thumbnailBuf;
+      submissionFile.thumbnail.width = thumbnailWidth;
+      submissionFile.thumbnail.height = thumbnailHeight;
+    }
   }
 
   /**
@@ -108,7 +174,7 @@ export class FileService {
       const buf: Buffer = await read(file.path);
       const sharpInstance = ImageUtil.load(buf);
       const { height, width } = await sharpInstance.metadata();
-      return { buffer: buf, width, height };
+      return { buffer: buf, width, height, sharpInstance };
     }
 
     throw new BadRequestException('File is not an image');
@@ -183,7 +249,8 @@ export class FileService {
       fileEntity.file = this.createFileBufferEntity(fileEntity, buf, 'primary');
       fileEntity.thumbnail = thumbnail;
       fileEntity.hasThumbnail = !!thumbnail;
-      fileEntity.hash = await hash(buf, { algorithm: 'md5' });
+      fileEntity.props.hasCustomThumbnail = !fileEntity.hasThumbnail;
+      fileEntity.hash = await hash(buf, { algorithm: 'sha256' });
 
       if (!submission) {
         await this.fileRepository.persistAndFlush(fileEntity);
@@ -210,28 +277,15 @@ export class FileService {
     file: MulterFileInfo,
     sharpInstance: Sharp
   ): Promise<IFileBuffer> {
-    const preferredDimension = 300;
-
-    let width = preferredDimension;
-    let height = Math.floor(
-      fileEntity.height
-        ? (fileEntity.height / fileEntity.width) * preferredDimension
-        : preferredDimension
+    const {
+      buffer: thumbnailBuf,
+      height,
+      width,
+    } = await this.generateThumbnail(
+      sharpInstance,
+      fileEntity.height,
+      fileEntity.width
     );
-
-    if (fileEntity.height) {
-      height = Math.min(fileEntity.height, height);
-    }
-
-    if (fileEntity.width) {
-      width = Math.min(fileEntity.width, width);
-    }
-
-    const thumbnailBuf = await sharpInstance
-      .resize(width, height)
-      .jpeg({ quality: 88, force: true })
-      .toBuffer();
-
     const thumbnailEntity = this.createFileBufferEntity(
       fileEntity,
       thumbnailBuf,
@@ -244,6 +298,36 @@ export class FileService {
     thumbnailEntity.mimeType = 'image/jpeg';
 
     return thumbnailEntity;
+  }
+
+  private async generateThumbnail(
+    sharpInstance: Sharp,
+    fileHeight: number,
+    fileWidth: number
+  ): Promise<{ width: number; height: number; buffer: Buffer }> {
+    const preferredDimension = 300;
+
+    let width = preferredDimension;
+    let height = Math.floor(
+      fileHeight
+        ? (fileHeight / fileWidth) * preferredDimension
+        : preferredDimension
+    );
+
+    if (fileHeight) {
+      height = Math.min(fileHeight, height);
+    }
+
+    if (fileWidth) {
+      width = Math.min(fileWidth, width);
+    }
+
+    const buffer = await sharpInstance
+      .resize(width, height)
+      .jpeg({ quality: 90, force: true })
+      .toBuffer();
+
+    return { buffer, height, width };
   }
 
   /**
@@ -268,7 +352,6 @@ export class FileService {
       width,
       fileName,
       mimeType,
-      size: buf.length,
     };
 
     switch (type) {

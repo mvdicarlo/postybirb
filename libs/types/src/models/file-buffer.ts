@@ -1,5 +1,5 @@
 import { IBaseEntity } from './base-entity';
-import { ISubmissionFile } from './file';
+import { ISubmissionFile } from './submission-file';
 import { FileDimensions } from './file-dimensions';
 
 export type IFileBuffer = FileDimensions &

@@ -11,7 +11,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -117,20 +117,9 @@ export class SubmissionController {
 
   @Post('file/replace/:id/:fileId')
   @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
   @ApiOkResponse({ description: 'File replaced.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  @UseInterceptors(FileInterceptor('file', { preservePath: true }))
   async replaceFile(
     @Param('id') id: string,
     @Param('fileId') fileId: string,
@@ -154,7 +143,7 @@ export class SubmissionController {
   })
   @ApiOkResponse({ description: 'Thumbnail file replaced.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FilesInterceptor('file', undefined, { preservePath: true }))
+  @UseInterceptors(FileInterceptor('file', { preservePath: true }))
   async replaceThumbnail(
     @Param('id') id: string,
     @Param('fileId') fileId: string,

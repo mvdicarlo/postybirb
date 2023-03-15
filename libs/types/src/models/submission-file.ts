@@ -14,4 +14,17 @@ export interface ISubmissionFile extends FileDimensions, IBaseEntity {
   thumbnail: IFileBuffer | undefined;
   altFile: IFileBuffer | undefined;
   hasThumbnail: boolean;
+  props: ISubmissionFileProps;
 }
+
+export interface ISubmissionFileProps {
+  /**
+   * Flag for determining if a thumbnail needs to be re-generated on file replace
+   * @type {boolean}
+   */
+  hasCustomThumbnail: boolean;
+}
+
+export const DefaultSubmissionFileProps: ISubmissionFileProps = {
+  hasCustomThumbnail: false,
+};
