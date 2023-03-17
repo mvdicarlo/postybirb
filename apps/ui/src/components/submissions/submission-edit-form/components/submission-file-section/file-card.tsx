@@ -22,7 +22,7 @@ import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { getUrlSource } from '../../../../../transports/https';
 import { TextFileIcon } from '../../../../shared/icons/Icons';
 import { SubmissionFormProps } from '../../submission-form-props';
-import { fetchAndMergeSubmission } from '../utilities/submission-edit-form-utilities';
+import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
 import FileUploadButton from './file-upload-button';
 
@@ -56,9 +56,9 @@ function orderFiles(
 }
 
 function CardImageProvider(file: ISubmissionFile) {
-  const { fileName, id } = file;
+  const { fileName, id, hash } = file;
   const fileType = getFileType(fileName);
-  const src = `${getUrlSource()}/api/file/file/${id}`;
+  const src = `${getUrlSource()}/api/file/file/${id}?${hash}`;
   switch (fileType) {
     case FileType.AUDIO:
       return (
@@ -115,12 +115,15 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-primary">
           <div className="text-center">
             <CardImageProvider {...file} />
-            <FileUploadButton
-              submission={submission}
-              submissionFile={file}
-              accept="*"
-              label="Change file"
-            />
+            <div>
+              <FileUploadButton
+                submission={submission}
+                submissionFile={file}
+                accept="*"
+                label="Change file"
+                onUpdate={onUpdate}
+              />
+            </div>
           </div>
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
@@ -154,13 +157,12 @@ function FileCard(props: SubmissionFileCardProps) {
                 aria-label={`Remove ${file.fileName}`}
                 color="danger"
                 onClick={() => {
-                  removeFile(submission.id, file).finally(() => {
-                    fetchAndMergeSubmission(submission, [
+                  removeFile(submission.id, file).then((update) => {
+                    mergeSubmission(submission, update.body, [
                       'files',
                       'metadata',
-                    ]).finally(() => {
-                      onUpdate();
-                    });
+                    ]);
+                    onUpdate();
                   });
                 }}
               />
@@ -199,11 +201,15 @@ export function SubmissionFileCardContainer(
       <EuiDragDropContext onDragEnd={onDragEnd}>
         <EuiDroppable droppableId={submission.id}>
           {orderedFiles.map((file, i) => (
-            <EuiDraggable key={file.id} index={i} draggableId={file.id}>
+            <EuiDraggable
+              key={`${file.id}-${file.hash}`}
+              index={i}
+              draggableId={`${file.id}-${file.hash}`}
+            >
               {(_, state) => (
                 <div className="postybirb__file-card-flex-item my-2">
                   <FileCard
-                    key={`file-card-${file.id}`}
+                    key={`file-card-${file.id}-${file.hash}`}
                     {...props}
                     file={file}
                     index={i + 1}

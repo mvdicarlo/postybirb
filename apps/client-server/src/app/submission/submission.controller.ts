@@ -90,8 +90,9 @@ export class SubmissionController {
   @Patch()
   @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  update(@Body() updateSubmissionDto: UpdateSubmissionDto) {
-    return this.service.update(updateSubmissionDto);
+  async update(@Body() updateSubmissionDto: UpdateSubmissionDto) {
+    await this.service.update(updateSubmissionDto);
+    return this.findOne(updateSubmissionDto.id);
   }
 
   @Delete()
@@ -113,6 +114,7 @@ export class SubmissionController {
     @UploadedFiles() files: MulterFileInfo[]
   ) {
     await Promise.all(files.map((file) => this.service.appendFile(id, file)));
+    return this.findOne(id);
   }
 
   @Post('file/replace/:id/:fileId')
@@ -125,7 +127,8 @@ export class SubmissionController {
     @Param('fileId') fileId: string,
     @UploadedFile() file: MulterFileInfo
   ) {
-    return this.service.replaceFile(id, fileId, file);
+    await this.service.replaceFile(id, fileId, file);
+    return this.findOne(id);
   }
 
   @Post('thumbnail/append/:id/:fileId')
@@ -149,13 +152,15 @@ export class SubmissionController {
     @Param('fileId') fileId: string,
     @UploadedFile() file: MulterFileInfo
   ) {
-    return this.service.replaceThumbnail(id, fileId, file);
+    await this.service.replaceThumbnail(id, fileId, file);
+    return this.findOne(id);
   }
 
   @Delete('file/remove/:id/:fileId')
   @ApiOkResponse({ description: 'File removed.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   async removeFile(@Param('id') id: string, @Param('fileId') fileId: string) {
-    return this.service.removeFile(id, fileId);
+    await this.service.removeFile(id, fileId);
+    return this.findOne(id);
   }
 }

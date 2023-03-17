@@ -254,7 +254,7 @@ export class SubmissionService
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.replaceFile(submission, fileId, file);
       await this.repository.persistAndFlush(submission);
-      return submission;
+      return;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');
@@ -273,6 +273,7 @@ export class SubmissionService
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.replaceThumbnailFile(fileId, file);
       await this.repository.persistAndFlush(submission);
+      return;
     }
 
     throw new BadRequestException('Submission is not a FILE submission.');

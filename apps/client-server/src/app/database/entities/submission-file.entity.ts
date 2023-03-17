@@ -55,13 +55,13 @@ export class SubmissionFile
   })
   altFile: IFileBuffer | undefined;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   size: number;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   width: number;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
 
   @Property({ type: 'boolean', nullable: false, default: false })
@@ -91,15 +91,15 @@ export class ThumbnailFile
   @OneToOne({ entity: () => SubmissionFile, mappedBy: 'thumbnail' })
   parent: SubmissionFile;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   get size(): number {
     return this.buffer?.length || 0;
   }
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   width: number;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
 }
 
@@ -120,15 +120,15 @@ export class PrimaryFile
   @OneToOne({ entity: () => SubmissionFile, mappedBy: 'file' })
   parent: SubmissionFile;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   get size(): number {
     return this.buffer?.length || 0;
   }
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   width: number;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
 }
 
@@ -146,14 +146,14 @@ export class AltFile extends BaseEntity<AltFile> implements IFileBuffer {
   @OneToOne({ entity: () => SubmissionFile, mappedBy: 'altFile' })
   parent: SubmissionFile;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   get size(): number {
     return this.buffer?.length || 0;
   }
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   width: number;
 
-  @Property({ type: 'int', nullable: false, default: 0 })
+  @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
 }

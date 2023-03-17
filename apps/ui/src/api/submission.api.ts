@@ -27,7 +27,7 @@ export default class SubmissionsApi {
   }
 
   static update(update: IUpdateSubmissionDto) {
-    return SubmissionsApi.request.patch('', update);
+    return SubmissionsApi.request.patch<ISubmissionDto, unknown>('', update);
   }
 
   static remove(ids: string[], action: HistoryAction = HistoryAction.DELETE) {
@@ -42,7 +42,7 @@ export default class SubmissionsApi {
   }
 
   static removeFile(submissionId: string, fileId: string) {
-    return SubmissionsApi.request.delete(
+    return SubmissionsApi.request.delete<ISubmissionDto>(
       `file/remove/${submissionId}/${fileId}`
     );
   }
@@ -50,7 +50,7 @@ export default class SubmissionsApi {
   static changeFile(submissionId: string, fileId: string, file: Blob) {
     const form = new FormData();
     form.append('file', file);
-    return SubmissionsApi.request.post(
+    return SubmissionsApi.request.post<ISubmissionDto, unknown>(
       `file/replace/${submissionId}/${fileId}`,
       form
     );

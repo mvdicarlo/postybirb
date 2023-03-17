@@ -90,12 +90,12 @@ export default class Https {
     return result;
   }
 
-  async delete(
+  async delete<T>(
     path?: string,
     search?: Record<string, Primitive | Primitive[]>
   ) {
     const res = await fetch(this.createUrl(path, search), { method: 'DELETE' });
-    return this.processResponse(res);
+    return this.processResponse<T>(res);
   }
 
   async get<T>(path?: string, search?: Record<string, Primitive>) {
@@ -108,11 +108,14 @@ export default class Https {
     body?: U | BodyInit,
     search?: Record<string, Primitive | Primitive[]>
   ) {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (body instanceof FormData) {
+      delete headers['Content-Type'];
+    }
     const res = await fetch(this.createUrl(path, search), {
-      headers: {
-        'Content-Type':
-          body instanceof FormData ? 'multipart/form-data' : 'application/json',
-      },
+      headers,
       body: this.processBody(body),
       method: 'PATCH',
     });
@@ -124,11 +127,14 @@ export default class Https {
     body?: U | FormData,
     search?: Record<string, Primitive | Primitive[]>
   ) {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (body instanceof FormData) {
+      delete headers['Content-Type'];
+    }
     const res = await fetch(this.createUrl(path, search), {
-      headers: {
-        'Content-Type':
-          body instanceof FormData ? 'multipart/form-data' : 'application/json',
-      },
+      headers,
       body: this.processBody<U>(body),
       method: 'POST',
     });
