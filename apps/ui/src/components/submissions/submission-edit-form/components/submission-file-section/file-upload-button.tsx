@@ -1,53 +1,45 @@
+/* eslint-disable react/require-default-props */
 import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
-import { ISubmissionFile } from '@postybirb/types';
-import { useRef } from 'react';
-import SubmissionsApi from '../../../../../api/submission.api';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
-import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
+import { ISubmissionDto } from '@postybirb/dto';
+import { useState } from 'react';
+import ModalUploader from '../../../../shared/uploader/model-uploader';
 
 type FileUploadButtonProps = {
-  submission: SubmissionDto;
-  submissionFile: ISubmissionFile;
-  accept: string;
+  compress?: boolean;
+  accept?: string[];
   label: string;
-  onUpdate: () => void;
+  endpointPath: string;
+  onComplete: (submissionDto: ISubmissionDto) => void;
 };
 
 export default function FileUploadButton(props: FileUploadButtonProps) {
-  const { submission, submissionFile, accept, label, onUpdate } = props;
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { compress, endpointPath, accept, label, onComplete } = props;
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
     <span>
-      <input
-        ref={inputRef}
-        type="file"
-        accept={accept}
-        style={{ display: 'none' }}
-        onChange={(event) => {
-          if (event.target.files?.length) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const file = event.target.files.item(0)!;
-            SubmissionsApi.changeFile(
-              submission.id,
-              submissionFile.id,
-              file
-            ).then((update) => {
-              mergeSubmission(submission, update.body, ['files', 'metadata']);
-              onUpdate();
-            });
-          }
-        }}
-      />
       <EuiToolTip position="top" content={label}>
         <EuiButtonIcon
           aria-label={label}
           iconType="exportAction"
           onClick={() => {
-            inputRef.current?.click();
+            setIsOpen(true);
           }}
         />
       </EuiToolTip>
+      <ModalUploader
+        compress={compress}
+        accept={accept}
+        endpointPath={endpointPath}
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+        }}
+        onComplete={(submission) => {
+          setIsOpen(false);
+          onComplete(submission);
+        }}
+      />
     </span>
   );
 }

@@ -117,11 +117,12 @@ function FileCard(props: SubmissionFileCardProps) {
             <CardImageProvider {...file} />
             <div>
               <FileUploadButton
-                submission={submission}
-                submissionFile={file}
-                accept="*"
                 label="Change file"
-                onUpdate={onUpdate}
+                endpointPath={`api/submission/file/replace/${submission.id}/${file.id}`}
+                onComplete={(dto) => {
+                  mergeSubmission(submission, dto, ['files', 'metadata']);
+                  onUpdate();
+                }}
               />
             </div>
           </div>
@@ -133,11 +134,23 @@ function FileCard(props: SubmissionFileCardProps) {
                 size={100}
                 allowFullScreen
                 alt={file.fileName}
-                src={`${getUrlSource()}/api/file/thumbnail/${file.id}`}
+                src={`${getUrlSource()}/api/file/thumbnail/${
+                  file.id
+                }?${Date.now()}`}
               />
-            ) : (
-              <div>TBD</div>
-            )}
+            ) : null}
+            <div>
+              <FileUploadButton
+                compress
+                accept={['image/*']}
+                label="Change thumbnail"
+                endpointPath={`api/submission/thumbnail/replace/${submission.id}/${file.id}`}
+                onComplete={(dto) => {
+                  mergeSubmission(submission, dto, ['files', 'metadata']);
+                  onUpdate();
+                }}
+              />
+            </div>
           </div>
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-details">

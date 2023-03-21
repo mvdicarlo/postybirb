@@ -1,7 +1,9 @@
+/* eslint-disable react/require-default-props */
+import { ISubmissionDto } from '@postybirb/dto';
+import Compressor from '@uppy/compressor';
 import Uppy from '@uppy/core';
-import DropTarget from '@uppy/drop-target';
 import ImageEditor from '@uppy/image-editor';
-import { Dashboard } from '@uppy/react';
+import { DashboardModal } from '@uppy/react';
 import Webcam from '@uppy/webcam';
 import XHRUpload from '@uppy/xhr-upload';
 import { useContext, useEffect, useMemo } from 'react';
@@ -9,18 +11,25 @@ import { AppThemeContext } from '../../../app/app-theme-provider';
 import { getUrlSource } from '../../../transports/https';
 
 type UploaderProps = {
+  accept?: string[];
   endpointPath: string;
-  // eslint-disable-next-line react/require-default-props
-  onComplete?: () => void;
+  isOpen: boolean;
+  compress?: boolean;
+  onComplete?: (submissionDto: ISubmissionDto) => void;
+  onClose: () => void;
 };
 
-export default function Uploader(props: UploaderProps) {
+export default function ModalUploader(props: UploaderProps) {
   const [theme] = useContext(AppThemeContext);
-  const { endpointPath, onComplete } = props;
+  const { accept, compress, isOpen, endpointPath, onClose, onComplete } = props;
 
   const uppy = useMemo(() => {
     const u = new Uppy({
       autoProceed: false,
+      restrictions: {
+        maxNumberOfFiles: 1,
+        allowedFileTypes: accept,
+      },
     });
 
     u.use(Webcam)
@@ -48,36 +57,45 @@ export default function Uploader(props: UploaderProps) {
       })
       .use(XHRUpload, {
         endpoint: `${getUrlSource()}/${endpointPath}`,
-        fieldName: 'files',
+        fieldName: 'file',
         allowedMetaFields: ['name'],
         headers: {
           'Access-Control-Allow-Origin': '*',
         },
-      })
-      .use(DropTarget, {
-        target: document.body,
       });
 
-    u.on('complete', () => {
+    u.on('complete', (e) => {
       if (onComplete) {
-        onComplete();
+        if (e.successful.length) {
+          onComplete(
+            e.successful[0]?.response?.body as unknown as ISubmissionDto
+          );
+        }
       }
     });
 
+    if (compress) {
+      u.use(Compressor, {
+        quality: 0.8,
+      });
+    }
+
     return u;
-  }, [endpointPath, onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpointPath, onComplete, compress]);
 
   useEffect(() => () => uppy.close(), [uppy]);
 
   return (
     <div className="postybirb__uploader">
-      <Dashboard
+      <DashboardModal
+        closeModalOnClickOutside
+        open={isOpen}
         uppy={uppy}
         theme={theme}
         plugins={['Webcam', 'ImageEditor']}
         width="100%"
-        height="280px"
-        thumbnailHeight={100}
+        onRequestClose={onClose}
       />
     </div>
   );

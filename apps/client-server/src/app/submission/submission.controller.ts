@@ -131,7 +131,7 @@ export class SubmissionController {
     return this.findOne(id);
   }
 
-  @Post('thumbnail/append/:id/:fileId')
+  @Post('thumbnail/replace/:id/:fileId')
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
