@@ -1,15 +1,12 @@
 import {
   DropResult,
-  EuiButtonIcon,
   EuiDragDropContext,
   euiDragDropReorder,
   EuiDraggable,
   EuiDroppable,
-  EuiHorizontalRule,
   EuiIcon,
   EuiImage,
   EuiSplitPanel,
-  EuiTitle,
 } from '@elastic/eui';
 import {
   FileSubmissionMetadata,
@@ -17,13 +14,13 @@ import {
   ISubmissionFile,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import SubmissionsApi from '../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { getUrlSource } from '../../../../../transports/https';
 import { TextFileIcon } from '../../../../shared/icons/Icons';
 import { SubmissionFormProps } from '../../submission-form-props';
 import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
+import { FileDetails } from './file-details';
 import FileUploadButton from './file-upload-button';
 
 type SubmissionFileCardContainerProps = SubmissionFormProps;
@@ -33,10 +30,6 @@ type SubmissionFileCardProps = SubmissionFormProps & {
   index: number;
   isDragging: boolean;
 };
-
-function removeFile(submissionId: string, file: ISubmissionFile) {
-  return SubmissionsApi.removeFile(submissionId, file.id);
-}
 
 function orderFiles(
   submission: SubmissionDto<FileSubmissionMetadata>
@@ -95,13 +88,10 @@ function CardImageProvider(file: ISubmissionFile) {
   }
 }
 
-// TODO Add thumbnail
-// TODO remove thumbnail
-// TODO better layout
 // TODO dimensions
 // TODO ignore prop
 function FileCard(props: SubmissionFileCardProps) {
-  const { isDragging, index, submission, file, onUpdate } = props;
+  const { isDragging, index, submission, file, onUpdate, validation } = props;
   return (
     <EuiSplitPanel.Outer
       className="postybirb__file-card"
@@ -154,35 +144,14 @@ function FileCard(props: SubmissionFileCardProps) {
           </div>
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-details">
-          <div>Details TBD</div>
+          <FileDetails
+            submission={submission}
+            onUpdate={onUpdate}
+            file={file}
+            validation={validation}
+          />
         </EuiSplitPanel.Inner>
       </EuiSplitPanel.Outer>
-      <EuiHorizontalRule margin="none" />
-      <EuiSplitPanel.Inner className="postybirb__file-card-info">
-        <EuiTitle size="xxxs" className="text-center">
-          <h2>
-            <span>{index}.</span>
-            <span className="ml-1">{file.fileName}</span>
-            {submission.files.length > 1 ? (
-              <EuiButtonIcon
-                className="ml-1"
-                iconType="trash"
-                aria-label={`Remove ${file.fileName}`}
-                color="danger"
-                onClick={() => {
-                  removeFile(submission.id, file).then((update) => {
-                    mergeSubmission(submission, update.body, [
-                      'files',
-                      'metadata',
-                    ]);
-                    onUpdate();
-                  });
-                }}
-              />
-            ) : null}
-          </h2>
-        </EuiTitle>
-      </EuiSplitPanel.Inner>
     </EuiSplitPanel.Outer>
   );
 }

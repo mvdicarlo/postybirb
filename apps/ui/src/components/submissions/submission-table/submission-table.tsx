@@ -82,8 +82,8 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
                     color: 'success',
                     text: (
                       <FormattedMessage
-                        id="login.account-removed"
-                        defaultMessage="Account removed"
+                        id="submission.submission-removed"
+                        defaultMessage="Submission removed"
                       />
                     ),
                   });

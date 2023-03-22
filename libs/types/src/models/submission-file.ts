@@ -23,6 +23,8 @@ export interface ISubmissionFileProps {
    * @type {boolean}
    */
   hasCustomThumbnail: boolean;
+  height?: number;
+  width?: number;
 }
 
 export const DefaultSubmissionFileProps: ISubmissionFileProps = {

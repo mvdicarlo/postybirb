@@ -195,7 +195,10 @@ export default function EditSubmissionPage() {
                   <EuiButton
                     size="s"
                     disabled={
-                      JSON.stringify(data) === JSON.stringify(original) ||
+                      JSON.stringify(data?.metadata) ===
+                        JSON.stringify(original?.metadata) ||
+                      JSON.stringify(data?.options) ===
+                        JSON.stringify(original?.options) ||
                       isSaving
                     }
                     isLoading={isSaving}
