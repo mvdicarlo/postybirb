@@ -36,15 +36,15 @@ export class TagGroupsController {
   @Post()
   @ApiOkResponse({ description: 'Tag group created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
-  create(@Body() createAccountDto: CreateTagGroupDto) {
-    return this.service.create(createAccountDto);
+  create(@Body() createDto: CreateTagGroupDto) {
+    return this.service.create(createDto);
   }
 
   @Patch()
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
-  update(@Body() updateTagGroupDto: UpdateTagGroupDto) {
-    return this.service.update(updateTagGroupDto);
+  update(@Body() updateDto: UpdateTagGroupDto) {
+    return this.service.update(updateDto);
   }
 
   @Delete()

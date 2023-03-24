@@ -16,3 +16,5 @@ export * from './lib/username-shortcut.dto';
 export * from './lib/validate-submission-options.dto';
 export * from './lib/website-info.dto';
 export * from './lib/website-login-type.dto';
+export * from './lib/create-directory-watcher.dto';
+export * from './lib/update-directory-watcher.dto';

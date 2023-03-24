@@ -15,6 +15,7 @@ import {
   Settings,
   TagGroup,
   TagConverter,
+  DirectoryWatcher,
 } from './entities';
 
 const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
@@ -31,6 +32,7 @@ const entities = [
   Settings,
   TagGroup,
   TagConverter,
+  DirectoryWatcher,
 ];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {

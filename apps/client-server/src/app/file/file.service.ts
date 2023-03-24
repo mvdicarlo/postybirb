@@ -12,6 +12,7 @@ import { FileSubmission, FileType, IFileBuffer } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import * as fastq from 'fastq';
+import { readFile } from 'fs/promises';
 import { async as hash } from 'hasha';
 import { cpus } from 'os';
 import { Sharp } from 'sharp';
@@ -222,7 +223,7 @@ export class FileService {
     submission?: FileSubmission
   ): Promise<SubmissionFile> {
     try {
-      const { mimetype: mimeType, originalname, size } = file;
+      const { fieldname, mimetype: mimeType, originalname, size } = file;
       const fileEntity = this.fileRepository.create({
         id: uuid(),
         mimeType,
@@ -231,7 +232,11 @@ export class FileService {
         submission,
       });
 
-      const buf: Buffer = await read(file.path);
+      const buf: Buffer =
+        // Only use standard read when from directory watchers
+        fieldname === 'directory-watcher'
+          ? await readFile(file.path)
+          : await read(file.path);
       let thumbnail: IFileBuffer;
       if (ImageUtil.isImage(file.mimetype, true)) {
         const sharpInstance = ImageUtil.load(buf);

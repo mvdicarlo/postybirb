@@ -65,6 +65,7 @@ async function bootstrap(appPort?: number) {
     .setDescription('PostyBirb API')
     .setVersion('1.0')
     .addTag('account')
+    .addTag('directory-watchers')
     .addTag('file')
     .addTag('form-generator')
     .addTag('submission')
