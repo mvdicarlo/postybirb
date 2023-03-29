@@ -31,7 +31,7 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
     super(moduleRef, repository, webSocket);
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   private async run() {
     const entities = await this.findAll();
     entities.filter((e) => !!e.path).forEach((e) => this.read(e));

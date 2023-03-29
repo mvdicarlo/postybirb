@@ -3,11 +3,11 @@ import { AccountService } from '../../account/account.service';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionOptionsService } from './submission-options.service';
 import { SubmissionService } from './submission.service';
 import { FileService } from '../../file/file.service';
 import { websiteImplementationProvider } from '../../websites/implementations';
 import { DatabaseModule } from '../../database/database.module';
+import { SubmissionOptionsService } from '../../submission-options/submission-options.service';
 
 describe('SubmissionService', () => {
   let service: SubmissionService;
