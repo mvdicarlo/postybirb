@@ -223,7 +223,7 @@ export class FileService {
     submission?: FileSubmission
   ): Promise<SubmissionFile> {
     try {
-      const { fieldname, mimetype: mimeType, originalname, size } = file;
+      const { origin, mimetype: mimeType, originalname, size } = file;
       const fileEntity = this.fileRepository.create({
         id: uuid(),
         mimeType,
@@ -234,7 +234,7 @@ export class FileService {
 
       const buf: Buffer =
         // Only use standard read when from directory watchers
-        fieldname === 'directory-watcher'
+        origin === 'directory-watcher'
           ? await readFile(file.path)
           : await read(file.path);
       let thumbnail: IFileBuffer;
@@ -266,7 +266,9 @@ export class FileService {
       this.logger.error(err.message, err.stack);
       return await Promise.reject(err);
     } finally {
-      await removeFile(file.path);
+      if (!file.origin) {
+        await removeFile(file.path);
+      }
     }
   }
 

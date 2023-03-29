@@ -10,7 +10,7 @@ export class DirectoryWatcher
   extends BaseEntity<DirectoryWatcher>
   implements IDirectoryWatcher
 {
-  @Property({ nullable: false, type: 'string' })
+  @Property({ nullable: true, type: 'string' })
   path: string;
 
   @Property({ nullable: false, type: 'string' })
@@ -18,5 +18,8 @@ export class DirectoryWatcher
     DirectoryWatcherImportAction.NEW_SUBMISSION;
 
   @Property({ nullable: true })
-  template: object;
+  template?: object;
+
+  @Property({ nullable: true })
+  submissionId?: string;
 }

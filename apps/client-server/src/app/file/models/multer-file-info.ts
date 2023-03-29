@@ -14,4 +14,5 @@ export interface MulterFileInfo {
   filename: string;
   path: string;
   buffer?: Buffer;
+  origin?: 'directory-watcher';
 }

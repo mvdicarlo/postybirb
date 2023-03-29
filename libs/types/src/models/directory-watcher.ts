@@ -15,7 +15,7 @@ export interface IDirectoryWatcher extends IBaseEntity {
   /**
    * Path that is read for file ingestion.
    */
-  path: string;
+  path?: string;
 
   /**
    * Action applied when ingesting.
@@ -27,4 +27,10 @@ export interface IDirectoryWatcher extends IBaseEntity {
    * Only applies on NEW_SUBMISSION_WITH_TEMPLATE.
    */
   template?: object;
+
+  /**
+   * Template that is applied.
+   * Only applies on ADD_TO_SUBMISSION.
+   */
+  submissionId?: string;
 }

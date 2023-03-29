@@ -3,7 +3,8 @@
  * between the frontend to the electron backend.
  */
 
-import { app, ipcMain } from 'electron';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { app, ipcMain, dialog } from 'electron';
 import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
@@ -13,10 +14,21 @@ export default class ElectronEvents {
 }
 
 // Retrieve app version
-ipcMain.handle('get-app-version', (event) => {
+ipcMain.handle('get-app-version', () => {
   console.log(`Fetching application version... [v${environment.version}]`);
 
   return environment.version;
+});
+
+ipcMain.handle('pick-directory', async (): Promise<string | undefined> => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory'],
+  });
+  if (!canceled) {
+    return filePaths[0];
+  }
+
+  return undefined;
 });
 
 // Handle App termination

@@ -1,10 +1,19 @@
-import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { DeleteQuery } from '../common/service/modifiers/delete-query';
 import { DirectoryWatchersService } from './directory-watchers.service';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
@@ -36,5 +45,16 @@ export class DirectoryWatchersController {
   @ApiNotFoundResponse({ description: 'Entity not found.' })
   update(@Body() updateDto: UpdateDirectoryWatcherDto) {
     return this.service.update(updateDto);
+  }
+
+  @Delete()
+  @ApiOkResponse({
+    description: 'Entity deleted.',
+    type: Boolean,
+  })
+  async remove(@Query() query: DeleteQuery) {
+    // eslint-disable-next-line no-param-reassign
+    query.action = 'HARD_DELETE';
+    return DeleteQuery.execute(query, this.service);
   }
 }

@@ -25,6 +25,7 @@ declare global {
   interface Window {
     electron: {
       getAppVersion(): Promise<string>;
+      pickDirectory?(): Promise<string | undefined>;
       platform: string;
       app_port: string;
       app_version: string;

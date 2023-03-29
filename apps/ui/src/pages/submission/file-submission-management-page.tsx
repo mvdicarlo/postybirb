@@ -3,6 +3,7 @@ import { SubmissionType } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import { FileIcon } from '../../components/shared/icons/Icons';
 import Uploader from '../../components/shared/uploader/uploader';
+import DirectoryWatchersTable from '../../components/submissions/directory-watchers-table/directory-watchers-table';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
@@ -28,6 +29,8 @@ export default function FileSubmissionManagementPage() {
       />
       <EuiSpacer />
       <Uploader endpointPath="api/submission" />
+      <EuiSpacer />
+      <DirectoryWatchersTable />
       <EuiSpacer />
       {isLoading ? (
         <EuiProgress size="xs" />
