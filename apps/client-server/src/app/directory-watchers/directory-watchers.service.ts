@@ -69,10 +69,16 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
         );
         break;
       case DirectoryWatcherImportAction.ADD_TO_SUBMISSION:
-        await this.submissionService.appendFile(
-          watcher.submissionId,
-          multerInfo
-        );
+        // eslint-disable-next-line no-restricted-syntax
+        for (const submissionId of watcher.submissionIds ?? []) {
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            await this.submissionService.appendFile(submissionId, multerInfo);
+          } catch (err) {
+            this.logger.error(err, 'Unable to append file');
+          }
+        }
+
         break;
       default:
         break;
@@ -101,6 +107,7 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
     const entity: DirectoryWatcher = await this.findOne(update.id);
     entity.path = update.path;
     entity.importAction = update.importAction;
+    entity.submissionIds = update.submissionIds;
 
     return this.repository
       .flush()

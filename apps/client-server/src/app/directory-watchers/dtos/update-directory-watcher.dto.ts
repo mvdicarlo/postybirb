@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IUpdateDirectoryWatcherDto } from '@postybirb/dto';
 import { DirectoryWatcherImportAction } from '@postybirb/types';
-import { IsEnum, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UpdateDirectoryWatcherDto implements IUpdateDirectoryWatcherDto {
   @ApiProperty()
@@ -15,4 +15,9 @@ export class UpdateDirectoryWatcherDto implements IUpdateDirectoryWatcherDto {
   @ApiProperty()
   @IsString()
   path: string;
+
+  @ApiProperty()
+  @IsArray()
+  @IsOptional()
+  submissionIds?: string[];
 }

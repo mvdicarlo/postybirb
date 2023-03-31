@@ -21,5 +21,5 @@ export class DirectoryWatcher
   template?: object;
 
   @Property({ nullable: true })
-  submissionId?: string;
+  submissionIds?: string[];
 }

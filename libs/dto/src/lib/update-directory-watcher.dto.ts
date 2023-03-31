@@ -2,5 +2,5 @@ import { IDirectoryWatcher } from '@postybirb/types';
 
 export type IUpdateDirectoryWatcherDto = Pick<
   IDirectoryWatcher,
-  'id' | 'importAction' | 'path'
+  'id' | 'importAction' | 'path' | 'submissionIds'
 >;

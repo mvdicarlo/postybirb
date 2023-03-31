@@ -32,5 +32,5 @@ export interface IDirectoryWatcher extends IBaseEntity {
    * Template that is applied.
    * Only applies on ADD_TO_SUBMISSION.
    */
-  submissionId?: string;
+  submissionIds?: string[];
 }

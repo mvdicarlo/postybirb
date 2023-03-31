@@ -15,17 +15,36 @@ import {
 import {
   DirectoryWatcherImportAction,
   IDirectoryWatcher,
+  SubmissionType,
 } from '@postybirb/types';
 import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import DirectoryWatchersApi from '../../../api/directory-watchers.api';
 import { SaveIcon } from '../../shared/icons/Icons';
+import SubmissionPicker from '../submission-picker.ts/submission-picker';
 
 type DirectoryWatcherCardProps = {
   directoryWatcher: IDirectoryWatcher;
   refetch: () => void;
 };
+
+function hasChanged(
+  original: IDirectoryWatcher,
+  updated: IDirectoryWatcher
+): boolean {
+  if (
+    original.path !== updated.path ||
+    original.importAction !== updated.importAction ||
+    original.template !== updated.template ||
+    JSON.stringify(original.submissionIds ?? []) !==
+      JSON.stringify(updated.submissionIds ?? [])
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   const { directoryWatcher, refetch } = props;
@@ -104,6 +123,25 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             {state.path || 'Empty'}
           </EuiButton>
         </EuiFormRow>
+        {state.importAction ===
+        DirectoryWatcherImportAction.ADD_TO_SUBMISSION ? (
+          <EuiFormRow
+            label={
+              <FormattedMessage id="submissions" defaultMessage="Submissions" />
+            }
+          >
+            <SubmissionPicker
+              type={SubmissionType.FILE}
+              selected={state.submissionIds ?? []}
+              onChange={(submissions) => {
+                setState({
+                  ...state,
+                  submissionIds: submissions.map((s) => s.id),
+                });
+              }}
+            />
+          </EuiFormRow>
+        ) : null}
       </EuiForm>
       <EuiHorizontalRule />
       <EuiFlexGroup alignItems="center" justifyContent="center">
@@ -121,9 +159,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           <EuiButtonIcon
-            disabled={
-              JSON.stringify(state) === JSON.stringify(directoryWatcher)
-            }
+            disabled={!hasChanged(directoryWatcher, state)}
             iconType={SaveIcon}
             color="primary"
             aria-label="Save folder upload changes"
