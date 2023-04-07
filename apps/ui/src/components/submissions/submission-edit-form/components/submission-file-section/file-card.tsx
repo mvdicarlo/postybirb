@@ -27,7 +27,6 @@ type SubmissionFileCardContainerProps = SubmissionFormProps;
 
 type SubmissionFileCardProps = SubmissionFormProps & {
   file: ISubmissionFile;
-  index: number;
   isDragging: boolean;
 };
 
@@ -88,10 +87,9 @@ function CardImageProvider(file: ISubmissionFile) {
   }
 }
 
-// TODO dimensions
 // TODO ignore prop
 function FileCard(props: SubmissionFileCardProps) {
-  const { isDragging, index, submission, file, onUpdate, validation } = props;
+  const { isDragging, submission, file, onUpdate, validation } = props;
   return (
     <EuiSplitPanel.Outer
       className="postybirb__file-card"
@@ -194,7 +192,6 @@ export function SubmissionFileCardContainer(
                     key={`file-card-${file.id}-${file.hash}`}
                     {...props}
                     file={file}
-                    index={i + 1}
                     isDragging={state.isDragging}
                   />
                 </div>

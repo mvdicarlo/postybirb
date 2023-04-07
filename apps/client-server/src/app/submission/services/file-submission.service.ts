@@ -27,7 +27,7 @@ export class FileSubmissionService
     submission.metadata = {
       ...submission.metadata,
       order: [],
-      modifiedFileDimensions: {},
+      modifiedFiles: {},
     };
 
     await this.appendFile(submission, file);

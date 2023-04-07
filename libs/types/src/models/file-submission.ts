@@ -8,16 +8,20 @@ type WebsiteFileDimension = {
   width: number;
 };
 
+type FileModifications = {
+  altText?: string;
+  dimensions?: Record<string | 'default', WebsiteFileDimension>;
+};
+
+type FileSpecificMetadata = Record<string, FileModifications>; // <fileId, altText>
+
 export type FileSubmissionMetadata = IBaseSubmissionMetadata & {
   order: string[];
 
   /**
-   * Stores information on file dimension modifications per site.
+   * Stores file specific metadata modifications (i.e. h/w alt text).
    */
-  modifiedFileDimensions: Record<
-    string | 'default' /* website id */,
-    Record<string /* fileId */, WebsiteFileDimension>
-  >;
+  modifiedFiles: FileSpecificMetadata;
 };
 
 export type FileSubmission = ISubmission<FileSubmissionMetadata>;

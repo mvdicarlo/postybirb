@@ -10,11 +10,12 @@
 }
 
 .postybirb__file-card-container .postybirb__file-card-flex-item {
-  height: 160px;
+  /* height: 160px; */
 }
 
 .postybirb__file-card-container .postybirb__file-card {
   height: 100%;
+  padding: 6px 0;
 }
 
 .postybirb__file-card .postybirb__file-card-info {
@@ -23,7 +24,7 @@
 
 .postybirb__file-card .postybirb__file-card-primary,
 .postybirb__file-card .postybirb__file-card-thumbnail {
-  flex-basis: 25%;
+  /* flex-basis: 25%; */
   flex-grow: 0;
 }
 
