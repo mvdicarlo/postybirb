@@ -27,6 +27,20 @@ import { useStore } from '../../stores/use-store';
 import NotFound from '../not-found/not-found';
 import { MessageSubmissionPath } from '../route-paths';
 
+function canSave(original?: SubmissionDto, updated?: SubmissionDto): boolean {
+  if (
+    JSON.stringify(updated?.metadata) !== JSON.stringify(original?.metadata)
+  ) {
+    return true;
+  }
+
+  if (JSON.stringify(updated?.options) !== JSON.stringify(original?.options)) {
+    return true;
+  }
+
+  return false;
+}
+
 async function save(original: SubmissionDto, updated: SubmissionDto) {
   const { id, isScheduled, schedule } = updated;
   const deletedOptions = original.options.filter(
@@ -194,13 +208,7 @@ export default function EditSubmissionPage() {
                 <EuiHeaderSectionItem>
                   <EuiButton
                     size="s"
-                    disabled={
-                      JSON.stringify(data?.metadata) ===
-                        JSON.stringify(original?.metadata) ||
-                      JSON.stringify(data?.options) ===
-                        JSON.stringify(original?.options) ||
-                      isSaving
-                    }
+                    disabled={!canSave(original, data) || isSaving}
                     isLoading={isSaving}
                     onClick={() => {
                       if (data && original) {

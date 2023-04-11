@@ -3,7 +3,7 @@
   margin: 0;
   box-shadow: inset 16px 0px 16px -16px rgba(0, 0, 0, 0.45),
     inset -16px 0px 16px -16px rgba(0, 0, 0, 0.45);
-  padding: 0.25em 0.5em;
+  padding: 0.1em 0.5em;
   border-radius: 8px;
   max-height: 668px;
   overflow-y: auto;
@@ -15,7 +15,7 @@
 
 .postybirb__file-card-container .postybirb__file-card {
   height: 100%;
-  padding: 6px 0;
+  padding: 8px 0;
 }
 
 .postybirb__file-card .postybirb__file-card-info {

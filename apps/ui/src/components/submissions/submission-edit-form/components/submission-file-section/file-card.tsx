@@ -14,6 +14,7 @@ import {
   ISubmissionFile,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
+import { FormattedMessage } from 'react-intl';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { getUrlSource } from '../../../../../transports/https';
 import { TextFileIcon } from '../../../../shared/icons/Icons';
@@ -87,7 +88,6 @@ function CardImageProvider(file: ISubmissionFile) {
   }
 }
 
-// TODO ignore prop
 function FileCard(props: SubmissionFileCardProps) {
   const { isDragging, submission, file, onUpdate, validation } = props;
   return (
@@ -102,6 +102,9 @@ function FileCard(props: SubmissionFileCardProps) {
       >
         <EuiSplitPanel.Inner className="postybirb__file-card-primary">
           <div className="text-center">
+            <strong>
+              <FormattedMessage id="primary" defaultMessage="Primary" />
+            </strong>
             <CardImageProvider {...file} />
             <div>
               <FileUploadButton
@@ -117,6 +120,9 @@ function FileCard(props: SubmissionFileCardProps) {
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
           <div className="text-center">
+            <strong>
+              <FormattedMessage id="thumbnail" defaultMessage="Thumbnail" />
+            </strong>
             {file.hasThumbnail ? (
               <EuiImage
                 size={100}

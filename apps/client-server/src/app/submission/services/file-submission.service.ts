@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FileSubmission } from '@postybirb/types';
+import { FileModifications, FileSubmission } from '@postybirb/types';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
@@ -47,6 +47,21 @@ export class FileSubmissionService
     if (append) {
       submission.metadata.order.push(createdFile.id);
     }
+
+    const fileModifications: FileModifications = {
+      altText: '',
+      dimensions: {
+        default: {
+          fileId: createdFile.id,
+          height: createdFile.height,
+          width: createdFile.width,
+        },
+      },
+      ignoredWebsites: [],
+    };
+
+    // eslint-disable-next-line no-param-reassign
+    submission.metadata.modifiedFiles[createdFile.id] = fileModifications;
     return createdFile;
   }
 

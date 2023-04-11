@@ -8,9 +8,10 @@ type WebsiteFileDimension = {
   width: number;
 };
 
-type FileModifications = {
-  altText?: string;
-  dimensions?: Record<string | 'default', WebsiteFileDimension>;
+export type FileModifications = {
+  altText: string;
+  dimensions: Record<string | 'default', WebsiteFileDimension>;
+  ignoredWebsites: string[];
 };
 
 type FileSpecificMetadata = Record<string, FileModifications>; // <fileId, altText>

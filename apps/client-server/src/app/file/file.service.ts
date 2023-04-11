@@ -301,8 +301,8 @@ export class FileService {
 
     thumbnailEntity.height = height;
     thumbnailEntity.width = width;
-    thumbnailEntity.fileName = `thumbnail_${thumbnailEntity.fileName}.jpg`;
-    thumbnailEntity.mimeType = 'image/jpeg';
+    thumbnailEntity.fileName = `thumbnail_${thumbnailEntity.fileName}.png`;
+    thumbnailEntity.mimeType = 'image/png';
 
     return thumbnailEntity;
   }
@@ -331,7 +331,7 @@ export class FileService {
 
     const buffer = await sharpInstance
       .resize(width, height)
-      .jpeg({ quality: 90, force: true })
+      .png({ quality: 90, force: true })
       .toBuffer();
 
     return { buffer, height, width };

@@ -17,15 +17,73 @@ import { FormattedMessage } from 'react-intl';
 import SubmissionsApi from '../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { SubmissionFormProps } from '../../submission-form-props';
+import { SimpleWebsiteSelect } from '../submission-form-website-select/simple-website-select';
 import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-details.css';
+
+function updateFileDimensions(
+  submission: SubmissionDto<FileSubmissionMetadata>,
+  file: ISubmissionFile,
+  height: number,
+  width: number
+) {
+  const { metadata } = submission;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  metadata.modifiedFiles[file.id].dimensions!['default'] = {
+    fileId: file.id,
+    height,
+    width,
+  };
+}
+
+function updateAltInfo(
+  submission: SubmissionDto<FileSubmissionMetadata>,
+  file: ISubmissionFile,
+  altText: string
+) {
+  const { metadata } = submission;
+  metadata.modifiedFiles[file.id].altText = altText;
+}
+
+function updateIgnoredWebsites(
+  submission: SubmissionDto<FileSubmissionMetadata>,
+  file: ISubmissionFile,
+  ignoredWebsites: string[]
+) {
+  const { metadata } = submission;
+  metadata.modifiedFiles[file.id].ignoredWebsites = ignoredWebsites ?? [];
+}
 
 type FileDetailsProps = SubmissionFormProps & {
   file: ISubmissionFile;
 };
 
 function SharedDetails(props: FileDetailsProps) {
-  const { file } = props;
+  const { file, submission, onUpdate } = props;
+  const fileMetadata = (submission as SubmissionDto<FileSubmissionMetadata>)
+    .metadata.modifiedFiles[file.id];
+
+  const providedAltText = fileMetadata.altText || '';
+  const providedIgnoredWebsites = fileMetadata.ignoredWebsites ?? [];
+
+  const [altText, setAltText] = useState<string>(providedAltText);
+  const [ignoredWebsites, setIgnoredWebsites] = useState<string[]>(
+    providedIgnoredWebsites
+  );
+
+  const updateAltText = useCallback(
+    (text: string) => {
+      updateAltInfo(
+        submission as SubmissionDto<FileSubmissionMetadata>,
+        file,
+        text
+      );
+      setAltText(text);
+      onUpdate();
+    },
+    [file, onUpdate, submission]
+  );
+
   const listItems: Array<{
     title: NonNullable<ReactNode>;
     description: NonNullable<ReactNode>;
@@ -44,49 +102,56 @@ function SharedDetails(props: FileDetailsProps) {
     },
   ];
 
-  return <EuiDescriptionList compressed listItems={listItems} type="column" />;
-}
-
-function storeFileDimensionModifications(
-  submission: SubmissionDto<FileSubmissionMetadata>,
-  file: ISubmissionFile,
-  height: number,
-  width: number
-) {
-  const { metadata } = submission;
-
-  // Ensure structure
-  metadata.modifiedFiles = metadata.modifiedFiles ?? {};
-  metadata.modifiedFiles[file.id] = metadata.modifiedFiles[file.id] ?? {
-    altText: undefined,
-    dimensions: {},
-  };
-
-  // insert
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  metadata.modifiedFiles[file.id].dimensions!['default'] = {
-    fileId: file.id,
-    height,
-    width,
-  };
-}
-
-function storeFileAltInfo(
-  submission: SubmissionDto<FileSubmissionMetadata>,
-  file: ISubmissionFile,
-  altText: string
-) {
-  const { metadata } = submission;
-
-  // Ensure structure
-  metadata.modifiedFiles = metadata.modifiedFiles ?? {};
-  metadata.modifiedFiles[file.id] = metadata.modifiedFiles[file.id] ?? {
-    altText: undefined,
-    dimensions: {},
-  };
-
-  // insert
-  metadata.modifiedFiles[file.id].altText = altText;
+  return (
+    <>
+      <EuiDescriptionList compressed listItems={listItems} type="column" />
+      <EuiFlexGroup>
+        <EuiFlexItem>
+          <EuiFormRow
+            fullWidth
+            label={<FormattedMessage id="alt-text" defaultMessage="Alt Text" />}
+          >
+            <EuiFieldText
+              compressed
+              fullWidth
+              value={altText}
+              onChange={(event) => {
+                updateAltText(event.target.value);
+              }}
+              onBlur={(event) => {
+                updateAltText(event.target.value.trim());
+              }}
+            />
+          </EuiFormRow>
+        </EuiFlexItem>
+        <EuiFlexItem>
+          <EuiFormRow
+            fullWidth
+            label={
+              <FormattedMessage
+                id="dont-post-to"
+                defaultMessage="Don't post to"
+              />
+            }
+          >
+            <SimpleWebsiteSelect
+              selected={ignoredWebsites}
+              submission={submission}
+              onChange={(websites) => {
+                updateIgnoredWebsites(
+                  submission as SubmissionDto<FileSubmissionMetadata>,
+                  file,
+                  websites
+                );
+                setIgnoredWebsites(websites);
+                onUpdate();
+              }}
+            />
+          </EuiFormRow>
+        </EuiFlexItem>
+      </EuiFlexGroup>
+    </>
+  );
 }
 
 function calculateAspectRatio(
@@ -115,113 +180,76 @@ function calculateAspectRatio(
 function ImageDetails(props: FileDetailsProps) {
   const { file, submission, onUpdate } = props;
   const fileMetadata = (submission as SubmissionDto<FileSubmissionMetadata>)
-    .metadata?.modifiedFiles?.[file.id];
+    .metadata.modifiedFiles[file.id];
 
   const { width: providedWidth, height: providedHeight } =
-    fileMetadata?.dimensions?.['default'] ?? file;
-  const providedAltText = fileMetadata?.altText || '';
+    fileMetadata.dimensions['default'] ?? file;
 
   const [height, setHeight] = useState<number>(providedHeight || 1);
   const [width, setWidth] = useState<number>(providedWidth || 1);
-  const [altText, setAltText] = useState<string>(providedAltText);
-
-  const updateAltText = useCallback(
-    (text: string) => {
-      storeFileAltInfo(
-        submission as SubmissionDto<FileSubmissionMetadata>,
-        file,
-        text
-      );
-      setAltText(text);
-      onUpdate();
-    },
-    [file, onUpdate, submission]
-  );
 
   return (
-    <>
-      <EuiFlexGroup>
-        <EuiFlexItem>
-          <EuiFormRow
-            label={<FormattedMessage id="height" defaultMessage="Height" />}
-          >
-            <EuiFieldNumber
-              value={height}
-              compressed
-              max={file.height}
-              min={1}
-              onChange={(event) => {
-                const { width: aspectW, height: aspectH } =
-                  calculateAspectRatio(
-                    Number(event.target.value),
-                    width,
-                    file.width / file.height,
-                    'h'
-                  );
-                setHeight(aspectH);
-                setWidth(aspectW);
-                storeFileDimensionModifications(
-                  submission as SubmissionDto<FileSubmissionMetadata>,
-                  file,
-                  aspectH,
-                  aspectW
-                );
-                onUpdate();
-              }}
-            />
-          </EuiFormRow>
-        </EuiFlexItem>
-
-        <EuiFlexItem>
-          <EuiFormRow
-            label={<FormattedMessage id="width" defaultMessage="Width" />}
-          >
-            <EuiFieldNumber
-              value={width}
-              compressed
-              max={file.width}
-              min={1}
-              onChange={(event) => {
-                const { width: aspectW, height: aspectH } =
-                  calculateAspectRatio(
-                    height,
-                    Number(event.target.value),
-                    file.height / file.width,
-                    'w'
-                  );
-                setHeight(aspectH);
-                setWidth(aspectW);
-                storeFileDimensionModifications(
-                  submission as SubmissionDto<FileSubmissionMetadata>,
-                  file,
-                  aspectH,
-                  aspectW
-                );
-                onUpdate();
-              }}
-            />
-          </EuiFormRow>
-        </EuiFlexItem>
-      </EuiFlexGroup>
-      <div className="w-100">
+    <EuiFlexGroup>
+      <EuiFlexItem>
         <EuiFormRow
-          fullWidth
-          label={<FormattedMessage id="alt-text" defaultMessage="Alt Text" />}
+          label={<FormattedMessage id="height" defaultMessage="Height" />}
         >
-          <EuiFieldText
+          <EuiFieldNumber
+            value={height}
             compressed
-            fullWidth
-            value={altText}
+            max={file.height}
+            min={1}
             onChange={(event) => {
-              updateAltText(event.target.value);
-            }}
-            onBlur={(event) => {
-              updateAltText(event.target.value.trim());
+              const { width: aspectW, height: aspectH } = calculateAspectRatio(
+                Math.min(Number(event.target.value), file.height),
+                width,
+                file.width / file.height,
+                'h'
+              );
+              setHeight(aspectH);
+              setWidth(aspectW);
+              updateFileDimensions(
+                submission as SubmissionDto<FileSubmissionMetadata>,
+                file,
+                aspectH,
+                aspectW
+              );
+              onUpdate();
             }}
           />
         </EuiFormRow>
-      </div>
-    </>
+      </EuiFlexItem>
+
+      <EuiFlexItem>
+        <EuiFormRow
+          label={<FormattedMessage id="width" defaultMessage="Width" />}
+        >
+          <EuiFieldNumber
+            value={width}
+            compressed
+            max={file.width}
+            min={1}
+            onChange={(event) => {
+              const { width: aspectW, height: aspectH } = calculateAspectRatio(
+                height,
+                Math.min(Number(event.target.value), file.width),
+                file.height / file.width,
+                'w'
+              );
+              setHeight(aspectH);
+              setWidth(aspectW);
+              updateFileDimensions(
+                submission as SubmissionDto<FileSubmissionMetadata>,
+                file,
+                aspectH,
+                aspectW
+              );
+              onUpdate();
+            }}
+          />
+        </EuiFormRow>
+      </EuiFlexItem>
+    </EuiFlexGroup>
   );
 }
 
