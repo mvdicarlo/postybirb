@@ -1,8 +1,9 @@
-import { EuiCheckbox, EuiTextArea } from '@elastic/eui';
+import { EuiCheckbox } from '@elastic/eui';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import { DescriptionValue } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { PostyBirbEditor } from '../../../../../shared/postybirb-editor/postybirb-editor';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 import useValidations from './use-validations';
@@ -48,20 +49,13 @@ export default function DescriptionField(props: DescriptionFieldProps) {
         />
       ) : null}
       {overrideDefault || option.isDefault ? (
-        <EuiTextArea
-          required={field.required}
-          fullWidth
-          compressed
-          isInvalid={validation.isInvalid}
+        <PostyBirbEditor
           value={description}
-          onChange={(e) => {
-            setDescription(e.target.value);
-          }}
-          onBlur={(e) => {
-            setDescription(e.target.value);
+          onChange={(descriptionValue) => {
+            setDescription(descriptionValue);
             option.data[propKey] = {
               ...value,
-              description: e.target.value,
+              description: descriptionValue,
             };
             onUpdate();
           }}

@@ -1,4 +1,9 @@
-import { BooleanField, RatingField, TextField } from '@postybirb/form-builder';
+import {
+  BooleanField,
+  RatingField,
+  TextField,
+  DescriptionField,
+} from '@postybirb/form-builder';
 import {
   DescriptionValue,
   FileWebsiteOptions,
@@ -16,7 +21,13 @@ export class DiscordFileSubmission implements FileWebsiteOptions {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
-  @TextField({ label: 'Description', defaultValue: '' })
+  @DescriptionField({
+    label: 'Description',
+    defaultValue: {
+      overrideDefault: false,
+      description: '',
+    },
+  })
   description: DescriptionValue;
 
   @RatingField({

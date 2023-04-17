@@ -1,5 +1,6 @@
 import {
   BooleanField,
+  DescriptionField,
   RatingField,
   TagField,
   TextField,
@@ -26,7 +27,13 @@ export class TestFileSubmission implements FileWebsiteOptions {
   @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
   tags: TagValue;
 
-  @TextField({ label: 'Description', defaultValue: '' })
+  @DescriptionField({
+    label: 'Description',
+    defaultValue: {
+      overrideDefault: false,
+      description: '',
+    },
+  })
   description: DescriptionValue;
 
   @RatingField({

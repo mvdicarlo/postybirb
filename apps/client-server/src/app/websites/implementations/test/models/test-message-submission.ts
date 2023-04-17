@@ -1,4 +1,9 @@
-import { RatingField, TagField, TextField } from '@postybirb/form-builder';
+import {
+  DescriptionField,
+  RatingField,
+  TagField,
+  TextField,
+} from '@postybirb/form-builder';
 import {
   IBaseWebsiteOptions,
   DefaultTagValue,
@@ -15,7 +20,13 @@ export class TestMessageSubmission implements IBaseWebsiteOptions {
   @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
   tags: TagValue;
 
-  @TextField({ label: 'Description', defaultValue: '' })
+  @DescriptionField({
+    label: 'Description',
+    defaultValue: {
+      overrideDefault: false,
+      description: '',
+    },
+  })
   description: DescriptionValue;
 
   @RatingField({
