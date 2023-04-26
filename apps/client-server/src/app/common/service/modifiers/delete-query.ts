@@ -21,33 +21,53 @@ export class DeleteQuery {
     // eslint-disable-next-line default-case
     switch (query.action) {
       case 'UNDO':
-        return service.unmarkForDeletion(
-          await service.find(
-            {
-              id: { $in: Array.isArray(query.ids) ? query.ids : [query.ids] },
-            },
-            undefined,
-            true
+        return service
+          .unmarkForDeletion(
+            await service.find(
+              {
+                id: { $in: Array.isArray(query.ids) ? query.ids : [query.ids] },
+              },
+              undefined,
+              true
+            )
           )
-        );
+          .then(() => ({
+            success: true,
+          }))
+          .catch(() => ({
+            success: false,
+          }));
       case 'DELETE':
       case 'REDO':
-        return service.markForDeletion(
-          await service.find(
-            {
-              id: { $in: Array.isArray(query.ids) ? query.ids : [query.ids] },
-            },
-            undefined,
-            true
+        return service
+          .markForDeletion(
+            await service.find(
+              {
+                id: { $in: Array.isArray(query.ids) ? query.ids : [query.ids] },
+              },
+              undefined,
+              true
+            )
           )
-        );
+          .then(() => ({
+            success: true,
+          }))
+          .catch(() => ({
+            success: false,
+          }));
       case 'HARD_DELETE':
       default:
         return Promise.all(
           (Array.isArray(query.ids) ? query.ids : [query.ids]).map((id) =>
             service.remove(id)
           )
-        );
+        )
+          .then(() => ({
+            success: true,
+          }))
+          .catch(() => ({
+            success: false,
+          }));
     }
   }
 }

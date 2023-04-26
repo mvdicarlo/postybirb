@@ -74,19 +74,18 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
     > = {};
 
     websiteBasedOptions.forEach((option) => {
-      // Safe to assume this will always have an account populated
-      const account = accounts.find(
-        (a) => a.id === option.account?.id
-      ) as IAccountDto;
+      const account = accounts.find((a) => a.id === option.account?.id);
 
-      if (!groups[account.websiteInfo.websiteDisplayName]) {
-        groups[account.websiteInfo.websiteDisplayName] = [];
+      if (account) {
+        if (!groups[account.websiteInfo.websiteDisplayName]) {
+          groups[account.websiteInfo.websiteDisplayName] = [];
+        }
+
+        groups[account.websiteInfo.websiteDisplayName].push({
+          account,
+          option,
+        });
       }
-
-      groups[account.websiteInfo.websiteDisplayName].push({
-        account,
-        option,
-      });
     });
 
     return groups;

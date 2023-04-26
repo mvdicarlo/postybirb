@@ -1,5 +1,5 @@
 import { Editor } from '@tinymce/tinymce-react';
-
+import sanizeHtml from 'sanitize-html';
 // TinyMCE so the global var exists
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 import tinymce, { RawEditorOptions } from 'tinymce/tinymce';
@@ -99,6 +99,30 @@ const tinyMceSettings: RawEditorOptions = {
     bold: { inline: 'b', exact: true },
     underline: { inline: 'u', exact: true },
     strikethrough: { inline: 's', exact: true },
+  },
+  paste_preprocess(plugin, args) {
+    // eslint-disable-next-line no-param-reassign
+    args.content = sanizeHtml(args.content, {
+      allowedTags: false,
+      allowedAttributes: {
+        a: ['href', 'target'],
+        div: ['align', 'style'],
+        pre: ['align', 'style'],
+        p: ['align', 'style'],
+        h1: ['align', 'style'],
+        h2: ['align', 'style'],
+        h3: ['align', 'style'],
+        h4: ['align', 'style'],
+        h5: ['align', 'style'],
+        h6: ['align', 'style'],
+        span: ['align', 'style'],
+      },
+      allowedStyles: {
+        '*': {
+          'text-align': [/.*/],
+        },
+      },
+    });
   },
   // custom_elements: '~shortcut,~shortcut-name,~shortcut-attributes,~shortcut-value',
 };
