@@ -43,6 +43,7 @@ import 'tinymce/plugins/template';
 import 'tinymce/plugins/visualblocks';
 import 'tinymce/plugins/visualchars';
 import 'tinymce/plugins/wordcount';
+// import './plugins/autoshortcut/index';
 
 if (tinymce) {
   // Loading trick
@@ -60,7 +61,12 @@ const tinyMceSettings: RawEditorOptions = {
   invalid_elements: 'img,audio,video',
   block_formats:
     'Paragraph=p;Header 1=h1;Header 2=h2;Header 3=h3;Header 4=h4;Header 5=h5;Header 6=h6',
-  content_style: 'p {margin: 0} * {font-family: arial}',
+  content_style: `p {margin: 0}*
+    {font-family: arial}
+    shortcut {color: salmon}
+    shortcut-name {color: blue}
+    shortcut-attributes {color: red}
+    shortcut-value {color: grey}`,
   height: 200,
   plugins: [
     'autoresize',
@@ -73,6 +79,7 @@ const tinyMceSettings: RawEditorOptions = {
     'help',
     'code',
     'lists',
+    // 'autoshortcut',
   ],
   menubar: 'edit help',
   toolbar: [
@@ -93,6 +100,7 @@ const tinyMceSettings: RawEditorOptions = {
     underline: { inline: 'u', exact: true },
     strikethrough: { inline: 's', exact: true },
   },
+  // custom_elements: '~shortcut,~shortcut-name,~shortcut-attributes,~shortcut-value',
 };
 
 type PostyBirbEditorProps = {
@@ -109,6 +117,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       init={tinyMceSettings as any}
       value={value || ''}
       onEditorChange={(newValue) => {
+        console.log(newValue);
         onChange(newValue);
       }}
     />
