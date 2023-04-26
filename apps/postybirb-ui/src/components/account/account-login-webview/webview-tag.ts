@@ -10,7 +10,6 @@ import {
   PageFaviconUpdatedEvent,
   ConsoleMessageEvent,
   FoundInPageEvent,
-  NewWindowEvent,
   WillNavigateEvent,
   DidStartNavigationEvent,
   DidRedirectNavigationEvent,
@@ -208,20 +207,6 @@ export interface WebviewTag extends HTMLElement {
   removeEventListener(
     event: 'found-in-page',
     listener: (event: FoundInPageEvent) => void
-  ): this;
-  /**
-   * Fired when the guest page attempts to open a new browser window.
-   *
-   * The following example code opens the new url in system's default browser.
-   */
-  addEventListener(
-    event: 'new-window',
-    listener: (event: NewWindowEvent) => void,
-    useCapture?: boolean
-  ): this;
-  removeEventListener(
-    event: 'new-window',
-    listener: (event: NewWindowEvent) => void
   ): this;
   /**
    * Emitted when a user or the page wants to start navigation. It can happen when
