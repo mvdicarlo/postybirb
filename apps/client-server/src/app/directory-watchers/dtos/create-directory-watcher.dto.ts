@@ -9,7 +9,9 @@ export class CreateDirectoryWatcherDto implements ICreateDirectoryWatcherDto {
   @IsString()
   path: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: DirectoryWatcherImportAction,
+  })
   @IsEnum(DirectoryWatcherImportAction)
   importAction: DirectoryWatcherImportAction;
 }

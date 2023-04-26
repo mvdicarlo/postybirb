@@ -46,7 +46,9 @@ export class AccountDto<T extends SafeObject> implements IAccountDto<T> {
    * Any additional data (i.e. tokens).
    * @type {T}
    */
-  @ApiProperty()
+  @ApiProperty({
+    type: Object,
+  })
   @IsObject()
   data: T;
 

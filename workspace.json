@@ -7,13 +7,15 @@
       "projectType": "application",
       "targets": {
         "build": {
-          "executor": "@nrwl/node:webpack",
+          "executor": "@nrwl/webpack:webpack",
           "outputs": ["{options.outputPath}"],
           "options": {
             "outputPath": "dist/apps/client-server",
             "main": "apps/client-server/src/main.ts",
             "tsConfig": "apps/client-server/tsconfig.app.json",
-            "assets": ["apps/client-server/src/assets"]
+            "assets": ["apps/client-server/src/assets"],
+            "target": "node",
+            "compiler": "tsc"
           },
           "configurations": {
             "production": {
@@ -48,7 +50,7 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/apps/client-server"],
           "options": {
-            "jestConfig": "apps/client-server/jest.config.js",
+            "jestConfig": "apps/client-server/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -86,7 +88,7 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/form-builder"],
           "options": {
-            "jestConfig": "libs/form-builder/jest.config.js",
+            "jestConfig": "libs/form-builder/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -109,7 +111,7 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/fs"],
           "options": {
-            "jestConfig": "libs/fs/jest.config.js",
+            "jestConfig": "libs/fs/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -132,7 +134,7 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/http"],
           "options": {
-            "jestConfig": "libs/http/jest.config.js",
+            "jestConfig": "libs/http/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -218,7 +220,87 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/apps/postybirb"],
           "options": {
-            "jestConfig": "apps/postybirb/jest.config.js",
+            "jestConfig": "apps/postybirb/jest.config.ts",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
+    },
+    "postybirb-ui": {
+      "root": "apps/postybirb-ui",
+      "sourceRoot": "apps/postybirb-ui/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/webpack:webpack",
+          "outputs": ["{options.outputPath}"],
+          "defaultConfiguration": "production",
+          "options": {
+            "compiler": "babel",
+            "outputPath": "dist/apps/postybirb-ui",
+            "index": "apps/postybirb-ui/src/index.html",
+            "baseHref": "/",
+            "main": "apps/postybirb-ui/src/main.tsx",
+            "polyfills": "apps/postybirb-ui/src/polyfills.ts",
+            "tsConfig": "apps/postybirb-ui/tsconfig.app.json",
+            "assets": ["apps/postybirb-ui/src/assets"],
+            "styles": ["apps/postybirb-ui/src/styles.css"],
+            "scripts": [],
+            "webpackConfig": "@nrwl/react/plugins/webpack"
+          },
+          "configurations": {
+            "development": {
+              "extractLicenses": false,
+              "optimization": false,
+              "sourceMap": true,
+              "vendorChunk": true
+            },
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "apps/postybirb-ui/src/environments/environment.ts",
+                  "with": "apps/postybirb-ui/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/webpack:dev-server",
+          "defaultConfiguration": "development",
+          "options": {
+            "buildTarget": "postybirb-ui:build",
+            "hmr": true
+          },
+          "configurations": {
+            "development": {
+              "buildTarget": "postybirb-ui:build:development"
+            },
+            "production": {
+              "buildTarget": "postybirb-ui:build:production",
+              "hmr": false
+            }
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/postybirb-ui/**/*.{ts,tsx,js,jsx}"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/postybirb-ui"],
+          "options": {
+            "jestConfig": "apps/postybirb-ui/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -270,104 +352,6 @@
       },
       "tags": []
     },
-    "ui": {
-      "root": "apps/ui",
-      "sourceRoot": "apps/ui/src",
-      "projectType": "application",
-      "targets": {
-        "build": {
-          "executor": "@nrwl/web:webpack",
-          "outputs": ["{options.outputPath}"],
-          "defaultConfiguration": "production",
-          "options": {
-            "compiler": "babel",
-            "outputPath": "dist/apps/ui",
-            "index": "apps/ui/src/index.html",
-            "baseHref": "/",
-            "main": "apps/ui/src/main.tsx",
-            "polyfills": "apps/ui/src/polyfills.ts",
-            "tsConfig": "apps/ui/tsconfig.app.json",
-            "assets": ["apps/ui/src/assets"],
-            "styles": ["apps/ui/src/styles.css"],
-            "scripts": [],
-            "webpackConfig": "@nrwl/react/plugins/webpack"
-          },
-          "configurations": {
-            "production": {
-              "fileReplacements": [
-                {
-                  "replace": "apps/ui/src/environments/environment.ts",
-                  "with": "apps/ui/src/environments/environment.prod.ts"
-                }
-              ],
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false
-            }
-          }
-        },
-        "serve": {
-          "executor": "@nrwl/web:dev-server",
-          "options": {
-            "buildTarget": "ui:build",
-            "hmr": true
-          },
-          "configurations": {
-            "production": {
-              "buildTarget": "ui:build:production",
-              "hmr": false
-            }
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
-          "options": {
-            "lintFilePatterns": ["apps/ui/**/*.{ts,tsx,js,jsx}"]
-          }
-        },
-        "test": {
-          "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/ui"],
-          "options": {
-            "jestConfig": "apps/ui/jest.config.js",
-            "passWithNoTests": true
-          }
-        }
-      },
-      "tags": []
-    },
-    "ui-e2e": {
-      "root": "apps/ui-e2e",
-      "sourceRoot": "apps/ui-e2e/src",
-      "projectType": "application",
-      "targets": {
-        "e2e": {
-          "executor": "@nrwl/cypress:cypress",
-          "options": {
-            "cypressConfig": "apps/ui-e2e/cypress.json",
-            "devServerTarget": "ui:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "ui:serve:production"
-            }
-          }
-        },
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
-          "options": {
-            "lintFilePatterns": ["apps/ui-e2e/**/*.{js,ts}"]
-          }
-        }
-      },
-      "tags": [],
-      "implicitDependencies": ["ui"]
-    },
     "utils-electron": {
       "root": "libs/utils/electron",
       "sourceRoot": "libs/utils/electron/src",
@@ -384,7 +368,7 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/utils/electron"],
           "options": {
-            "jestConfig": "libs/utils/electron/jest.config.js",
+            "jestConfig": "libs/utils/electron/jest.config.ts",
             "passWithNoTests": true
           }
         }
@@ -392,6 +376,7 @@
       "tags": []
     },
     "utils-file-type": {
+      "$schema": "../../../node_modules/nx/schemas/project-schema.json",
       "root": "libs/utils/file-type",
       "sourceRoot": "libs/utils/file-type/src",
       "projectType": "library",
@@ -422,12 +407,13 @@
           "executor": "@nrwl/jest:jest",
           "outputs": ["coverage/libs/website-metadata"],
           "options": {
-            "jestConfig": "libs/website-metadata/jest.config.js",
+            "jestConfig": "libs/website-metadata/jest.config.ts",
             "passWithNoTests": true
           }
         }
       },
       "tags": []
     }
-  }
+  },
+  "$schema": "./node_modules/nx/schemas/workspace-schema.json"
 }

@@ -1,4 +1,5 @@
-const nxPreset = require('@nrwl/jest/preset');
+const nxPreset = require('@nrwl/jest/preset').default;
+
 const { join } = require('path');
 
 const basePath = __dirname.split(/(app|lib)/)[0];

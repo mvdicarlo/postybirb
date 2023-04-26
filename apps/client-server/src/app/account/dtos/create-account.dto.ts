@@ -7,7 +7,7 @@ import { IsArray, IsString, Length } from 'class-validator';
  */
 export class CreateAccountDto implements ICreateAccountDto {
   @ApiProperty()
-  @IsString({})
+  @IsString()
   @Length(1, 64)
   name: string;
 

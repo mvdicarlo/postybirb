@@ -1,5 +1,6 @@
-module.exports = {
-  displayName: 'fs',
+/* eslint-disable */
+export default {
+  displayName: 'website-metadata',
   preset: '../../jest.preset.js',
   globals: {
     'ts-jest': {
@@ -11,6 +12,5 @@ module.exports = {
     '^.+\\.[tj]sx?$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
-  coverageDirectory: '../../coverage/libs/fs',
-  runner: '@kayahr/jest-electron-runner/main',
+  coverageDirectory: '../../coverage/libs/website-metadata',
 };

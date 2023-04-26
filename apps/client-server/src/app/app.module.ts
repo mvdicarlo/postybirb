@@ -27,7 +27,7 @@ import { WebsitesModule } from './websites/websites.module';
     SubmissionModule,
     SettingsModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'ui'),
+      rootPath: join(__dirname, '..', 'postybirb-ui'),
       exclude: ['/api*'],
     }),
     FormGeneratorModule,

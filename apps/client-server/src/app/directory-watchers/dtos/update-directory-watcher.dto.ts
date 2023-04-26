@@ -8,7 +8,9 @@ export class UpdateDirectoryWatcherDto implements IUpdateDirectoryWatcherDto {
   @IsString()
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    enum: DirectoryWatcherImportAction,
+  })
   @IsEnum(DirectoryWatcherImportAction)
   importAction: DirectoryWatcherImportAction;
 

@@ -10,7 +10,9 @@ export class SetWebsiteDataRequestDto
   @IsString()
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Object,
+  })
   @IsObject()
   data: SafeObject;
 }

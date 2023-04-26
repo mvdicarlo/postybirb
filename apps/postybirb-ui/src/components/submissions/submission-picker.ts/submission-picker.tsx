@@ -2,9 +2,9 @@
 import { EuiComboBox, EuiComboBoxOptionOption } from '@elastic/eui';
 import { ISubmissionDto } from '@postybirb/dto';
 import { SubmissionType } from '@postybirb/types';
-import { SubmissionDto } from 'apps/ui/src/models/dtos/submission.dto';
-import { SubmissionStore } from 'apps/ui/src/stores/submission.store';
 import { useCallback, useState } from 'react';
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
 
 type SubmissionPickerProps = {

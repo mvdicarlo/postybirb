@@ -11,7 +11,9 @@ export class OAuthWebsiteRequestDto<T extends SafeObject> {
   @IsString()
   website: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Object,
+  })
   @IsObject()
   data: T;
 
