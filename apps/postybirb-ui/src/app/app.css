@@ -20,11 +20,9 @@ body {
   position: sticky;
   z-index: 100;
   top: 0;
-  background: inherit;
   padding-top: 24px;
-  background-color: #f7f8fc;
 }
 
-.postybirb__page-body.dark .euiPageHeader {
-  background-color: #141519;
+.postybirb__page-section > div {
+  padding-top: 0px;
 }

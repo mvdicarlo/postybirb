@@ -31,3 +31,7 @@
   inline-size: 16px;
   block-size: 16px;
 }
+
+.euiListGroupItem__icon {
+  padding-right: 6px;
+}

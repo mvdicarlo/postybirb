@@ -1,4 +1,9 @@
-import { EuiPageHeader, EuiProgress, EuiSpacer } from '@elastic/eui';
+import {
+  EuiPageHeader,
+  EuiProgress,
+  EuiSpacer,
+  useEuiTheme,
+} from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import { FileIcon } from '../../components/shared/icons/Icons';
@@ -9,6 +14,7 @@ import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
 export default function FileSubmissionManagementPage() {
+  const { euiTheme } = useEuiTheme();
   const { state, isLoading } = useStore(SubmissionStore);
 
   const fileSubmissions = state.filter(
@@ -18,6 +24,7 @@ export default function FileSubmissionManagementPage() {
   return (
     <>
       <EuiPageHeader
+        css={{ background: euiTheme.colors.body }}
         bottomBorder
         iconType={FileIcon.Header}
         pageTitle={

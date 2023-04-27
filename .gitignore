@@ -39,4 +39,5 @@ testem.log
 .DS_Store
 Thumbs.db
 
-eui_theme*
+eui_theme_light.min.css
+eui_theme_dark.min.css

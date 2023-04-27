@@ -1,4 +1,5 @@
 import { useState, createContext, PropsWithChildren, useCallback } from 'react';
+import { EuiProvider } from '@elastic/eui';
 import { LS_THEME_KEY } from '../constants';
 
 let themeOnStart: ThemeColors = localStorage.getItem(
@@ -53,7 +54,7 @@ export default function AppThemeProvider({ children }: PropsWithChildren<any>) {
   const themeState = useTheme({ theme: themeOnStart });
   return (
     <AppThemeContext.Provider value={themeState}>
-      {children}
+      <EuiProvider colorMode={themeState[0]}>{children}</EuiProvider>
     </AppThemeContext.Provider>
   );
 }

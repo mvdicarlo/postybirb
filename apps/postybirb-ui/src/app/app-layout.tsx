@@ -54,9 +54,10 @@ import './app.css';
 function AppImage() {
   return (
     <img
-      className="euiIcon euiIcon--large euiHeaderLogo__icon"
       src="/assets/app-icon.png"
       alt="postybirb icon"
+      width="24"
+      height="24"
     />
   );
 }
@@ -165,14 +166,14 @@ export default function AppLayout() {
         >
           <AppSearch />
           <EuiSpacer size="s" />
-          <EuiButton
+          {/* <EuiButton
             color="success"
             aria-label="Update PostyBirb"
             fullWidth
             iconType={ArrowUpIcon}
           >
             <FormattedMessage id="update" defaultMessage="Update" />
-          </EuiButton>
+          </EuiButton> */}
           <EuiListGroup maxWidth="none" color="text" gutterSize="none" size="s">
             <EuiListGroupItem
               aria-label="PostyBirb login accounts"
@@ -362,7 +363,7 @@ export default function AppLayout() {
         borderRadius="none"
         className={`postybirb__page-body ${theme}`}
       >
-        <EuiPageSection color="transparent">
+        <EuiPageSection color="transparent" className="postybirb__page-section">
           <EuiErrorBoundary>
             <Routes />
           </EuiErrorBoundary>

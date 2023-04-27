@@ -1,5 +1,4 @@
 import {
-  AnyEntity,
   BaseEntity as BaseMikroOrmEntity,
   PrimaryKey,
   Property,
@@ -9,8 +8,8 @@ import { IBaseEntity } from '@postybirb/types';
 import { v4 } from 'uuid';
 
 export abstract class BaseEntity<T extends IBaseEntity = IBaseEntity>
-  extends BaseMikroOrmEntity<T, 'id', never>
-  implements IBaseEntity, AnyEntity<IBaseEntity>
+  extends BaseMikroOrmEntity<T, 'id'>
+  implements IBaseEntity
 {
   @PrimaryKey()
   @Unique()
