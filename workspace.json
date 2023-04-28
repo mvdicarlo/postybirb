@@ -196,7 +196,7 @@
           "executor": "nx-electron:package",
           "options": {
             "name": "postybirb",
-            "frontendProject": "ui",
+            "frontendProject": "postybirb-ui",
             "outputPath": "dist/packages",
             "prepackageOnly": true
           }
@@ -205,7 +205,7 @@
           "executor": "nx-electron:make",
           "options": {
             "name": "postybirb",
-            "frontendProject": "ui",
+            "frontendProject": "postybirb-ui",
             "outputPath": "dist/executables"
           }
         },

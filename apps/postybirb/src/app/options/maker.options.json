@@ -1,3 +1,30 @@
 {
-  "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json"
+  "$schema": "../../../../../node_modules/nx-electron/src/validation/maker.schema.json",
+  "appId": "com.lemonynade.postybirb",
+  "productName": "PostyBirb",
+  "publish": {
+    "provider": "github",
+    "owner": "mvdicarlo",
+    "repo": "postybirb"
+  },
+  "directories": {
+    "buildResources": "packaging-resources"
+  },
+  "nsis": {
+    "deleteAppDataOnUninstall": true
+  },
+  "win": {
+    "publisherName": ["Michael DiCarlo"],
+    "icon": "icons/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      },
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ]
+  }
 }

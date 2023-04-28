@@ -17,7 +17,6 @@ export class SSL {
     const certPath = join(path, 'cert.pem');
 
     let exists = false;
-
     try {
       await stat(certPath);
       exists = true;

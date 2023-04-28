@@ -1,18 +1,18 @@
+import { INestApplication } from '@nestjs/common';
+import { isOSX } from '@postybirb/utils/electron';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   BrowserWindow,
-  shell,
-  screen,
-  nativeImage,
-  Tray,
   Menu,
+  Tray,
   globalShortcut,
+  nativeImage,
+  screen,
+  shell,
 } from 'electron';
 import { join } from 'path';
-import { format } from 'url';
-import { isOSX } from '@postybirb/utils/electron';
 import { environment } from '../environments/environment';
-import { rendererAppName, rendererAppPort } from './constants';
-import { INestApplication } from '@nestjs/common';
+import { rendererAppPort } from './constants';
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
@@ -38,9 +38,9 @@ export default class App {
   }
 
   private static onWindowAllClosed() {
-    // if (process.platform !== 'darwin') {
-    //   App.application.quit();
-    // }
+    if (process.platform !== 'darwin') {
+      App.application.quit();
+    }
   }
 
   private static onClose() {
@@ -131,11 +131,7 @@ export default class App {
 
   private static loadMainWindow() {
     // load the index.html of the app.
-    if (!App.application.isPackaged) {
-      App.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
-    } else {
-      App.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
-    }
+    App.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
   }
 
   private static initAppTray() {

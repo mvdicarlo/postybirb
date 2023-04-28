@@ -1,4 +1,6 @@
 {
+  "author": "Michael DiCarlo",
+  "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
   "version": "4.0.0",
   "license": "MIT",
@@ -7,6 +9,7 @@
     "start": "nx run-many --target=serve --projects=postybirb,postybirb-ui --parallel",
     "build": "nx run-many --target=build --projects=postybirb,postybirb-ui --parallel",
     "package": "nx run postybirb:package",
+    "make": "yarn install && npm run build && npm run package && nx run postybirb:make",
     "test": "nx test",
     "lint": "nx workspace-lint && run-p --continue-on-error lint:*",
     "lint:client-server": "nx lint client-server --fix",
