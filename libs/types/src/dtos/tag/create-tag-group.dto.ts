@@ -1,3 +1,3 @@
-import { ITagGroup } from '@postybirb/types';
+import { ITagGroup } from '../../models';
 
 export type ICreateTagGroupDto = Pick<ITagGroup, 'name' | 'tags'>;

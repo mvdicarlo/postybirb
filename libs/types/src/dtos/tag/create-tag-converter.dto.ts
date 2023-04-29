@@ -1,3 +1,3 @@
-import { ITagConverter } from '@postybirb/types';
+import { ITagConverter } from '../../models';
 
 export type ICreateTagConverterDto = Pick<ITagConverter, 'tag' | 'convertTo'>;

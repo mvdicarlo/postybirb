@@ -1,4 +1,4 @@
-import { IDirectoryWatcher } from '@postybirb/types';
+import { IDirectoryWatcher } from '../../models';
 
 export type IUpdateDirectoryWatcherDto = Pick<
   IDirectoryWatcher,

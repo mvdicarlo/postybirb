@@ -1,4 +1,4 @@
-import { ITagConverter } from '@postybirb/types';
+import { ITagConverter } from '../../models';
 
 export type IUpdateTagConverterDto = Pick<
   ITagConverter,

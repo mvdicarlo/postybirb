@@ -4,8 +4,8 @@ import { IEntity } from '../database/entity.interface';
 import { ISubmissionMetadata } from './submission-metadata.interface';
 import { ISubmissionFields } from './submission-fields.interface';
 import { ISubmissionFile } from './submission-file.interface';
-import { ISubmissionAccountData } from './submission-options.interface';
-import { ISubmissionScheduleInfo } from './submission-schedule-info';
+import { ISubmissionAccountData } from './submission-account-data.interface';
+import { ISubmissionScheduleInfo } from './submission-schedule-info.interface';
 
 /**
  * Represents a submission entity.
