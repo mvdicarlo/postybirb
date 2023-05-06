@@ -3,9 +3,14 @@ import { IEntityDto } from '../database/entity.dto';
 
 export type ISubmissionFileDto = Omit<
   IEntityDto<ISubmissionFile>,
-  'altFile' | 'thumbnail' | 'file'
+  'altFile' | 'thumbnail' | 'file' | 'parent' | 'submission' | 'buffer'
 > & {
-  altFile?: string;
-  thumbnail?: string;
-  file: string;
+  altFile?: ISubSubmissionFileDto;
+  thumbnail?: ISubSubmissionFileDto;
+  file: ISubSubmissionFileDto;
 };
+
+export type ISubSubmissionFileDto = Pick<
+  ISubmissionFileDto,
+  'id' | 'createdAt' | 'updatedAt' | 'fileName' | 'mimeType' | 'size'
+>;

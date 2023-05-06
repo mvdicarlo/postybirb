@@ -1,7 +1,7 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { Logger } from '@postybirb/logger';
-import { SafeObject, IAccount } from '@postybirb/types';
+import { IAccount, SafeObject } from '@postybirb/types';
 import { WebsiteData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 
 /**
  * Saves website specific data associated with an account.
@@ -17,7 +17,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
 
   private initialized: boolean;
 
-  private repository: EntityRepository<WebsiteData<T>>;
+  private repository: PostyBirbRepository<WebsiteData<T>>;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -32,8 +32,10 @@ export default class WebsiteDataManager<T extends SafeObject> {
     try {
       entity = await this.repository.findOneOrFail(this.account.id);
     } catch {
-      entity = this.repository.create({ id: this.account.id });
-      entity.data = {} as T;
+      entity = this.repository.create({
+        id: this.account.id,
+        data: {} as T,
+      } as WebsiteData<T>);
     }
 
     this.entity = entity;
@@ -44,7 +46,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
     await this.repository.persistAndFlush(this.entity);
   }
 
-  public async initialize(repository: EntityRepository<WebsiteData<T>>) {
+  public async initialize(repository: PostyBirbRepository<WebsiteData<T>>) {
     if (!this.initialized) {
       this.repository = repository;
       this.initialized = true;

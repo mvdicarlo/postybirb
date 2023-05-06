@@ -3,7 +3,7 @@ import { DatabaseModule } from '../database/database.module';
 import {
   cleanTestDatabase,
   initializeDatabase,
-} from '../database/mikroorm.providers';
+} from '../database/mikro-orm.providers';
 import { websiteImplementationProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';

@@ -1,12 +1,26 @@
-import { Entity, Property } from '@mikro-orm/core';
-import { ITagGroup } from '@postybirb/types';
-import { BaseEntity } from './base.entity';
+import { Entity, EntityRepositoryType, Property } from '@mikro-orm/core';
+import { ITagGroup, TagGroupDto, Tag } from '@postybirb/types';
+import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostyBirbEntity } from './postybirb-entity';
 
-@Entity()
-export class TagGroup extends BaseEntity<TagGroup> implements ITagGroup {
-  @Property({ type: 'string', nullable: false })
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class TagGroup extends PostyBirbEntity implements ITagGroup {
+  [EntityRepositoryType]?: PostyBirbRepository<TagGroup>;
+
+  /** @inheritdoc */
+  @Property({ unique: true, type: 'string', nullable: false })
   name: string;
 
+  /** @inheritdoc */
   @Property({ type: 'array', default: [], nullable: false })
-  tags: string[];
+  tags: Tag[];
+
+  toJson(): TagGroupDto {
+    return {
+      ...super.toJson(),
+      name: this.name,
+      tags: [...this.tags],
+    };
+  }
 }

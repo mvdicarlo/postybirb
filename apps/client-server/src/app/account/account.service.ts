@@ -1,4 +1,4 @@
-import { ChangeSetType, EntityRepository } from '@mikro-orm/core';
+import { ChangeSetType } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -7,17 +7,18 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { Log } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import { SafeObject } from '@postybirb/types';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
-import { Class, Constructor } from 'type-fest';
-import { OnDatabaseUpdate } from '../common/service/modifiers/on-database-update';
-import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { Class } from 'type-fest';
+import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account } from '../database/entities';
-import { BaseEntity } from '../database/entities/base.entity';
-import { EntityUpdateRecord } from '../database/subscribers/database.subscriber';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import {
+  DatabaseUpdateSubscriber,
+  EntityUpdateRecord,
+} from '../database/subscribers/database.subscriber';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -27,7 +28,7 @@ import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
-// TODO make sure that submission options are cleaned on delete and don't return when soft-deleted
+// TODO refactor to use new service type
 
 /**
  * Service responsible for returning Account data.
@@ -35,8 +36,8 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbCRUDService<Account>
-  implements OnModuleInit, OnDatabaseUpdate
+  extends PostyBirbService<Account>
+  implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<
     string,
@@ -47,17 +48,14 @@ export class AccountService
   > = {};
 
   constructor(
-    moduleRef: ModuleRef,
+    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Account)
-    repository: EntityRepository<Account>,
+    repository: PostyBirbRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway
   ) {
-    super(moduleRef, repository, webSocket);
-  }
-
-  getRegisteredEntities(): Constructor<BaseEntity>[] {
-    return [Account];
+    super(repository, webSocket);
+    repository.addUpdateListener(dbSubscriber, [Account], () => this.emit());
   }
 
   async onDatabaseUpdate(updates: EntityUpdateRecord<Account>[]) {
@@ -87,7 +85,6 @@ export class AccountService
    * Initializes all website login timers and creates instances for known accounts.
    */
   async onModuleInit() {
-    await super.onModuleInit();
     const accounts = await this.repository.find({});
 
     // Assumes that no error is thrown, otherwise there will be a big issue here.
@@ -205,7 +202,7 @@ export class AccountService
    * @param {string} id
    */
   async manuallyExecuteOnLogin(id: string): Promise<void> {
-    const account = await this.findOne(id);
+    const account = await this.repository.findOne(id);
     const instance = this.websiteRegistry.findInstance(account);
     await this.awaitPendingLogin(instance);
     await this.executeOnLogin(instance);
@@ -234,7 +231,7 @@ export class AccountService
    * @return {*}  {Promise<AccountDto<SafeObject>[]>}
    */
   async findAllAccountDto(): Promise<AccountDto<SafeObject>[]> {
-    const accounts = await this.find({});
+    const accounts = await this.repository.find({});
     return accounts.map((account) => {
       const instance = this.websiteRegistry.findInstance(account);
       if (!instance) {
@@ -242,8 +239,7 @@ export class AccountService
           `No instance found for account: ${account.id} ${account.website}`
         );
       }
-      return {
-        ...account.toJSON(),
+      return account.toJson({
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
         websiteInfo: {
@@ -251,7 +247,7 @@ export class AccountService
             instance.metadata.displayName || instance.metadata.name,
           supports: instance.getSupportedTypes(),
         },
-      };
+      });
     });
   }
 
@@ -290,7 +286,7 @@ export class AccountService
    */
   @Log()
   async update(updateAccountDto: UpdateAccountDto): Promise<boolean> {
-    const account: Account = await this.findOne(updateAccountDto.id);
+    const account: Account = await this.repository.findOne(updateAccountDto.id);
     account.name = updateAccountDto.name || account.name;
     account.groups = updateAccountDto.groups || account.groups;
     return this.repository
@@ -301,6 +297,11 @@ export class AccountService
       });
   }
 
+  remove(id: string) {
+    this.logger.info({}, `Removing Account '${id}'`);
+    return this.repository.delete(id);
+  }
+
   /**
    * Clears the data and login state associated with an account.
    *
@@ -308,7 +309,7 @@ export class AccountService
    */
   @Log()
   async clearAccountData(id: string) {
-    const account = await this.findOne(id);
+    const account = await this.repository.findOne(id);
     const instance = this.websiteRegistry.findInstance(account);
     await instance.clearLoginStateAndData();
   }
@@ -319,7 +320,7 @@ export class AccountService
    * @param {SetWebsiteDataRequestDto} setWebsiteDataRequestDto
    */
   async setAccountData(setWebsiteDataRequestDto: SetWebsiteDataRequestDto) {
-    const account = await this.findOne(setWebsiteDataRequestDto.id);
+    const account = await this.repository.findOne(setWebsiteDataRequestDto.id);
     const instance = this.websiteRegistry.findInstance(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
   }

@@ -1,4 +1,3 @@
-import { EntityRepository } from '@mikro-orm/core';
 import {
   ILoginState,
   UsernameShortcut,
@@ -6,9 +5,9 @@ import {
 } from '@postybirb/dto';
 import { Logger } from '@postybirb/logger';
 import {
-  SafeObject,
   IAccount,
   LoginState,
+  SafeObject,
   SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
@@ -17,6 +16,7 @@ import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
 import { WebsiteData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import { isFileWebsite } from './models/website-modifiers/file-website';
 import { isMessageWebsite } from './models/website-modifiers/message-website';
@@ -166,7 +166,7 @@ export abstract class Website<D extends SafeObject> {
    * Method that runs once on initialization of the Website class.
    */
   public async onInitialize(
-    websiteDataRepository: EntityRepository<WebsiteData<D>>
+    websiteDataRepository: PostyBirbRepository<WebsiteData<D>>
   ): Promise<void> {
     this.logger.trace('onInitialize');
 

@@ -1,39 +1,39 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { rename } from 'fs';
 import { readdir } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
-import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { PostyBirbService } from '../common/service/postybirb-service';
 import { DirectoryWatcher } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { SubmissionService } from '../submission/services/submission.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
+// TODO update
+
 const PROCESSED_NAME = 'pb_read';
 
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatcher> {
+export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher> {
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(
-    moduleRef: ModuleRef,
     @InjectRepository(DirectoryWatcher)
-    repository: EntityRepository<DirectoryWatcher>,
+    repository: PostyBirbRepository<DirectoryWatcher>,
     private readonly submissionService: SubmissionService,
     @Optional() webSocket?: WSGateway
   ) {
-    super(moduleRef, repository, webSocket);
+    super(repository, webSocket);
   }
 
   @Cron(CronExpression.EVERY_30_SECONDS)
   private async run() {
-    const entities = await this.findAll();
+    const entities = await this.repository.findAll();
     entities.filter((e) => !!e.path).forEach((e) => this.read(e));
   }
 
@@ -103,8 +103,15 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
     return entity;
   }
 
+  remove(id: string) {
+    this.logger.info({}, `Removing DirectoryWatcher '${id}'`);
+    return this.repository.delete(id);
+  }
+
   async update(update: UpdateDirectoryWatcherDto): Promise<boolean> {
-    const entity: DirectoryWatcher = await this.findOne(update.id);
+    const entity: DirectoryWatcher = await this.repository.findById(update.id, {
+      failOnMissing: true,
+    });
     entity.path = update.path;
     entity.importAction = update.importAction;
     entity.submissionIds = update.submissionIds;

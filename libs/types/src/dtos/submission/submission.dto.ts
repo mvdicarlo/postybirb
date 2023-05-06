@@ -9,7 +9,7 @@ import { ISubmissionFileDto } from './submission-file.dto';
 
 export type ISubmissionDto<
   T extends ISubmissionMetadata = ISubmissionMetadata
-> = IEntityDto<ISubmission<T>> & {
+> = IEntityDto<Omit<ISubmission<T>, 'files' | 'options'>> & {
   files: ISubmissionFileDto[];
   options: ISubmissionAccountDataDto<ISubmissionFields>[];
 };

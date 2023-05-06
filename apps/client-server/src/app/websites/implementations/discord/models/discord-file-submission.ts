@@ -6,12 +6,12 @@ import {
 } from '@postybirb/form-builder';
 import {
   DescriptionValue,
-  FileWebsiteOptions,
+  ISubmissionFields,
   SubmissionRating,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class DiscordFileSubmission implements FileWebsiteOptions {
+export class DiscordFileSubmission implements ISubmissionFields {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
   useThumbnail = true;
 

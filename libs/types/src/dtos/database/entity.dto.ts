@@ -3,9 +3,13 @@ import { IEntity } from '../../models';
 export type OmittedEntityFields =
   | 'createdAt'
   | 'updatedAt'
-  | 'markedForDeletion';
+  | 'markedForDeletion'
+  | 'toJson';
 
-export type IEntityDto<T extends IEntity> = Omit<T, OmittedEntityFields> &
+export type IEntityDto<T extends IEntity = IEntity> = Omit<
+  T,
+  OmittedEntityFields
+> &
   Pick<IEntity, 'id'> & {
     /**
      * Created timestamp as string.

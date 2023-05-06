@@ -8,15 +8,17 @@ import {
 import { Injectable } from '@nestjs/common';
 import { Constructor } from 'type-fest';
 import { v4 } from 'uuid';
-import { BaseEntity } from '../entities/base.entity';
+import { PostyBirbEntity } from '../entities/postybirb-entity';
 
-export type EntityUpdateRecord<T = BaseEntity> = [ChangeSetType, T];
-export type OnDatabaseUpdateCallback<T = BaseEntity> = (
+export type SubscribableEntities = PostyBirbEntity;
+
+export type EntityUpdateRecord<T = SubscribableEntities> = [ChangeSetType, T];
+export type OnDatabaseUpdateCallback<T = SubscribableEntities> = (
   updates: EntityUpdateRecord<T>[]
 ) => void;
 
 const registeredListeners: Map<
-  Constructor<BaseEntity>,
+  Constructor<SubscribableEntities>,
   OnDatabaseUpdateCallback[]
 > = new Map();
 
@@ -25,25 +27,29 @@ const registeredListeners: Map<
  * the emits events to listeners (for emits and other reactive events).
  *
  * @class DatabaseUpdateSubscriber
- * @implements {EventSubscriber<BaseEntity>}
+ * @implements {EventSubscriber<SubscribableEntities>}
  */
 @Subscriber()
 @Injectable()
-export class DatabaseUpdateSubscriber implements EventSubscriber<BaseEntity> {
+export class DatabaseUpdateSubscriber
+  implements EventSubscriber<SubscribableEntities>
+{
   private id = v4();
 
   async afterFlush(event: FlushEventArgs): Promise<void> {
-    this.publish(event.uow.getChangeSets() as ChangeSet<BaseEntity>[]);
+    this.publish(
+      event.uow.getChangeSets() as ChangeSet<SubscribableEntities>[]
+    );
   }
 
   /**
    * Subscribe a callback function to a list of entities.
    *
-   * @param {Constructor<BaseEntity>[]} entities
+   * @param {Constructor<SubscribableEntities>[]} entities
    * @param {OnDatabaseUpdateCallback} func
    */
   public subscribe(
-    entities: Constructor<BaseEntity>[],
+    entities: Constructor<SubscribableEntities>[],
     func: OnDatabaseUpdateCallback
   ): void {
     entities.forEach((entity) => {
@@ -61,9 +67,9 @@ export class DatabaseUpdateSubscriber implements EventSubscriber<BaseEntity> {
   /**
    * Publishes updates to the database to registered callbacks.
    *
-   * @param {ChangeSet<BaseEntity>[]} changeSet
+   * @param {ChangeSet<SubscribableEntities>[]} changeSet
    */
-  private publish(changeSet: ChangeSet<BaseEntity>[]) {
+  private publish(changeSet: ChangeSet<SubscribableEntities>[]) {
     const callbacks: Map<OnDatabaseUpdateCallback, EntityUpdateRecord[]> =
       new Map();
     changeSet.forEach((change) => {

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -30,31 +31,34 @@ export class TagGroupsController {
   @Get()
   @ApiOkResponse({ description: 'A list of all tag group records.' })
   findAll() {
-    return this.service.findAll();
+    return this.service
+      .findAll()
+      .then((entities) => entities.map((entity) => entity.toJson()));
   }
 
   @Post()
   @ApiOkResponse({ description: 'Tag group created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createDto: CreateTagGroupDto) {
-    return this.service.create(createDto);
+    return this.service.create(createDto).then((entity) => entity.toJson());
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
-  update(@Body() updateDto: UpdateTagGroupDto) {
-    return this.service.update(updateDto);
+  update(@Param('id') id: string, @Body() updateDto: UpdateTagGroupDto) {
+    return this.service.update(id, updateDto).then((entity) => entity.toJson());
   }
 
   @Delete()
   @ApiOkResponse({
     description: 'Tag groups deleted successfully.',
-    type: Boolean,
   })
   async remove(@Query() query: DeleteQuery) {
-    // eslint-disable-next-line no-param-reassign
-    query.action = 'HARD_DELETE';
-    return DeleteQuery.execute(query, this.service);
+    return Promise.all(
+      query.getIds().map((id) => this.service.remove(id))
+    ).then(() => ({
+      success: true,
+    }));
   }
 }

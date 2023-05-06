@@ -6,7 +6,7 @@ import { WebsiteData } from '../database/entities';
 import {
   cleanTestDatabase,
   initializeDatabase,
-} from '../database/mikroorm.providers';
+} from '../database/mikro-orm.providers';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteDataService } from './website-data.service';
 

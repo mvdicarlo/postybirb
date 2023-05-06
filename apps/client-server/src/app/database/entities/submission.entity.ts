@@ -1,32 +1,44 @@
-import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
 import {
-  IBaseSubmissionMetadata,
+  Collection,
+  Entity,
+  EntityRepositoryType,
+  OneToMany,
+  Property,
+} from '@mikro-orm/core';
+import {
   ISubmission,
-  SubmissionType,
-  IBaseWebsiteOptions,
+  ISubmissionDto,
+  ISubmissionFields,
   ISubmissionFile,
+  ISubmissionFileDto,
+  ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  SubmissionType,
 } from '@postybirb/types';
 
-import { BaseEntity } from './base.entity';
+import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostyBirbEntity } from './postybirb-entity';
+import { SubmissionAccountData } from './submission-account-data.entity';
 import { SubmissionFile } from './submission-file.entity';
-import { SubmissionOptions } from './submission-options.entity';
 
-@Entity()
-export class Submission<T extends IBaseSubmissionMetadata>
-  extends BaseEntity<Submission<T>>
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class Submission<T extends ISubmissionMetadata>
+  extends PostyBirbEntity
   implements ISubmission<T>
 {
+  [EntityRepositoryType]?: PostyBirbRepository<Submission<T>>;
+
   @Property({ type: 'string', nullable: false })
   type: SubmissionType;
 
   @OneToMany({
-    entity: () => SubmissionOptions,
+    entity: () => SubmissionAccountData,
     mappedBy: 'submission',
     orphanRemoval: true,
   })
   options = new Collection<
-    SubmissionOptions<IBaseWebsiteOptions>,
+    SubmissionAccountData<ISubmissionFields>,
     ISubmission<T>
   >(this);
 
@@ -43,4 +55,18 @@ export class Submission<T extends IBaseSubmissionMetadata>
 
   @Property({ type: 'json', nullable: false })
   metadata: T;
+
+  toJson(): ISubmissionDto<T> {
+    return {
+      ...super.toJson(),
+      type: this.type,
+      isScheduled: this.isScheduled,
+      schedule: this.schedule,
+      metadata: this.metadata,
+      files: this.files
+        .getItems()
+        .map((f) => f.toJson()) as ISubmissionFileDto[],
+      options: this.options.getItems().map((o) => o.toJson()),
+    };
+  }
 }

@@ -1,5 +1,5 @@
 import { ICreateTagGroupDto, IUpdateTagGroupDto } from '@postybirb/dto';
-import { ITagGroup } from '@postybirb/types';
+import { ITagGroupDto } from '@postybirb/types';
 import Https from '../transports/https';
 
 export default class TagGroupsApi {
@@ -16,14 +16,14 @@ export default class TagGroupsApi {
   }
 
   static getAll() {
-    return TagGroupsApi.request.get<ITagGroup[]>();
+    return TagGroupsApi.request.get<ITagGroupDto[]>();
   }
 
   static get(id: string, refresh = false) {
-    return TagGroupsApi.request.get<ITagGroup>(id, { refresh });
+    return TagGroupsApi.request.get<ITagGroupDto>(id, { refresh });
   }
 
-  static update(update: IUpdateTagGroupDto) {
-    return TagGroupsApi.request.patch('', update);
+  static update(id: string, update: IUpdateTagGroupDto) {
+    return TagGroupsApi.request.patch(id, update);
   }
 }

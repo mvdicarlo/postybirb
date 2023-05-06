@@ -53,8 +53,10 @@ export class TagConvertersController {
     type: Boolean,
   })
   async remove(@Query() query: DeleteQuery) {
-    // eslint-disable-next-line no-param-reassign
-    query.action = 'HARD_DELETE';
-    return DeleteQuery.execute(query, this.service);
+    return Promise.all(
+      query.getIds().map((id) => this.service.remove(id))
+    ).then(() => ({
+      success: true,
+    }));
   }
 }

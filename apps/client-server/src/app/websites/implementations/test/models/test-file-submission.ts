@@ -8,13 +8,13 @@ import {
 import {
   DefaultTagValue,
   DescriptionValue,
-  FileWebsiteOptions,
+  ISubmissionFields,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class TestFileSubmission implements FileWebsiteOptions {
+export class TestFileSubmission implements ISubmissionFields {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
   useThumbnail = true;
 

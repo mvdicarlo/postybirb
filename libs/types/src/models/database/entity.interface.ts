@@ -20,10 +20,4 @@ export interface IEntity {
    * @type {Date}
    */
   updatedAt: Date;
-
-  /**
-   * Indicates whether the entity is marked for deletion.
-   * @type {boolean}
-   */
-  markedForDeletion: boolean;
 }

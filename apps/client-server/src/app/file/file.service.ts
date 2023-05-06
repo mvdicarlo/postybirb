@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -23,8 +22,11 @@ import {
   SubmissionFile,
   ThumbnailFile,
 } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { MulterFileInfo } from './models/multer-file-info';
 import { ImageUtil } from './utils/image.util';
+
+// TODO refactor
 
 type Task = {
   file: MulterFileInfo;
@@ -48,15 +50,16 @@ export class FileService {
 
   constructor(
     @InjectRepository(SubmissionFile)
-    private readonly fileRepository: EntityRepository<SubmissionFile>,
+    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
     @InjectRepository(PrimaryFile)
-    private readonly primaryFileRepository: EntityRepository<PrimaryFile>,
+    private readonly primaryFileRepository: PostyBirbRepository<PrimaryFile>,
     @InjectRepository(AltFile)
-    private readonly altFileRepository: EntityRepository<AltFile>,
+    private readonly altFileRepository: PostyBirbRepository<AltFile>,
     @InjectRepository(ThumbnailFile)
-    private readonly thumbnailRepository: EntityRepository<ThumbnailFile>
+    private readonly thumbnailRepository: PostyBirbRepository<ThumbnailFile>
   ) {}
 
+  // TODO populate prop usage
   /**
    * Returns file by Id.
    *
@@ -64,13 +67,12 @@ export class FileService {
    */
   async findFile(
     id: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     populate: readonly (keyof SubmissionFile)[] | boolean = false
   ): Promise<SubmissionFile> {
     try {
       const entity = await this.fileRepository.findOneOrFail(
         { id },
-        { populate }
+        { populate: true }
       );
 
       return entity;

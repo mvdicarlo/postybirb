@@ -83,7 +83,11 @@ export class AccountController {
     type: Boolean,
   })
   async remove(@Query() query: DeleteQuery) {
-    return DeleteQuery.execute(query, this.service);
+    return Promise.all(
+      query.getIds().map((id) => this.service.remove(id))
+    ).then(() => ({
+      success: true,
+    }));
   }
 
   @Post('/account-data')

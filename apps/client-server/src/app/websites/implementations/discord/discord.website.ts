@@ -25,9 +25,9 @@ export default class Discord
     FileWebsite<DiscordFileSubmission>,
     MessageWebsite<DiscordMessageSubmission>
 {
-  supportsFile: true = true;
+  supportsFile = true as const;
 
-  supportsMessage: true = true;
+  supportsMessage = true as const;
 
   supportsAdditionalFiles = true;
 

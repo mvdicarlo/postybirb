@@ -1,12 +1,24 @@
-import { Entity, Property } from '@mikro-orm/core';
-import { ISettings, ISettingsOptions } from '@postybirb/types';
-import { BaseEntity } from './base.entity';
+import { Entity, EntityRepositoryType, Property } from '@mikro-orm/core';
+import { ISettings, ISettingsDto, ISettingsOptions } from '@postybirb/types';
+import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostyBirbEntity } from './postybirb-entity';
 
-@Entity()
-export class Settings extends BaseEntity<Settings> implements ISettings {
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class Settings extends PostyBirbEntity implements ISettings {
+  [EntityRepositoryType]?: PostyBirbRepository<Settings>;
+
   @Property({ nullable: false })
   profile: string;
 
   @Property({ type: 'json', nullable: false })
   settings: ISettingsOptions;
+
+  toJson(): ISettingsDto {
+    return {
+      ...super.toJson(),
+      profile: this.profile,
+      settings: this.settings,
+    };
+  }
 }

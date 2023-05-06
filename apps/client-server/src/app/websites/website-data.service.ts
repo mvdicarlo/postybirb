@@ -1,9 +1,9 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { SafeObject } from '@postybirb/types';
 import { WebsiteData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 
 /**
  * Simple WebsiteData service (for testing)
@@ -14,7 +14,7 @@ export class WebsiteDataService {
 
   constructor(
     @InjectRepository(WebsiteData)
-    private readonly websiteDataRepository: EntityRepository<
+    private readonly websiteDataRepository: PostyBirbRepository<
       WebsiteData<SafeObject>
     >
   ) {}

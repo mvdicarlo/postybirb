@@ -23,7 +23,7 @@ import {
   ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
-import { Submission, SubmissionOptions } from '../database/entities';
+import { Submission, SubmissionAccountData } from '../database/entities';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
 import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
@@ -41,9 +41,9 @@ export class SubmissionOptionsService {
     private readonly submissionRepository: EntityRepository<
       Submission<SubmissionMetadataType>
     >,
-    @InjectRepository(SubmissionOptions)
+    @InjectRepository(SubmissionAccountData)
     private readonly submissionOptionsRepository: EntityRepository<
-      SubmissionOptions<IBaseWebsiteOptions>
+      SubmissionAccountData<IBaseWebsiteOptions>
     >,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
@@ -90,7 +90,7 @@ export class SubmissionOptionsService {
     return submissionOptions;
   }
 
-  async findOne(id: string): Promise<SubmissionOptions<IBaseWebsiteOptions>> {
+  async findOne(id: string): Promise<SubmissionAccountData<IBaseWebsiteOptions>> {
     try {
       return await this.submissionOptionsRepository.findOneOrFail(id);
     } catch {
@@ -141,7 +141,7 @@ export class SubmissionOptionsService {
   createDefaultSubmissionOptions(
     submission: Submission<IBaseSubmissionMetadata>,
     title: string
-  ): SubmissionOptions<IBaseWebsiteOptions> {
+  ): SubmissionAccountData<IBaseWebsiteOptions> {
     const submissionOptions = this.submissionOptionsRepository.create({
       isDefault: true,
       submission,

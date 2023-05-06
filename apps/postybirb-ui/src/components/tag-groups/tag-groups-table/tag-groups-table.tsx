@@ -35,7 +35,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
   };
 
   const saveTagGroupChanges = ({ id, tags, name }: ITagGroup) => {
-    TagGroupsApi.update({ id, tags, name });
+    TagGroupsApi.update(id, { tags, name });
   };
 
   const deleteSelectedItems = () => {

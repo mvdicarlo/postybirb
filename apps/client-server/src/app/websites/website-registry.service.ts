@@ -1,11 +1,11 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { SafeObject, IAccount } from '@postybirb/types';
+import { IAccount, SafeObject } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WebsiteData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
@@ -27,7 +27,7 @@ export class WebsiteRegistryService {
 
   constructor(
     @InjectRepository(WebsiteData)
-    private readonly websiteDataRepository: EntityRepository<
+    private readonly websiteDataRepository: PostyBirbRepository<
       WebsiteData<SafeObject>
     >,
     @Inject(WEBSITE_IMPLEMENTATIONS)

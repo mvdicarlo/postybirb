@@ -13,7 +13,7 @@ import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { BaseEntity } from './app/database/entities/base.entity';
-import { initializeDatabase } from './app/database/mikroorm.providers';
+import { initializeDatabase } from './app/database/mikro-orm.providers';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 

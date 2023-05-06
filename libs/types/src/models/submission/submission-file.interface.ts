@@ -1,3 +1,4 @@
+import { Rel } from '@mikro-orm/core';
 import { IEntity } from '../database/entity.interface';
 import { IFileBuffer } from '../file/file-buffer.interface';
 import { IFileDimensions } from '../file/file-dimensions.interface';
@@ -18,7 +19,7 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    *
    * @type {ISubmission<FileSubmissionMetadata>}
    */
-  submission: ISubmission<FileSubmissionMetadata>;
+  submission: Rel<ISubmission<FileSubmissionMetadata>>;
   /**
    * Name of the file.
    *
@@ -29,7 +30,6 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    * Hash of the file.
    *
    * @type {string}
-   * @memberof ISubmissionFile
    */
   hash: string;
   /**
@@ -50,14 +50,14 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    *
    * @type {(IFileBuffer | undefined)}
    */
-  thumbnail: IFileBuffer | undefined;
+  thumbnail?: Rel<IFileBuffer>;
   /**
    * Alternate file to post instead of the main.
    * Primarily used for Text based submission.
    *
    * @type {(IFileBuffer | undefined)}
    */
-  altFile: IFileBuffer | undefined;
+  altFile?: Rel<IFileBuffer>;
   /**
    * Status flag for internal processing.
    *

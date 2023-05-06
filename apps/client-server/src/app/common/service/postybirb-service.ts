@@ -1,7 +1,7 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { BaseEntity } from '../../database/entities/base.entity';
+import { PostyBirbEntity } from '../../database/entities/postybirb-entity';
+import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
@@ -11,11 +11,11 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  * @class PostyBirbService
  */
 @Injectable()
-export abstract class PostyBirbService<T extends BaseEntity> {
+export abstract class PostyBirbService<T extends PostyBirbEntity> {
   protected readonly logger = Logger(Object.getPrototypeOf(this).name);
 
   constructor(
-    protected readonly repository: EntityRepository<T>,
+    protected readonly repository: PostyBirbRepository<T>,
     private readonly webSocket?: WSGateway
   ) {}
 
@@ -23,5 +23,9 @@ export abstract class PostyBirbService<T extends BaseEntity> {
     if (this.webSocket) {
       this.webSocket.emit(event);
     }
+  }
+
+  public findAll() {
+    return this.repository.findAll();
   }
 }
