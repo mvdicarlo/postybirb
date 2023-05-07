@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ISubmissionDto } from '@postybirb/dto';
 import {
-  IBaseSubmissionMetadata,
-  SubmissionType,
-  ISubmissionOptions,
-  IBaseWebsiteOptions,
+  ISubmissionAccountDataDto,
+  ISubmissionDto,
+  ISubmissionFields,
+  ISubmissionFileDto,
+  ISubmissionMetadata,
   ISubmissionScheduleInfo,
-  ISubmissionFile,
+  SubmissionType,
 } from '@postybirb/types';
 import { IsArray, IsBoolean, IsObject, IsString } from 'class-validator';
 
-export class SubmissionDto<T extends IBaseSubmissionMetadata>
+export class SubmissionDto<T extends ISubmissionMetadata = ISubmissionMetadata>
   implements ISubmissionDto<T>
 {
   /**
@@ -29,7 +29,7 @@ export class SubmissionDto<T extends IBaseSubmissionMetadata>
    */
   @ApiProperty()
   @IsArray()
-  options: ISubmissionOptions<IBaseWebsiteOptions>[];
+  options: ISubmissionAccountDataDto<ISubmissionFields>[];
 
   /**
    * Whether or not the submission is actively scheduled.
@@ -56,7 +56,7 @@ export class SubmissionDto<T extends IBaseSubmissionMetadata>
    */
   @ApiProperty()
   @IsArray()
-  files: ISubmissionFile[];
+  files: ISubmissionFileDto[];
 
   /**
    * Additional metadata pertaining to the submission type.
@@ -77,9 +77,9 @@ export class SubmissionDto<T extends IBaseSubmissionMetadata>
 
   @ApiProperty()
   @IsString()
-  createdAt: Date;
+  createdAt: string;
 
   @ApiProperty()
   @IsString()
-  updatedAt: Date;
+  updatedAt: string;
 }

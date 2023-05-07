@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FileModifications, FileSubmission } from '@postybirb/types';
+import { FileMetadataFields, FileSubmission } from '@postybirb/types';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { ISubmissionService } from './submission-service';
+import { ISubmissionService } from './submission-service.interface';
 
 /**
  * Service that implements logic for manipulating a FileSubmission.
@@ -27,7 +27,7 @@ export class FileSubmissionService
     submission.metadata = {
       ...submission.metadata,
       order: [],
-      modifiedFiles: {},
+      fileMetadata: {},
     };
 
     await this.appendFile(submission, file);
@@ -48,7 +48,7 @@ export class FileSubmissionService
       submission.metadata.order.push(createdFile.id);
     }
 
-    const fileModifications: FileModifications = {
+    const fileModifications: FileMetadataFields = {
       altText: '',
       dimensions: {
         default: {
@@ -61,7 +61,7 @@ export class FileSubmissionService
     };
 
     // eslint-disable-next-line no-param-reassign
-    submission.metadata.modifiedFiles[createdFile.id] = fileModifications;
+    submission.metadata.fileMetadata[createdFile.id] = fileModifications;
     return createdFile;
   }
 

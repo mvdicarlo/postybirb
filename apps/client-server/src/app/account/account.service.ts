@@ -130,6 +130,10 @@ export class AccountService
     });
   }
 
+  public findOne(id: string) {
+    return this.repository.findById(id, { failOnMissing: true });
+  }
+
   /**
    * Runs onLogin on all created website instances within a specific interval
    * and updates website login state.
@@ -285,8 +289,11 @@ export class AccountService
    * @return {*}  {Promise<boolean>}
    */
   @Log()
-  async update(updateAccountDto: UpdateAccountDto): Promise<boolean> {
-    const account: Account = await this.repository.findOne(updateAccountDto.id);
+  async update(
+    id: string,
+    updateAccountDto: UpdateAccountDto
+  ): Promise<boolean> {
+    const account: Account = await this.repository.findOne(id);
     account.name = updateAccountDto.name || account.name;
     account.groups = updateAccountDto.groups || account.groups;
     return this.repository

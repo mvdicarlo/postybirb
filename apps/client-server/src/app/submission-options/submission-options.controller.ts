@@ -5,7 +5,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IBaseWebsiteOptions } from '@postybirb/types';
+import { ISubmissionFields } from '@postybirb/types';
 import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
 import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
 import { ValidateSubmissionOptionsDto } from './dtos/validate-submission-options.dto';
@@ -31,7 +31,7 @@ export class SubmissionOptionsController {
   })
   create(
     @Body()
-    createSubmissionOptionsDto: CreateSubmissionOptionsDto<IBaseWebsiteOptions>
+    createSubmissionOptionsDto: CreateSubmissionOptionsDto<ISubmissionFields>
   ) {
     return this.service.create(createSubmissionOptionsDto);
   }
@@ -41,7 +41,7 @@ export class SubmissionOptionsController {
   @ApiNotFoundResponse({ description: 'Submission option Id not found.' })
   update(
     @Body()
-    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<IBaseWebsiteOptions>
+    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<ISubmissionFields>
   ) {
     return this.service.update(updateSubmissionOptionsDto);
   }

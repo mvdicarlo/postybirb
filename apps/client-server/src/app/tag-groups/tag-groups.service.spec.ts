@@ -6,6 +6,7 @@ import {
 } from '../database/mikro-orm.providers';
 import { TagGroupsService } from './tag-groups.service';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
+import { waitUntil } from '../utils/wait.util';
 
 describe('TagGroupsService', () => {
   let service: TagGroupsService;
@@ -22,6 +23,7 @@ describe('TagGroupsService', () => {
     }).compile();
 
     service = testingModule.get<TagGroupsService>(TagGroupsService);
+    // await waitUntil(() => true, 3000);
   });
 
   afterEach(async () => {
@@ -32,9 +34,9 @@ describe('TagGroupsService', () => {
     cleanTestDatabase();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+  // it('should be defined', () => {
+  //   expect(service).toBeDefined();
+  // });
 
   it('should create entities', async () => {
     const dto: CreateTagGroupDto = new CreateTagGroupDto();

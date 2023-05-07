@@ -1,39 +1,35 @@
-import { EntityRepository, FindOptions } from '@mikro-orm/core';
+import { FindOptions } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
-  forwardRef,
   Inject,
   Injectable,
   Optional,
+  forwardRef,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { Log } from '@postybirb/logger';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
-  IBaseSubmissionMetadata,
-  isFileSubmission,
   MessageSubmission,
   ScheduleType,
   SubmissionMetadataType,
   SubmissionType,
+  isFileSubmission,
 } from '@postybirb/types';
-import { Constructor } from 'type-fest';
 import { AccountService } from '../../account/account.service';
 import { OnDatabaseQuery } from '../../common/service/modifiers/on-database-query';
-import { OnDatabaseUpdate } from '../../common/service/modifiers/on-database-update';
-import { PostyBirbCRUDService } from '../../common/service/postybirb-crud-service';
+import { PostyBirbService } from '../../common/service/postybirb-service';
 import { Submission } from '../../database/entities';
-import { BaseEntity } from '../../database/entities/base.entity';
+import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
+import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { SubmissionOptionsService } from '../../submission-options/submission-options.service';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { SubmissionDto } from '../dtos/submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { SubmissionOptionsService } from '../../submission-options/submission-options.service';
 
 type SubmissionEntity = Submission<SubmissionMetadataType>;
 
@@ -44,13 +40,13 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbCRUDService<SubmissionEntity>
-  implements OnDatabaseQuery<SubmissionEntity>, OnDatabaseUpdate
+  extends PostyBirbService<SubmissionEntity>
+  implements OnDatabaseQuery<Submission>
 {
   constructor(
-    moduleRef: ModuleRef,
+    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Submission)
-    repository: EntityRepository<SubmissionEntity>,
+    repository: PostyBirbRepository<SubmissionEntity>,
     private readonly accountService: AccountService,
     @Inject(forwardRef(() => SubmissionOptionsService))
     private readonly submissionOptionsService: SubmissionOptionsService,
@@ -58,18 +54,11 @@ export class SubmissionService
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway
   ) {
-    super(moduleRef, repository, webSocket);
+    super(repository, webSocket);
+    repository.addUpdateListener(dbSubscriber, [Submission], () => this.emit());
   }
 
-  getRegisteredEntities(): Constructor<BaseEntity>[] {
-    return [Submission];
-  }
-
-  onDatabaseUpdate() {
-    this.emit();
-  }
-
-  getDefaultQueryOptions(): FindOptions<SubmissionEntity, 'options' | 'files'> {
+  getDefaultQueryOptions(): FindOptions<Submission, 'options' | 'files'> {
     return {
       // Typechecking is annoying here for nested types
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,10 +72,19 @@ export class SubmissionService
   public async emit() {
     super.emit({
       event: SUBMISSION_UPDATES,
-      data: await this.findAllAsDto<SubmissionDto<IBaseSubmissionMetadata>>(
-        SubmissionDto
+      data: (await this.repository.findAll(this.getDefaultQueryOptions())).map(
+        (s) => s.toJson()
       ),
     });
+  }
+
+  public findOne(id: string) {
+    return this.repository.findOneOrFail(id, this.getDefaultQueryOptions());
+  }
+
+  remove(id: string) {
+    this.logger.info({}, `Removing Submission '${id}'`);
+    return this.repository.delete(id);
   }
 
   /**
@@ -176,7 +174,10 @@ export class SubmissionService
    * @return {*}  {Promise<boolean>}
    */
   async update(updateSubmissionDto: UpdateSubmissionDto): Promise<boolean> {
-    const submission = await this.findOne(updateSubmissionDto.id);
+    const submission = await this.repository.findOne(
+      updateSubmissionDto.id,
+      this.getDefaultQueryOptions()
+    );
 
     submission.isScheduled = updateSubmissionDto.isScheduled;
     submission.schedule = {
@@ -237,7 +238,9 @@ export class SubmissionService
    * @param {MulterFileInfo} file
    */
   async appendFile(id: string, file: MulterFileInfo) {
-    const submission = await this.findOne(id);
+    const submission = await this.repository.findById(id, {
+      failOnMissing: true,
+    });
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.appendFile(submission, file);
@@ -249,7 +252,7 @@ export class SubmissionService
   }
 
   async replaceFile(id: string, fileId: string, file: MulterFileInfo) {
-    const submission = await this.findOne(id);
+    const submission = await this.repository.findById(id);
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.replaceFile(submission, fileId, file);
@@ -268,7 +271,7 @@ export class SubmissionService
    * @param {MulterFileInfo} file
    */
   async replaceThumbnail(id: string, fileId: string, file: MulterFileInfo) {
-    const submission = await this.findOne(id);
+    const submission = await this.repository.findById(id);
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.replaceThumbnailFile(fileId, file);
@@ -286,7 +289,7 @@ export class SubmissionService
    * @param {string} fileId
    */
   async removeFile(id: string, fileId: string) {
-    const submission = await this.findOne(id);
+    const submission = await this.repository.findById(id);
 
     if (isFileSubmission(submission)) {
       await this.fileSubmissionService.removeFile(submission, fileId);

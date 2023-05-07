@@ -11,7 +11,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -24,7 +24,6 @@ import { SubmissionType } from '@postybirb/types';
 import { DeleteQuery } from '../common/service/modifiers/delete-query';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
-import { SubmissionDto } from './dtos/submission.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
 import { SubmissionService } from './services/submission.service';
 
@@ -48,7 +47,9 @@ export class SubmissionController {
   @Get()
   @ApiOkResponse({ description: 'A list of all submission records.' })
   findAll() {
-    return this.service.findAllAsDto(SubmissionDto);
+    return this.service
+      .findAll()
+      .then((submissions) => submissions.map((s) => s.toJson()));
   }
 
   @Post()
@@ -101,7 +102,11 @@ export class SubmissionController {
     type: Boolean,
   })
   async remove(@Query() query: DeleteQuery) {
-    return DeleteQuery.execute(query, this.service);
+    return Promise.all(
+      query.getIds().map((id) => this.service.remove(id))
+    ).then(() => ({
+      success: true,
+    }));
   }
 
   @Post('file/add/:id')

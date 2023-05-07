@@ -12,10 +12,10 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
-import { BaseEntity } from './app/database/entities/base.entity';
 import { initializeDatabase } from './app/database/mikro-orm.providers';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
+import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
   serialize(
@@ -24,7 +24,7 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   ): PlainLiteralObject | PlainLiteralObject[] {
     // Attempts to deal with recursive objects
     return super.serialize(
-      response instanceof BaseEntity ? response.toJSON() : response,
+      response instanceof PostyBirbEntity ? response.toJson() : response,
       options
     );
   }

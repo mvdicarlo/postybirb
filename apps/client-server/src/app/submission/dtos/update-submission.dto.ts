@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IUpdateSubmissionDto } from '@postybirb/dto';
 import {
   FileSubmissionMetadata,
-  IBaseSubmissionMetadata,
-  IBaseWebsiteOptions,
-  ISubmissionOptions,
+  ISubmissionAccountData,
+  ISubmissionFields,
+  ISubmissionMetadata,
   ScheduleType,
 } from '@postybirb/types';
 import {
@@ -37,15 +37,15 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsArray()
-  deletedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
+  deletedOptions?: ISubmissionAccountData<ISubmissionFields>[];
 
   @ApiProperty()
   @IsOptional()
   @IsArray()
-  newOrUpdatedOptions?: ISubmissionOptions<IBaseWebsiteOptions>[];
+  newOrUpdatedOptions?: ISubmissionAccountData<ISubmissionFields>[];
 
   @ApiProperty()
   @IsOptional()
   @IsObject()
-  metadata?: IBaseSubmissionMetadata | FileSubmissionMetadata;
+  metadata?: ISubmissionMetadata | FileSubmissionMetadata;
 }

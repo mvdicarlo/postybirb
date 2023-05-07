@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IBaseWebsiteOptions } from '@postybirb/types';
+import { ISubmissionFields } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
-export class CreateSubmissionOptionsDto<T extends IBaseWebsiteOptions> {
+export class CreateSubmissionOptionsDto<T extends ISubmissionFields> {
   @ApiProperty()
   @IsString()
   accountId: string;

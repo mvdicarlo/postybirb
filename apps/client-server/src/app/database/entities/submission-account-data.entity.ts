@@ -7,9 +7,10 @@ import {
   wrap,
 } from '@mikro-orm/core';
 import {
-  IAccount,
+  IAccountDto,
   ISubmissionAccountData,
   ISubmissionAccountDataDto,
+  ISubmissionDto,
   ISubmissionFields,
   ISubmissionMetadata,
 } from '@postybirb/types';
@@ -20,7 +21,9 @@ import { Submission } from './submission.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
-export class SubmissionAccountData<T extends ISubmissionFields>
+export class SubmissionAccountData<
+    T extends ISubmissionFields = ISubmissionFields
+  >
   extends PostyBirbEntity
   implements ISubmissionAccountData<T>
 {
@@ -39,7 +42,7 @@ export class SubmissionAccountData<T extends ISubmissionFields>
   data: T;
 
   @ManyToOne(() => Account, { nullable: true, lazy: false })
-  account: Rel<IAccount>;
+  account: Rel<Account>;
 
   @Property({ type: 'boolean', nullable: false })
   isDefault = false;
@@ -49,8 +52,8 @@ export class SubmissionAccountData<T extends ISubmissionFields>
       ...super.toJson(),
       isDefault: this.isDefault,
       data: { ...this.data },
-      account: wrap(this.account).toObject().toJson(),
-      submission: wrap(this.submission).toObject(['options']).toJson(),
+      account: wrap(this.account).toObject() as any,
+      submission: wrap(this.submission).toObject(['options']) as any,
     };
   }
 }

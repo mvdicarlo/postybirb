@@ -95,12 +95,12 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
       hash: this.hash,
       hasThumbnail: this.hasThumbnail,
       props: this.props,
-      file: wrap(this.file).toObject().toJson(),
+      file: wrap(this.file).toObject() as any,
       altFile: this.altFile
-        ? wrap(this.altFile).toObject().toJson()
+        ? (wrap(this.altFile).toObject() as any)
         : undefined,
       thumbnail: this.thumbnail
-        ? wrap(this.thumbnail).toObject().toJson()
+        ? (wrap(this.thumbnail).toObject() as any)
         : undefined,
     };
   }

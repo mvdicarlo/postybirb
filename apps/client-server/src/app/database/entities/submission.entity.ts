@@ -23,7 +23,7 @@ import { SubmissionFile } from './submission-file.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
-export class Submission<T extends ISubmissionMetadata>
+export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   extends PostyBirbEntity
   implements ISubmission<T>
 {
@@ -65,7 +65,7 @@ export class Submission<T extends ISubmissionMetadata>
       metadata: this.metadata,
       files: this.files
         .getItems()
-        .map((f) => f.toJson()) as ISubmissionFileDto[],
+        .map((f) => (f as SubmissionFile).toJson()) as ISubmissionFileDto[],
       options: this.options.getItems().map((o) => o.toJson()),
     };
   }

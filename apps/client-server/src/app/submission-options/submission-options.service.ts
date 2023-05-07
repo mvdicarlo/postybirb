@@ -1,4 +1,3 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -10,11 +9,10 @@ import {
 } from '@nestjs/common';
 import { Log, Logger } from '@postybirb/logger';
 import {
-  IBaseWebsiteOptions,
   FileSubmission,
-  FileWebsiteOptions,
-  IBaseSubmissionMetadata,
   ISubmission,
+  ISubmissionFields,
+  ISubmissionMetadata,
   MessageSubmission,
   PostData,
   SubmissionMetadataType,
@@ -24,13 +22,14 @@ import {
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { Submission, SubmissionAccountData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { SubmissionService } from '../submission/services/submission.service';
+import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
+import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
 import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
-import { SubmissionService } from '../submission/services/submission.service';
 import { ValidateSubmissionOptionsDto } from './dtos/validate-submission-options.dto';
-import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
-import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 
 @Injectable()
 export class SubmissionOptionsService {
@@ -38,27 +37,25 @@ export class SubmissionOptionsService {
 
   constructor(
     @InjectRepository(Submission)
-    private readonly submissionRepository: EntityRepository<
+    private readonly submissionRepository: PostyBirbRepository<
       Submission<SubmissionMetadataType>
     >,
     @InjectRepository(SubmissionAccountData)
-    private readonly submissionOptionsRepository: EntityRepository<
-      SubmissionAccountData<IBaseWebsiteOptions>
-    >,
+    private readonly submissionOptionsRepository: PostyBirbRepository<SubmissionAccountData>,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService
   ) {}
 
-  async create<T extends IBaseWebsiteOptions>(
+  async create<T extends ISubmissionFields>(
     createSubmissionOptions: CreateSubmissionOptionsDto<T>
   ) {
     const account = await this.accountService.findOne(
       createSubmissionOptions.accountId
     );
 
-    let submission: Submission<IBaseSubmissionMetadata>;
+    let submission: Submission<SubmissionMetadataType>;
     try {
       submission = await this.submissionRepository.findOneOrFail(
         createSubmissionOptions.submissionId
@@ -90,7 +87,7 @@ export class SubmissionOptionsService {
     return submissionOptions;
   }
 
-  async findOne(id: string): Promise<SubmissionAccountData<IBaseWebsiteOptions>> {
+  async findOne(id: string): Promise<SubmissionAccountData> {
     try {
       return await this.submissionOptionsRepository.findOneOrFail(id);
     } catch {
@@ -118,7 +115,7 @@ export class SubmissionOptionsService {
    */
   @Log()
   async update(
-    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto<IBaseWebsiteOptions>
+    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto
   ): Promise<boolean> {
     try {
       const options = await this.findOne(updateSubmissionOptionsDto.id);
@@ -139,9 +136,9 @@ export class SubmissionOptionsService {
    * @return {*}  {SubmissionOptions<SafeObject>}
    */
   createDefaultSubmissionOptions(
-    submission: Submission<IBaseSubmissionMetadata>,
+    submission: Submission<ISubmissionMetadata>,
     title: string
-  ): SubmissionAccountData<IBaseWebsiteOptions> {
+  ): SubmissionAccountData {
     const submissionOptions = this.submissionOptionsRepository.create({
       isDefault: true,
       submission,
@@ -166,7 +163,7 @@ export class SubmissionOptionsService {
    */
   async validateSubmissionOption(
     validate: ValidateSubmissionOptionsDto
-  ): Promise<ValidationResult<IBaseWebsiteOptions>> {
+  ): Promise<ValidationResult<ISubmissionFields>> {
     const { defaultOptions, options, accountId, submissionId } = validate;
     const submission = await this.submissionService.findOne(submissionId);
     const account = await this.accountService.findOne(accountId);
@@ -183,7 +180,7 @@ export class SubmissionOptionsService {
     ) {
       return websiteInstance.onValidateFileSubmission(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        postData as unknown as PostData<FileSubmission, FileWebsiteOptions>
+        postData as unknown as PostData<FileSubmission, ISubmissionFields>
       );
     }
 
@@ -193,7 +190,7 @@ export class SubmissionOptionsService {
     ) {
       return websiteInstance.onValidateMessageSubmission(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        postData as unknown as PostData<MessageSubmission, IBaseWebsiteOptions>
+        postData as unknown as PostData<MessageSubmission, ISubmissionFields>
       );
     }
 
@@ -213,12 +210,10 @@ export class SubmissionOptionsService {
    */
   private async getPostData(
     submission: ISubmission,
-    defaultOptions: IBaseWebsiteOptions,
-    options: IBaseWebsiteOptions
-  ): Promise<
-    PostData<ISubmission<IBaseSubmissionMetadata>, IBaseWebsiteOptions>
-  > {
-    const data: PostData<ISubmission, IBaseWebsiteOptions> = {
+    defaultOptions: ISubmissionFields,
+    options: ISubmissionFields
+  ): Promise<PostData<ISubmission<ISubmissionMetadata>, ISubmissionFields>> {
+    const data: PostData<ISubmission, ISubmissionFields> = {
       submission,
       options,
     };
