@@ -41,17 +41,6 @@ const mikroOrmOptions: MikroOrmModuleSyncOptions = {
   dbName: DATABASE_PATH,
 };
 
-export async function initializeDatabase(): Promise<void> {
-  const orm = await MikroORM.init(mikroOrmOptions);
-
-  const generator = orm.getSchemaGenerator();
-  // const schemaUpdate = await generator.getUpdateSchemaSQL();
-  // console.log(schemaUpdate);
-  // await generator.createSchema();
-  await generator.updateSchema();
-  await orm.close();
-}
-
 export function cleanTestDatabase(): void {
   try {
     unlinkSync(DATABASE_PATH);

@@ -4,7 +4,6 @@ import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
 import {
   cleanTestDatabase,
-  initializeDatabase,
 } from '../database/mikro-orm.providers';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import TestWebsite from './implementations/test/test.website';

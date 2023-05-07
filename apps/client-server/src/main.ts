@@ -1,3 +1,4 @@
+import { MikroORM } from '@mikro-orm/core';
 import {
   ClassSerializerInterceptor,
   INestApplication,
@@ -12,10 +13,9 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
-import { initializeDatabase } from './app/database/mikro-orm.providers';
+import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
-import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
   serialize(
@@ -31,8 +31,6 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
 }
 
 async function bootstrap(appPort?: number) {
-  await initializeDatabase();
-
   let app: INestApplication;
   if (process.env.NODE_ENV !== 'Test') {
     // TLS/SSL on non-test
@@ -46,6 +44,9 @@ async function bootstrap(appPort?: number) {
   } else {
     app = await NestFactory.create(AppModule);
   }
+
+  await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
+  await app.get(MikroORM).getSchemaGenerator().updateSchema();
 
   const globalPrefix = 'api';
   app.enableCors();

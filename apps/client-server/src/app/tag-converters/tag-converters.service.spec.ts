@@ -1,22 +1,21 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
-import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
-import { TagGroupsService } from './tag-groups.service';
-import { cleanTestDatabase } from '../database/mikro-orm.providers';
+import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
+import { TagConvertersService } from './tag-converters.service';
 
-describe('TagGroupsService', () => {
-  let service: TagGroupsService;
+describe('TagConvertersService', () => {
+  let service: TagConvertersService;
   let module: TestingModule;
   let orm: MikroORM;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
       imports: [DatabaseModule],
-      providers: [TagGroupsService],
+      providers: [TagConvertersService],
     }).compile();
 
-    service = module.get<TagGroupsService>(TagGroupsService);
+    service = module.get<TagConvertersService>(TagConvertersService);
     orm = module.get(MikroORM);
     try {
       await orm.getSchemaGenerator().ensureDatabase();
@@ -41,14 +40,16 @@ describe('TagGroupsService', () => {
   });
 
   it('should create entities', async () => {
-    const dto: CreateTagGroupDto = new CreateTagGroupDto();
-    dto.name = 'test';
-    dto.tags = ['test', 'tag group'];
+    const dto: CreateTagConverterDto = new CreateTagConverterDto();
+    dto.tag = 'test';
+    dto.convertTo = {
+      default: 'converted',
+    };
 
     await service.create(dto);
-    const groups = await service.findAll();
-    expect(groups).toHaveLength(1);
-    expect(groups[0].name).toEqual(dto.name);
-    expect(groups[0].tags).toEqual(dto.tags);
+    const converters = await service.findAll();
+    expect(converters).toHaveLength(1);
+    expect(converters[0].tag).toEqual(dto.tag);
+    expect(converters[0].convertTo).toEqual(dto.convertTo);
   });
 });
