@@ -11,10 +11,9 @@ describe('TagGroupsService', () => {
   let orm: MikroORM;
 
   function createTagGroupDto(name: string, tags: string[]) {
-    const dto: CreateTagGroupDto = new CreateTagGroupDto();
+    const dto = new CreateTagGroupDto();
     dto.name = name;
     dto.tags = tags;
-
     return dto;
   }
 
@@ -59,7 +58,7 @@ describe('TagGroupsService', () => {
     });
   });
 
-  it('should should fail to create duplicate named groups', async () => {
+  it('should fail to create duplicate named groups', async () => {
     const dto = createTagGroupDto('test', ['test']);
     const dto2 = createTagGroupDto('test', ['test', 'test-dupe']);
 
@@ -76,5 +75,31 @@ describe('TagGroupsService', () => {
       expectedException = err;
     }
     expect(expectedException).toBeInstanceOf(BadRequestException);
+  });
+
+  it('should update entities', async () => {
+    const dto = createTagGroupDto('test', ['test', 'tag group']);
+
+    const record = await service.create(dto);
+    const groups = await service.findAll();
+    expect(groups).toHaveLength(1);
+
+    const updateDto = new CreateTagGroupDto();
+    updateDto.name = 'test';
+    updateDto.tags = ['test', 'updated'];
+    await service.update(record.id, updateDto);
+    const updatedRec = await service.findById(record.id);
+    expect(updatedRec.name).toBe(updateDto.name);
+    expect(updatedRec.tags).toEqual(updateDto.tags);
+  });
+
+  it('should delete entities', async () => {
+    const dto = createTagGroupDto('test', ['test', 'tag group']);
+
+    const record = await service.create(dto);
+    expect(await service.findAll()).toHaveLength(1);
+
+    await service.remove(record.id);
+    expect(await service.findAll()).toHaveLength(0);
   });
 });

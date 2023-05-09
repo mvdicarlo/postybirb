@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
   Patch,
   Post,
   Query,
@@ -40,11 +41,14 @@ export class TagConvertersController {
     return this.service.create(createTagConverterDto);
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Tag converter updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag converter not found.' })
-  update(@Body() updateAccountDto: UpdateTagConverterDto) {
-    return this.service.update(updateAccountDto);
+  update(
+    @Body() updateAccountDto: UpdateTagConverterDto,
+    @Param('id') id: string
+  ) {
+    return this.service.update(id, updateAccountDto);
   }
 
   @Delete()

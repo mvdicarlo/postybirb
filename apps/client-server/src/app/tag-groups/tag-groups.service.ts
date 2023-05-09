@@ -23,30 +23,22 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
 
   async create(createDto: CreateTagGroupDto): Promise<TagGroup> {
     this.logger.info(createDto, `Creating TagGroup '${createDto.name}'`);
-    const existing = await this.repository.findOne({ name: createDto.name });
-    if (existing) {
-      throw new BadRequestException(
-        `A tag group with name '${createDto.name}' already exists.`
-      );
-    }
+    await this.throwIfExists({ name: createDto.name });
     const tagGroup = this.repository.create(createDto);
     await this.repository.persistAndFlush(tagGroup);
     return tagGroup;
   }
 
-  async update(id: string, update: UpdateTagGroupDto) {
+  update(id: string, update: UpdateTagGroupDto) {
     this.logger.info(update, `Updating TagGroup '${id}'`);
     return this.repository.update(id, update);
   }
 
   remove(id: string) {
-    this.logger.info({}, `Removing TagGroup '${id}'`);
+    this.logger.info({ id }, `Removing TagGroup '${id}'`);
     return this.repository.delete(id);
   }
 
-  /**
-   * Emits tag group state and data onto websocket.
-   */
   protected async emit() {
     super.emit({
       event: TAG_GROUP_UPDATES,

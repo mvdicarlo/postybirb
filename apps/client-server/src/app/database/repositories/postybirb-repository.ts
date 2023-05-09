@@ -1,4 +1,10 @@
-import { EntityRepository, FilterQuery, wrap } from '@mikro-orm/core';
+import {
+  EntityDTO,
+  EntityRepository,
+  FilterQuery,
+  Loaded,
+  wrap,
+} from '@mikro-orm/core';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { IEntity } from '@postybirb/types';
 import { EventEmitter } from 'events';
@@ -16,6 +22,10 @@ type EventMap = {
 
 type EventKey<T extends EventMap> = string & keyof T;
 type EventReceiver<T> = (params: T) => void;
+
+export type FindOptions = {
+  failOnMissing: boolean;
+};
 
 export class PostyBirbRepository<
   T extends IEntity
@@ -42,7 +52,7 @@ export class PostyBirbRepository<
     return this;
   }
 
-  async findById(id: string, options?: { failOnMissing: boolean }) {
+  async findById(id: string, options?: FindOptions) {
     const entity = await this.findOne({ id } as FilterQuery<T>);
 
     if (!entity && options?.failOnMissing) {
@@ -52,15 +62,11 @@ export class PostyBirbRepository<
     return entity;
   }
 
-  async update<D extends Partial<T>>(id: string, dto: D) {
-    const entity = this.findOne({ id } as FilterQuery<T>);
-
-    if (!entity) {
-      throw new NotFoundException(`Unable to find entity Id '${id}'`);
-    }
+  async update(id: string, dto: Partial<EntityDTO<Loaded<T, never>>>) {
+    const entity = await this.findById(id, { failOnMissing: true });
 
     try {
-      const updatedEntity = await wrap(entity).assign(dto);
+      const updatedEntity = wrap(entity).assign(dto);
       await this.flush();
       return updatedEntity;
     } catch (err) {

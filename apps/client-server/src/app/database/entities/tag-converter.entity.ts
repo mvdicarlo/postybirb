@@ -1,5 +1,10 @@
-import { Entity, EntityRepositoryType, Property } from '@mikro-orm/core';
-import { ITagConverter, ITagConverterDto } from '@postybirb/types';
+import {
+  Entity,
+  EntityRepositoryType,
+  Property,
+  serialize,
+} from '@mikro-orm/core';
+import { ITagConverter, TagConverterDto } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
 
@@ -14,11 +19,7 @@ export class TagConverter extends PostyBirbEntity implements ITagConverter {
   @Property({ type: 'json' })
   convertTo: Record<string, string>;
 
-  toJSON(): ITagConverterDto {
-    return {
-      ...super.toJSON(),
-      tag: this.tag,
-      convertTo: { ...this.convertTo },
-    };
+  toJSON(): TagConverterDto {
+    return serialize(this) as TagConverterDto;
   }
 }
