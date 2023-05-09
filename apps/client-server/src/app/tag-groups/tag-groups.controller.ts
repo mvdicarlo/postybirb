@@ -33,21 +33,21 @@ export class TagGroupsController {
   findAll() {
     return this.service
       .findAll()
-      .then((entities) => entities.map((entity) => entity.toJson()));
+      .then((entities) => entities.map((entity) => entity.toJSON()));
   }
 
   @Post()
   @ApiOkResponse({ description: 'Tag group created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createDto: CreateTagGroupDto) {
-    return this.service.create(createDto).then((entity) => entity.toJson());
+    return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 
   @Patch(':id')
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
   update(@Param('id') id: string, @Body() updateDto: UpdateTagGroupDto) {
-    return this.service.update(id, updateDto).then((entity) => entity.toJson());
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 
   @Delete()

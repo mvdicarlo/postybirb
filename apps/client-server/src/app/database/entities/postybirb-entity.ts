@@ -1,4 +1,4 @@
-import { PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { PrimaryKey, Property, Unique, serialize } from '@mikro-orm/core';
 import { IEntity, IEntityDto } from '@postybirb/types';
 import { v4 } from 'uuid';
 
@@ -10,18 +10,19 @@ export abstract class PostyBirbEntity implements IEntity {
   id: string = v4();
 
   /** @inheritdoc */
-  @Property()
+  @Property({
+    serializer: (value) => value.toISOString(),
+  })
   createdAt: Date = new Date();
 
   /** @inheritdoc */
-  @Property({ onUpdate: () => new Date() })
+  @Property({
+    onUpdate: () => new Date(),
+    serializer: (value) => value.toISOString(),
+  })
   updatedAt: Date = new Date();
 
-  toJson(): IEntityDto {
-    return {
-      id: this.id,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
-    };
+  toJSON(): IEntityDto {
+    return serialize(this) as IEntityDto;
   }
 }

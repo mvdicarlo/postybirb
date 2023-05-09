@@ -32,11 +32,11 @@ export class Account extends PostyBirbEntity implements IAccount {
     SubmissionAccountData<ISubmissionFields>
   >(this);
 
-  toJson(
+  toJSON(
     externalProps?: Pick<IAccountDto, 'websiteInfo' | 'data' | 'loginState'>
   ): IAccountDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       name: this.name,
       website: this.website,
       groups: [...this.groups],

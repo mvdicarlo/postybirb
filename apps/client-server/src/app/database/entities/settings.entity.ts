@@ -14,9 +14,9 @@ export class Settings extends PostyBirbEntity implements ISettings {
   @Property({ type: 'json', nullable: false })
   settings: ISettingsOptions;
 
-  toJson(): ISettingsDto {
+  toJSON(): ISettingsDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       profile: this.profile,
       settings: this.settings,
     };

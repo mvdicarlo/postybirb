@@ -47,9 +47,9 @@ export class SubmissionAccountData<
   @Property({ type: 'boolean', nullable: false })
   isDefault = false;
 
-  toJson(): ISubmissionAccountDataDto<T> {
+  toJSON(): ISubmissionAccountDataDto<T> {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       isDefault: this.isDefault,
       data: { ...this.data },
       account: wrap(this.account).toObject() as any,

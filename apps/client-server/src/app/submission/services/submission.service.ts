@@ -73,7 +73,7 @@ export class SubmissionService
     super.emit({
       event: SUBMISSION_UPDATES,
       data: (await this.repository.findAll(this.getDefaultQueryOptions())).map(
-        (s) => s.toJson()
+        (s) => s.toJSON()
       ),
     });
   }

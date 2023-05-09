@@ -82,7 +82,7 @@ export class FileController {
     );
 
     // TODO check this works correctly
-    const result = results.map((r) => r.toJson());
+    const result = results.map((r) => r.toJSON());
     return result;
   }
 }

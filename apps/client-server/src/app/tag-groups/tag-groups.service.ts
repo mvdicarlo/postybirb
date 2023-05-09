@@ -1,5 +1,5 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { TagGroup } from '../database/entities';
@@ -23,6 +23,12 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
 
   async create(createDto: CreateTagGroupDto): Promise<TagGroup> {
     this.logger.info(createDto, `Creating TagGroup '${createDto.name}'`);
+    const existing = await this.repository.findOne({ name: createDto.name });
+    if (existing) {
+      throw new BadRequestException(
+        `A tag group with name '${createDto.name}' already exists.`
+      );
+    }
     const tagGroup = this.repository.create(createDto);
     await this.repository.persistAndFlush(tagGroup);
     return tagGroup;
@@ -44,7 +50,7 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
   protected async emit() {
     super.emit({
       event: TAG_GROUP_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toJson()),
+      data: (await this.repository.findAll()).map((entity) => entity.toJSON()),
     });
   }
 }

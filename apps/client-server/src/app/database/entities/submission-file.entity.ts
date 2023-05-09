@@ -84,9 +84,9 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
   })
   props: ISubmissionFileProps = DefaultSubmissionFileProps;
 
-  toJson(): ISubmissionFileDto {
+  toJSON(): ISubmissionFileDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       fileName: this.fileName,
       mimeType: this.mimeType,
       size: this.size,
@@ -137,9 +137,9 @@ export class ThumbnailFile extends PostyBirbEntity implements IFileBuffer {
   @Property({ type: 'boolean', nullable: false, default: false })
   hasThumbnail: boolean;
 
-  toJson(): ISubSubmissionFileDto {
+  toJSON(): ISubSubmissionFileDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       fileName: this.fileName,
       mimeType: this.mimeType,
       size: this.size,
@@ -175,9 +175,9 @@ export class PrimaryFile extends PostyBirbEntity implements IFileBuffer {
   @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
 
-  toJson(): ISubSubmissionFileDto {
+  toJSON(): ISubSubmissionFileDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       fileName: this.fileName,
       mimeType: this.mimeType,
       size: this.size,
@@ -213,9 +213,9 @@ export class AltFile extends PostyBirbEntity implements IFileBuffer {
   @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
 
-  toJson(): ISubSubmissionFileDto {
+  toJSON(): ISubSubmissionFileDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       fileName: this.fileName,
       mimeType: this.mimeType,
       size: this.size,

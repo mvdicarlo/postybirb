@@ -14,9 +14,9 @@ export class TagConverter extends PostyBirbEntity implements ITagConverter {
   @Property({ type: 'json' })
   convertTo: Record<string, string>;
 
-  toJson(): ITagConverterDto {
+  toJSON(): ITagConverterDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       tag: this.tag,
       convertTo: { ...this.convertTo },
     };

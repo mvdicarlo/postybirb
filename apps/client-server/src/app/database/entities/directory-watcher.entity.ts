@@ -28,9 +28,9 @@ export class DirectoryWatcher
   @Property({ nullable: true })
   submissionIds?: string[];
 
-  toJson(): IDirectoryWatcherDto {
+  toJSON(): IDirectoryWatcherDto {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       path: this.path,
       submissionIds: this.submissionIds ? [...this.submissionIds] : undefined,
       template: this.template,

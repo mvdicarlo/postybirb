@@ -56,16 +56,16 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   @Property({ type: 'json', nullable: false })
   metadata: T;
 
-  toJson(): ISubmissionDto<T> {
+  toJSON(): ISubmissionDto<T> {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       type: this.type,
       isScheduled: this.isScheduled,
       schedule: this.schedule,
       metadata: this.metadata,
       files: this.files
         .getItems()
-        .map((f) => (f as SubmissionFile).toJson()) as ISubmissionFileDto[],
+        .map((f) => (f as SubmissionFile).toJSON()) as ISubmissionFileDto[],
       options: this.options.getItems().map((o) => o.toJson()),
     };
   }

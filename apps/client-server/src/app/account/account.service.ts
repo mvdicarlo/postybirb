@@ -243,7 +243,7 @@ export class AccountService
           `No instance found for account: ${account.id} ${account.website}`
         );
       }
-      return account.toJson({
+      return account.toJSON({
         loginState: instance.getLoginState(),
         data: instance.getWebsiteData(),
         websiteInfo: {

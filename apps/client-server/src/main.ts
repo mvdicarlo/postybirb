@@ -24,7 +24,7 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   ): PlainLiteralObject | PlainLiteralObject[] {
     // Attempts to deal with recursive objects
     return super.serialize(
-      response instanceof PostyBirbEntity ? response.toJson() : response,
+      response instanceof PostyBirbEntity ? response.toJSON() : response,
       options
     );
   }

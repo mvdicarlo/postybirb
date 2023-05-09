@@ -1,7 +1,5 @@
-import { MikroORM } from '@mikro-orm/core';
 import { MikroOrmModule, MikroOrmModuleSyncOptions } from '@mikro-orm/nestjs';
 import { PostyBirbDirectories } from '@postybirb/fs';
-import { unlinkSync } from 'fs';
 import { join } from 'path';
 import {
   Account,
@@ -38,17 +36,8 @@ const entities = [
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {
   entities,
   type: 'sqlite',
-  dbName: DATABASE_PATH,
+  dbName: process.env.NODE_ENV === 'Test' ? ':memory:' : DATABASE_PATH,
 };
-
-export function cleanTestDatabase(): void {
-  try {
-    unlinkSync(DATABASE_PATH);
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(err);
-  }
-}
 
 export const getDatabaseProvider = () => [
   MikroOrmModule.forRoot({ ...mikroOrmOptions, allowGlobalContext: true }),

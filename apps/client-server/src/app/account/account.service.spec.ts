@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
-import { cleanTestDatabase } from '../database/mikro-orm.providers';
 import { websiteImplementationProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';

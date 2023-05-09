@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ICreateTagGroupDto } from '@postybirb/dto';
+import { ICreateTagGroupDto } from '@postybirb/types';
 import { IsArray, IsString } from 'class-validator';
 
 export class CreateTagGroupDto implements ICreateTagGroupDto {

@@ -14,9 +14,9 @@ export class WebsiteData<T extends SafeObject>
   @Property({ type: 'json' })
   data: T;
 
-  toJson(): IWebsiteDataDto<T> {
+  toJSON(): IWebsiteDataDto<T> {
     return {
-      ...super.toJson(),
+      ...super.toJSON(),
       data: { ...this.data },
     };
   }

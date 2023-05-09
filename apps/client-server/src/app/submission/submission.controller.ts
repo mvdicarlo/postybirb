@@ -49,7 +49,7 @@ export class SubmissionController {
   findAll() {
     return this.service
       .findAll()
-      .then((submissions) => submissions.map((s) => s.toJson()));
+      .then((submissions) => submissions.map((s) => s.toJSON()));
   }
 
   @Post()
