@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
@@ -18,10 +18,13 @@ export class SettingsController {
     return this.service.findAll();
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Update successful.' })
   @ApiNotFoundResponse({ description: 'Settings profile not found.' })
-  update(@Body() updateSettingsDto: UpdateSettingsDto) {
-    return this.service.update(updateSettingsDto);
+  update(
+    @Body() updateSettingsDto: UpdateSettingsDto,
+    @Param('id') id: string
+  ) {
+    return this.service.update(id, updateSettingsDto);
   }
 }

@@ -1,10 +1,5 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-  Optional,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../database/entities';
@@ -14,14 +9,11 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsConstants } from './settings.constants';
 
-// TODO refactor
-
 @Injectable()
 export class SettingsService
   extends PostyBirbService<Settings>
   implements OnModuleInit
 {
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(
     dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Settings)
@@ -85,14 +77,8 @@ export class SettingsService
    *
    * @param {UpdateSettingsDto} updateSettingsDto
    */
-  async update(updateSettingsDto: UpdateSettingsDto): Promise<boolean> {
-    const settingObj = await this.repository.findOne(updateSettingsDto.id);
-    settingObj.settings = updateSettingsDto.settings;
-    return this.repository
-      .flush()
-      .then(() => true)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+  async update(id: string, updateSettingsDto: UpdateSettingsDto) {
+    this.logger.info(updateSettingsDto, `Updating Settings '${id}'`);
+    return this.repository.update(id, updateSettingsDto);
   }
 }
