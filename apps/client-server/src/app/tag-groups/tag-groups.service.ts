@@ -34,11 +34,6 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
     return this.repository.update(id, update);
   }
 
-  remove(id: string) {
-    this.logger.info({ id }, `Removing TagGroup '${id}'`);
-    return this.repository.delete(id);
-  }
-
   protected async emit() {
     super.emit({
       event: TAG_GROUP_UPDATES,

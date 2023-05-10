@@ -1,20 +1,12 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { TagGroup } from '../database/entities';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
@@ -25,15 +17,9 @@ import { TagGroupsService } from './tag-groups.service';
  */
 @ApiTags('tag-groups')
 @Controller('tag-groups')
-export class TagGroupsController {
-  constructor(private readonly service: TagGroupsService) {}
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all tag group records.' })
-  findAll() {
-    return this.service
-      .findAll()
-      .then((entities) => entities.map((entity) => entity.toJSON()));
+export class TagGroupsController extends PostyBirbController<TagGroup> {
+  constructor(readonly service: TagGroupsService) {
+    super(service);
   }
 
   @Post()
@@ -48,17 +34,5 @@ export class TagGroupsController {
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
   update(@Param('id') id: string, @Body() updateDto: UpdateTagGroupDto) {
     return this.service.update(id, updateDto).then((entity) => entity.toJSON());
-  }
-
-  @Delete()
-  @ApiOkResponse({
-    description: 'Tag groups deleted successfully.',
-  })
-  async remove(@Query() query: DeleteQuery) {
-    return Promise.all(
-      query.getIds().map((id) => this.service.remove(id))
-    ).then(() => ({
-      success: true,
-    }));
   }
 }

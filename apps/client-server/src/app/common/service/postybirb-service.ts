@@ -15,7 +15,9 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  * @class PostyBirbService
  */
 @Injectable()
-export abstract class PostyBirbService<T extends PostyBirbEntity> {
+export abstract class PostyBirbService<
+  T extends PostyBirbEntity = PostyBirbEntity
+> {
   protected readonly logger = Logger(Object.getPrototypeOf(this).name);
 
   constructor(
@@ -60,6 +62,11 @@ export abstract class PostyBirbService<T extends PostyBirbEntity> {
 
   public findAll() {
     return this.repository.findAll();
+  }
+
+  public remove(id: string) {
+    this.logger.info({ id }, `Removing entity '${id}'.`);
+    return this.repository.delete(id);
   }
 
   // END Repository Wrappers

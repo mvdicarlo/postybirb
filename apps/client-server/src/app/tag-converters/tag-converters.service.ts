@@ -31,11 +31,6 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
     return tagConverter;
   }
 
-  remove(id: string) {
-    this.logger.info({}, `Removing TagConverter '${id}'`);
-    return this.repository.delete(id);
-  }
-
   update(id: string, update: UpdateTagConverterDto) {
     this.logger.info(update, `Updating TagConverter '${id}'`);
     return this.repository.update(id, update);

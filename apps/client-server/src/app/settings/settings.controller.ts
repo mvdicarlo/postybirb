@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Param, Patch } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { Settings } from '../database/entities';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
 
@@ -9,13 +11,9 @@ import { SettingsService } from './settings.service';
  */
 @ApiTags('settings')
 @Controller('settings')
-export class SettingsController {
-  constructor(private readonly service: SettingsService) {}
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all settings records.' })
-  findAll() {
-    return this.service.findAll();
+export class SettingsController extends PostyBirbController<Settings> {
+  constructor(readonly service: SettingsService) {
+    super(service);
   }
 
   @Patch(':id')
