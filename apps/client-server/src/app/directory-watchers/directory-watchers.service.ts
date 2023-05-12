@@ -1,5 +1,5 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { rename } from 'fs';
@@ -14,14 +14,21 @@ import { SubmissionService } from '../submission/services/submission.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
-
-// TODO update
+import { IsTestEnvironment } from '../utils/test.util';
 
 const PROCESSED_NAME = 'pb_read';
 
+/**
+ * A directory watcher service that reads created watchers and checks
+ * for new files added to the folder.
+ *
+ * If a new file is detected it will attempt to process it.
+ *
+ * @class DirectoryWatchersService
+ * @extends {PostyBirbService<DirectoryWatcher>}
+ */
 @Injectable()
 export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher> {
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(
     @InjectRepository(DirectoryWatcher)
     repository: PostyBirbRepository<DirectoryWatcher>,
@@ -31,12 +38,22 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
     super(repository, webSocket);
   }
 
+  /**
+   * CRON run read of paths.
+   */
   @Cron(CronExpression.EVERY_30_SECONDS)
   private async run() {
-    const entities = await this.repository.findAll();
-    entities.filter((e) => !!e.path).forEach((e) => this.read(e));
+    if (!IsTestEnvironment()) {
+      const entities = await this.repository.findAll();
+      entities.filter((e) => !!e.path).forEach((e) => this.read(e));
+    }
   }
 
+  /**
+   * Reads the directory for files that don't have the PROCESSED_NAME tag.
+   *
+   * @param {DirectoryWatcher} watcher
+   */
   private async read(watcher: DirectoryWatcher) {
     const filesInDirectory = await readdir(watcher.path);
     filesInDirectory
@@ -44,6 +61,12 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
       .forEach((file) => this.processFile(watcher, file));
   }
 
+  /**
+   * Attempts to process file and apply action.
+   *
+   * @param {DirectoryWatcher} watcher
+   * @param {string} fileName
+   */
   private async processFile(watcher: DirectoryWatcher, fileName: string) {
     const filePath = join(watcher.path, fileName);
     const multerInfo: MulterFileInfo = {
@@ -103,24 +126,8 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
     return entity;
   }
 
-  remove(id: string) {
-    this.logger.info({}, `Removing DirectoryWatcher '${id}'`);
-    return this.repository.delete(id);
-  }
-
-  async update(update: UpdateDirectoryWatcherDto): Promise<boolean> {
-    const entity: DirectoryWatcher = await this.repository.findById(update.id, {
-      failOnMissing: true,
-    });
-    entity.path = update.path;
-    entity.importAction = update.importAction;
-    entity.submissionIds = update.submissionIds;
-
-    return this.repository
-      .flush()
-      .then(() => true)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+  update(id: string, update: UpdateDirectoryWatcherDto) {
+    this.logger.info(update, `Updating DirectoryWatcher '${id}'`);
+    return this.repository.update(id, update);
   }
 }

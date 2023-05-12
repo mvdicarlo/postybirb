@@ -16,6 +16,7 @@ import { AppModule } from './app/app.module';
 import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
+import { IsTestEnvironment } from './app/utils/test.util';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
   serialize(
@@ -32,7 +33,7 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
 
 async function bootstrap(appPort?: number) {
   let app: INestApplication;
-  if (process.env.NODE_ENV !== 'Test') {
+  if (!IsTestEnvironment()) {
     // TLS/SSL on non-test
     const { cert, key } = await SSL.getOrCreateSSL();
     app = await NestFactory.create(AppModule, {

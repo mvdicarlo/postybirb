@@ -15,6 +15,7 @@ import {
   TagConverter,
   DirectoryWatcher,
 } from './entities';
+import { IsTestEnvironment } from '../utils/test.util';
 
 const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
 
@@ -36,7 +37,7 @@ const entities = [
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {
   entities,
   type: 'sqlite',
-  dbName: process.env.NODE_ENV === 'Test' ? ':memory:' : DATABASE_PATH,
+  dbName: IsTestEnvironment() ? ':memory:' : DATABASE_PATH,
 };
 
 export const getDatabaseProvider = () => [

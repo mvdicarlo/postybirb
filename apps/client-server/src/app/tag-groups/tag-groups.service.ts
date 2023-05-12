@@ -1,5 +1,5 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { TagGroup } from '../database/entities';
