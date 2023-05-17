@@ -1,5 +1,6 @@
 import { Logger } from '@postybirb/logger';
 import { IAccount, SafeObject } from '@postybirb/types';
+import pino from 'pino';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 
@@ -9,7 +10,7 @@ import { PostyBirbRepository } from '../database/repositories/postybirb-reposito
  * @class WebsiteDataManager
  */
 export default class WebsiteDataManager<T extends SafeObject> {
-  private readonly logger;
+  private readonly logger: pino.Logger;
 
   private readonly account: IAccount;
 
@@ -17,7 +18,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
 
   private initialized: boolean;
 
-  private repository: PostyBirbRepository<WebsiteData<T>>;
+  private repository: PostyBirbRepository<WebsiteData>;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -27,10 +28,12 @@ export default class WebsiteDataManager<T extends SafeObject> {
     this.initialized = false;
   }
 
-  private async loadData() {
+  private async createOrLoadWebsiteData() {
     let entity: WebsiteData<T> = {} as WebsiteData<T>;
     try {
-      entity = await this.repository.findOneOrFail(this.account.id);
+      entity = await this.repository.findById(this.account.id, {
+        failOnMissing: true,
+      });
     } catch {
       entity = this.repository.create({
         id: this.account.id,
@@ -42,15 +45,18 @@ export default class WebsiteDataManager<T extends SafeObject> {
   }
 
   private async saveData() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await this.repository.persistAndFlush(this.entity);
   }
 
+  /**
+   * Initializes the internal WebsiteData entity.
+   * @param {PostyBirbRepository<WebsiteData<T>>} repository
+   */
   public async initialize(repository: PostyBirbRepository<WebsiteData<T>>) {
     if (!this.initialized) {
       this.repository = repository;
+      await this.createOrLoadWebsiteData();
       this.initialized = true;
-      await this.loadData();
     }
   }
 
@@ -58,18 +64,35 @@ export default class WebsiteDataManager<T extends SafeObject> {
     return this.initialized;
   }
 
+  /**
+   * Deletes the internal WebsiteData entity and creates a new one.
+   */
   public async clearData() {
     this.logger.info('Clearing website data');
     await this.repository.removeAndFlush(this.entity);
 
     // Do a reload to recreate an object that hasn't been saved.
-    await this.loadData();
+    await this.createOrLoadWebsiteData();
   }
 
+  /**
+   * Returns stored WebsiteData.
+   *
+   * @return {*}  {T}
+   * @memberof WebsiteDataManager
+   */
   public getData(): T {
+    if (!this.initialized) {
+      return {} as T;
+    }
+
     return { ...this.entity.data };
   }
 
+  /**
+   * Sets WebsiteData value.
+   * @param {T} data
+   */
   public async setData(data: T) {
     if (JSON.stringify(data) !== JSON.stringify(this.entity.data)) {
       this.entity.data = { ...data };

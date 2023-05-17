@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
 import { FileService } from '../file/file.service';
-import { websiteImplementationProvider } from '../websites/implementations';
+import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
@@ -24,7 +24,7 @@ describe('SubmissionPartService', () => {
         AccountService,
         WebsiteRegistryService,
         SubmissionOptionsService,
-        websiteImplementationProvider,
+        WebsiteImplProvider,
       ],
     }).compile();
 

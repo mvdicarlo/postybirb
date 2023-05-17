@@ -8,10 +8,9 @@ export type IAccountDto<T = any> = IEntityDto<IAccount> & {
    * Current login state for the account.
    * @type {ILoginState}
    */
-  loginState: ILoginState;
+  state: ILoginState;
   /**
-   * Additional information
-   * (I have forgotten what this is and will update when I remember).
+   * Additional information from website data entity.
    * @type {T}
    */
   data: T;

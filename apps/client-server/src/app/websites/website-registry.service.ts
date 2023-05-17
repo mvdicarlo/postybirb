@@ -49,7 +49,7 @@ export class WebsiteRegistryService {
         }
 
         this.logger.debug(
-          `Registering website: ${website.prototype.metadata.name}`
+          `Registered website: ${website.prototype.metadata.name}`
         );
         this.availableWebsites[website.prototype.metadata.name] = website;
       }

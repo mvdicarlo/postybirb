@@ -8,17 +8,16 @@ import { AccountId } from '../account/account.type';
  * @template T - The type of data associated with the website.
  * @extends {IEntity}
  */
-export interface IWebsiteData<T extends SafeObject> extends IEntity {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IWebsiteData<T extends SafeObject = any> extends IEntity {
   /**
    * The ID of the associated account.
    * @type {AccountId}
-   * @memberof IWebsiteData
    */
   id: AccountId;
   /**
    * The data associated with the website.
    * @type {T}
-   * @memberof IWebsiteData
    */
   data: T;
 }

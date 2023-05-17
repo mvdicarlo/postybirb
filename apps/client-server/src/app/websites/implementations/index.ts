@@ -12,8 +12,7 @@ const useValue: Class<UnknownWebsite>[] = [Discord, FurAffinity, TestWebsite];
 useValue.push(TestWebsite);
 // }
 
-export const websiteImplementationProvider: Provider<Class<UnknownWebsite>[]> =
-  {
-    provide: WEBSITE_IMPLEMENTATIONS,
-    useValue,
-  };
+export const WebsiteImplProvider: Provider<Class<UnknownWebsite>[]> = {
+  provide: WEBSITE_IMPLEMENTATIONS,
+  useValue,
+};

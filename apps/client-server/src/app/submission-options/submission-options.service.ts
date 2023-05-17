@@ -51,8 +51,9 @@ export class SubmissionOptionsService {
   async create<T extends ISubmissionFields>(
     createSubmissionOptions: CreateSubmissionOptionsDto<T>
   ) {
-    const account = await this.accountService.findOne(
-      createSubmissionOptions.accountId
+    const account = await this.accountService.findById(
+      createSubmissionOptions.accountId,
+      { failOnMissing: true }
     );
 
     let submission: Submission<SubmissionMetadataType>;
@@ -166,7 +167,9 @@ export class SubmissionOptionsService {
   ): Promise<ValidationResult<ISubmissionFields>> {
     const { defaultOptions, options, accountId, submissionId } = validate;
     const submission = await this.submissionService.findOne(submissionId);
-    const account = await this.accountService.findOne(accountId);
+    const account = await this.accountService.findById(accountId, {
+      failOnMissing: true,
+    });
     const websiteInstance = this.websiteRegistry.findInstance(account);
 
     const postData = await this.getPostData(

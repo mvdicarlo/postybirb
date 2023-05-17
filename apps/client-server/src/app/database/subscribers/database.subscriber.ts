@@ -72,6 +72,7 @@ export class DatabaseUpdateSubscriber
   private publish(changeSet: ChangeSet<SubscribableEntities>[]) {
     const callbacks: Map<OnDatabaseUpdateCallback, EntityUpdateRecord[]> =
       new Map();
+    const seen: string[] = [];
     changeSet.forEach((change) => {
       // Retrieve any callbacks registered
       const proto = Object.getPrototypeOf(change.entity);
@@ -82,6 +83,14 @@ export class DatabaseUpdateSubscriber
             callbacks.set(cb, []);
           }
 
+          if (
+            !seen.includes(
+              `${proto.constructor}:${change.type}:${change.entity.id}`
+            )
+          )
+            seen.push(
+              `${proto.constructor}:${change.type}:${change.entity.id}`
+            );
           callbacks.set(cb, [
             ...callbacks.get(cb),
             [change.type, change.entity],

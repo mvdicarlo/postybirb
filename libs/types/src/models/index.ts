@@ -36,5 +36,6 @@ export * from './website/login-state.class';
 export * from './website/login-state.interface';
 export * from './website/post-data.type';
 export * from './website/website-data.interface';
+export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
