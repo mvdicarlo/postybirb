@@ -1,8 +1,8 @@
 import {
   FileSubmissionMetadata,
   ISubmissionMetadata,
-  ISubmissionFields,
-  ISubmissionAccountData,
+  IWebsiteFormFields,
+  IWebsiteOptions,
   ScheduleType,
 } from '@postybirb/types';
 
@@ -15,9 +15,9 @@ export interface IUpdateSubmissionDto {
 
   scheduleType: ScheduleType;
 
-  deletedOptions?: ISubmissionAccountData<ISubmissionFields>[];
+  deletedOptions?: IWebsiteOptions<IWebsiteFormFields>[];
 
-  newOrUpdatedOptions?: ISubmissionAccountData<ISubmissionFields>[];
+  newOrUpdatedOptions?: IWebsiteOptions<IWebsiteFormFields>[];
 
   metadata?: ISubmissionMetadata | FileSubmissionMetadata;
 }

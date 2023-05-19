@@ -7,12 +7,11 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Log, Logger } from '@postybirb/logger';
 import {
   FileSubmission,
   ISubmission,
-  ISubmissionFields,
   ISubmissionMetadata,
+  IWebsiteFormFields,
   MessageSubmission,
   PostData,
   SubmissionMetadataType,
@@ -21,35 +20,36 @@ import {
   ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
-import { Submission, SubmissionAccountData } from '../database/entities';
+import { PostyBirbService } from '../common/service/postybirb-service';
+import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { SubmissionService } from '../submission/services/submission.service';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { CreateSubmissionOptionsDto } from './dtos/create-submission-options.dto';
-import { UpdateSubmissionOptionsDto } from './dtos/update-submission-options.dto';
-import { ValidateSubmissionOptionsDto } from './dtos/validate-submission-options.dto';
+import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
+import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
-export class SubmissionOptionsService {
-  private readonly logger = Logger(SubmissionOptionsService.name);
-
+export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   constructor(
+    @InjectRepository(WebsiteOptions)
+    readonly repository: PostyBirbRepository<WebsiteOptions>,
     @InjectRepository(Submission)
     private readonly submissionRepository: PostyBirbRepository<
       Submission<SubmissionMetadataType>
     >,
-    @InjectRepository(SubmissionAccountData)
-    private readonly submissionOptionsRepository: PostyBirbRepository<SubmissionAccountData>,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService
-  ) {}
+  ) {
+    super(repository);
+  }
 
-  async create<T extends ISubmissionFields>(
-    createSubmissionOptions: CreateSubmissionOptionsDto<T>
+  async create<T extends IWebsiteFormFields>(
+    createSubmissionOptions: CreateWebsiteOptionsDto<T>
   ) {
     const account = await this.accountService.findById(
       createSubmissionOptions.accountId,
@@ -77,70 +77,35 @@ export class SubmissionOptionsService {
       );
     }
 
-    const submissionOptions = this.submissionOptionsRepository.create({
+    const submissionOptions = this.repository.create({
       submission,
       data: createSubmissionOptions.data,
       account,
     });
 
-    await this.submissionOptionsRepository.persistAndFlush(submissionOptions);
+    await this.repository.persistAndFlush(submissionOptions);
 
     return submissionOptions;
   }
 
-  async findOne(id: string): Promise<SubmissionAccountData> {
-    try {
-      return await this.submissionOptionsRepository.findOneOrFail(id);
-    } catch {
-      throw new NotFoundException(id);
-    }
-  }
-
-  /**
-   * Deleted a submission option matching the Id provided.
-   *
-   * @param {string} id
-   * @return {*}  {Promise<DeleteResult>}
-   */
-  @Log()
-  async remove(id: string): Promise<void> {
-    await this.submissionOptionsRepository.remove(await this.findOne(id));
-  }
-
-  /**
-   * Updates a submission option matching the Id provided.
-   *
-   * @param {string} id
-   * @param {UpdateSubmissionOptionsDto} updateSubmissionOptionsDto
-   * @return {*}  {Promise<boolean>}
-   */
-  @Log()
-  async update(
-    updateSubmissionOptionsDto: UpdateSubmissionOptionsDto
-  ): Promise<boolean> {
-    try {
-      const options = await this.findOne(updateSubmissionOptionsDto.id);
-      options.data = updateSubmissionOptionsDto.data;
-      await this.submissionOptionsRepository.flush();
-      this.submissionService.emit();
-      return true;
-    } catch (err) {
-      throw new BadRequestException(err);
-    }
+  update(id: string, update: UpdateWebsiteOptionsDto) {
+    this.logger.info(update, `Updating WebsiteOptions '${id}'`);
+    return this.repository.update(id, update);
   }
 
   /**
    * Creates the default submission option that stores shared data
    * across multiple submission options.
    *
-   * @param {Submission<IBaseSubmissionMetadata>} submission
-   * @return {*}  {SubmissionOptions<SafeObject>}
+   * @param {Submission<ISubmissionMetadata>} submission
+   * @param {string} title
+   * @return {*}  {WebsiteOptions}
    */
   createDefaultSubmissionOptions(
     submission: Submission<ISubmissionMetadata>,
     title: string
-  ): SubmissionAccountData {
-    const submissionOptions = this.submissionOptionsRepository.create({
+  ): WebsiteOptions {
+    const submissionOptions = this.repository.create({
       isDefault: true,
       submission,
       data: {
@@ -158,13 +123,12 @@ export class SubmissionOptionsService {
 
   /**
    * Validates a submission option against a website instance.
-   * @todo create a validation return type
-   * @param {ValidateSubmissionOptionsDto} validate
+   * @param {ValidateWebsiteOptionsDto} validate
    * @return {Promise<ValidationResult>}
    */
-  async validateSubmissionOption(
-    validate: ValidateSubmissionOptionsDto
-  ): Promise<ValidationResult<ISubmissionFields>> {
+  async validateWebsiteOption(
+    validate: ValidateWebsiteOptionsDto
+  ): Promise<ValidationResult<IWebsiteFormFields>> {
     const { defaultOptions, options, accountId, submissionId } = validate;
     const submission = await this.submissionService.findOne(submissionId);
     const account = await this.accountService.findById(accountId, {
@@ -183,7 +147,7 @@ export class SubmissionOptionsService {
     ) {
       return websiteInstance.onValidateFileSubmission(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        postData as unknown as PostData<FileSubmission, ISubmissionFields>
+        postData as unknown as PostData<FileSubmission, IWebsiteFormFields>
       );
     }
 
@@ -193,7 +157,7 @@ export class SubmissionOptionsService {
     ) {
       return websiteInstance.onValidateMessageSubmission(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        postData as unknown as PostData<MessageSubmission, ISubmissionFields>
+        postData as unknown as PostData<MessageSubmission, IWebsiteFormFields>
       );
     }
 
@@ -205,18 +169,19 @@ export class SubmissionOptionsService {
   /**
    * Creates the simple post data required to post and validate a submission.
    * NOTE: this will probably be split out later as real posting is considered.
+   *
+   * @private
    * @param {ISubmission} submission
-   * @param {IBaseWebsiteOptions} options
-   * @return {*}  {Promise<
-   *     PostData<ISubmission<IBaseSubmissionMetadata>, IBaseWebsiteOptions>
-   *   >}
+   * @param {IWebsiteFormFields} defaultOptions
+   * @param {IWebsiteFormFields} options
+   * @return {*}  {Promise<PostData<ISubmission<ISubmissionMetadata>, IWebsiteFormFields>>}
    */
   private async getPostData(
     submission: ISubmission,
-    defaultOptions: ISubmissionFields,
-    options: ISubmissionFields
-  ): Promise<PostData<ISubmission<ISubmissionMetadata>, ISubmissionFields>> {
-    const data: PostData<ISubmission, ISubmissionFields> = {
+    defaultOptions: IWebsiteFormFields,
+    options: IWebsiteFormFields
+  ): Promise<PostData<ISubmission<ISubmissionMetadata>, IWebsiteFormFields>> {
+    const data: PostData<ISubmission, IWebsiteFormFields> = {
       submission,
       options,
     };

@@ -1,4 +1,4 @@
-import { ISubmissionFields } from '../submission/submission-fields.interface';
+import { IWebsiteFormFields } from '../submission/website-form-fields.interface';
 import { ISubmission } from '../submission/submission.interface';
 
 /**
@@ -9,7 +9,7 @@ import { ISubmission } from '../submission/submission.interface';
  * @property {T} options - The submission options.
  * @property {S} submission - The submission data.
  */
-export type PostData<S extends ISubmission, T extends ISubmissionFields> = {
+export type PostData<S extends ISubmission, T extends IWebsiteFormFields> = {
   /**
    * The submission options.
    * @type {T}

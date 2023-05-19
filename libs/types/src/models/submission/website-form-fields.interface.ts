@@ -6,7 +6,7 @@ import { TagValue } from '../tag/tag-value.type';
  * An interface representing the base fields for a submission.
  * @interface
  */
-export interface ISubmissionFields {
+export interface IWebsiteFormFields {
   /**
    * The title of the submission.
    * @type {string|undefined}

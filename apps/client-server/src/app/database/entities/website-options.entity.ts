@@ -4,15 +4,14 @@ import {
   ManyToOne,
   Property,
   Rel,
+  serialize,
   wrap,
 } from '@mikro-orm/core';
 import {
-  IAccountDto,
-  ISubmissionAccountData,
-  ISubmissionAccountDataDto,
-  ISubmissionDto,
-  ISubmissionFields,
   ISubmissionMetadata,
+  IWebsiteFormFields,
+  IWebsiteOptions,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { Account } from './account.entity';
@@ -21,13 +20,11 @@ import { Submission } from './submission.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
-export class SubmissionAccountData<
-    T extends ISubmissionFields = ISubmissionFields
-  >
+export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
   extends PostyBirbEntity
-  implements ISubmissionAccountData<T>
+  implements IWebsiteOptions<T>
 {
-  [EntityRepositoryType]?: PostyBirbRepository<SubmissionAccountData<T>>;
+  [EntityRepositoryType]?: PostyBirbRepository<WebsiteOptions<T>>;
 
   @ManyToOne({
     entity: () => Submission,
@@ -47,13 +44,11 @@ export class SubmissionAccountData<
   @Property({ type: 'boolean', nullable: false })
   isDefault = false;
 
-  toJSON(): ISubmissionAccountDataDto<T> {
-    return {
-      ...super.toJSON(),
-      isDefault: this.isDefault,
-      data: { ...this.data },
-      account: wrap(this.account).toObject() as any,
-      submission: wrap(this.submission).toObject(['options']) as any,
-    };
+  toJSON(): WebsiteOptionsDto<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return serialize(this as any, {
+      populate: ['account'],
+      exclude: ['submission'],
+    }) as WebsiteOptionsDto<T>;
   }
 }

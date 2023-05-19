@@ -24,7 +24,7 @@ import { Submission } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
-import { SubmissionOptionsService } from '../../submission-options/submission-options.service';
+import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
@@ -48,8 +48,8 @@ export class SubmissionService
     @InjectRepository(Submission)
     repository: PostyBirbRepository<SubmissionEntity>,
     private readonly accountService: AccountService,
-    @Inject(forwardRef(() => SubmissionOptionsService))
-    private readonly submissionOptionsService: SubmissionOptionsService,
+    @Inject(forwardRef(() => WebsiteOptionsService))
+    private readonly submissionOptionsService: WebsiteOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway
@@ -202,8 +202,7 @@ export class SubmissionService
       updateSubmissionDto.newOrUpdatedOptions.forEach((option) => {
         if (option.createdAt) {
           optionChanges.push(
-            this.submissionOptionsService.update({
-              id: option.id,
+            this.submissionOptionsService.update(option.id, {
               data: option.data,
             })
           );

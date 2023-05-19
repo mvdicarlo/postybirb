@@ -10,12 +10,12 @@ import {
   IAccount,
   IAccountDto,
   ILoginState,
-  ISubmissionFields,
+  IWebsiteFormFields,
   IWebsiteInfo,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
-import { SubmissionAccountData } from './submission-account-data.entity';
+import { WebsiteOptions } from './website-options.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
@@ -31,13 +31,13 @@ export class Account extends PostyBirbEntity implements IAccount {
   @Property({ type: 'array', default: [], nullable: false })
   groups: string[] = [];
 
-  @OneToMany(() => SubmissionAccountData, (so) => so.account, {
+  @OneToMany(() => WebsiteOptions, (so) => so.account, {
     orphanRemoval: true,
     lazy: true,
     hidden: true,
   })
   submissionAccountData = new Collection<
-    SubmissionAccountData<ISubmissionFields>
+    WebsiteOptions<IWebsiteFormFields>
   >(this);
 
   @Property({ persist: false })

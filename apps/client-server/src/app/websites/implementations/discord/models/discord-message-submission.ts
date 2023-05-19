@@ -4,13 +4,13 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  ISubmissionFields,
+  IWebsiteFormFields,
   DescriptionValue,
   SubmissionRating,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class DiscordMessageSubmission implements ISubmissionFields {
+export class DiscordMessageSubmission implements IWebsiteFormFields {
   @TextField({
     label: 'Title',
     defaultValue: '',

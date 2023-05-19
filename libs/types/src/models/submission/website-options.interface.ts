@@ -1,17 +1,17 @@
 import { IAccount } from '../account/account.interface';
 import { IEntity } from '../database/entity.interface';
 import { ISubmissionMetadata } from './submission-metadata.interface';
-import { ISubmissionFields } from './submission-fields.interface';
+import { IWebsiteFormFields } from './website-form-fields.interface';
 import { ISubmission } from './submission.interface';
 
 /**
  * Represents options associated with a submission per account.
- * @interface ISubmissionAccountData
+ * @interface IWebsiteOptions
  * @template T - The type of fields associated with the submission.
  * @extends {IEntity}
  */
-export interface ISubmissionAccountData<
-  T extends ISubmissionFields = ISubmissionFields
+export interface IWebsiteOptions<
+  T extends IWebsiteFormFields = IWebsiteFormFields
 > extends IEntity {
   /**
    * The submission associated with the options.

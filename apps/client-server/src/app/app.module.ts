@@ -10,7 +10,7 @@ import { DirectoryWatchersModule } from './directory-watchers/directory-watchers
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { SettingsModule } from './settings/settings.module';
-import { SubmissionOptionsModule } from './submission-options/submission-options.module';
+import { WebsiteOptionsModule } from './submission-options/website-options.module';
 import { SubmissionModule } from './submission/submission.module';
 import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
@@ -31,7 +31,7 @@ import { WebsitesModule } from './websites/websites.module';
       exclude: ['/api*'],
     }),
     FormGeneratorModule,
-    SubmissionOptionsModule,
+    WebsiteOptionsModule,
     TagGroupsModule,
     TagConvertersModule,
     DirectoryWatchersModule,

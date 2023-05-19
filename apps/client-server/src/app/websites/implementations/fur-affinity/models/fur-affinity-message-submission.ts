@@ -6,15 +6,16 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  ISubmissionFields,
-  DefaultTagValue,
+  IWebsiteFormFields,
+  DefaultDescriptionValue,
   DescriptionValue,
   SubmissionRating,
   TagValue,
+  DefaultTagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class FurAffinityMessageSubmission implements ISubmissionFields {
+export class FurAffinityMessageSubmission implements IWebsiteFormFields {
   @TextField({
     label: 'Title',
     defaultValue: '',
@@ -28,10 +29,7 @@ export class FurAffinityMessageSubmission implements ISubmissionFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: '',
-    },
+    defaultValue: DefaultDescriptionValue,
     row: 3,
     column: 1,
   })

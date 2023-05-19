@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IValidateSubmissionOptionsDto } from '@postybirb/dto';
-import { ISubmissionFields } from '@postybirb/types';
+import {
+  IValidateWebsiteOptionsDto,
+  IWebsiteFormFields,
+} from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
-export class ValidateSubmissionOptionsDto
-  implements IValidateSubmissionOptionsDto
-{
+export class ValidateWebsiteOptionsDto implements IValidateWebsiteOptionsDto {
   @ApiProperty()
   @IsString()
   submissionId: string;
@@ -16,9 +16,9 @@ export class ValidateSubmissionOptionsDto
 
   @ApiProperty({ type: Object })
   @IsObject()
-  options: ISubmissionFields;
+  options: IWebsiteFormFields;
 
   @ApiProperty({ type: Object })
   @IsObject()
-  defaultOptions: ISubmissionFields;
+  defaultOptions: IWebsiteFormFields;
 }

@@ -1,9 +1,9 @@
 import {
   ISubmissionFile,
   ISubmissionMetadata,
-  ISubmissionAccountData,
+  IWebsiteOptions,
   ISubmissionScheduleInfo,
-  ISubmissionFields,
+  IWebsiteFormFields,
 } from '@postybirb/types';
 
 export interface ISubmissionDto<
@@ -14,7 +14,7 @@ export interface ISubmissionDto<
   id: string;
   isScheduled: boolean;
   metadata: T;
-  options: ISubmissionAccountData<ISubmissionFields>[];
+  options: IWebsiteOptions<IWebsiteFormFields>[];
   schedule: ISubmissionScheduleInfo;
   type: 'MESSAGE' | 'FILE';
   updatedAt: Date;

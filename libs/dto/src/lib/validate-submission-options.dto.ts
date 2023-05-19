@@ -1,7 +1,7 @@
-import { ISubmissionFields } from '@postybirb/types';
+import { IWebsiteFormFields } from '@postybirb/types';
 
 export interface IValidateSubmissionOptionsDto<
-  T extends ISubmissionFields = ISubmissionFields
+  T extends IWebsiteFormFields = IWebsiteFormFields
 > {
   submissionId: string;
 
@@ -9,5 +9,5 @@ export interface IValidateSubmissionOptionsDto<
 
   options: T;
 
-  defaultOptions: ISubmissionFields;
+  defaultOptions: IWebsiteFormFields;
 }

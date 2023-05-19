@@ -4,11 +4,12 @@ import {
   EntityRepositoryType,
   OneToMany,
   Property,
+  serialize,
 } from '@mikro-orm/core';
 import {
   ISubmission,
   ISubmissionDto,
-  ISubmissionFields,
+  IWebsiteFormFields,
   ISubmissionFile,
   ISubmissionFileDto,
   ISubmissionMetadata,
@@ -18,7 +19,7 @@ import {
 
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
-import { SubmissionAccountData } from './submission-account-data.entity';
+import { WebsiteOptions } from './website-options.entity';
 import { SubmissionFile } from './submission-file.entity';
 
 /** @inheritdoc */
@@ -33,14 +34,13 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   type: SubmissionType;
 
   @OneToMany({
-    entity: () => SubmissionAccountData,
+    entity: () => WebsiteOptions,
     mappedBy: 'submission',
     orphanRemoval: true,
   })
-  options = new Collection<
-    SubmissionAccountData<ISubmissionFields>,
-    ISubmission<T>
-  >(this);
+  options = new Collection<WebsiteOptions<IWebsiteFormFields>, ISubmission<T>>(
+    this
+  );
 
   @OneToMany(() => SubmissionFile, (sf) => sf.submission, {
     orphanRemoval: true,
@@ -57,16 +57,9 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   metadata: T;
 
   toJSON(): ISubmissionDto<T> {
-    return {
-      ...super.toJSON(),
-      type: this.type,
-      isScheduled: this.isScheduled,
-      schedule: this.schedule,
-      metadata: this.metadata,
-      files: this.files
-        .getItems()
-        .map((f) => (f as SubmissionFile).toJSON()) as ISubmissionFileDto[],
-      options: this.options.getItems().map((o) => o.toJson()),
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return serialize(this as any, {
+      populate: ['files', 'options'],
+    }) as ISubmissionDto<T>;
   }
 }

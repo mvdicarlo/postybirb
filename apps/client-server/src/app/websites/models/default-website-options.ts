@@ -6,11 +6,12 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  ISubmissionFields,
-  DefaultTagValue,
+  IWebsiteFormFields,
+  DefaultDescriptionValue,
   DescriptionValue,
   SubmissionRating,
   TagValue,
+  DefaultTagValue,
 } from '@postybirb/types';
 
 export const DefaultRatingOptions: RatingOption[] = [
@@ -32,7 +33,7 @@ export const DefaultRatingOptions: RatingOption[] = [
   },
 ];
 
-export class DefaultWebsiteOptions implements ISubmissionFields {
+export class DefaultWebsiteOptions implements IWebsiteFormFields {
   @TextField({
     label: 'Title',
     defaultValue: '',
@@ -42,7 +43,12 @@ export class DefaultWebsiteOptions implements ISubmissionFields {
   })
   title: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue, row: 2, column: 1 })
+  @TagField({
+    label: 'Tags',
+    defaultValue: DefaultTagValue,
+    row: 2,
+    column: 1,
+  })
   tags: TagValue;
 
   @DescriptionField({

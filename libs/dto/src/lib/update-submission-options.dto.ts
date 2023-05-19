@@ -1,6 +1,6 @@
-import { ISubmissionFields } from '@postybirb/types';
+import { IWebsiteFormFields } from '@postybirb/types';
 
-export interface IUpdateSubmissionOptionsDto<T extends ISubmissionFields> {
+export interface IUpdateSubmissionOptionsDto<T extends IWebsiteFormFields> {
   id: string;
   data: T;
 }

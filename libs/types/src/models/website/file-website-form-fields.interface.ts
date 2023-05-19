@@ -1,11 +1,11 @@
-import { ISubmissionFields } from '../submission/submission-fields.interface';
+import { IWebsiteFormFields } from '../submission/website-form-fields.interface';
 
 /**
  * File submission specific fields.
- * @interface FileWebsiteOptions
+ * @interface FileWebsiteFormFields
  * @extends {ISubmissionFields}
  */
-export interface FileWebsiteFields extends ISubmissionFields {
+export interface FileWebsiteFormFields extends IWebsiteFormFields {
   /**
    * Whether the thumbnail should be used.
    * TODO determine if this makes sense anymore

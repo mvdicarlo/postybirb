@@ -7,7 +7,7 @@ import { SubmissionService } from './submission.service';
 import { FileService } from '../../file/file.service';
 import { WebsiteImplProvider } from '../../websites/implementations';
 import { DatabaseModule } from '../../database/database.module';
-import { SubmissionOptionsService } from '../../submission-options/submission-options.service';
+import { WebsiteOptionsService } from '../../website-options/website-options.service';
 
 describe('SubmissionService', () => {
   let service: SubmissionService;
@@ -22,7 +22,7 @@ describe('SubmissionService', () => {
         MessageSubmissionService,
         AccountService,
         WebsiteRegistryService,
-        SubmissionOptionsService,
+        WebsiteOptionsService,
         WebsiteImplProvider,
       ],
     }).compile();

@@ -1,9 +1,9 @@
 import {
   ISubmission,
-  ISubmissionFields,
+  IWebsiteFormFields,
   ISubmissionScheduleInfo,
 } from '../../models';
-import { ISubmissionAccountDataDto } from './submission-account-data.dto';
+import { WebsiteOptionsDto } from './website-options.dto';
 
 export type IUpdateSubmissionDto = Pick<
   ISubmission,
@@ -11,5 +11,5 @@ export type IUpdateSubmissionDto = Pick<
 > &
   ISubmissionScheduleInfo & {
     deletedAccountDataIds?: string[];
-    newOrUpdatedOptions?: ISubmissionAccountDataDto<ISubmissionFields>[];
+    newOrUpdatedOptions?: WebsiteOptionsDto<IWebsiteFormFields>[];
   };

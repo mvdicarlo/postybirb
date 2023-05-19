@@ -1,6 +1,6 @@
 import {
   ILoginState,
-  ISubmissionFields,
+  IWebsiteFormFields,
   FileSubmission,
   MessageSubmission,
   PostData,
@@ -60,7 +60,7 @@ export default class TestWebsite
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, ISubmissionFields>,
+    postData: PostData<FileSubmission, IWebsiteFormFields>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');

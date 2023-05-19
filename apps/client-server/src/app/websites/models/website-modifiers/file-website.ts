@@ -1,6 +1,6 @@
 import {
   FileSubmission,
-  ISubmissionFields,
+  IWebsiteFormFields,
   PostData,
   ValidationResult,
 } from '@postybirb/types';
@@ -12,7 +12,7 @@ import { UnknownWebsite } from '../../website';
  * Generally this will always be used by each supported website.
  * @interface FileWebsite
  */
-export interface FileWebsite<T extends ISubmissionFields> {
+export interface FileWebsite<T extends IWebsiteFormFields> {
   FileModel: Class<T>;
   supportsFile: true;
   supportsAdditionalFiles: boolean;
@@ -31,9 +31,9 @@ export interface FileWebsite<T extends ISubmissionFields> {
 
 export function isFileWebsite(
   websiteInstance: UnknownWebsite
-): websiteInstance is FileWebsite<ISubmissionFields> & UnknownWebsite {
+): websiteInstance is FileWebsite<IWebsiteFormFields> & UnknownWebsite {
   return Boolean(
-    (websiteInstance as FileWebsite<ISubmissionFields> & UnknownWebsite)
+    (websiteInstance as FileWebsite<IWebsiteFormFields> & UnknownWebsite)
       .supportsFile
   );
 }

@@ -1,5 +1,5 @@
 import {
-  ISubmissionFields,
+  IWebsiteFormFields,
   MessageSubmission,
   PostData,
   ValidationResult,
@@ -12,7 +12,7 @@ import { UnknownWebsite } from '../../website';
  * Defines methods for allowing message (notification, journal, blob, etc.) based posting.
  * @interface MessageWebsite
  */
-export interface MessageWebsite<T extends ISubmissionFields> {
+export interface MessageWebsite<T extends IWebsiteFormFields> {
   MessageModel: Class<T>;
   supportsMessage: true;
 
@@ -30,9 +30,9 @@ export interface MessageWebsite<T extends ISubmissionFields> {
 
 export function isMessageWebsite(
   websiteInstance: UnknownWebsite
-): websiteInstance is MessageWebsite<ISubmissionFields> & UnknownWebsite {
+): websiteInstance is MessageWebsite<IWebsiteFormFields> & UnknownWebsite {
   return Boolean(
-    (websiteInstance as MessageWebsite<ISubmissionFields> & UnknownWebsite)
+    (websiteInstance as MessageWebsite<IWebsiteFormFields> & UnknownWebsite)
       .supportsMessage
   );
 }

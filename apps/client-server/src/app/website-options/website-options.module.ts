@@ -3,8 +3,8 @@ import { AccountModule } from '../account/account.module';
 import { DatabaseModule } from '../database/database.module';
 import { SubmissionModule } from '../submission/submission.module';
 import { WebsitesModule } from '../websites/websites.module';
-import { SubmissionOptionsController } from './submission-options.controller';
-import { SubmissionOptionsService } from './submission-options.service';
+import { WebsiteOptionsController } from './website-options.controller';
+import { WebsiteOptionsService } from './website-options.service';
 
 @Module({
   imports: [
@@ -13,8 +13,8 @@ import { SubmissionOptionsService } from './submission-options.service';
     AccountModule,
     DatabaseModule,
   ],
-  providers: [SubmissionOptionsService],
-  controllers: [SubmissionOptionsController],
-  exports: [SubmissionOptionsService],
+  providers: [WebsiteOptionsService],
+  controllers: [WebsiteOptionsController],
+  exports: [WebsiteOptionsService],
 })
-export class SubmissionOptionsModule {}
+export class WebsiteOptionsModule {}

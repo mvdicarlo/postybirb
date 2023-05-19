@@ -2,9 +2,9 @@ import { Collection } from '@mikro-orm/core';
 import { SubmissionType } from '../../enums';
 import { IEntity } from '../database/entity.interface';
 import { ISubmissionMetadata } from './submission-metadata.interface';
-import { ISubmissionFields } from './submission-fields.interface';
+import { IWebsiteFormFields } from './website-form-fields.interface';
 import { ISubmissionFile } from './submission-file.interface';
-import { ISubmissionAccountData } from './submission-account-data.interface';
+import { IWebsiteOptions } from './website-options.interface';
 import { ISubmissionScheduleInfo } from './submission-schedule-info.interface';
 
 /**
@@ -24,9 +24,9 @@ export interface ISubmission<
 
   /**
    * The options associated with the submission.
-   * @type {Collection<ISubmissionAccountData<ISubmissionFields>>}
+   * @type {Collection<IWebsiteOptions<IWebsiteFormFields>>}
    */
-  options: Collection<ISubmissionAccountData<ISubmissionFields>>;
+  options: Collection<IWebsiteOptions<IWebsiteFormFields>>;
 
   /**
    * Indicates whether the submission is scheduled.

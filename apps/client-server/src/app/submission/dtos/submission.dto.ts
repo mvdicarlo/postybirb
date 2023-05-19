@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  ISubmissionAccountDataDto,
+  WebsiteOptionsDto,
   ISubmissionDto,
-  ISubmissionFields,
+  IWebsiteFormFields,
   ISubmissionFileDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
@@ -29,7 +29,7 @@ export class SubmissionDto<T extends ISubmissionMetadata = ISubmissionMetadata>
    */
   @ApiProperty()
   @IsArray()
-  options: ISubmissionAccountDataDto<ISubmissionFields>[];
+  options: WebsiteOptionsDto<IWebsiteFormFields>[];
 
   /**
    * Whether or not the submission is actively scheduled.

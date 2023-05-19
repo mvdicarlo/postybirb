@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { formBuilder } from '@postybirb/form-builder';
-import { ISubmissionFields, SubmissionType } from '@postybirb/types';
+import { IWebsiteFormFields, SubmissionType } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -39,7 +39,7 @@ export class FormGeneratorService {
     const data = instance.getWebsiteData();
 
     // Get form model
-    let FormModel: Class<ISubmissionFields> = null;
+    let FormModel: Class<IWebsiteFormFields> = null;
     if (request.type === SubmissionType.MESSAGE && isMessageWebsite(instance)) {
       FormModel = instance.MessageModel;
     }
