@@ -9,18 +9,17 @@ import {
 import {
   ISubmission,
   ISubmissionDto,
-  IWebsiteFormFields,
   ISubmissionFile,
-  ISubmissionFileDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  IWebsiteFormFields,
   SubmissionType,
 } from '@postybirb/types';
 
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
-import { WebsiteOptions } from './website-options.entity';
 import { SubmissionFile } from './submission-file.entity';
+import { WebsiteOptions } from './website-options.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })

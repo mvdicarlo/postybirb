@@ -47,7 +47,7 @@ export abstract class PostyBirbService<
     const exists = await this.repository.findOne(where);
     if (exists) {
       const err = new BadRequestException(
-        `An entity with query '${JSON.stringify(where)}' already exists.`
+        `An entity with query '${JSON.stringify(where)}' already exists`
       );
       this.logger.error(err);
       throw err;
@@ -65,7 +65,7 @@ export abstract class PostyBirbService<
   }
 
   public remove(id: string) {
-    this.logger.info({ id }, `Removing entity '${id}'.`);
+    this.logger.info({ id }, `Removing entity '${id}'`);
     return this.repository.delete(id);
   }
 
