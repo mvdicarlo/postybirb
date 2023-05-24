@@ -66,7 +66,7 @@ export class FileSubmissionService
   }
 
   async replaceThumbnailFile(fileId: string, file: MulterFileInfo) {
-    return this.fileService.replaceFileThumbnail(fileId, file);
+    return this.fileService.update(file, fileId, true);
   }
 
   async removeFile(submission: FileSubmission, fileId: string) {
@@ -86,6 +86,6 @@ export class FileSubmissionService
       throw new BadRequestException('File not found on submission');
     }
 
-    await this.fileService.replacePrimaryFile(fileId, file);
+    await this.fileService.update(file, fileId, false);
   }
 }

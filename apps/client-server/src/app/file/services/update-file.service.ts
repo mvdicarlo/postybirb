@@ -9,29 +9,24 @@ import { Logger } from '@postybirb/logger';
 import { FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { async as hash } from 'hasha';
-import {
-  AltFile,
-  PrimaryFile,
-  SubmissionFile,
-  ThumbnailFile,
-} from '../../database/entities';
+import { SubmissionFile } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
+import { CreateFileService } from './create-file.service';
 
+/**
+ * A Service for updating existing SubmissionFile entities.
+ * @export
+ */
 @Injectable()
 export class UpdateFileService {
   private readonly logger = Logger(UpdateFileService.name);
 
   constructor(
+    private readonly createFileService: CreateFileService,
     @InjectRepository(SubmissionFile)
-    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
-    @InjectRepository(PrimaryFile)
-    private readonly primaryFileRepository: PostyBirbRepository<PrimaryFile>,
-    @InjectRepository(AltFile)
-    private readonly altFileRepository: PostyBirbRepository<AltFile>,
-    @InjectRepository(ThumbnailFile)
-    private readonly thumbnailRepository: PostyBirbRepository<ThumbnailFile>
+    private readonly fileRepository: PostyBirbRepository<SubmissionFile>
   ) {}
 
   /**
@@ -66,7 +61,7 @@ export class UpdateFileService {
   ) {
     const thumbnailDetails = await this.getImageDetails(file, buf);
     if (!submissionFile.thumbnail) {
-      submissionFile.thumbnail = this.createFileBufferEntity(
+      submissionFile.thumbnail = this.createFileService.createFileBufferEntity(
         submissionFile,
         thumbnailDetails.buffer,
         'thumbnail'
@@ -142,7 +137,11 @@ export class UpdateFileService {
         buffer: thumbnailBuf,
         width: thumbnailWidth,
         height: thumbnailHeight,
-      } = await this.generateThumbnail(sharpInstance, height, width);
+      } = await this.createFileService.generateThumbnail(
+        sharpInstance,
+        height,
+        width
+      );
       submissionFile.thumbnail.buffer = thumbnailBuf;
       submissionFile.thumbnail.width = thumbnailWidth;
       submissionFile.thumbnail.height = thumbnailHeight;

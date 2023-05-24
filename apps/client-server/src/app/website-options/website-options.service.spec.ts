@@ -11,6 +11,8 @@ import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { DatabaseModule } from '../database/database.module';
 import { FileService } from '../file/file.service';
+import { CreateFileService } from '../file/services/create-file.service';
+import { UpdateFileService } from '../file/services/update-file.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
@@ -51,6 +53,8 @@ describe('WebsiteOptionsService', () => {
       imports: [DatabaseModule],
       providers: [
         SubmissionService,
+        CreateFileService,
+        UpdateFileService,
         FileService,
         SubmissionService,
         FileSubmissionService,
@@ -127,5 +131,79 @@ describe('WebsiteOptionsService', () => {
       createdAt: record.createdAt.toISOString(),
       updatedAt: record.updatedAt.toISOString(),
     });
+  });
+
+  it('should remove entity', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+
+    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    dto.data = {
+      title: 'title',
+      tags: DefaultTagValue,
+      description: DefaultDescriptionValue,
+      rating: SubmissionRating.GENERAL,
+    };
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
+
+    const record = await service.create(dto);
+    expect(await service.findAll()).toHaveLength(2); // 2 because default
+
+    await service.remove(record.id);
+    expect(await service.findAll()).toHaveLength(1);
+  });
+
+  it('should remove entity when parent is removed', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+
+    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    dto.data = {
+      title: 'title',
+      tags: DefaultTagValue,
+      description: DefaultDescriptionValue,
+      rating: SubmissionRating.GENERAL,
+    };
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
+
+    await service.create(dto);
+    expect(await service.findAll()).toHaveLength(2); // 2 because default
+
+    await submissionService.remove(submission.id);
+    expect(await service.findAll()).toHaveLength(0);
+  });
+
+  it('should update entity', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+
+    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    dto.data = {
+      title: 'title',
+      tags: DefaultTagValue,
+      description: DefaultDescriptionValue,
+      rating: SubmissionRating.GENERAL,
+    };
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
+
+    const record = await service.create(dto);
+    expect(record.account.id).toEqual(dto.accountId);
+    expect(record.isDefault).toEqual(false);
+    expect(record.data).toEqual(dto.data);
+    expect(record.submission.id).toEqual(dto.submissionId);
+
+    const update = await service.update(record.id, {
+      data: {
+        title: 'title updated',
+        tags: DefaultTagValue,
+        description: DefaultDescriptionValue,
+        rating: SubmissionRating.GENERAL,
+      },
+    });
+
+    expect(update.data.title).toEqual('title updated');
   });
 });

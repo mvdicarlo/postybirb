@@ -1,25 +1,8 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Res,
-  UploadedFiles,
-  UseInterceptors,
-} from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import {
-  ApiBody,
-  ApiConsumes,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Controller, Get, Param, Res } from '@nestjs/common';
+import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { IFileBuffer } from '@postybirb/types';
 import { getType } from 'mime';
 import { FileService } from './file.service';
-import { MulterFileInfo } from './models/multer-file-info';
 
 @ApiTags('file')
 @Controller('file')
@@ -30,59 +13,21 @@ export class FileController {
   @ApiOkResponse()
   @ApiNotFoundResponse()
   async getThumbnail(@Param('id') id: string, @Res() response) {
-    const file = await this.service.findFile(id, ['thumbnail']);
+    const file = await this.service.findFile(id);
     let imageProvidingEntity: IFileBuffer | null = null;
     if (file.thumbnail) {
       imageProvidingEntity = file.thumbnail;
     }
-    response.contentType(imageProvidingEntity.mimeType);
-    response.send(imageProvidingEntity.buffer);
+    response.contentType(imageProvidingEntity?.mimeType ?? 'image/jpeg');
+    response.send(imageProvidingEntity?.buffer ?? Buffer.from([]));
   }
 
   @Get('file/:id')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   async getImage(@Param('id') id: string, @Res() response) {
-    const { file } = await this.service.findFile(id, ['file']);
+    const { file } = await this.service.findFile(id);
     response.contentType(getType(file.fileName));
     response.send(file.buffer);
-  }
-
-  @Get('entity/:id')
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  getFile(@Param('id') id: string) {
-    return this.service.findFile(id);
-  }
-
-  @Delete(':id')
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  delete(@Param('id') id: string) {
-    return this.service.remove(id);
-  }
-
-  @Post('upload')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
-  async uploadFile(@UploadedFiles() files: MulterFileInfo[]) {
-    const results = await Promise.all(
-      files.map((file) => this.service.create(file))
-    );
-
-    // TODO check this works correctly
-    const result = results.map((r) => r.toJSON());
-    return result;
   }
 }

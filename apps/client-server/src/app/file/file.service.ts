@@ -19,8 +19,6 @@ import { UpdateFileService } from './services/update-file.service';
 /**
  * Service that handles storing file data into database.
  * @todo text encoding parsing and file name conversion (no periods)
- *
- * @class FileService
  */
 @Injectable()
 export class FileService {
@@ -74,12 +72,19 @@ export class FileService {
    */
   public async update(
     file: MulterFileInfo,
-    submission: FileSubmission
+    submissionFileId: string,
+    forThumbnail: boolean
   ): Promise<SubmissionFile> {
-    return this.queue.push({ type: TaskType.UPDATE, file, submission });
+    return this.queue.push({
+      type: TaskType.UPDATE,
+      file,
+      submissionFileId,
+      target: forThumbnail ? 'thumbnail' : undefined,
+    });
   }
 
   private async doTask(task: Task): Promise<SubmissionFile> {
+    task.file.originalname = this.sanitizeFilename(task.file.originalname);
     const buf: Buffer = await this.getFile(task.file.path, task.file.origin);
     switch (task.type) {
       case TaskType.CREATE:
@@ -100,6 +105,19 @@ export class FileService {
     }
   }
 
+  /**
+   * Removes periods from the filename.
+   * There is some website that doesn't like them.
+   *
+   * @param {string} filename
+   * @return {*}  {string}
+   */
+  private sanitizeFilename(filename: string): string {
+    const nameParts = filename.split('.');
+    const ext = nameParts.pop();
+    return `${nameParts.join('_')}.${ext}`;
+  }
+
   private async getFile(path: string, taskOrigin: TaskOrigin): Promise<Buffer> {
     switch (taskOrigin) {
       case 'directory-watcher':
@@ -108,5 +126,14 @@ export class FileService {
         // Approved location
         return read(path);
     }
+  }
+
+  /**
+   * Returns file by Id.
+   *
+   * @param {string} id
+   */
+  public async findFile(id: string): Promise<SubmissionFile> {
+    return this.fileRepository.findById(id, { failOnMissing: true });
   }
 }

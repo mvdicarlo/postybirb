@@ -17,6 +17,10 @@ import { PostyBirbRepository } from '../../database/repositories/postybirb-repos
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 
+/**
+ * A Service that defines operations for creating a SubmissionFile.
+ * @class CreateFileService
+ */
 @Injectable()
 export class CreateFileService {
   private readonly logger = Logger(CreateFileService.name);
@@ -67,6 +71,14 @@ export class CreateFileService {
     }
   }
 
+  /**
+   * Creates a SubmissionFile with pre-populated fields.
+   *
+   * @param {MulterFileInfo} file
+   * @param {FileSubmission} submission
+   * @param {Buffer} buf
+   * @return {*}  {Promise<SubmissionFile>}
+   */
   private async createSubmissionFile(
     file: MulterFileInfo,
     submission: FileSubmission,
@@ -87,6 +99,15 @@ export class CreateFileService {
     return entity;
   }
 
+  /**
+   * Populates SubmissionFile with Image specific fields.
+   * Width, Height, Thumbnail.
+   *
+   * @param {SubmissionFile} entity
+   * @param {MulterFileInfo} file
+   * @param {Buffer} buf
+   * @return {*}  {Promise<void>}
+   */
   private async populateAsImageFile(
     entity: SubmissionFile,
     file: MulterFileInfo,
@@ -111,7 +132,7 @@ export class CreateFileService {
    * @param {MulterFileInfo} file
    * @return {*}  {Promise<IFileBuffer>}
    */
-  private async createFileThumbnail(
+  public async createFileThumbnail(
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
     sharpInstance: Sharp
@@ -139,7 +160,15 @@ export class CreateFileService {
     return thumbnailEntity;
   }
 
-  private async generateThumbnail(
+  /**
+   * Generates a thumbnail for display at specific dimension requirements.
+   *
+   * @param {Sharp} sharpInstance
+   * @param {number} fileHeight
+   * @param {number} fileWidth
+   * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer }>}
+   */
+  public async generateThumbnail(
     sharpInstance: Sharp,
     fileHeight: number,
     fileWidth: number
@@ -177,7 +206,7 @@ export class CreateFileService {
    * @param {string} type - thumbnail/alt/primary
    * @return {*}  {IFileBuffer}
    */
-  private createFileBufferEntity(
+  public createFileBufferEntity(
     fileEntity: SubmissionFile,
     buf: Buffer,
     type: 'thumbnail' | 'alt' | 'primary'

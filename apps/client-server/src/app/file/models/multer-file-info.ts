@@ -14,6 +14,10 @@ export interface MulterFileInfo {
   filename: string;
   path: string;
   buffer?: Buffer;
+  /**
+   * Internal origin, empty when external.
+   * @type {TaskOrigin}
+   */
   origin?: TaskOrigin;
 }
 

@@ -53,7 +53,9 @@ export class PostyBirbRepository<
   }
 
   async findById(id: string, options?: FindOptions) {
-    const entity = await this.findOne({ id } as FilterQuery<T>);
+    const entity = await this.findOne({ id } as FilterQuery<T>, {
+      populate: true,
+    });
 
     if (!entity && options?.failOnMissing) {
       throw new NotFoundException(`Unable to find entity Id '${id}'`);

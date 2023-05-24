@@ -7,6 +7,7 @@ import {
   OneToOne,
   Property,
   Rel,
+  serialize,
   wrap,
 } from '@mikro-orm/core';
 import {
@@ -85,24 +86,7 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
   props: ISubmissionFileProps = DefaultSubmissionFileProps;
 
   toJSON(): ISubmissionFileDto {
-    return {
-      ...super.toJSON(),
-      fileName: this.fileName,
-      mimeType: this.mimeType,
-      size: this.size,
-      width: this.width,
-      height: this.height,
-      hash: this.hash,
-      hasThumbnail: this.hasThumbnail,
-      props: this.props,
-      file: wrap(this.file).toObject() as any,
-      altFile: this.altFile
-        ? (wrap(this.altFile).toObject() as any)
-        : undefined,
-      thumbnail: this.thumbnail
-        ? (wrap(this.thumbnail).toObject() as any)
-        : undefined,
-    };
+    return serialize(this) as ISubmissionFileDto;
   }
 }
 
@@ -138,12 +122,7 @@ export class ThumbnailFile extends PostyBirbEntity implements IFileBuffer {
   hasThumbnail: boolean;
 
   toJSON(): ISubSubmissionFileDto {
-    return {
-      ...super.toJSON(),
-      fileName: this.fileName,
-      mimeType: this.mimeType,
-      size: this.size,
-    };
+    return serialize(this) as ISubSubmissionFileDto;
   }
 }
 
@@ -176,12 +155,7 @@ export class PrimaryFile extends PostyBirbEntity implements IFileBuffer {
   height: number;
 
   toJSON(): ISubSubmissionFileDto {
-    return {
-      ...super.toJSON(),
-      fileName: this.fileName,
-      mimeType: this.mimeType,
-      size: this.size,
-    };
+    return serialize(this) as ISubSubmissionFileDto;
   }
 }
 
@@ -214,11 +188,6 @@ export class AltFile extends PostyBirbEntity implements IFileBuffer {
   height: number;
 
   toJSON(): ISubSubmissionFileDto {
-    return {
-      ...super.toJSON(),
-      fileName: this.fileName,
-      mimeType: this.mimeType,
-      size: this.size,
-    };
+    return serialize(this) as ISubSubmissionFileDto;
   }
 }
