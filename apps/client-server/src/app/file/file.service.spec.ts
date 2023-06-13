@@ -34,7 +34,7 @@ describe('FileService', () => {
     return record;
   }
 
-  function createMulterData(): MulterFileInfo {
+  function createMulterData(path: string): MulterFileInfo {
     return {
       fieldname: 'file',
       originalname: 'powerbear.jpg',
@@ -43,12 +43,19 @@ describe('FileService', () => {
       size: testFile.length,
       destination: '',
       filename: 'powerbear.jpg',
-      path: `${PostyBirbDirectories.DATA_DIRECTORY}/test-file.jpg`,
+      path,
       origin: undefined,
     };
   }
 
+  function setup(): string {
+    const path = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.jpg`;
+    writeSync(path, testFile);
+    return path;
+  }
+
   beforeAll(() => {
+    PostyBirbDirectories.initializeDirectories();
     testFile = readFileSync(join(__dirname, '../test-files/powerbear.jpg'));
   });
 
@@ -78,7 +85,6 @@ describe('FileService', () => {
     } catch {
       // none
     }
-    writeSync(`${PostyBirbDirectories.DATA_DIRECTORY}/test-file.jpg`, testFile);
   });
 
   it('should be defined', () => {
@@ -86,8 +92,9 @@ describe('FileService', () => {
   });
 
   it('should create submission file', async () => {
+    const path = setup();
     const submission = await createSubmission();
-    const fileInfo = createMulterData();
+    const fileInfo = createMulterData(path);
     const file = await service.create(fileInfo, submission as FileSubmission);
     expect(file.file).toBeDefined();
     expect(file.thumbnail).toBeDefined();
@@ -103,5 +110,41 @@ describe('FileService', () => {
     expect(file.file.parent.id).toEqual(file.id);
     expect(file.file.mimeType).toEqual(fileInfo.mimetype);
     expect(file.file.buffer).toEqual(testFile);
-  }, 10_000);
+  });
+
+  it('should not update submission file when hash is same', async () => {
+    const path = setup();
+    const submission = await createSubmission();
+    const fileInfo = createMulterData(path);
+    const file = await service.create(fileInfo, submission as FileSubmission);
+    expect(file.file).toBeDefined();
+
+    const path2 = setup();
+    const updateFileInfo = {
+      fieldname: 'file',
+      originalname: 'powerbear.jpg',
+      encoding: '',
+      mimetype: 'image/png',
+      size: testFile.length,
+      destination: '',
+      filename: 'powerbear.jpg',
+      path: path2,
+      origin: undefined,
+    };
+    const updatedFile = await service.update(updateFileInfo, file.id, false);
+    expect(updatedFile.file).toBeDefined();
+    expect(updatedFile.thumbnail).toBeDefined();
+    expect(updatedFile.fileName).toBe(updateFileInfo.originalname);
+    expect(updatedFile.size).toBe(updateFileInfo.size);
+    expect(updatedFile.hasThumbnail).toBe(true);
+    expect(updatedFile.props.hasCustomThumbnail).toBe(false);
+    expect(updatedFile.height).toBe(100);
+    expect(updatedFile.width).toBe(100);
+    expect(updatedFile.file.size).toBe(updateFileInfo.size);
+    expect(updatedFile.file.height).toBe(100);
+    expect(updatedFile.file.width).toBe(100);
+    expect(updatedFile.file.parent.id).toEqual(file.id);
+    expect(updatedFile.file.mimeType).not.toEqual(updateFileInfo.mimetype);
+    expect(updatedFile.file.buffer).toEqual(testFile);
+  });
 });

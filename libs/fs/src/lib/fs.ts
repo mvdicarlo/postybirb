@@ -11,7 +11,7 @@ import { POSTYBIRB_DIRECTORY } from './directories';
 
 function validatePath(path: string) {
   if (!path.startsWith(POSTYBIRB_DIRECTORY)) {
-    throw new Error('Cannot write outside of PostyBirb directory');
+    throw new Error('Cannot read/write outside of PostyBirb directory');
   }
 }
 
