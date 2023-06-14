@@ -51,7 +51,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
   }
 
   /**
-   * Reads the directory for files that don't have the PROCESSED_NAME tag.
+   * Reads directory for processable files.
    *
    * @param {DirectoryWatcher} watcher
    */
