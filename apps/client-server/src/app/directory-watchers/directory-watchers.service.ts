@@ -2,8 +2,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
-import { rename } from 'fs';
-import { readdir } from 'fs/promises';
+import { readFile, readdir, stat, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -11,12 +10,14 @@ import { DirectoryWatcher } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { SubmissionService } from '../submission/services/submission.service';
+import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
-import { IsTestEnvironment } from '../utils/test.util';
 
-const PROCESSED_NAME = 'pb_read';
+type WatcherMetadata = {
+  read: string[];
+};
 
 /**
  * A directory watcher service that reads created watchers and checks
@@ -55,10 +56,40 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
    * @param {DirectoryWatcher} watcher
    */
   private async read(watcher: DirectoryWatcher) {
-    const filesInDirectory = await readdir(watcher.path);
-    filesInDirectory
-      .filter((file) => !file.startsWith(PROCESSED_NAME))
-      .forEach((file) => this.processFile(watcher, file));
+    let meta: WatcherMetadata = { read: [] };
+    const metaFileName = join(watcher.path, 'pb-meta.json');
+    if ((await stat(metaFileName)).isFile()) {
+      meta = JSON.parse(
+        (await readFile(metaFileName)).toString()
+      ) as WatcherMetadata;
+      if (!meta.read) {
+        meta.read = []; // protect user modification
+      }
+    }
+
+    const filesInDirectory = (await readdir(watcher.path))
+      .filter((file) => file !== 'pb-meta.json')
+      .filter((file) => !meta.read.includes(file));
+    await Promise.allSettled(
+      filesInDirectory.map((file) =>
+        this.processFile(watcher, file).then(() => {
+          // Only update list when successful
+          meta.read.push(file);
+        })
+      )
+    );
+
+    // Update metadata after all is processed
+    writeFile(metaFileName, JSON.stringify(meta, null, 1))
+      .then(() =>
+        this.logger.debug({}, `Metadata updated for '${metaFileName}'`)
+      )
+      .catch((err) => {
+        this.logger.error(
+          err,
+          `Failed to update metadata for '${metaFileName}'`
+        );
+      });
   }
 
   /**
@@ -80,7 +111,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
       filename: fileName,
       path: filePath,
     };
-    this.logger.info(`Processing file ${filePath}`);
+    this.logger.debug(`Processing file ${filePath}`);
     switch (watcher.importAction) {
       case DirectoryWatcherImportAction.NEW_SUBMISSION:
         await this.submissionService.create(
@@ -99,6 +130,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
             await this.submissionService.appendFile(submissionId, multerInfo);
           } catch (err) {
             this.logger.error(err, 'Unable to append file');
+            throw err;
           }
         }
 
@@ -106,16 +138,6 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
       default:
         break;
     }
-
-    rename(
-      filePath,
-      join(watcher.path, `${PROCESSED_NAME}_${fileName}`),
-      (err) => {
-        if (err) {
-          this.logger.error(err);
-        }
-      }
-    );
   }
 
   async create(
