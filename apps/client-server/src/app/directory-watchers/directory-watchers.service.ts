@@ -14,6 +14,7 @@ import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
+import { FileSubmissionService } from '../submission/services/file-submission.service';
 
 type WatcherMetadata = {
   read: string[];
@@ -34,6 +35,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
     @InjectRepository(DirectoryWatcher)
     repository: PostyBirbRepository<DirectoryWatcher>,
     private readonly submissionService: SubmissionService,
+    private readonly fileSubmissionService: FileSubmissionService,
     @Optional() webSocket?: WSGateway
   ) {
     super(repository, webSocket);
@@ -127,7 +129,10 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
         for (const submissionId of watcher.submissionIds ?? []) {
           try {
             // eslint-disable-next-line no-await-in-loop
-            await this.submissionService.appendFile(submissionId, multerInfo);
+            await this.fileSubmissionService.appendFile(
+              submissionId,
+              multerInfo
+            );
           } catch (err) {
             this.logger.error(err, 'Unable to append file');
             throw err;

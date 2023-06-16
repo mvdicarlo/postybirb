@@ -130,7 +130,9 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     validate: ValidateWebsiteOptionsDto
   ): Promise<ValidationResult<IWebsiteFormFields>> {
     const { defaultOptions, options, accountId, submissionId } = validate;
-    const submission = await this.submissionService.findOne(submissionId);
+    const submission = await this.submissionService.findById(submissionId, {
+      failOnMissing: true,
+    });
     const account = await this.accountService.findById(accountId, {
       failOnMissing: true,
     });

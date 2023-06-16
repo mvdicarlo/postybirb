@@ -1,0 +1,112 @@
+import {
+  BadRequestException,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  UploadedFile,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import {
+  ApiBadRequestResponse,
+  ApiConsumes,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { SubmissionId } from '@postybirb/types';
+import { MulterFileInfo } from '../file/models/multer-file-info';
+import { FileSubmissionService } from './services/file-submission.service';
+import { SubmissionService } from './services/submission.service';
+
+type Target = 'file' | 'thumbnail';
+
+/**
+ * Specific REST operations for File Submissions.
+ * i.e. as thumbnail changes.
+ * @class FileSubmissionController
+ */
+@ApiTags('file-submission')
+@Controller('file-submission')
+export class FileSubmissionController {
+  constructor(
+    private service: FileSubmissionService,
+    private submissionService: SubmissionService
+  ) {}
+
+  private findOne(id: SubmissionId) {
+    return this.submissionService
+      .findById(id)
+      .then((record) => record.toJSON());
+  }
+
+  @Post('add/:target/:id')
+  @ApiConsumes('multipart/form-data')
+  @ApiOkResponse({ description: 'File appended.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
+  async appendFile(
+    @Param('target') target: Target,
+    @Param('id') id: SubmissionId,
+    @UploadedFiles() files: MulterFileInfo[]
+  ) {
+    switch (target) {
+      case 'file':
+        await Promise.all(
+          files.map((file) => this.service.appendFile(id, file))
+        );
+        break;
+      case 'thumbnail':
+      default:
+        throw new BadRequestException(`Unsupported add target '${target}'`);
+    }
+
+    return this.findOne(id);
+  }
+
+  @Post('replace/:target/:id/:fileId')
+  @ApiConsumes('multipart/form-data')
+  @ApiOkResponse({ description: 'File replaced.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  @UseInterceptors(FileInterceptor('file', { preservePath: true }))
+  async replaceFile(
+    @Param('target') target: Target,
+    @Param('id') id: SubmissionId,
+    @Param('fileId') fileId: string,
+    @UploadedFile() file: MulterFileInfo
+  ) {
+    switch (target) {
+      case 'file':
+        await this.service.replaceFile(id, fileId, file);
+        break;
+      case 'thumbnail':
+        await this.service.replaceThumbnail(id, fileId, file);
+        break;
+      default:
+        throw new BadRequestException(`Unsupported replace target '${target}'`);
+    }
+
+    return this.findOne(id);
+  }
+
+  @Delete('remove/:target/:id/:fileId')
+  @ApiOkResponse({ description: 'File removed.' })
+  @ApiBadRequestResponse({ description: 'Bad request made.' })
+  async removeFile(
+    @Param('target') target: Target,
+    @Param('id') id: SubmissionId,
+    @Param('fileId') fileId: string
+  ) {
+    switch (target) {
+      case 'file':
+        await this.service.removeFile(id, fileId);
+        break;
+      case 'thumbnail':
+      default:
+        throw new BadRequestException(`Unsupported remove target '${target}'`);
+    }
+
+    return this.findOne(id);
+  }
+}

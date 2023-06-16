@@ -7,9 +7,9 @@ import { WebsiteOptionsDto } from './website-options.dto';
 
 export type IUpdateSubmissionDto = Pick<
   ISubmission,
-  'id' | 'isScheduled' | 'metadata'
+  'isScheduled' | 'metadata'
 > &
   ISubmissionScheduleInfo & {
-    deletedAccountDataIds?: string[];
+    deletedWebsiteOptions?: string[];
     newOrUpdatedOptions?: WebsiteOptionsDto<IWebsiteFormFields>[];
   };

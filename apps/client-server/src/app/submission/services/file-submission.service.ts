@@ -1,9 +1,22 @@
+import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FileMetadataFields, FileSubmission } from '@postybirb/types';
+import {
+  FileMetadataFields,
+  FileSubmission,
+  ISubmission,
+  SubmissionMetadataType,
+  SubmissionType,
+  isFileSubmission,
+} from '@postybirb/types';
+import { PostyBirbService } from '../../common/service/postybirb-service';
+import { Submission } from '../../database/entities';
+import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { ISubmissionService } from './submission-service.interface';
+
+type SubmissionEntity = Submission<SubmissionMetadataType>;
 
 /**
  * Service that implements logic for manipulating a FileSubmission.
@@ -14,9 +27,16 @@ import { ISubmissionService } from './submission-service.interface';
  */
 @Injectable()
 export class FileSubmissionService
+  extends PostyBirbService<SubmissionEntity>
   implements ISubmissionService<FileSubmission>
 {
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    @InjectRepository(Submission)
+    repository: PostyBirbRepository<SubmissionEntity>,
+    private readonly fileService: FileService
+  ) {
+    super(repository);
+  }
 
   async populate(
     submission: FileSubmission,
@@ -33,20 +53,34 @@ export class FileSubmissionService
     await this.appendFile(submission, file);
   }
 
-  async remove(submission: FileSubmission) {
-    // Nothing yet
+  private guardIsFileSubmission(submission: ISubmission) {
+    if (!isFileSubmission(submission)) {
+      throw new BadRequestException(
+        `Submission '${submission.id}' is not a ${SubmissionType.FILE} submission.`
+      );
+    }
   }
 
-  async appendFile(
-    submission: FileSubmission,
-    file: MulterFileInfo,
-    append = true
-  ) {
+  /**
+   * Adds a file to a submission.
+   *
+   * @param {string} id
+   * @param {MulterFileInfo} file
+   */
+  async appendFile(id: string | FileSubmission, file: MulterFileInfo) {
+    const submission = (
+      typeof id === 'string'
+        ? await this.repository.findById(id, {
+            failOnMissing: true,
+          })
+        : id
+    ) as FileSubmission;
+
+    this.guardIsFileSubmission(submission);
+
     const createdFile = await this.fileService.create(file, submission);
     submission.files.add(createdFile);
-    if (append) {
-      submission.metadata.order.push(createdFile.id);
-    }
+    submission.metadata.order.push(createdFile.id);
 
     const fileModifications: FileMetadataFields = {
       altText: '',
@@ -62,30 +96,56 @@ export class FileSubmissionService
 
     // eslint-disable-next-line no-param-reassign
     submission.metadata.fileMetadata[createdFile.id] = fileModifications;
-    return createdFile;
+    await this.repository.persistAndFlush(submission);
+    return submission;
   }
 
-  async replaceThumbnailFile(fileId: string, file: MulterFileInfo) {
-    return this.fileService.update(file, fileId, true);
-  }
+  async replaceFile(id: string, fileId: string, file: MulterFileInfo) {
+    const submission = (await this.repository.findById(id)) as FileSubmission;
+    this.guardIsFileSubmission(submission);
 
-  async removeFile(submission: FileSubmission, fileId: string) {
-    await this.fileService.remove(fileId);
-    // eslint-disable-next-line no-param-reassign
-    submission.metadata.order = submission.metadata.order.filter(
-      (id) => id !== fileId
-    );
-  }
-
-  async replaceFile(
-    submission: FileSubmission,
-    fileId: string,
-    file: MulterFileInfo
-  ) {
-    if (!submission.metadata.order.some((id) => id === fileId)) {
+    if (
+      !submission.metadata.order.some(
+        (metaFileOrderId) => metaFileOrderId === fileId
+      )
+    ) {
       throw new BadRequestException('File not found on submission');
     }
 
     await this.fileService.update(file, fileId, false);
+    await this.repository.persistAndFlush(submission);
+  }
+
+  /**
+   * Replaces a thumbnail file.
+   *
+   * @param {string} id
+   * @param {string} fileId
+   * @param {MulterFileInfo} file
+   */
+  async replaceThumbnail(id: string, fileId: string, file: MulterFileInfo) {
+    const submission = (await this.repository.findById(id)) as FileSubmission;
+    this.guardIsFileSubmission(submission);
+
+    await this.fileService.update(file, fileId, true);
+    await this.repository.persistAndFlush(submission);
+  }
+
+  /**
+   * Removes a file of thumbnail that matches file id.
+   *
+   * @param {string} id
+   * @param {string} fileId
+   */
+  async removeFile(id: string, fileId: string) {
+    const submission = (await this.repository.findById(id)) as FileSubmission;
+    this.guardIsFileSubmission(submission);
+
+    await this.fileService.remove(fileId);
+    // eslint-disable-next-line no-param-reassign
+    submission.metadata.order = submission.metadata.order.filter(
+      (metaFileOrderId) => metaFileOrderId !== fileId
+    );
+    await this.repository.persistAndFlush(submission);
   }
 }

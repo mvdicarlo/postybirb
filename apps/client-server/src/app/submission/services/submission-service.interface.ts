@@ -10,6 +10,4 @@ export interface ISubmissionService<
     createSubmissionDto: CreateSubmissionDto,
     file?: MulterFileInfo
   ): Promise<void>;
-
-  remove?(submission: T): Promise<void>;
 }

@@ -1,27 +1,23 @@
 import {
   Body,
   Controller,
-  Delete,
-  Get,
   Param,
   Patch,
   Post,
-  Query,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import {
   ApiBadRequestResponse,
-  ApiBody,
   ApiConsumes,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { SubmissionType } from '@postybirb/types';
-import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
@@ -34,22 +30,9 @@ import { SubmissionService } from './services/submission.service';
  */
 @ApiTags('submission')
 @Controller('submission')
-export class SubmissionController {
-  constructor(private readonly service: SubmissionService) {}
-
-  @Get(':id')
-  @ApiOkResponse({ description: 'The requested Submission.' })
-  @ApiNotFoundResponse({ description: 'Submission not found.' })
-  async findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
-  }
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all submission records.' })
-  findAll() {
-    return this.service
-      .findAll()
-      .then((submissions) => submissions.map((s) => s.toJSON()));
+export class SubmissionController extends PostyBirbController<Submission> {
+  constructor(readonly service: SubmissionService) {
+    super(service);
   }
 
   @Post()
@@ -88,84 +71,13 @@ export class SubmissionController {
     ).map(mapper);
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
-  async update(@Body() updateSubmissionDto: UpdateSubmissionDto) {
-    await this.service.update(updateSubmissionDto);
-    return this.findOne(updateSubmissionDto.id);
-  }
-
-  @Delete()
-  @ApiOkResponse({
-    description: 'Submission deleted successfully.',
-    type: Boolean,
-  })
-  async remove(@Query() query: DeleteQuery) {
-    return Promise.all(
-      query.getIds().map((id) => this.service.remove(id))
-    ).then(() => ({
-      success: true,
-    }));
-  }
-
-  @Post('file/add/:id')
-  @ApiConsumes('multipart/form-data')
-  @ApiOkResponse({ description: 'File appended.' })
-  @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
-  async appendFile(
+  async update(
     @Param('id') id: string,
-    @UploadedFiles() files: MulterFileInfo[]
+    @Body() updateSubmissionDto: UpdateSubmissionDto
   ) {
-    await Promise.all(files.map((file) => this.service.appendFile(id, file)));
-    return this.findOne(id);
-  }
-
-  @Post('file/replace/:id/:fileId')
-  @ApiConsumes('multipart/form-data')
-  @ApiOkResponse({ description: 'File replaced.' })
-  @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FileInterceptor('file', { preservePath: true }))
-  async replaceFile(
-    @Param('id') id: string,
-    @Param('fileId') fileId: string,
-    @UploadedFile() file: MulterFileInfo
-  ) {
-    await this.service.replaceFile(id, fileId, file);
-    return this.findOne(id);
-  }
-
-  @Post('thumbnail/replace/:id/:fileId')
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        files: {
-          type: 'string',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  @ApiOkResponse({ description: 'Thumbnail file replaced.' })
-  @ApiBadRequestResponse({ description: 'Bad request made.' })
-  @UseInterceptors(FileInterceptor('file', { preservePath: true }))
-  async replaceThumbnail(
-    @Param('id') id: string,
-    @Param('fileId') fileId: string,
-    @UploadedFile() file: MulterFileInfo
-  ) {
-    await this.service.replaceThumbnail(id, fileId, file);
-    return this.findOne(id);
-  }
-
-  @Delete('file/remove/:id/:fileId')
-  @ApiOkResponse({ description: 'File removed.' })
-  @ApiBadRequestResponse({ description: 'Bad request made.' })
-  async removeFile(@Param('id') id: string, @Param('fileId') fileId: string) {
-    await this.service.removeFile(id, fileId);
-    return this.findOne(id);
+    return this.service.update(id, updateSubmissionDto);
   }
 }

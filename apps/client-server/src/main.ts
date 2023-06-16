@@ -69,11 +69,12 @@ async function bootstrap(appPort?: number) {
     .addTag('account')
     .addTag('directory-watchers')
     .addTag('file')
+    .addTag('file-submission')
     .addTag('form-generator')
     .addTag('submission')
-    .addTag('submission-option')
     .addTag('tag-converters')
     .addTag('tag-groups')
+    .addTag('website-option')
     .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);
