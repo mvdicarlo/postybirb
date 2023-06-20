@@ -7,7 +7,6 @@ import {
 } from '@postybirb/form-builder';
 import {
   IWebsiteFormFields,
-  DefaultDescriptionValue,
   DescriptionValue,
   SubmissionRating,
   TagValue,

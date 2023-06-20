@@ -71,6 +71,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     createSubmissionDto: CreateSubmissionDto,
     file?: MulterFileInfo
   ): Promise<SubmissionEntity> {
+    this.logger.info(createSubmissionDto, 'Creating Submission');
     const submission = this.repository.create({
       ...createSubmissionDto,
       isScheduled: false,
@@ -138,13 +139,13 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
   }
 
   async update(id: string, update: UpdateSubmissionDto) {
-    this.logger.info(update, `Updating Submission '${id}`);
+    this.logger.info(update, `Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
 
-    submission.isScheduled = update.isScheduled;
+    submission.isScheduled = update.isScheduled ?? submission.isScheduled;
     submission.schedule = {
-      scheduledFor: update.scheduledFor,
-      scheduleType: update.scheduleType,
+      scheduledFor: update.scheduledFor ?? submission.schedule.scheduledFor,
+      scheduleType: update.scheduleType ?? submission.schedule.scheduleType,
     };
     submission.metadata = {
       ...submission.metadata,
