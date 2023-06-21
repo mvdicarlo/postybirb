@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import {
   ILoginState,
   UsernameShortcut,
@@ -12,14 +13,19 @@ import {
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { session } from 'electron';
 import { Logger as PinoLogger } from 'pino';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
-import { isFileWebsite } from './models/website-modifiers/file-website';
-import { isMessageWebsite } from './models/website-modifiers/message-website';
+import {
+  FileWebsiteKey,
+  isFileWebsite,
+} from './models/website-modifiers/file-website';
+import {
+  MessageWebsiteKey,
+  isMessageWebsite,
+} from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,7 +56,7 @@ export abstract class Website<D extends SafeObject> {
   public readonly metadata: IWebsiteMetadata;
 
   /**
-   * Do not set this manually. Apply with @LoginType decorator
+   * Do not set this manually. Apply with {@LoginType} decorator
    * A property used to define how a user will login through the UI.
    * @type {UserLoginType} - User will login through a webview using the provided url.
    * @type {CustomLoginType} - User will login through a custom login flow created by the implementer.
@@ -71,6 +77,12 @@ export abstract class Website<D extends SafeObject> {
    */
   public abstract readonly externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<D>;
 
+  /**
+   * Username shortcut that is used for modifying links to users for websites that
+   * support it.
+   *
+   * Should ideally be set using the {@SupportsUsernameShortcut} decorator.
+   */
   public readonly usernameShortcut: UsernameShortcut;
 
   /**
@@ -93,6 +105,26 @@ export abstract class Website<D extends SafeObject> {
     return this.account.id;
   }
 
+  /**
+   * Whether or not this class supports {SubmissionType.FILE}.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  public get supportsFile(): boolean {
+    return FileWebsiteKey in this;
+  }
+
+  /**
+   * Whether or not this class supports {SubmissionType.MESSAGE}.
+   *
+   * @readonly
+   * @type {boolean}
+   */
+  public get supportsMessage(): boolean {
+    return MessageWebsiteKey in this;
+  }
+
   constructor(userAccount: IAccount) {
     this.account = userAccount;
     this.logger = Logger(this.id);
@@ -101,7 +133,7 @@ export abstract class Website<D extends SafeObject> {
   }
 
   // -------------- Externally Accessed Methods --------------
-  // Methods intended to be executed to be run by consumers of a Website
+  // Methods intended to be executed by consumers of a Website
 
   public async clearLoginStateAndData() {
     this.logger.info('Clearing login state and data');
@@ -139,11 +171,11 @@ export abstract class Website<D extends SafeObject> {
   public getSupportedTypes(): SubmissionType[] {
     const types: SubmissionType[] = [];
 
-    if (isMessageWebsite(this)) {
+    if (this.supportsMessage) {
       types.push(SubmissionType.MESSAGE);
     }
 
-    if (isFileWebsite(this)) {
+    if (this.supportsFile) {
       types.push(SubmissionType.FILE);
     }
 

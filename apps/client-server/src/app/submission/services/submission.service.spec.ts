@@ -127,6 +127,10 @@ describe('SubmissionService', () => {
               overrideDefault: false,
               tags: [],
             },
+            description: {
+              overrideDefault: false,
+              description: '',
+            },
             title: 'Test',
           },
         },
@@ -215,6 +219,10 @@ describe('SubmissionService', () => {
             tags: {
               overrideDefault: false,
               tags: [],
+            },
+            description: {
+              overrideDefault: false,
+              description: '',
             },
             title: 'Test',
           },

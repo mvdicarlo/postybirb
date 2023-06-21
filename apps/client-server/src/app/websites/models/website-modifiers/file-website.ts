@@ -7,6 +7,8 @@ import {
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../../website';
 
+export const FileWebsiteKey = 'FileModel';
+
 /**
  * Defines methods for allowing file based posting.
  * Generally this will always be used by each supported website.
@@ -14,7 +16,6 @@ import { UnknownWebsite } from '../../website';
  */
 export interface FileWebsite<T extends IWebsiteFormFields> {
   FileModel: Class<T>;
-  supportsFile: true;
   supportsAdditionalFiles: boolean;
 
   createFileModel(): T;

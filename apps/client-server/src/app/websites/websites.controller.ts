@@ -16,7 +16,7 @@ export class WebsitesController {
     private readonly websiteRegistryService: WebsiteRegistryService
   ) {}
 
-  @Post('/oauth')
+  @Post('oauth')
   @ApiResponse({ status: 200, description: 'Authorization step completed.' })
   @ApiResponse({ status: 404, description: 'Website instance not found.' })
   @ApiResponse({
@@ -27,7 +27,7 @@ export class WebsitesController {
     return this.websiteRegistryService.performOAuthStep(oauthRequestDto);
   }
 
-  @Get('/info')
+  @Get('info')
   @ApiResponse({ status: 200 })
   getWebsiteLoginInfo() {
     return this.websiteRegistryService

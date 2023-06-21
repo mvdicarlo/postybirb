@@ -32,10 +32,6 @@ export default class TestWebsite
 
   supportsAdditionalFiles = false;
 
-  supportsFile = true as const;
-
-  supportsMessage = true as const;
-
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
     test: true,
   };

@@ -11,6 +11,7 @@ import {
   SubmissionRating,
   TagValue,
   DefaultTagValue,
+  DefaultDescriptionValue,
 } from '@postybirb/types';
 
 export const DefaultRatingOptions: RatingOption[] = [
@@ -32,10 +33,18 @@ export const DefaultRatingOptions: RatingOption[] = [
   },
 ];
 
+// TODO Think of a way to set these from a user customized db
+export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
+  title: '',
+  tags: DefaultTagValue,
+  description: DefaultDescriptionValue,
+  rating: SubmissionRating.GENERAL,
+};
+
 export class DefaultWebsiteOptions implements IWebsiteFormFields {
   @TextField({
     label: 'Title',
-    defaultValue: '',
+    defaultValue: DefaultWebsiteOptionsObject.title,
     required: true,
     row: 0,
     column: 1,
@@ -44,7 +53,7 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
 
   @TagField({
     label: 'Tags',
-    defaultValue: DefaultTagValue,
+    defaultValue: DefaultWebsiteOptionsObject.tags,
     row: 2,
     column: 1,
   })
@@ -52,10 +61,7 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: '',
-    },
+    defaultValue: DefaultWebsiteOptionsObject.description,
     row: 3,
     column: 1,
   })
@@ -63,7 +69,7 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
 
   @RatingField({
     label: 'Rating',
-    defaultValue: SubmissionRating.GENERAL,
+    defaultValue: DefaultWebsiteOptionsObject.rating,
     options: DefaultRatingOptions,
     required: true,
     row: 0,

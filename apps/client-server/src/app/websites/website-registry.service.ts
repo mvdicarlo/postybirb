@@ -9,6 +9,7 @@ import { PostyBirbRepository } from '../database/repositories/postybirb-reposito
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
+import { IsTestEnvironment } from '../utils/test.util';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 
@@ -33,17 +34,18 @@ export class WebsiteRegistryService {
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[]
   ) {
+    this.logger.debug('Registering websites');
     Object.values({ ...this.websiteImplementations }).forEach(
       (website: Class<UnknownWebsite>) => {
         if (!website.prototype.metadata.name) {
-          throw new Error(`${website.name} is missing metadata field "name"`);
+          throw new Error(`${website.name} is missing metadata field 'name'`);
         }
 
         if (
           !website.prototype.loginUrl &&
           !website.prototype.loginComponentName
         ) {
-          this.logger.error(
+          this.logger.warn(
             `${website.name} is missing a login method. Please apply the UserLoginWebsite or CustomLoginWebsite interface.`
           );
         }
@@ -54,6 +56,17 @@ export class WebsiteRegistryService {
         this.availableWebsites[website.prototype.metadata.name] = website;
       }
     );
+  }
+
+  /**
+   * Only used for unit testing.
+   */
+  getRepository() {
+    if (IsTestEnvironment()) {
+      return this.websiteDataRepository;
+    }
+
+    throw new Error('Test only method');
   }
 
   /**
@@ -79,22 +92,22 @@ export class WebsiteRegistryService {
       }
 
       if (!this.websiteInstances[website][id]) {
-        this.logger.info(`Creating instance of "${website}" with id "${id}"`);
+        this.logger.info(`Creating instance of '${website}' with id '${id}'`);
         this.websiteInstances[website][id] = new WebsiteCtor(account);
         await this.websiteInstances[website][id].onInitialize(
           this.websiteDataRepository
         );
       } else {
         this.logger.warn(
-          `An instance of "${website}" with id "${id}" already exists`
+          `An instance of "${website}" with id '${id}' already exists`
         );
       }
 
       return this.websiteInstances[website][id];
     }
 
-    this.logger.error(`Unable to find website "${website}"`);
-    throw new BadRequestException(`Unable to find website "${website}"`);
+    this.logger.error(`Unable to find website '${website}'`);
+    throw new BadRequestException(`Unable to find website '${website}'`);
   }
 
   /**

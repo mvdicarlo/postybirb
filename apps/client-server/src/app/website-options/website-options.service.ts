@@ -15,7 +15,6 @@ import {
   MessageSubmission,
   PostData,
   SubmissionMetadataType,
-  SubmissionRating,
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
@@ -24,6 +23,7 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { SubmissionService } from '../submission/services/submission.service';
+import { DefaultWebsiteOptionsObject } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -109,12 +109,8 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       isDefault: true,
       submission,
       data: {
+        ...DefaultWebsiteOptionsObject,
         title,
-        rating: SubmissionRating.GENERAL,
-        tags: {
-          tags: [],
-          overrideDefault: false,
-        },
       },
     });
 
