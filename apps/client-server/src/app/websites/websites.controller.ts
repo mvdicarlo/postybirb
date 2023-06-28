@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { IWebsiteInfoDto } from '@postybirb/dto';
-import { SafeObject } from '@postybirb/types';
+import { DynamicObject } from '@postybirb/types';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteRegistryService } from './website-registry.service';
 
@@ -23,7 +23,7 @@ export class WebsitesController {
     status: 500,
     description: 'An error occurred while performing authorization operation.',
   })
-  getWebsiteData(@Body() oauthRequestDto: OAuthWebsiteRequestDto<SafeObject>) {
+  getWebsiteData(@Body() oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>) {
     return this.websiteRegistryService.performOAuthStep(oauthRequestDto);
   }
 

@@ -1,4 +1,6 @@
-import { IWebsiteData, SafeObject } from '../../models';
+import { IWebsiteData, DynamicObject } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
 
-export type IWebsiteDataDto<T extends SafeObject> = IEntityDto<IWebsiteData<T>>;
+export type IWebsiteDataDto<T extends DynamicObject> = IEntityDto<
+  IWebsiteData<T>
+>;

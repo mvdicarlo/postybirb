@@ -6,6 +6,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
+import { NULL_ACCOUNT_ID, NullAccount } from '@postybirb/types';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -55,6 +56,7 @@ export class AccountService
    * Initializes all website login timers and creates instances for known accounts.
    */
   async onModuleInit() {
+    await this.populateNullAccount();
     await this.initWebsiteRegistry();
     this.initWebsiteLoginRefreshTimers();
 
@@ -66,10 +68,23 @@ export class AccountService
   }
 
   /**
+   * Create the Nullable typed account.
+   */
+  private async populateNullAccount(): Promise<void> {
+    if (!(await this.repository.findById(NULL_ACCOUNT_ID))) {
+      await this.repository.persistAndFlush(
+        this.repository.create(new NullAccount())
+      );
+    }
+  }
+
+  /**
    * Loads accounts into website registry.
    */
   private async initWebsiteRegistry(): Promise<void> {
-    const accounts = await this.repository.find({});
+    const accounts = await this.repository.find({
+      id: { $ne: NULL_ACCOUNT_ID },
+    });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account))
     ).catch((err) => {
@@ -100,9 +115,11 @@ export class AccountService
   }
 
   protected async emit() {
-    const dtos = await this.findAll().then((results) =>
-      results.map((account) => account.toJSON())
-    );
+    const dtos = await this.repository
+      .find({
+        id: { $ne: NULL_ACCOUNT_ID },
+      })
+      .then((results) => results.map((account) => account.toJSON()));
     super.emit({
       event: ACCOUNT_UPDATES,
       data: dtos,
@@ -215,9 +232,11 @@ export class AccountService
   }
 
   public async findAll() {
-    return (await this.repository.findAll()).map((result) =>
-      this.populateAccount(result)
-    );
+    return (
+      await this.repository.find({
+        id: { $ne: NULL_ACCOUNT_ID },
+      })
+    ).map((result) => this.populateAccount(result));
   }
 
   /**

@@ -15,6 +15,7 @@ import {
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
+import { UserSpecifiedWebsiteOptions } from './user-specified-website-options.entity';
 import { WebsiteOptions } from './website-options.entity';
 
 /** @inheritdoc */
@@ -36,9 +37,16 @@ export class Account extends PostyBirbEntity implements IAccount {
     lazy: true,
     hidden: true,
   })
-  submissionAccountData = new Collection<
-    WebsiteOptions<IWebsiteFormFields>
-  >(this);
+  websiteOptions = new Collection<WebsiteOptions<IWebsiteFormFields>>(this);
+
+  @OneToMany(() => UserSpecifiedWebsiteOptions, (so) => so.account, {
+    orphanRemoval: true,
+    lazy: true,
+    hidden: true,
+  })
+  userSpecifiedWebsiteOptions = new Collection<UserSpecifiedWebsiteOptions>(
+    this
+  );
 
   @Property({ persist: false })
   state: ILoginState = {

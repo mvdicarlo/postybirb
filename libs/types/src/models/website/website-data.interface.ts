@@ -1,5 +1,5 @@
 import { IEntity } from '../database/entity.interface';
-import { SafeObject } from '../common/safe-object';
+import { DynamicObject } from '../common/dynamic-object';
 import { AccountId } from '../account/account.type';
 
 /**
@@ -9,7 +9,7 @@ import { AccountId } from '../account/account.type';
  * @extends {IEntity}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface IWebsiteData<T extends SafeObject = any> extends IEntity {
+export interface IWebsiteData<T extends DynamicObject = any> extends IEntity {
   /**
    * The ID of the associated account.
    * @type {AccountId}

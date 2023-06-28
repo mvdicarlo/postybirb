@@ -1,5 +1,5 @@
 import { Logger } from '@postybirb/logger';
-import { IAccount, SafeObject } from '@postybirb/types';
+import { IAccount, DynamicObject } from '@postybirb/types';
 import pino from 'pino';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
@@ -9,7 +9,7 @@ import { PostyBirbRepository } from '../database/repositories/postybirb-reposito
  *
  * @class WebsiteDataManager
  */
-export default class WebsiteDataManager<T extends SafeObject> {
+export default class WebsiteDataManager<T extends DynamicObject> {
   private readonly logger: pino.Logger;
 
   private readonly account: IAccount;
@@ -29,16 +29,16 @@ export default class WebsiteDataManager<T extends SafeObject> {
   }
 
   private async createOrLoadWebsiteData() {
-    let entity: WebsiteData<T> = {} as WebsiteData<T>;
-    try {
-      entity = await this.repository.findById(this.account.id, {
-        failOnMissing: true,
-      });
-    } catch {
+    let entity: WebsiteData<T> = await this.repository.findById(
+      this.account.id
+    );
+
+    if (!entity) {
       entity = this.repository.create({
         id: this.account.id,
         data: {} as T,
       } as WebsiteData<T>);
+      await this.repository.persistAndFlush(entity);
     }
 
     this.entity = entity;

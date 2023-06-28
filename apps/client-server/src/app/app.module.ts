@@ -16,6 +16,7 @@ import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsitesModule } from './websites/websites.module';
+import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WebsitesModule } from './websites/websites.module';
     TagGroupsModule,
     TagConvertersModule,
     DirectoryWatchersModule,
+    UserSpecifiedWebsiteOptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

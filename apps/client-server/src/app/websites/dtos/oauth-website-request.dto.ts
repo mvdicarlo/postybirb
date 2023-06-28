@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SafeObject } from '@postybirb/types';
+import { DynamicObject } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
-export class OAuthWebsiteRequestDto<T extends SafeObject> {
+export class OAuthWebsiteRequestDto<T extends DynamicObject> {
   @ApiProperty()
   @IsString()
   id: string;

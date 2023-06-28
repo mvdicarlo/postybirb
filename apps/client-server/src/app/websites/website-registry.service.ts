@@ -1,7 +1,7 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { IAccount, SafeObject } from '@postybirb/types';
+import { IAccount, DynamicObject } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WebsiteData } from '../database/entities';
@@ -29,7 +29,7 @@ export class WebsiteRegistryService {
   constructor(
     @InjectRepository(WebsiteData)
     private readonly websiteDataRepository: PostyBirbRepository<
-      WebsiteData<SafeObject>
+      WebsiteData<DynamicObject>
     >,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[]
@@ -164,7 +164,7 @@ export class WebsiteRegistryService {
    * @todo better type overlap
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
-  public performOAuthStep(oauthRequestDto: OAuthWebsiteRequestDto<SafeObject>) {
+  public performOAuthStep(oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>) {
     const instance = this.findInstance(oauthRequestDto as unknown as IAccount);
     if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
       return (instance as unknown as OAuthWebsite).onAuthorize(

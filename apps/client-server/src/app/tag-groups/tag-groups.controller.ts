@@ -12,7 +12,7 @@ import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
 
 /**
- * CRUD operations on TagGroups.
+ * CRUD operations for TagGroups.
  * @class TagGroupsController
  */
 @ApiTags('tag-groups')

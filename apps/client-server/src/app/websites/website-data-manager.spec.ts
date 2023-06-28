@@ -1,17 +1,16 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { SafeObject } from '@postybirb/types';
+import { DynamicObject, NullAccount } from '@postybirb/types';
 import { DatabaseModule } from '../database/database.module';
-import { Account, WebsiteData } from '../database/entities';
+import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { WebsiteImplProvider } from './implementations';
-import TestWebsite from './implementations/test/test.website';
 import WebsiteDataManager from './website-data-manager';
 
-describe('WebsiteDataManager<SafeObject>', () => {
+describe('WebsiteDataManager', () => {
   let module: TestingModule;
   let orm: MikroORM;
-  let repository: PostyBirbRepository<WebsiteData<SafeObject>>;
+  let repository: PostyBirbRepository<WebsiteData<DynamicObject>>;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -20,7 +19,7 @@ describe('WebsiteDataManager<SafeObject>', () => {
     }).compile();
 
     repository =
-      module.get<PostyBirbRepository<WebsiteData<SafeObject>>>(
+      module.get<PostyBirbRepository<WebsiteData<DynamicObject>>>(
         PostyBirbRepository
       );
     orm = module.get(MikroORM);
@@ -41,14 +40,7 @@ describe('WebsiteDataManager<SafeObject>', () => {
   });
 
   it('should initialize entity', async () => {
-    const account = new Account();
-
-    Object.assign(account, {
-      name: 'test',
-      id: 'test',
-      website: TestWebsite.prototype.metadata.name,
-    });
-
+    const account = new NullAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();
@@ -60,14 +52,7 @@ describe('WebsiteDataManager<SafeObject>', () => {
   });
 
   it('should be able to set new data', async () => {
-    const account = new Account();
-
-    Object.assign(account, {
-      name: 'test',
-      id: 'test',
-      website: TestWebsite.prototype.metadata.name,
-    });
-
+    const account = new NullAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();
@@ -83,14 +68,7 @@ describe('WebsiteDataManager<SafeObject>', () => {
   });
 
   it('should be able to clear data', async () => {
-    const account = new Account();
-
-    Object.assign(account, {
-      name: 'test',
-      id: 'test',
-      website: TestWebsite.prototype.metadata.name,
-    });
-
+    const account = new NullAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();

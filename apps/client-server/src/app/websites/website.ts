@@ -8,7 +8,7 @@ import { Logger } from '@postybirb/logger';
 import {
   IAccount,
   LoginState,
-  SafeObject,
+  DynamicObject,
   SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
@@ -31,7 +31,7 @@ import WebsiteDataManager from './website-data-manager';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnknownWebsite = Website<any>;
 
-export abstract class Website<D extends SafeObject> {
+export abstract class Website<D extends DynamicObject> {
   protected readonly logger: PinoLogger;
 
   /**

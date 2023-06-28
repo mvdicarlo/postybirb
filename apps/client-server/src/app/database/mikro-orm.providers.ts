@@ -1,37 +1,39 @@
 import { MikroOrmModule, MikroOrmModuleSyncOptions } from '@mikro-orm/nestjs';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { join } from 'path';
+import { IsTestEnvironment } from '../utils/test.util';
 import {
   Account,
   AltFile,
-  SubmissionFile,
+  DirectoryWatcher,
   PrimaryFile,
+  Settings,
+  Submission,
+  SubmissionFile,
+  TagConverter,
+  TagGroup,
   ThumbnailFile,
+  UserSpecifiedWebsiteOptions,
   WebsiteData,
   WebsiteOptions,
-  Submission,
-  Settings,
-  TagGroup,
-  TagConverter,
-  DirectoryWatcher,
 } from './entities';
-import { IsTestEnvironment } from '../utils/test.util';
 
 const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
 
 const entities = [
   Account,
-  SubmissionFile,
   AltFile,
+  DirectoryWatcher,
   PrimaryFile,
+  Settings,
+  Submission,
+  SubmissionFile,
+  TagConverter,
+  TagGroup,
   ThumbnailFile,
+  UserSpecifiedWebsiteOptions,
   WebsiteData,
   WebsiteOptions,
-  Submission,
-  Settings,
-  TagGroup,
-  TagConverter,
-  DirectoryWatcher,
 ];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {

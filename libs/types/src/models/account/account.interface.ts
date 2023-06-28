@@ -30,3 +30,19 @@ export interface IAccount extends IEntity {
    */
   groups: string[];
 }
+
+export const NULL_ACCOUNT_ID = 'DEFAULT_ACCOUNT';
+
+export class NullAccount implements IAccount {
+  id: string = NULL_ACCOUNT_ID;
+
+  name: string = NULL_ACCOUNT_ID;
+
+  website: string = NULL_ACCOUNT_ID;
+
+  groups: string[] = [];
+
+  createdAt: Date;
+
+  updatedAt: Date;
+}

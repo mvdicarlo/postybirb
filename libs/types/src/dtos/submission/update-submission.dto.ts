@@ -3,7 +3,7 @@ import {
   IWebsiteFormFields,
   ISubmissionScheduleInfo,
 } from '../../models';
-import { WebsiteOptionsDto } from './website-options.dto';
+import { WebsiteOptionsDto } from '../website-options/website-options.dto';
 
 export type IUpdateSubmissionDto = Pick<
   ISubmission,

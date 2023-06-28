@@ -4,7 +4,7 @@ import {
   ISubmissionMetadata,
 } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
-import { WebsiteOptionsDto } from './website-options.dto';
+import { WebsiteOptionsDto } from '../website-options/website-options.dto';
 import { ISubmissionFileDto } from './submission-file.dto';
 
 export type ISubmissionDto<
