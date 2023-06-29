@@ -29,7 +29,7 @@ export interface IWebsiteOptions<
    * The account associated with the options.
    * @type {IAccount}
    */
-  account?: IAccount;
+  account: IAccount;
 
   /**
    * Indicates whether the the entity as targeting default options.

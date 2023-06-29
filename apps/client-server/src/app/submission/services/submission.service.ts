@@ -175,9 +175,9 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         } else {
           optionChanges.push(
             this.submissionOptionsService.create({
-              accountId: option.account.id,
+              account: option.account,
               data: option.data,
-              submissionId: submission.id,
+              submission: submission.id,
             })
           );
         }

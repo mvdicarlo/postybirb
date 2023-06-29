@@ -13,6 +13,7 @@ import {
   ISubmissionMetadata,
   IWebsiteFormFields,
   MessageSubmission,
+  NULL_ACCOUNT_ID,
   PostData,
   SubmissionMetadataType,
   SubmissionType,
@@ -52,25 +53,25 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     createSubmissionOptions: CreateWebsiteOptionsDto<T>
   ) {
     const account = await this.accountService.findById(
-      createSubmissionOptions.accountId,
+      createSubmissionOptions.account,
       { failOnMissing: true }
     );
 
     let submission: Submission<SubmissionMetadataType>;
     try {
       submission = await this.submissionRepository.findOneOrFail(
-        createSubmissionOptions.submissionId
+        createSubmissionOptions.submission
       );
     } catch {
       throw new NotFoundException(
-        `Submission ${createSubmissionOptions.submissionId} not found.`
+        `Submission ${createSubmissionOptions.submission} not found.`
       );
     }
 
     if (
       submission.options
         .toArray()
-        .some((option) => option.account?.id === account.id)
+        .some((option) => option.account.id === account.id)
     ) {
       throw new BadRequestException(
         `Submission option with account id ${account.id} already exists on ${submission.id}. Use update operation instead.`
@@ -99,15 +100,16 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
    *
    * @param {Submission<ISubmissionMetadata>} submission
    * @param {string} title
-   * @return {*}  {WebsiteOptions}
+   * @return {*}  {Promise<WebsiteOptions>}
    */
-  createDefaultSubmissionOptions(
+  async createDefaultSubmissionOptions(
     submission: Submission<ISubmissionMetadata>,
     title: string
-  ): WebsiteOptions {
+  ): Promise<WebsiteOptions> {
     const submissionOptions = this.repository.create({
       isDefault: true,
       submission,
+      account: await this.accountService.findById(NULL_ACCOUNT_ID),
       data: {
         ...DefaultWebsiteOptionsObject,
         title,
@@ -125,7 +127,12 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto
   ): Promise<ValidationResult<IWebsiteFormFields>> {
-    const { defaultOptions, options, accountId, submissionId } = validate;
+    const {
+      defaultOptions,
+      options,
+      account: accountId,
+      submission: submissionId,
+    } = validate;
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });

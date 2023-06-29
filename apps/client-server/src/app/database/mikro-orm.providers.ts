@@ -30,10 +30,10 @@ const entities = [
   SubmissionFile,
   TagConverter,
   TagGroup,
+  WebsiteOptions,
   ThumbnailFile,
   UserSpecifiedWebsiteOptions,
   WebsiteData,
-  WebsiteOptions,
 ];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {

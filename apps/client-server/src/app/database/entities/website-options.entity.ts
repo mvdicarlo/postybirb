@@ -37,7 +37,11 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
   @Property({ type: 'json', nullable: false })
   data: T;
 
-  @ManyToOne(() => Account, { nullable: true, lazy: false })
+  @ManyToOne(() => Account, {
+    nullable: false,
+    lazy: false,
+    serializer: (account) => account.id,
+  })
   account: Rel<Account>;
 
   @Property({ type: 'boolean', nullable: false })

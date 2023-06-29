@@ -18,7 +18,6 @@ import { IsTestEnvironment } from '../../utils/test.util';
 
 /**
  * A Service for updating existing SubmissionFile entities.
- * @export
  */
 @Injectable()
 export class UpdateFileService {

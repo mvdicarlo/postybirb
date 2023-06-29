@@ -85,6 +85,9 @@ describe('FileService', () => {
     } catch {
       // none
     }
+
+    const accountService = module.get<AccountService>(AccountService);
+    await accountService.onModuleInit();
   });
 
   it('should be defined', () => {

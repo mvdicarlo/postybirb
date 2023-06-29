@@ -8,11 +8,11 @@ import { IsObject, IsString } from 'class-validator';
 export class ValidateWebsiteOptionsDto implements IValidateWebsiteOptionsDto {
   @ApiProperty()
   @IsString()
-  submissionId: string;
+  submission: string;
 
   @ApiProperty()
   @IsString()
-  accountId: string;
+  account: string;
 
   @ApiProperty({ type: Object })
   @IsObject()

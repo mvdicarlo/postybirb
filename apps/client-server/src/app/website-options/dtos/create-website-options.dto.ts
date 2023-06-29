@@ -5,14 +5,13 @@ import {
   SubmissionId,
 } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
-import { AccountId } from 'libs/types/src/models/account/account.type';
 
 export class CreateWebsiteOptionsDto<T extends IWebsiteFormFields>
   implements ICreateWebsiteOptionsDto
 {
   @ApiProperty()
   @IsString()
-  accountId: AccountId;
+  account: string;
 
   @ApiProperty({ type: Object })
   @IsObject()
@@ -20,5 +19,5 @@ export class CreateWebsiteOptionsDto<T extends IWebsiteFormFields>
 
   @ApiProperty()
   @IsString()
-  submissionId: SubmissionId;
+  submission: SubmissionId;
 }

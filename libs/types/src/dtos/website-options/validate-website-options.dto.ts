@@ -4,8 +4,8 @@ import { AccountId } from '../../models/account/account.type';
 export interface IValidateWebsiteOptionsDto<
   T extends IWebsiteFormFields = IWebsiteFormFields
 > {
-  submissionId: SubmissionId;
-  accountId: AccountId;
+  submission: SubmissionId;
+  account: AccountId;
   options: T;
   defaultOptions: IWebsiteFormFields;
 }

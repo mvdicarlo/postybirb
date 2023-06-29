@@ -2,7 +2,11 @@ import { MikroORM } from '@mikro-orm/core';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
-import { ScheduleType, SubmissionType } from '@postybirb/types';
+import {
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionType,
+} from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../../account/account.service';
@@ -19,6 +23,7 @@ import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionService } from './submission.service';
+import { AccountModule } from '../../account/account.module';
 
 describe('SubmissionService', () => {
   let testFile: Buffer | null = null;
@@ -33,7 +38,7 @@ describe('SubmissionService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
+      imports: [DatabaseModule, AccountModule],
       providers: [
         SubmissionService,
         CreateFileService,
@@ -55,6 +60,8 @@ describe('SubmissionService', () => {
     } catch {
       // none
     }
+    const accountService = module.get<AccountService>(AccountService);
+    await accountService.onModuleInit();
   });
 
   afterAll(async () => {
@@ -120,6 +127,7 @@ describe('SubmissionService', () => {
           createdAt: defaultOptions.createdAt.toISOString(),
           updatedAt: defaultOptions.updatedAt.toISOString(),
           isDefault: true,
+          account: NULL_ACCOUNT_ID,
           submission: record.id,
           data: {
             rating: 'GENERAL',
@@ -213,6 +221,7 @@ describe('SubmissionService', () => {
           createdAt: defaultOptions.createdAt.toISOString(),
           updatedAt: defaultOptions.updatedAt.toISOString(),
           isDefault: true,
+          account: NULL_ACCOUNT_ID,
           submission: record.id,
           data: {
             rating: 'GENERAL',
