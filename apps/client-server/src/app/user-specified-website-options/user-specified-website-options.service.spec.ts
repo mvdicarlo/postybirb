@@ -6,6 +6,8 @@ import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UserSpecifiedWebsiteOptionsService } from './user-specified-website-options.service';
+import { BadRequestException } from '@nestjs/common';
+import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 
 describe('UserSpecifiedWebsiteOptionsService', () => {
   let service: UserSpecifiedWebsiteOptionsService;
@@ -59,5 +61,32 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
       type: dto.type,
       updatedAt: record.updatedAt.toISOString(),
     });
+  });
+
+  it('should fail to create a duplicate entity', async () => {
+    const dto = new CreateUserSpecifiedWebsiteOptionsDto();
+    dto.account = NULL_ACCOUNT_ID;
+    dto.options = { test: 'test' };
+    dto.type = SubmissionType.MESSAGE;
+
+    await service.create(dto);
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should update entities', async () => {
+    const dto = new CreateUserSpecifiedWebsiteOptionsDto();
+    dto.account = NULL_ACCOUNT_ID;
+    dto.options = { test: 'test' };
+    dto.type = SubmissionType.MESSAGE;
+
+    const record = await service.create(dto);
+    const options = { ...record.options };
+
+    const updateDto = new UpdateUserSpecifiedWebsiteOptionsDto();
+    updateDto.type = SubmissionType.MESSAGE;
+    updateDto.options = { test: 'updated' };
+    const updateRecord = await service.update(record.id, updateDto);
+    expect(record.id).toEqual(updateRecord.id);
+    expect(options).not.toEqual(updateRecord.options);
   });
 });
