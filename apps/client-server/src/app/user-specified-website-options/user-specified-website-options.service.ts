@@ -1,5 +1,6 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
+import { AccountId, SubmissionType } from '@postybirb/types';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { UserSpecifiedWebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
@@ -36,5 +37,12 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
   update(id: string, update: UpdateUserSpecifiedWebsiteOptionsDto) {
     this.logger.info(update, `Updating UserSpecifiedWebsiteOptions '${id}'`);
     return this.repository.update(id, update);
+  }
+
+  public findByAccountAndSubmissionType(
+    accountId: AccountId,
+    type: SubmissionType
+  ) {
+    return this.repository.findOne({ account: accountId, type });
   }
 }

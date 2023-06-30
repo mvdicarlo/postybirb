@@ -1,7 +1,7 @@
 import { SubmissionType } from '../../enums';
-import { IAccountDto } from '../account/account.dto';
+import { AccountId } from '../../models';
 
 export interface IFormGenerationRequestDto {
-  account: IAccountDto;
+  accountId: AccountId;
   type: SubmissionType;
 }

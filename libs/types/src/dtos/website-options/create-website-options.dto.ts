@@ -1,5 +1,4 @@
-import { IWebsiteFormFields, SubmissionId } from '../../models';
-import { AccountId } from '../../models/account/account.type';
+import { AccountId, IWebsiteFormFields, SubmissionId } from '../../models';
 
 export type ICreateWebsiteOptionsDto = {
   submission: SubmissionId;

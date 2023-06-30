@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { SubmissionType } from '@postybirb/types';
 import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
 import { FormGeneratorService } from './form-generator.service';
 
@@ -22,7 +23,7 @@ export class FormGeneratorController {
     return this.service.generateForm(request);
   }
 
-  @Get('default-form')
+  @Get('default/:type')
   @ApiResponse({
     status: 200,
     description: 'Returns the default form',
@@ -31,7 +32,7 @@ export class FormGeneratorController {
     status: 500,
     description: 'An error occurred while performing operation.',
   })
-  getDefaultForm() {
-    return this.service.getDefaultForm();
+  getDefaultForm(@Param('type') type: SubmissionType) {
+    return this.service.getDefaultForm(type);
   }
 }

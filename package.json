@@ -11,6 +11,7 @@
     "package": "nx run postybirb:package",
     "make": "yarn install && npm run build && npm run package && nx run postybirb:make",
     "test": "nx test",
+    "test:client-server": "nx test client-server && rimraf test",
     "lint": "nx workspace-lint && run-p --continue-on-error lint:*",
     "lint:client-server": "nx lint client-server --fix",
     "lint:form-builder": "nx lint form-builder --fix",

@@ -1,5 +1,4 @@
-import { IWebsiteFormFields, IWebsiteOptions } from '../../models';
-import { AccountId } from '../../models/account/account.type';
+import { AccountId, IWebsiteFormFields, IWebsiteOptions } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
 import { ISubmissionDto } from '../submission/submission.dto';
 

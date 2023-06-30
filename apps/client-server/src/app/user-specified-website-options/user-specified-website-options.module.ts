@@ -7,5 +7,6 @@ import { DatabaseModule } from '../database/database.module';
   imports: [DatabaseModule],
   controllers: [UserSpecifiedWebsiteOptionsController],
   providers: [UserSpecifiedWebsiteOptionsService],
+  exports: [UserSpecifiedWebsiteOptionsService],
 })
 export class UserSpecifiedWebsiteOptionsModule {}

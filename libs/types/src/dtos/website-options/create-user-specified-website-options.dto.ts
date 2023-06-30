@@ -1,5 +1,4 @@
-import { IUserSpecifiedWebsiteOptions } from '../../models';
-import { AccountId } from '../../models/account/account.type';
+import { AccountId, IUserSpecifiedWebsiteOptions } from '../../models';
 
 export type ICreateUserSpecifiedWebsiteOptionsDto = Pick<
   IUserSpecifiedWebsiteOptions,

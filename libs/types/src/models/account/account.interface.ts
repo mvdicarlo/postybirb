@@ -1,14 +1,15 @@
-import { IEntity } from '../database/entity.interface';
-import { AccountId } from './account.type';
+import { EntityId, IEntity } from '../database/entity.interface';
+import { WebsiteId } from '../website/website.type';
+
+export type AccountId = EntityId;
 
 /**
  * Represents an account with its associated properties.
- * @interface
  */
 export interface IAccount extends IEntity {
   /**
    * The unique identifier of the account and the session partition key.
-   * @type {string}
+   * @type {AccountId}
    */
   id: AccountId;
 
@@ -20,9 +21,9 @@ export interface IAccount extends IEntity {
 
   /**
    * The website associated with the account.
-   * @type {string}
+   * @type {WebsiteId}
    */
-  website: string;
+  website: WebsiteId;
 
   /**
    * The list of tags that the account is associated with.
@@ -31,14 +32,14 @@ export interface IAccount extends IEntity {
   groups: string[];
 }
 
-export const NULL_ACCOUNT_ID = 'DEFAULT_ACCOUNT';
+export const NULL_ACCOUNT_ID = 'NULL_ACCOUNT';
 
 export class NullAccount implements IAccount {
-  id: string = NULL_ACCOUNT_ID;
+  id: AccountId = NULL_ACCOUNT_ID;
 
   name: string = NULL_ACCOUNT_ID;
 
-  website: string = NULL_ACCOUNT_ID;
+  website: WebsiteId = 'default';
 
   groups: string[] = [];
 

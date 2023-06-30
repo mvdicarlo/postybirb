@@ -1,13 +1,14 @@
+export type EntityId = string;
+
 /**
  * An interface representing a base entity with common properties.
- * @interface
  */
 export interface IEntity {
   /**
    * The unique identifier of the entity.
-   * @type {string}
+   * @type {EntityId}
    */
-  id: string;
+  id: EntityId;
 
   /**
    * The date when the entity was created.

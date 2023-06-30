@@ -1,6 +1,6 @@
-import { IEntity } from '../database/entity.interface';
+import { AccountId } from '../account/account.interface';
 import { DynamicObject } from '../common/dynamic-object';
-import { AccountId } from '../account/account.type';
+import { IEntity } from '../database/entity.interface';
 
 /**
  * Represents data associated with a website.

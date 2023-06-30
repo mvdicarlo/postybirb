@@ -164,7 +164,9 @@ export class WebsiteRegistryService {
    * @todo better type overlap
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
-  public performOAuthStep(oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>) {
+  public performOAuthStep(
+    oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>
+  ) {
     const instance = this.findInstance(oauthRequestDto as unknown as IAccount);
     if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
       return (instance as unknown as OAuthWebsite).onAuthorize(

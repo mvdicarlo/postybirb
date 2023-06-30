@@ -1,10 +1,12 @@
 import { Rel } from '@mikro-orm/core';
-import { IEntity } from '../database/entity.interface';
+import { EntityId, IEntity } from '../database/entity.interface';
 import { IFileBuffer } from '../file/file-buffer.interface';
 import { IFileDimensions } from '../file/file-dimensions.interface';
 import { FileSubmissionMetadata } from './file-submission/file-submission-metadata.type';
 import { ISubmissionFileProps } from './submission-file-props.interface';
 import { ISubmission } from './submission.interface';
+
+export type SubmissionFileId = EntityId;
 
 /**
  * Represents a file attached to a submission for posting.

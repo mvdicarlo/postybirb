@@ -1,11 +1,13 @@
 import { Collection } from '@mikro-orm/core';
 import { SubmissionType } from '../../enums';
-import { IEntity } from '../database/entity.interface';
-import { ISubmissionMetadata } from './submission-metadata.interface';
-import { IWebsiteFormFields } from './website-form-fields.interface';
-import { ISubmissionFile } from './submission-file.interface';
+import { EntityId, IEntity } from '../database/entity.interface';
 import { IWebsiteOptions } from '../website-options/website-options.interface';
+import { ISubmissionFile } from './submission-file.interface';
+import { ISubmissionMetadata } from './submission-metadata.interface';
 import { ISubmissionScheduleInfo } from './submission-schedule-info.interface';
+import { IWebsiteFormFields } from './website-form-fields.interface';
+
+export type SubmissionId = EntityId;
 
 /**
  * Represents a submission entity.

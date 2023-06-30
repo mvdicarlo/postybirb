@@ -1,4 +1,4 @@
-import { AccountId } from '../account/account.type';
+import { AccountId } from '../account/account.interface';
 
 /**
  * Data structure for login request.

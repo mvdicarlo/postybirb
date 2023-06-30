@@ -33,7 +33,6 @@ export const DefaultRatingOptions: RatingOption[] = [
   },
 ];
 
-// TODO Think of a way to set these from a user customized db
 export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
   title: '',
   tags: DefaultTagValue,
