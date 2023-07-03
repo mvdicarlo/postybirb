@@ -26,7 +26,7 @@ export class DirectoryWatchersController extends PostyBirbController<DirectoryWa
   @ApiOkResponse({ description: 'Entity created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createDto: CreateDirectoryWatcherDto) {
-    return this.service.create(createDto);
+    return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 
   @Patch(':id')
@@ -36,6 +36,6 @@ export class DirectoryWatchersController extends PostyBirbController<DirectoryWa
     @Body() updateDto: UpdateDirectoryWatcherDto,
     @Param('id') id: string
   ) {
-    return this.service.update(id, updateDto);
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 }

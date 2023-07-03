@@ -17,7 +17,7 @@ import { useCallback, useMemo, useReducer, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
-import SubmissionOptionsApi from '../../api/submission-options.api';
+import WebsiteOptionsApi from '../../api/website-options.api';
 import SubmissionsApi from '../../api/submission.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
@@ -96,7 +96,7 @@ export default function EditSubmissionPage() {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 accountId: o.account!.id!,
               };
-              return SubmissionOptionsApi.validate(o.id, dto);
+              return WebsiteOptionsApi.validate(o.id, dto);
             })
         ) as Promise<SubmissionValidationResult[]>;
       }

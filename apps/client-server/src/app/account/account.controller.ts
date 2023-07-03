@@ -50,7 +50,9 @@ export class AccountController extends PostyBirbController<Account> {
   @ApiOkResponse({ description: 'Account updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Account Id not found.' })
   update(@Body() updateAccountDto: UpdateAccountDto, @Param('id') id: string) {
-    return this.service.update(id, updateAccountDto);
+    return this.service
+      .update(id, updateAccountDto)
+      .then((entity) => entity.toJSON());
   }
 
   @Post('/account-data')

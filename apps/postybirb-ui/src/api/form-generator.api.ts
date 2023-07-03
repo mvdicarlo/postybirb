@@ -1,22 +1,22 @@
 import { IFormGenerationRequestDto } from '@postybirb/dto';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
-import Https from '../transports/https';
+import { SubmissionType } from '@postybirb/types';
+import { HttpClient } from '../transports/http-client';
 
-export default class FormGeneratorApi {
-  private static readonly request: Https = new Https('form-generator');
+class FormGeneratorApi {
+  private readonly client: HttpClient = new HttpClient('form-generator');
 
-  static getDefaultForm() {
+  getDefaultForm(type: SubmissionType) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return FormGeneratorApi.request.get<FormBuilderMetadata<any>>(
-      'default-form'
-    );
+    return this.client.get<FormBuilderMetadata<any>>(`default/${type}`);
   }
 
-  static getForm(dto: IFormGenerationRequestDto) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return FormGeneratorApi.request.post<
-      FormBuilderMetadata<any>,
-      IFormGenerationRequestDto
+  getForm(dto: IFormGenerationRequestDto) {
+    return this.client.post<
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      FormBuilderMetadata<any>
     >('', dto);
   }
 }
+
+export default new FormGeneratorApi();

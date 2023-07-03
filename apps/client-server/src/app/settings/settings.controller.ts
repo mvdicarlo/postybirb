@@ -23,6 +23,8 @@ export class SettingsController extends PostyBirbController<Settings> {
     @Body() updateSettingsDto: UpdateSettingsDto,
     @Param('id') id: string
   ) {
-    return this.service.update(id, updateSettingsDto);
+    return this.service
+      .update(id, updateSettingsDto)
+      .then((entity) => entity.toJSON());
   }
 }

@@ -1,12 +1,17 @@
 import { IWebsiteInfoDto } from '@postybirb/dto';
-import Https from '../transports/https';
+import { IOAuthWebsiteRequestDto } from '@postybirb/types';
+import { HttpClient } from '../transports/http-client';
 
-export default class WebsitesApi {
-  private static readonly request: Https = new Https('websites');
+class WebsitesApi {
+  private readonly client: HttpClient = new HttpClient('websites');
 
-  static getWebsiteInfo() {
-    return WebsitesApi.request
-      .get<IWebsiteInfoDto[]>('info')
-      .then((res) => res.body);
+  getWebsiteInfo() {
+    return this.client.get<IWebsiteInfoDto[]>('info');
+  }
+
+  performOAuthStep(dto: IOAuthWebsiteRequestDto<never>) {
+    return this.client.post('oauth', dto);
   }
 }
+
+export default new WebsitesApi();

@@ -44,10 +44,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
     @Body() createSubmissionDto: CreateSubmissionDto,
     @UploadedFiles() files: MulterFileInfo[]
   ) {
-    const mapper = (res) => {
-      const obj = res.toJSON();
-      return obj;
-    };
+    const mapper = (res) => res.toJSON();
     if ((files || []).length) {
       const results = await Promise.all(
         files.map((file, index) => {
@@ -78,6 +75,8 @@ export class SubmissionController extends PostyBirbController<Submission> {
     @Param('id') id: string,
     @Body() updateSubmissionDto: UpdateSubmissionDto
   ) {
-    return this.service.update(id, updateSubmissionDto);
+    return this.service
+      .update(id, updateSubmissionDto)
+      .then((entity) => entity.toJSON());
   }
 }

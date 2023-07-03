@@ -26,16 +26,15 @@ export class TagConvertersController extends PostyBirbController<TagConverter> {
   @ApiOkResponse({ description: 'Tag converter created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createTagConverterDto: CreateTagConverterDto) {
-    return this.service.create(createTagConverterDto);
+    return this.service
+      .create(createTagConverterDto)
+      .then((entity) => entity.toJSON());
   }
 
   @Patch(':id')
-  @ApiOkResponse({ description: 'Tag converter updated.', type: Boolean })
+  @ApiOkResponse({ description: 'Tag converter updated.' })
   @ApiNotFoundResponse({ description: 'Tag converter not found.' })
-  update(
-    @Body() updateAccountDto: UpdateTagConverterDto,
-    @Param('id') id: string
-  ) {
-    return this.service.update(id, updateAccountDto);
+  update(@Body() updateDto: UpdateTagConverterDto, @Param('id') id: string) {
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 }

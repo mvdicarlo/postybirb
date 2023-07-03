@@ -1,44 +1,18 @@
 import {
   ICreateDirectoryWatcherDto,
-  ISubmissionDto,
+  IDirectoryWatcher,
   IUpdateDirectoryWatcherDto,
-} from '@postybirb/dto';
-import { IDirectoryWatcher } from '@postybirb/types';
-import { HistoryAction } from '../modules/action-history/action-history';
-import Https from '../transports/https';
+} from '@postybirb/types';
+import { BaseApi } from './base.api';
 
-export default class DirectoryWatchersApi {
-  private static readonly request: Https = new Https('directory-watchers');
-
-  static get(id: string) {
-    return DirectoryWatchersApi.request
-      .get<IDirectoryWatcher>(id)
-      .then((res) => res.body);
-  }
-
-  static getAll() {
-    return DirectoryWatchersApi.request
-      .get<IDirectoryWatcher[]>()
-      .then((res) => res.body);
-  }
-
-  static create(create: ICreateDirectoryWatcherDto) {
-    return DirectoryWatchersApi.request.post<ISubmissionDto, unknown>(
-      '',
-      create
-    );
-  }
-
-  static update(update: IUpdateDirectoryWatcherDto) {
-    return DirectoryWatchersApi.request.patch<ISubmissionDto, unknown>(
-      '',
-      update
-    );
-  }
-
-  static remove(ids: string[]) {
-    return DirectoryWatchersApi.request.delete('', {
-      ids,
-    });
+class DirectoryWatchersApi extends BaseApi<
+  IDirectoryWatcher,
+  ICreateDirectoryWatcherDto,
+  IUpdateDirectoryWatcherDto
+> {
+  constructor() {
+    super('directory-watchers');
   }
 }
+
+export default new DirectoryWatchersApi();

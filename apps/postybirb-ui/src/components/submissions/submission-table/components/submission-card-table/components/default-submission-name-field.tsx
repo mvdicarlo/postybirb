@@ -2,7 +2,7 @@ import { EuiFieldText } from '@elastic/eui';
 import { IBaseWebsiteOptions } from '@postybirb/types';
 import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import SubmissionOptionsApi from '../../../../../../api/submission-options.api';
+import WebsiteOptionsApi from '../../../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 
 type DefaultSubmissionNameFieldProps = {
@@ -19,7 +19,7 @@ export function DefaultSubmissionNameField(
   const submitDefaultOptionChanges = useCallback(
     (options: IBaseWebsiteOptions) => {
       if (JSON.stringify(options) !== JSON.stringify(defaultOptions)) {
-        SubmissionOptionsApi.update({ id: defaultOptionId, data: options });
+        WebsiteOptionsApi.update({ id: defaultOptionId, data: options });
       }
     },
     [defaultOptionId, defaultOptions]

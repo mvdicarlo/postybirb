@@ -1,56 +1,32 @@
 import {
+  AccountId,
   IAccountDto,
   ICreateAccountDto,
   ISetWebsiteDataRequestDto,
   IUpdateAccountDto,
-} from '@postybirb/dto';
-import {
-  ActionEntityType,
-  ActionHistory,
-  ActionType,
-  HistoryAction,
-} from '../modules/action-history/action-history';
-import Https from '../transports/https';
+} from '@postybirb/types';
+import { BaseApi } from './base.api';
 
-export default class AccountApi {
-  private static readonly request: Https = new Https('account');
-
-  static create(createAccountDto: ICreateAccountDto) {
-    return AccountApi.request.post('', createAccountDto);
+class AccountApi extends BaseApi<
+  IAccountDto,
+  ICreateAccountDto,
+  IUpdateAccountDto
+> {
+  constructor() {
+    super('account');
   }
 
-  static remove(ids: string[], action: HistoryAction = HistoryAction.DELETE) {
-    if (action === HistoryAction.DELETE) {
-      ActionHistory.RecordAction({
-        entity: ActionEntityType.ACCOUNT,
-        type: ActionType.DELETE,
-        ids,
-      });
-    }
-    return AccountApi.request.delete('', { ids, action });
+  clear(id: AccountId) {
+    return this.client.post<undefined>(`clear/${id}`);
   }
 
-  static getAll() {
-    return AccountApi.request.get<IAccountDto[]>();
+  setWebsiteData<T>(request: ISetWebsiteDataRequestDto<T>) {
+    return this.client.post<undefined>('account-data', request);
   }
 
-  static get(id: string, refresh = false) {
-    return AccountApi.request.get<IAccountDto>(id, { refresh });
-  }
-
-  static clear(id: string) {
-    return AccountApi.request.post(`clear/${id}`);
-  }
-
-  static setWebsiteData<T>(request: ISetWebsiteDataRequestDto<T>) {
-    return AccountApi.request.post('account-data', request);
-  }
-
-  static update(update: IUpdateAccountDto) {
-    return AccountApi.request.patch('', update);
-  }
-
-  static refreshLogin(id: string) {
-    return AccountApi.request.get(`refresh/${id}`);
+  refreshLogin(id: AccountId) {
+    return this.client.get<undefined>(`refresh/${id}`);
   }
 }
+
+export default new AccountApi();

@@ -8,7 +8,6 @@ import {
   Property,
   Rel,
   serialize,
-  wrap,
 } from '@mikro-orm/core';
 import {
   DefaultSubmissionFileProps,
@@ -43,10 +42,15 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
     inversedBy: 'parent',
     orphanRemoval: true,
     lazy: false,
+    serializer: (s) => s.id,
   })
   file: Rel<IFileBuffer>;
 
-  @ManyToOne(() => Submission, { nullable: false, inversedBy: 'files' })
+  @ManyToOne(() => Submission, {
+    nullable: false,
+    inversedBy: 'files',
+    serializer: (s) => s.id,
+  })
   submission: ISubmission<FileSubmissionMetadata>;
 
   @OneToOne({
@@ -55,6 +59,7 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
     orphanRemoval: true,
     lazy: false,
     nullable: true,
+    serializer: (s) => s.id,
   })
   thumbnail: Rel<IFileBuffer>;
 
@@ -104,7 +109,11 @@ export class ThumbnailFile extends PostyBirbEntity implements IFileBuffer {
   @Property({ nullable: false })
   mimeType: string;
 
-  @OneToOne({ entity: () => SubmissionFile, mappedBy: 'thumbnail' })
+  @OneToOne({
+    entity: () => SubmissionFile,
+    mappedBy: 'thumbnail',
+    serializer: (s) => s.id,
+  })
   parent: Rel<SubmissionFile>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
@@ -140,7 +149,11 @@ export class PrimaryFile extends PostyBirbEntity implements IFileBuffer {
   @Property({ nullable: false })
   mimeType: string;
 
-  @OneToOne({ entity: () => SubmissionFile, mappedBy: 'file' })
+  @OneToOne({
+    entity: () => SubmissionFile,
+    mappedBy: 'file',
+    serializer: (s) => s.id,
+  })
   parent: Rel<SubmissionFile>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
@@ -173,7 +186,11 @@ export class AltFile extends PostyBirbEntity implements IFileBuffer {
   @Property({ nullable: false })
   mimeType: string;
 
-  @OneToOne({ entity: () => SubmissionFile, mappedBy: 'altFile' })
+  @OneToOne({
+    entity: () => SubmissionFile,
+    mappedBy: 'altFile',
+    serializer: (s) => s.id,
+  })
   parent: Rel<SubmissionFile>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })

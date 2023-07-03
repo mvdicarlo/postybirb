@@ -1,5 +1,6 @@
 import { IEntity } from '../database/entity.interface';
 import { DirectoryWatcherImportAction } from '../../enums/directory-watcher-import-action.enum';
+import { SubmissionId } from '../submission/submission.interface';
 
 /**
  * Defines an entity that reads in files to the app from a folder.
@@ -27,7 +28,7 @@ export interface IDirectoryWatcher extends IEntity {
 
   /**
    * The submission IDs that are used when `importAction` is `ADD_TO_SUBMISSION`.
-   * @type {string[]|undefined}
+   * @type {SubmissionId[]|undefined}
    */
-  submissionIds?: string[];
+  submissionIds?: SubmissionId[];
 }

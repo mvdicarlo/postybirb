@@ -37,7 +37,7 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
     @Body()
     createDto: CreateWebsiteOptionsDto<IWebsiteFormFields>
   ) {
-    return this.service.create(createDto);
+    return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 
   @Patch(':id')
@@ -48,7 +48,7 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
     updateDto: UpdateWebsiteOptionsDto<IWebsiteFormFields>,
     @Param('id') id: string
   ) {
-    return this.service.update(id, updateDto);
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 
   @Post('validate')
