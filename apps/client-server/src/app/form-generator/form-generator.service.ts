@@ -36,7 +36,9 @@ export class FormGeneratorService {
   async generateForm(
     request: FormGenerationRequestDto
   ): Promise<FormBuilderMetadata<never>> {
-    const account = await this.accountService.findById(request.accountId);
+    const account = await this.accountService.findById(request.accountId, {
+      failOnMissing: true,
+    });
 
     // Get instance for creation
     const instance = await this.websiteRegistryService.findInstance(account);
@@ -68,6 +70,10 @@ export class FormGeneratorService {
     return this.populateUserDefaults(form, request.accountId, request.type);
   }
 
+  /**
+   * Returns the default fields form.
+   * @param {SubmissionType} type
+   */
   getDefaultForm(type: SubmissionType) {
     return this.populateUserDefaults(
       formBuilder(new DefaultWebsiteOptions(), {}),
