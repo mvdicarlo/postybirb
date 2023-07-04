@@ -93,10 +93,9 @@ export default function EditSubmissionPage() {
                 submissionId: data.id,
                 options: o.data,
                 defaultOptions: data.getDefaultOptions().data,
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                accountId: o.account!.id!,
+                accountId: o.account,
               };
-              return WebsiteOptionsApi.validate(o.id, dto);
+              return WebsiteOptionsApi.validate(dto).then(res => res.body);
             })
         ) as Promise<SubmissionValidationResult[]>;
       }

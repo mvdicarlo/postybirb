@@ -1,24 +1,24 @@
-import { ISubmissionDto } from '@postybirb/dto';
 import {
-  IBaseWebsiteOptions,
-  IBaseSubmissionMetadata,
-  ISubmissionFile,
-  ISubmissionOptions,
+  ISubmissionDto,
+  ISubmissionFileDto,
+  ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  IWebsiteFormFields,
   ScheduleType,
   SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
 import SubmissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
-  T extends IBaseSubmissionMetadata = IBaseSubmissionMetadata,
-  O extends IBaseWebsiteOptions = IBaseWebsiteOptions
+  T extends ISubmissionMetadata = ISubmissionMetadata,
+  O extends IWebsiteFormFields = IWebsiteFormFields
 > implements ISubmissionDto<T>
 {
-  createdAt!: Date;
+  createdAt!: string;
 
-  files!: ISubmissionFile[];
+  files!: ISubmissionFileDto[];
 
   id!: string;
 
@@ -26,13 +26,13 @@ export class SubmissionDto<
 
   metadata!: T;
 
-  options!: ISubmissionOptions<IBaseWebsiteOptions>[];
+  options!: WebsiteOptionsDto<IWebsiteFormFields>[];
 
   schedule!: ISubmissionScheduleInfo;
 
   type!: SubmissionType;
 
-  updatedAt!: Date;
+  updatedAt!: string;
 
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
@@ -46,13 +46,13 @@ export class SubmissionDto<
 
   public getDefaultOptions(
     submission?: SubmissionDto<T, O>
-  ): ISubmissionOptions<O> {
+  ): WebsiteOptionsDto<O> {
     return (submission || this).options.find(
       (o) => o.isDefault
-    ) as ISubmissionOptions<O>;
+    ) as WebsiteOptionsDto<O>;
   }
 
-  public removeOption(option: ISubmissionOptions<O>) {
+  public removeOption(option: WebsiteOptionsDto<O>) {
     const index = this.options.indexOf(option);
     if (index >= 0) {
       this.options.splice(index, 1);
@@ -60,11 +60,11 @@ export class SubmissionDto<
   }
 
   public updateSchedule(date: Moment | null) {
-    return SubmissionsApi.update({
-      id: this.id,
+    return SubmissionsApi.update(this.id, {
       isScheduled: this.isScheduled,
       scheduleType: ScheduleType.SINGLE,
-      scheduledFor: date ? date.toISOString() : null,
+      scheduledFor: date ? date.toISOString() : undefined,
+      metadata: this.metadata
     });
   }
 

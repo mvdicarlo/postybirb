@@ -5,8 +5,8 @@ import {
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import {
-  IBaseWebsiteOptions,
-  ISubmissionOptions,
+  IWebsiteFormFields,
+  WebsiteOptionsDto,
   ValidationResult,
 } from '@postybirb/types';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -18,8 +18,8 @@ export type SubmissionFormProps = {
 };
 
 export type SubmissionSectionProps = SubmissionFormProps & {
-  option: ISubmissionOptions<any>;
-  defaultOptions: ISubmissionOptions<IBaseWebsiteOptions>;
+  option: WebsiteOptionsDto<any>;
+  defaultOptions: WebsiteOptionsDto<IWebsiteFormFields>;
   account?: IAccountDto;
 };
 

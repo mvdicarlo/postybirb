@@ -9,13 +9,13 @@ import {
 export interface ISubmissionDto<
   T extends ISubmissionMetadata = ISubmissionMetadata
 > {
-  createdAt: Date;
+  createdAt: string;
   files: ISubmissionFile[];
   id: string;
   isScheduled: boolean;
   metadata: T;
-  options: IWebsiteOptions<IWebsiteFormFields>[];
+  options: IWebsiteOptions<IWebsiteFormFields>[]; // TODO should this be dto?
   schedule: ISubmissionScheduleInfo;
   type: 'MESSAGE' | 'FILE';
-  updatedAt: Date;
+  updatedAt: string;
 }
