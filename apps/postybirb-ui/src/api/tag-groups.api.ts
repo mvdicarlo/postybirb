@@ -1,14 +1,14 @@
 import {
-  ICreateTagConverterDto,
-  IUpdateTagConverterDto,
+  ICreateTagGroupDto,
+  IUpdateTagGroupDto,
   TagGroupDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class TagGroupsApi extends BaseApi<
   TagGroupDto,
-  ICreateTagConverterDto,
-  IUpdateTagConverterDto
+  ICreateTagGroupDto,
+  IUpdateTagGroupDto
 > {
   constructor() {
     super('tag-groups');

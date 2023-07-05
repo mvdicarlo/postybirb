@@ -10,7 +10,7 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { ITagConverter, IWebsiteInfoDto } from '@postybirb/types';
+import { IWebsiteInfoDto, TagConverterDto } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
@@ -34,7 +34,7 @@ function createTagConverter() {
     .then((res) => res.body);
 }
 
-function updateTagConverter(updatedTagConverter: ITagConverter) {
+function updateTagConverter(updatedTagConverter: TagConverterDto) {
   const { id, tag, convertTo } = updatedTagConverter;
   return tagConvertersApi
     .update(id, { tag, convertTo })
@@ -42,11 +42,11 @@ function updateTagConverter(updatedTagConverter: ITagConverter) {
 }
 
 function TagConverterField(props: {
-  converter: ITagConverter;
+  converter: TagConverterDto;
   websiteInfo: IWebsiteInfoDto[];
 }) {
   const { converter, websiteInfo } = props;
-  const [tagConverter, setTagConverter] = useState<ITagConverter>(converter);
+  const [tagConverter, setTagConverter] = useState<TagConverterDto>(converter);
 
   return (
     <EuiForm className="mb-2">

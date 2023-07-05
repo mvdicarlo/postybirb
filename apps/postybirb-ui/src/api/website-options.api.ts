@@ -2,6 +2,7 @@ import {
   ICreateWebsiteOptionsDto,
   IUpdateWebsiteOptionsDto,
   IValidateWebsiteOptionsDto,
+  IWebsiteFormFields,
   ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
@@ -10,7 +11,7 @@ import { BaseApi } from './base.api';
 class WebsiteOptionsApi extends BaseApi<
   WebsiteOptionsDto,
   ICreateWebsiteOptionsDto,
-  IUpdateWebsiteOptionsDto<never>
+  IUpdateWebsiteOptionsDto<IWebsiteFormFields>
 > {
   constructor() {
     super('submission-option');

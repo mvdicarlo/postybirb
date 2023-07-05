@@ -7,7 +7,7 @@ import {
 } from '@elastic/eui';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import AccountApi from '../../api/account.api';
+import accountApi from '../../api/account.api';
 import { useToast } from '../../app/app-toast-provider';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
@@ -51,12 +51,13 @@ export default function DiscordLoginView(
       onSubmit={(event) => {
         event.preventDefault();
         setSubmitting(true);
-        AccountApi.setWebsiteData<DiscordAccountData>({
-          id,
-          data: {
-            webhook,
-          },
-        })
+        accountApi
+          .setWebsiteData<DiscordAccountData>({
+            id,
+            data: {
+              webhook,
+            },
+          })
           .then(() => {
             addToast({
               id,

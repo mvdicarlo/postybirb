@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { IWebsiteInfoDto } from '@postybirb/dto';
-import { DynamicObject } from '@postybirb/types';
+import { DynamicObject, IWebsiteInfoDto } from '@postybirb/types';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteRegistryService } from './website-registry.service';
 

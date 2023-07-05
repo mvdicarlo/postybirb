@@ -10,36 +10,36 @@ import {
   EuiSpacer,
   EuiTableSelectionType,
 } from '@elastic/eui';
-import { ITagGroup } from '@postybirb/types';
+import { TagGroupDto } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { useReducer, useRef, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import TagGroupsApi from '../../../api/tag-groups.api';
+import tagGroupsApi from '../../../api/tag-groups.api';
 
 type TagGroupsTableProps = {
-  tagGroups: ITagGroup[];
+  tagGroups: TagGroupDto[];
 };
 
 export default function TagGroupsTable(props: TagGroupsTableProps) {
   const { tagGroups } = props;
-  const [selectedItems, setSelectedItems] = useState<ITagGroup[]>([]);
+  const [selectedItems, setSelectedItems] = useState<TagGroupDto[]>([]);
   const tableRef = useRef<EuiBasicTable | null>(null);
   const [, forceUpdate] = useReducer((x: number) => (x === 0 ? 1 : 0), 0);
 
-  const onSelectionChange = (selected: ITagGroup[]) => {
+  const onSelectionChange = (selected: TagGroupDto[]) => {
     setSelectedItems(selected);
   };
 
   const createNewTagGroup = () => {
-    TagGroupsApi.create({ name: 'New Tag Group', tags: [] });
+    tagGroupsApi.create({ name: 'New Tag Group', tags: [] });
   };
 
-  const saveTagGroupChanges = ({ id, tags, name }: ITagGroup) => {
-    TagGroupsApi.update(id, { tags, name });
+  const saveTagGroupChanges = ({ id, tags, name }: TagGroupDto) => {
+    tagGroupsApi.update(id, { tags, name });
   };
 
   const deleteSelectedItems = () => {
-    TagGroupsApi.remove(selectedItems.map((item) => item.id));
+    tagGroupsApi.remove(selectedItems.map((item) => item.id));
     setSelectedItems([]);
   };
 
@@ -50,17 +50,17 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       </EuiButton>
     ) : null;
 
-  const selection: EuiTableSelectionType<ITagGroup> = {
+  const selection: EuiTableSelectionType<TagGroupDto> = {
     onSelectionChange,
   };
 
-  const columns: Array<EuiBasicTableColumn<ITagGroup>> = [
+  const columns: Array<EuiBasicTableColumn<TagGroupDto>> = [
     {
       field: 'name',
       name: <FormattedMessage id="name" defaultMessage="Name" />,
       sortable: true,
       truncateText: true,
-      render: (name: string, tagGroup: ITagGroup) => (
+      render: (name: string, tagGroup: TagGroupDto) => (
         <EuiFieldText
           placeholder="Name"
           value={name}
@@ -77,7 +77,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       field: 'tags',
       name: <FormattedMessage id="tags" defaultMessage="Tags" />,
       width: '60%',
-      render: (tags: string[], tagGroup: ITagGroup) => {
+      render: (tags: string[], tagGroup: TagGroupDto) => {
         const options = tags.map((tag) => ({
           label: tag,
           key: `${tagGroup.id}:${tag}`,
@@ -124,8 +124,8 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
           type: 'icon',
           icon: 'trash',
           color: 'danger',
-          onClick: (tagGroup: ITagGroup) => {
-            TagGroupsApi.remove([tagGroup.id]);
+          onClick: (tagGroup: TagGroupDto) => {
+            tagGroupsApi.remove([tagGroup.id]);
           },
         },
       ],

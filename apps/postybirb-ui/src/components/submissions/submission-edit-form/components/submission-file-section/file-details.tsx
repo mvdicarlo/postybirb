@@ -14,7 +14,7 @@ import { isImage } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import SubmissionsApi from '../../../../../api/submission.api';
+import submissionsApi from '../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { SubmissionFormProps } from '../../submission-form-props';
 import { SimpleWebsiteSelect } from '../submission-form-website-select/simple-website-select';
@@ -254,7 +254,7 @@ function ImageDetails(props: FileDetailsProps) {
 }
 
 function removeFile(submissionId: string, file: ISubmissionFile) {
-  return SubmissionsApi.removeFile(submissionId, file.id);
+  return submissionsApi.removeFile(submissionId, file.id);
 }
 
 export function FileDetails(props: FileDetailsProps) {

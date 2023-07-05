@@ -1,4 +1,4 @@
-import { CustomLoginType, UserLoginType } from '@postybirb/dto';
+import { CustomLoginType, UserLoginType } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 

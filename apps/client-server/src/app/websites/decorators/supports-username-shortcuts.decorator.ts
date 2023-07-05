@@ -1,4 +1,4 @@
-import { UsernameShortcut } from '@postybirb/dto';
+import { UsernameShortcut } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 

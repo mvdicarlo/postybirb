@@ -20,7 +20,7 @@ import {
 import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
-import DirectoryWatchersApi from '../../../api/directory-watchers.api';
+import directoryWatchersApi from '../../../api/directory-watchers.api';
 import { SaveIcon } from '../../shared/icons/Icons';
 import SubmissionPicker from '../submission-picker.ts/submission-picker';
 
@@ -151,7 +151,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             color="danger"
             aria-label="Delete folder watcher"
             onClick={() => {
-              DirectoryWatchersApi.remove([directoryWatcher.id]).finally(() => {
+              directoryWatchersApi.remove([directoryWatcher.id]).finally(() => {
                 refetch();
               });
             }}
@@ -164,12 +164,13 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             color="primary"
             aria-label="Save folder upload changes"
             onClick={() => {
-              DirectoryWatchersApi.update({
-                ...state,
-                id: directoryWatcher.id,
-              }).finally(() => {
-                refetch();
-              });
+              directoryWatchersApi
+                .update(directoryWatcher.id, {
+                  ...state,
+                })
+                .finally(() => {
+                  refetch();
+                });
             }}
           />
         </EuiFlexItem>
@@ -181,7 +182,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
 export default function DirectoryWatchersTable() {
   const { data, isLoading, refetch } = useQuery(
     [`directory-watchers`],
-    () => DirectoryWatchersApi.getAll(),
+    () => directoryWatchersApi.getAll().then((res) => res.body),
     {
       refetchOnWindowFocus: false,
       cacheTime: 0,
@@ -214,11 +215,13 @@ export default function DirectoryWatchersTable() {
             iconType="plus"
             className="ml-2"
             onClick={() => {
-              DirectoryWatchersApi.create({
-                importAction: DirectoryWatcherImportAction.NEW_SUBMISSION,
-              }).finally(() => {
-                refetch();
-              });
+              directoryWatchersApi
+                .create({
+                  importAction: DirectoryWatcherImportAction.NEW_SUBMISSION,
+                })
+                .finally(() => {
+                  refetch();
+                });
             }}
           />
         </h3>

@@ -1,15 +1,13 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import {
-  ILoginState,
-  UsernameShortcut,
-  WebsiteLoginType,
-} from '@postybirb/dto';
 import { Logger } from '@postybirb/logger';
 import {
-  IAccount,
-  LoginState,
   DynamicObject,
+  IAccount,
+  ILoginState,
+  LoginState,
   SubmissionType,
+  UsernameShortcut,
+  WebsiteLoginType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
@@ -18,14 +16,8 @@ import { Logger as PinoLogger } from 'pino';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
-import {
-  FileWebsiteKey,
-  isFileWebsite,
-} from './models/website-modifiers/file-website';
-import {
-  MessageWebsiteKey,
-  isMessageWebsite,
-} from './models/website-modifiers/message-website';
+import { FileWebsiteKey } from './models/website-modifiers/file-website';
+import { MessageWebsiteKey } from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

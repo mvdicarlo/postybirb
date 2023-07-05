@@ -8,7 +8,7 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import 'regenerator-runtime';
-import SubmissionsApi from '../../../api/submission.api';
+import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import HttpErrorResponse from '../../../models/http-error-response';
@@ -75,7 +75,8 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
               selectedSubmissionIds.includes(submission.id)
             )}
             onDeleteSelected={(selected) => {
-              SubmissionsApi.remove(selected.map((s) => s.id))
+              submissionsApi
+                .remove(selected.map((s) => s.id))
                 .then(() => {
                   addToast({
                     id: Date.now().toString(),

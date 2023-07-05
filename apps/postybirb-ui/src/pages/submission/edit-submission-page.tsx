@@ -17,7 +17,7 @@ import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
 import submissionsApi from '../../api/submission.api';
-import WebsiteOptionsApi from '../../api/website-options.api';
+import websiteOptionsApi from '../../api/website-options.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
@@ -95,7 +95,7 @@ export default function EditSubmissionPage() {
                 defaultOptions: data.getDefaultOptions().data,
                 account: o.account,
               };
-              return WebsiteOptionsApi.validate(dto).then((res) => res.body);
+              return websiteOptionsApi.validate(dto).then((res) => res.body);
             })
         ) as Promise<SubmissionValidationResult[]>;
       }

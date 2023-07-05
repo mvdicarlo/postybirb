@@ -1,5 +1,4 @@
 import {
-  EuiButtonIcon,
   EuiFilterButton,
   EuiFilterGroup,
   EuiSpacer,
@@ -11,17 +10,8 @@ import { useLocalStorage } from 'react-use';
 import settingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
-import {
-  ActionEntityType,
-  ActionHistory,
-} from '../../../modules/action-history/action-history';
-import {
-  RedoKeybinding,
-  UndoKeybinding,
-} from '../../../shared/app-keybindings';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
-import { useKeybinding } from '../../app/keybinding/keybinding';
 import AccountLoginCard from '../account-login-card/account-login-card';
 
 type AccountLoginContainerProps = {
@@ -54,33 +44,6 @@ export function AccountLoginContainer(
     'show-hidden-accounts',
     false
   );
-
-  const hasUndoAction = ActionHistory.hasUndoActions(ActionEntityType.ACCOUNT);
-  const hasRedoAction = ActionHistory.hasRedoActions(ActionEntityType.ACCOUNT);
-
-  useKeybinding({
-    keybinding: UndoKeybinding,
-    onActivate(event) {
-      if (
-        !(event.target instanceof HTMLInputElement) &&
-        !document.querySelector('.euiModal')
-      ) {
-        ActionHistory.Undo(ActionEntityType.ACCOUNT);
-      }
-    },
-  });
-
-  useKeybinding({
-    keybinding: RedoKeybinding,
-    onActivate(event) {
-      if (
-        !(event.target instanceof HTMLInputElement) &&
-        !document.querySelector('.euiModal')
-      ) {
-        ActionHistory.Redo(ActionEntityType.ACCOUNT);
-      }
-    },
-  });
 
   // eslint-disable-next-line react/destructuring-assignment
   const { settings } = props.settings;
@@ -135,28 +98,6 @@ export function AccountLoginContainer(
         </EuiFilterGroup>
       </div>
       <EuiSpacer />
-      {hasUndoAction || hasRedoAction ? (
-        <>
-          <div>
-            <EuiButtonIcon
-              className="mr-1"
-              title="Undo"
-              size="s"
-              iconType="editorUndo"
-              disabled={!hasUndoAction}
-              onClick={() => ActionHistory.Undo(ActionEntityType.ACCOUNT)}
-            />
-            <EuiButtonIcon
-              title="Redo"
-              size="s"
-              iconType="editorRedo"
-              disabled={!hasRedoAction}
-              onClick={() => ActionHistory.Redo(ActionEntityType.ACCOUNT)}
-            />
-          </div>
-          <EuiSpacer />
-        </>
-      ) : null}
       <div className="account-login-list">
         {websites.map((website) => (
           <AccountLoginCard
