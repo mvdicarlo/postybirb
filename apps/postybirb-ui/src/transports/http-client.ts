@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-globals
-const defaultTargetProvider = () => location.origin;
+export const defaultTargetProvider = () => location.origin;
+// return `https://localhost:${window.electron.app_port}`; OLD
+
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 type HttpResponse<T> = {
   body: T;

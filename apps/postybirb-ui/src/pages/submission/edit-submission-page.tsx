@@ -10,15 +10,14 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { IValidateSubmissionOptionsDto } from '@postybirb/dto';
-import { SubmissionType } from '@postybirb/types';
+import { IValidateWebsiteOptionsDto, SubmissionType } from '@postybirb/types';
 import { debounce } from 'lodash';
 import { useCallback, useMemo, useReducer, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
+import submissionsApi from '../../api/submission.api';
 import WebsiteOptionsApi from '../../api/website-options.api';
-import SubmissionsApi from '../../api/submission.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
@@ -43,19 +42,20 @@ function canSave(original?: SubmissionDto, updated?: SubmissionDto): boolean {
 
 async function save(original: SubmissionDto, updated: SubmissionDto) {
   const { id, isScheduled, schedule } = updated;
-  const deletedOptions = original.options.filter(
-    (originalOpt) =>
-      !updated.options.some((updatedOpt) => originalOpt.id === updatedOpt.id)
-  );
+  const deletedWebsiteOptions = original.options
+    .filter(
+      (originalOpt) =>
+        !updated.options.some((updatedOpt) => originalOpt.id === updatedOpt.id)
+    )
+    .map((o) => o.id);
 
   const newOrUpdatedOptions = updated.options;
 
-  return SubmissionsApi.update({
-    id,
+  return submissionsApi.update(id, {
     isScheduled,
     scheduledFor: schedule.scheduledFor,
     scheduleType: schedule.scheduleType,
-    deletedOptions,
+    deletedWebsiteOptions,
     newOrUpdatedOptions,
     metadata: updated.metadata,
   });
@@ -72,9 +72,9 @@ export default function EditSubmissionPage() {
   const { data, isLoading, isFetching, refetch } = useQuery(
     [`submission-${id}`],
     () =>
-      SubmissionsApi.get(id as string).then(
-        (value) => new SubmissionDto(value.body)
-      ),
+      submissionsApi
+        .get(id as string)
+        .then((value) => new SubmissionDto(value.body)),
     {
       refetchOnWindowFocus: false,
       cacheTime: 0,
@@ -89,13 +89,13 @@ export default function EditSubmissionPage() {
           data.options
             .filter((o) => !o.isDefault)
             .map((o) => {
-              const dto: IValidateSubmissionOptionsDto = {
-                submissionId: data.id,
+              const dto: IValidateWebsiteOptionsDto = {
+                submission: data.id,
                 options: o.data,
                 defaultOptions: data.getDefaultOptions().data,
-                accountId: o.account,
+                account: o.account,
               };
-              return WebsiteOptionsApi.validate(dto).then(res => res.body);
+              return WebsiteOptionsApi.validate(dto).then((res) => res.body);
             })
         ) as Promise<SubmissionValidationResult[]>;
       }

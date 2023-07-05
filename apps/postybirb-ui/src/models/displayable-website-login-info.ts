@@ -1,4 +1,4 @@
-import { IWebsiteInfoDto } from '@postybirb/dto';
+import { IWebsiteInfoDto } from '@postybirb/types';
 
 export type DisplayableWebsiteLoginInfo = IWebsiteInfoDto & {
   isHidden: boolean;

@@ -10,13 +10,12 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { IWebsiteInfoDto } from '@postybirb/dto';
-import { ITagConverter } from '@postybirb/types';
+import { ITagConverter, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
-import TagConvertersApi from '../../../api/tag-converters.api';
-import WebsitesApi from '../../../api/websites.api';
+import tagConvertersApi from '../../../api/tag-converters.api';
+import websitesApi from '../../../api/websites.api';
 import { TagConvertersKeybinding } from '../../../shared/app-keybindings';
 import { ModalProperties } from '../../../shared/common-properties/modal.properties';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
@@ -27,15 +26,19 @@ import Loading from '../../shared/loading/loading';
 type TagGroupsFlyoutProps = ModalProperties;
 
 function createTagConverter() {
-  return TagConvertersApi.create({
-    tag: `Converter ${Date.now()}`,
-    convertTo: {},
-  });
+  return tagConvertersApi
+    .create({
+      tag: `Converter ${Date.now()}`,
+      convertTo: {},
+    })
+    .then((res) => res.body);
 }
 
 function updateTagConverter(updatedTagConverter: ITagConverter) {
   const { id, tag, convertTo } = updatedTagConverter;
-  return TagConvertersApi.update({ id, tag, convertTo });
+  return tagConvertersApi
+    .update(id, { tag, convertTo })
+    .then((res) => res.body);
 }
 
 function TagConverterField(props: {
@@ -112,7 +115,7 @@ function TagConverterField(props: {
           iconType="trash"
           color="danger"
           onClick={() => {
-            TagConvertersApi.remove([tagConverter.id]);
+            tagConvertersApi.remove([tagConverter.id]);
           }}
         />
       </div>
@@ -124,7 +127,7 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
   const { state, isLoading } = useStore(TagConverterStore);
   const { data: websiteInfo, isLoading: isLoadingWebsiteInfo } = useQuery(
     'website-info',
-    WebsitesApi.getWebsiteInfo,
+    () => websitesApi.getWebsiteInfo().then((res) => res.body),
     {
       refetchInterval: false,
       refetchOnWindowFocus: false,

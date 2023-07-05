@@ -1,6 +1,5 @@
-import { IFormGenerationRequestDto } from '@postybirb/dto';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
-import { SubmissionType } from '@postybirb/types';
+import { IFormGenerationRequestDto, SubmissionType } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 class FormGeneratorApi {

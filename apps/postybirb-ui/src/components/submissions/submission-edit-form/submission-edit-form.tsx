@@ -1,6 +1,9 @@
 import { EuiSideNav, EuiSideNavItemType, EuiTitle } from '@elastic/eui';
-import { IAccountDto } from '@postybirb/dto';
-import { ISubmissionOptions, SubmissionType } from '@postybirb/types';
+import {
+  IAccountDto,
+  WebsiteOptionsDto,
+  SubmissionType,
+} from '@postybirb/types';
 import { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import SubmissionFileSection from './components/submission-file-section/submission-file-section';
@@ -25,7 +28,7 @@ function getSideNav(
   defaultOptionsId: string,
   websiteGroups: Record<
     string,
-    { option: ISubmissionOptions; account: IAccountDto }[]
+    { option: WebsiteOptionsDto; account: IAccountDto }[]
   >
 ): EuiSideNavItemType<unknown>[] {
   const sidenavOptions: EuiSideNavItemType<unknown>[] = [
@@ -66,15 +69,15 @@ export default function SubmissionEditForm(props: SubmissionEditFormProps) {
 
   const websiteGroups: Record<
     string,
-    { option: ISubmissionOptions; account: IAccountDto }[]
+    { option: WebsiteOptionsDto; account: IAccountDto }[]
   > = useMemo(() => {
     const groups: Record<
       string,
-      { option: ISubmissionOptions; account: IAccountDto }[]
+      { option: WebsiteOptionsDto; account: IAccountDto }[]
     > = {};
 
     websiteBasedOptions.forEach((option) => {
-      const account = accounts.find((a) => a.id === option.account?.id);
+      const account = accounts.find((a) => a.id === option.account);
 
       if (account) {
         if (!groups[account.websiteInfo.websiteDisplayName]) {

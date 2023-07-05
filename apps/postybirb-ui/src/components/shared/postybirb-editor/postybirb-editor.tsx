@@ -138,7 +138,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
   // loading process and is instead loaded as a string via content_style
   return (
     <Editor
-      init={tinyMceSettings as any}
+      init={tinyMceSettings as never}
       value={value || ''}
       onEditorChange={(newValue) => {
         console.log(newValue);

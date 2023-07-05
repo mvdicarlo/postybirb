@@ -9,7 +9,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
-import SubmissionsApi from '../../api/submission.api';
+import submissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
   T extends ISubmissionMetadata = ISubmissionMetadata,
@@ -60,11 +60,11 @@ export class SubmissionDto<
   }
 
   public updateSchedule(date: Moment | null) {
-    return SubmissionsApi.update(this.id, {
+    return submissionsApi.update(this.id, {
       isScheduled: this.isScheduled,
       scheduleType: ScheduleType.SINGLE,
       scheduledFor: date ? date.toISOString() : undefined,
-      metadata: this.metadata
+      metadata: this.metadata,
     });
   }
 

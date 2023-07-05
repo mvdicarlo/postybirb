@@ -1,4 +1,4 @@
-import { ISubmissionDto } from '@postybirb/dto';
+import { ISubmissionDto } from '@postybirb/types';
 import SubmissionsApi from '../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 
