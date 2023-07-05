@@ -1,5 +1,5 @@
 import { EuiCard } from '@elastic/eui';
-import { IAccountDto } from '@postybirb/dto';
+import { IAccountDto } from '@postybirb/types';
 import { useToggle } from 'react-use';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import AccountLoginCardTable from './account-login-card-table';

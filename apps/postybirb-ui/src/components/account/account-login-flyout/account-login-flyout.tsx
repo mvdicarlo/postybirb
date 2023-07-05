@@ -9,7 +9,7 @@ import {
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
-import WebsitesApi from '../../../api/websites.api';
+import websitesApi from '../../../api/websites.api';
 import { ModalProperties } from '../../../shared/common-properties/modal.properties';
 import { AccountKeybinding } from '../../../shared/app-keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
@@ -22,9 +22,8 @@ import { AccountLoginContainer } from '../account-login-container/account-login-
 type AccountLoginFlyoutProps = ModalProperties;
 
 export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
-  const { isLoading, data: availableWebsites } = useQuery(
-    'website-info',
-    WebsitesApi.getWebsiteInfo
+  const { isLoading, data: availableWebsites } = useQuery('website-info', () =>
+    websitesApi.getWebsiteInfo().then((res) => res.body)
   );
 
   const { isLoading: isLoadingStore, state: settingsState } =

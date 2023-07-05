@@ -6,7 +6,7 @@ import {
   EuiModalHeaderTitle,
   EuiOverlayMask,
 } from '@elastic/eui';
-import { IAccountDto, IWebsiteInfoDto } from '@postybirb/dto';
+import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { ReactNode } from 'react';
 import './account-login-modal.css';
 

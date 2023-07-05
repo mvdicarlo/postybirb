@@ -1,5 +1,4 @@
-import { IWebsiteInfoDto } from '@postybirb/dto';
-import { IOAuthWebsiteRequestDto } from '@postybirb/types';
+import { IOAuthWebsiteRequestDto, IWebsiteInfoDto } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 class WebsitesApi {

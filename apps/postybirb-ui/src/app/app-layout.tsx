@@ -1,5 +1,4 @@
 import {
-  EuiButton,
   EuiCollapsibleNavGroup,
   EuiErrorBoundary,
   EuiListGroup,
@@ -19,7 +18,6 @@ import Keybinding, {
   useKeybinding,
 } from '../components/app/keybinding/keybinding';
 import {
-  ArrowUpIcon,
   FileIcon,
   GearIcon,
   HomeIcon,

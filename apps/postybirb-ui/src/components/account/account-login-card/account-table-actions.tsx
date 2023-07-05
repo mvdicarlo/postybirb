@@ -8,7 +8,7 @@ import {
 } from '@elastic/eui';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import AccountApi from '../../../api/account.api';
+import accountApi from '../../../api/account.api';
 import { useToast } from '../../../app/app-toast-provider';
 import HttpErrorResponse from '../../../models/http-error-response';
 
@@ -26,7 +26,8 @@ export function DeleteAccountPopover(props: { id: string }) {
         iconType="trash"
         color="danger"
         onClick={() => {
-          AccountApi.remove([id])
+          accountApi
+            .remove([id])
             .then(() => {
               addToast({
                 id,
@@ -101,7 +102,8 @@ export function ClearAccountDataPopover(props: { id: string }) {
           iconType="flag"
           onClick={() => {
             setOpen(false);
-            AccountApi.clear(id)
+            accountApi
+              .clear(id)
               .then(() => {
                 addToast({
                   id,

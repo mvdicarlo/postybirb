@@ -1,4 +1,4 @@
-import { IAccountDto, IWebsiteInfoDto } from '@postybirb/dto';
+import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 
 export type LoginComponentProps<T> = {
   account: IAccountDto<T>;

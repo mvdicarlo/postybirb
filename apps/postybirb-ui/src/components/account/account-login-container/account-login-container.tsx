@@ -5,10 +5,10 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { ISettingsDto, IWebsiteInfoDto } from '@postybirb/dto';
+import { IWebsiteInfoDto, SettingsDto } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
-import SettingsApi from '../../../api/settings.api';
+import settingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import {
@@ -26,7 +26,7 @@ import AccountLoginCard from '../account-login-card/account-login-card';
 
 type AccountLoginContainerProps = {
   availableWebsites: IWebsiteInfoDto[];
-  settings: ISettingsDto;
+  settings: SettingsDto;
 };
 
 function filterWebsites(
@@ -185,7 +185,7 @@ export function AccountLoginContainer(
                 hiddenWebsites,
               };
 
-              SettingsApi.update(updatedSettings);
+              settingsApi.update(updatedSettings.id, updatedSettings);
             }}
           />
         ))}

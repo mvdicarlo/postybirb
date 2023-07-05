@@ -14,7 +14,7 @@ import {
 } from '@elastic/eui';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import AccountApi from '../../../api/account.api';
+import accountApi from '../../../api/account.api';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import ErrorAlert from '../../shared/error-alert/error-alert';
 
@@ -94,13 +94,14 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
           onSubmit={(event) => {
             event.preventDefault();
             setIsCreating(true);
-            AccountApi.create({
-              name: accountName,
-              website: website.id,
-              groups: selectedGroups
-                .filter((group) => !!group.value)
-                .map((group) => group.value as string),
-            })
+            accountApi
+              .create({
+                name: accountName,
+                website: website.id,
+                groups: selectedGroups
+                  .filter((group) => !!group.value)
+                  .map((group) => group.value as string),
+              })
               .then(() => {
                 onCloseModal();
               })

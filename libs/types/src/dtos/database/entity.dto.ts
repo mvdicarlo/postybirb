@@ -1,10 +1,6 @@
 import { IEntity } from '../../models';
 
-export type OmittedEntityFields =
-  | 'createdAt'
-  | 'updatedAt'
-  | 'markedForDeletion'
-  | 'toJson';
+export type OmittedEntityFields = 'createdAt' | 'updatedAt' | 'toJson';
 
 export type IEntityDto<T extends IEntity = IEntity> = Omit<
   T,
