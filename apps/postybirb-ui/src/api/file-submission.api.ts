@@ -19,8 +19,30 @@ class FileSubmissionsApi {
   }
 
   removeFile(id: SubmissionId, fileId: EntityId, target: Target) {
-    this.client.delete<ISubmissionDto>(`remove/${target}/${id}/${fileId}`);
+    return this.client.delete<ISubmissionDto>(
+      `remove/${target}/${id}/${fileId}`
+    );
   }
 }
 
 export default new FileSubmissionsApi();
+
+export function getRemoveFileUrl(
+  id: SubmissionId,
+  fileId: EntityId,
+  target: Target
+): string {
+  return `api/file-submission/remove/${target}/${id}/${fileId}`;
+}
+
+export function getReplaceFileUrl(
+  id: SubmissionId,
+  fileId: EntityId,
+  target: Target
+): string {
+  return `api/file-submission/replace/${target}/${id}/${fileId}`;
+}
+
+export function getAppendFileUrl(id: SubmissionId, target: Target): string {
+  return `api/file-submission/add/${target}/${id}`;
+}

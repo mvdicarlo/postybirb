@@ -1,4 +1,5 @@
 import { EuiSpacer } from '@elastic/eui';
+import { getAppendFileUrl } from '../../../../../api/file-submission.api';
 import Uploader from '../../../../shared/uploader/uploader';
 import { SubmissionFormProps } from '../../submission-form-props';
 import SubmissionFormSection from '../submission-form-section/submission-form-section';
@@ -17,7 +18,7 @@ export default function SubmissionFileSection(
         <SubmissionFileCardContainer {...props} />
         <EuiSpacer />
         <Uploader
-          endpointPath={`api/submission/file/add/${submission.id}`}
+          endpointPath={getAppendFileUrl(submission.id, 'file')}
           onComplete={() => {
             fetchAndMergeSubmission(submission, ['files', 'metadata']).finally(
               () => {

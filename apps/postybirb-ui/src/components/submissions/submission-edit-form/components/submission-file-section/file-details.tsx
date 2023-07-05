@@ -9,12 +9,12 @@ import {
   EuiFormRow,
   EuiSpacer,
 } from '@elastic/eui';
-import { FileSubmissionMetadata, ISubmissionFile } from '@postybirb/types';
+import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
 import { isImage } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import submissionsApi from '../../../../../api/submission.api';
+import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { SubmissionFormProps } from '../../submission-form-props';
 import { SimpleWebsiteSelect } from '../submission-form-website-select/simple-website-select';
@@ -23,13 +23,13 @@ import './file-details.css';
 
 function updateFileDimensions(
   submission: SubmissionDto<FileSubmissionMetadata>,
-  file: ISubmissionFile,
+  file: ISubmissionFileDto,
   height: number,
   width: number
 ) {
   const { metadata } = submission;
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  metadata.modifiedFiles[file.id].dimensions!['default'] = {
+  metadata.fileMetadata[file.id].dimensions!['default'] = {
     fileId: file.id,
     height,
     width,
@@ -38,30 +38,30 @@ function updateFileDimensions(
 
 function updateAltInfo(
   submission: SubmissionDto<FileSubmissionMetadata>,
-  file: ISubmissionFile,
+  file: ISubmissionFileDto,
   altText: string
 ) {
   const { metadata } = submission;
-  metadata.modifiedFiles[file.id].altText = altText;
+  metadata.fileMetadata[file.id].altText = altText;
 }
 
 function updateIgnoredWebsites(
   submission: SubmissionDto<FileSubmissionMetadata>,
-  file: ISubmissionFile,
+  file: ISubmissionFileDto,
   ignoredWebsites: string[]
 ) {
   const { metadata } = submission;
-  metadata.modifiedFiles[file.id].ignoredWebsites = ignoredWebsites ?? [];
+  metadata.fileMetadata[file.id].ignoredWebsites = ignoredWebsites ?? [];
 }
 
 type FileDetailsProps = SubmissionFormProps & {
-  file: ISubmissionFile;
+  file: ISubmissionFileDto;
 };
 
 function SharedDetails(props: FileDetailsProps) {
   const { file, submission, onUpdate } = props;
   const fileMetadata = (submission as SubmissionDto<FileSubmissionMetadata>)
-    .metadata.modifiedFiles[file.id];
+    .metadata.fileMetadata[file.id];
 
   const providedAltText = fileMetadata.altText || '';
   const providedIgnoredWebsites = fileMetadata.ignoredWebsites ?? [];
@@ -180,7 +180,7 @@ function calculateAspectRatio(
 function ImageDetails(props: FileDetailsProps) {
   const { file, submission, onUpdate } = props;
   const fileMetadata = (submission as SubmissionDto<FileSubmissionMetadata>)
-    .metadata.modifiedFiles[file.id];
+    .metadata.fileMetadata[file.id];
 
   const { width: providedWidth, height: providedHeight } =
     fileMetadata.dimensions['default'] ?? file;
@@ -253,8 +253,8 @@ function ImageDetails(props: FileDetailsProps) {
   );
 }
 
-function removeFile(submissionId: string, file: ISubmissionFile) {
-  return submissionsApi.removeFile(submissionId, file.id);
+function removeFile(submissionId: string, file: ISubmissionFileDto) {
+  return fileSubmissionApi.removeFile(submissionId, file.id, 'file');
 }
 
 export function FileDetails(props: FileDetailsProps) {

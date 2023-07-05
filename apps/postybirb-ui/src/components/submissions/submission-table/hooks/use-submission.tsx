@@ -3,9 +3,6 @@ import {
   IValidateWebsiteOptionsDto,
   SubmissionId,
 } from '@postybirb/types';
-import submissionApi from 'apps/postybirb-ui/src/api/submission.api';
-import websiteOptionsApi from 'apps/postybirb-ui/src/api/website-options.api';
-import { SubmissionDto } from 'apps/postybirb-ui/src/models/dtos/submission.dto';
 import { debounce } from 'lodash';
 import {
   PropsWithChildren,
@@ -16,6 +13,9 @@ import {
   useReducer,
 } from 'react';
 import { useQuery } from 'react-query';
+import submissionApi from '../../../../api/submission.api';
+import websiteOptionsApi from '../../../../api/website-options.api';
+import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { SubmissionValidationResult } from '../../submission-edit-form/submission-form-props';
 
 export type SubmissionProviderContext = {
