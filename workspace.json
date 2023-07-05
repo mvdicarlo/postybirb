@@ -57,21 +57,6 @@
       },
       "tags": []
     },
-    "dto": {
-      "root": "libs/dto",
-      "sourceRoot": "libs/dto/src",
-      "projectType": "library",
-      "targets": {
-        "lint": {
-          "executor": "@nrwl/linter:eslint",
-          "outputs": ["{options.outputFile}"],
-          "options": {
-            "lintFilePatterns": ["libs/dto/**/*.ts"]
-          }
-        }
-      },
-      "tags": []
-    },
     "form-builder": {
       "root": "libs/form-builder",
       "sourceRoot": "libs/form-builder/src",
