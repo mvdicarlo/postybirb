@@ -30,7 +30,7 @@ export class BaseApi<
   }
 
   public remove(ids: EntityId[]) {
-    return this.client.delete<boolean>('', {
+    return this.client.delete<{ success: boolean }>('', {
       ids,
     });
   }

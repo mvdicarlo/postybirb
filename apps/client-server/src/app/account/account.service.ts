@@ -115,11 +115,9 @@ export class AccountService
   }
 
   protected async emit() {
-    const dtos = await this.repository
-      .find({
-        id: { $ne: NULL_ACCOUNT_ID },
-      })
-      .then((results) => results.map((account) => account.toJSON()));
+    const dtos = await this.findAll().then((results) =>
+      results.map((account) => account.toJSON())
+    );
     super.emit({
       event: ACCOUNT_UPDATES,
       data: dtos,

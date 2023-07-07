@@ -10,13 +10,13 @@ import { DirectoryWatchersModule } from './directory-watchers/directory-watchers
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { SettingsModule } from './settings/settings.module';
-import { WebsiteOptionsModule } from './submission-options/website-options.module';
 import { SubmissionModule } from './submission/submission.module';
 import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
-import { WebSocketModule } from './web-socket/web-socket.module';
-import { WebsitesModule } from './websites/websites.module';
 import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
+import { WebSocketModule } from './web-socket/web-socket.module';
+import { WebsiteOptionsModule } from './website-options/website-options.module';
+import { WebsitesModule } from './websites/websites.module';
 
 @Module({
   imports: [

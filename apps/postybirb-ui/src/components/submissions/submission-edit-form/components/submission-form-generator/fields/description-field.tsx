@@ -36,7 +36,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
           }
           onChange={(e) => {
             const descriptionValue = e.target.checked
-              ? defaultOptions.data.description?.description
+              ? defaultOptions.data.description?.description ?? ''
               : '';
             setDescription(descriptionValue);
             setOverrideDefault(e.target.checked);

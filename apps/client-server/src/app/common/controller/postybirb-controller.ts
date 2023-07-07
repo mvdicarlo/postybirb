@@ -15,7 +15,9 @@ export abstract class PostyBirbController<T extends PostyBirbEntity> {
   @Get(':id')
   @ApiOkResponse({ description: 'Record by Id.' })
   findOne(@Param('id') id: string) {
-    return this.service.findById(id).then((record) => record.toJSON());
+    return this.service
+      .findById(id, { failOnMissing: true })
+      .then((record) => record.toJSON());
   }
 
   @Get()

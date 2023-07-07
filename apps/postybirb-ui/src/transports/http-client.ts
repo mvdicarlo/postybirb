@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-globals
-export const defaultTargetProvider = () => location.origin;
-// return `https://localhost:${window.electron.app_port}`; OLD
+export const defaultTargetProvider = () =>
+  `https://localhost:${window.electron.app_port}`;
 
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-type HttpResponse<T> = {
+export type ErrorResponse<T = string> = {
+  error: string;
+  message: T;
+  statusCode: number;
+};
+export type HttpResponse<T> = {
   body: T;
   status: number;
   statusText: string;
-  error: unknown; // TODO define this type
+  error: ErrorResponse;
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -20,7 +25,7 @@ type HttpOptions = {
 
 export class HttpClient {
   constructor(
-    private readonly basePath: string = '',
+    private readonly basePath: string,
     private readonly targetProvider: () => string = defaultTargetProvider
   ) {}
 
@@ -76,7 +81,13 @@ export class HttpClient {
       shouldUseBody ? null : (bodyOrSearchParams as SearchBody)
     );
 
-    let headers = {};
+    let headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (bodyOrSearchParams instanceof FormData) {
+      delete headers['Content-Type'];
+    }
 
     if (options.headers) {
       headers = { ...options.headers, ...headers };
@@ -94,7 +105,7 @@ export class HttpClient {
       body: await this.processResponse<T>(res),
       status: res.status,
       statusText: res.statusText,
-      error: undefined,
+      error: { error: '', statusCode: 0, message: '' },
     };
 
     if (!res.ok) {
@@ -106,7 +117,7 @@ export class HttpClient {
   }
 
   private createPath(path: string, searchBody: SearchBody): URL {
-    const url = new URL(path, this.targetProvider());
+    const url = new URL(`api/${this.basePath}/${path}`, this.targetProvider());
     if (typeof searchBody === 'string') {
       url.search = searchBody;
     } else if (searchBody && typeof searchBody === 'object') {

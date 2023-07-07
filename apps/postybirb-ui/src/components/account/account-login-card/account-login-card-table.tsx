@@ -261,7 +261,7 @@ export default function AccountLoginCardTable(
       ),
     },
     {
-      field: 'loginState',
+      field: 'state',
       name: <FormattedMessage id="status" defaultMessage="Status" />,
       render: (item: unknown) => {
         const { isLoggedIn, username, pending } = item as ILoginState;

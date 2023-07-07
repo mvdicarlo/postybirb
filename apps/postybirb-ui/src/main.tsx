@@ -3,7 +3,6 @@ import * as ReactDOM from 'react-dom';
 import { HashRouter as BrowserRouter } from 'react-router-dom';
 import App from './app/app';
 import AppThemeProvider from './app/app-theme-provider';
-import './modules/action-history/action-history';
 
 // TODO react 18
 // const container = document.getElementById('app');
