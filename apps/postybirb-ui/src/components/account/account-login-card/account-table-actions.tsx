@@ -10,50 +10,31 @@ import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import accountApi from '../../../api/account.api';
 import { useToast } from '../../../app/app-toast-provider';
-import HttpErrorResponse from '../../../models/http-error-response';
+import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 
 export function DeleteAccountPopover(props: { id: string }) {
   const { id } = props;
-  const { addToast } = useToast();
 
   return (
     <EuiToolTip
       content={<FormattedMessage id="delete" defaultMessage="Delete" />}
     >
-      <EuiButtonIcon
-        aria-label="Delete"
-        className="ml-1"
-        iconType="trash"
-        color="danger"
-        onClick={() => {
-          accountApi
-            .remove([id])
-            .then(() => {
-              addToast({
-                id,
-                color: 'success',
-                text: (
-                  <FormattedMessage
-                    id="login.account-removed"
-                    defaultMessage="Account removed"
-                  />
-                ),
-              });
-            })
-            .catch(({ error }: { error: HttpErrorResponse }) => {
-              addToast({
-                id,
-                text: <span>{error.message}</span>,
-                title: (
-                  <span>
-                    {error.statusCode} {error.error}
-                  </span>
-                ),
-                color: 'danger',
-              });
-            });
-        }}
-      />
+      <DeleteActionPopover
+        onDelete={() => accountApi.remove([id])}
+        successMessage={
+          <FormattedMessage
+            id="login.account-removed"
+            defaultMessage="Account removed"
+          />
+        }
+      >
+        <EuiButtonIcon
+          aria-label="Delete"
+          className="ml-1"
+          iconType="trash"
+          color="danger"
+        />
+      </DeleteActionPopover>
     </EuiToolTip>
   );
 }
@@ -61,7 +42,7 @@ export function DeleteAccountPopover(props: { id: string }) {
 export function ClearAccountDataPopover(props: { id: string }) {
   const { id } = props;
   const [isOpen, setOpen] = useState<boolean>(false);
-  const { addToast } = useToast();
+  const { addToast, addErrorToast } = useToast();
 
   return (
     <EuiPopover
@@ -116,17 +97,8 @@ export function ClearAccountDataPopover(props: { id: string }) {
                   ),
                 });
               })
-              .catch(({ error }: { error: HttpErrorResponse }) => {
-                addToast({
-                  id,
-                  text: <span>{error.message}</span>,
-                  title: (
-                    <span>
-                      {error.statusCode} {error.error}
-                    </span>
-                  ),
-                  color: 'danger',
-                });
+              .catch((res) => {
+                addErrorToast(res);
               });
           }}
         >

@@ -17,8 +17,8 @@ export type HttpResponse<T> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-type RequestBody = Object | BodyInit | null;
-type SearchBody = string | object | null;
+type RequestBody = Object | BodyInit | undefined;
+type SearchBody = string | object | undefined;
 type HttpOptions = {
   headers?: Record<string, string>;
 };
@@ -31,7 +31,7 @@ export class HttpClient {
 
   public get<T = any>(
     path = '',
-    searchParams: SearchBody = null,
+    searchParams: SearchBody = undefined,
     options: HttpOptions = {}
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('GET', path, searchParams, options ?? {});
@@ -39,7 +39,7 @@ export class HttpClient {
 
   public post<T = any>(
     path = '',
-    body: RequestBody = null,
+    body: RequestBody = undefined,
     options: HttpOptions = {}
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('POST', path, body, options ?? {});
@@ -47,7 +47,7 @@ export class HttpClient {
 
   public put<T = any>(
     path = '',
-    searchParams: SearchBody = null,
+    searchParams: SearchBody = undefined,
     options: HttpOptions = {}
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('PUT', path, searchParams, options ?? {});
@@ -55,7 +55,7 @@ export class HttpClient {
 
   public patch<T = any>(
     path = '',
-    body: RequestBody = null,
+    body: RequestBody = undefined,
     options: HttpOptions = {}
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('PATCH', path, body, options ?? {});
@@ -63,7 +63,7 @@ export class HttpClient {
 
   public delete<T = any>(
     path = '',
-    searchParams: SearchBody = null,
+    searchParams: SearchBody = undefined,
     options: HttpOptions = {}
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('DELETE', path, searchParams, options ?? {});
@@ -78,14 +78,14 @@ export class HttpClient {
     const shouldUseBody = this.supportsBody(method);
     const url = this.createPath(
       path,
-      shouldUseBody ? null : (bodyOrSearchParams as SearchBody)
+      shouldUseBody ? undefined : (bodyOrSearchParams as SearchBody)
     );
 
     let headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
-    if (bodyOrSearchParams instanceof FormData) {
+    if (bodyOrSearchParams instanceof FormData || !shouldUseBody) {
       delete headers['Content-Type'];
     }
 
@@ -140,12 +140,17 @@ export class HttpClient {
     return url;
   }
 
-  private handleRequestData(body: RequestBody): BodyInit {
+  private handleRequestData(body: RequestBody): BodyInit | undefined {
     if (body instanceof FormData) {
       return body;
     }
+
     if (typeof body === 'object') {
       return JSON.stringify(body);
+    }
+
+    if (typeof body === 'string') {
+      return body;
     }
 
     return body;

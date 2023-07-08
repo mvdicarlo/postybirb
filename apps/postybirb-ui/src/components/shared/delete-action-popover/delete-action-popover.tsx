@@ -5,14 +5,14 @@ import {
   EuiPopoverTitle,
   EuiText,
 } from '@elastic/eui';
-import { KeyboardEvent, ReactNode, useCallback, useState } from 'react';
+import { KeyboardEvent, PropsWithChildren, useCallback, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToast } from '../../../app/app-toast-provider';
 import { HttpResponse } from '../../../transports/http-client';
 
 type DeleteActionPopoverProps = {
   onDelete: () => Promise<HttpResponse<{ success: boolean }>>;
-  button: NonNullable<ReactNode>;
+  successMessage: NonNullable<JSX.Element>;
 };
 
 function onEnterKey(event: KeyboardEvent, cb: () => void) {
@@ -21,10 +21,12 @@ function onEnterKey(event: KeyboardEvent, cb: () => void) {
   }
 }
 
-export default function DeleteActionPopover(props: DeleteActionPopoverProps) {
-  const { button, onDelete } = props;
+export default function DeleteActionPopover(
+  props: PropsWithChildren<DeleteActionPopoverProps>
+) {
+  const { children, successMessage, onDelete } = props;
 
-  const { addToast } = useToast();
+  const { addToast, addErrorToast } = useToast();
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -33,31 +35,21 @@ export default function DeleteActionPopover(props: DeleteActionPopoverProps) {
     if (!isDeleting) {
       setIsDeleting(true);
       onDelete()
-        .catch((err: HttpResponse<never>) => {
+        .then(() => {
           addToast({
             id: Date.now().toString(),
-            color: 'danger',
-            iconType: 'error',
-            text: <span>err.error.message</span>,
-            title: (
-              <div>
-                <FormattedMessage
-                  id="error.failed-to-delete"
-                  defaultMessage="Failed to delete"
-                />
-                <span> - </span>
-                <span>
-                  {err.error.statusCode} - {err.error.error}
-                </span>
-              </div>
-            ),
+            color: 'success',
+            text: successMessage,
           });
+        })
+        .catch((err: HttpResponse<never>) => {
+          addErrorToast(err);
         })
         .finally(() => {
           setIsDeleting(false);
         });
     }
-  }, [addToast, isDeleting, onDelete]);
+  }, [addToast, addErrorToast, isDeleting, onDelete, successMessage]);
 
   return (
     <EuiPopover
@@ -69,19 +61,16 @@ export default function DeleteActionPopover(props: DeleteActionPopoverProps) {
           onClickCapture={openPopover}
           onKeyUpCapture={(event) => onEnterKey(event, openPopover)}
         >
-          {button}
+          {children}
         </span>
       }
     >
-      <EuiPopoverTitle>
-        <FormattedMessage id="warning" defaultMessage="Warning" />
-      </EuiPopoverTitle>
       <div>
         <EuiText size="s">
           <p>
             <FormattedMessage
-              id="delete.warning-message"
-              defaultMessage="This action cannot be undone"
+              id="action.cannot-be-undone"
+              defaultMessage="This action cannot be undone."
             />
           </p>
         </EuiText>
@@ -89,6 +78,7 @@ export default function DeleteActionPopover(props: DeleteActionPopoverProps) {
       <EuiPopoverFooter>
         <EuiButton
           fullWidth
+          color="danger"
           isDisabled={isDeleting}
           isLoading={isDeleting}
           size="s"

@@ -8,8 +8,11 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { HttpResponse } from '../transports/http-client';
 
 export type AppToastContext = {
+  addErrorToast: (err: HttpResponse<never>) => void;
   addToast: (toast: Toast) => void;
   removeToast: (id: string) => void;
   toasts: Toast[];
@@ -18,13 +21,14 @@ export type AppToastContext = {
 const ToastContext = createContext<AppToastContext>({} as AppToastContext);
 
 export type AppToastContextValue = {
+  addErrorToast: (err: HttpResponse<never>) => void;
   addToast: (toast: Toast) => void;
   removeToast: (id: string) => void;
 };
 
 export function useToast(): AppToastContextValue {
-  const { addToast, removeToast } = useContext(ToastContext);
-  return { addToast, removeToast };
+  const { addToast, removeToast, addErrorToast } = useContext(ToastContext);
+  return { addToast, removeToast, addErrorToast };
 }
 
 export function AppToastProvider({ children }: PropsWithChildren<unknown>) {
@@ -48,9 +52,30 @@ export function AppToastProvider({ children }: PropsWithChildren<unknown>) {
     [toasts, setToasts]
   );
 
+  const addErrorToast = useCallback(
+    (res: HttpResponse<never>) => {
+      addToast({
+        id: Date.now().toString(),
+        color: 'danger',
+        iconType: 'error',
+        text: <span>{res.error.message}</span>,
+        title: (
+          <div>
+            <FormattedMessage id="error" defaultMessage="Error" />
+            <span> - </span>
+            <span>
+              {res.error.statusCode} - {res.error.error}
+            </span>
+          </div>
+        ),
+      });
+    },
+    [addToast]
+  );
+
   const contextValue = useMemo(
-    () => ({ toasts, addToast, removeToast }),
-    [toasts, removeToast, addToast]
+    () => ({ toasts, addToast, addErrorToast, removeToast }),
+    [toasts, removeToast, addToast, addErrorToast]
   );
 
   return (

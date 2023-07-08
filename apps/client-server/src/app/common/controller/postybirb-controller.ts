@@ -2,7 +2,6 @@ import { Delete, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { PostyBirbEntity } from '../../database/entities/postybirb-entity';
 import { PostyBirbService } from '../service/postybirb-service';
-import { DeleteQuery } from '../service/modifiers/delete-query';
 
 /**
  * Base PostyBirb controller logic that should be good for most rest calls.
@@ -31,11 +30,10 @@ export abstract class PostyBirbController<T extends PostyBirbEntity> {
   @Delete()
   @ApiOkResponse({
     description: 'Records removed.',
-    type: Boolean,
   })
-  async remove(@Query() query: DeleteQuery) {
+  async remove(@Query('ids') ids: string | string[]) {
     return Promise.all(
-      query.getIds().map((id) => this.service.remove(id))
+      (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id))
     ).then(() => ({
       success: true,
     }));

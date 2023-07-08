@@ -15,8 +15,8 @@ import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 import { SSL } from './app/security-and-authentication/ssl';
-import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 import { IsTestEnvironment } from './app/utils/test.util';
+import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
   serialize(

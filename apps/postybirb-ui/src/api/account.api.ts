@@ -30,3 +30,4 @@ class AccountApi extends BaseApi<
 }
 
 export default new AccountApi();
+new AccountApi().remove(['abc', 'def']).catch(console.log);

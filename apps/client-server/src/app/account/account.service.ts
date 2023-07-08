@@ -226,7 +226,7 @@ export class AccountService
   public findById(id: string, options?: FindOptions) {
     return this.repository
       .findById(id, options)
-      .then((result) => this.populateAccount(result));
+      .then((result) => (result ? this.populateAccount(result) : undefined));
   }
 
   public async findAll() {
