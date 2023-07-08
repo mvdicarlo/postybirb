@@ -44,7 +44,7 @@
   "private": true,
   "dependencies": {
     "@elastic/datemath": "^5.0.3",
-    "@elastic/eui": "^77.2.0",
+    "@elastic/eui": "^83.1.0",
     "@emotion/css": "^11.10.6",
     "@emotion/react": "11.10.4",
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
@@ -60,7 +60,7 @@
     "@nestjs/platform-socket.io": "^9.0.8",
     "@nestjs/schedule": "^2.2.0",
     "@nestjs/serve-static": "^3.0.0",
-    "@nestjs/swagger": "6.0.0",
+    "@nestjs/swagger": "^7.1.1",
     "@nestjs/websockets": "^9.0.8",
     "@tinymce/tinymce-react": "^4.3.0",
     "@uppy/compressor": "^1.0.1",

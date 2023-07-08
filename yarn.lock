@@ -2672,18 +2672,18 @@
 
 "@elastic/datemath@^5.0.3":
   version "5.0.3"
-  resolved "https://registry.npmjs.org/@elastic/datemath/-/datemath-5.0.3.tgz"
+  resolved "https://registry.yarnpkg.com/@elastic/datemath/-/datemath-5.0.3.tgz#7baccdab672b9a3ecb7fe8387580670936b58573"
   integrity sha512-8Hbr1Uyjm5OcYBfEB60K7sCP6U3IXuWDaLaQmYv3UxgI4jqBWbakoemwWvsqPVUvnwEjuX6z7ghPZbefs8xiaA==
   dependencies:
     tslib "^1.9.3"
 
-"@elastic/eui@^77.2.0":
-  version "77.2.0"
-  resolved "https://registry.yarnpkg.com/@elastic/eui/-/eui-77.2.0.tgz#7f40e3c3b8ababfcf639000833dfa6d0db267e4a"
-  integrity sha512-6j3jqXdRmLGQ530GtdMrXyqi7rVd/XCMhymgO+FJiamf3dw5NF1LsXiOTn2+lTa/Tn3v2sJMVsr+SL+0h2Cd+A==
+"@elastic/eui@^83.1.0":
+  version "83.1.0"
+  resolved "https://registry.yarnpkg.com/@elastic/eui/-/eui-83.1.0.tgz#ed1e409306da2ed9171d334e0ed7e6622c499141"
+  integrity sha512-l6ERa836K/U9dccZ4xkyf2tmTO54DeElhGXmNdq02CATbXNQ3YGnoAn99+HvA82oXF3zCSpy+pg5tLx6Ag1zaw==
   dependencies:
     "@types/chroma-js" "^2.0.0"
-    "@types/lodash" "^4.14.160"
+    "@types/lodash" "^4.14.194"
     "@types/numeral" "^0.0.28"
     "@types/react-beautiful-dnd" "^13.1.2"
     "@types/react-input-autosize" "^2.2.1"
@@ -2704,6 +2704,7 @@
     react-focus-on "^3.7.0"
     react-input-autosize "^3.0.0"
     react-is "^17.0.2"
+    react-remove-scroll-bar "^2.3.4"
     react-virtualized-auto-sizer "^1.0.6"
     react-window "^1.8.6"
     refractor "^3.5.0"
@@ -3678,10 +3679,10 @@
     tslib "2.4.0"
     uuid "8.3.2"
 
-"@nestjs/mapped-types@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-1.0.1.tgz#78b62041c7a407db4a90eb140567321602bed18e"
-  integrity sha512-NFvofzSinp00j5rzUd4tf+xi9od6383iY0JP7o0Bnu1fuItAUkWBgc4EKuIQ3D+c2QI3i9pG1kDWAeY27EMGtg==
+"@nestjs/mapped-types@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-2.0.2.tgz#c8a090a8d22145b85ed977414c158534210f2e4f"
+  integrity sha512-V0izw6tWs6fTp9+KiiPUbGHWALy563Frn8X6Bm87ANLRuE46iuBMD5acKBDP5lKL/75QFvrzSJT7HkCbB0jTpg==
 
 "@nestjs/platform-express@9.0.0":
   version "9.0.0"
@@ -3738,16 +3739,16 @@
   dependencies:
     path-to-regexp "0.2.5"
 
-"@nestjs/swagger@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/swagger/-/swagger-6.0.0.tgz#49c1f6c25a0469053a9fc004bf92ffad84708879"
-  integrity sha512-yHyEPuQCo5+M9krZYhwH5jjtBIMHJIVbvL3nO5ufqwTjEnDC1GqP75ziMBPG3ffu7akWAmVWZPIA2xVcHiqw2Q==
+"@nestjs/swagger@^7.1.1":
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/@nestjs/swagger/-/swagger-7.1.1.tgz#67285035a58a32059f219532b449addf81f8e513"
+  integrity sha512-gIG1aVCegZlIppXZizKHqWkqZvQkvptTBR1C5CzZoDwGoVVKJBmJ2i9FAcsnzzb0j7hncFKhcBuWYOBJOsCvug==
   dependencies:
-    "@nestjs/mapped-types" "1.0.1"
+    "@nestjs/mapped-types" "2.0.2"
     js-yaml "4.1.0"
     lodash "4.17.21"
     path-to-regexp "3.2.0"
-    swagger-ui-dist "4.12.0"
+    swagger-ui-dist "5.1.0"
 
 "@nestjs/testing@9.0.0":
   version "9.0.0"
@@ -4764,10 +4765,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/lodash@^4.14.160":
-  version "4.14.178"
-  resolved "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.178.tgz"
-  integrity sha512-0d5Wd09ItQWH1qFbEyQ7oTQ3GZrMfth5JkbN3EvTKLXcHLRDSXeLnlvlOn0wvxVIwK5o2M8JzP/OWz7T3NRsbw==
+"@types/lodash@^4.14.194":
+  version "4.14.195"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.195.tgz#bafc975b252eb6cea78882ce8a7b6bf22a6de632"
+  integrity sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==
 
 "@types/luxon@*":
   version "3.2.0"
@@ -15475,7 +15476,7 @@ react-refresh@^0.10.0:
   resolved "https://registry.npmjs.org/react-refresh/-/react-refresh-0.10.0.tgz"
   integrity sha512-PgidR3wST3dDYKr6b4pJoqQFpPGNKDSCDx4cZoshjXipw3LzO7mG1My2pwEzz2JVkF+inx3xRpDeQLFQGH/hsQ==
 
-react-remove-scroll-bar@^2.3.3:
+react-remove-scroll-bar@^2.3.3, react-remove-scroll-bar@^2.3.4:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/react-remove-scroll-bar/-/react-remove-scroll-bar-2.3.4.tgz#53e272d7a5cb8242990c7f144c44d8bd8ab5afd9"
   integrity sha512-63C4YQBUt0m6ALadE9XV56hV8BgJWDmmTPY758iIJjfQKt2nYwoUrPk0LXRXcB/yIj82T1/Ixfdpdk68LwIB0A==
@@ -17372,10 +17373,10 @@ svgo@^2.7.0, svgo@^2.8.0:
     picocolors "^1.0.0"
     stable "^0.1.8"
 
-swagger-ui-dist@4.12.0:
-  version "4.12.0"
-  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.12.0.tgz#986d90f05e81fb9db3ca40372278a5d8ce71db3a"
-  integrity sha512-B0Iy2ueXtbByE6OOyHTi3lFQkpPi/L7kFOKFeKTr44za7dJIELa9kzaca6GkndCgpK1QTjArnoXG+aUy0XQp1w==
+swagger-ui-dist@5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-5.1.0.tgz#b01b3be06bebb2566b2df586c1632d502ec792ad"
+  integrity sha512-c1KmAjuVODxw+vwkNLALQZrgdlBAuBbr2xSPfYrJgseEi7gFKcTvShysPmyuDI4kcUa1+5rFpjWvXdusKY74mg==
 
 swagger-ui-dist@>=4.1.3:
   version "4.1.3"
