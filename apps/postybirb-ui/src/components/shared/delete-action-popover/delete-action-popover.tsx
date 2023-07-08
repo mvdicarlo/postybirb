@@ -1,10 +1,4 @@
-import {
-  EuiButton,
-  EuiPopover,
-  EuiPopoverFooter,
-  EuiPopoverTitle,
-  EuiText,
-} from '@elastic/eui';
+import { EuiButton, EuiPopover, EuiPopoverFooter, EuiText } from '@elastic/eui';
 import { KeyboardEvent, PropsWithChildren, useCallback, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToast } from '../../../app/app-toast-provider';
@@ -12,7 +6,8 @@ import { HttpResponse } from '../../../transports/http-client';
 
 type DeleteActionPopoverProps = {
   onDelete: () => Promise<HttpResponse<{ success: boolean }>>;
-  successMessage: NonNullable<JSX.Element>;
+  // eslint-disable-next-line react/require-default-props
+  successMessage?: NonNullable<JSX.Element>;
 };
 
 function onEnterKey(event: KeyboardEvent, cb: () => void) {
@@ -36,11 +31,13 @@ export default function DeleteActionPopover(
       setIsDeleting(true);
       onDelete()
         .then(() => {
-          addToast({
-            id: Date.now().toString(),
-            color: 'success',
-            text: successMessage,
-          });
+          if (successMessage) {
+            addToast({
+              id: Date.now().toString(),
+              color: 'success',
+              text: successMessage,
+            });
+          }
         })
         .catch((err: HttpResponse<never>) => {
           addErrorToast(err);

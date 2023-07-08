@@ -21,6 +21,7 @@ import { ModalProperties } from '../../../shared/common-properties/modal.propert
 import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { useStore } from '../../../stores/use-store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
+import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import Loading from '../../shared/loading/loading';
 
 type TagGroupsFlyoutProps = ModalProperties;
@@ -109,15 +110,16 @@ function TagConverterField(props: {
             updateTagConverter(tagConverter);
           }}
         />
-        <EuiButtonIcon
-          size="m"
-          aria-label={`Delete tag converter ${tagConverter.tag}`}
-          iconType="trash"
-          color="danger"
-          onClick={() => {
-            tagConvertersApi.remove([tagConverter.id]);
-          }}
-        />
+        <DeleteActionPopover
+          onDelete={() => tagConvertersApi.remove([tagConverter.id])}
+        >
+          <EuiButtonIcon
+            size="m"
+            aria-label={`Delete tag converter ${tagConverter.tag}`}
+            iconType="trash"
+            color="danger"
+          />
+        </DeleteActionPopover>
       </div>
     </EuiForm>
   );

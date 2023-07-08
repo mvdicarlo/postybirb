@@ -21,6 +21,7 @@ import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
+import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import { SaveIcon } from '../../shared/icons/Icons';
 import SubmissionPicker from '../submission-picker.ts/submission-picker';
 
@@ -146,16 +147,19 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
       <EuiHorizontalRule />
       <EuiFlexGroup alignItems="center" justifyContent="center">
         <EuiFlexItem grow={false}>
-          <EuiButtonIcon
-            iconType="trash"
-            color="danger"
-            aria-label="Delete folder watcher"
-            onClick={() => {
+          <DeleteActionPopover
+            onDelete={() =>
               directoryWatchersApi.remove([directoryWatcher.id]).finally(() => {
                 refetch();
-              });
-            }}
-          />
+              })
+            }
+          >
+            <EuiButtonIcon
+              iconType="trash"
+              color="danger"
+              aria-label="Delete folder watcher"
+            />
+          </DeleteActionPopover>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>
           <EuiButtonIcon
