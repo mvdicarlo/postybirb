@@ -125,7 +125,7 @@ function TagConverterField(props: {
   );
 }
 
-export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
+function TagConverterDisplay() {
   const { state, isLoading } = useStore(TagConverterStore);
   const { data: websiteInfo, isLoading: isLoadingWebsiteInfo } = useQuery(
     'website-info',
@@ -136,6 +136,37 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
     }
   );
 
+  const sortedWebsiteInfo = (websiteInfo ?? [])
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    .filter((website) => website.metadata.supportsTags !== false);
+
+  return (
+    <Loading isLoading={isLoading || isLoadingWebsiteInfo}>
+      <>
+        <EuiButton
+          iconType="plus"
+          aria-label="Add new tag converter"
+          onClick={createTagConverter}
+          size="s"
+        >
+          <FormattedMessage id="add" defaultMessage="Add" />
+        </EuiButton>
+        {state.map((converter) => (
+          <>
+            <EuiSpacer />
+            <TagConverterField
+              key={converter.id}
+              converter={converter}
+              websiteInfo={sortedWebsiteInfo}
+            />
+          </>
+        ))}
+      </>
+    </Loading>
+  );
+}
+
+export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
   const { onClose, isOpen } = props;
   const keybindingProps: KeybindingProps = {
     keybinding: TagConvertersKeybinding,
@@ -145,12 +176,8 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
     return null;
   }
 
-  const sortedWebsiteInfo = (websiteInfo ?? [])
-    .sort((a, b) => a.displayName.localeCompare(b.displayName))
-    .filter((website) => website.metadata.supportsTags !== false);
-
   return (
-    <EuiFlyout ownFocus onClose={onClose} style={{ minWidth: '75vw' }}>
+    <EuiFlyout ownFocus onClose={onClose} style={{ minWidth: '50vw' }}>
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="m">
           <div>
@@ -164,27 +191,7 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <Loading isLoading={isLoading || isLoadingWebsiteInfo}>
-          <>
-            <EuiButton
-              iconType="plus"
-              aria-label="Add new tag converter"
-              onClick={createTagConverter}
-              size="s"
-            >
-              <FormattedMessage id="add" defaultMessage="Add" />
-            </EuiButton>
-            {state.map((converter) => (
-              <>
-                <EuiSpacer />
-                <TagConverterField
-                  converter={converter}
-                  websiteInfo={sortedWebsiteInfo}
-                />
-              </>
-            ))}
-          </>
-        </Loading>
+        <TagConverterDisplay />
       </EuiFlyoutBody>
     </EuiFlyout>
   );

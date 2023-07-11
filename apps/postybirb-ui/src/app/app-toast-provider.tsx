@@ -62,7 +62,7 @@ export function AppToastProvider({ children }: PropsWithChildren<unknown>) {
         title: (
           <div>
             <FormattedMessage id="error" defaultMessage="Error" />
-            <span> - </span>
+            <span> </span>
             <span>
               {res.error.statusCode} - {res.error.error}
             </span>

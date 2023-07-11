@@ -26,27 +26,30 @@ export default function DeleteActionPopover(
   const [isDeleting, setIsDeleting] = useState(false);
 
   const openPopover = useCallback(() => setOpen(true), []);
-  const remove = useCallback(() => {
+  const remove = () => {
     if (!isDeleting) {
       setIsDeleting(true);
       onDelete()
-        .then(() => {
-          if (successMessage) {
-            addToast({
-              id: Date.now().toString(),
-              color: 'success',
-              text: successMessage,
-            });
+        .then(
+          () => {
+            if (successMessage) {
+              addToast({
+                id: Date.now().toString(),
+                color: 'success',
+                text: successMessage,
+              });
+            }
+          },
+          (err: HttpResponse<never>) => {
+            addErrorToast(err);
           }
-        })
-        .catch((err: HttpResponse<never>) => {
-          addErrorToast(err);
-        })
+        )
         .finally(() => {
           setIsDeleting(false);
+          setOpen(false);
         });
     }
-  }, [addToast, addErrorToast, isDeleting, onDelete, successMessage]);
+  };
 
   return (
     <EuiPopover
@@ -79,7 +82,7 @@ export default function DeleteActionPopover(
           isDisabled={isDeleting}
           isLoading={isDeleting}
           size="s"
-          onClick={onDelete}
+          onClick={remove}
           onKeyUp={(event: KeyboardEvent) => onEnterKey(event, remove)}
         >
           <FormattedMessage id="delete" defaultMessage="Delete" />
