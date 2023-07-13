@@ -31,7 +31,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
   };
 
   const createNewTagGroup = () => {
-    tagGroupsApi.create({ name: 'New Tag Group', tags: [] });
+    tagGroupsApi.create({ name: `New Tag Group ${Date.now()}`, tags: [] });
   };
 
   const saveTagGroupChanges = ({ id, tags, name }: TagGroupDto) => {
