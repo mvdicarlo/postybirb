@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import websitesApi from '../../../api/websites.api';
-import { ModalProperties } from '../../../shared/common-properties/modal.properties';
+import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import { AccountKeybinding } from '../../../shared/app-keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
 import { useStore } from '../../../stores/use-store';
@@ -19,9 +19,8 @@ import Loading from '../../shared/loading/loading';
 import SwitchComponent from '../../shared/switch-component/switch-component';
 import { AccountLoginContainer } from '../account-login-container/account-login-container';
 
-type AccountLoginFlyoutProps = ModalProperties;
-
-export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
+export function AccountLoginFlyout() {
+  const [isOpen, toggle] = useFlyoutToggle('accountFlyoutVisible');
   const { isLoading, data: availableWebsites } = useQuery('website-info', () =>
     websitesApi.getWebsiteInfo().then((res) => res.body)
   );
@@ -29,7 +28,6 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
   const { isLoading: isLoadingStore, state: settingsState } =
     useStore(SettingsStore);
 
-  const { onClose, isOpen } = props;
   const keybindingProps: KeybindingProps = {
     keybinding: AccountKeybinding,
     onActivate: () => {},
@@ -64,7 +62,13 @@ export function AccountLoginFlyout(props: AccountLoginFlyoutProps) {
   ));
 
   return (
-    <EuiFlyout ownFocus onClose={onClose} style={{ minWidth: '75vw' }}>
+    <EuiFlyout
+      ownFocus
+      onClose={() => {
+        toggle(false);
+      }}
+      style={{ minWidth: '75vw' }}
+    >
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="m">
           <div>

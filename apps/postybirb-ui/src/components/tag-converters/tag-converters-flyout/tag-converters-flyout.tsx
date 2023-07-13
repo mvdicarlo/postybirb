@@ -17,14 +17,12 @@ import { useQuery } from 'react-query';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import websitesApi from '../../../api/websites.api';
 import { TagConvertersKeybinding } from '../../../shared/app-keybindings';
-import { ModalProperties } from '../../../shared/common-properties/modal.properties';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { useStore } from '../../../stores/use-store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
+import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import Loading from '../../shared/loading/loading';
-
-type TagGroupsFlyoutProps = ModalProperties;
 
 function createTagConverter() {
   return tagConvertersApi
@@ -166,8 +164,9 @@ function TagConverterDisplay() {
   );
 }
 
-export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
-  const { onClose, isOpen } = props;
+export function TagConvertersFlyout() {
+  const [isOpen, toggle] = useFlyoutToggle('tagConvertersFlyoutVisible');
+
   const keybindingProps: KeybindingProps = {
     keybinding: TagConvertersKeybinding,
     onActivate: () => {},
@@ -177,7 +176,13 @@ export function TagConvertersFlyout(props: TagGroupsFlyoutProps) {
   }
 
   return (
-    <EuiFlyout ownFocus onClose={onClose} style={{ minWidth: '50vw' }}>
+    <EuiFlyout
+      ownFocus
+      onClose={() => {
+        toggle(false);
+      }}
+      style={{ minWidth: '50vw' }}
+    >
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="m">
           <div>
