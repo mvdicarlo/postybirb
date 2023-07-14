@@ -142,7 +142,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onCloseModal} disabled={isCreating}>
-          Cancel
+          <FormattedMessage id="cancel" defaultMessage="Cancel" />
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -151,7 +151,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
           isLoading={isCreating}
           disabled={!accountName.length}
         >
-          <FormattedMessage id="add" defaultMessage="Add" />
+          <FormattedMessage id="create" defaultMessage="Create" />
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

@@ -6,10 +6,10 @@ import AppSettings from '../app-settings';
 export default function AppFlyouts() {
   return (
     <>
-      <AppSettings />
-      <AccountLoginFlyout />
-      <TagGroupsFlyout />
-      <TagConvertersFlyout />
+      <AppSettings key="app-settings-flyout" />
+      <AccountLoginFlyout key="account-flyout" />
+      <TagGroupsFlyout key="tag-group-flyout" />
+      <TagConvertersFlyout key="tag-converter-flyout" />
     </>
   );
 }

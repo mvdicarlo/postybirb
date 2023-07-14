@@ -3,7 +3,7 @@ import StoreManager from './store-manager';
 
 export function useStore<S>(store: StoreManager<S>) {
   const [isLoading, setIsLoading] = useState<boolean>(!store.initLoadCompleted);
-  const [state, setState] = useState<S[]>(store.getData());
+  const [state, setState] = useState<S[]>([]);
 
   const onUpdate = useCallback((data: S[]) => {
     setState(data);
@@ -11,6 +11,7 @@ export function useStore<S>(store: StoreManager<S>) {
   }, []);
 
   useEffect(() => {
+    setState(store.getData());
     const observer = store.updates.subscribe(onUpdate);
     return () => {
       observer.unsubscribe();
@@ -23,8 +24,7 @@ export function useStore<S>(store: StoreManager<S>) {
       setIsLoading(true);
       store.refresh().finally(() => setIsLoading(false));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]);
+  }, [isLoading, setIsLoading, store]);
 
   return { isLoading, state, reload };
 }
