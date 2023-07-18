@@ -1,41 +1,34 @@
-import { EntityRepository } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
-import { Account, WebsiteData } from '../database/entities';
-import { initializeDatabase } from '../database/mikroorm.providers';
-import { websiteImplementationProvider } from './implementations';
+import { Account } from '../database/entities';
+import { WebsiteImplProvider } from './implementations';
 import TestWebsite from './implementations/test/test.website';
-import { WebsiteDataService } from './website-data.service';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let repository: EntityRepository<WebsiteData<any>>;
-  let testingModule: TestingModule;
-
-  beforeAll(async () => {
-    await initializeDatabase();
-  });
+  let module: TestingModule;
+  let orm: MikroORM;
 
   beforeEach(async () => {
-    testingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [DatabaseModule],
-      providers: [
-        WebsiteDataService,
-        WebsiteRegistryService,
-        websiteImplementationProvider,
-      ],
+      providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
 
-    service = testingModule.get<WebsiteRegistryService>(WebsiteRegistryService);
-    repository = testingModule
-      .get<WebsiteDataService>(WebsiteDataService)
-      .getRepository();
+    service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
+    orm = module.get(MikroORM);
+    try {
+      await orm.getSchemaGenerator().refreshDatabase();
+    } catch {
+      // none
+    }
   });
 
-  afterEach(async () => {
-    await testingModule.close();
+  afterAll(async () => {
+    await orm.close(true);
+    await module.close();
   });
 
   it('should be defined', () => {
@@ -49,7 +42,9 @@ describe('WebsiteRegistryService', () => {
   });
 
   it('should successfully create website instance', async () => {
-    const account = new Account({
+    const account = new Account();
+
+    Object.assign(account, {
       name: 'test',
       id: 'test',
       website: TestWebsite.prototype.metadata.name,
@@ -62,7 +57,9 @@ describe('WebsiteRegistryService', () => {
   });
 
   it('should successfully remove website instance', async () => {
-    const account = new Account({
+    const account = new Account();
+
+    Object.assign(account, {
       name: 'test',
       id: 'test',
       website: TestWebsite.prototype.metadata.name,

@@ -19,17 +19,18 @@ export function SimpleWebsiteSelect(props: SimpleWebsiteSelectProps) {
 
   useEffect(() => {
     const opts: EuiComboBoxOptionOption[] = submission.options
-      .map(({ account }) =>
-        account
-          ? {
-              label: `${
-                accounts.find((a) => a.id === account.id)?.websiteInfo
-                  .websiteDisplayName || 'Unknown'
-              } - ${account.name}`,
-              key: account.id,
-            }
-          : undefined
-      )
+      .map((option) => {
+        const account = accounts.find((a) => a.id === option.account);
+        if (account) {
+          return {
+            label: `${account.websiteInfo.websiteDisplayName || 'Unknown'} - ${
+              account.name
+            }`,
+            key: account.id,
+          };
+        }
+        return undefined;
+      })
       .filter((o) => !!o) as EuiComboBoxOptionOption[];
     setOptions(opts.sort((a, b) => a.label.localeCompare(b.label)));
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,21 +1,12 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseBoolPipe,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { Account } from '../database/entities/account.entity';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
@@ -27,33 +18,18 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @ApiTags('account')
 @Controller('account')
-export class AccountController {
-  constructor(private readonly service: AccountService) {}
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all account records.' })
-  findAll() {
-    return this.service.findAllAccountDto();
-  }
-
-  @Get(':id')
-  @ApiOkResponse({ description: 'The requested Account.' })
-  @ApiNotFoundResponse({ description: 'Account not found.' })
-  async findOne(
-    @Param('id') id: string,
-    @Query('refresh', ParseBoolPipe) refresh: boolean
-  ) {
-    if (refresh) {
-      await this.service.manuallyExecuteOnLogin(id);
-    }
-    return this.service.findAccountDto(id);
+export class AccountController extends PostyBirbController<Account> {
+  constructor(readonly service: AccountService) {
+    super(service);
   }
 
   @Post()
   @ApiOkResponse({ description: 'Account created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createAccountDto: CreateAccountDto) {
-    return this.service.create(createAccountDto);
+    return this.service
+      .create(createAccountDto)
+      .then((account) => account.toJSON());
   }
 
   @Post('/clear/:id')
@@ -70,20 +46,13 @@ export class AccountController {
     this.service.manuallyExecuteOnLogin(id);
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Account updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Account Id not found.' })
-  update(@Body() updateAccountDto: UpdateAccountDto) {
-    return this.service.update(updateAccountDto);
-  }
-
-  @Delete()
-  @ApiOkResponse({
-    description: 'Account deleted successfully.',
-    type: Boolean,
-  })
-  async remove(@Query() query: DeleteQuery) {
-    return DeleteQuery.execute(query, this.service);
+  update(@Body() updateAccountDto: UpdateAccountDto, @Param('id') id: string) {
+    return this.service
+      .update(id, updateAccountDto)
+      .then((entity) => entity.toJSON());
   }
 
   @Post('/account-data')

@@ -1,13 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IUpdateDirectoryWatcherDto } from '@postybirb/dto';
-import { DirectoryWatcherImportAction } from '@postybirb/types';
+import {
+  DirectoryWatcherImportAction,
+  IUpdateDirectoryWatcherDto,
+} from '@postybirb/types';
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UpdateDirectoryWatcherDto implements IUpdateDirectoryWatcherDto {
-  @ApiProperty()
-  @IsString()
-  id: string;
-
   @ApiProperty({
     enum: DirectoryWatcherImportAction,
   })

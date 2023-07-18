@@ -4,6 +4,10 @@ export async function waitUntil(
   fn: () => boolean,
   milliseconds: number
 ): Promise<void> {
+  if (fn()) {
+    return;
+  }
+
   const interval = setInterval(milliseconds);
 
   // eslint-disable-next-line no-restricted-syntax, @typescript-eslint/no-unused-vars

@@ -11,11 +11,11 @@ import {
   EuiIcon,
   EuiToolTip,
 } from '@elastic/eui';
-import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/dto';
+import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
-import AccountApi from '../../../api/account.api';
+import accountApi from '../../../api/account.api';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
 import { PencilIcon, SaveIcon } from '../../shared/icons/Icons';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
@@ -199,7 +199,7 @@ function AccountLoginAction(props: {
       website={website}
       onClose={() => {
         setIsVisible(false);
-        AccountApi.refreshLogin(account.id);
+        accountApi.refreshLogin(account.id);
       }}
     >
       {loginMethod}
@@ -252,8 +252,7 @@ export default function AccountLoginCardTable(
           key={name}
           name={name}
           onNameUpdate={(updatedName: string) => {
-            AccountApi.update({
-              id: record.id,
+            accountApi.update(record.id, {
               name: updatedName,
               groups: record.groups,
             });
@@ -262,7 +261,7 @@ export default function AccountLoginCardTable(
       ),
     },
     {
-      field: 'loginState',
+      field: 'state',
       name: <FormattedMessage id="status" defaultMessage="Status" />,
       render: (item: unknown) => {
         const { isLoggedIn, username, pending } = item as ILoginState;
@@ -303,8 +302,7 @@ export default function AccountLoginCardTable(
           groups={accountGroups}
           allGroups={groups}
           onGroupsUpdate={(updatedGroups: string[]) => {
-            AccountApi.update({
-              id: record.id,
+            accountApi.update(record.id, {
               name: record.name,
               groups: updatedGroups,
             });

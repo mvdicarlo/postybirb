@@ -6,8 +6,9 @@ import { extname } from 'path';
 import { AccountModule } from '../account/account.module';
 import { DatabaseModule } from '../database/database.module';
 import { FileModule } from '../file/file.module';
-import { SubmissionOptionsModule } from '../submission-options/submission-options.module';
+import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsitesModule } from '../websites/websites.module';
+import { FileSubmissionController } from './file-submission.controller';
 import { FileSubmissionService } from './services/file-submission.service';
 import { MessageSubmissionService } from './services/message-submission.service';
 import { SubmissionService } from './services/submission.service';
@@ -19,7 +20,7 @@ import { SubmissionController } from './submission.controller';
     WebsitesModule,
     AccountModule,
     FileModule,
-    forwardRef(() => SubmissionOptionsModule),
+    forwardRef(() => WebsiteOptionsModule),
     MulterModule.register({
       limits: {
         fileSize: 3e8, // Max 300MB
@@ -39,7 +40,7 @@ import { SubmissionController } from './submission.controller';
     MessageSubmissionService,
     FileSubmissionService,
   ],
-  controllers: [SubmissionController],
-  exports: [SubmissionService],
+  controllers: [SubmissionController, FileSubmissionController],
+  exports: [SubmissionService, FileSubmissionService],
 })
 export class SubmissionModule {}

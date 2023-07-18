@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { SubmissionType } from '@postybirb/types';
+import { ICreateSubmissionDto, SubmissionType } from '@postybirb/types';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
-export class CreateSubmissionDto {
+export class CreateSubmissionDto implements ICreateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsString()

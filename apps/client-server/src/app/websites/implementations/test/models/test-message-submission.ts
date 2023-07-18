@@ -5,15 +5,16 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  IBaseWebsiteOptions,
-  DefaultTagValue,
+  IWebsiteFormFields,
+  DefaultDescriptionValue,
   DescriptionValue,
   SubmissionRating,
   TagValue,
+  DefaultTagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class TestMessageSubmission implements IBaseWebsiteOptions {
+export class TestMessageSubmission implements IWebsiteFormFields {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
@@ -22,10 +23,7 @@ export class TestMessageSubmission implements IBaseWebsiteOptions {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: '',
-    },
+    defaultValue: DefaultDescriptionValue,
   })
   description: DescriptionValue;
 

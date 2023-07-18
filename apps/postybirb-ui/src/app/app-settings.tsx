@@ -12,14 +12,12 @@ import { FormattedMessage } from 'react-intl';
 import Keybinding, {
   KeybindingProps,
 } from '../components/app/keybinding/keybinding';
-import { ModalProperties } from '../shared/common-properties/modal.properties';
 import { SettingsKeybinding } from '../shared/app-keybindings';
 import { AppThemeContext } from './app-theme-provider';
+import { useFlyoutToggle } from '../hooks/use-flyout-toggle';
 
-type AppSettingsProps = ModalProperties;
-
-export default function AppSettings(props: AppSettingsProps) {
-  const { onClose, isOpen } = props;
+export default function AppSettings() {
+  const [isOpen, toggle] = useFlyoutToggle('settingsVisible');
   const keybindingProps: KeybindingProps = {
     keybinding: SettingsKeybinding,
     onActivate: () => {},
@@ -32,7 +30,12 @@ export default function AppSettings(props: AppSettingsProps) {
   }
 
   return (
-    <EuiFlyout ownFocus onClose={onClose}>
+    <EuiFlyout
+      ownFocus
+      onClose={() => {
+        toggle(false);
+      }}
+    >
       <EuiFlyoutHeader hasBorder>
         <EuiTitle size="m">
           <div>
@@ -43,7 +46,7 @@ export default function AppSettings(props: AppSettingsProps) {
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <EuiForm component="form">
+        <EuiForm component="form" className="postybirb__settings">
           <EuiFormRow
             label={
               <FormattedMessage

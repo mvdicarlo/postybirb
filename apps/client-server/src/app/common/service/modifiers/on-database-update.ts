@@ -1,9 +1,9 @@
 import { Constructor } from 'type-fest';
-import { BaseEntity } from '../../../database/entities/base.entity';
+import { PostyBirbEntity } from '../../../database/entities/postybirb-entity';
 import { OnDatabaseUpdateCallback } from '../../../database/subscribers/database.subscriber';
 
 export interface OnDatabaseUpdate {
-  getRegisteredEntities(): Constructor<BaseEntity>[];
+  getRegisteredEntities(): Constructor<PostyBirbEntity>[];
   onDatabaseUpdate: OnDatabaseUpdateCallback;
 }
 

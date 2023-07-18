@@ -8,12 +8,11 @@ import TestWebsite from './test/test.website';
 
 const useValue: Class<UnknownWebsite>[] = [Discord, FurAffinity, TestWebsite];
 
-// if (process.env.NODE_ENV === 'Test') {
+// if (IsTestEnvironment()) {
 useValue.push(TestWebsite);
 // }
 
-export const websiteImplementationProvider: Provider<Class<UnknownWebsite>[]> =
-  {
-    provide: WEBSITE_IMPLEMENTATIONS,
-    useValue,
-  };
+export const WebsiteImplProvider: Provider<Class<UnknownWebsite>[]> = {
+  provide: WEBSITE_IMPLEMENTATIONS,
+  useValue,
+};

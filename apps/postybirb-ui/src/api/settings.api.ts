@@ -1,14 +1,16 @@
-import { ISettingsDto, IUpdateSettingsDto } from '@postybirb/dto';
+import { EntityId, IUpdateSettingsDto, SettingsDto } from '@postybirb/types';
 import Https from '../transports/https';
 
-export default class SettingsApi {
-  private static readonly request: Https = new Https('settings');
+class SettingsApi {
+  private readonly client: Https = new Https('settings');
 
-  static getAll() {
-    return SettingsApi.request.get<ISettingsDto[]>();
+  getAll() {
+    return this.client.get<SettingsDto[]>();
   }
 
-  static update(dto: IUpdateSettingsDto) {
-    return SettingsApi.request.patch('', dto);
+  update(id: EntityId, dto: IUpdateSettingsDto) {
+    return this.client.patch(id, dto);
   }
 }
+
+export default new SettingsApi();

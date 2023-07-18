@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ICreateTagConverterDto } from '@postybirb/dto';
+import { ICreateTagConverterDto } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
 export class CreateTagConverterDto implements ICreateTagConverterDto {

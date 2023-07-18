@@ -1,9 +1,9 @@
-import { ISettingsDto } from '@postybirb/dto';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
-import SettingsApi from '../api/settings.api';
+import { SettingsDto } from '@postybirb/types';
+import settingsApi from '../api/settings.api';
 import StoreManager from './store-manager';
 
-export const SettingsStore: StoreManager<ISettingsDto> =
-  new StoreManager<ISettingsDto>(SETTINGS_UPDATES, () =>
-    SettingsApi.getAll().then(({ body }) => body)
+export const SettingsStore: StoreManager<SettingsDto> =
+  new StoreManager<SettingsDto>(SETTINGS_UPDATES, () =>
+    settingsApi.getAll().then(({ body }) => body)
   );

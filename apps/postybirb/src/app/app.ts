@@ -131,7 +131,11 @@ export default class App {
 
   private static loadMainWindow() {
     // load the index.html of the app.
-    App.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
+    if (this.isDevelopmentMode()) {
+      App.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
+    } else {
+      App.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
+    }
   }
 
   private static initAppTray() {

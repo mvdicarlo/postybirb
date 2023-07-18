@@ -1,3 +1,4 @@
+import { MikroORM } from '@mikro-orm/core';
 import {
   ClassSerializerInterceptor,
   INestApplication,
@@ -12,9 +13,9 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import * as compression from 'compression';
 import * as sharp from 'sharp';
 import { AppModule } from './app/app.module';
-import { BaseEntity } from './app/database/entities/base.entity';
-import { initializeDatabase } from './app/database/mikroorm.providers';
+import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 import { SSL } from './app/security-and-authentication/ssl';
+import { IsTestEnvironment } from './app/utils/test.util';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
@@ -24,17 +25,15 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   ): PlainLiteralObject | PlainLiteralObject[] {
     // Attempts to deal with recursive objects
     return super.serialize(
-      response instanceof BaseEntity ? response.toJSON() : response,
+      response instanceof PostyBirbEntity ? response.toJSON() : response,
       options
     );
   }
 }
 
 async function bootstrap(appPort?: number) {
-  await initializeDatabase();
-
   let app: INestApplication;
-  if (process.env.NODE_ENV !== 'Test') {
+  if (!IsTestEnvironment()) {
     // TLS/SSL on non-test
     const { cert, key } = await SSL.getOrCreateSSL();
     app = await NestFactory.create(AppModule, {
@@ -46,6 +45,9 @@ async function bootstrap(appPort?: number) {
   } else {
     app = await NestFactory.create(AppModule);
   }
+
+  await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
+  await app.get(MikroORM).getSchemaGenerator().updateSchema();
 
   const globalPrefix = 'api';
   app.enableCors();
@@ -67,11 +69,12 @@ async function bootstrap(appPort?: number) {
     .addTag('account')
     .addTag('directory-watchers')
     .addTag('file')
+    .addTag('file-submission')
     .addTag('form-generator')
     .addTag('submission')
-    .addTag('submission-option')
     .addTag('tag-converters')
     .addTag('tag-groups')
+    .addTag('website-option')
     .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);

@@ -6,7 +6,7 @@ import Webcam from '@uppy/webcam';
 import XHRUpload from '@uppy/xhr-upload';
 import { useContext, useEffect, useMemo } from 'react';
 import { AppThemeContext } from '../../../app/app-theme-provider';
-import { getUrlSource } from '../../../transports/https';
+import { defaultTargetProvider } from '../../../transports/http-client';
 
 type UploaderProps = {
   endpointPath: string;
@@ -47,7 +47,7 @@ export default function Uploader(props: UploaderProps) {
         },
       })
       .use(XHRUpload, {
-        endpoint: `${getUrlSource()}/${endpointPath}`,
+        endpoint: `${defaultTargetProvider()}/${endpointPath}`,
         fieldName: 'files',
         allowedMetaFields: ['name'],
         headers: {

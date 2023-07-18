@@ -37,11 +37,7 @@ export default class FurAffinity
   MessageModel: Class<FurAffinityMessageSubmission> =
     FurAffinityMessageSubmission;
 
-  supportsFile: true;
-
   supportsAdditionalFiles = false;
-
-  supportsMessage: true = true;
 
   protected BASE_URL = 'https://furaffinity.net';
 

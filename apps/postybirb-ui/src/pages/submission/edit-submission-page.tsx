@@ -10,17 +10,17 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { IValidateSubmissionOptionsDto } from '@postybirb/dto';
-import { SubmissionType } from '@postybirb/types';
+import { IValidateWebsiteOptionsDto, SubmissionType } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useCallback, useMemo, useReducer, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
-import SubmissionOptionsApi from '../../api/submission-options.api';
-import SubmissionsApi from '../../api/submission.api';
+import submissionsApi from '../../api/submission.api';
+import websiteOptionsApi from '../../api/website-options.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
+import { useUpdateView } from '../../hooks/use-update-view';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { AccountStore } from '../../stores/account.store';
 import { useStore } from '../../stores/use-store';
@@ -43,19 +43,20 @@ function canSave(original?: SubmissionDto, updated?: SubmissionDto): boolean {
 
 async function save(original: SubmissionDto, updated: SubmissionDto) {
   const { id, isScheduled, schedule } = updated;
-  const deletedOptions = original.options.filter(
-    (originalOpt) =>
-      !updated.options.some((updatedOpt) => originalOpt.id === updatedOpt.id)
-  );
+  const deletedWebsiteOptions = original.options
+    .filter(
+      (originalOpt) =>
+        !updated.options.some((updatedOpt) => originalOpt.id === updatedOpt.id)
+    )
+    .map((o) => o.id);
 
   const newOrUpdatedOptions = updated.options;
 
-  return SubmissionsApi.update({
-    id,
+  return submissionsApi.update(id, {
     isScheduled,
     scheduledFor: schedule.scheduledFor,
     scheduleType: schedule.scheduleType,
-    deletedOptions,
+    deletedWebsiteOptions,
     newOrUpdatedOptions,
     metadata: updated.metadata,
   });
@@ -65,16 +66,16 @@ export default function EditSubmissionPage() {
   const [isSaving, setIsSaving] = useState(false);
   const { id } = useParams();
   const history = useNavigate();
-  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  const updateView = useUpdateView();
 
   const { state: accounts, isLoading: isLoadingAccounts } =
     useStore(AccountStore);
   const { data, isLoading, isFetching, refetch } = useQuery(
     [`submission-${id}`],
     () =>
-      SubmissionsApi.get(id as string).then(
-        (value) => new SubmissionDto(value.body)
-      ),
+      submissionsApi
+        .get(id as string)
+        .then((value) => new SubmissionDto(value.body)),
     {
       refetchOnWindowFocus: false,
       cacheTime: 0,
@@ -89,14 +90,13 @@ export default function EditSubmissionPage() {
           data.options
             .filter((o) => !o.isDefault)
             .map((o) => {
-              const dto: IValidateSubmissionOptionsDto = {
-                submissionId: data.id,
+              const dto: IValidateWebsiteOptionsDto = {
+                submission: data.id,
                 options: o.data,
                 defaultOptions: data.getDefaultOptions().data,
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                accountId: o.account!.id!,
+                account: o.account,
               };
-              return SubmissionOptionsApi.validate(o.id, dto);
+              return websiteOptionsApi.validate(dto).then((res) => res.body);
             })
         ) as Promise<SubmissionValidationResult[]>;
       }
@@ -116,7 +116,7 @@ export default function EditSubmissionPage() {
 
   const original = useMemo(() => data?.copy(), [data]);
   const onUpdate = useCallback(() => {
-    forceUpdate();
+    updateView();
     debouncedValidate();
   }, [debouncedValidate]);
 

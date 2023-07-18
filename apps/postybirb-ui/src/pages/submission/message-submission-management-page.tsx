@@ -9,7 +9,7 @@ import {
 import { SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import SubmissionsApi from '../../api/submission.api';
+import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
 import { SubmissionStore } from '../../stores/submission.store';
@@ -24,7 +24,7 @@ function isValidName(name: string): boolean {
 }
 
 function createNewMessageSubmission(name: string) {
-  return SubmissionsApi.createMessageSubmission(name);
+  return submissionsApi.createMessageSubmission(name);
 }
 
 function CreateMessageSubmissionForm(): JSX.Element {

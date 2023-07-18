@@ -25,10 +25,6 @@ export default class Discord
     FileWebsite<DiscordFileSubmission>,
     MessageWebsite<DiscordMessageSubmission>
 {
-  supportsFile: true = true;
-
-  supportsMessage: true = true;
-
   supportsAdditionalFiles = true;
 
   FileModel: Class<DiscordFileSubmission> = DiscordFileSubmission;

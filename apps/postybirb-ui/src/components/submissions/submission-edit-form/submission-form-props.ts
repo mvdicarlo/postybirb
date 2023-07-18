@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IAccountDto } from '@postybirb/dto';
 import {
   FieldAggregateType,
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import {
-  IBaseWebsiteOptions,
-  ISubmissionOptions,
+  IAccountDto,
+  IWebsiteFormFields,
   ValidationResult,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 
@@ -18,8 +18,8 @@ export type SubmissionFormProps = {
 };
 
 export type SubmissionSectionProps = SubmissionFormProps & {
-  option: ISubmissionOptions<any>;
-  defaultOptions: ISubmissionOptions<IBaseWebsiteOptions>;
+  option: WebsiteOptionsDto<any>;
+  defaultOptions: WebsiteOptionsDto<IWebsiteFormFields>;
   account?: IAccountDto;
 };
 

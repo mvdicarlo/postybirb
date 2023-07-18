@@ -6,15 +6,16 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionValue,
-  FileWebsiteOptions,
+  IWebsiteFormFields,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class FurAffinityFileSubmission implements FileWebsiteOptions {
+export class FurAffinityFileSubmission implements IWebsiteFormFields {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
   useThumbnail = true;
 
@@ -35,10 +36,7 @@ export class FurAffinityFileSubmission implements FileWebsiteOptions {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: '',
-    },
+    defaultValue: DefaultDescriptionValue,
     row: 3,
     column: 1,
   })

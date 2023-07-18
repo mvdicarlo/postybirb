@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ISetWebsiteDataRequestDto } from '@postybirb/dto';
-import { SafeObject } from '@postybirb/types';
+import { DynamicObject, ISetWebsiteDataRequestDto } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
 export class SetWebsiteDataRequestDto
-  implements ISetWebsiteDataRequestDto<SafeObject>
+  implements ISetWebsiteDataRequestDto<DynamicObject>
 {
   @ApiProperty()
   @IsString()
@@ -14,5 +13,5 @@ export class SetWebsiteDataRequestDto
     type: Object,
   })
   @IsObject()
-  data: SafeObject;
+  data: DynamicObject;
 }

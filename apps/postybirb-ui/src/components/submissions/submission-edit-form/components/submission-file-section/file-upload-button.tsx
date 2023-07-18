@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
+import { ISubmissionDto } from '@postybirb/types';
 import { useState } from 'react';
 import ModalUploader from '../../../../shared/uploader/model-uploader';
 

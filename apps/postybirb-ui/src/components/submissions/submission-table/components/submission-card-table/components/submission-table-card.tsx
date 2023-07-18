@@ -12,12 +12,11 @@ import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../../../../pages/route-paths';
+import { defaultTargetProvider } from '../../../../../../transports/http-client';
 import {
   SquareCheckedIcon,
   SquareIcon,
 } from '../../../../../shared/icons/Icons';
-
-import { getUrlSource } from '../../../../../../transports/https';
 import { SubmissionTableCardEditableFields } from './submission-table-card-editable-fields';
 
 type SubmissionCardOnSelect = (id: string) => void;
@@ -37,7 +36,7 @@ export function SubmissionTableCard(
 
   let img: string | undefined;
   if (files.length) {
-    img = `${getUrlSource()}/api/file/thumbnail/${files[0].id}`;
+    img = `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`;
   }
 
   const navToEdit = useCallback(

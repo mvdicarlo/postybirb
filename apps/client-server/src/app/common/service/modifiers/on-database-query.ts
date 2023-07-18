@@ -1,7 +1,7 @@
 import { FindOptions } from '@mikro-orm/core';
-import { BaseEntity } from '../../../database/entities/base.entity';
+import { PostyBirbEntity } from '../../../database/entities/postybirb-entity';
 
-export interface OnDatabaseQuery<T extends BaseEntity> {
+export interface OnDatabaseQuery<T extends PostyBirbEntity> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getDefaultQueryOptions(): FindOptions<T, any>;
 }

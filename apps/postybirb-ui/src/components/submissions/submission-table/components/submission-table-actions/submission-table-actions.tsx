@@ -1,19 +1,10 @@
 import { EuiHeaderSectionItemButton, EuiIcon } from '@elastic/eui';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import {
   SquareFilledIcon,
   SquareIcon,
   SquareMinusIcon,
 } from '../../../../shared/icons/Icons';
-import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
-import {
-  ActionEntityType,
-  ActionHistory,
-} from '../../../../../modules/action-history/action-history';
-import {
-  RedoKeybinding,
-  UndoKeybinding,
-} from '../../../../../shared/app-keybindings';
-import { useKeybinding } from '../../../../app/keybinding/keybinding';
 
 type SubmissionTableActionsProps = {
   selected: SubmissionDto[];
@@ -33,39 +24,6 @@ export function SubmissionTableActions(
     onUnselectAll,
     onDeleteSelected,
   } = props;
-
-  const hasUndoAction = ActionHistory.hasUndoActions(
-    ActionEntityType.SUBMISSION
-  );
-  const hasRedoAction = ActionHistory.hasRedoActions(
-    ActionEntityType.SUBMISSION
-  );
-
-  useKeybinding({
-    keybinding: UndoKeybinding,
-    onActivate(event) {
-      if (
-        !(event.target instanceof HTMLInputElement) &&
-        !document.querySelector('.euiModal') &&
-        !document.querySelector('.euiFlyoutHeader')
-      ) {
-        ActionHistory.Undo(ActionEntityType.SUBMISSION);
-      }
-    },
-  });
-
-  useKeybinding({
-    keybinding: RedoKeybinding,
-    onActivate(event) {
-      if (
-        !(event.target instanceof HTMLInputElement) &&
-        !document.querySelector('.euiModal') &&
-        !document.querySelector('.euiFlyoutHeader')
-      ) {
-        ActionHistory.Redo(ActionEntityType.SUBMISSION);
-      }
-    },
-  });
 
   let selectBtn: JSX.Element = (
     <EuiHeaderSectionItemButton onClick={() => onSelectAll()}>
@@ -89,18 +47,6 @@ export function SubmissionTableActions(
   return (
     <>
       {selectBtn}
-      <EuiHeaderSectionItemButton
-        disabled={!hasUndoAction}
-        onClick={() => ActionHistory.Undo(ActionEntityType.SUBMISSION)}
-      >
-        <EuiIcon type="editorUndo" />
-      </EuiHeaderSectionItemButton>
-      <EuiHeaderSectionItemButton
-        disabled={!hasRedoAction}
-        onClick={() => ActionHistory.Redo(ActionEntityType.SUBMISSION)}
-      >
-        <EuiIcon type="editorRedo" />
-      </EuiHeaderSectionItemButton>
       <EuiHeaderSectionItemButton
         color="danger"
         notification={selected.length}

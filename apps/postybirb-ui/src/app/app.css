@@ -7,6 +7,11 @@ body {
   height: 100vh;
 }
 
+.euiOverlayMask {
+  z-index: 1100 !important; /* On top of file status */
+  inset-block-start: 0 !important;
+}
+
 .postybirb__page-body {
   height: 100%;
   overflow: auto;

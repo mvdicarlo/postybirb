@@ -1,65 +1,45 @@
-import { BaseEntity, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { Injectable, Optional } from '@nestjs/common';
 import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
-import { Constructor } from 'type-fest';
-import { OnDatabaseUpdate } from '../common/service/modifiers/on-database-update';
-import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { PostyBirbService } from '../common/service/postybirb-service';
 import { TagConverter } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 
 @Injectable()
-export class TagConvertersService
-  extends PostyBirbCRUDService<TagConverter>
-  implements OnDatabaseUpdate
-{
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+export class TagConvertersService extends PostyBirbService<TagConverter> {
   constructor(
-    moduleRef: ModuleRef,
+    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(TagConverter)
-    repository: EntityRepository<TagConverter>,
+    repository: PostyBirbRepository<TagConverter>,
     @Optional() webSocket?: WSGateway
   ) {
-    super(moduleRef, repository, webSocket);
-  }
-
-  getRegisteredEntities(): Constructor<TagConverter>[] {
-    return [TagConverter];
-  }
-
-  onDatabaseUpdate() {
-    this.emit();
+    super(repository, webSocket);
+    repository.addUpdateListener(dbSubscriber, [TagConverter], () =>
+      this.emit()
+    );
   }
 
   async create(createDto: CreateTagConverterDto): Promise<TagConverter> {
+    this.logger.info(createDto, `Creating TagConverter '${createDto.tag}'`);
+    await this.throwIfExists({ tag: createDto.tag });
     const tagConverter = this.repository.create(createDto);
     await this.repository.persistAndFlush(tagConverter);
     return tagConverter;
   }
 
-  async update(update: UpdateTagConverterDto): Promise<boolean> {
-    const tagConverter: TagConverter = await this.findOne(update.id);
-    tagConverter.convertTo = update.convertTo;
-    tagConverter.tag = update.tag;
-
-    return this.repository
-      .flush()
-      .then(() => true)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+  update(id: string, update: UpdateTagConverterDto) {
+    this.logger.info(update, `Updating TagConverter '${id}'`);
+    return this.repository.update(id, update);
   }
 
-  /**
-   * Emits tag group state and data onto websocket.
-   */
   protected async emit() {
     super.emit({
       event: TAG_CONVERTER_UPDATES,
-      data: await this.findAll(),
+      data: (await this.repository.findAll()).map((entity) => entity.toJSON()),
     });
   }
 }

@@ -8,7 +8,7 @@ import { ValidationMessage, ValidationResult } from '@postybirb/types';
 import { useMemo } from 'react';
 import { useQuery } from 'react-query';
 import Translation from '../../../../translations/translation';
-import FormGeneratorApi from '../../../../../api/form-generator.api';
+import formGeneratorApi from '../../../../../api/form-generator.api';
 import {
   SubmissionSectionProps,
   SubmissionValidationResult,
@@ -48,11 +48,11 @@ export default function SubmissionOptionsSection(
     async () =>
       (
         await (option.account
-          ? FormGeneratorApi.getForm({
-              account: option.account,
+          ? formGeneratorApi.getForm({
+              accountId: option.account,
               type: submission.type,
             })
-          : FormGeneratorApi.getDefaultForm())
+          : formGeneratorApi.getDefaultForm(submission.type))
       ).body,
     {
       refetchOnWindowFocus: false,

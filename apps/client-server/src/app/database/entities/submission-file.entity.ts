@@ -1,22 +1,33 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable max-classes-per-file */
-import { Entity, ManyToOne, OneToOne, Property } from '@mikro-orm/core';
 import {
-  ISubmissionFile,
-  IFileBuffer,
-  ISubmission,
-  FileSubmissionMetadata,
-  ISubmissionFileProps,
+  Entity,
+  EntityRepositoryType,
+  ManyToOne,
+  OneToOne,
+  Property,
+  Rel,
+  serialize,
+} from '@mikro-orm/core';
+import {
   DefaultSubmissionFileProps,
+  FileSubmissionMetadata,
+  IFileBuffer,
+  ISubSubmissionFileDto,
+  ISubmission,
+  ISubmissionFile,
+  ISubmissionFileDto,
+  ISubmissionFileProps,
 } from '@postybirb/types';
-import { BaseEntity } from './base.entity';
+import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostyBirbEntity } from './postybirb-entity';
 import { Submission } from './submission.entity';
 
-@Entity()
-export class SubmissionFile
-  extends BaseEntity<SubmissionFile>
-  implements ISubmissionFile
-{
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
+  [EntityRepositoryType]?: PostyBirbRepository<SubmissionFile>;
+
   @Property({ nullable: false })
   fileName: string;
 
@@ -30,30 +41,36 @@ export class SubmissionFile
     entity: () => PrimaryFile,
     inversedBy: 'parent',
     orphanRemoval: true,
-    lazy: true,
+    lazy: false,
+    serializer: (s) => s.id,
   })
-  file: IFileBuffer;
+  file: Rel<IFileBuffer>;
 
-  @ManyToOne(() => Submission, { nullable: false, inversedBy: 'files' })
+  @ManyToOne(() => Submission, {
+    nullable: false,
+    inversedBy: 'files',
+    serializer: (s) => s.id,
+  })
   submission: ISubmission<FileSubmissionMetadata>;
 
   @OneToOne({
     entity: () => ThumbnailFile,
     inversedBy: 'parent',
     orphanRemoval: true,
-    lazy: true,
+    lazy: false,
     nullable: true,
+    serializer: (s) => s.id,
   })
-  thumbnail: IFileBuffer;
+  thumbnail: Rel<IFileBuffer>;
 
   @OneToOne({
     entity: () => AltFile,
     inversedBy: 'parent',
     orphanRemoval: true,
-    lazy: true,
+    lazy: false,
     nullable: true,
   })
-  altFile: IFileBuffer | undefined;
+  altFile?: Rel<IFileBuffer>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   size: number;
@@ -72,13 +89,17 @@ export class SubmissionFile
     nullable: false,
   })
   props: ISubmissionFileProps = DefaultSubmissionFileProps;
+
+  toJSON(): ISubmissionFileDto {
+    return serialize(this) as ISubmissionFileDto;
+  }
 }
 
-@Entity()
-export class ThumbnailFile
-  extends BaseEntity<ThumbnailFile>
-  implements IFileBuffer
-{
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class ThumbnailFile extends PostyBirbEntity implements IFileBuffer {
+  [EntityRepositoryType]?: PostyBirbRepository<ThumbnailFile>;
+
   @Property({ type: 'blob', nullable: false })
   buffer: Buffer;
 
@@ -88,8 +109,12 @@ export class ThumbnailFile
   @Property({ nullable: false })
   mimeType: string;
 
-  @OneToOne({ entity: () => SubmissionFile, mappedBy: 'thumbnail' })
-  parent: SubmissionFile;
+  @OneToOne({
+    entity: () => SubmissionFile,
+    mappedBy: 'thumbnail',
+    serializer: (s) => s.id,
+  })
+  parent: Rel<SubmissionFile>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   get size(): number {
@@ -101,13 +126,20 @@ export class ThumbnailFile
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
+
+  @Property({ type: 'boolean', nullable: false, default: false })
+  hasThumbnail: boolean;
+
+  toJSON(): ISubSubmissionFileDto {
+    return serialize(this) as ISubSubmissionFileDto;
+  }
 }
 
-@Entity()
-export class PrimaryFile
-  extends BaseEntity<PrimaryFile>
-  implements IFileBuffer
-{
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class PrimaryFile extends PostyBirbEntity implements IFileBuffer {
+  [EntityRepositoryType]?: PostyBirbRepository<PrimaryFile>;
+
   @Property({ type: 'blob', nullable: false })
   buffer: Buffer;
 
@@ -117,8 +149,12 @@ export class PrimaryFile
   @Property({ nullable: false })
   mimeType: string;
 
-  @OneToOne({ entity: () => SubmissionFile, mappedBy: 'file' })
-  parent: SubmissionFile;
+  @OneToOne({
+    entity: () => SubmissionFile,
+    mappedBy: 'file',
+    serializer: (s) => s.id,
+  })
+  parent: Rel<SubmissionFile>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   get size(): number {
@@ -130,10 +166,17 @@ export class PrimaryFile
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
+
+  toJSON(): ISubSubmissionFileDto {
+    return serialize(this) as ISubSubmissionFileDto;
+  }
 }
 
-@Entity()
-export class AltFile extends BaseEntity<AltFile> implements IFileBuffer {
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class AltFile extends PostyBirbEntity implements IFileBuffer {
+  [EntityRepositoryType]?: PostyBirbRepository<AltFile>;
+
   @Property({ type: 'blob', nullable: false })
   buffer: Buffer;
 
@@ -143,8 +186,12 @@ export class AltFile extends BaseEntity<AltFile> implements IFileBuffer {
   @Property({ nullable: false })
   mimeType: string;
 
-  @OneToOne({ entity: () => SubmissionFile, mappedBy: 'altFile' })
-  parent: SubmissionFile;
+  @OneToOne({
+    entity: () => SubmissionFile,
+    mappedBy: 'altFile',
+    serializer: (s) => s.id,
+  })
+  parent: Rel<SubmissionFile>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   get size(): number {
@@ -156,4 +203,8 @@ export class AltFile extends BaseEntity<AltFile> implements IFileBuffer {
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   height: number;
+
+  toJSON(): ISubSubmissionFileDto {
+    return serialize(this) as ISubSubmissionFileDto;
+  }
 }

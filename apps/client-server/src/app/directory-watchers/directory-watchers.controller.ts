@@ -1,19 +1,12 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { DirectoryWatcher } from '../database/entities';
 import { DirectoryWatchersService } from './directory-watchers.service';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
@@ -24,37 +17,25 @@ import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
  */
 @ApiTags('directory-watchers')
 @Controller('directory-watchers')
-export class DirectoryWatchersController {
-  constructor(private readonly service: DirectoryWatchersService) {}
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all entites.' })
-  findAll() {
-    return this.service.findAll();
+export class DirectoryWatchersController extends PostyBirbController<DirectoryWatcher> {
+  constructor(readonly service: DirectoryWatchersService) {
+    super(service);
   }
 
   @Post()
   @ApiOkResponse({ description: 'Entity created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createDto: CreateDirectoryWatcherDto) {
-    return this.service.create(createDto);
+    return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Entity updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Entity not found.' })
-  update(@Body() updateDto: UpdateDirectoryWatcherDto) {
-    return this.service.update(updateDto);
-  }
-
-  @Delete()
-  @ApiOkResponse({
-    description: 'Entity deleted.',
-    type: Boolean,
-  })
-  async remove(@Query() query: DeleteQuery) {
-    // eslint-disable-next-line no-param-reassign
-    query.action = 'HARD_DELETE';
-    return DeleteQuery.execute(query, this.service);
+  update(
+    @Body() updateDto: UpdateDirectoryWatcherDto,
+    @Param('id') id: string
+  ) {
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 }

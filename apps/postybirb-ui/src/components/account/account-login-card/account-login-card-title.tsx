@@ -1,5 +1,5 @@
 import { EuiButton, EuiButtonIcon } from '@elastic/eui';
-import { IAccountDto } from '@postybirb/dto';
+import { IAccountDto } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 

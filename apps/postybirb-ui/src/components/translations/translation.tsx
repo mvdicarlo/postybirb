@@ -1,3 +1,4 @@
+import { DynamicObject } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 
 const translations: Record<string, (props: TranslationProps) => JSX.Element> = {
@@ -13,8 +14,8 @@ const translations: Record<string, (props: TranslationProps) => JSX.Element> = {
 
 type TranslationProps = {
   id: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, react/no-unused-prop-types, react/require-default-props
-  values?: Record<string, any>;
+  // eslint-disable-next-line react/require-default-props, react/no-unused-prop-types
+  values?: DynamicObject;
 };
 
 export default function Translation(props: TranslationProps): JSX.Element {

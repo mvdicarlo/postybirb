@@ -1,20 +1,21 @@
 import {
-  FileWebsiteOptions,
   FileSubmission,
+  IWebsiteFormFields,
   PostData,
   ValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../../website';
 
+export const FileWebsiteKey = 'FileModel';
+
 /**
  * Defines methods for allowing file based posting.
  * Generally this will always be used by each supported website.
  * @interface FileWebsite
  */
-export interface FileWebsite<T extends FileWebsiteOptions> {
+export interface FileWebsite<T extends IWebsiteFormFields> {
   FileModel: Class<T>;
-  supportsFile: true;
   supportsAdditionalFiles: boolean;
 
   createFileModel(): T;
@@ -31,9 +32,9 @@ export interface FileWebsite<T extends FileWebsiteOptions> {
 
 export function isFileWebsite(
   websiteInstance: UnknownWebsite
-): websiteInstance is FileWebsite<FileWebsiteOptions> & UnknownWebsite {
+): websiteInstance is FileWebsite<IWebsiteFormFields> & UnknownWebsite {
   return Boolean(
-    (websiteInstance as FileWebsite<FileWebsiteOptions> & UnknownWebsite)
+    (websiteInstance as FileWebsite<IWebsiteFormFields> & UnknownWebsite)
       .supportsFile
   );
 }

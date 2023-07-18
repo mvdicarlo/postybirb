@@ -5,13 +5,14 @@ import {
   DescriptionField,
 } from '@postybirb/form-builder';
 import {
+  DefaultDescriptionValue,
   DescriptionValue,
-  FileWebsiteOptions,
+  IWebsiteFormFields,
   SubmissionRating,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
-export class DiscordFileSubmission implements FileWebsiteOptions {
+export class DiscordFileSubmission implements IWebsiteFormFields {
   @BooleanField({ label: 'Use thumbnail', defaultValue: true })
   useThumbnail = true;
 
@@ -23,10 +24,7 @@ export class DiscordFileSubmission implements FileWebsiteOptions {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: '',
-    },
+    defaultValue: DefaultDescriptionValue,
   })
   description: DescriptionValue;
 

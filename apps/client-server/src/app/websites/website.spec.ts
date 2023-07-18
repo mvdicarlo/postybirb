@@ -1,41 +1,42 @@
-import { EntityRepository } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TestMetadata } from '@postybirb/website-metadata';
 import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
-import {
-  cleanTestDatabase,
-  initializeDatabase,
-} from '../database/mikroorm.providers';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { WebsiteImplProvider } from './implementations';
 import TestWebsite from './implementations/test/test.website';
-import { WebsiteDataService } from './website-data.service';
+import { WebsiteRegistryService } from './website-registry.service';
 
 describe('Website', () => {
-  let testingModule: TestingModule;
-  let service: WebsiteDataService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let repository: EntityRepository<WebsiteData<any>>;
+  let module: TestingModule;
+  let orm: MikroORM;
 
-  beforeAll(async () => {
-    await initializeDatabase();
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let repository: PostyBirbRepository<WebsiteData<any>>;
 
   beforeEach(async () => {
-    testingModule = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [DatabaseModule],
-      providers: [WebsiteDataService],
+      providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
-
-    service = testingModule.get(WebsiteDataService);
+    const service = module.get(WebsiteRegistryService);
     repository = service.getRepository();
+    orm = module.get(MikroORM);
+    try {
+      await orm.getSchemaGenerator().refreshDatabase();
+    } catch {
+      // none
+    }
   });
 
-  afterEach(async () => {
-    await testingModule.close();
+  afterAll(async () => {
+    await orm.close(true);
+    await module.close();
   });
 
-  afterAll(() => {
-    cleanTestDatabase();
+  it('should be defined', () => {
+    expect(repository).toBeDefined();
   });
 
   it('should store data', async () => {
@@ -47,10 +48,10 @@ describe('Website', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-
     await website.onInitialize(repository);
+    website.onBeforeLogin();
     await website.onLogin();
-
+    website.onAfterLogin();
     const entity = await repository.findOne(website.accountId);
     expect(entity.data).toEqual({ test: 'test-mode' });
   });
@@ -59,6 +60,7 @@ describe('Website', () => {
     expect(TestWebsite.prototype.metadata).toEqual({
       ...TestMetadata,
       refreshInterval: 60_000 * 60,
+      supportsTags: true,
     });
   });
 });

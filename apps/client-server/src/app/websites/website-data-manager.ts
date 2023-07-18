@@ -1,15 +1,16 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { Logger } from '@postybirb/logger';
-import { SafeObject, IAccount } from '@postybirb/types';
+import { IAccount, DynamicObject } from '@postybirb/types';
+import pino from 'pino';
 import { WebsiteData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 
 /**
  * Saves website specific data associated with an account.
  *
  * @class WebsiteDataManager
  */
-export default class WebsiteDataManager<T extends SafeObject> {
-  private readonly logger;
+export default class WebsiteDataManager<T extends DynamicObject> {
+  private readonly logger: pino.Logger;
 
   private readonly account: IAccount;
 
@@ -17,7 +18,7 @@ export default class WebsiteDataManager<T extends SafeObject> {
 
   private initialized: boolean;
 
-  private repository: EntityRepository<WebsiteData<T>>;
+  private repository: PostyBirbRepository<WebsiteData>;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -27,28 +28,35 @@ export default class WebsiteDataManager<T extends SafeObject> {
     this.initialized = false;
   }
 
-  private async loadData() {
-    let entity: WebsiteData<T> = {} as WebsiteData<T>;
-    try {
-      entity = await this.repository.findOneOrFail(this.account.id);
-    } catch {
-      entity = this.repository.create({ id: this.account.id });
-      entity.data = {} as T;
+  private async createOrLoadWebsiteData() {
+    let entity: WebsiteData<T> = await this.repository.findById(
+      this.account.id
+    );
+
+    if (!entity) {
+      entity = this.repository.create({
+        id: this.account.id,
+        data: {} as T,
+      } as WebsiteData<T>);
+      await this.repository.persistAndFlush(entity);
     }
 
     this.entity = entity;
   }
 
   private async saveData() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await this.repository.persistAndFlush(this.entity);
   }
 
-  public async initialize(repository: EntityRepository<WebsiteData<T>>) {
+  /**
+   * Initializes the internal WebsiteData entity.
+   * @param {PostyBirbRepository<WebsiteData<T>>} repository
+   */
+  public async initialize(repository: PostyBirbRepository<WebsiteData<T>>) {
     if (!this.initialized) {
       this.repository = repository;
+      await this.createOrLoadWebsiteData();
       this.initialized = true;
-      await this.loadData();
     }
   }
 
@@ -56,18 +64,35 @@ export default class WebsiteDataManager<T extends SafeObject> {
     return this.initialized;
   }
 
+  /**
+   * Deletes the internal WebsiteData entity and creates a new one.
+   */
   public async clearData() {
     this.logger.info('Clearing website data');
     await this.repository.removeAndFlush(this.entity);
 
     // Do a reload to recreate an object that hasn't been saved.
-    await this.loadData();
+    await this.createOrLoadWebsiteData();
   }
 
+  /**
+   * Returns stored WebsiteData.
+   *
+   * @return {*}  {T}
+   * @memberof WebsiteDataManager
+   */
   public getData(): T {
+    if (!this.initialized) {
+      return {} as T;
+    }
+
     return { ...this.entity.data };
   }
 
+  /**
+   * Sets WebsiteData value.
+   * @param {T} data
+   */
   public async setData(data: T) {
     if (JSON.stringify(data) !== JSON.stringify(this.entity.data)) {
       this.entity.data = { ...data };

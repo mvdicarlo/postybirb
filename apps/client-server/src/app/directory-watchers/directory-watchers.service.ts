@@ -1,49 +1,105 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
+import { Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
-import { rename } from 'fs';
-import { readdir } from 'fs/promises';
+import { readFile, readdir, stat, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
-import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { PostyBirbService } from '../common/service/postybirb-service';
 import { DirectoryWatcher } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { SubmissionService } from '../submission/services/submission.service';
+import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
+import { FileSubmissionService } from '../submission/services/file-submission.service';
 
-const PROCESSED_NAME = 'pb_read';
+type WatcherMetadata = {
+  read: string[];
+};
 
+/**
+ * A directory watcher service that reads created watchers and checks
+ * for new files added to the folder.
+ *
+ * If a new file is detected it will attempt to process it.
+ *
+ * @class DirectoryWatchersService
+ * @extends {PostyBirbService<DirectoryWatcher>}
+ */
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatcher> {
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher> {
   constructor(
-    moduleRef: ModuleRef,
     @InjectRepository(DirectoryWatcher)
-    repository: EntityRepository<DirectoryWatcher>,
+    repository: PostyBirbRepository<DirectoryWatcher>,
     private readonly submissionService: SubmissionService,
+    private readonly fileSubmissionService: FileSubmissionService,
     @Optional() webSocket?: WSGateway
   ) {
-    super(moduleRef, repository, webSocket);
+    super(repository, webSocket);
   }
 
+  /**
+   * CRON run read of paths.
+   */
   @Cron(CronExpression.EVERY_30_SECONDS)
   private async run() {
-    const entities = await this.findAll();
-    entities.filter((e) => !!e.path).forEach((e) => this.read(e));
+    if (!IsTestEnvironment()) {
+      const entities = await this.repository.findAll();
+      entities.filter((e) => !!e.path).forEach((e) => this.read(e));
+    }
   }
 
+  /**
+   * Reads directory for processable files.
+   *
+   * @param {DirectoryWatcher} watcher
+   */
   private async read(watcher: DirectoryWatcher) {
-    const filesInDirectory = await readdir(watcher.path);
-    filesInDirectory
-      .filter((file) => !file.startsWith(PROCESSED_NAME))
-      .forEach((file) => this.processFile(watcher, file));
+    let meta: WatcherMetadata = { read: [] };
+    const metaFileName = join(watcher.path, 'pb-meta.json');
+    if ((await stat(metaFileName)).isFile()) {
+      meta = JSON.parse(
+        (await readFile(metaFileName)).toString()
+      ) as WatcherMetadata;
+      if (!meta.read) {
+        meta.read = []; // protect user modification
+      }
+    }
+
+    const filesInDirectory = (await readdir(watcher.path))
+      .filter((file) => file !== 'pb-meta.json')
+      .filter((file) => !meta.read.includes(file));
+    await Promise.allSettled(
+      filesInDirectory.map((file) =>
+        this.processFile(watcher, file).then(() => {
+          // Only update list when successful
+          meta.read.push(file);
+        })
+      )
+    );
+
+    // Update metadata after all is processed
+    writeFile(metaFileName, JSON.stringify(meta, null, 1))
+      .then(() =>
+        this.logger.debug({}, `Metadata updated for '${metaFileName}'`)
+      )
+      .catch((err) => {
+        this.logger.error(
+          err,
+          `Failed to update metadata for '${metaFileName}'`
+        );
+      });
   }
 
+  /**
+   * Attempts to process file and apply action.
+   *
+   * @param {DirectoryWatcher} watcher
+   * @param {string} fileName
+   */
   private async processFile(watcher: DirectoryWatcher, fileName: string) {
     const filePath = join(watcher.path, fileName);
     const multerInfo: MulterFileInfo = {
@@ -57,7 +113,7 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
       filename: fileName,
       path: filePath,
     };
-    this.logger.info(`Processing file ${filePath}`);
+    this.logger.debug(`Processing file ${filePath}`);
     switch (watcher.importAction) {
       case DirectoryWatcherImportAction.NEW_SUBMISSION:
         await this.submissionService.create(
@@ -73,9 +129,13 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
         for (const submissionId of watcher.submissionIds ?? []) {
           try {
             // eslint-disable-next-line no-await-in-loop
-            await this.submissionService.appendFile(submissionId, multerInfo);
+            await this.fileSubmissionService.appendFile(
+              submissionId,
+              multerInfo
+            );
           } catch (err) {
             this.logger.error(err, 'Unable to append file');
+            throw err;
           }
         }
 
@@ -83,16 +143,6 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
       default:
         break;
     }
-
-    rename(
-      filePath,
-      join(watcher.path, `${PROCESSED_NAME}_${fileName}`),
-      (err) => {
-        if (err) {
-          this.logger.error(err);
-        }
-      }
-    );
   }
 
   async create(
@@ -103,17 +153,8 @@ export class DirectoryWatchersService extends PostyBirbCRUDService<DirectoryWatc
     return entity;
   }
 
-  async update(update: UpdateDirectoryWatcherDto): Promise<boolean> {
-    const entity: DirectoryWatcher = await this.findOne(update.id);
-    entity.path = update.path;
-    entity.importAction = update.importAction;
-    entity.submissionIds = update.submissionIds;
-
-    return this.repository
-      .flush()
-      .then(() => true)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+  update(id: string, update: UpdateDirectoryWatcherDto) {
+    this.logger.info(update, `Updating DirectoryWatcher '${id}'`);
+    return this.repository.update(id, update);
   }
 }

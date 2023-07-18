@@ -1,6 +1,6 @@
 import {
   ILoginState,
-  FileWebsiteOptions,
+  IWebsiteFormFields,
   FileSubmission,
   MessageSubmission,
   PostData,
@@ -32,10 +32,6 @@ export default class TestWebsite
 
   supportsAdditionalFiles = false;
 
-  supportsFile: true = true;
-
-  supportsMessage: true = true;
-
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
     test: true,
   };
@@ -60,7 +56,7 @@ export default class TestWebsite
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, FileWebsiteOptions>,
+    postData: PostData<FileSubmission, IWebsiteFormFields>,
     cancellationToken: unknown
   ): Promise<unknown> {
     throw new Error('Method not implemented.');

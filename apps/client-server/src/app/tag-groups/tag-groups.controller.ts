@@ -1,60 +1,38 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { TagGroup } from '../database/entities';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
 
 /**
- * CRUD operations on TagGroups.
+ * CRUD operations for TagGroups.
  * @class TagGroupsController
  */
 @ApiTags('tag-groups')
 @Controller('tag-groups')
-export class TagGroupsController {
-  constructor(private readonly service: TagGroupsService) {}
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all tag group records.' })
-  findAll() {
-    return this.service.findAll();
+export class TagGroupsController extends PostyBirbController<TagGroup> {
+  constructor(readonly service: TagGroupsService) {
+    super(service);
   }
 
   @Post()
   @ApiOkResponse({ description: 'Tag group created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createDto: CreateTagGroupDto) {
-    return this.service.create(createDto);
+    return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 
-  @Patch()
+  @Patch(':id')
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
-  update(@Body() updateDto: UpdateTagGroupDto) {
-    return this.service.update(updateDto);
-  }
-
-  @Delete()
-  @ApiOkResponse({
-    description: 'Tag groups deleted successfully.',
-    type: Boolean,
-  })
-  async remove(@Query() query: DeleteQuery) {
-    // eslint-disable-next-line no-param-reassign
-    query.action = 'HARD_DELETE';
-    return DeleteQuery.execute(query, this.service);
+  update(@Param('id') id: string, @Body() updateDto: UpdateTagGroupDto) {
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 }

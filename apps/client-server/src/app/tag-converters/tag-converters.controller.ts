@@ -1,19 +1,12 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { DeleteQuery } from '../common/service/modifiers/delete-query';
+import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { TagConverter } from '../database/entities';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 import { TagConvertersService } from './tag-converters.service';
@@ -24,37 +17,24 @@ import { TagConvertersService } from './tag-converters.service';
  */
 @ApiTags('tag-converters')
 @Controller('tag-converters')
-export class TagConvertersController {
-  constructor(private readonly service: TagConvertersService) {}
-
-  @Get()
-  @ApiOkResponse({ description: 'A list of all tag converter records.' })
-  findAll() {
-    return this.service.findAll();
+export class TagConvertersController extends PostyBirbController<TagConverter> {
+  constructor(readonly service: TagConvertersService) {
+    super(service);
   }
 
   @Post()
   @ApiOkResponse({ description: 'Tag converter created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createTagConverterDto: CreateTagConverterDto) {
-    return this.service.create(createTagConverterDto);
+    return this.service
+      .create(createTagConverterDto)
+      .then((entity) => entity.toJSON());
   }
 
-  @Patch()
-  @ApiOkResponse({ description: 'Tag converter updated.', type: Boolean })
+  @Patch(':id')
+  @ApiOkResponse({ description: 'Tag converter updated.' })
   @ApiNotFoundResponse({ description: 'Tag converter not found.' })
-  update(@Body() updateAccountDto: UpdateTagConverterDto) {
-    return this.service.update(updateAccountDto);
-  }
-
-  @Delete()
-  @ApiOkResponse({
-    description: 'Tag groups deleted successfully.',
-    type: Boolean,
-  })
-  async remove(@Query() query: DeleteQuery) {
-    // eslint-disable-next-line no-param-reassign
-    query.action = 'HARD_DELETE';
-    return DeleteQuery.execute(query, this.service);
+  update(@Body() updateDto: UpdateTagConverterDto, @Param('id') id: string) {
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }
 }

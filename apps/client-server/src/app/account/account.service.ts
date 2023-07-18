@@ -1,33 +1,28 @@
-import { ChangeSetType, EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
-import { Log } from '@postybirb/logger';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
-import { SafeObject } from '@postybirb/types';
+import { NULL_ACCOUNT_ID, NullAccount } from '@postybirb/types';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
-import { Class, Constructor } from 'type-fest';
-import { OnDatabaseUpdate } from '../common/service/modifiers/on-database-update';
-import { PostyBirbCRUDService } from '../common/service/postybirb-crud-service';
+import { Class } from 'type-fest';
+import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account } from '../database/entities';
-import { BaseEntity } from '../database/entities/base.entity';
-import { EntityUpdateRecord } from '../database/subscribers/database.subscriber';
+import {
+  FindOptions,
+  PostyBirbRepository,
+} from '../database/repositories/postybirb-repository';
+import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { AccountDto } from './dtos/account.dto';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
-
-// TODO make sure that submission options are cleaned on delete and don't return when soft-deleted
 
 /**
  * Service responsible for returning Account data.
@@ -35,8 +30,8 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbCRUDService<Account>
-  implements OnModuleInit, OnDatabaseUpdate
+  extends PostyBirbService<Account>
+  implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<
     string,
@@ -47,57 +42,60 @@ export class AccountService
   > = {};
 
   constructor(
-    moduleRef: ModuleRef,
+    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Account)
-    repository: EntityRepository<Account>,
+    repository: PostyBirbRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway
   ) {
-    super(moduleRef, repository, webSocket);
-  }
-
-  getRegisteredEntities(): Constructor<BaseEntity>[] {
-    return [Account];
-  }
-
-  async onDatabaseUpdate(updates: EntityUpdateRecord<Account>[]) {
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < updates.length; i++) {
-      const [type, account] = updates[i];
-      // eslint-disable-next-line default-case
-      switch (type) {
-        case ChangeSetType.CREATE:
-          this.afterCreate(
-            account,
-            // eslint-disable-next-line no-await-in-loop
-            await this.websiteRegistry.create(account)
-          );
-          break;
-        case ChangeSetType.DELETE:
-          // eslint-disable-next-line no-await-in-loop
-          await this.websiteRegistry.remove(account);
-          break;
-      }
-    }
-
-    this.emit();
+    super(repository, webSocket);
+    repository.addUpdateListener(dbSubscriber, [Account], () => this.emit());
   }
 
   /**
    * Initializes all website login timers and creates instances for known accounts.
    */
   async onModuleInit() {
-    await super.onModuleInit();
-    const accounts = await this.repository.find({});
+    await this.populateNullAccount();
+    await this.initWebsiteRegistry();
+    this.initWebsiteLoginRefreshTimers();
 
-    // Assumes that no error is thrown, otherwise there will be a big issue here.
+    this.emit();
+
+    Object.keys(this.loginRefreshTimers).forEach((interval) =>
+      this.executeOnLoginForInterval(interval)
+    );
+  }
+
+  /**
+   * Create the Nullable typed account.
+   */
+  private async populateNullAccount(): Promise<void> {
+    if (!(await this.repository.findById(NULL_ACCOUNT_ID))) {
+      await this.repository.persistAndFlush(
+        this.repository.create(new NullAccount())
+      );
+    }
+  }
+
+  /**
+   * Loads accounts into website registry.
+   */
+  private async initWebsiteRegistry(): Promise<void> {
+    const accounts = await this.repository.find({
+      id: { $ne: NULL_ACCOUNT_ID },
+    });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account))
     ).catch((err) => {
       this.logger.error(err, 'onModuleInit');
     });
+  }
 
-    // Initialize website login check timers
+  /**
+   * Creates website login check timers.
+   */
+  private initWebsiteLoginRefreshTimers(): void {
     const availableWebsites = this.websiteRegistry.getAvailableWebsites();
     availableWebsites.forEach((website) => {
       const interval: number =
@@ -114,22 +112,15 @@ export class AccountService
 
       this.loginRefreshTimers[interval].websites.push(website);
     });
-
-    this.emit();
-
-    // POST INIT
-    Object.keys(this.loginRefreshTimers).forEach((interval) =>
-      this.executeOnLoginForInterval(interval)
-    );
   }
 
-  /**
-   * Emits account state and data onto websocket.
-   */
   protected async emit() {
+    const dtos = await this.findAll().then((results) =>
+      results.map((account) => account.toJSON())
+    );
     super.emit({
       event: ACCOUNT_UPDATES,
-      data: await this.findAllAccountDto(),
+      data: dtos,
     });
   }
 
@@ -165,7 +156,6 @@ export class AccountService
       this.emit();
       await website.onLogin();
     } catch (e) {
-      // @consider Force login state logged out here
       if (e instanceof Error) {
         this.logger.error(e);
       }
@@ -205,7 +195,7 @@ export class AccountService
    * @param {string} id
    */
   async manuallyExecuteOnLogin(id: string): Promise<void> {
-    const account = await this.findOne(id);
+    const account = await this.repository.findOne(id);
     const instance = this.websiteRegistry.findInstance(account);
     await this.awaitPendingLogin(instance);
     await this.executeOnLogin(instance);
@@ -213,92 +203,77 @@ export class AccountService
 
   /**
    * Creates an Account.
-   * @param {CreateAccountDto} createAccountDto
+   * @param {CreateAccountDto} createDto
    * @return {*}  {Promise<Account>}
    */
-  @Log()
-  async create(createAccountDto: CreateAccountDto): Promise<Account> {
-    if (!this.websiteRegistry.canCreate(createAccountDto.website)) {
+  async create(createDto: CreateAccountDto): Promise<Account> {
+    this.logger.info(
+      createDto,
+      `Creating Account '${createDto.name}:${createDto.website}`
+    );
+    if (!this.websiteRegistry.canCreate(createDto.website)) {
       throw new BadRequestException(
-        `Website ${createAccountDto.website} is not supported.`
+        `Website ${createDto.website} is not supported.`
       );
     }
-    const account = this.repository.create(createAccountDto);
+    const account = this.repository.create(createDto);
     await this.repository.persistAndFlush(account);
+    const instance = await this.websiteRegistry.create(account);
+    this.afterCreate(account, instance);
+    return this.populateAccount(account);
+  }
+
+  public findById(id: string, options?: FindOptions) {
+    return this.repository
+      .findById(id, options)
+      .then((result) => (result ? this.populateAccount(result) : undefined));
+  }
+
+  public async findAll() {
+    return (
+      await this.repository.find({
+        id: { $ne: NULL_ACCOUNT_ID },
+      })
+    ).map((result) => this.populateAccount(result));
+  }
+
+  /**
+   * Mutates account and sets externally populate info.
+   *
+   * @param {Account} account
+   * @return {*}  {Account}
+   */
+  private populateAccount(account: Account): Account {
+    const instance = this.websiteRegistry.findInstance(account);
+    if (instance) {
+      // eslint-disable-next-line no-param-reassign
+      account.data = instance.getWebsiteData();
+
+      // eslint-disable-next-line no-param-reassign
+      account.state = instance.getLoginState();
+
+      // eslint-disable-next-line no-param-reassign
+      account.websiteInfo = {
+        websiteDisplayName:
+          instance.metadata.displayName || instance.metadata.name,
+        supports: instance.getSupportedTypes(),
+      };
+    }
+
     return account;
   }
 
-  /**
-   * Returns a list of all Accounts and their associated login state and data.
-   *
-   * @return {*}  {Promise<AccountDto<SafeObject>[]>}
-   */
-  async findAllAccountDto(): Promise<AccountDto<SafeObject>[]> {
-    const accounts = await this.find({});
-    return accounts.map((account) => {
-      const instance = this.websiteRegistry.findInstance(account);
-      if (!instance) {
-        throw new BadRequestException(
-          `No instance found for account: ${account.id} ${account.website}`
-        );
-      }
-      return {
-        ...account.toJSON(),
-        loginState: instance.getLoginState(),
-        data: instance.getWebsiteData(),
-        websiteInfo: {
-          websiteDisplayName:
-            instance.metadata.displayName || instance.metadata.name,
-          supports: instance.getSupportedTypes(),
-        },
-      };
-    });
+  async update(id: string, update: UpdateAccountDto) {
+    this.logger.info(update, `Updating Account '${id}'`);
+    return this.populateAccount(await this.repository.update(id, update));
   }
 
-  /**
-   * Finds an Account matching the Id provided or throws NotFoundException.
-   *
-   * @param {string} id
-   * @return {*}  {Promise<AccountDto<SafeObject>>}
-   */
-  async findAccountDto(id: string): Promise<AccountDto<SafeObject>> {
-    try {
-      const account = await this.repository.findOneOrFail({ id });
-      const instance = this.websiteRegistry.findInstance(account);
-      return {
-        ...account,
-        loginState: instance.getLoginState(),
-        data: instance.getWebsiteData(),
-        websiteInfo: {
-          websiteDisplayName:
-            instance.metadata.displayName || instance.metadata.name,
-          supports: instance.getSupportedTypes(),
-        },
-      };
-    } catch (e) {
-      this.logger.error(e);
-      throw new NotFoundException(id);
+  async remove(id: string) {
+    const account = await this.findById(id);
+    if (account) {
+      this.websiteRegistry.remove(account);
     }
-  }
-
-  /**
-   * Updates an Account matching the Id provided.
-   *
-   * @param {string} id
-   * @param {UpdateAccountDto} updateAccountDto
-   * @return {*}  {Promise<boolean>}
-   */
-  @Log()
-  async update(updateAccountDto: UpdateAccountDto): Promise<boolean> {
-    const account: Account = await this.findOne(updateAccountDto.id);
-    account.name = updateAccountDto.name || account.name;
-    account.groups = updateAccountDto.groups || account.groups;
-    return this.repository
-      .flush()
-      .then(() => true)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+    return super.remove(id);
   }
 
   /**
@@ -306,11 +281,13 @@ export class AccountService
    *
    * @param {string} id
    */
-  @Log()
   async clearAccountData(id: string) {
-    const account = await this.findOne(id);
-    const instance = this.websiteRegistry.findInstance(account);
-    await instance.clearLoginStateAndData();
+    this.logger.info({ id }, `Clearing Account data for '${id}'`);
+    const account = await this.findById(id);
+    if (account) {
+      const instance = this.websiteRegistry.findInstance(account);
+      await instance.clearLoginStateAndData();
+    }
   }
 
   /**
@@ -319,7 +296,10 @@ export class AccountService
    * @param {SetWebsiteDataRequestDto} setWebsiteDataRequestDto
    */
   async setAccountData(setWebsiteDataRequestDto: SetWebsiteDataRequestDto) {
-    const account = await this.findOne(setWebsiteDataRequestDto.id);
+    const account = await this.repository.findById(
+      setWebsiteDataRequestDto.id,
+      { failOnMissing: true }
+    );
     const instance = this.websiteRegistry.findInstance(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
   }

@@ -11,12 +11,13 @@ import {
 import {
   FileSubmissionMetadata,
   FileType,
-  ISubmissionFile,
+  ISubmissionFileDto,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { FormattedMessage } from 'react-intl';
+import { getReplaceFileUrl } from '../../../../../api/file-submission.api';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
-import { getUrlSource } from '../../../../../transports/https';
+import { defaultTargetProvider } from '../../../../../transports/http-client';
 import { TextFileIcon } from '../../../../shared/icons/Icons';
 import { SubmissionFormProps } from '../../submission-form-props';
 import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
@@ -27,17 +28,17 @@ import FileUploadButton from './file-upload-button';
 type SubmissionFileCardContainerProps = SubmissionFormProps;
 
 type SubmissionFileCardProps = SubmissionFormProps & {
-  file: ISubmissionFile;
+  file: ISubmissionFileDto;
   isDragging: boolean;
 };
 
 function orderFiles(
   submission: SubmissionDto<FileSubmissionMetadata>
-): ISubmissionFile[] {
+): ISubmissionFileDto[] {
   const { metadata, files } = submission;
   const { order } = metadata;
 
-  const orderedFiles: ISubmissionFile[] = Array(order.length);
+  const orderedFiles: ISubmissionFileDto[] = Array(order.length);
   files.forEach((file) => {
     const index = order.findIndex((id) => id === file.id);
     if (index > -1) {
@@ -48,10 +49,10 @@ function orderFiles(
   return orderedFiles.filter((f) => !!f);
 }
 
-function CardImageProvider(file: ISubmissionFile) {
+function CardImageProvider(file: ISubmissionFileDto) {
   const { fileName, id, hash } = file;
   const fileType = getFileType(fileName);
-  const src = `${getUrlSource()}/api/file/file/${id}?${hash}`;
+  const src = `${defaultTargetProvider()}/api/file/file/${id}?${hash}`;
   switch (fileType) {
     case FileType.AUDIO:
       return (
@@ -109,7 +110,7 @@ function FileCard(props: SubmissionFileCardProps) {
             <div>
               <FileUploadButton
                 label="Change file"
-                endpointPath={`api/submission/file/replace/${submission.id}/${file.id}`}
+                endpointPath={getReplaceFileUrl(submission.id, file.id, 'file')}
                 onComplete={(dto) => {
                   mergeSubmission(submission, dto, ['files', 'metadata']);
                   onUpdate();
@@ -128,7 +129,7 @@ function FileCard(props: SubmissionFileCardProps) {
                 size={100}
                 allowFullScreen
                 alt={file.fileName}
-                src={`${getUrlSource()}/api/file/thumbnail/${
+                src={`${defaultTargetProvider()}/api/file/thumbnail/${
                   file.id
                 }?${Date.now()}`}
               />
@@ -138,7 +139,11 @@ function FileCard(props: SubmissionFileCardProps) {
                 compress
                 accept={['image/*']}
                 label="Change thumbnail"
-                endpointPath={`api/submission/thumbnail/replace/${submission.id}/${file.id}`}
+                endpointPath={getReplaceFileUrl(
+                  submission.id,
+                  file.id,
+                  'thumbnail'
+                )}
                 onComplete={(dto) => {
                   mergeSubmission(submission, dto, ['files', 'metadata']);
                   onUpdate();

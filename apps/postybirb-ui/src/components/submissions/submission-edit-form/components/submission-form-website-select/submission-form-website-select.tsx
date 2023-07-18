@@ -1,6 +1,5 @@
 import { EuiComboBox, EuiComboBoxOptionOption, EuiFormRow } from '@elastic/eui';
-import { IAccountDto } from '@postybirb/dto';
-import { ISubmissionOptions } from '@postybirb/types';
+import { IAccountDto, WebsiteOptionsDto } from '@postybirb/types';
 import { useEffect, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { SubmissionFormProps } from '../../submission-form-props';
@@ -26,7 +25,7 @@ export function SubmissionFormWebsiteSelect(
     setOptions(opts.sort((a, b) => a.label.localeCompare(b.label)));
     setSelectedOptions(
       opts.filter((comboOpt) =>
-        submission.options.some((option) => option.account?.id === comboOpt.key)
+        submission.options.some((option) => option.account === comboOpt.key)
       )
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,26 +48,16 @@ export function SubmissionFormWebsiteSelect(
         onChange={(newOptions) => {
           newOptions.forEach((o) => {
             // When new accounts are added
-            if (!submission.options.some((opt) => opt.account?.id === o.key)) {
+            if (!submission.options.some((opt) => opt.account === o.key)) {
               const account = accounts.find(
                 (a) => a.id === o.key
               ) as IAccountDto<unknown>;
               // Somewhat messy creation
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const newSubmissionOptions: ISubmissionOptions<any> = {
+              const newSubmissionOptions: WebsiteOptionsDto = {
                 id: Date.now().toString(),
-                account: {
-                  id: account.id,
-                  name: account.name,
-                  website: account.website,
-                  groups: account.groups,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  markedForDeletion: false,
-                },
+                account: account.id,
                 data: {},
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              } as ISubmissionOptions<any>;
+              } as WebsiteOptionsDto;
               submission.options.push(newSubmissionOptions);
             }
           });
@@ -76,7 +65,7 @@ export function SubmissionFormWebsiteSelect(
           submission.options
             .filter((o) => !o.isDefault) // Ignore default record
             .filter(
-              (o) => !newOptions.some((newOpt) => newOpt.key === o.account?.id)
+              (o) => !newOptions.some((newOpt) => newOpt.key === o.account)
             )
             .forEach((removedOption) => submission.removeOption(removedOption));
 

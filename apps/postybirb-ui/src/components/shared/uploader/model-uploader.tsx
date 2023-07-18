@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { ISubmissionDto } from '@postybirb/dto';
+import { ISubmissionDto } from '@postybirb/types';
 import Compressor from '@uppy/compressor';
 import Uppy from '@uppy/core';
 import ImageEditor from '@uppy/image-editor';
@@ -8,7 +8,7 @@ import Webcam from '@uppy/webcam';
 import XHRUpload from '@uppy/xhr-upload';
 import { useContext, useEffect, useMemo } from 'react';
 import { AppThemeContext } from '../../../app/app-theme-provider';
-import { getUrlSource } from '../../../transports/https';
+import { defaultTargetProvider } from '../../../transports/http-client';
 
 type UploaderProps = {
   accept?: string[];
@@ -56,7 +56,7 @@ export default function ModalUploader(props: UploaderProps) {
         },
       })
       .use(XHRUpload, {
-        endpoint: `${getUrlSource()}/${endpointPath}`,
+        endpoint: `${defaultTargetProvider()}/${endpointPath}`,
         fieldName: 'file',
         allowedMetaFields: ['name'],
         headers: {

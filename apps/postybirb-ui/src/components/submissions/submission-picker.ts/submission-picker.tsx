@@ -1,7 +1,6 @@
 /* eslint-disable react/require-default-props */
 import { EuiComboBox, EuiComboBoxOptionOption } from '@elastic/eui';
-import { ISubmissionDto } from '@postybirb/dto';
-import { SubmissionType } from '@postybirb/types';
+import { ISubmissionDto, SubmissionType } from '@postybirb/types';
 import { useCallback, useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionStore } from '../../../stores/submission.store';

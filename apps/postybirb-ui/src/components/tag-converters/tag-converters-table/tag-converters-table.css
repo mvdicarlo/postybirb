@@ -1,0 +1,6 @@
+.postybirb__tag_converter_table
+  .euiTableRow
+  .euiTableCellContent
+  .euiCheckbox--inList {
+  margin-top: 20px !important;
+}

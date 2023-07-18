@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ICreateAccountDto } from '@postybirb/dto';
+import { ICreateAccountDto } from '@postybirb/types';
 import { IsArray, IsString, Length } from 'class-validator';
 
 /**

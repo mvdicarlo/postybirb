@@ -36,8 +36,11 @@ export default function AccountLoginWebview(props: AccountLoginWebviewProps) {
           webviewRef.current = ref as WebviewTag;
         }}
         className="webview h-full w-full"
+        // eslint-disable-next-line react/no-unknown-property
         webpreferences="nativeWindowOpen=1"
+        // eslint-disable-next-line react/no-unknown-property
         partition={`persist:${id}`}
+        // eslint-disable-next-line react/no-unknown-property
         allowpopups
       />
     </div>

@@ -1,15 +1,25 @@
-import { Entity, Property } from '@mikro-orm/core';
 import {
+  Entity,
+  EntityRepositoryType,
+  Property,
+  serialize,
+} from '@mikro-orm/core';
+import {
+  DirectoryWatcherDto,
   DirectoryWatcherImportAction,
   IDirectoryWatcher,
 } from '@postybirb/types';
-import { BaseEntity } from './base.entity';
+import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostyBirbEntity } from './postybirb-entity';
 
-@Entity()
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
 export class DirectoryWatcher
-  extends BaseEntity<DirectoryWatcher>
+  extends PostyBirbEntity
   implements IDirectoryWatcher
 {
+  [EntityRepositoryType]?: PostyBirbRepository<DirectoryWatcher>;
+
   @Property({ nullable: true, type: 'string' })
   path: string;
 
@@ -22,4 +32,8 @@ export class DirectoryWatcher
 
   @Property({ nullable: true })
   submissionIds?: string[];
+
+  toJSON(): DirectoryWatcherDto {
+    return serialize(this) as DirectoryWatcherDto;
+  }
 }

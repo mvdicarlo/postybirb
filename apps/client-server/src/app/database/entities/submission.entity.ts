@@ -1,34 +1,45 @@
-import { Collection, Entity, OneToMany, Property } from '@mikro-orm/core';
 import {
-  IBaseSubmissionMetadata,
+  Collection,
+  Entity,
+  EntityRepositoryType,
+  OneToMany,
+  Property,
+  serialize,
+} from '@mikro-orm/core';
+import {
   ISubmission,
-  SubmissionType,
-  IBaseWebsiteOptions,
+  ISubmissionDto,
   ISubmissionFile,
+  ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  IWebsiteFormFields,
+  SubmissionType,
 } from '@postybirb/types';
 
-import { BaseEntity } from './base.entity';
+import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostyBirbEntity } from './postybirb-entity';
 import { SubmissionFile } from './submission-file.entity';
-import { SubmissionOptions } from './submission-options.entity';
+import { WebsiteOptions } from './website-options.entity';
 
-@Entity()
-export class Submission<T extends IBaseSubmissionMetadata>
-  extends BaseEntity<Submission<T>>
+/** @inheritdoc */
+@Entity({ customRepository: () => PostyBirbRepository })
+export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
+  extends PostyBirbEntity
   implements ISubmission<T>
 {
+  [EntityRepositoryType]?: PostyBirbRepository<Submission<T>>;
+
   @Property({ type: 'string', nullable: false })
   type: SubmissionType;
 
   @OneToMany({
-    entity: () => SubmissionOptions,
+    entity: () => WebsiteOptions,
     mappedBy: 'submission',
     orphanRemoval: true,
   })
-  options = new Collection<
-    SubmissionOptions<IBaseWebsiteOptions>,
-    ISubmission<T>
-  >(this);
+  options = new Collection<WebsiteOptions<IWebsiteFormFields>, ISubmission<T>>(
+    this
+  );
 
   @OneToMany(() => SubmissionFile, (sf) => sf.submission, {
     orphanRemoval: true,
@@ -43,4 +54,11 @@ export class Submission<T extends IBaseSubmissionMetadata>
 
   @Property({ type: 'json', nullable: false })
   metadata: T;
+
+  toJSON(): ISubmissionDto<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return serialize(this as any, {
+      populate: ['files', 'options', 'options.account'],
+    }) as ISubmissionDto<T>;
+  }
 }

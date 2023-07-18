@@ -1,14 +1,15 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { SafeObject, IAccount } from '@postybirb/types';
+import { IAccount, DynamicObject } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { WebsiteData } from '../database/entities';
+import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
+import { IsTestEnvironment } from '../utils/test.util';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 
@@ -27,33 +28,45 @@ export class WebsiteRegistryService {
 
   constructor(
     @InjectRepository(WebsiteData)
-    private readonly websiteDataRepository: EntityRepository<
-      WebsiteData<SafeObject>
+    private readonly websiteDataRepository: PostyBirbRepository<
+      WebsiteData<DynamicObject>
     >,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[]
   ) {
+    this.logger.debug('Registering websites');
     Object.values({ ...this.websiteImplementations }).forEach(
       (website: Class<UnknownWebsite>) => {
         if (!website.prototype.metadata.name) {
-          throw new Error(`${website.name} is missing metadata field "name"`);
+          throw new Error(`${website.name} is missing metadata field 'name'`);
         }
 
         if (
           !website.prototype.loginUrl &&
           !website.prototype.loginComponentName
         ) {
-          this.logger.error(
+          this.logger.warn(
             `${website.name} is missing a login method. Please apply the UserLoginWebsite or CustomLoginWebsite interface.`
           );
         }
 
         this.logger.debug(
-          `Registering website: ${website.prototype.metadata.name}`
+          `Registered website: ${website.prototype.metadata.name}`
         );
         this.availableWebsites[website.prototype.metadata.name] = website;
       }
     );
+  }
+
+  /**
+   * Only used for unit testing.
+   */
+  getRepository() {
+    if (IsTestEnvironment()) {
+      return this.websiteDataRepository;
+    }
+
+    throw new Error('Test only method');
   }
 
   /**
@@ -79,22 +92,22 @@ export class WebsiteRegistryService {
       }
 
       if (!this.websiteInstances[website][id]) {
-        this.logger.info(`Creating instance of "${website}" with id "${id}"`);
+        this.logger.info(`Creating instance of '${website}' with id '${id}'`);
         this.websiteInstances[website][id] = new WebsiteCtor(account);
         await this.websiteInstances[website][id].onInitialize(
           this.websiteDataRepository
         );
       } else {
         this.logger.warn(
-          `An instance of "${website}" with id "${id}" already exists`
+          `An instance of "${website}" with id '${id}' already exists`
         );
       }
 
       return this.websiteInstances[website][id];
     }
 
-    this.logger.error(`Unable to find website "${website}"`);
-    throw new BadRequestException(`Unable to find website "${website}"`);
+    this.logger.error(`Unable to find website '${website}'`);
+    throw new BadRequestException(`Unable to find website '${website}'`);
   }
 
   /**
@@ -151,7 +164,9 @@ export class WebsiteRegistryService {
    * @todo better type overlap
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
-  public performOAuthStep(oauthRequestDto: OAuthWebsiteRequestDto<SafeObject>) {
+  public performOAuthStep(
+    oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>
+  ) {
     const instance = this.findInstance(oauthRequestDto as unknown as IAccount);
     if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
       return (instance as unknown as OAuthWebsite).onAuthorize(
