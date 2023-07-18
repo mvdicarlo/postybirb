@@ -139,24 +139,6 @@ export default function AppSideNav() {
       </EuiButton> */}
         <EuiListGroup maxWidth="none" color="text" gutterSize="none" size="s">
           <EuiListGroupItem
-            aria-label="PostyBirb login accounts"
-            size="s"
-            iconType={UserGroupIcon.GroupItem}
-            onClick={() => toggleAccountLoginPage()}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...accountKeybinding}>
-                    <FormattedMessage id="accounts" defaultMessage="Accounts" />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage id="accounts" defaultMessage="Accounts" />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
             size="s"
             aria-label="PostyBirb home"
             iconType={HomeIcon.GroupItem}
@@ -172,6 +154,24 @@ export default function AppSideNav() {
                 }
               >
                 <FormattedMessage id="home" defaultMessage="Home" />
+              </EuiToolTip>
+            }
+          />
+          <EuiListGroupItem
+            aria-label="PostyBirb login accounts"
+            size="s"
+            iconType={UserGroupIcon.GroupItem}
+            onClick={() => toggleAccountLoginPage()}
+            label={
+              <EuiToolTip
+                position="right"
+                content={
+                  <Keybinding {...accountKeybinding}>
+                    <FormattedMessage id="accounts" defaultMessage="Accounts" />
+                  </Keybinding>
+                }
+              >
+                <FormattedMessage id="accounts" defaultMessage="Accounts" />
               </EuiToolTip>
             }
           />

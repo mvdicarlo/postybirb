@@ -71,6 +71,7 @@ export function AccountLoginContainer(
         </div>
         <EuiFilterGroup compressed>
           <EuiFilterButton
+            style={{ borderRadius: 0 }}
             aria-label="Show hidden accounts filter"
             onClick={() => setHiddenFilter(!isHiddenFilterOn)}
           >
@@ -80,6 +81,8 @@ export function AccountLoginContainer(
             />
           </EuiFilterButton>
           <EuiFilterButton
+            style={{ borderRadius: 0 }}
+            withNext
             aria-label="Show hidden accounts filter on"
             color={isHiddenFilterOn ? 'primary' : undefined}
             hasActiveFilters={isHiddenFilterOn}
@@ -88,6 +91,7 @@ export function AccountLoginContainer(
             <FormattedMessage id="on" defaultMessage="On" />
           </EuiFilterButton>
           <EuiFilterButton
+            style={{ borderRadius: 0 }}
             aria-label="Show hidden accounts filter off"
             hasActiveFilters={!isHiddenFilterOn}
             color={!isHiddenFilterOn ? 'primary' : undefined}

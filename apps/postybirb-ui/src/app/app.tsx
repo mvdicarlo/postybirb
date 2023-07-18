@@ -7,7 +7,13 @@ import { AppThemeContext } from './app-theme-provider';
 import { AppToastProvider } from './app-toast-provider';
 import './app.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 export default function App() {
   const [theme] = useContext(AppThemeContext);
