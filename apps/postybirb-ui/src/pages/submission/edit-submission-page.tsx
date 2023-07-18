@@ -12,7 +12,7 @@ import {
 } from '@elastic/eui';
 import { IValidateWebsiteOptionsDto, SubmissionType } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useCallback, useMemo, useReducer, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router';
@@ -20,6 +20,7 @@ import submissionsApi from '../../api/submission.api';
 import websiteOptionsApi from '../../api/website-options.api';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
+import { useUpdateView } from '../../hooks/use-update-view';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { AccountStore } from '../../stores/account.store';
 import { useStore } from '../../stores/use-store';
@@ -65,7 +66,7 @@ export default function EditSubmissionPage() {
   const [isSaving, setIsSaving] = useState(false);
   const { id } = useParams();
   const history = useNavigate();
-  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  const updateView = useUpdateView();
 
   const { state: accounts, isLoading: isLoadingAccounts } =
     useStore(AccountStore);
@@ -115,7 +116,7 @@ export default function EditSubmissionPage() {
 
   const original = useMemo(() => data?.copy(), [data]);
   const onUpdate = useCallback(() => {
-    forceUpdate();
+    updateView();
     debouncedValidate();
   }, [debouncedValidate]);
 

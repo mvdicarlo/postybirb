@@ -37,6 +37,9 @@ function AppIntlProvider({ children }: PropsWithChildren<any>): JSX.Element {
         locale={locale}
         messages={getLocaleData(locale)}
         defaultLocale="en"
+        onError={(p) => {
+          // nothing
+        }}
       >
         {children}
       </IntlProvider>

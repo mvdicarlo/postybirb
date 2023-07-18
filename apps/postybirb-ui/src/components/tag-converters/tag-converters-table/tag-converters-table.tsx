@@ -12,12 +12,13 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { TagConverterDto } from '@postybirb/types';
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import websitesApi from '../../../api/websites.api';
 import { useToast } from '../../../app/app-toast-provider';
+import { useUpdateView } from '../../../hooks/use-update-view';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import './tag-converters-table.css';
 
@@ -38,26 +39,33 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const { tagConverters } = props;
   const [selectedItems, setSelectedItems] = useState<TagConverterDto[]>([]);
   const tableRef = useRef<EuiBasicTable | null>(null);
-  const [, forceUpdate] = useReducer((x: number) => (x === 0 ? 1 : 0), 0);
+  const updateView = useUpdateView();
   const [records, setRecords] = useState(tagConverters); // Internal state to protect unsaved edits
+  //   console.log('render');
 
   useEffect(() => {
     const newRecords = tagConverters.filter(
       (tc) => !records.some((r) => r.id === tc.id)
     );
 
-    records.forEach((r) => {
-      const updated = tagConverters.find(
-        (tc) => tc.id === r.id && tc.updatedAt !== r.updatedAt
-      );
+    const updatedRecords = records
+      .filter((r) => tagConverters.some((tc) => tc.id === r.id))
+      .map((r) => {
+        const updated = tagConverters.find(
+          (tc) => tc.id === r.id && tc.updatedAt !== r.updatedAt
+        );
 
-      if (updated) {
-        Object.assign(r, updated);
-      }
-    });
+        if (updated) {
+          Object.assign(r, updated);
+        }
 
-    setRecords([...newRecords, ...records]);
-  }, [tagConverters, records]);
+        return r;
+      });
+
+    setRecords([...newRecords, ...updatedRecords]);
+    // Don't add records, this causes rapid renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagConverters]);
 
   const tagSupportingWebsites = (websiteInfo ?? [])
     .sort((a, b) => a.displayName.localeCompare(b.displayName))
@@ -146,7 +154,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
             onChange={(event) => {
               // eslint-disable-next-line no-param-reassign
               converter.tag = event.target.value;
-              forceUpdate();
+              updateView();
             }}
           />
         </EuiFormRow>
@@ -170,7 +178,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                       ...tagConverter.convertTo,
                       [website.id]: event.target.value,
                     };
-                    forceUpdate();
+                    updateView();
                   }}
                   onBlur={(event) => {
                     // eslint-disable-next-line no-param-reassign
@@ -178,7 +186,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                       ...tagConverter.convertTo,
                       [website.id]: event.target.value.trim(),
                     };
-                    forceUpdate();
+                    updateView();
                   }}
                 />
               </EuiFormRow>

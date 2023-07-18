@@ -7,47 +7,99 @@ import {
   EuiFieldText,
   EuiFlexGroup,
   EuiFlexItem,
+  EuiFormRow,
   EuiSpacer,
   EuiTableSelectionType,
+  EuiText,
 } from '@elastic/eui';
 import { TagGroupDto } from '@postybirb/types';
 import { uniq } from 'lodash';
-import { useReducer, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import tagGroupsApi from '../../../api/tag-groups.api';
+import { useToast } from '../../../app/app-toast-provider';
+import { useUpdateView } from '../../../hooks/use-update-view';
+import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
+import './tag-groups-table.css';
 
 type TagGroupsTableProps = {
   tagGroups: TagGroupDto[];
 };
 
 export default function TagGroupsTable(props: TagGroupsTableProps) {
+  const { addToast } = useToast();
   const { tagGroups } = props;
   const [selectedItems, setSelectedItems] = useState<TagGroupDto[]>([]);
   const tableRef = useRef<EuiBasicTable | null>(null);
-  const [, forceUpdate] = useReducer((x: number) => (x === 0 ? 1 : 0), 0);
+  const updateView = useUpdateView();
+  const [records, setRecords] = useState(tagGroups); // Internal state to protect unsaved edits
+
+  useEffect(() => {
+    const newRecords = tagGroups.filter(
+      (tc) => !records.some((r) => r.id === tc.id)
+    );
+
+    const updatedRecords = records
+      .filter((r) => tagGroups.some((tg) => tg.id === r.id))
+      .map((r) => {
+        const updated = tagGroups.find(
+          (tc) => tc.id === r.id && tc.updatedAt !== r.updatedAt
+        );
+
+        if (updated) {
+          Object.assign(r, updated);
+        }
+
+        return r;
+      });
+
+    setRecords([...newRecords, ...updatedRecords]);
+    // Don't add records, this causes rapid renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tagGroups]);
 
   const onSelectionChange = (selected: TagGroupDto[]) => {
     setSelectedItems(selected);
   };
 
   const createNewTagGroup = () => {
-    tagGroupsApi.create({ name: `New Tag Group ${Date.now()}`, tags: [] });
+    tagGroupsApi.create({ name: `Tag ${Date.now()}`, tags: [] });
   };
 
-  const saveTagGroupChanges = ({ id, tags, name }: TagGroupDto) => {
-    tagGroupsApi.update(id, { tags, name });
+  const saveChanges = ({ id, name, tags }: TagGroupDto) => {
+    tagGroupsApi.update(id, { name, tags }).then(() => {
+      addToast({
+        id: Date.now().toString(),
+        color: 'success',
+        text: (
+          <FormattedMessage
+            id="update.success-tag-group"
+            defaultMessage="Updated tag group"
+          />
+        ),
+      });
+    });
   };
 
-  const deleteSelectedItems = () => {
-    tagGroupsApi.remove(selectedItems.map((item) => item.id));
-    setSelectedItems([]);
-  };
+  const deleteSelectedItems = () =>
+    tagGroupsApi.remove(selectedItems.map((item) => item.id)).then((res) => {
+      setSelectedItems([]);
+      return res;
+    });
 
   const deleteButton =
     selectedItems.length > 0 ? (
-      <EuiButton color="danger" iconType="trash" onClick={deleteSelectedItems}>
-        Delete {selectedItems.length}
-      </EuiButton>
+      <DeleteActionPopover onDelete={deleteSelectedItems}>
+        <EuiButton
+          color="danger"
+          iconType="trash"
+          size="s"
+          aria-label="Delete selected tag groups"
+        >
+          <FormattedMessage id="delete" defaultMessage="Delete" />{' '}
+          {selectedItems.length}
+        </EuiButton>
+      </DeleteActionPopover>
     ) : null;
 
   const selection: EuiTableSelectionType<TagGroupDto> = {
@@ -60,17 +112,36 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       name: <FormattedMessage id="name" defaultMessage="Name" />,
       sortable: true,
       truncateText: true,
-      render: (name: string, tagGroup: TagGroupDto) => (
-        <EuiFieldText
-          placeholder="Name"
-          value={name}
-          compressed
-          onChange={(event) => {
-            // eslint-disable-next-line no-param-reassign
-            tagGroup.name = event.target.value;
-            forceUpdate();
-          }}
-        />
+      render: (name: string, group: TagGroupDto) => (
+        <EuiFormRow
+          fullWidth
+          className="w-full"
+          isInvalid={records.some(
+            (tagGroup) =>
+              tagGroup.name.trim() === group.name.trim() &&
+              tagGroup.id !== group.id
+          )}
+          error={
+            <EuiText size="relative">
+              <FormattedMessage
+                id="duplicate.tag-group"
+                defaultMessage="Duplicate name"
+              />
+            </EuiText>
+          }
+        >
+          <EuiFieldText
+            fullWidth
+            placeholder="Tag"
+            value={name}
+            compressed
+            onChange={(event) => {
+              // eslint-disable-next-line no-param-reassign
+              group.name = event.target.value;
+              updateView();
+            }}
+          />
+        </EuiFormRow>
       ),
     },
     {
@@ -94,39 +165,59 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
             onCreateOption={(tagValue: string) => {
               // eslint-disable-next-line no-param-reassign
               tagGroup.tags = uniq([...tagGroup.tags, tagValue]);
-              forceUpdate();
+              updateView();
             }}
             onChange={(values) => {
               // eslint-disable-next-line no-param-reassign
               tagGroup.tags = uniq(
                 values.map(({ value }) => value)
               ) as string[];
-              forceUpdate();
+              updateView();
             }}
           />
         );
       },
     },
     {
-      name: 'Actions',
+      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
       width: '8%',
       actions: [
         {
-          name: 'Save',
-          description: 'Save changes',
-          type: 'icon',
-          icon: 'save',
-          onClick: saveTagGroupChanges,
+          render: (group: TagGroupDto) => (
+            <EuiButtonIcon
+              aria-label={`Save changes for ${group.name}`}
+              color="primary"
+              iconType="save"
+              disabled={
+                !group.name.trim().length ||
+                records.some(
+                  (tagGroup) =>
+                    tagGroup.name.trim() === group.name.trim() &&
+                    tagGroup.id !== group.id
+                )
+              }
+              onClick={() => {
+                saveChanges(group);
+              }}
+            >
+              <FormattedMessage id="save" defaultMessage="Save" />
+            </EuiButtonIcon>
+          ),
         },
         {
-          name: 'Delete',
-          description: 'Delete tag group',
-          type: 'icon',
-          icon: 'trash',
-          color: 'danger',
-          onClick: (tagGroup: TagGroupDto) => {
-            tagGroupsApi.remove([tagGroup.id]);
-          },
+          render: (group: TagGroupDto) => (
+            <DeleteActionPopover
+              onDelete={() => tagGroupsApi.remove([group.id])}
+            >
+              <EuiButtonIcon
+                color="danger"
+                iconType="trash"
+                aria-label={`Delete tag group ${group.name}`}
+              >
+                <FormattedMessage id="delete" defaultMessage="Delete" />
+              </EuiButtonIcon>
+            </DeleteActionPopover>
+          ),
         },
       ],
     },
@@ -135,12 +226,15 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
   return (
     <>
       <EuiFlexGroup alignItems="center" justifyContent="spaceBetween">
-        <EuiFlexItem grow={false}>
-          <EuiButtonIcon
-            onClick={createNewTagGroup}
+        <EuiFlexItem grow={10}>
+          <EuiButton
+            size="s"
             iconType="plus"
             aria-label="Create new tag group"
-          />
+            onClick={createNewTagGroup}
+          >
+            <FormattedMessage id="new" defaultMessage="New" />
+          </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>
       </EuiFlexGroup>
@@ -148,8 +242,9 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       <EuiSpacer size="l" />
 
       <EuiBasicTable
+        className="postybirb__tag_group_table"
         ref={tableRef}
-        items={tagGroups}
+        items={records}
         itemId="id"
         columns={columns}
         isSelectable

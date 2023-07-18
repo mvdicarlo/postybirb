@@ -10,11 +10,11 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useReducer,
 } from 'react';
 import { useQuery } from 'react-query';
 import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
+import { useUpdateView } from '../../../../hooks/use-update-view';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { SubmissionValidationResult } from '../../submission-edit-form/submission-form-props';
 
@@ -56,7 +56,7 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     [data]
   );
   const original = useMemo(() => submission?.copy(), [submission]);
-  const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
+  const updateView = useUpdateView();
 
   const { data: validationResults, refetch: fetchValidations } = useQuery(
     `validation-${id}`,
