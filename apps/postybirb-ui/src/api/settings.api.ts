@@ -1,8 +1,8 @@
 import { EntityId, IUpdateSettingsDto, SettingsDto } from '@postybirb/types';
-import Https from '../transports/https';
+import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {
-  private readonly client: Https = new Https('settings');
+  private readonly client: HttpClient = new HttpClient('settings');
 
   getAll() {
     return this.client.get<SettingsDto[]>();
