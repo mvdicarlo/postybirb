@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unused-prop-types */
 import {
   EuiCard,
   EuiFilterButton,
@@ -11,7 +10,7 @@ import { ISettingsOptions, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
-import { AccountFilterState } from './account-login-container';
+import { AccountFilterState } from '../../../hooks/account/use-accounts';
 
 type AccountLoginFiltersProps = {
   availableWebsites: IWebsiteInfoDto[];

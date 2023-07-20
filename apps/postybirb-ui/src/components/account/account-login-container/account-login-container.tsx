@@ -1,6 +1,5 @@
 import { EuiSpacer } from '@elastic/eui';
 import { IWebsiteInfoDto, SettingsDto } from '@postybirb/types';
-import { useLocalStorage } from 'react-use';
 import settingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
@@ -8,6 +7,7 @@ import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
 import AccountLoginCard from '../account-login-card/account-login-card';
 import { AccountLoginFilters } from './account-login-filters';
+import { useAccountFilters } from '../../../hooks/account/use-accounts';
 
 type AccountLoginContainerProps = {
   availableWebsites: IWebsiteInfoDto[];
@@ -32,25 +32,14 @@ function filterWebsites(
   }));
 }
 
-export type AccountFilterState = {
-  showHiddenAccounts: boolean;
-};
-
-const DEFAULT_FILTER_STATE: AccountFilterState = {
-  showHiddenAccounts: true,
-};
-
 export function AccountLoginContainer(
   props: AccountLoginContainerProps
 ): JSX.Element {
   const { availableWebsites, settings: settingsDto } = props;
   const { settings } = settingsDto;
+  const { filterState, setFilterState } = useAccountFilters();
 
   const { state: accounts } = useStore(AccountStore);
-  const [filterState, setFilterState] = useLocalStorage<AccountFilterState>(
-    'account-filters',
-    DEFAULT_FILTER_STATE
-  );
 
   const websites = filterWebsites(availableWebsites, settings.hiddenWebsites, {
     showHidden: filterState?.showHiddenAccounts || false,
@@ -85,7 +74,7 @@ export function AccountLoginContainer(
   return (
     <div className="account-login-container">
       <AccountLoginFilters
-        filterState={filterState ?? DEFAULT_FILTER_STATE}
+        filterState={filterState}
         settings={settings}
         availableWebsites={availableWebsites}
         onFilterUpdate={setFilterState}
