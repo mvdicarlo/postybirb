@@ -2,10 +2,11 @@ import { EuiSpacer } from '@elastic/eui';
 import { IWebsiteInfoDto, SettingsDto } from '@postybirb/types';
 import settingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
+import { useAccountFilters } from '../../../hooks/account/use-accounts';
+import { AccountFilterState } from '../../../models/app-states/account-filter-state';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import AccountLoginCard from '../account-login-card/account-login-card';
 import { AccountLoginFilters } from './account-login-filters';
-import { useAccountFilters } from '../../../hooks/account/use-accounts';
 
 type AccountLoginContainerProps = {
   availableWebsites: IWebsiteInfoDto[];
@@ -15,13 +16,17 @@ type AccountLoginContainerProps = {
 function filterWebsites(
   availableWebsites: IWebsiteInfoDto[],
   hiddenWebsites: string[],
-  filters: { showHidden: boolean }
+  filters: AccountFilterState
 ): DisplayableWebsiteLoginInfo[] {
   let filteredWebsites = availableWebsites;
-  if (!filters.showHidden) {
+  if (!filters.showHiddenWebsites) {
     filteredWebsites = filteredWebsites.filter(
       (w) => !hiddenWebsites.includes(w.id)
     );
+  }
+
+  if (!filters.showWebsitesWithoutAccounts) {
+    filteredWebsites = filteredWebsites.filter((w) => w.accounts.length);
   }
 
   return filteredWebsites.map((w) => ({
@@ -37,9 +42,11 @@ export function AccountLoginContainer(
   const { settings } = settingsDto;
   const { filterState, setFilterState } = useAccountFilters();
 
-  const websites = filterWebsites(availableWebsites, settings.hiddenWebsites, {
-    showHidden: filterState?.showHiddenWebsites || false,
-  });
+  const websites = filterWebsites(
+    availableWebsites,
+    settings.hiddenWebsites,
+    filterState
+  );
 
   const allAccountGroups = ArrayHelper.unique(
     availableWebsites.flatMap(({ accounts }) =>

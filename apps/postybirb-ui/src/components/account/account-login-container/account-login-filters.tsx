@@ -87,7 +87,7 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
   return (
     <EuiFilterGroup compressed>
       <EuiFilterButton
-        style={{ borderRadius: 0 }}
+        style={{ borderRadius: 0, width: 120 }}
         aria-label="Show hidden websites filter"
         onClick={() =>
           onFilterUpdate({
@@ -140,7 +140,7 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
   return (
     <EuiFilterGroup compressed>
       <EuiFilterButton
-        style={{ borderRadius: 0 }}
+        style={{ borderRadius: 0, width: 120 }}
         aria-label="Show empty websites filter"
         onClick={() =>
           onFilterUpdate({
@@ -152,7 +152,7 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
       >
         <FormattedMessage
           id="account.login.empty-filter"
-          defaultMessage="Show empty websites"
+          defaultMessage="Show empty"
         />
       </EuiFilterButton>
       <EuiFilterButton
