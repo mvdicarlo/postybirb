@@ -5,21 +5,18 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
-import { useQuery } from 'react-query';
-import websitesApi from '../../../api/websites.api';
 import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import { AccountKeybinding } from '../../../shared/app-keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
 import { useStore } from '../../../stores/use-store';
+import { WebsiteStore } from '../../../stores/website.store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
 import Loading from '../../shared/loading/loading';
 import { AccountLoginContainer } from '../account-login-container/account-login-container';
 
 export function AccountLoginFlyout() {
   const [isOpen, toggle] = useFlyoutToggle('accountFlyoutVisible');
-  const { isLoading, data: availableWebsites } = useQuery('website-info', () =>
-    websitesApi.getWebsiteInfo().then((res) => res.body)
-  );
+  const { state: availableWebsites, isLoading } = useStore(WebsiteStore);
 
   const { isLoading: isLoadingStore, state: settingsState } =
     useStore(SettingsStore);

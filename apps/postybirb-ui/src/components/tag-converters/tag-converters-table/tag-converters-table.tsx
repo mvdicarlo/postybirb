@@ -14,11 +14,11 @@ import {
 import { TagConverterDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useQuery } from 'react-query';
 import tagConvertersApi from '../../../api/tag-converters.api';
-import websitesApi from '../../../api/websites.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
+import { useStore } from '../../../stores/use-store';
+import { WebsiteStore } from '../../../stores/website.store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import './tag-converters-table.css';
 
@@ -28,20 +28,13 @@ type TagConvertersTableProps = {
 
 export default function TagConvertersTable(props: TagConvertersTableProps) {
   const { addToast } = useToast();
-  const { data: websiteInfo, isLoading: isLoadingWebsiteInfo } = useQuery(
-    'website-info',
-    () => websitesApi.getWebsiteInfo().then((res) => res.body),
-    {
-      refetchInterval: false,
-      refetchOnWindowFocus: false,
-    }
-  );
+  const { state: websiteInfo, isLoading: isLoadingWebsiteInfo } =
+    useStore(WebsiteStore);
   const { tagConverters } = props;
   const [selectedItems, setSelectedItems] = useState<TagConverterDto[]>([]);
   const tableRef = useRef<EuiBasicTable | null>(null);
   const updateView = useUpdateView();
   const [records, setRecords] = useState(tagConverters); // Internal state to protect unsaved edits
-  //   console.log('render');
 
   useEffect(() => {
     const newRecords = tagConverters.filter(

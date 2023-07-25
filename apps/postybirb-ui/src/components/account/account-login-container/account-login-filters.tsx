@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-prop-types */
 import {
   EuiCard,
   EuiFilterButton,
@@ -5,12 +6,13 @@ import {
   EuiPopover,
   EuiPopoverTitle,
   EuiSelectable,
+  EuiSpacer,
 } from '@elastic/eui';
 import { ISettingsOptions, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { AccountFilterState } from '../../../models/app-states/account-filter-state';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
-import { AccountFilterState } from '../../../hooks/account/use-accounts';
 
 type AccountLoginFiltersProps = {
   availableWebsites: IWebsiteInfoDto[];
@@ -20,7 +22,9 @@ type AccountLoginFiltersProps = {
   onHide: (website: DisplayableWebsiteLoginInfo) => void;
 };
 
-function HiddenAccountButtonSelect(props: AccountLoginFiltersProps) {
+type FilterDropdownProps = Omit<AccountLoginFiltersProps, 'onFilterUpdate'>;
+
+function ShowHiddenWebsitesFilterDropdown(props: FilterDropdownProps) {
   const { availableWebsites, filterState, settings, onHide } = props;
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
@@ -32,7 +36,7 @@ function HiddenAccountButtonSelect(props: AccountLoginFiltersProps) {
       onClick={() => setIsPopoverOpen(!isPopoverOpen)}
       isSelected={isPopoverOpen}
       numFilters={settings.hiddenWebsites?.length}
-      hasActiveFilters={filterState.showHiddenAccounts}
+      hasActiveFilters={filterState.showHiddenWebsites}
       numActiveFilters={settings.hiddenWebsites?.length}
     >
       <FormattedMessage id="hidden" defaultMessage="Hidden" />
@@ -78,9 +82,113 @@ function HiddenAccountButtonSelect(props: AccountLoginFiltersProps) {
   );
 }
 
-export function AccountLoginFilters(props: AccountLoginFiltersProps) {
+function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
   const { filterState, onFilterUpdate } = props;
+  return (
+    <EuiFilterGroup compressed>
+      <EuiFilterButton
+        style={{ borderRadius: 0 }}
+        aria-label="Show hidden websites filter"
+        onClick={() =>
+          onFilterUpdate({
+            ...filterState,
+            showHiddenWebsites: !filterState.showHiddenWebsites,
+          })
+        }
+      >
+        <FormattedMessage
+          id="account.login.hidden-filter"
+          defaultMessage="Show hidden"
+        />
+      </EuiFilterButton>
+      <EuiFilterButton
+        style={{ borderRadius: 0 }}
+        withNext
+        aria-label="Show hidden websites filter on"
+        color={filterState.showHiddenWebsites ? 'primary' : undefined}
+        hasActiveFilters={filterState.showHiddenWebsites}
+        onClick={() =>
+          onFilterUpdate({
+            ...filterState,
+            showHiddenWebsites: true,
+          })
+        }
+      >
+        <FormattedMessage id="on" defaultMessage="On" />
+      </EuiFilterButton>
+      <EuiFilterButton
+        style={{ borderRadius: 0 }}
+        aria-label="Show hidden websites filter off"
+        hasActiveFilters={!filterState.showHiddenWebsites}
+        color={!filterState.showHiddenWebsites ? 'primary' : undefined}
+        onClick={() =>
+          onFilterUpdate({
+            ...filterState,
+            showHiddenWebsites: false,
+          })
+        }
+      >
+        <FormattedMessage id="off" defaultMessage="Off" />
+      </EuiFilterButton>
+      <ShowHiddenWebsitesFilterDropdown {...props} />
+    </EuiFilterGroup>
+  );
+}
 
+function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
+  const { filterState, onFilterUpdate } = props;
+  return (
+    <EuiFilterGroup compressed>
+      <EuiFilterButton
+        style={{ borderRadius: 0 }}
+        aria-label="Show empty websites filter"
+        onClick={() =>
+          onFilterUpdate({
+            ...filterState,
+            showWebsitesWithoutAccounts:
+              !filterState.showWebsitesWithoutAccounts,
+          })
+        }
+      >
+        <FormattedMessage
+          id="account.login.empty-filter"
+          defaultMessage="Show empty websites"
+        />
+      </EuiFilterButton>
+      <EuiFilterButton
+        style={{ borderRadius: 0 }}
+        withNext
+        aria-label="Show empty websites filter on"
+        color={filterState.showWebsitesWithoutAccounts ? 'primary' : undefined}
+        hasActiveFilters={filterState.showWebsitesWithoutAccounts}
+        onClick={() =>
+          onFilterUpdate({
+            ...filterState,
+            showWebsitesWithoutAccounts: true,
+          })
+        }
+      >
+        <FormattedMessage id="on" defaultMessage="On" />
+      </EuiFilterButton>
+      <EuiFilterButton
+        style={{ borderRadius: 0 }}
+        aria-label="Show empty websites filter off"
+        hasActiveFilters={!filterState.showWebsitesWithoutAccounts}
+        color={!filterState.showWebsitesWithoutAccounts ? 'primary' : undefined}
+        onClick={() =>
+          onFilterUpdate({
+            ...filterState,
+            showWebsitesWithoutAccounts: false,
+          })
+        }
+      >
+        <FormattedMessage id="off" defaultMessage="Off" />
+      </EuiFilterButton>
+    </EuiFilterGroup>
+  );
+}
+
+export function AccountLoginFilters(props: AccountLoginFiltersProps) {
   return (
     <EuiCard
       hasBorder
@@ -89,53 +197,13 @@ export function AccountLoginFilters(props: AccountLoginFiltersProps) {
       titleSize="xs"
       layout="horizontal"
     >
-      <EuiFilterGroup compressed>
-        <EuiFilterButton
-          style={{ borderRadius: 0 }}
-          aria-label="Show hidden accounts filter"
-          onClick={() =>
-            onFilterUpdate({
-              ...filterState,
-              showHiddenAccounts: !filterState.showHiddenAccounts,
-            })
-          }
-        >
-          <FormattedMessage
-            id="account.login.hidden-filter"
-            defaultMessage="Show hidden"
-          />
-        </EuiFilterButton>
-        <EuiFilterButton
-          style={{ borderRadius: 0 }}
-          withNext
-          aria-label="Show hidden accounts filter on"
-          color={filterState.showHiddenAccounts ? 'primary' : undefined}
-          hasActiveFilters={filterState.showHiddenAccounts}
-          onClick={() =>
-            onFilterUpdate({
-              ...filterState,
-              showHiddenAccounts: true,
-            })
-          }
-        >
-          <FormattedMessage id="on" defaultMessage="On" />
-        </EuiFilterButton>
-        <EuiFilterButton
-          style={{ borderRadius: 0 }}
-          aria-label="Show hidden accounts filter off"
-          hasActiveFilters={!filterState.showHiddenAccounts}
-          color={!filterState.showHiddenAccounts ? 'primary' : undefined}
-          onClick={() =>
-            onFilterUpdate({
-              ...filterState,
-              showHiddenAccounts: false,
-            })
-          }
-        >
-          <FormattedMessage id="off" defaultMessage="Off" />
-        </EuiFilterButton>
-        <HiddenAccountButtonSelect {...props} />
-      </EuiFilterGroup>
+      <div>
+        <ShowHiddenWebsitesFilter {...props} />
+      </div>
+      <EuiSpacer size="s" />
+      <div>
+        <ShowWebsitesWithoutAccountsFilter {...props} />
+      </div>
     </EuiCard>
   );
 }

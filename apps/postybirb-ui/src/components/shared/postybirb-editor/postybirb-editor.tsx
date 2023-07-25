@@ -141,7 +141,6 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       init={tinyMceSettings as never}
       value={value || ''}
       onEditorChange={(newValue) => {
-        console.log(newValue);
         onChange(newValue);
       }}
     />

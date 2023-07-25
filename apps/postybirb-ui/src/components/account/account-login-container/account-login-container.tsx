@@ -3,8 +3,6 @@ import { IWebsiteInfoDto, SettingsDto } from '@postybirb/types';
 import settingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
-import { AccountStore } from '../../../stores/account.store';
-import { useStore } from '../../../stores/use-store';
 import AccountLoginCard from '../account-login-card/account-login-card';
 import { AccountLoginFilters } from './account-login-filters';
 import { useAccountFilters } from '../../../hooks/account/use-accounts';
@@ -39,14 +37,14 @@ export function AccountLoginContainer(
   const { settings } = settingsDto;
   const { filterState, setFilterState } = useAccountFilters();
 
-  const { state: accounts } = useStore(AccountStore);
-
   const websites = filterWebsites(availableWebsites, settings.hiddenWebsites, {
-    showHidden: filterState?.showHiddenAccounts || false,
+    showHidden: filterState?.showHiddenWebsites || false,
   });
 
-  const groups = ArrayHelper.unique(
-    accounts.flatMap((account) => account.groups)
+  const allAccountGroups = ArrayHelper.unique(
+    availableWebsites.flatMap(({ accounts }) =>
+      accounts.flatMap(({ groups }) => groups)
+    )
   );
 
   const onHideWebsite = (websiteInfo: DisplayableWebsiteLoginInfo) => {
@@ -86,8 +84,8 @@ export function AccountLoginContainer(
           <AccountLoginCard
             key={website.id}
             website={website}
-            groups={groups}
-            instances={accounts
+            groups={allAccountGroups}
+            instances={website.accounts
               .filter((account) => account.website === website.id)
               .sort((a, b) => a.name.localeCompare(b.name))}
             onHide={onHideWebsite}

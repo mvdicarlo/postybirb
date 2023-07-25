@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DynamicObject, IWebsiteInfoDto } from '@postybirb/types';
+import { DynamicObject } from '@postybirb/types';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { WebsiteRegistryService } from './website-registry.service';
 
@@ -31,19 +31,6 @@ export class WebsitesController {
   @Get('info')
   @ApiResponse({ status: 200 })
   getWebsiteLoginInfo() {
-    return this.websiteRegistryService
-      .getAvailableWebsites()
-      .map((website) => {
-        const resObj: IWebsiteInfoDto = {
-          loginType: website.prototype.loginType,
-          id: website.prototype.metadata.name,
-          displayName: website.prototype.metadata.displayName,
-          usernameShortcut: website.prototype.usernameShortcut,
-          metadata: website.prototype.metadata,
-        };
-
-        return resObj;
-      })
-      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+    return this.websiteRegistryService.getWebsiteInfo();
   }
 }

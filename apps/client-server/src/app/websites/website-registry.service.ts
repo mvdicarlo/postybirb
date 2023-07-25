@@ -1,15 +1,28 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Optional,
+} from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { IAccount, DynamicObject } from '@postybirb/types';
+import { WEBSITE_UPDATES } from '@postybirb/socket-events';
+import {
+  AccountId,
+  DynamicObject,
+  IAccount,
+  IWebsiteInfoDto,
+} from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { WebsiteData } from '../database/entities';
+import { Account, WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
+import { IsTestEnvironment } from '../utils/test.util';
+import { WSGateway } from '../web-socket/web-socket-gateway';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
-import { IsTestEnvironment } from '../utils/test.util';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
 
@@ -27,12 +40,16 @@ export class WebsiteRegistryService {
   private readonly websiteInstances: WebsiteInstances = {};
 
   constructor(
+    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(WebsiteData)
     private readonly websiteDataRepository: PostyBirbRepository<
       WebsiteData<DynamicObject>
     >,
+    @InjectRepository(Account)
+    private readonly accountRepository: PostyBirbRepository<Account>,
     @Inject(WEBSITE_IMPLEMENTATIONS)
-    private readonly websiteImplementations: Class<UnknownWebsite>[]
+    private readonly websiteImplementations: Class<UnknownWebsite>[],
+    @Optional() private readonly webSocket?: WSGateway
   ) {
     this.logger.debug('Registering websites');
     Object.values({ ...this.websiteImplementations }).forEach(
@@ -56,6 +73,20 @@ export class WebsiteRegistryService {
         this.availableWebsites[website.prototype.metadata.name] = website;
       }
     );
+    accountRepository.addUpdateListener(
+      dbSubscriber,
+      [Account, WebsiteData],
+      () => this.emit()
+    );
+  }
+
+  private async emit() {
+    if (this.webSocket) {
+      this.webSocket.emit({
+        event: WEBSITE_UPDATES,
+        data: await this.getWebsiteInfo(),
+      });
+    }
   }
 
   /**
@@ -142,6 +173,52 @@ export class WebsiteRegistryService {
    */
   public getAvailableWebsites(): Class<UnknownWebsite>[] {
     return Object.values(this.availableWebsites);
+  }
+
+  /**
+   * Returns a list of all available websites for UI.
+   * @return {*}  {Promise<IWebsiteInfoDto[]>}
+   */
+  public async getWebsiteInfo(): Promise<IWebsiteInfoDto[]> {
+    const dtos: IWebsiteInfoDto[] = [];
+
+    const availableWebsites = this.getAvailableWebsites();
+    // eslint-disable-next-line no-restricted-syntax
+    for (const website of availableWebsites) {
+      // eslint-disable-next-line no-await-in-loop
+      const accounts = await this.accountRepository.find({
+        website: website.prototype.metadata.name,
+      });
+      dtos.push({
+        loginType: website.prototype.loginType,
+        id: website.prototype.metadata.name,
+        displayName: website.prototype.metadata.displayName,
+        usernameShortcut: website.prototype.usernameShortcut,
+        metadata: website.prototype.metadata,
+        // eslint-disable-next-line no-await-in-loop
+        accounts: accounts.map((account) => {
+          const instance = this.findInstance(account);
+          if (instance) {
+            // eslint-disable-next-line no-param-reassign
+            account.data = instance.getWebsiteData();
+
+            // eslint-disable-next-line no-param-reassign
+            account.state = instance.getLoginState();
+
+            // eslint-disable-next-line no-param-reassign
+            account.websiteInfo = {
+              websiteDisplayName:
+                instance.metadata.displayName || instance.metadata.name,
+              supports: instance.getSupportedTypes(),
+            };
+          }
+
+          return account.toJSON();
+        }),
+      });
+    }
+
+    return dtos.sort((a, b) => a.displayName.localeCompare(b.displayName));
   }
 
   /**

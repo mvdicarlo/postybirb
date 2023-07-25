@@ -45,7 +45,11 @@ export default function Keybinding(props: PropsWithChildren<KeybindingProps>) {
   return (
     <>
       {children}
-      <span title={`Shortcut: ${keybinding}`} className="keybinding ml-1">
+      <span
+        key={keybinding}
+        title={`Shortcut: ${keybinding}`}
+        className="keybinding ml-1"
+      >
         {bindings}
       </span>
     </>

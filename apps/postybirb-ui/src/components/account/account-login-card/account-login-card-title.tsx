@@ -50,7 +50,7 @@ export default function AccountLoginCardTitle(
   );
 
   return (
-    <div className="login-card-title">
+    <span className="login-card-title">
       <span className="align-middle">{displayName}</span>
       <span>{displayIcon}</span>
       <span className="float-right">
@@ -66,6 +66,6 @@ export default function AccountLoginCardTitle(
           />
         </EuiButton>
       </span>
-    </div>
+    </span>
   );
 }
