@@ -10,20 +10,25 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useState,
 } from 'react';
+import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
-import submissionApi from '../../../../api/submission.api';
-import websiteOptionsApi from '../../../../api/website-options.api';
-import { useUpdateView } from '../../../../hooks/use-update-view';
-import { SubmissionDto } from '../../../../models/dtos/submission.dto';
-import { SubmissionValidationResult } from '../../submission-edit-form/submission-form-props';
+import submissionApi from '../../api/submission.api';
+import websiteOptionsApi from '../../api/website-options.api';
+import { useToast } from '../../app/app-toast-provider';
+import { SubmissionValidationResult } from '../../components/submissions/submission-edit-form/submission-form-props';
+import { SubmissionDto } from '../../models/dtos/submission.dto';
+import { useUpdateView } from '../use-update-view';
 
 export type SubmissionProviderContext = {
   submission: SubmissionDto;
   isChanged: boolean;
   isLoading: boolean;
+  isSaving: boolean;
   validationResults: SubmissionValidationResult[];
   refetch: () => void;
+  save: () => void;
 };
 
 export const SubmissionContext = createContext<SubmissionProviderContext>(
@@ -43,6 +48,7 @@ function hasChanges(original?: SubmissionDto, update?: SubmissionDto): boolean {
 }
 
 function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
+  const { addToast, addErrorToast } = useToast();
   const { data, refetch, ...query } = useQuery(
     [`submission-${id}`],
     () => submissionApi.get(id).then((value) => new SubmissionDto(value.body)),
@@ -57,6 +63,7 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
   );
   const original = useMemo(() => submission?.copy(), [submission]);
   const updateView = useUpdateView();
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const { data: validationResults, refetch: fetchValidations } = useQuery(
     `validation-${id}`,
@@ -66,10 +73,11 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
           data.options
             .filter((o) => !o.isDefault)
             .map((o) => {
+              const defaultOptions = data.getDefaultOptions();
               const dto: IValidateWebsiteOptionsDto = {
                 submission: data.id,
                 options: o.data,
-                defaultOptions: data.getDefaultOptions().data,
+                defaultOptions: defaultOptions?.data,
                 account: o.account,
               };
               return websiteOptionsApi.validate(dto).then((res) => res.body);
@@ -90,6 +98,60 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
   const isLoading: boolean = query.isFetching || query.isLoading;
   const isChanged: boolean = hasChanges(original, submission);
 
+  const save = useCallback(() => {
+    if (isChanged && !isSaving) {
+      setIsSaving(true);
+      const { id: submissionId, isScheduled, schedule } = submission;
+      const deletedWebsiteOptions = original.options
+        .filter(
+          (originalOpt) =>
+            !submission.options.some(
+              (updatedOpt) => originalOpt.id === updatedOpt.id
+            )
+        )
+        .map((o) => o.id);
+
+      const newOrUpdatedOptions = submission.options;
+
+      submissionApi
+        .update(submissionId, {
+          isScheduled,
+          scheduledFor: schedule.scheduledFor,
+          scheduleType: schedule.scheduleType,
+          deletedWebsiteOptions,
+          newOrUpdatedOptions,
+          metadata: submission.metadata,
+        })
+        .then(() => {
+          addToast({
+            id: Date.now().toString(),
+            color: 'success',
+            text: (
+              <FormattedMessage
+                id="submission.save.success"
+                defaultMessage="Submission saved"
+              />
+            ),
+          });
+          refetch();
+        })
+        .catch((err) => {
+          addErrorToast(err);
+        })
+        .finally(() => {
+          setIsSaving(false);
+        });
+    }
+  }, [
+    addErrorToast,
+    addToast,
+    isChanged,
+    isSaving,
+    original.options,
+    refetch,
+    submission,
+  ]);
+
   // TODO setMetadata -> update
   // TODO setWebsiteOption -> update
 
@@ -97,8 +159,10 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     submission,
     isChanged,
     isLoading,
+    isSaving,
     validationResults: validationResults ?? [],
     refetch,
+    save,
   };
 }
 

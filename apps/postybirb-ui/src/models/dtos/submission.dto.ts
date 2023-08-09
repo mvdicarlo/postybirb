@@ -1,10 +1,14 @@
 import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
   ISubmissionDto,
   ISubmissionFileDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
   ScheduleType,
+  SubmissionRating,
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
@@ -36,6 +40,24 @@ export class SubmissionDto<
 
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
+    if (!this.options) {
+      this.options = [
+        {
+          id: '',
+          createdAt: '',
+          updatedAt: '',
+          submission: {} as ISubmissionDto,
+          account: NULL_ACCOUNT_ID,
+          isDefault: true,
+          data: {
+            title: '',
+            tags: DefaultTagValue,
+            description: DefaultDescriptionValue,
+            rating: SubmissionRating.GENERAL,
+          },
+        },
+      ];
+    }
   }
 
   public hasValidScheduleTime(): boolean {
