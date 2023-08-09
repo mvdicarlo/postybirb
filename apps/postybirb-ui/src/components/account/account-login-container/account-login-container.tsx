@@ -2,8 +2,8 @@ import { EuiSpacer } from '@elastic/eui';
 import { IWebsiteInfoDto, SettingsDto } from '@postybirb/types';
 import settingsApi from '../../../api/settings.api';
 import { ArrayHelper } from '../../../helpers/array.helper';
-import { useAccountFilters } from '../../../hooks/account/use-accounts';
-import { AccountFilterState } from '../../../models/app-states/account-filter-state';
+import { useAccountFilters } from '../../../hooks/account/use-accounts-filters';
+import { filterWebsites } from '../../../hooks/account/use-websites';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import AccountLoginCard from '../account-login-card/account-login-card';
 import { AccountLoginFilters } from './account-login-filters';
@@ -12,28 +12,6 @@ type AccountLoginContainerProps = {
   availableWebsites: IWebsiteInfoDto[];
   settings: SettingsDto;
 };
-
-function filterWebsites(
-  availableWebsites: IWebsiteInfoDto[],
-  hiddenWebsites: string[],
-  filters: AccountFilterState
-): DisplayableWebsiteLoginInfo[] {
-  let filteredWebsites = availableWebsites;
-  if (!filters.showHiddenWebsites) {
-    filteredWebsites = filteredWebsites.filter(
-      (w) => !hiddenWebsites.includes(w.id)
-    );
-  }
-
-  if (!filters.showWebsitesWithoutAccounts) {
-    filteredWebsites = filteredWebsites.filter((w) => w.accounts.length);
-  }
-
-  return filteredWebsites.map((w) => ({
-    ...w,
-    isHidden: !hiddenWebsites.includes(w.id),
-  }));
-}
 
 export function AccountLoginContainer(
   props: AccountLoginContainerProps
