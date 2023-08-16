@@ -14,7 +14,7 @@ class WebsiteOptionsApi extends BaseApi<
   IUpdateWebsiteOptionsDto<IWebsiteFormFields>
 > {
   constructor() {
-    super('submission-option');
+    super('website-option');
   }
 
   validate(dto: IValidateWebsiteOptionsDto) {

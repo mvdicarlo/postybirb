@@ -1,7 +1,9 @@
 import {
+  IAccountDto,
   ISubmissionDto,
   IValidateWebsiteOptionsDto,
   SubmissionId,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { debounce } from 'lodash';
 import {
@@ -27,8 +29,11 @@ export type SubmissionProviderContext = {
   isLoading: boolean;
   isSaving: boolean;
   validationResults: SubmissionValidationResult[];
+  addWebsiteOption: (account: IAccountDto) => void;
+  removeWebsiteOption: (option: WebsiteOptionsDto) => void;
   refetch: () => void;
   save: () => void;
+  updateView: () => void;
 };
 
 export const SubmissionContext = createContext<SubmissionProviderContext>(
@@ -93,6 +98,24 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
   const revalidate = useCallback(
     debounce(() => fetchValidations(), 1_500),
     [fetchValidations]
+  );
+
+  const addWebsiteOption = useCallback(
+    (account: IAccountDto) => {
+      submission.addOption({
+        id: Date.now().toString(),
+        account: account.id,
+        data: {},
+      } as WebsiteOptionsDto);
+    },
+    [submission]
+  );
+
+  const removeWebsiteOption = useCallback(
+    (option: WebsiteOptionsDto) => {
+      submission.removeOption(option);
+    },
+    [submission]
   );
 
   const isLoading: boolean = query.isFetching || query.isLoading;
@@ -161,8 +184,11 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     isLoading,
     isSaving,
     validationResults: validationResults ?? [],
+    addWebsiteOption,
+    removeWebsiteOption,
     refetch,
     save,
+    updateView,
   };
 }
 

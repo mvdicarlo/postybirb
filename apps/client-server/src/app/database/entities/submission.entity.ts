@@ -36,6 +36,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     entity: () => WebsiteOptions,
     mappedBy: 'submission',
     orphanRemoval: true,
+    eager: true,
   })
   options = new Collection<WebsiteOptions<IWebsiteFormFields>, ISubmission<T>>(
     this
@@ -43,6 +44,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   @OneToMany(() => SubmissionFile, (sf) => sf.submission, {
     orphanRemoval: true,
+    eager: true,
   })
   files = new Collection<ISubmissionFile>(this);
 

@@ -1,4 +1,5 @@
 import { ISettingsOptions, IWebsiteInfoDto } from '@postybirb/types';
+import { useMemo } from 'react';
 import { AccountFilterState } from '../../models/app-states/account-filter-state';
 import { DisplayableWebsiteLoginInfo } from '../../models/displayable-website-login-info';
 import { SettingsStore } from '../../stores/settings.store';
@@ -36,17 +37,22 @@ export function useWebsites() {
     ? settings[0].settings
     : { hiddenWebsites: [] };
 
-  const filteredAccounts = filterWebsites(
-    state,
-    currentSettings.hiddenWebsites,
-    filterState
+  const filteredAccounts = useMemo(
+    () => filterWebsites(state, currentSettings.hiddenWebsites, filterState),
+    [currentSettings.hiddenWebsites, filterState, state]
+  );
+
+  const accounts = useMemo(
+    () => state.flatMap((website) => website.accounts),
+    [state]
   );
 
   return {
+    accounts,
     filteredAccounts,
     filterState,
     setFilterState,
-    allAccounts: state,
+    websites: state,
     isLoading,
   };
 }

@@ -40,6 +40,7 @@ export class SubmissionDto<
 
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
+    this.files = this.files ?? [];
     if (!this.options) {
       this.options = [
         {
@@ -75,10 +76,11 @@ export class SubmissionDto<
   }
 
   public removeOption(option: WebsiteOptionsDto<O>) {
-    const index = this.options.indexOf(option);
-    if (index >= 0) {
-      this.options.splice(index, 1);
-    }
+    this.options = this.options.filter((opt) => opt.id !== option.id);
+  }
+
+  public addOption(option: WebsiteOptionsDto<O>) {
+    this.options = [...this.options, option];
   }
 
   public updateSchedule(date: Moment | null) {
