@@ -9,26 +9,21 @@ import {
   ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { SubmissionDto } from '../../../models/dtos/submission.dto';
 
-export type SubmissionFormProps = {
-  onUpdate: () => void;
-  submission: SubmissionDto;
+export type SubmissionSectionProps = {
+  option: WebsiteOptionsDto<any>;
+  defaultOption: WebsiteOptionsDto<IWebsiteFormFields>;
   validation: SubmissionValidationResult[];
 };
 
-export type SubmissionSectionProps = SubmissionFormProps & {
-  option: WebsiteOptionsDto<any>;
-  defaultOptions: WebsiteOptionsDto<IWebsiteFormFields>;
-  account?: IAccountDto;
-};
-
 export type SubmissionGeneratorProps = SubmissionSectionProps & {
+  account: IAccountDto;
   metadata: FormBuilderMetadata<any> | undefined;
+  onUpdate: () => void;
 };
 
 export type SubmissionGeneratedFieldProps<T = FieldAggregateType<any>> =
-  SubmissionSectionProps & {
+  SubmissionGeneratorProps & {
     field: T;
     propKey: string;
   };

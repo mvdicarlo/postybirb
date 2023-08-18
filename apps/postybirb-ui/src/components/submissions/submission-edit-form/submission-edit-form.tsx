@@ -1,11 +1,29 @@
-import { EuiSideNav, EuiSideNavItemType } from '@elastic/eui';
-import { IWebsiteInfoDto } from '@postybirb/types';
+import { EuiSideNav, EuiSideNavItemType, EuiTitle } from '@elastic/eui';
+import {
+  IAccountDto,
+  IWebsiteFormFields,
+  IWebsiteInfoDto,
+  SubmissionType,
+  WebsiteOptionsDto,
+} from '@postybirb/types';
+import { useMemo } from 'react';
+import { FormattedMessage } from 'react-intl';
 import { useWebsites } from '../../../hooks/account/use-websites';
-import { useSubmission } from '../../../hooks/hooks/use-submission';
+import { useSubmission } from '../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import SubmissionFileSection from './components/submission-file-section/submission-file-section';
 import SubmissionFormSection from './components/submission-form-section/submission-form-section';
 import { SubmissionFormWebsiteSelect } from './components/submission-form-website-select/submission-form-website-select';
+import SubmissionOptionsSection from './components/submission-options-section/submission-options-section';
 import './submission-edit-form.css';
+
+type PairedWebsiteOptions = {
+  website: IWebsiteInfoDto;
+  pairs: {
+    account: IAccountDto;
+    option: WebsiteOptionsDto<IWebsiteFormFields>;
+  }[];
+};
 
 function scrollToAnchor(anchorId: string): void {
   const anchor = document.querySelector(`[data-anchor='${anchorId}']`);
@@ -17,7 +35,7 @@ function scrollToAnchor(anchorId: string): void {
 function getSideNav(
   submission: SubmissionDto,
   defaultOptionsId: string,
-  websiteGroups: IWebsiteInfoDto[]
+  websiteGroups: PairedWebsiteOptions[]
 ): EuiSideNavItemType<unknown>[] {
   const sidenavOptions: EuiSideNavItemType<unknown>[] = [
     {
@@ -31,18 +49,16 @@ function getSideNav(
 
   // eslint-disable-next-line no-restricted-syntax
   for (const group of websiteGroups) {
-    const { accounts, displayName } = group;
-    const selectedAccounts = accounts.filter((account) =>
-      submission.options.some((option) => option.account === account.id)
-    );
-    if (selectedAccounts.length) {
+    const { website, pairs } = group;
+    const { displayName } = website;
+    if (pairs.length) {
       sidenavOptions.push({
         name: displayName,
         id: displayName,
         onClick: () => {
           scrollToAnchor(displayName);
         },
-        items: selectedAccounts.map((account) => ({
+        items: pairs.map(({ account }) => ({
           name: account.name,
           id: account.id,
           onClick: () => {
@@ -57,24 +73,72 @@ function getSideNav(
 }
 
 export default function SubmissionEditForm() {
-  const { submission } = useSubmission();
+  const { submission, validationResults } = useSubmission();
   const { websites } = useWebsites();
 
   const defaultOptions = submission.getDefaultOptions();
 
+  const selectedWebsites = useMemo(() => {
+    const selectedWebsiteOptions: PairedWebsiteOptions[] = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const group of websites) {
+      const { accounts } = group;
+      const selectedAccountPairs = accounts
+        .map((account) => ({
+          account,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          option: submission.options.find(
+            (option) => option.account === account.id
+          )!,
+        }))
+        .filter(({ option }) => !!option);
+      if (selectedAccountPairs.length) {
+        selectedWebsiteOptions.push({
+          website: group,
+          pairs: selectedAccountPairs,
+        });
+      }
+    }
+
+    return selectedWebsiteOptions.sort((a, b) =>
+      a.website.displayName.localeCompare(b.website.displayName)
+    );
+  }, [submission.options, websites]);
+
   const sidenavOptions: EuiSideNavItemType<unknown>[] = getSideNav(
     submission,
     defaultOptions.id,
-    websites
+    selectedWebsites
   );
+
+  const optionSections = selectedWebsites.map(({ website, pairs }) => (
+    <SubmissionFormSection key={website.displayName}>
+      <EuiTitle size="s">
+        <h4 data-anchor={website.displayName}>{website.displayName}</h4>
+      </EuiTitle>
+      {pairs.map(({ option }) => (
+        <SubmissionOptionsSection
+          key={option.id}
+          option={option}
+          defaultOption={defaultOptions}
+          validation={validationResults}
+        />
+      ))}
+    </SubmissionFormSection>
+  ));
 
   return (
     <div className="postybirb__submission-form">
       <div className="postybirb__submission-form-sections">
+        {submission.type === SubmissionType.FILE ? (
+          <SubmissionFormSection>
+            <SubmissionFileSection />
+          </SubmissionFormSection>
+        ) : null}
         <SubmissionFormSection>
           <SubmissionFormWebsiteSelect />
         </SubmissionFormSection>
-        {/* <SubmissionFormSection key={defaultOptions.id}>
+        <SubmissionFormSection key={defaultOptions.id}>
           <EuiTitle size="s">
             <h4 data-anchor={defaultOptions.id}>
               <FormattedMessage
@@ -84,33 +148,12 @@ export default function SubmissionEditForm() {
             </h4>
           </EuiTitle>
           <SubmissionOptionsSection
-            {...props}
             option={defaultOptions}
-            defaultOptions={defaultOptions}
-            submission={submission}
-            onUpdate={onUpdate}
+            defaultOption={defaultOptions}
+            validation={validationResults}
           />
         </SubmissionFormSection>
-        {Object.entries(websiteGroups)
-          .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([websiteName, optionPairs]) => (
-            <SubmissionFormSection key={websiteName}>
-              <EuiTitle size="s">
-                <h4 data-anchor={websiteName}>{websiteName}</h4>
-              </EuiTitle>
-              {optionPairs.map((o) => (
-                <SubmissionOptionsSection
-                  {...props}
-                  key={o.option.id}
-                  option={o.option}
-                  defaultOptions={defaultOptions}
-                  submission={submission}
-                  onUpdate={onUpdate}
-                  account={o.account}
-                />
-              ))}
-            </SubmissionFormSection>
-          ))} */}
+        {optionSections}
       </div>
       <div className="postybirb__submission-form-navigator">
         <EuiSideNav items={sidenavOptions} />

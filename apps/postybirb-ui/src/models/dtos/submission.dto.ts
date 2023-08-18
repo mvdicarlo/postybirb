@@ -38,6 +38,8 @@ export class SubmissionDto<
 
   updatedAt!: string;
 
+  private defaultOption?: WebsiteOptionsDto;
+
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
     this.files = this.files ?? [];
@@ -67,12 +69,13 @@ export class SubmissionDto<
       : true;
   }
 
-  public getDefaultOptions(
-    submission?: SubmissionDto<T, O>
-  ): WebsiteOptionsDto<O> {
-    return (submission || this).options.find(
-      (o) => o.isDefault
-    ) as WebsiteOptionsDto<O>;
+  public getDefaultOptions(): WebsiteOptionsDto<O> {
+    if (!this.defaultOption) {
+      this.defaultOption = this.options.find(
+        (o) => o.isDefault
+      ) as WebsiteOptionsDto<O>;
+    }
+    return this.defaultOption as WebsiteOptionsDto<O>;
   }
 
   public removeOption(option: WebsiteOptionsDto<O>) {

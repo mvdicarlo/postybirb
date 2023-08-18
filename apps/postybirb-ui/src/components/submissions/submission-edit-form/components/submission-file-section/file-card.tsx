@@ -16,18 +16,16 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { FormattedMessage } from 'react-intl';
 import { getReplaceFileUrl } from '../../../../../api/file-submission.api';
+import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import { TextFileIcon } from '../../../../shared/icons/Icons';
-import { SubmissionFormProps } from '../../submission-form-props';
 import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-card.css';
 import { FileDetails } from './file-details';
 import FileUploadButton from './file-upload-button';
 
-type SubmissionFileCardContainerProps = SubmissionFormProps;
-
-type SubmissionFileCardProps = SubmissionFormProps & {
+type SubmissionFileCardProps = {
   file: ISubmissionFileDto;
   isDragging: boolean;
 };
@@ -90,7 +88,9 @@ function CardImageProvider(file: ISubmissionFileDto) {
 }
 
 function FileCard(props: SubmissionFileCardProps) {
-  const { isDragging, submission, file, onUpdate, validation } = props;
+  const { submission, updateView } = useSubmission();
+
+  const { isDragging, file } = props;
   return (
     <EuiSplitPanel.Outer
       className="postybirb__file-card"
@@ -113,7 +113,7 @@ function FileCard(props: SubmissionFileCardProps) {
                 endpointPath={getReplaceFileUrl(submission.id, file.id, 'file')}
                 onComplete={(dto) => {
                   mergeSubmission(submission, dto, ['files', 'metadata']);
-                  onUpdate();
+                  updateView();
                 }}
               />
             </div>
@@ -146,29 +146,22 @@ function FileCard(props: SubmissionFileCardProps) {
                 )}
                 onComplete={(dto) => {
                   mergeSubmission(submission, dto, ['files', 'metadata']);
-                  onUpdate();
+                  updateView();
                 }}
               />
             </div>
           </div>
         </EuiSplitPanel.Inner>
         <EuiSplitPanel.Inner className="postybirb__file-card-details">
-          <FileDetails
-            submission={submission}
-            onUpdate={onUpdate}
-            file={file}
-            validation={validation}
-          />
+          <FileDetails file={file} />
         </EuiSplitPanel.Inner>
       </EuiSplitPanel.Outer>
     </EuiSplitPanel.Outer>
   );
 }
 
-export function SubmissionFileCardContainer(
-  props: SubmissionFileCardContainerProps
-) {
-  const { submission, onUpdate } = props;
+export function SubmissionFileCardContainer() {
+  const { submission, updateView } = useSubmission();
   const orderedFiles = orderFiles(
     submission as SubmissionDto<FileSubmissionMetadata>
   );
@@ -183,7 +176,7 @@ export function SubmissionFileCardContainer(
       (submission as SubmissionDto<FileSubmissionMetadata>).metadata.order =
         items;
 
-      onUpdate();
+      updateView();
     }
   };
 
@@ -201,7 +194,6 @@ export function SubmissionFileCardContainer(
                 <div className="postybirb__file-card-flex-item my-2">
                   <FileCard
                     key={`file-card-${file.id}-${file.hash}`}
-                    {...props}
                     file={file}
                     isDragging={state.isDragging}
                   />

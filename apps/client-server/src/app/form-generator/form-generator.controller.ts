@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SubmissionType } from '@postybirb/types';
+import { NULL_ACCOUNT_ID } from '@postybirb/types';
 import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
 import { FormGeneratorService } from './form-generator.service';
 
@@ -20,19 +20,8 @@ export class FormGeneratorController {
     description: 'An error occurred while performing operation.',
   })
   getFormForWebsite(@Body() request: FormGenerationRequestDto) {
-    return this.service.generateForm(request);
-  }
-
-  @Get('default/:type')
-  @ApiResponse({
-    status: 200,
-    description: 'Returns the default form',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'An error occurred while performing operation.',
-  })
-  getDefaultForm(@Param('type') type: SubmissionType) {
-    return this.service.getDefaultForm(type);
+    return request.accountId === NULL_ACCOUNT_ID
+      ? this.service.getDefaultForm(request.type)
+      : this.service.generateForm(request);
   }
 }

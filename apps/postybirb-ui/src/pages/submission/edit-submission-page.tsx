@@ -15,7 +15,7 @@ import { FormattedMessage } from 'react-intl';
 import { useNavigate, useParams } from 'react-router';
 import SubmissionProvider, {
   useSubmission,
-} from '../../hooks/hooks/use-submission';
+} from '../../hooks/submission/use-submission';
 import NotFound from '../not-found/not-found';
 import { MessageSubmissionPath } from '../route-paths';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';

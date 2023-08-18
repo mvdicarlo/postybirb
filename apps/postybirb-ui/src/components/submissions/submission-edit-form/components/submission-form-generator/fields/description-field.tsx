@@ -12,7 +12,7 @@ type DescriptionFieldProps =
   SubmissionGeneratedFieldProps<DescriptionFieldType>;
 
 export default function DescriptionField(props: DescriptionFieldProps) {
-  const { propKey, field, defaultOptions, option, onUpdate } = props;
+  const { propKey, field, defaultOption, option, onUpdate } = props;
   const validation = useValidations(props);
   const value: DescriptionValue = option.data[propKey] ?? field.defaultValue;
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
@@ -36,7 +36,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
           }
           onChange={(e) => {
             const descriptionValue = e.target.checked
-              ? defaultOptions.data.description?.description ?? ''
+              ? defaultOption.data.description?.description ?? ''
               : '';
             setDescription(descriptionValue);
             setOverrideDefault(e.target.checked);
