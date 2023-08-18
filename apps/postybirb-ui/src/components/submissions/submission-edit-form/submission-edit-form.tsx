@@ -1,10 +1,12 @@
-import { EuiSideNav, EuiSideNavItemType } from '@elastic/eui';
+import { EuiSideNav, EuiSideNavItemType, EuiTitle } from '@elastic/eui';
 import { IWebsiteInfoDto } from '@postybirb/types';
+import { FormattedMessage } from 'react-intl';
 import { useWebsites } from '../../../hooks/account/use-websites';
-import { useSubmission } from '../../../hooks/hooks/use-submission';
+import { useSubmission } from '../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import SubmissionFormSection from './components/submission-form-section/submission-form-section';
 import { SubmissionFormWebsiteSelect } from './components/submission-form-website-select/submission-form-website-select';
+import SubmissionOptionsSection from './components/submission-options-section/submission-options-section';
 import './submission-edit-form.css';
 
 function scrollToAnchor(anchorId: string): void {
@@ -57,7 +59,7 @@ function getSideNav(
 }
 
 export default function SubmissionEditForm() {
-  const { submission } = useSubmission();
+  const { submission, validationResults } = useSubmission();
   const { websites } = useWebsites();
 
   const defaultOptions = submission.getDefaultOptions();
@@ -74,7 +76,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection>
           <SubmissionFormWebsiteSelect />
         </SubmissionFormSection>
-        {/* <SubmissionFormSection key={defaultOptions.id}>
+        <SubmissionFormSection key={defaultOptions.id}>
           <EuiTitle size="s">
             <h4 data-anchor={defaultOptions.id}>
               <FormattedMessage
@@ -84,31 +86,27 @@ export default function SubmissionEditForm() {
             </h4>
           </EuiTitle>
           <SubmissionOptionsSection
-            {...props}
             option={defaultOptions}
-            defaultOptions={defaultOptions}
-            submission={submission}
-            onUpdate={onUpdate}
+            defaultOption={defaultOptions}
+            validation={validationResults}
           />
         </SubmissionFormSection>
-        {Object.entries(websiteGroups)
-          .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([websiteName, optionPairs]) => (
-            <SubmissionFormSection key={websiteName}>
+        {/* {websites // TODO make this more efficient
+          .sort((a, b) => a.displayName.localeCompare(b.displayName))
+          .map((website) => (
+            <SubmissionFormSection key={website.displayName}>
               <EuiTitle size="s">
-                <h4 data-anchor={websiteName}>{websiteName}</h4>
+                <h4 data-anchor={website.displayName}>{website.displayName}</h4>
               </EuiTitle>
-              {optionPairs.map((o) => (
-                <SubmissionOptionsSection
-                  {...props}
-                  key={o.option.id}
-                  option={o.option}
-                  defaultOptions={defaultOptions}
-                  submission={submission}
-                  onUpdate={onUpdate}
-                  account={o.account}
-                />
-              ))}
+              {submission.options
+                .filter((option) =>
+                  website.accounts.some(
+                    (account) => account.id === option.account
+                  )
+                )
+                .map((option) => (
+                  <SubmissionOptionsSection key={option.id} option={option} />
+                ))}
             </SubmissionFormSection>
           ))} */}
       </div>

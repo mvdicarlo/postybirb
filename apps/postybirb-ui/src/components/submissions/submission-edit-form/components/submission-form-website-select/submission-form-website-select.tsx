@@ -3,7 +3,7 @@ import { IAccountDto, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { useMemo } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useWebsites } from '../../../../../hooks/account/use-websites';
-import { useSubmission } from '../../../../../hooks/hooks/use-submission';
+import { useSubmission } from '../../../../../hooks/submission/use-submission';
 
 export function SubmissionFormWebsiteSelect() {
   const { submission, addWebsiteOption, removeWebsiteOption, updateView } =

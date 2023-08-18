@@ -15,8 +15,8 @@ import { filesize } from 'filesize';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
+import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
-import { SubmissionFormProps } from '../../submission-form-props';
 import { SimpleWebsiteSelect } from '../submission-form-website-select/simple-website-select';
 import { mergeSubmission } from '../utilities/submission-edit-form-utilities';
 import './file-details.css';
@@ -54,12 +54,13 @@ function updateIgnoredWebsites(
   metadata.fileMetadata[file.id].ignoredWebsites = ignoredWebsites ?? [];
 }
 
-type FileDetailsProps = SubmissionFormProps & {
+type FileDetailsProps = {
   file: ISubmissionFileDto;
 };
 
 function SharedDetails(props: FileDetailsProps) {
-  const { file, submission, onUpdate } = props;
+  const { submission, updateView } = useSubmission();
+  const { file } = props;
   const fileMetadata = (submission as SubmissionDto<FileSubmissionMetadata>)
     .metadata.fileMetadata[file.id];
 
@@ -79,9 +80,9 @@ function SharedDetails(props: FileDetailsProps) {
         text
       );
       setAltText(text);
-      onUpdate();
+      updateView();
     },
-    [file, onUpdate, submission]
+    [file, updateView, submission]
   );
 
   const listItems: Array<{
@@ -144,7 +145,7 @@ function SharedDetails(props: FileDetailsProps) {
                   websites
                 );
                 setIgnoredWebsites(websites);
-                onUpdate();
+                updateView();
               }}
             />
           </EuiFormRow>
@@ -178,7 +179,8 @@ function calculateAspectRatio(
 }
 
 function ImageDetails(props: FileDetailsProps) {
-  const { file, submission, onUpdate } = props;
+  const { submission, updateView } = useSubmission();
+  const { file } = props;
   const fileMetadata = (submission as SubmissionDto<FileSubmissionMetadata>)
     .metadata.fileMetadata[file.id];
 
@@ -214,7 +216,7 @@ function ImageDetails(props: FileDetailsProps) {
                 aspectH,
                 aspectW
               );
-              onUpdate();
+              updateView();
             }}
           />
         </EuiFormRow>
@@ -244,7 +246,7 @@ function ImageDetails(props: FileDetailsProps) {
                 aspectH,
                 aspectW
               );
-              onUpdate();
+              updateView();
             }}
           />
         </EuiFormRow>
@@ -258,7 +260,8 @@ function removeFile(submissionId: string, file: ISubmissionFileDto) {
 }
 
 export function FileDetails(props: FileDetailsProps) {
-  const { submission, file, onUpdate } = props;
+  const { submission, updateView } = useSubmission();
+  const { file } = props;
 
   const imageInfo = useMemo(() => {
     if (isImage(file.fileName)) {
@@ -280,7 +283,7 @@ export function FileDetails(props: FileDetailsProps) {
                       'files',
                       'metadata',
                     ]);
-                    onUpdate();
+                    updateView();
                   });
                 }}
               />

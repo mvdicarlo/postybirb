@@ -118,7 +118,7 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     [submission]
   );
 
-  const isLoading: boolean = query.isFetching || query.isLoading;
+  const { isLoading } = query;
   const isChanged: boolean = hasChanges(original, submission);
 
   const save = useCallback(() => {

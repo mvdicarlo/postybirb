@@ -14,7 +14,7 @@ export function DefaultSubmissionNameField(
 ): JSX.Element {
   const { submission } = props;
   const { id: defaultOptionId, data: defaultOptions } =
-    submission.getDefaultOptions(submission);
+    submission.getDefaultOptions();
 
   const submitDefaultOptionChanges = useCallback(
     (options: IWebsiteFormFields) => {

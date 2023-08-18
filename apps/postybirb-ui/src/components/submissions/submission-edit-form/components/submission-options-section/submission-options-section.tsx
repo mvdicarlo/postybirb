@@ -6,13 +6,10 @@ import {
 } from '@elastic/eui';
 import { ValidationMessage, ValidationResult } from '@postybirb/types';
 import { useMemo } from 'react';
-import { useQuery } from 'react-query';
+import { useSubmission } from '../../../../../hooks/submission/use-submission';
+import { useSubmissionOptions } from '../../../../../hooks/submission/use-submission-options';
 import Translation from '../../../../translations/translation';
-import formGeneratorApi from '../../../../../api/form-generator.api';
-import {
-  SubmissionSectionProps,
-  SubmissionValidationResult,
-} from '../../submission-form-props';
+import { SubmissionSectionProps } from '../../submission-form-props';
 import SubmissionFormGenerator from '../submission-form-generator/submission-form-generator';
 
 type SubmissionOptionsSectionProps = SubmissionSectionProps;
@@ -42,41 +39,23 @@ function ValidationMessages(props: {
 export default function SubmissionOptionsSection(
   props: SubmissionOptionsSectionProps
 ) {
-  const { account, option, submission, validation, onUpdate } = props;
-  const { isLoading, data } = useQuery(
-    [option.id],
-    async () =>
-      (
-        await (option.account
-          ? formGeneratorApi.getForm({
-              accountId: option.account,
-              type: submission.type,
-            })
-          : formGeneratorApi.getDefaultForm(submission.type))
-      ).body,
-    {
-      refetchOnWindowFocus: false,
-    }
+  const { submission, updateView } = useSubmission();
+  const { defaultOption, option, validation } = props;
+  const { isLoading, account, form, validations } = useSubmissionOptions(
+    option,
+    submission.type,
+    validation
   );
 
-  const validationMsgs: SubmissionValidationResult = useMemo(
-    () =>
-      validation.find((v) => v.id === option.id) ??
-      ({
-        id: option.id,
-        result: {},
-      } as SubmissionValidationResult),
-    [option.id, validation]
-  );
   const validationAlerts = useMemo(
     () =>
-      Object.entries(validationMsgs.result).map(([key, value]) => (
+      Object.entries(validations.result).map(([key, value]) => (
         <ValidationMessages
           messages={value}
           type={key as keyof ValidationResult}
         />
       )),
-    [validationMsgs]
+    [validations]
   );
 
   return (
@@ -97,7 +76,7 @@ export default function SubmissionOptionsSection(
             onClick={() => {
               // Remove option
               submission.removeOption(option);
-              onUpdate();
+              updateView();
             }}
           />
         )
@@ -111,7 +90,12 @@ export default function SubmissionOptionsSection(
       {isLoading ? null : (
         <>
           {validationAlerts}
-          <SubmissionFormGenerator metadata={data} {...props} />
+          <SubmissionFormGenerator
+            account={account}
+            metadata={form}
+            onUpdate={updateView}
+            {...props}
+          />
         </>
       )}
     </EuiAccordion>
