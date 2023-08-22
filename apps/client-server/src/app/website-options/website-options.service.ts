@@ -106,15 +106,19 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     submission: Submission<ISubmissionMetadata>,
     title: string
   ): Promise<WebsiteOptions> {
-    const submissionOptions = this.repository.create({
-      isDefault: true,
-      submission,
-      account: await this.accountService.findById(NULL_ACCOUNT_ID),
-      data: {
-        ...DefaultWebsiteOptionsObject,
-        title,
+    this.logger.info({ id: submission.id }, 'Creating Default Website Options');
+    const submissionOptions = this.repository.create(
+      {
+        isDefault: true,
+        submission,
+        account: await this.accountService.findById(NULL_ACCOUNT_ID),
+        data: {
+          ...DefaultWebsiteOptionsObject,
+          title,
+        },
       },
-    });
+      { persist: false }
+    );
 
     return submissionOptions;
   }

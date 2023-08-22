@@ -1,5 +1,6 @@
 import {
   EuiCollapsibleNavGroup,
+  EuiErrorBoundary,
   EuiListGroup,
   EuiListGroupItem,
   EuiPageSidebar,
@@ -127,7 +128,9 @@ export default function AppSideNav() {
           </span>
         }
       >
-        <AppSearch />
+        <EuiErrorBoundary>
+          <AppSearch />
+        </EuiErrorBoundary>
         <EuiSpacer size="s" />
         {/* <EuiButton
         color="success"

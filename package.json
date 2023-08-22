@@ -115,7 +115,7 @@
     "regenerator-runtime": "^0.13.9",
     "rxjs": "^7.3.0",
     "sanitize-html": "^2.10.0",
-    "sharp": "^0.29.1",
+    "sharp": "^0.32.5",
     "socket.io": "^4.4.0",
     "socket.io-client": "^4.4.1",
     "swagger-ui-express": "^4.1.6",

@@ -127,14 +127,20 @@ export default function SubmissionEditForm() {
     </SubmissionFormSection>
   ));
 
+  const fileSection = useMemo(
+    () =>
+      submission.type === SubmissionType.FILE ? (
+        <SubmissionFormSection>
+          <SubmissionFileSection />
+        </SubmissionFormSection>
+      ) : null,
+    [submission.type]
+  );
+
   return (
     <div className="postybirb__submission-form">
       <div className="postybirb__submission-form-sections">
-        {submission.type === SubmissionType.FILE ? (
-          <SubmissionFormSection>
-            <SubmissionFileSection />
-          </SubmissionFormSection>
-        ) : null}
+        {fileSection}
         <SubmissionFormSection>
           <SubmissionFormWebsiteSelect />
         </SubmissionFormSection>

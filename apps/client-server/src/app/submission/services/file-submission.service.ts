@@ -50,7 +50,7 @@ export class FileSubmissionService
       fileMetadata: {},
     };
 
-    await this.appendFile(submission, file);
+    await this.appendFile(submission, file, false);
   }
 
   private guardIsFileSubmission(submission: ISubmission) {
@@ -67,7 +67,11 @@ export class FileSubmissionService
    * @param {string} id
    * @param {MulterFileInfo} file
    */
-  async appendFile(id: string | FileSubmission, file: MulterFileInfo) {
+  async appendFile(
+    id: string | FileSubmission,
+    file: MulterFileInfo,
+    persist = true
+  ) {
     const submission = (
       typeof id === 'string'
         ? await this.repository.findById(id, {
@@ -96,7 +100,9 @@ export class FileSubmissionService
 
     // eslint-disable-next-line no-param-reassign
     submission.metadata.fileMetadata[createdFile.id] = fileModifications;
-    await this.repository.persistAndFlush(submission);
+    if (persist) {
+      await this.repository.persistAndFlush(submission);
+    }
     return submission;
   }
 

@@ -55,7 +55,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
   public async emit() {
     super.emit({
       event: SUBMISSION_UPDATES,
-      data: (await this.repository.findAll()).map((s) => s.toJSON()),
+      data: (await this.findAll()).map((s) => s.toJSON()),
     });
   }
 
@@ -133,6 +133,8 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         name
       )
     );
+
+    this.logger.info(submission);
 
     await this.repository.persistAndFlush(submission);
     return submission;

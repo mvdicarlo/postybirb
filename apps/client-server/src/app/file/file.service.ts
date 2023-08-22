@@ -86,6 +86,7 @@ export class FileService {
   private async doTask(task: Task): Promise<SubmissionFile> {
     task.file.originalname = this.sanitizeFilename(task.file.originalname);
     const buf: Buffer = await this.getFile(task.file.path, task.file.origin);
+    this.logger.info(task);
     switch (task.type) {
       case TaskType.CREATE:
         // eslint-disable-next-line no-case-declarations

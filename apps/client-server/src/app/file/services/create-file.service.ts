@@ -20,6 +20,7 @@ import { IsTestEnvironment } from '../../utils/test.util';
 
 /**
  * A Service that defines operations for creating a SubmissionFile.
+ * TODO check unit tests now that update has happened
  * !Sharp hangs when run in test environment. Not sure why, but for now, returning
  * !dummy data is enough for testing.
  * @class CreateFileService
@@ -54,16 +55,16 @@ export class CreateFileService {
     buf: Buffer
   ): Promise<SubmissionFile> {
     try {
-      this.logger.debug(file, `Creating SubmissionFile entity`);
+      this.logger.info(file, `Creating SubmissionFile entity`);
       const entity = await this.createSubmissionFile(file, submission, buf);
-
       if (ImageUtil.isImage(file.mimetype, true)) {
-        this.logger.debug(file.mimetype, '[Mutation] Populating as Image');
+        this.logger.info('[Mutation] Populating as Image');
         await this.populateAsImageFile(entity, file, buf);
       }
 
       entity.file = this.createFileBufferEntity(entity, buf, 'primary');
-      await this.fileRepository.persistAndFlush(entity);
+      submission.files.add(entity);
+      this.logger.info({ id: entity.id }, 'SubmissionFile Created');
       return entity;
     } catch (err) {
       this.logger.error(err.message, err.stack);
