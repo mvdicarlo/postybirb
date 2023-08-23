@@ -36,7 +36,6 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
 @Injectable()
 export class SubmissionService extends PostyBirbService<SubmissionEntity> {
   constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Submission)
     repository: PostyBirbRepository<SubmissionEntity>,
     @Inject(forwardRef(() => WebsiteOptionsService))
@@ -46,7 +45,6 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     @Optional() webSocket: WSGateway
   ) {
     super(repository, webSocket);
-    repository.addUpdateListener(dbSubscriber, [Submission], () => this.emit());
   }
 
   /**
@@ -137,6 +135,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     this.logger.info(submission);
 
     await this.repository.persistAndFlush(submission);
+    this.emit();
     return submission;
   }
 
@@ -190,9 +189,15 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
     try {
       await this.repository.flush();
+      this.emit();
       return await this.findById(id);
     } catch (err) {
       throw new BadRequestException(err);
     }
+  }
+
+  public async remove(id: string) {
+    await super.remove(id);
+    this.emit();
   }
 }
