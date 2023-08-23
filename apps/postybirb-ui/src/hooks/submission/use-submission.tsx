@@ -100,6 +100,11 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     [fetchValidations]
   );
 
+  const updateViewAndRevalidate = () => {
+    updateView();
+    revalidate();
+  };
+
   const addWebsiteOption = useCallback(
     (account: IAccountDto) => {
       submission.addOption({
@@ -175,9 +180,6 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     submission,
   ]);
 
-  // TODO setMetadata -> update
-  // TODO setWebsiteOption -> update
-
   return {
     submission,
     isChanged,
@@ -188,7 +190,7 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
     removeWebsiteOption,
     refetch,
     save,
-    updateView,
+    updateView: updateViewAndRevalidate,
   };
 }
 

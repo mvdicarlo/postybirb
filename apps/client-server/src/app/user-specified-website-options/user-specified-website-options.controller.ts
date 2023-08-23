@@ -25,7 +25,13 @@ export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<U
   @Post()
   @ApiOkResponse({ description: 'Entity created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
-  create(@Body() createDto: CreateUserSpecifiedWebsiteOptionsDto) {
+  async create(@Body() createDto: CreateUserSpecifiedWebsiteOptionsDto) {
+    if (await this.service.findById(createDto.account)) {
+      return this.update(createDto.account, {
+        type: createDto.type,
+        options: createDto.options,
+      });
+    }
     return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 

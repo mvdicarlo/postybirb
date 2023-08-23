@@ -28,6 +28,7 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
       type: createDto.type,
     });
     const entity = this.repository.create({
+      id: createDto.account,
       ...createDto,
     });
     await this.repository.persistAndFlush(entity);
