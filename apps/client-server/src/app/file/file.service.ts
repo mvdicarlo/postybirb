@@ -27,7 +27,7 @@ export class FileService {
   private readonly queue: queueAsPromised<Task, SubmissionFile> = fastq.promise<
     this,
     Task
-  >(this, this.doTask, Math.min(cpus().length, 3));
+  >(this, this.doTask, Math.min(cpus().length, 5));
 
   constructor(
     private readonly createFileService: CreateFileService,

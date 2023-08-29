@@ -17,7 +17,6 @@ import {
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { Submission } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -131,8 +130,6 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         name
       )
     );
-
-    this.logger.info(submission);
 
     await this.repository.persistAndFlush(submission);
     this.emit();

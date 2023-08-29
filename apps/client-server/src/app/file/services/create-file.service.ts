@@ -23,6 +23,7 @@ import { IsTestEnvironment } from '../../utils/test.util';
  * TODO check unit tests now that update has happened
  * !Sharp hangs when run in test environment. Not sure why, but for now, returning
  * !dummy data is enough for testing.
+ * TODO figure out why multi-submission sometimes breaks entity population
  * @class CreateFileService
  */
 @Injectable()

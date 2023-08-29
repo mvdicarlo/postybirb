@@ -130,7 +130,7 @@ export default function AppSearch() {
       const isFileType = s.type === SubmissionType.FILE;
       const sub = {
         key: s.id,
-        label: s.getDefaultOptions().data.title || 'Unknown submission',
+        label: s.getDefaultOptions()?.data.title || 'Unknown submission',
         icon: {
           type: isFileType ? FileIcon : MessageIcon,
         },
@@ -153,7 +153,7 @@ export default function AppSearch() {
 
       if (isFileType) {
         sub.meta.push({
-          text: s.files[0].fileName,
+          text: s.files[0]?.fileName,
           type: 'case',
         });
       }

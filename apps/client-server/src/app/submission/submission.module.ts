@@ -3,6 +3,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { v4 } from 'uuid';
 import { AccountModule } from '../account/account.module';
 import { DatabaseModule } from '../database/database.module';
 import { FileModule } from '../file/file.module';
@@ -30,7 +31,7 @@ import { SubmissionController } from './submission.controller';
           cb(null, PostyBirbDirectories.TEMP_DIRECTORY);
         },
         filename(req, file, cb) {
-          cb(null, Date.now() + extname(file.originalname)); // Appending extension
+          cb(null, v4() + extname(file.originalname)); // Appending extension
         },
       }),
     }),
