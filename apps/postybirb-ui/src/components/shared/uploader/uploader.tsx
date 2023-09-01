@@ -76,8 +76,7 @@ export default function Uploader(props: UploaderProps) {
         theme={theme}
         plugins={['Webcam', 'ImageEditor']}
         width="100%"
-        height="280px"
-        thumbnailHeight={100}
+        height="300px"
       />
     </div>
   );
