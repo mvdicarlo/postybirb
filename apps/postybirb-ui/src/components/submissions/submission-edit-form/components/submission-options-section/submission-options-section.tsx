@@ -1,21 +1,21 @@
 import {
   EuiAccordion,
-  EuiButton,
+  EuiButtonEmpty,
   EuiButtonIcon,
   EuiCallOut,
   EuiTitle,
   EuiToolTip,
 } from '@elastic/eui';
 import { ValidationMessage, ValidationResult } from '@postybirb/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import userSpecifiedWebsiteOptionsApi from '../../../../../api/user-specified-website-options.api';
-import { useToast } from '../../../../../app/app-toast-provider';
+
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { useSubmissionOptions } from '../../../../../hooks/submission/use-submission-options';
 import Translation from '../../../../translations/translation';
 import { SubmissionSectionProps } from '../../submission-form-props';
 import SubmissionFormGenerator from '../submission-form-generator/submission-form-generator';
+import UserSpecifiedWebsiteOptionsSaveModal from './user-specified-website-options-save-modal';
 
 type SubmissionOptionsSectionProps = SubmissionSectionProps;
 
@@ -44,7 +44,6 @@ function ValidationMessages(props: {
 export default function SubmissionOptionsSection(
   props: SubmissionOptionsSectionProps
 ) {
-  const { addToast, addErrorToast } = useToast();
   const { submission, updateView } = useSubmission();
   const { option, validation } = props;
   const { isLoading, account, form, validations } = useSubmissionOptions(
@@ -52,6 +51,8 @@ export default function SubmissionOptionsSection(
     submission.type,
     validation
   );
+  const [isDefaultSaveModalVisible, setIsDefaultSaveModalVisible] =
+    useState(false);
 
   const validationAlerts = useMemo(
     () =>
@@ -76,37 +77,18 @@ export default function SubmissionOptionsSection(
       extraAction={
         <div>
           <EuiToolTip content="Saves current values as the default for this account to be loaded in future submissions.">
-            <EuiButton
+            <EuiButtonEmpty
               className="mr-2"
               size="s"
               onClick={() => {
-                userSpecifiedWebsiteOptionsApi
-                  .create({
-                    account: account.id,
-                    type: submission.type,
-                    options: option.data,
-                  })
-                  .then(() => {
-                    addToast({
-                      id: Date.now().toString(),
-                      text: (
-                        <FormattedMessage
-                          id="default-options-saved"
-                          defaultMessage="Defaults saved"
-                        />
-                      ),
-                    });
-                  })
-                  .catch((err) => {
-                    addErrorToast(err);
-                  });
+                setIsDefaultSaveModalVisible(true);
               }}
             >
               <FormattedMessage
                 id="edit-form.set-default-options"
                 defaultMessage="Save as default"
               />
-            </EuiButton>
+            </EuiButtonEmpty>
           </EuiToolTip>
 
           {option.isDefault ? null : (
@@ -129,6 +111,17 @@ export default function SubmissionOptionsSection(
       element="fieldset"
       buttonClassName="euiAccordionForm__button"
     >
+      {isDefaultSaveModalVisible && form ? (
+        <UserSpecifiedWebsiteOptionsSaveModal
+          accountId={option.account}
+          type={submission.type}
+          options={option.data}
+          form={form}
+          onClose={() => {
+            setIsDefaultSaveModalVisible(false);
+          }}
+        />
+      ) : null}
       {isLoading ? null : (
         <>
           {validationAlerts}

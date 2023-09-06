@@ -17,7 +17,7 @@ import SubmissionProvider, {
   useSubmission,
 } from '../../hooks/submission/use-submission';
 import NotFound from '../not-found/not-found';
-import { MessageSubmissionPath } from '../route-paths';
+import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 
 function EditSubmissionPageNavHeader() {
@@ -42,7 +42,11 @@ function EditSubmissionPageNavHeader() {
         href: '#',
         onClick: (e) => {
           e.preventDefault();
-          history(MessageSubmissionPath);
+          history(
+            submission.type === SubmissionType.FILE
+              ? FileSubmissionPath
+              : MessageSubmissionPath
+          );
         },
       },
       {

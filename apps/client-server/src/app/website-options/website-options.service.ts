@@ -31,6 +31,7 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
+import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 
 @Injectable()
 export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
@@ -44,7 +45,8 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
     private readonly websiteRegistry: WebsiteRegistryService,
-    private readonly accountService: AccountService
+    private readonly accountService: AccountService,
+    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService
   ) {
     super(repository);
   }
@@ -107,6 +109,13 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     title: string
   ): Promise<WebsiteOptions> {
     this.logger.info({ id: submission.id }, 'Creating Default Website Options');
+    const defaultOptions =
+      (
+        await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
+          NULL_ACCOUNT_ID,
+          submission.type
+        )
+      ).options ?? {};
     const submissionOptions = this.repository.create(
       {
         isDefault: true,
@@ -114,6 +123,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         account: await this.accountService.findById(NULL_ACCOUNT_ID),
         data: {
           ...DefaultWebsiteOptionsObject,
+          ...defaultOptions,
           title,
         },
       },

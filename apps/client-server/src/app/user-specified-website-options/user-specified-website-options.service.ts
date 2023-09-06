@@ -37,6 +37,7 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
 
   update(id: string, update: UpdateUserSpecifiedWebsiteOptionsDto) {
     this.logger.info(update, `Updating UserSpecifiedWebsiteOptions '${id}'`);
+    // TODO check this actually updates subfields
     return this.repository.update(id, update);
   }
 
