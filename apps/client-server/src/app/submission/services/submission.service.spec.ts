@@ -9,12 +9,14 @@ import {
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
 import { DatabaseModule } from '../../database/database.module';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
+import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
@@ -23,7 +25,6 @@ import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionService } from './submission.service';
-import { AccountModule } from '../../account/account.module';
 
 describe('SubmissionService', () => {
   let testFile: Buffer | null = null;
@@ -48,6 +49,7 @@ describe('SubmissionService', () => {
         MessageSubmissionService,
         AccountService,
         WebsiteRegistryService,
+        UserSpecifiedWebsiteOptionsService,
         WebsiteOptionsService,
         WebsiteImplProvider,
       ],

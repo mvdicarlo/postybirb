@@ -115,7 +115,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
           NULL_ACCOUNT_ID,
           submission.type
         )
-      ).options ?? {};
+      )?.options ?? {};
     const submissionOptions = this.repository.create(
       {
         isDefault: true,

@@ -68,7 +68,7 @@ export class PostyBirbRepository<
     const entity = await this.findById(id, { failOnMissing: true });
 
     try {
-      const updatedEntity = wrap(entity).assign(dto);
+      const updatedEntity = wrap(entity).assign(dto, { mergeObjects: false });
       await this.flush();
       return updatedEntity;
     } catch (err) {

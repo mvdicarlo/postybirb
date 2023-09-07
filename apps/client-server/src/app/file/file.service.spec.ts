@@ -17,6 +17,7 @@ import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
 import { CreateFileService } from './services/create-file.service';
 import { UpdateFileService } from './services/update-file.service';
+import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 
 describe('FileService', () => {
   let testFile: Buffer | null = null;
@@ -63,6 +64,7 @@ describe('FileService', () => {
     module = await Test.createTestingModule({
       imports: [DatabaseModule],
       providers: [
+        UserSpecifiedWebsiteOptionsService,
         SubmissionService,
         CreateFileService,
         UpdateFileService,

@@ -17,6 +17,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
@@ -63,6 +64,7 @@ describe('WebsiteOptionsService', () => {
         WebsiteRegistryService,
         WebsiteOptionsService,
         WebsiteImplProvider,
+        UserSpecifiedWebsiteOptionsService,
       ],
     }).compile();
 
