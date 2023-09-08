@@ -16,6 +16,7 @@ import SubmissionFormSection from './components/submission-form-section/submissi
 import { SubmissionFormWebsiteSelect } from './components/submission-form-website-select/submission-form-website-select';
 import SubmissionOptionsSection from './components/submission-options-section/submission-options-section';
 import './submission-edit-form.css';
+import SubmissionScheduler from '../submission-scheduler/submission-scheduler';
 
 type PairedWebsiteOptions = {
   website: IWebsiteInfoDto;
@@ -73,7 +74,7 @@ function getSideNav(
 }
 
 export default function SubmissionEditForm() {
-  const { submission, validationResults } = useSubmission();
+  const { submission, validationResults, updateView } = useSubmission();
   const { websites } = useWebsites();
 
   const defaultOptions = submission.getDefaultOptions();
@@ -143,6 +144,20 @@ export default function SubmissionEditForm() {
         {fileSection}
         <SubmissionFormSection>
           <SubmissionFormWebsiteSelect />
+        </SubmissionFormSection>
+        <SubmissionFormSection>
+          <EuiTitle size="xs">
+            <h4 data-anchor={defaultOptions.id}>
+              <FormattedMessage id="schedule" defaultMessage="Schedule" />
+            </h4>
+          </EuiTitle>
+          <SubmissionScheduler
+            schedule={submission.schedule}
+            onChange={(updatedSchedule) => {
+              submission.schedule = updatedSchedule;
+              updateView();
+            }}
+          />
         </SubmissionFormSection>
         <SubmissionFormSection key={defaultOptions.id}>
           <EuiTitle size="s">

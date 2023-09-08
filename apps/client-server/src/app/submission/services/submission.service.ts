@@ -74,7 +74,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       isScheduled: false,
       schedule: {
         scheduledFor: undefined,
-        scheduleType: ScheduleType.SINGLE,
+        scheduleType: ScheduleType.NONE,
       },
       options: [],
       metadata: {},

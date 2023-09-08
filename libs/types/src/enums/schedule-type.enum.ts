@@ -4,6 +4,10 @@
  */
 export enum ScheduleType {
   /**
+   * Indicates no schedule.
+   */
+  NONE = 'None',
+  /**
    * Indicates a single schedule occurrence.
    */
   SINGLE = 'single',
