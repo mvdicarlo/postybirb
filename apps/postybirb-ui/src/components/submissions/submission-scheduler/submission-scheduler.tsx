@@ -1,9 +1,18 @@
-import { EuiDatePicker, EuiRadioGroup, EuiSpacer } from '@elastic/eui';
+import {
+  EuiDatePicker,
+  EuiFieldText,
+  EuiFormRow,
+  EuiIcon,
+  EuiLink,
+  EuiRadioGroup,
+  EuiSpacer,
+} from '@elastic/eui';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
+import cronstrue from 'cronstrue';
 
 const radios = [
   {
@@ -51,7 +60,30 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
       case ScheduleType.NONE:
         return null;
       case ScheduleType.RECURRING:
-        return <div>Recurring</div>;
+        return (
+          <EuiFormRow
+            label={
+              <EuiLink href="https://crontab.cronhub.io/">
+                Cron Format <EuiIcon type="link" size="s" />
+              </EuiLink>
+            }
+            helpText={
+              schedule.scheduledFor
+                ? cronstrue.toString(schedule.scheduledFor)
+                : 'Invalid CRON string'
+            }
+          >
+            <EuiFieldText
+              value={schedule.scheduledFor}
+              onChange={(event) => {
+                onUpdate({
+                  ...schedule,
+                  scheduledFor: event.target.value,
+                });
+              }}
+            />
+          </EuiFormRow>
+        );
       case ScheduleType.SINGLE:
       default: {
         const date = new Date(schedule.scheduledFor as string);
@@ -61,7 +93,6 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
         const now = moment();
         return (
           <EuiDatePicker
-            inline
             showTimeSelect
             minDate={now}
             shadow={false}
@@ -80,39 +111,45 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
 
   return (
     <div className="postybirb__submission-scheduler">
-      <EuiRadioGroup
-        options={radios}
-        idSelected={schedule.scheduleType}
-        onChange={(id) => {
-          switch (id as ScheduleType) {
-            case ScheduleType.SINGLE: {
-              let date: string | undefined;
-              if (lastUsedSchedule) {
-                const lastUsedDate = new Date(lastUsedSchedule).getTime();
-                const now = Date.now();
-                if (now < lastUsedDate) {
-                  date = lastUsedSchedule;
+      <div className="flex">
+        <EuiRadioGroup
+          options={radios}
+          idSelected={schedule.scheduleType}
+          onChange={(id) => {
+            switch (id as ScheduleType) {
+              case ScheduleType.SINGLE: {
+                let date: string | undefined;
+                if (lastUsedSchedule) {
+                  const lastUsedDate = new Date(lastUsedSchedule).getTime();
+                  const now = Date.now();
+                  if (now < lastUsedDate) {
+                    date = lastUsedSchedule;
+                  }
                 }
+                onUpdate({
+                  scheduleType: id as ScheduleType,
+                  scheduledFor: lastKnownSetDate ?? date,
+                });
+                break;
               }
-              onUpdate({
-                scheduleType: id as ScheduleType,
-                scheduledFor: lastKnownSetDate ?? date,
-              });
-              break;
+              case ScheduleType.RECURRING:
+                onUpdate({
+                  scheduleType: id as ScheduleType,
+                  scheduledFor: '0 0 * * FRI',
+                });
+                break;
+              case ScheduleType.NONE:
+              default:
+                onUpdate({
+                  scheduleType: id as ScheduleType,
+                  scheduledFor: undefined,
+                });
+                break;
             }
-            case ScheduleType.NONE:
-            case ScheduleType.RECURRING:
-            default:
-              onUpdate({
-                scheduleType: id as ScheduleType,
-                scheduledFor: undefined,
-              });
-              break;
-          }
-        }}
-      />
-      <EuiSpacer size="xs" />
-      {datePicker}
+          }}
+        />
+        <div className="ml-3 flex-1">{datePicker}</div>
+      </div>
     </div>
   );
 }

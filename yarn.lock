@@ -7973,6 +7973,11 @@ cron@2.2.0:
   dependencies:
     luxon "^3.2.1"
 
+cronstrue@^2.32.0:
+  version "2.32.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-2.32.0.tgz#cb705bdd9ba76d5fd64be4e1df1f2eee7165dad9"
+  integrity sha512-dmNflOCNJL6lZEj0dp2YhGIPY83VTjFue6d9feFhnNtrER6mAjBrUvSgK95j3IB/xNGpLjaZDIDG6ACKTZr9Yw==
+
 cropperjs@1.5.7:
   version "1.5.7"
   resolved "https://registry.npmjs.org/cropperjs/-/cropperjs-1.5.7.tgz"
