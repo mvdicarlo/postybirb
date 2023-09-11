@@ -5,7 +5,6 @@ import {
   Property,
   Rel,
   serialize,
-  wrap,
 } from '@mikro-orm/core';
 import {
   ISubmissionMetadata,
@@ -16,6 +15,7 @@ import {
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { Account } from './account.entity';
 import { PostyBirbEntity } from './postybirb-entity';
+import { SubmissionTemplate } from './submission-template.entity';
 import { Submission } from './submission.entity';
 
 /** @inheritdoc */
@@ -34,6 +34,15 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
     lazy: false,
   })
   submission: Rel<Submission<ISubmissionMetadata>>;
+
+  @ManyToOne({
+    entity: () => SubmissionTemplate,
+    cascade: [],
+    inversedBy: 'options',
+    nullable: true,
+    lazy: true,
+  })
+  template: Rel<SubmissionTemplate>;
 
   @Property({ type: 'json', nullable: false })
   data: T;

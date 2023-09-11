@@ -8,12 +8,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  EntityId,
   FileSubmission,
   ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
   MessageSubmission,
   NULL_ACCOUNT_ID,
+  NullAccount,
   PostData,
   SubmissionMetadataType,
   SubmissionType,
@@ -32,6 +34,7 @@ import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { SubmissionTemplate } from '../database/entities/submission-template.entity';
 
 @Injectable()
 export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
@@ -52,21 +55,20 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   }
 
   async create<T extends IWebsiteFormFields>(
-    createSubmissionOptions: CreateWebsiteOptionsDto<T>
+    createDto: CreateWebsiteOptionsDto<T>
   ) {
-    const account = await this.accountService.findById(
-      createSubmissionOptions.account,
-      { failOnMissing: true }
-    );
+    const account = await this.accountService.findById(createDto.account, {
+      failOnMissing: true,
+    });
 
     let submission: Submission<SubmissionMetadataType>;
     try {
       submission = await this.submissionRepository.findOneOrFail(
-        createSubmissionOptions.submission
+        createDto.submission
       );
     } catch {
       throw new NotFoundException(
-        `Submission ${createSubmissionOptions.submission} not found.`
+        `Submission ${createDto.submission} not found.`
       );
     }
 
@@ -82,13 +84,29 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
 
     const submissionOptions = this.repository.create({
       submission,
-      data: createSubmissionOptions.data,
+      data: createDto.data,
       account,
     });
 
     await this.repository.persistAndFlush(submissionOptions);
 
     return submissionOptions;
+  }
+
+  async createSubmissionTemplateOption(
+    template: SubmissionTemplate,
+    createDto: Omit<CreateWebsiteOptionsDto<IWebsiteFormFields>, 'submission'>
+  ) {
+    const account = await this.accountService.findById(createDto.account, {
+      failOnMissing: true,
+    });
+
+    return this.repository.create({
+      template,
+      data: createDto.data,
+      account,
+      submission: null,
+    });
   }
 
   update(id: string, update: UpdateWebsiteOptionsDto) {

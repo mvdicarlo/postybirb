@@ -119,7 +119,7 @@ describe('SubmissionService', () => {
       isScheduled: false,
       schedule: {
         scheduledFor: undefined,
-        scheduleType: ScheduleType.SINGLE,
+        scheduleType: ScheduleType.NONE,
       },
       metadata: {},
       files: [],
@@ -179,7 +179,7 @@ describe('SubmissionService', () => {
       isScheduled: false,
       schedule: {
         scheduledFor: undefined,
-        scheduleType: ScheduleType.SINGLE,
+        scheduleType: ScheduleType.NONE,
       },
       metadata: {
         fileMetadata: {

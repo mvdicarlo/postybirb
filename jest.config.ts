@@ -3,7 +3,7 @@ const { getJestProjects } = require('@nrwl/jest');
 export default {
   projects: [
     ...getJestProjects(),
-    '<rootDir>/apps/ui',
+    '<rootDir>/apps/postybirb-ui',
     '<rootDir>/apps/postybirb',
     '<rootDir>/apps/client-server',
     '<rootDir>/libs/http',

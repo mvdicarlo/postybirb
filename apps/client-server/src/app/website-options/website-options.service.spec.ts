@@ -80,6 +80,11 @@ describe('WebsiteOptionsService', () => {
     await accountService.onModuleInit();
   });
 
+  afterAll(async () => {
+    await orm.close(true);
+    await module.close();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });

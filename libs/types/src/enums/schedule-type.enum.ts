@@ -6,7 +6,7 @@ export enum ScheduleType {
   /**
    * Indicates no schedule.
    */
-  NONE = 'None',
+  NONE = 'none',
   /**
    * Indicates a single schedule occurrence.
    */

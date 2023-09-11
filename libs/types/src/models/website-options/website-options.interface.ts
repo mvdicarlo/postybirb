@@ -3,6 +3,7 @@ import { IEntity } from '../database/entity.interface';
 import { ISubmissionMetadata } from '../submission/submission-metadata.interface';
 import { IWebsiteFormFields } from '../submission/website-form-fields.interface';
 import { ISubmission } from '../submission/submission.interface';
+import { ISubmissionTemplate } from '../submission/submission-template.interface';
 
 /**
  * Represents options associated with a submission per account.
@@ -18,6 +19,12 @@ export interface IWebsiteOptions<
    * @type {ISubmission<ISubmissionMetadata>}
    */
   submission: ISubmission<ISubmissionMetadata>;
+
+  /**
+   * The submission template associated with the options.
+   * @type {ISubmissionTemplate}
+   */
+  template: ISubmissionTemplate;
 
   /**
    * The fields associated with the options.

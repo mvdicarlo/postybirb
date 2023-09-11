@@ -17,6 +17,7 @@ import {
   WebsiteData,
   WebsiteOptions,
 } from './entities';
+import { SubmissionTemplate } from './entities/submission-template.entity';
 
 const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
 
@@ -28,6 +29,7 @@ const entities = [
   Settings,
   Submission,
   SubmissionFile,
+  SubmissionTemplate,
   TagConverter,
   TagGroup,
   WebsiteOptions,

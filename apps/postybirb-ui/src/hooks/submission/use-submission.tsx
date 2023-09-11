@@ -49,6 +49,10 @@ function hasChanges(original?: SubmissionDto, update?: SubmissionDto): boolean {
     return true;
   }
 
+  if (JSON.stringify(update?.schedule) !== JSON.stringify(original?.schedule)) {
+    return true;
+  }
+
   return false;
 }
 

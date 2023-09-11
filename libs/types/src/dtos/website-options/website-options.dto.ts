@@ -4,7 +4,10 @@ import { ISubmissionDto } from '../submission/submission.dto';
 
 export type WebsiteOptionsDto<
   T extends IWebsiteFormFields = IWebsiteFormFields
-> = Omit<IEntityDto<IWebsiteOptions<T>>, 'account' | 'submission'> & {
+> = Omit<
+  IEntityDto<IWebsiteOptions<T>>,
+  'account' | 'submission' | 'template'
+> & {
   account: AccountId;
   submission: ISubmissionDto;
 };
