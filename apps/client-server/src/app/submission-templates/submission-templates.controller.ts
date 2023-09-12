@@ -29,13 +29,13 @@ export class SubmissionTemplatesController extends PostyBirbController<Submissio
     return this.service.create(createDto).then((entity) => entity.toJSON());
   }
 
-  //   @Patch(':id')
-  //   @ApiOkResponse({ description: 'Entity updated.' })
-  //   @ApiNotFoundResponse({ description: 'Entity not found.' })
-  //   update(
-  //     @Body() updateDto: UpdateSubmissionTemplateDto,
-  //     @Param('id') id: string
-  //   ) {
-  //     return this.service.update(id, updateDto).then((entity) => entity.toJSON());
-  //   }
+  @Patch(':id')
+  @ApiOkResponse({ description: 'Entity updated.' })
+  @ApiNotFoundResponse({ description: 'Entity not found.' })
+  update(
+    @Body() updateDto: UpdateSubmissionTemplateDto,
+    @Param('id') id: string
+  ) {
+    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
+  }
 }

@@ -8,14 +8,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
-  EntityId,
   FileSubmission,
   ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
   MessageSubmission,
   NULL_ACCOUNT_ID,
-  NullAccount,
   PostData,
   SubmissionMetadataType,
   SubmissionType,
@@ -24,8 +22,10 @@ import {
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
+import { SubmissionTemplate } from '../database/entities/submission-template.entity';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { SubmissionService } from '../submission/services/submission.service';
+import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { DefaultWebsiteOptionsObject } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -33,8 +33,6 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
-import { SubmissionTemplate } from '../database/entities/submission-template.entity';
 
 @Injectable()
 export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {

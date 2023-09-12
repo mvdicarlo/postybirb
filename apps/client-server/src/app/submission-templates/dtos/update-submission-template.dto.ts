@@ -1,10 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IUpdateSubmissionTemplateDto,
-  IWebsiteFormFields,
-  WebsiteOptionsDto,
-} from '@postybirb/types';
+import { IUpdateSubmissionTemplateDto } from '@postybirb/types';
 import { IsArray, IsOptional, IsString } from 'class-validator';
+import { CreateWebsiteOptionsDto } from '../../website-options/dtos/create-website-options.dto';
 
 export class UpdateSubmissionTemplateDto
   implements IUpdateSubmissionTemplateDto
@@ -17,5 +14,5 @@ export class UpdateSubmissionTemplateDto
   @ApiProperty()
   @IsOptional()
   @IsArray()
-  options: WebsiteOptionsDto<IWebsiteFormFields>[];
+  options: CreateWebsiteOptionsDto[];
 }

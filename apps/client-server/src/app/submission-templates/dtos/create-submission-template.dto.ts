@@ -1,9 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  ICreateSubmissionTemplateDto,
-  IWebsiteFormFields,
-  SubmissionType,
-} from '@postybirb/types';
+import { ICreateSubmissionTemplateDto, SubmissionType } from '@postybirb/types';
 import {
   ArrayMinSize,
   IsArray,
@@ -28,5 +24,5 @@ export class CreateSubmissionTemplateDto
   @ApiProperty()
   @IsArray()
   @ArrayMinSize(1)
-  options: CreateWebsiteOptionsDto<IWebsiteFormFields>[];
+  options: CreateWebsiteOptionsDto[];
 }

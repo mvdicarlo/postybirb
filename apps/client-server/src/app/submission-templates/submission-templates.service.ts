@@ -6,6 +6,7 @@ import { SubmissionTemplate } from '../database/entities/submission-template.ent
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { WSGateway } from '../web-socket/web-socket-gateway';
+import { CreateWebsiteOptionsDto } from '../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { CreateSubmissionTemplateDto } from './dtos/create-submission-template.dto';
 import { UpdateSubmissionTemplateDto } from './dtos/update-submission-template.dto';
@@ -34,32 +35,62 @@ export class SubmissionTemplatesService extends PostyBirbService<SubmissionTempl
 
   async create(createDto: CreateSubmissionTemplateDto) {
     this.logger.info(createDto, 'Creating Submission Template');
+    const name = createDto.name?.trim();
 
-    if (createDto.name.trim().length === 0) {
+    if (name.length === 0) {
       throw new BadRequestException('Name must not be empty or whitespace');
     }
 
-    const entity = this.repository.create({
-      name: createDto.name,
+    await this.throwIfExists({
+      name,
       type: createDto.type,
     });
 
-    const options = await Promise.all(
-      createDto.options.map((option) =>
-        this.websiteOptionsService.createSubmissionTemplateOption(entity, {
-          account: option.account,
-          data: option.data,
-        })
-      )
-    );
+    const entity = this.repository.create({
+      name,
+      type: createDto.type,
+    });
 
+    const options = await this.createTemplateOptions(entity, createDto.options);
     entity.options.add(options);
     await this.repository.persistAndFlush(entity);
 
     return entity;
   }
 
-  async update(id: string, updateDto: UpdateSubmissionTemplateDto) {
-    throw new Error('Method not implemented.');
+  async update(id: string, update: UpdateSubmissionTemplateDto) {
+    this.logger.info(update, `Updating SubmissionTemplate '${id}'`);
+    const entity = await this.findById(id, { failOnMissing: true });
+
+    const name = update.name?.trim();
+    if (name) {
+      entity.name = name;
+    }
+
+    if (entity.options?.length) {
+      entity.options.removeAll();
+      const options = await this.createTemplateOptions(entity, update.options);
+      entity.options.add(options);
+    }
+
+    await this.repository.persistAndFlush(entity);
+    return entity;
+  }
+
+  private createTemplateOptions(
+    submissionTemplate: SubmissionTemplate,
+    options: CreateWebsiteOptionsDto[]
+  ) {
+    return Promise.all(
+      options.map((option) =>
+        this.websiteOptionsService.createSubmissionTemplateOption(
+          submissionTemplate,
+          {
+            account: option.account,
+            data: option.data,
+          }
+        )
+      )
+    );
   }
 }

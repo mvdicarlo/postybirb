@@ -6,8 +6,9 @@ import {
 } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
 
-export class CreateWebsiteOptionsDto<T extends IWebsiteFormFields>
-  implements ICreateWebsiteOptionsDto
+export class CreateWebsiteOptionsDto<
+  T extends IWebsiteFormFields = IWebsiteFormFields
+> implements ICreateWebsiteOptionsDto
 {
   @ApiProperty()
   @IsString()

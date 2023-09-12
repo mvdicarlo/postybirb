@@ -1,4 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   DefaultDescriptionValue,
@@ -22,10 +23,12 @@ import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateSubmissionTemplateDto } from './dtos/create-submission-template.dto';
 import { SubmissionTemplatesService } from './submission-templates.service';
+import { UpdateSubmissionTemplateDto } from './dtos/update-submission-template.dto';
 
 describe('SubmissionTemplatesService', () => {
   let service: SubmissionTemplatesService;
   let accountService: AccountService;
+  let websiteOptionsService: WebsiteOptionsService;
   let module: TestingModule;
   let orm: MikroORM;
 
@@ -53,6 +56,9 @@ describe('SubmissionTemplatesService', () => {
       SubmissionTemplatesService
     );
     accountService = module.get<AccountService>(AccountService);
+    websiteOptionsService = module.get<WebsiteOptionsService>(
+      WebsiteOptionsService
+    );
     orm = module.get(MikroORM);
     try {
       await orm.getSchemaGenerator().refreshDatabase();
@@ -102,5 +108,88 @@ describe('SubmissionTemplatesService', () => {
       type: SubmissionType.MESSAGE,
       updatedAt: record.updatedAt.toISOString(),
     });
+  });
+
+  it('should throw exception on invalid name', async () => {
+    const dto = new CreateSubmissionTemplateDto();
+    dto.name = ' ';
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should throw exception on duplicate entity', async () => {
+    const dto = new CreateSubmissionTemplateDto();
+    dto.name = 'test';
+    dto.options = [];
+    dto.type = SubmissionType.FILE;
+    await service.create(dto);
+    await expect(service.create(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should update entities', async () => {
+    const createDto = new CreateSubmissionTemplateDto();
+    createDto.name = 'test template';
+    createDto.type = SubmissionType.MESSAGE;
+    createDto.options = [
+      {
+        submission: undefined,
+        account: NULL_ACCOUNT_ID,
+        data: {
+          title: 'title',
+          tags: DefaultTagValue,
+          description: DefaultDescriptionValue,
+          rating: SubmissionRating.GENERAL,
+        },
+      },
+    ];
+
+    const record = await service.create(createDto);
+    const optionId = record.options[0].id;
+
+    const updateDto = new UpdateSubmissionTemplateDto();
+    updateDto.name = 'updated template';
+    updateDto.options = [
+      {
+        submission: undefined,
+        account: NULL_ACCOUNT_ID,
+        data: {
+          title: 'title',
+          tags: DefaultTagValue,
+          description: DefaultDescriptionValue,
+          rating: SubmissionRating.GENERAL,
+        },
+      },
+    ];
+
+    const updatedRecord = await service.update(record.id, updateDto);
+    expect(updatedRecord.name).toBe(updateDto.name);
+    expect(updatedRecord.options).toHaveLength(1);
+    expect(updatedRecord.options[0].id).not.toBe(optionId);
+  });
+
+  it('should remove entities', async () => {
+    const dto = new CreateSubmissionTemplateDto();
+    dto.name = 'test template';
+    dto.type = SubmissionType.MESSAGE;
+    dto.options = [
+      {
+        submission: undefined,
+        account: NULL_ACCOUNT_ID,
+        data: {
+          title: 'title',
+          tags: DefaultTagValue,
+          description: DefaultDescriptionValue,
+          rating: SubmissionRating.GENERAL,
+        },
+      },
+    ];
+
+    const record = await service.create(dto);
+    expect(await service.findAll()).toHaveLength(1);
+    expect(await websiteOptionsService.findAll()).toHaveLength(1);
+
+    await service.remove(record.id);
+
+    expect(await service.findAll()).toHaveLength(0);
+    expect(await websiteOptionsService.findAll()).toHaveLength(0);
   });
 });
