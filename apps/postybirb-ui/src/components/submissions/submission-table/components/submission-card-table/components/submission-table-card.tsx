@@ -18,6 +18,7 @@ import {
   SquareIcon,
 } from '../../../../../shared/icons/Icons';
 import { SubmissionTableCardEditableFields } from './submission-table-card-editable-fields';
+import submissionApi from 'apps/postybirb-ui/src/api/submission.api';
 
 type SubmissionCardOnSelect = (id: string) => void;
 
@@ -96,6 +97,19 @@ export function SubmissionTableCard(
             aria-label="Edit submission"
             onClick={() => {
               navToEdit(submission.id);
+            }}
+          />
+        </EuiToolTip>
+        <EuiToolTip
+          content={
+            <FormattedMessage id="duplicate" defaultMessage="Duplicate" />
+          }
+        >
+          <EuiButtonIcon
+            iconType="listAdd"
+            aria-label="Duplicate submission"
+            onClick={() => {
+              submissionApi.duplicate(submission.id);
             }}
           />
         </EuiToolTip>

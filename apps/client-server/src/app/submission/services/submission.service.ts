@@ -1,19 +1,24 @@
+/* eslint-disable no-param-reassign */
+import { serialize, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
   Inject,
   Injectable,
+  NotFoundException,
   Optional,
   forwardRef,
 } from '@nestjs/common';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
+  FileSubmissionMetadata,
   MessageSubmission,
   ScheduleType,
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
+import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { Submission } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
@@ -195,6 +200,69 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
   public async remove(id: string) {
     await super.remove(id);
+    this.emit();
+  }
+
+  /**
+   * Duplicates a submission.
+   * @param {string} id
+   */
+  public async duplicate(id: string) {
+    this.logger.info(`Duplicating Submission '${id}'`);
+    const entityToDuplicate = await this.repository.findOne(
+      { id },
+      { populate: true }
+    );
+
+    if (!entityToDuplicate) {
+      throw new NotFoundException(`No entity with id '${id}' found`);
+    }
+
+    const copy = serialize(entityToDuplicate, {
+      populate: true,
+      ignoreSerializers: true,
+    });
+    copy.id = v4();
+    copy.options.forEach((option) => {
+      option.id = v4();
+      delete option.submission;
+    });
+    const metadata = copy.metadata as FileSubmissionMetadata;
+    copy.files.forEach((fileEntity) => {
+      delete fileEntity.submission;
+      const oldId = fileEntity.id;
+      // Fix metadata
+      const index = metadata.order.findIndex(
+        (fileId) => fileId === fileEntity.id
+      );
+      fileEntity.id = v4();
+      if (index > -1) {
+        metadata.order[index] = fileEntity.id;
+      }
+
+      if (metadata.fileMetadata[oldId]) {
+        metadata.fileMetadata[fileEntity.id] = metadata.fileMetadata[oldId];
+        delete metadata.fileMetadata[oldId];
+      }
+
+      if (fileEntity.altFile) {
+        fileEntity.altFile.id = v4();
+        delete fileEntity.altFile.parent;
+      }
+
+      if (fileEntity.file) {
+        fileEntity.file.id = v4();
+        delete fileEntity.file.parent;
+      }
+
+      if (fileEntity.thumbnail) {
+        fileEntity.thumbnail.id = v4();
+        delete fileEntity.thumbnail.parent;
+      }
+    });
+
+    const created = this.repository.create(copy);
+    await this.repository.persistAndFlush(created);
     this.emit();
   }
 }

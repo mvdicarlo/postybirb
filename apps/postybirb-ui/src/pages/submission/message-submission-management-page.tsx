@@ -1,16 +1,17 @@
 import {
   EuiButtonIcon,
   EuiFieldText,
+  EuiFormLabel,
   EuiPageHeader,
   EuiProgress,
   EuiSpacer,
-  EuiFormLabel,
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
+import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
@@ -63,10 +64,18 @@ function CreateMessageSubmissionForm(): JSX.Element {
 
 export default function MessageSubmissionManagementPage() {
   const { state, isLoading } = useStore(SubmissionStore);
+  const [tab, setTab] = useState<'submissions' | 'templates'>('submissions');
 
   const messageSubmissions = state.filter(
     (submission) => submission.type === SubmissionType.MESSAGE
   );
+
+  const display =
+    tab === 'submissions' ? (
+      <SubmissionTable submissions={messageSubmissions} />
+    ) : (
+      <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
+    );
 
   return (
     <>
@@ -79,15 +88,31 @@ export default function MessageSubmissionManagementPage() {
             defaultMessage="Message Submissions"
           />
         }
+        tabs={[
+          {
+            label: (
+              <FormattedMessage id="submissions" defaultMessage="Submissions" />
+            ),
+            isSelected: tab === 'submissions',
+            onClick: () => {
+              setTab('submissions');
+            },
+          },
+          {
+            label: (
+              <FormattedMessage id="templates" defaultMessage="Templates" />
+            ),
+            isSelected: tab === 'templates',
+            onClick: () => {
+              setTab('templates');
+            },
+          },
+        ]}
       />
       <EuiSpacer />
       <CreateMessageSubmissionForm />
       <EuiSpacer />
-      {isLoading ? (
-        <EuiProgress size="xs" />
-      ) : (
-        <SubmissionTable submissions={messageSubmissions} />
-      )}
+      {isLoading ? <EuiProgress size="xs" /> : display}
     </>
   );
 }

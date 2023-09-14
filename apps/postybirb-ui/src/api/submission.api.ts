@@ -2,6 +2,7 @@ import {
   ICreateSubmissionDto,
   ISubmissionDto,
   IUpdateSubmissionDto,
+  SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
@@ -20,6 +21,10 @@ class SubmissionsApi extends BaseApi<
       name,
       type: SubmissionType.MESSAGE,
     });
+  }
+
+  duplicate(id: SubmissionId) {
+    return this.client.post(`duplicate/${id}`);
   }
 }
 

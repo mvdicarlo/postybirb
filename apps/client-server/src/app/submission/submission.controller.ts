@@ -15,7 +15,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { SubmissionType } from '@postybirb/types';
+import { SubmissionId, SubmissionType } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
@@ -68,11 +68,18 @@ export class SubmissionController extends PostyBirbController<Submission> {
     ).map(mapper);
   }
 
+  @Post('duplicate/:id')
+  @ApiOkResponse({ description: 'Submission duplicated.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async duplicate(@Param('id') id: SubmissionId) {
+    this.service.duplicate(id);
+  }
+
   @Patch(':id')
-  @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
+  @ApiOkResponse({ description: 'Submission updated.' })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async update(
-    @Param('id') id: string,
+    @Param('id') id: SubmissionId,
     @Body() updateSubmissionDto: UpdateSubmissionDto
   ) {
     return this.service
