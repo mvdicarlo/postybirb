@@ -14,13 +14,14 @@ import {
   FileSubmission,
   FileSubmissionMetadata,
   MessageSubmission,
+  NULL_ACCOUNT_ID,
   ScheduleType,
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { Submission } from '../../database/entities';
+import { Submission, WebsiteOptions } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
@@ -29,6 +30,7 @@ import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
+import { cloneDeep } from 'lodash';
 
 type SubmissionEntity = Submission<SubmissionMetadataType>;
 
@@ -205,6 +207,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
   /**
    * Duplicates a submission.
+   * !Somewhat janky method of doing a clone.
    * @param {string} id
    */
   public async duplicate(id: string) {
@@ -218,16 +221,24 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       throw new NotFoundException(`No entity with id '${id}' found`);
     }
 
-    const copy = serialize(entityToDuplicate, {
-      populate: true,
-      ignoreSerializers: true,
-    });
+    const copy = cloneDeep(
+      serialize(entityToDuplicate, {
+        populate: true,
+        ignoreSerializers: true,
+      })
+    );
     copy.id = v4();
-    copy.options.forEach((option) => {
+    copy.options.forEach((option: WebsiteOptions) => {
       option.id = v4();
+      if (option.account.id === NULL_ACCOUNT_ID) {
+        option.data.title = `${option.data.title} copy`;
+      }
       delete option.submission;
     });
-    const metadata = copy.metadata as FileSubmissionMetadata;
+    const metadata = JSON.parse(
+      JSON.stringify(copy.metadata)
+    ) as FileSubmissionMetadata;
+    copy.metadata = metadata;
     copy.files.forEach((fileEntity) => {
       delete fileEntity.submission;
       const oldId = fileEntity.id;
