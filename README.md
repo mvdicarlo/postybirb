@@ -1,22 +1,61 @@
 # Postybirb
 
-This project was generated using [Nx](https://nx.dev).
+## About
+
+PostyBirb is an application that helps artists post art and other multimedia to
+multiple websites more quickly.The overall goal of PostyBirb is to cut down on
+the time it takes to post submissions to multiple websites.
+
+## V4 Initiative
+
+v4 sets out to be more flexible for adding new features and updates not easily
+supported on v3. It also aims to be more contributor friendly and ease the 
+implementation of websites where possible.
+
+## Looking for v3 (PostyBirb+)?
+
+You can find v3 [here](https://github.com/mvdicarlo/postybirb-plus).
 
 ## Primary Modules (/apps)
 
 ### Client-Server
 
-The "Back end" of the application. This houses all data models, user settings, posting logic, etc.
+The "Back end" of the application. This houses all data models, user settings,
+posting logic, etc.
+
+#### Primary Technologies Used
+
+- NestJS
+- MikroOrm (sqlite3)
 
 ### Postybirb
 
-The Electron part of the application that contains most settings and some initialization logic.
+The Electron part of the application that contains initialization logic and
+app setup.
 
-### UI
+#### Primary Technologies Used
 
-The user interface for the application that talks with Client-Server through web-socket and https.
+- Electron
+
+### PostyBirb-UI
+
+The user interface for the application that talks with Client-Server through
+web-socket and https.
+
+#### Primary Technologies Used
+
+- React
 
 ## Project Setup
 
-`npm install`
+`yarn install`
 `npm start`
+
+## Recommended Plugins (VSCode)
+
+- Nx Console
+
+
+-----------------
+
+This project was generated using [Nx](https://nx.dev).
