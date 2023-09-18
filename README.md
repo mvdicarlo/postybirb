@@ -16,6 +16,22 @@ implementation of websites where possible.
 
 You can find v3 [here](https://github.com/mvdicarlo/postybirb-plus).
 
+## Project Setup
+
+1. `yarn install` Installs dependencies
+2. `yarn run setup` Installs hooks/husky
+3. `npm start` Starts app
+
+### Recommended Plugins (VSCode)
+
+- Nx Console
+
+## Contributing
+
+Please write clean code.
+
+Follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
+
 ## Primary Modules (/apps)
 
 ### Client-Server
@@ -45,16 +61,6 @@ web-socket and https.
 #### Primary Technologies Used
 
 - React
-
-## Project Setup
-
-`yarn install`
-`npm start`
-
-## Recommended Plugins (VSCode)
-
-- Nx Console
-
 
 -----------------
 
