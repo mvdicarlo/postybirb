@@ -20,6 +20,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { v4 } from 'uuid';
+import { cloneDeep } from 'lodash';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
@@ -30,7 +31,6 @@ import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
-import { cloneDeep } from 'lodash';
 
 type SubmissionEntity = Submission<SubmissionMetadataType>;
 

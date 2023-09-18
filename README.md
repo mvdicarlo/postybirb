@@ -25,6 +25,7 @@ You can find v3 [here](https://github.com/mvdicarlo/postybirb-plus).
 ### Recommended Plugins (VSCode)
 
 - Nx Console
+- Jest Runner
 
 ## Contributing
 

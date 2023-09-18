@@ -1,4 +1,3 @@
-import './wdyr';
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom';
 import { HashRouter as BrowserRouter } from 'react-router-dom';

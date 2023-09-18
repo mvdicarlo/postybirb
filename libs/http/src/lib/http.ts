@@ -182,7 +182,6 @@ export class Http {
 
     // TODO figure out if I need to call followRedirect even though follow is default behavior
     req.on('redirect', (statusCode, method, redirectUrl, responseHeaders) => {
-      Http.logger.debug(`Redirect: ${url} -> ${redirectUrl}`);
       responseUrl = redirectUrl;
     });
 
