@@ -10,6 +10,7 @@ import {
 import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
+import submissionApi from '../../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../../../../pages/route-paths';
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
@@ -18,7 +19,6 @@ import {
   SquareIcon,
 } from '../../../../../shared/icons/Icons';
 import { SubmissionTableCardEditableFields } from './submission-table-card-editable-fields';
-import submissionApi from 'apps/postybirb-ui/src/api/submission.api';
 
 type SubmissionCardOnSelect = (id: string) => void;
 
