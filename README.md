@@ -22,9 +22,15 @@ You can find v3 [here](https://github.com/mvdicarlo/postybirb-plus).
 2. `yarn run setup` Installs hooks/husky
 3. `npm start` Starts app
 
-## Recommended Plugins (VSCode)
+### Recommended Plugins (VSCode)
 
 - Nx Console
+
+## Contributing
+
+Please write clean code.
+
+Follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## Primary Modules (/apps)
 
