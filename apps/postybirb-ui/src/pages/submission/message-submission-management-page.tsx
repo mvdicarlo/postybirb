@@ -70,23 +70,20 @@ export default function MessageSubmissionManagementPage() {
     (submission) => submission.type === SubmissionType.MESSAGE
   );
 
-  const display = useMemo(
-    () =>
-      tab === 'submissions' ? (
-        <>
-          <CreateMessageSubmissionForm />
-          <EuiSpacer />
-          {isLoading ? (
-            <EuiProgress size="xs" />
-          ) : (
-            <SubmissionTable submissions={messageSubmissions} />
-          )}
-        </>
-      ) : (
-        <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
-      ),
-    [isLoading, messageSubmissions, tab]
-  );
+  const display =
+    tab === 'submissions' ? (
+      <>
+        <CreateMessageSubmissionForm />
+        <EuiSpacer />
+        {isLoading ? (
+          <EuiProgress size="xs" />
+        ) : (
+          <SubmissionTable submissions={messageSubmissions} />
+        )}
+      </>
+    ) : (
+      <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
+    );
 
   return (
     <>
