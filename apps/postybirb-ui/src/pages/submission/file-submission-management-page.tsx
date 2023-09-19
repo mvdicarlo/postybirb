@@ -26,7 +26,17 @@ export default function FileSubmissionManagementPage() {
 
   const display =
     tab === 'submissions' ? (
-      <SubmissionTable submissions={fileSubmissions} />
+      <>
+        <Uploader endpointPath="api/submission" />
+        <EuiSpacer />
+        <DirectoryWatchersTable />
+        <EuiSpacer />
+        {isLoading ? (
+          <EuiProgress size="xs" />
+        ) : (
+          <SubmissionTable submissions={fileSubmissions} />
+        )}
+      </>
     ) : (
       <SubmissionTemplateManagementView type={SubmissionType.FILE} />
     );
@@ -65,11 +75,7 @@ export default function FileSubmissionManagementPage() {
         ]}
       />
       <EuiSpacer />
-      <Uploader endpointPath="api/submission" />
-      <EuiSpacer />
-      <DirectoryWatchersTable />
-      <EuiSpacer />
-      {isLoading ? <EuiProgress size="xs" /> : display}
+      {display}
     </>
   );
 }

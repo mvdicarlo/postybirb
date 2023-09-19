@@ -72,7 +72,15 @@ export default function MessageSubmissionManagementPage() {
 
   const display =
     tab === 'submissions' ? (
-      <SubmissionTable submissions={messageSubmissions} />
+      <>
+        <CreateMessageSubmissionForm />
+        <EuiSpacer />
+        {isLoading ? (
+          <EuiProgress size="xs" />
+        ) : (
+          <SubmissionTable submissions={messageSubmissions} />
+        )}
+      </>
     ) : (
       <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
     );
@@ -110,9 +118,7 @@ export default function MessageSubmissionManagementPage() {
         ]}
       />
       <EuiSpacer />
-      <CreateMessageSubmissionForm />
-      <EuiSpacer />
-      {isLoading ? <EuiProgress size="xs" /> : display}
+      {display}
     </>
   );
 }

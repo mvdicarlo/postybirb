@@ -81,18 +81,6 @@ describe('SubmissionTemplatesService', () => {
     const dto = new CreateSubmissionTemplateDto();
     dto.name = 'test template';
     dto.type = SubmissionType.MESSAGE;
-    dto.options = [
-      {
-        submission: undefined,
-        account: NULL_ACCOUNT_ID,
-        data: {
-          title: 'title',
-          tags: DefaultTagValue,
-          description: DefaultDescriptionValue,
-          rating: SubmissionRating.GENERAL,
-        },
-      },
-    ];
 
     const record = await service.create(dto);
     const records = await service.findAll();
@@ -119,7 +107,6 @@ describe('SubmissionTemplatesService', () => {
   it('should throw exception on duplicate entity', async () => {
     const dto = new CreateSubmissionTemplateDto();
     dto.name = 'test';
-    dto.options = [];
     dto.type = SubmissionType.FILE;
     await service.create(dto);
     await expect(service.create(dto)).rejects.toThrow(BadRequestException);
@@ -129,18 +116,6 @@ describe('SubmissionTemplatesService', () => {
     const createDto = new CreateSubmissionTemplateDto();
     createDto.name = 'test template';
     createDto.type = SubmissionType.MESSAGE;
-    createDto.options = [
-      {
-        submission: undefined,
-        account: NULL_ACCOUNT_ID,
-        data: {
-          title: 'title',
-          tags: DefaultTagValue,
-          description: DefaultDescriptionValue,
-          rating: SubmissionRating.GENERAL,
-        },
-      },
-    ];
 
     const record = await service.create(createDto);
     const optionId = record.options[0].id;
@@ -170,18 +145,6 @@ describe('SubmissionTemplatesService', () => {
     const dto = new CreateSubmissionTemplateDto();
     dto.name = 'test template';
     dto.type = SubmissionType.MESSAGE;
-    dto.options = [
-      {
-        submission: undefined,
-        account: NULL_ACCOUNT_ID,
-        data: {
-          title: 'title',
-          tags: DefaultTagValue,
-          description: DefaultDescriptionValue,
-          rating: SubmissionRating.GENERAL,
-        },
-      },
-    ];
 
     const record = await service.create(dto);
     expect(await service.findAll()).toHaveLength(1);

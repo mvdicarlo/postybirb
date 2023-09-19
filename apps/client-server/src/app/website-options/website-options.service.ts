@@ -125,28 +125,67 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     title: string
   ): Promise<WebsiteOptions> {
     this.logger.info({ id: submission.id }, 'Creating Default Website Options');
-    const defaultOptions =
-      (
-        await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
-          NULL_ACCOUNT_ID,
-          submission.type
-        )
-      )?.options ?? {};
-    const submissionOptions = this.repository.create(
+    const options = this.repository.create(
       {
         isDefault: true,
         submission,
         account: await this.accountService.findById(NULL_ACCOUNT_ID),
-        data: {
-          ...DefaultWebsiteOptionsObject,
-          ...defaultOptions,
-          title,
-        },
       },
       { persist: false }
     );
 
-    return submissionOptions;
+    await this.populateDefaultWebsiteOptions(submission.type, options, title);
+    return options;
+  }
+
+  /**
+   * Creates the default submission option that stores shared data
+   * across multiple submission template options.
+   *
+   * @param {SubmissionTemplate} template
+   * @param {string} title
+   * @return {*}  {Promise<WebsiteOptions>}
+   */
+  async createDefaultSubmissionTemplateOptions(
+    template: SubmissionTemplate
+  ): Promise<WebsiteOptions> {
+    this.logger.info(
+      { id: template.id },
+      'Creating Default Website Options For Template'
+    );
+
+    const options = this.repository.create(
+      {
+        isDefault: true,
+        template,
+        account: await this.accountService.findById(NULL_ACCOUNT_ID),
+      },
+      { persist: false }
+    );
+
+    await this.populateDefaultWebsiteOptions(template.type, options);
+    return options;
+  }
+
+  private async populateDefaultWebsiteOptions(
+    type: SubmissionType,
+    entity: WebsiteOptions,
+    title?: string
+  ) {
+    const defaultOptions =
+      (
+        await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
+          NULL_ACCOUNT_ID,
+          type
+        )
+      )?.options ?? {};
+    Object.assign(entity, {
+      data: {
+        ...DefaultWebsiteOptionsObject,
+        ...defaultOptions,
+        title,
+      },
+    });
   }
 
   /**

@@ -51,7 +51,11 @@ export class SubmissionTemplatesService extends PostyBirbService<SubmissionTempl
       type: createDto.type,
     });
 
-    const options = await this.createTemplateOptions(entity, createDto.options);
+    const options = [
+      await this.websiteOptionsService.createDefaultSubmissionTemplateOptions(
+        entity
+      ),
+    ];
     entity.options.add(options);
     await this.repository.persistAndFlush(entity);
 
