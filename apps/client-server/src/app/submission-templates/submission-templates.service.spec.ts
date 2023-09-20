@@ -8,7 +8,6 @@ import {
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
-import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
 import { FileService } from '../file/file.service';
@@ -18,12 +17,13 @@ import { FileSubmissionService } from '../submission/services/file-submission.se
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateSubmissionTemplateDto } from './dtos/create-submission-template.dto';
-import { SubmissionTemplatesService } from './submission-templates.service';
 import { UpdateSubmissionTemplateDto } from './dtos/update-submission-template.dto';
+import { SubmissionTemplatesService } from './submission-templates.service';
 
 describe('SubmissionTemplatesService', () => {
   let service: SubmissionTemplatesService;
@@ -34,7 +34,7 @@ describe('SubmissionTemplatesService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule, AccountModule],
+      imports: [DatabaseModule, WebsiteOptionsModule],
       providers: [
         SubmissionTemplatesService,
         SubmissionService,

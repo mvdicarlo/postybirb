@@ -58,6 +58,8 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagGroups]);
 
+  console.log(records);
+
   const onSelectionChange = (selected: TagGroupDto[]) => {
     setSelectedItems(selected);
   };
@@ -242,7 +244,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       <EuiSpacer size="l" />
 
       <EuiBasicTable
-        className="postybirb__tag_group_table"
+        className="postybirb__tag-group-table"
         ref={tableRef}
         items={records}
         itemId="id"

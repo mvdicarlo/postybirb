@@ -67,6 +67,15 @@ export class SubmissionTemplatesService extends PostyBirbService<SubmissionTempl
     const entity = await this.findById(id, { failOnMissing: true });
 
     const name = update.name?.trim();
+
+    // Do not allow rename to same name
+    if (entity.name !== name) {
+      await this.throwIfExists({
+        name,
+        type: entity.type,
+      });
+    }
+
     if (name) {
       entity.name = name;
     }
