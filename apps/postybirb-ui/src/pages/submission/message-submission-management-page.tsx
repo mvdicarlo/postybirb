@@ -7,7 +7,7 @@ import {
   EuiSpacer,
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
@@ -70,12 +70,23 @@ export default function MessageSubmissionManagementPage() {
     (submission) => submission.type === SubmissionType.MESSAGE
   );
 
-  const display =
-    tab === 'submissions' ? (
-      <SubmissionTable submissions={messageSubmissions} />
-    ) : (
-      <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
-    );
+  const display = useMemo(
+    () =>
+      tab === 'submissions' ? (
+        <>
+          <CreateMessageSubmissionForm />
+          <EuiSpacer />
+          {isLoading ? (
+            <EuiProgress size="xs" />
+          ) : (
+            <SubmissionTable submissions={messageSubmissions} />
+          )}
+        </>
+      ) : (
+        <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
+      ),
+    [isLoading, messageSubmissions, tab]
+  );
 
   return (
     <>
@@ -110,9 +121,7 @@ export default function MessageSubmissionManagementPage() {
         ]}
       />
       <EuiSpacer />
-      <CreateMessageSubmissionForm />
-      <EuiSpacer />
-      {isLoading ? <EuiProgress size="xs" /> : display}
+      {display}
     </>
   );
 }

@@ -8,7 +8,6 @@ import {
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
-import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
 import { FileService } from '../file/file.service';
@@ -18,12 +17,13 @@ import { FileSubmissionService } from '../submission/services/file-submission.se
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateSubmissionTemplateDto } from './dtos/create-submission-template.dto';
-import { SubmissionTemplatesService } from './submission-templates.service';
 import { UpdateSubmissionTemplateDto } from './dtos/update-submission-template.dto';
+import { SubmissionTemplatesService } from './submission-templates.service';
 
 describe('SubmissionTemplatesService', () => {
   let service: SubmissionTemplatesService;
@@ -34,7 +34,7 @@ describe('SubmissionTemplatesService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule, AccountModule],
+      imports: [DatabaseModule, WebsiteOptionsModule],
       providers: [
         SubmissionTemplatesService,
         SubmissionService,
@@ -81,18 +81,6 @@ describe('SubmissionTemplatesService', () => {
     const dto = new CreateSubmissionTemplateDto();
     dto.name = 'test template';
     dto.type = SubmissionType.MESSAGE;
-    dto.options = [
-      {
-        submission: undefined,
-        account: NULL_ACCOUNT_ID,
-        data: {
-          title: 'title',
-          tags: DefaultTagValue,
-          description: DefaultDescriptionValue,
-          rating: SubmissionRating.GENERAL,
-        },
-      },
-    ];
 
     const record = await service.create(dto);
     const records = await service.findAll();
@@ -119,7 +107,6 @@ describe('SubmissionTemplatesService', () => {
   it('should throw exception on duplicate entity', async () => {
     const dto = new CreateSubmissionTemplateDto();
     dto.name = 'test';
-    dto.options = [];
     dto.type = SubmissionType.FILE;
     await service.create(dto);
     await expect(service.create(dto)).rejects.toThrow(BadRequestException);
@@ -129,18 +116,6 @@ describe('SubmissionTemplatesService', () => {
     const createDto = new CreateSubmissionTemplateDto();
     createDto.name = 'test template';
     createDto.type = SubmissionType.MESSAGE;
-    createDto.options = [
-      {
-        submission: undefined,
-        account: NULL_ACCOUNT_ID,
-        data: {
-          title: 'title',
-          tags: DefaultTagValue,
-          description: DefaultDescriptionValue,
-          rating: SubmissionRating.GENERAL,
-        },
-      },
-    ];
 
     const record = await service.create(createDto);
     const optionId = record.options[0].id;
@@ -170,18 +145,6 @@ describe('SubmissionTemplatesService', () => {
     const dto = new CreateSubmissionTemplateDto();
     dto.name = 'test template';
     dto.type = SubmissionType.MESSAGE;
-    dto.options = [
-      {
-        submission: undefined,
-        account: NULL_ACCOUNT_ID,
-        data: {
-          title: 'title',
-          tags: DefaultTagValue,
-          description: DefaultDescriptionValue,
-          rating: SubmissionRating.GENERAL,
-        },
-      },
-    ];
 
     const record = await service.create(dto);
     expect(await service.findAll()).toHaveLength(1);

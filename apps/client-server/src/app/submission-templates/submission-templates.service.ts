@@ -51,7 +51,11 @@ export class SubmissionTemplatesService extends PostyBirbService<SubmissionTempl
       type: createDto.type,
     });
 
-    const options = await this.createTemplateOptions(entity, createDto.options);
+    const options = [
+      await this.websiteOptionsService.createDefaultSubmissionTemplateOptions(
+        entity
+      ),
+    ];
     entity.options.add(options);
     await this.repository.persistAndFlush(entity);
 
@@ -63,6 +67,15 @@ export class SubmissionTemplatesService extends PostyBirbService<SubmissionTempl
     const entity = await this.findById(id, { failOnMissing: true });
 
     const name = update.name?.trim();
+
+    // Do not allow rename to same name
+    if (entity.name !== name) {
+      await this.throwIfExists({
+        name,
+        type: entity.type,
+      });
+    }
+
     if (name) {
       entity.name = name;
     }
