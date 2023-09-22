@@ -59,6 +59,12 @@ export class FileSubmissionService
         `Submission '${submission.id}' is not a ${SubmissionType.FILE} submission.`
       );
     }
+
+    if (submission.metadata.template) {
+      throw new BadRequestException(
+        `Submission '${submission.id}' is a template and cannot have files.`
+      );
+    }
   }
 
   /**

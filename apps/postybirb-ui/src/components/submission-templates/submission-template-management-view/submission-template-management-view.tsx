@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   EuiBasicTable,
   EuiBasicTableColumn,
@@ -11,14 +12,15 @@ import {
   EuiTableSelectionType,
   EuiText,
 } from '@elastic/eui';
-import { ISubmissionTemplateDto, SubmissionType } from '@postybirb/types';
+import { SubmissionType } from '@postybirb/types';
 import { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
-import submissionTemplatesApi from '../../../api/submission-templates.api';
+import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
-import { SubmissionTemplatePath } from '../../../pages/route-paths';
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { EditSubmissionPath } from '../../../pages/route-paths';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { useStore } from '../../../stores/use-store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
@@ -33,9 +35,7 @@ export default function SubmissionTemplateManagementView(
   const { type } = props;
   const { addToast } = useToast();
   const { state, isLoading } = useStore(SubmissionTemplateStore);
-  const [selectedItems, setSelectedItems] = useState<ISubmissionTemplateDto[]>(
-    []
-  );
+  const [selectedItems, setSelectedItems] = useState<SubmissionDto[]>([]);
   const templates = useMemo(
     () => state.filter((t) => t.type === type),
     [state, type]
@@ -68,20 +68,21 @@ export default function SubmissionTemplateManagementView(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templates]);
 
-  const onSelectionChange = (selected: ISubmissionTemplateDto[]) => {
+  const onSelectionChange = (selected: SubmissionDto[]) => {
     setSelectedItems(selected);
   };
 
-  const selection: EuiTableSelectionType<ISubmissionTemplateDto> = {
+  const selection: EuiTableSelectionType<SubmissionDto> = {
     onSelectionChange,
   };
 
   const navToEdit = (id: string) => {
-    history(`${SubmissionTemplatePath}/${id}`);
+    history(`${EditSubmissionPath}/${id}`);
   };
 
-  const saveChanges = ({ id, name }: ISubmissionTemplateDto) => {
-    submissionTemplatesApi.update(id, { name, options: [] }).then(() => {
+  const saveChanges = ({ id, metadata }: SubmissionDto) => {
+    const { name } = metadata.template!;
+    submissionsApi.updateTemplateName(id, { name }).then(() => {
       addToast({
         id: Date.now().toString(),
         color: 'success',
@@ -96,9 +97,7 @@ export default function SubmissionTemplateManagementView(
   };
 
   const deleteSelectedItems = async () => {
-    const res = await submissionTemplatesApi.remove(
-      selectedItems.map((s) => s.id)
-    );
+    const res = await submissionsApi.remove(selectedItems.map((s) => s.id));
     setSelectedItems([]);
     return res;
   };
@@ -118,20 +117,20 @@ export default function SubmissionTemplateManagementView(
       </DeleteActionPopover>
     ) : null;
 
-  const tableColumns: Array<EuiBasicTableColumn<ISubmissionTemplateDto>> = [
+  const tableColumns: Array<EuiBasicTableColumn<SubmissionDto>> = [
     {
       field: 'name',
       name: <FormattedMessage id="name" defaultMessage="Name" />,
       sortable: true,
       truncateText: true,
-      render: (name: string, template: ISubmissionTemplateDto) => (
+      render: (name: string, template: SubmissionDto) => (
         <EuiFormRow
           fullWidth
           className="w-full"
           isInvalid={records.some(
             (record) =>
-              record.name.trim() === template.name.trim() &&
-              record.id !== template.id
+              record.getTemplateName().trim() ===
+                template.getTemplateName().trim() && record.id !== template.id
           )}
           error={
             <EuiText size="relative">
@@ -144,12 +143,12 @@ export default function SubmissionTemplateManagementView(
         >
           <EuiFieldText
             fullWidth
-            placeholder="Tag"
-            value={name}
+            placeholder="Name"
+            value={template.getTemplateName()}
             compressed
             onChange={(event) => {
               // eslint-disable-next-line no-param-reassign
-              template.name = event.target.value;
+              template.metadata.template!.name = event.target.value;
               updateView();
             }}
           />
@@ -160,18 +159,19 @@ export default function SubmissionTemplateManagementView(
       field: 'id',
       width: '20%',
       name: <FormattedMessage id="actions" defaultMessage="Actions" />,
-      render: (_: unknown, template: ISubmissionTemplateDto) => (
+      render: (_: unknown, template: SubmissionDto) => (
         <div>
           <EuiButtonIcon
             title="Save"
-            aria-label={`Save changes for ${template.name}`}
+            aria-label={`Save changes for ${template.getTemplateName()}`}
             color="primary"
             iconType="save"
             disabled={
-              !template.name.trim().length ||
+              !template.getTemplateName().trim().length ||
               records.some(
                 (record) =>
-                  record.name.trim() === template.name.trim() &&
+                  record.getTemplateName().trim() ===
+                    template.getTemplateName().trim() &&
                   record.id !== template.id
               )
             }
@@ -183,14 +183,15 @@ export default function SubmissionTemplateManagementView(
           </EuiButtonIcon>
           <EuiButtonIcon
             title="Edit"
-            aria-label={`Edit ${template.name}`}
+            aria-label={`Edit ${template.getTemplateName()}`}
             color="primary"
             iconType="documentEdit"
             disabled={
-              !template.name.trim().length ||
+              !template.getTemplateName().trim().length ||
               records.some(
                 (record) =>
-                  record.name.trim() === template.name.trim() &&
+                  record.getTemplateName().trim() ===
+                    template.getTemplateName().trim() &&
                   record.id !== template.id
               )
             }
@@ -201,14 +202,14 @@ export default function SubmissionTemplateManagementView(
             <FormattedMessage id="edit" defaultMessage="Edit" />
           </EuiButtonIcon>
           <DeleteActionPopover
-            onDelete={() => submissionTemplatesApi.remove([template.id])}
+            onDelete={() => submissionsApi.remove([template.id])}
           >
             <EuiButtonIcon
               title="Delete"
               className="ml-4"
               color="danger"
               iconType="trash"
-              aria-label={`Delete submission template ${template.name}`}
+              aria-label={`Delete submission template ${template.getTemplateName()}`}
             >
               <FormattedMessage id="delete" defaultMessage="Delete" />
             </EuiButtonIcon>
@@ -228,9 +229,10 @@ export default function SubmissionTemplateManagementView(
               iconType="plus"
               aria-label="Create new submission template"
               onClick={() => {
-                submissionTemplatesApi.create({
+                submissionsApi.create({
                   name: `Submission Template ${Date.now()}`,
                   type,
+                  isTemplate: true,
                 });
               }}
             >

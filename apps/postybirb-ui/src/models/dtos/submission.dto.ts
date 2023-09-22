@@ -43,6 +43,9 @@ export class SubmissionDto<
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
     this.files = this.files ?? [];
+    if (!this.metadata) {
+      this.metadata = {} as T;
+    }
     if (!this.options) {
       this.options = [
         {
@@ -102,5 +105,13 @@ export class SubmissionDto<
   public overwrite(from: SubmissionDto<T, O>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Object.apply(this, from.copy() as any);
+  }
+
+  public isTemplate(): boolean {
+    return Boolean(this.metadata.template);
+  }
+
+  public getTemplateName() {
+    return this.metadata.template?.name ?? 'Template';
   }
 }
