@@ -1,9 +1,18 @@
-import { SUBMISSION_TEMPLATE_UPDATES } from '@postybirb/socket-events';
-import { ISubmissionTemplateDto } from '@postybirb/types';
-import submissionTemplateApi from '../api/submission-templates.api';
+import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
+import submissionsApi from '../api/submission.api';
+import { SubmissionDto } from '../models/dtos/submission.dto';
 import StoreManager from './store-manager';
 
-export const SubmissionTemplateStore: StoreManager<ISubmissionTemplateDto> =
-  new StoreManager<ISubmissionTemplateDto>(SUBMISSION_TEMPLATE_UPDATES, () =>
-    submissionTemplateApi.getAll().then(({ body }) => body)
+export const SubmissionTemplateStore: StoreManager<SubmissionDto> =
+  new StoreManager<SubmissionDto>(
+    SUBMISSION_UPDATES,
+    () =>
+      submissionsApi
+        .getAll()
+        .then(({ body }) =>
+          body
+            .filter((d) => d.metadata.template)
+            .map((d) => new SubmissionDto(d))
+        ),
+    SubmissionDto
   );

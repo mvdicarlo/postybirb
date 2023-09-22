@@ -72,7 +72,6 @@ async function bootstrap(appPort?: number) {
     .addTag('file-submission')
     .addTag('form-generator')
     .addTag('submission')
-    .addTag('submission-templates')
     .addTag('tag-converters')
     .addTag('tag-groups')
     .addTag('website-option')

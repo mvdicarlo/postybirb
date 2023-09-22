@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ICreateSubmissionDto, SubmissionType } from '@postybirb/types';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class CreateSubmissionDto implements ICreateSubmissionDto {
   @ApiProperty()
@@ -12,4 +12,9 @@ export class CreateSubmissionDto implements ICreateSubmissionDto {
   @IsOptional()
   @IsEnum(SubmissionType)
   type: SubmissionType;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  isTemplate?: boolean;
 }

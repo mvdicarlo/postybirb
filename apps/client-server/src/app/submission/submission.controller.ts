@@ -22,6 +22,7 @@ import { MulterFileInfo } from '../file/models/multer-file-info';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
 import { SubmissionService } from './services/submission.service';
+import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 
 /**
  * CRUD operations on Submission data.
@@ -84,6 +85,18 @@ export class SubmissionController extends PostyBirbController<Submission> {
   ) {
     return this.service
       .update(id, updateSubmissionDto)
+      .then((entity) => entity.toJSON());
+  }
+
+  @Patch('template/:id')
+  @ApiOkResponse({ description: 'Submission updated.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async updateTemplateName(
+    @Param('id') id: SubmissionId,
+    @Body() updateSubmissionDto: UpdateSubmissionTemplateNameDto
+  ) {
+    return this.service
+      .updateTemplateName(id, updateSubmissionDto)
       .then((entity) => entity.toJSON());
   }
 }

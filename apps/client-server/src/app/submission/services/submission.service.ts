@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { serialize, wrap } from '@mikro-orm/core';
+import { serialize } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -19,8 +19,8 @@ import {
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
-import { v4 } from 'uuid';
 import { cloneDeep } from 'lodash';
+import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
@@ -28,6 +28,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
@@ -87,6 +88,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       metadata: {},
     });
 
+    if (createSubmissionDto.isTemplate) {
+      submission.metadata.template = {
+        name: createSubmissionDto.name.trim(),
+      };
+    }
+
     switch (createSubmissionDto.type) {
       case SubmissionType.MESSAGE: {
         if (file) {
@@ -103,6 +110,11 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       }
 
       case SubmissionType.FILE: {
+        if (createSubmissionDto.isTemplate) {
+          // Don't need to populate on a template
+          break;
+        }
+
         if (!file) {
           throw new BadRequestException(
             'No file provided for SubmissionType FILE.'
@@ -275,5 +287,27 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     const created = this.repository.create(copy);
     await this.repository.persistAndFlush(created);
     this.emit();
+  }
+
+  async updateTemplateName(
+    id: string,
+    updateSubmissionDto: UpdateSubmissionTemplateNameDto
+  ) {
+    const entity = await this.findById(id, { failOnMissing: true });
+
+    const name = updateSubmissionDto.name.trim();
+    if (!updateSubmissionDto.name) {
+      throw new BadRequestException(
+        'Template name cannot be empty or whitespace'
+      );
+    }
+
+    if (entity.metadata.template) {
+      entity.metadata.template.name = name;
+      await this.repository.flush();
+      return entity;
+    }
+
+    throw new BadRequestException(`Submission '${id}' is not a template`);
   }
 }
