@@ -2,6 +2,7 @@ import {
   ICreateSubmissionDto,
   ISubmissionDto,
   IUpdateSubmissionDto,
+  IUpdateSubmissionTemplateNameDto,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
@@ -25,6 +26,10 @@ class SubmissionsApi extends BaseApi<
 
   duplicate(id: SubmissionId) {
     return this.client.post(`duplicate/${id}`);
+  }
+
+  updateTemplateName(id: SubmissionId, dto: IUpdateSubmissionTemplateNameDto) {
+    return this.client.patch(`template/${id}`, dto);
   }
 }
 

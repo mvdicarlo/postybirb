@@ -128,14 +128,15 @@ export default function SubmissionEditForm() {
     </SubmissionFormSection>
   ));
 
+  const isTemplate = submission.isTemplate();
   const fileSection = useMemo(
     () =>
-      submission.type === SubmissionType.FILE ? (
+      submission.type === SubmissionType.FILE && !isTemplate ? (
         <SubmissionFormSection>
           <SubmissionFileSection />
         </SubmissionFormSection>
       ) : null,
-    [submission.type]
+    [submission.type, isTemplate]
   );
 
   return (

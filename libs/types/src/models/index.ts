@@ -20,7 +20,6 @@ export * from './submission/submission-file.interface';
 export * from './submission/submission-metadata.interface';
 export * from './submission/submission-metadata.type';
 export * from './submission/submission-schedule-info.interface';
-export * from './submission/submission-template.interface';
 export * from './submission/submission.interface';
 export * from './submission/validation-result.type';
 export * from './submission/website-form-fields.interface';

@@ -71,17 +71,10 @@ function EditSubmissionPageNavHeader() {
             <EuiHeaderSection>
               <EuiTitle size="xs">
                 <h4>
-                  {submission.isTemplate() ? (
-                    <FormattedMessage
-                      id="submissions.edit-page-header-template"
-                      defaultMessage="Edit Template"
-                    />
-                  ) : (
-                    <FormattedMessage
-                      id="submissions.edit-page-header"
-                      defaultMessage="Edit Submission"
-                    />
-                  )}
+                  <FormattedMessage
+                    id="submissions.edit-page-header"
+                    defaultMessage="Edit Submission"
+                  />
                 </h4>
               </EuiTitle>
             </EuiHeaderSection>,
@@ -117,7 +110,7 @@ function EditSubmissionPageNavHeader() {
   );
 }
 
-function EditSubmissionPageInternal() {
+function EditSubmissionTemplatePageInternal() {
   const { isLoading } = useSubmission();
 
   return (
@@ -135,7 +128,7 @@ function EditSubmissionPageInternal() {
   );
 }
 
-export default function EditSubmissionPage() {
+export default function EditSubmissionTemplatePage() {
   const { id } = useParams();
 
   if (!id) {
@@ -144,7 +137,7 @@ export default function EditSubmissionPage() {
 
   return (
     <SubmissionProvider id={id}>
-      <EditSubmissionPageInternal />
+      <EditSubmissionTemplatePageInternal />
     </SubmissionProvider>
   );
 }

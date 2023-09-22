@@ -22,7 +22,6 @@ import {
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
-import { SubmissionTemplate } from '../database/entities/submission-template.entity';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
@@ -91,22 +90,6 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     return submissionOptions;
   }
 
-  async createSubmissionTemplateOption(
-    template: SubmissionTemplate,
-    createDto: Omit<CreateWebsiteOptionsDto<IWebsiteFormFields>, 'submission'>
-  ) {
-    const account = await this.accountService.findById(createDto.account, {
-      failOnMissing: true,
-    });
-
-    return this.repository.create({
-      template,
-      data: createDto.data,
-      account,
-      submission: null,
-    });
-  }
-
   update(id: string, update: UpdateWebsiteOptionsDto) {
     this.logger.info(update, `Updating WebsiteOptions '${id}'`);
     return this.repository.update(id, update);
@@ -135,35 +118,6 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     );
 
     await this.populateDefaultWebsiteOptions(submission.type, options, title);
-    return options;
-  }
-
-  /**
-   * Creates the default submission option that stores shared data
-   * across multiple submission template options.
-   *
-   * @param {SubmissionTemplate} template
-   * @param {string} title
-   * @return {*}  {Promise<WebsiteOptions>}
-   */
-  async createDefaultSubmissionTemplateOptions(
-    template: SubmissionTemplate
-  ): Promise<WebsiteOptions> {
-    this.logger.info(
-      { id: template.id },
-      'Creating Default Website Options For Template'
-    );
-
-    const options = this.repository.create(
-      {
-        isDefault: true,
-        template,
-        account: await this.accountService.findById(NULL_ACCOUNT_ID),
-      },
-      { persist: false }
-    );
-
-    await this.populateDefaultWebsiteOptions(template.type, options);
     return options;
   }
 

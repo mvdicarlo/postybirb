@@ -9,6 +9,10 @@ export const SubmissionStore: StoreManager<SubmissionDto> =
     () =>
       submissionsApi
         .getAll()
-        .then(({ body }) => body.map((d) => new SubmissionDto(d))),
+        .then(({ body }) =>
+          body
+            .filter((d) => !d.metadata.template)
+            .map((d) => new SubmissionDto(d))
+        ),
     SubmissionDto
   );
