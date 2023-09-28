@@ -19,7 +19,7 @@ export default function FileSubmissionManagementPage() {
   const { euiTheme } = useEuiTheme();
   const { state, isLoading } = useStore(SubmissionStore);
   const [tab, setTab] = useState<'submissions' | 'templates'>('submissions');
-
+  console.log(state);
   const fileSubmissions = state.filter(
     (submission) => submission.type === SubmissionType.FILE
   );

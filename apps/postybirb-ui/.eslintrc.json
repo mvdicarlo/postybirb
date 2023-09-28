@@ -4,7 +4,9 @@
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
-      "rules": {}
+      "rules": {
+        "react/require-default-props": "off"
+      }
     },
     {
       "files": ["*.ts", "*.tsx"],

@@ -1,7 +1,11 @@
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
+import { ISubmissionDto } from '@postybirb/types';
 import submissionsApi from '../api/submission.api';
 import { SubmissionDto } from '../models/dtos/submission.dto';
 import StoreManager from './store-manager';
+
+const filter = (submission: SubmissionDto | ISubmissionDto) =>
+  submission.metadata.template !== undefined;
 
 export const SubmissionTemplateStore: StoreManager<SubmissionDto> =
   new StoreManager<SubmissionDto>(
@@ -10,9 +14,8 @@ export const SubmissionTemplateStore: StoreManager<SubmissionDto> =
       submissionsApi
         .getAll()
         .then(({ body }) =>
-          body
-            .filter((d) => d.metadata.template)
-            .map((d) => new SubmissionDto(d))
+          body.filter(filter).map((d) => new SubmissionDto(d))
         ),
-    SubmissionDto
+    SubmissionDto,
+    filter
   );

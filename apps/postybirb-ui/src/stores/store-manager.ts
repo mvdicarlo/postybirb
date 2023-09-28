@@ -18,9 +18,10 @@ export default class StoreManager<T> {
   public initLoadCompleted = false;
 
   constructor(
-    private readonly websocketDomain: string,
+    websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>,
-    private readonly ModelConstructor?: Constructor<T>
+    private readonly ModelConstructor?: Constructor<T>,
+    private readonly filterFn?: (data: T) => boolean
   ) {
     this.data = [];
     this.subject = new Subject<T[]>();
@@ -36,7 +37,11 @@ export default class StoreManager<T> {
   }
 
   private handleMessages(messages: T[]): void {
-    this.data = messages ?? [];
+    let m = messages ?? [];
+    if (this.filterFn) {
+      m = m.filter(this.filterFn);
+    }
+    this.data = m;
     this.subject.next(this.getData());
   }
 
