@@ -9,8 +9,8 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
-import { SubmissionType } from '@postybirb/types';
-import { useMemo } from 'react';
+import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
+import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate, useParams } from 'react-router';
 import SubmissionProvider, {
@@ -19,10 +19,20 @@ import SubmissionProvider, {
 import NotFound from '../not-found/not-found';
 import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
+import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
 
 function EditSubmissionPageNavHeader() {
   const history = useNavigate();
-  const { isLoading, isSaving, isChanged, submission, save } = useSubmission();
+  const [importTemplateVisible, setImportTemplateVisible] = useState(false);
+  const {
+    isLoading,
+    isSaving,
+    isChanged,
+    submission,
+    save,
+    updateView,
+    addWebsiteOption,
+  } = useSubmission();
   const defaultOption = submission.getDefaultOptions();
   const breadcrumbs: EuiBreadcrumb[] = useMemo(
     () => [
@@ -62,58 +72,104 @@ function EditSubmissionPageNavHeader() {
   );
 
   return (
-    <EuiHeader
-      style={{ position: 'sticky', top: 0 }}
-      sections={[
-        {
-          items: [
-            <EuiHeaderLogo iconType="documentEdit" />,
-            <EuiHeaderSection>
-              <EuiTitle size="xs">
-                <h4>
-                  {submission.isTemplate() ? (
-                    <FormattedMessage
-                      id="submissions.edit-page-header-template"
-                      defaultMessage="Edit Template"
-                    />
-                  ) : (
-                    <FormattedMessage
-                      id="submissions.edit-page-header"
-                      defaultMessage="Edit Submission"
-                    />
-                  )}
-                </h4>
-              </EuiTitle>
-            </EuiHeaderSection>,
-          ],
-          breadcrumbs,
-          breadcrumbProps: {
-            lastBreadcrumbIsCurrentPage: true,
+    <>
+      {importTemplateVisible ? (
+        <TemplatePickerModal
+          submissionId={submission.id}
+          type={submission.type}
+          onApply={(options) => {
+            options.forEach((option) => {
+              const existingOption = submission.options.find(
+                (o) => o.account === option.account
+              );
+              if (existingOption) {
+                existingOption.data = {
+                  ...existingOption.data,
+                  ...option.data,
+                };
+              } else {
+                submission.addOption({
+                  id: Date.now().toString(),
+                  account: option.account,
+                  data: option.data,
+                } as WebsiteOptionsDto);
+              }
+            });
+            setImportTemplateVisible(false);
+            updateView();
+          }}
+          onClose={() => {
+            setImportTemplateVisible(false);
+          }}
+        />
+      ) : null}
+      <EuiHeader
+        style={{ position: 'sticky', top: 0 }}
+        sections={[
+          {
+            items: [
+              <EuiHeaderLogo iconType="documentEdit" />,
+              <EuiHeaderSection>
+                <EuiTitle size="xs">
+                  <h4>
+                    {submission.isTemplate() ? (
+                      <FormattedMessage
+                        id="submissions.edit-page-header-template"
+                        defaultMessage="Edit Template"
+                      />
+                    ) : (
+                      <FormattedMessage
+                        id="submissions.edit-page-header"
+                        defaultMessage="Edit Submission"
+                      />
+                    )}
+                  </h4>
+                </EuiTitle>
+              </EuiHeaderSection>,
+            ],
+            breadcrumbs,
+            breadcrumbProps: {
+              lastBreadcrumbIsCurrentPage: true,
+            },
           },
-        },
-        {
-          items: [
-            <EuiHeaderSection>
-              <EuiHeaderSectionItem>
-                <EuiButton
-                  size="s"
-                  disabled={!isChanged || isSaving}
-                  isLoading={isSaving || isLoading}
-                  onClick={() => {
-                    save();
-                  }}
-                >
-                  <FormattedMessage
-                    id="submission.save"
-                    defaultMessage="Save"
-                  />
-                </EuiButton>
-              </EuiHeaderSectionItem>
-            </EuiHeaderSection>,
-          ],
-        },
-      ]}
-    />
+          {
+            items: [
+              <EuiHeaderSection>
+                <EuiHeaderSectionItem>
+                  <EuiButton
+                    size="s"
+                    color="text"
+                    onClick={() => {
+                      setImportTemplateVisible(true);
+                    }}
+                  >
+                    <FormattedMessage
+                      id="import-template"
+                      defaultMessage="Import Template"
+                    />
+                  </EuiButton>
+                </EuiHeaderSectionItem>
+                <EuiHeaderSectionItem>
+                  <EuiButton
+                    size="s"
+                    disabled={!isChanged || isSaving}
+                    isLoading={isSaving || isLoading}
+                    onClick={() => {
+                      save();
+                    }}
+                  >
+                    <FormattedMessage
+                      id="submission.save"
+                      defaultMessage="Save"
+                    />
+                  </EuiButton>
+                </EuiHeaderSectionItem>
+              </EuiHeaderSection>,
+            ],
+          },
+        ]}
+      />
+    </>
   );
 }
 
