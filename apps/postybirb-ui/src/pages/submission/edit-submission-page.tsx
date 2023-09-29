@@ -24,15 +24,8 @@ import TemplatePickerModal from '../../components/submission-templates/template-
 function EditSubmissionPageNavHeader() {
   const history = useNavigate();
   const [importTemplateVisible, setImportTemplateVisible] = useState(false);
-  const {
-    isLoading,
-    isSaving,
-    isChanged,
-    submission,
-    save,
-    updateView,
-    addWebsiteOption,
-  } = useSubmission();
+  const { isLoading, isSaving, isChanged, submission, save, updateView } =
+    useSubmission();
   const defaultOption = submission.getDefaultOptions();
   const breadcrumbs: EuiBreadcrumb[] = useMemo(
     () => [

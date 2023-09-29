@@ -5,7 +5,7 @@ import {
   EuiPageSection,
 } from '@elastic/eui';
 import { useContext } from 'react';
-import Routes from '../../pages/routes';
+import { Outlet } from 'react-router-dom';
 import { AppThemeContext } from '../app-theme-provider';
 import AppFlyouts from './app-flyouts';
 import AppSideNav from './app-side-nav';
@@ -27,7 +27,7 @@ export default function AppLayout() {
       >
         <EuiPageSection color="transparent" className="postybirb__page-section">
           <EuiErrorBoundary>
-            <Routes />
+            <Outlet />
           </EuiErrorBoundary>
         </EuiPageSection>
       </EuiPageBody>
