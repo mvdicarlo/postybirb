@@ -1,11 +1,15 @@
 import {
   EuiBreadcrumb,
   EuiButton,
+  EuiButtonEmpty,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderSection,
   EuiHeaderSectionItem,
   EuiLoadingSpinner,
+  EuiModal,
+  EuiModalBody,
+  EuiModalFooter,
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
@@ -13,26 +17,42 @@ import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
 import { useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useNavigate, useParams } from 'react-router';
+import ReactRouterPrompt from 'react-router-prompt';
+import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
+import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import SubmissionProvider, {
   useSubmission,
 } from '../../hooks/submission/use-submission';
 import NotFound from '../not-found/not-found';
 import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
-import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
-import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
+
+function BlockModal({
+  onCancel,
+  onConfirm,
+}: {
+  onCancel(): void;
+  onConfirm(): void;
+}) {
+  return (
+    <EuiModal title="You have unsaved changes" onClose={onCancel}>
+      <EuiModalBody>Are you sure you want to leave this page?</EuiModalBody>
+      <EuiModalFooter>
+        <EuiButtonEmpty onClick={onCancel}>
+          <FormattedMessage id="no" defaultMessage="No" />
+        </EuiButtonEmpty>
+        <EuiButton fill onClick={onConfirm}>
+          <FormattedMessage id="yes" defaultMessage="Yes" />
+        </EuiButton>
+      </EuiModalFooter>
+    </EuiModal>
+  );
+}
 
 function EditSubmissionPageNavHeader() {
   const history = useNavigate();
   const [importTemplateVisible, setImportTemplateVisible] = useState(false);
-  const {
-    isLoading,
-    isSaving,
-    isChanged,
-    submission,
-    save,
-    updateView,
-    addWebsiteOption,
-  } = useSubmission();
+  const { isLoading, isSaving, isChanged, submission, save, updateView } =
+    useSubmission();
   const defaultOption = submission.getDefaultOptions();
   const breadcrumbs: EuiBreadcrumb[] = useMemo(
     () => [
@@ -73,6 +93,14 @@ function EditSubmissionPageNavHeader() {
 
   return (
     <>
+      <ReactRouterPrompt when={isChanged}>
+        {({ isActive, onConfirm, onCancel }) => {
+          if (isActive) {
+            return <BlockModal onCancel={onCancel} onConfirm={onConfirm} />;
+          }
+          return null;
+        }}
+      </ReactRouterPrompt>
       {importTemplateVisible ? (
         <TemplatePickerModal
           submissionId={submission.id}
@@ -151,6 +179,7 @@ function EditSubmissionPageNavHeader() {
                 </EuiHeaderSectionItem>
                 <EuiHeaderSectionItem>
                   <EuiButton
+                    className="ml-2"
                     size="s"
                     disabled={!isChanged || isSaving}
                     isLoading={isSaving || isLoading}

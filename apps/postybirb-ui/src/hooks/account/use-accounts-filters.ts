@@ -13,6 +13,7 @@ function loadFromLocalStorage(): AccountFilterState {
     try {
       filters = { ...filters, ...JSON.parse(state) };
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error(err);
     }
   }

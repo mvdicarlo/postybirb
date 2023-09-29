@@ -58,8 +58,6 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tagGroups]);
 
-  console.log(records);
-
   const onSelectionChange = (selected: TagGroupDto[]) => {
     setSelectedItems(selected);
   };
