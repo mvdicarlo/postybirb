@@ -113,6 +113,7 @@
     "react-query": "^3",
     "react-router": "^6.16.0",
     "react-router-dom": "^6.16.0",
+    "react-router-prompt": "^0.5.4",
     "react-use": "^17.4.0",
     "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "^0.13.9",

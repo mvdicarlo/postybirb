@@ -5,14 +5,13 @@ import {
   EuiIcon,
   EuiLink,
   EuiRadioGroup,
-  EuiSpacer,
 } from '@elastic/eui';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
+import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
-import cronstrue from 'cronstrue';
 
 const radios = [
   {

@@ -15923,6 +15923,11 @@ react-router-dom@^6.16.0:
     "@remix-run/router" "1.9.0"
     react-router "6.16.0"
 
+react-router-prompt@^0.5.4:
+  version "0.5.4"
+  resolved "https://registry.yarnpkg.com/react-router-prompt/-/react-router-prompt-0.5.4.tgz#ef6bcf2af9c4f7b2f33b3a396e624cecd5a967b2"
+  integrity sha512-7kyDOdDuijCoZE/3WNK7mEUfUi6XJtZpCpP0wbmGtwU8CP+ZmJ7Hpz6L/Sf3BLYgvpNnkqWES92Gb4HT6Vetyg==
+
 react-router@6.16.0, react-router@^6.16.0:
   version "6.16.0"
   resolved "https://registry.yarnpkg.com/react-router/-/react-router-6.16.0.tgz#abbf3d5bdc9c108c9b822a18be10ee004096fb81"
