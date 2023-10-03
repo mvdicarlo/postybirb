@@ -31,6 +31,7 @@ export default class App {
 
   public static isDevelopmentMode() {
     const isEnvironmentSet: boolean = 'ELECTRON_IS_DEV' in process.env;
+    console.log(process.env);
     const getFromEnvironment: boolean =
       parseInt(process.env.ELECTRON_IS_DEV, 10) === 1;
 
