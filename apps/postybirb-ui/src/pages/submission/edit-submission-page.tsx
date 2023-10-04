@@ -1,7 +1,7 @@
 import {
   EuiBreadcrumb,
   EuiButton,
-  EuiButtonEmpty,
+  EuiButtonIcon,
   EuiHeader,
   EuiHeaderLogo,
   EuiHeaderSection,
@@ -10,6 +10,8 @@ import {
   EuiModal,
   EuiModalBody,
   EuiModalFooter,
+  EuiModalHeader,
+  EuiModalHeaderTitle,
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
@@ -29,19 +31,35 @@ import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 function BlockModal({
   onCancel,
   onConfirm,
+  onSave,
 }: {
   onCancel(): void;
   onConfirm(): void;
+  onSave(): void;
 }) {
   return (
-    <EuiModal title="You have unsaved changes" onClose={onCancel}>
+    <EuiModal onClose={onCancel}>
+      <EuiModalHeader>
+        <EuiModalHeaderTitle>
+          <FormattedMessage
+            id="leave-modal.title"
+            defaultMessage="You have unsaved changes"
+          />
+        </EuiModalHeaderTitle>
+      </EuiModalHeader>
       <EuiModalBody>Are you sure you want to leave this page?</EuiModalBody>
       <EuiModalFooter>
-        <EuiButtonEmpty onClick={onCancel}>
+        <EuiButton color="danger" onClick={onCancel}>
           <FormattedMessage id="no" defaultMessage="No" />
-        </EuiButtonEmpty>
-        <EuiButton fill onClick={onConfirm}>
+        </EuiButton>
+        <EuiButton onClick={onConfirm}>
           <FormattedMessage id="yes" defaultMessage="Yes" />
+        </EuiButton>
+        <EuiButton onClick={onSave}>
+          <FormattedMessage
+            id="leave-modal.save-first"
+            defaultMessage="Save and Close"
+          />
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>
@@ -54,6 +72,15 @@ function EditSubmissionPageNavHeader() {
   const { isLoading, isSaving, isChanged, submission, save, updateView } =
     useSubmission();
   const defaultOption = submission.getDefaultOptions();
+
+  const navBack = () => {
+    history(
+      submission.type === SubmissionType.FILE
+        ? FileSubmissionPath
+        : MessageSubmissionPath
+    );
+  };
+
   const breadcrumbs: EuiBreadcrumb[] = useMemo(
     () => [
       {
@@ -72,11 +99,7 @@ function EditSubmissionPageNavHeader() {
         href: '#',
         onClick: (e) => {
           e.preventDefault();
-          history(
-            submission.type === SubmissionType.FILE
-              ? FileSubmissionPath
-              : MessageSubmissionPath
-          );
+          navBack();
         },
       },
       {
@@ -96,7 +119,16 @@ function EditSubmissionPageNavHeader() {
       <ReactRouterPrompt when={isChanged}>
         {({ isActive, onConfirm, onCancel }) => {
           if (isActive) {
-            return <BlockModal onCancel={onCancel} onConfirm={onConfirm} />;
+            return (
+              <BlockModal
+                onCancel={onCancel}
+                onConfirm={onConfirm}
+                onSave={() => {
+                  save();
+                  onConfirm();
+                }}
+              />
+            );
           }
           return null;
         }}
@@ -192,6 +224,20 @@ function EditSubmissionPageNavHeader() {
                       defaultMessage="Save"
                     />
                   </EuiButton>
+                </EuiHeaderSectionItem>
+                <EuiHeaderSectionItem>
+                  <EuiButtonIcon
+                    aria-label="Close"
+                    title="Close"
+                    color="danger"
+                    iconType="cross"
+                    className="ml-2"
+                    size="s"
+                    isLoading={isSaving || isLoading}
+                    onClick={() => {
+                      navBack();
+                    }}
+                  />
                 </EuiHeaderSectionItem>
               </EuiHeaderSection>,
             ],
