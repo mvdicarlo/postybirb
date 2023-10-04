@@ -1,6 +1,8 @@
 name: Build/Release
 on:
   push:
+    branches:
+      - main
     tags:
       - '*'
 jobs:
