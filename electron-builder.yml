@@ -1,0 +1,35 @@
+appId: com.mvdicarlo.postybirb
+copyright: Copyright (c) 2023 Michael DiCarlo
+productName: PostyBirb
+publish:
+  provider: github
+  owner: mvdicarlo
+  repo: postybirb
+directories:
+  buildResources: packaging-resources
+  output: dist/packages
+
+mac:
+  category: public.app-category.productivity
+  icon: icons/icon.icns
+  gatekeeperAssess: false
+  target: dmg
+
+linux:
+  category: Network
+  icon: icons/icon_256x256x32.png
+  target:
+    - AppImage
+    - snap
+
+nsis:
+  deleteAppDataOnUninstall: true
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+win:
+  publisherName: Michael DiCarlo
+  icon: icons/icon.ico
+  target:
+    - nsis
+    - portable
