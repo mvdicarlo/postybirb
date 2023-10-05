@@ -38,7 +38,7 @@ export class DatabaseUpdateSubscriber
 
   async afterFlush(event: FlushEventArgs): Promise<void> {
     this.publish(
-      event.uow.getChangeSets() as any as ChangeSet<SubscribableEntities>[]
+      event.uow.getChangeSets() as unknown as ChangeSet<SubscribableEntities>[]
     );
   }
 

@@ -13,8 +13,8 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import {
+  DirectoryWatcherDto,
   DirectoryWatcherImportAction,
-  IDirectoryWatcher,
   SubmissionType,
 } from '@postybirb/types';
 import { useMemo, useState } from 'react';
@@ -23,23 +23,21 @@ import { useQuery } from 'react-query';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import { SaveIcon } from '../../shared/icons/Icons';
-import SubmissionPicker from '../submission-picker.ts/submission-picker';
+import TemplatePicker from '../../submission-templates/template-picker/template-picker';
 
 type DirectoryWatcherCardProps = {
-  directoryWatcher: IDirectoryWatcher;
+  directoryWatcher: DirectoryWatcherDto;
   refetch: () => void;
 };
 
 function hasChanged(
-  original: IDirectoryWatcher,
-  updated: IDirectoryWatcher
+  original: DirectoryWatcherDto,
+  updated: DirectoryWatcherDto
 ): boolean {
   if (
     original.path !== updated.path ||
     original.importAction !== updated.importAction ||
-    original.template !== updated.template ||
-    JSON.stringify(original.submissionIds ?? []) !==
-      JSON.stringify(updated.submissionIds ?? [])
+    original.template !== updated.template
   ) {
     return true;
   }
@@ -55,10 +53,6 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
     {
       label: 'Create new submission',
       value: DirectoryWatcherImportAction.NEW_SUBMISSION,
-    },
-    {
-      label: 'Add to submission',
-      value: DirectoryWatcherImportAction.ADD_TO_SUBMISSION,
     },
   ];
 
@@ -85,13 +79,6 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
                     <FormattedMessage
                       id="directory-watcher.import-action.new-submission"
                       defaultMessage="Create new submission"
-                    />
-                  );
-                case DirectoryWatcherImportAction.ADD_TO_SUBMISSION:
-                  return (
-                    <FormattedMessage
-                      id="directory-watcher.import-action.add-to-submission"
-                      defaultMessage="Add to submission"
                     />
                   );
                 default:
@@ -124,20 +111,17 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             {state.path || 'Empty'}
           </EuiButton>
         </EuiFormRow>
-        {state.importAction ===
-        DirectoryWatcherImportAction.ADD_TO_SUBMISSION ? (
+        {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
           <EuiFormRow
-            label={
-              <FormattedMessage id="submissions" defaultMessage="Submissions" />
-            }
+            label={<FormattedMessage id="template" defaultMessage="Template" />}
           >
-            <SubmissionPicker
+            <TemplatePicker
               type={SubmissionType.FILE}
-              selected={state.submissionIds ?? []}
-              onChange={(submissions) => {
+              selected={state.template}
+              onChange={(template) => {
                 setState({
                   ...state,
-                  submissionIds: submissions.map((s) => s.id),
+                  template: template?.id,
                 });
               }}
             />
@@ -167,6 +151,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             iconType={SaveIcon}
             color="primary"
             aria-label="Save folder upload changes"
+            isDisabled={!state.path}
             onClick={() => {
               directoryWatchersApi
                 .update(directoryWatcher.id, {

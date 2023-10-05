@@ -1,7 +1,9 @@
 import {
   Entity,
   EntityRepositoryType,
+  ManyToOne,
   Property,
+  Rel,
   serialize,
 } from '@mikro-orm/core';
 import {
@@ -11,6 +13,7 @@ import {
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
+import { Submission } from './submission.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
@@ -27,13 +30,18 @@ export class DirectoryWatcher
   importAction: DirectoryWatcherImportAction =
     DirectoryWatcherImportAction.NEW_SUBMISSION;
 
-  @Property({ nullable: true })
-  template?: object;
-
-  @Property({ nullable: true })
-  submissionIds?: string[];
+  @ManyToOne(() => Submission, {
+    nullable: true,
+    lazy: false,
+    serializer: (s) => s?.id,
+    cascade: [],
+  })
+  template?: Rel<Submission>;
 
   toJSON(): DirectoryWatcherDto {
-    return serialize(this) as DirectoryWatcherDto;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return serialize(this as any, {
+      populate: ['template'],
+    }) as DirectoryWatcherDto;
   }
 }

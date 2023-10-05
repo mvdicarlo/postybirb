@@ -16,6 +16,7 @@ import {
   MessageSubmission,
   NULL_ACCOUNT_ID,
   ScheduleType,
+  SubmissionId,
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
@@ -155,6 +156,58 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     return submission;
   }
 
+  /**
+   * Applies a template to a submission.
+   * Primarily used when a submission is created from a template.
+   *
+   * @param {string} id
+   * @param {string} templateId
+   */
+  async applyOverridingTemplate(id: SubmissionId, templateId: SubmissionId) {
+    this.logger.info({ id, templateId }, 'Applying template to submission');
+    const submission = await this.findById(id, { failOnMissing: true });
+    const template: Submission = await this.findById(templateId, {
+      failOnMissing: true,
+    });
+
+    if (!template.metadata.template) {
+      throw new BadRequestException('Template Id provided is not a template.');
+    }
+
+    const defaultOption: WebsiteOptions = submission.options
+      .getItems()
+      .find((option: WebsiteOptions) => option.account.id === NULL_ACCOUNT_ID);
+    submission.options.removeAll();
+    const options = template.options.getItems();
+    const newOptions = await Promise.all(
+      options.map(async (option) => {
+        const newOption = await this.submissionOptionsService.createOption(
+          submission,
+          option.account,
+          option.data,
+          defaultOption.data.title
+        );
+        return newOption;
+      })
+    );
+
+    submission.options.add(newOptions);
+
+    try {
+      await this.repository.persistAndFlush(submission);
+      this.emit();
+      return await this.findById(id);
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
+  }
+
+  /**
+   * Updates a submission.
+   *
+   * @param {string} id
+   * @param {UpdateSubmissionDto} update
+   */
   async update(id: string, update: UpdateSubmissionDto) {
     this.logger.info(update, `Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });

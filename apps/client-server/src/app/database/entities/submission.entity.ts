@@ -20,6 +20,7 @@ import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
 import { SubmissionFile } from './submission-file.entity';
 import { WebsiteOptions } from './website-options.entity';
+import { DirectoryWatcher } from './directory-watcher.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
@@ -47,6 +48,13 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     eager: true,
   })
   files = new Collection<ISubmissionFile>(this);
+
+  @OneToMany(() => DirectoryWatcher, (dw) => dw.template, {
+    orphanRemoval: false,
+    lazy: true,
+    hidden: true,
+  })
+  directoryWatchers = new Collection<DirectoryWatcher>(this);
 
   @Property({ type: 'boolean', nullable: false })
   isScheduled: boolean;

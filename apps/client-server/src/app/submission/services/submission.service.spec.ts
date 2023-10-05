@@ -286,7 +286,7 @@ describe('SubmissionService', () => {
     updateDto.scheduledFor = '*';
     updateDto.metadata = {
       test: 'test',
-    };
+    } as unknown;
 
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.isScheduled).toEqual(updateDto.isScheduled);
