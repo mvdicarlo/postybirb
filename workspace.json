@@ -48,7 +48,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/client-server"],
+          "outputs": ["{workspaceRoot}/coverage/apps/client-server"],
           "options": {
             "jestConfig": "apps/client-server/jest.config.ts",
             "passWithNoTests": true
@@ -71,7 +71,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/form-builder"],
+          "outputs": ["{workspaceRoot}/coverage/libs/form-builder"],
           "options": {
             "jestConfig": "libs/form-builder/jest.config.ts",
             "passWithNoTests": true
@@ -94,7 +94,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/fs"],
+          "outputs": ["{workspaceRoot}/coverage/libs/fs"],
           "options": {
             "jestConfig": "libs/fs/jest.config.ts",
             "passWithNoTests": true
@@ -117,7 +117,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/http"],
+          "outputs": ["{workspaceRoot}/coverage/libs/http"],
           "options": {
             "jestConfig": "libs/http/jest.config.ts",
             "passWithNoTests": true
@@ -203,7 +203,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/postybirb"],
+          "outputs": ["{workspaceRoot}/coverage/apps/postybirb"],
           "options": {
             "jestConfig": "apps/postybirb/jest.config.ts",
             "passWithNoTests": true
@@ -283,7 +283,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/apps/postybirb-ui"],
+          "outputs": ["{workspaceRoot}/coverage/apps/postybirb-ui"],
           "options": {
             "jestConfig": "apps/postybirb-ui/jest.config.ts",
             "passWithNoTests": true
@@ -351,7 +351,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/utils/electron"],
+          "outputs": ["{workspaceRoot}/coverage/libs/utils/electron"],
           "options": {
             "jestConfig": "libs/utils/electron/jest.config.ts",
             "passWithNoTests": true
@@ -390,7 +390,7 @@
         },
         "test": {
           "executor": "@nrwl/jest:jest",
-          "outputs": ["coverage/libs/website-metadata"],
+          "outputs": ["{workspaceRoot}/coverage/libs/website-metadata"],
           "options": {
             "jestConfig": "libs/website-metadata/jest.config.ts",
             "passWithNoTests": true
