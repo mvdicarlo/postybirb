@@ -37,6 +37,7 @@
     "workspace-generator": "nx workspace-generator",
     "dep-graph": "nx dep-graph",
     "help": "nx help",
+    "postinstall": "run-p --continue-on-error postinstall:*",
     "postinstall:deps": "exitzero electron-builder install-app-deps",
     "postinstall:copy-themes": "shx cp node_modules/@elastic/eui/dist/*.min.css apps/postybirb-ui/src/assets",
     "setup": "run-s setup:husky",
