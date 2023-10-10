@@ -7,9 +7,9 @@ import {
   serialize,
 } from '@mikro-orm/core';
 import {
-  ISubmissionMetadata,
   IWebsiteFormFields,
   IWebsiteOptions,
+  NULL_ACCOUNT_ID,
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
@@ -32,7 +32,7 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
     nullable: true,
     lazy: false,
   })
-  submission: Rel<Submission<ISubmissionMetadata>>;
+  submission: Rel<Submission>;
 
   @Property({ type: 'json', nullable: false })
   data: T;
@@ -44,8 +44,10 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
   })
   account: Rel<Account>;
 
-  @Property({ type: 'boolean', nullable: false })
-  isDefault = false;
+  @Property({ persist: false })
+  get isDefault() {
+    return this?.account?.id === NULL_ACCOUNT_ID;
+  }
 
   toJSON(): WebsiteOptionsDto<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

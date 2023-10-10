@@ -1,4 +1,9 @@
-import { IDirectoryWatcher } from '../../models';
+import { IDirectoryWatcher, SubmissionId } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
 
-export type DirectoryWatcherDto = IEntityDto<IDirectoryWatcher>;
+export type DirectoryWatcherDto = Omit<
+  IEntityDto<IDirectoryWatcher>,
+  'template'
+> & {
+  template?: SubmissionId;
+};

@@ -1,12 +1,12 @@
 import {
   ICreateDirectoryWatcherDto,
-  IDirectoryWatcher,
+  DirectoryWatcherDto,
   IUpdateDirectoryWatcherDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class DirectoryWatchersApi extends BaseApi<
-  IDirectoryWatcher,
+  DirectoryWatcherDto,
   ICreateDirectoryWatcherDto,
   IUpdateDirectoryWatcherDto
 > {

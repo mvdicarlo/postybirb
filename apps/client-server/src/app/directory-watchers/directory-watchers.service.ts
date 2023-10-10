@@ -1,8 +1,8 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
-import { readFile, readdir, stat, writeFile } from 'fs/promises';
+import { readFile, readdir, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -14,7 +14,6 @@ import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
-import { FileSubmissionService } from '../submission/services/file-submission.service';
 
 type WatcherMetadata = {
   read: string[];
@@ -35,7 +34,6 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
     @InjectRepository(DirectoryWatcher)
     repository: PostyBirbRepository<DirectoryWatcher>,
     private readonly submissionService: SubmissionService,
-    private readonly fileSubmissionService: FileSubmissionService,
     @Optional() webSocket?: WSGateway
   ) {
     super(repository, webSocket);
@@ -58,40 +56,56 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
    * @param {DirectoryWatcher} watcher
    */
   private async read(watcher: DirectoryWatcher) {
-    let meta: WatcherMetadata = { read: [] };
     const metaFileName = join(watcher.path, 'pb-meta.json');
-    if ((await stat(metaFileName)).isFile()) {
-      meta = JSON.parse(
-        (await readFile(metaFileName)).toString()
-      ) as WatcherMetadata;
-      if (!meta.read) {
-        meta.read = []; // protect user modification
-      }
-    }
+    try {
+      const meta = await this.getMetadata(watcher);
+      const filesInDirectory = (await readdir(watcher.path))
+        .filter((file) => file !== 'pb-meta.json')
+        .filter((file) => !meta.read.includes(file));
 
-    const filesInDirectory = (await readdir(watcher.path))
-      .filter((file) => file !== 'pb-meta.json')
-      .filter((file) => !meta.read.includes(file));
-    await Promise.allSettled(
-      filesInDirectory.map((file) =>
-        this.processFile(watcher, file).then(() => {
-          // Only update list when successful
-          meta.read.push(file);
-        })
-      )
-    );
-
-    // Update metadata after all is processed
-    writeFile(metaFileName, JSON.stringify(meta, null, 1))
-      .then(() =>
-        this.logger.debug({}, `Metadata updated for '${metaFileName}'`)
-      )
-      .catch((err) => {
-        this.logger.error(
-          err,
-          `Failed to update metadata for '${metaFileName}'`
-        );
+      const promises = filesInDirectory.map(async (file) => {
+        await this.processFile(watcher, file);
+        meta.read.push(file);
       });
+
+      await Promise.allSettled(promises);
+
+      // Update metadata after all is processed
+      writeFile(metaFileName, JSON.stringify(meta, null, 1))
+        .then(() =>
+          this.logger.debug({}, `Metadata updated for '${metaFileName}'`)
+        )
+        .catch((err) => {
+          this.logger.error(
+            err,
+            `Failed to update metadata for '${metaFileName}'`
+          );
+        });
+    } catch (e) {
+      this.logger.error(e, `Failed to read directory ${watcher.path}`);
+    }
+  }
+
+  /**
+   * Gets metadata for directory watcher.
+   *
+   * @param {DirectoryWatcher} watcher
+   * @returns {Promise<WatcherMetadata>}
+   */
+  private async getMetadata(
+    watcher: DirectoryWatcher
+  ): Promise<WatcherMetadata> {
+    try {
+      const metadata = JSON.parse(
+        (await readFile(join(watcher.path, 'pb-meta.json'))).toString()
+      ) as WatcherMetadata;
+      if (!metadata.read) {
+        metadata.read = []; // protect user modification
+      }
+      return metadata;
+    } catch {
+      return { read: [] };
+    }
   }
 
   /**
@@ -113,35 +127,37 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
       filename: fileName,
       path: filePath,
     };
-    this.logger.debug(`Processing file ${filePath}`);
-    switch (watcher.importAction) {
-      case DirectoryWatcherImportAction.NEW_SUBMISSION:
-        await this.submissionService.create(
-          {
-            name: fileName,
-            type: SubmissionType.FILE,
-          },
-          multerInfo
-        );
-        break;
-      case DirectoryWatcherImportAction.ADD_TO_SUBMISSION:
-        // eslint-disable-next-line no-restricted-syntax
-        for (const submissionId of watcher.submissionIds ?? []) {
-          try {
-            // eslint-disable-next-line no-await-in-loop
-            await this.fileSubmissionService.appendFile(
-              submissionId,
-              multerInfo
+    this.logger.info(`Processing file ${filePath}`);
+    let submissionId = null;
+    try {
+      switch (watcher.importAction) {
+        case DirectoryWatcherImportAction.NEW_SUBMISSION: {
+          const submission = await this.submissionService.create(
+            {
+              name: fileName,
+              type: SubmissionType.FILE,
+            },
+            multerInfo
+          );
+          submissionId = submission.id;
+          if (watcher.template) {
+            await this.submissionService.applyOverridingTemplate(
+              submission.id,
+              watcher.template?.id
             );
-          } catch (err) {
-            this.logger.error(err, 'Unable to append file');
-            throw err;
           }
+          break;
         }
 
-        break;
-      default:
-        break;
+        default:
+          break;
+      }
+    } catch (err) {
+      this.logger.error(err, `Failed to process file ${filePath}`);
+      if (submissionId) {
+        await this.submissionService.remove(submissionId);
+      }
+      throw err;
     }
   }
 
@@ -153,8 +169,21 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
     return entity;
   }
 
-  update(id: string, update: UpdateDirectoryWatcherDto) {
+  async update(id: string, update: UpdateDirectoryWatcherDto) {
     this.logger.info(update, `Updating DirectoryWatcher '${id}'`);
-    return this.repository.update(id, update);
+    const entity = await this.repository.findById(id, { failOnMissing: true });
+    const template = update.template
+      ? await this.submissionService.findById(update.template, {
+          failOnMissing: true,
+        })
+      : null;
+    if (template && !template.metadata.template) {
+      throw new BadRequestException('Template Id provided is not a template.');
+    }
+    entity.importAction = update.importAction ?? entity.importAction;
+    entity.path = update.path ?? entity.path;
+    entity.template = template;
+    await this.repository.persistAndFlush(entity);
+    return entity;
   }
 }

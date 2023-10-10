@@ -13,7 +13,6 @@ import './account-login-modal.css';
 type AccountLoginModalProps = {
   account: IAccountDto<unknown>;
   website: IWebsiteInfoDto;
-  // eslint-disable-next-line react/require-default-props
   initialFocus?: string;
   children: ReactNode;
   onClose: () => void;
