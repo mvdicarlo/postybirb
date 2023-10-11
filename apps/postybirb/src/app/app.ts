@@ -12,6 +12,7 @@ import {
 } from 'electron';
 import { join } from 'path';
 import { rendererAppPort } from './constants';
+import { environment } from '../environments/environment';
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
@@ -29,8 +30,7 @@ export default class App {
   static nestApp: INestApplication;
 
   public static isDevelopmentMode() {
-    const isDevEnv: boolean = 'NX_WORKSPACE_ROOT' in process.env;
-    return isDevEnv;
+    return environment.production;
   }
 
   private static onWindowAllClosed() {
