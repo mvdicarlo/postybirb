@@ -2,9 +2,15 @@
 # 1. autoprefixer to adjust CSS to support the below specified browsers
 # 2. babel preset-env to adjust included polyfills
 #
+# Run
+#  npx browserslist 
+# in apps/postybirb-ui to verify that all is OK
+#
+# Direct Chrome version should be set from
+# https://releases.electronjs.org/releases/stable
+# according to electron version in package.json
+#
 # For additional information regarding the format and rule options, please see:
 # https://github.com/browserslist/browserslist#queries
-#
-# If you need to support different browsers in production, you may tweak the list below.
 
-last 1 Chrome version
+Chrome 112
