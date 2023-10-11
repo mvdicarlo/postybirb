@@ -9,6 +9,7 @@ import App from './app/app';
 import ElectronEvents from './app/events/electron.events';
 import SquirrelEvents from './app/events/squirrel.events';
 import { environment } from './environments/environment';
+import { startMetrics } from './metrics';
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
@@ -19,6 +20,9 @@ if (!isOnlyInstance) {
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
+
+// Setup Metrics
+startMetrics();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const psbId = powerSaveBlocker.start('prevent-app-suspension');

@@ -7,12 +7,7 @@ import {
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
-import {
-  AccountId,
-  DynamicObject,
-  IAccount,
-  IWebsiteInfoDto,
-} from '@postybirb/types';
+import { DynamicObject, IAccount, IWebsiteInfoDto } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Account, WebsiteData } from '../database/entities';

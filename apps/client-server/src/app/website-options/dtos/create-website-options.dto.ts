@@ -21,4 +21,6 @@ export class CreateWebsiteOptionsDto<
   @ApiProperty()
   @IsString()
   submission: SubmissionId;
+
+  isDefault?: boolean = false;
 }

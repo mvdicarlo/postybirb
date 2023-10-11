@@ -8,6 +8,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  AccountId,
+  DynamicObject,
   FileSubmission,
   ISubmission,
   ISubmissionMetadata,
@@ -49,6 +51,47 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService
   ) {
     super(repository);
+  }
+
+  /**
+   * Creates a submission option for a submission.
+   *
+   * @param {Submission} submission
+   * @param {AccountId} accountId
+   * @param {DynamicObject} data
+   * @param {string} [title]
+   */
+  async createOption(
+    submission: Submission,
+    accountId: AccountId,
+    data: DynamicObject,
+    title?: string
+  ) {
+    const account = await this.accountService.findById(accountId, {
+      failOnMissing: true,
+    });
+    const isDefault = accountId === NULL_ACCOUNT_ID;
+
+    const userDefinedDefaultOptions =
+      await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
+        accountId,
+        submission.type
+      );
+
+    const mergedData = {
+      ...(isDefault ? DefaultWebsiteOptionsObject : {}), // Only merge default options if this is the default option
+      ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
+      ...data, // Merge user defined data
+      title, // Override title (optional)
+    };
+
+    const option = this.repository.create({
+      submission,
+      account,
+      data: mergedData,
+    });
+
+    return option;
   }
 
   async create<T extends IWebsiteFormFields>(

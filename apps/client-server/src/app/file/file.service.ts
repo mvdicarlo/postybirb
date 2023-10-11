@@ -43,7 +43,7 @@ export class FileService {
    * @return {*}
    */
   public async remove(id: string) {
-    this.logger.log(id, `Removing entity '${id}'`);
+    this.logger.info(id, `Removing entity '${id}'`);
     return this.fileRepository.removeAndFlush(
       await this.fileRepository.findById(id)
     );

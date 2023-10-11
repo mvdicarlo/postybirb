@@ -76,8 +76,9 @@
     "@uppy/react": "^3.1.3",
     "@uppy/webcam": "^3.3.0",
     "@uppy/xhr-upload": "^3.3.2",
-    "autoprefixer": "10.4.13",
     "caniuse-lite": "^1.0.30001547",
+    "applicationinsights": "^2.9.0",
+    "autoprefixer": "10.4.12",
     "cheerio": "^1.0.0-rc.10",
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.1",
@@ -195,10 +196,11 @@
     "react-test-renderer": "18.2.0",
     "shx": "^0.3.4",
     "ts-jest": "^29.1.0",
-    "types": "^0.1.1",
     "typescript": "4.8.4",
     "url-loader": "^4.1.1",
     "webpack": "^5.75.0",
     "webpack-merge": "^5.8.0"
   }
 }
+
+

@@ -1,6 +1,8 @@
-import { IDirectoryWatcher } from '../../models';
+import { IDirectoryWatcher, SubmissionId } from '../../models';
 
 export type IUpdateDirectoryWatcherDto = Pick<
   IDirectoryWatcher,
-  'importAction' | 'path' | 'submissionIds'
->;
+  'importAction' | 'path'
+> & {
+  template?: SubmissionId;
+};
