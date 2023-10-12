@@ -19,10 +19,9 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
   async create(
     createDto: CreateUserSpecifiedWebsiteOptionsDto
   ): Promise<UserSpecifiedWebsiteOptions> {
-    this.logger.info(
-      createDto,
-      `Creating UserSpecifiedWebsiteOptions '${createDto.account}'`
-    );
+    this.logger
+      .withMetadata(createDto)
+      .info(`Creating UserSpecifiedWebsiteOptions '${createDto.account}'`);
     await this.throwIfExists({
       account: createDto.account,
       type: createDto.type,
@@ -36,7 +35,9 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
   }
 
   update(id: string, update: UpdateUserSpecifiedWebsiteOptionsDto) {
-    this.logger.info(update, `Updating UserSpecifiedWebsiteOptions '${id}'`);
+    this.logger
+      .withMetadata(update)
+      .info(`Updating UserSpecifiedWebsiteOptions '${id}'`);
     return this.repository.update(id, { options: update.options });
   }
 

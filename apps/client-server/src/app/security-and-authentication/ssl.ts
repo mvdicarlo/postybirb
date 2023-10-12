@@ -1,17 +1,16 @@
-import * as forge from 'node-forge';
+import forge from 'node-forge';
+import { Logger } from '@postybirb/logger';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
+import { mkdir, readFile, stat, writeFile } from 'fs/promises';
 import { join } from 'path';
-import { stat, readFile, writeFile, mkdir } from 'fs/promises';
-import { Logger } from '@postybirb/logger';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (forge as any).options.usePureJavaScript = true;
 
 export class SSL {
-  private static readonly logger = Logger(SSL.name);
-
   static async getOrCreateSSL(): Promise<{ key: string; cert: string }> {
+    const logger = Logger().withContext({ name: 'SSL' });
     const path = join(app.getPath('userData'), 'auth');
     const keyPath = join(path, 'key.pem');
     const certPath = join(path, 'cert.pem');
@@ -25,7 +24,7 @@ export class SSL {
         await mkdir(path);
       } catch (err) {
         if (err.code !== 'EEXIST') {
-          SSL.logger.error(err);
+          logger.error(err);
         }
       }
     }
@@ -37,7 +36,7 @@ export class SSL {
       };
     }
 
-    SSL.logger.info('Creating SSL certs...');
+    logger.trace('Creating SSL certs...');
     const { pki } = forge;
 
     const keys = pki.rsa.generateKeyPair(2048);
@@ -68,7 +67,7 @@ export class SSL {
 
     await Promise.all([writeFile(keyPath, pkey), writeFile(certPath, pcert)]);
 
-    SSL.logger.info('SSL Certs created');
+    logger.info('SSL Certs created');
     return { cert: pcert, key: pkey };
   }
 }

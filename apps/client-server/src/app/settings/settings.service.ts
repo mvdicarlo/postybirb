@@ -55,10 +55,10 @@ export class SettingsService
     this.repository
       .persistAndFlush(entity)
       .then(() => {
-        this.logger.debug(entity, 'Default settings created');
+        this.logger.withMetadata(entity).debug('Default settings created');
       })
-      .catch((err) => {
-        this.logger.error(err, 'Unablet to create default settings');
+      .catch((err: Error) => {
+        this.logger.withError(err).error('Unablet to create default settings');
       });
   }
 
@@ -78,7 +78,9 @@ export class SettingsService
    * @param {UpdateSettingsDto} updateSettingsDto
    */
   async update(id: string, updateSettingsDto: UpdateSettingsDto) {
-    this.logger.info(updateSettingsDto, `Updating Settings '${id}'`);
+    this.logger
+      .withMetadata(updateSettingsDto)
+      .info(`Updating Settings '${id}'`);
     return this.repository.update(id, updateSettingsDto);
   }
 }

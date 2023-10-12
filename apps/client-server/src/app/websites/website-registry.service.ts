@@ -27,7 +27,7 @@ type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
  */
 @Injectable()
 export class WebsiteRegistryService {
-  private readonly logger = Logger(WebsiteRegistryService.name);
+  private readonly logger = Logger();
 
   private readonly availableWebsites: Record<string, Class<UnknownWebsite>> =
     {};

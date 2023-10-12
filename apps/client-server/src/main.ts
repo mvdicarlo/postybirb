@@ -10,8 +10,8 @@ import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
-import * as compression from 'compression';
-import * as sharp from 'sharp';
+import compression from 'compression';
+import sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
 import { SSL } from './app/security-and-authentication/ssl';

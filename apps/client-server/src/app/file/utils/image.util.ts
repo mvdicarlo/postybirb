@@ -1,4 +1,4 @@
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 
 export class ImageUtil {
   static isImage(mimetype: string, includeGIF = false): boolean {

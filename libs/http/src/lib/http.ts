@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 import { net, ClientRequest, ClientRequestConstructorOptions } from 'electron';
 import { encode as encodeQueryString } from 'querystring';
-import * as urlEncoded from 'form-urlencoded';
-import * as FormData from 'form-data';
+import urlEncoded from 'form-urlencoded';
+import FormData from 'form-data';
 import { getPartitionKey } from '@postybirb/utils/electron';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods

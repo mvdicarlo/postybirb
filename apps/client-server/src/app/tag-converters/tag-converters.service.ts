@@ -24,7 +24,9 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
   }
 
   async create(createDto: CreateTagConverterDto): Promise<TagConverter> {
-    this.logger.info(createDto, `Creating TagConverter '${createDto.tag}'`);
+    this.logger
+      .withMetadata(createDto)
+      .info(`Creating TagConverter '${createDto.tag}'`);
     await this.throwIfExists({ tag: createDto.tag });
     const tagConverter = this.repository.create(createDto);
     await this.repository.persistAndFlush(tagConverter);
@@ -32,7 +34,7 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
   }
 
   update(id: string, update: UpdateTagConverterDto) {
-    this.logger.info(update, `Updating TagConverter '${id}'`);
+    this.logger.withMetadata(update).info(`Updating TagConverter '${id}'`);
     return this.repository.update(id, update);
   }
 

@@ -18,7 +18,7 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
 export abstract class PostyBirbService<
   T extends PostyBirbEntity = PostyBirbEntity
 > {
-  protected readonly logger = Logger(Object.getPrototypeOf(this).name);
+  protected readonly logger = Logger();
 
   constructor(
     protected readonly repository: PostyBirbRepository<T>,
@@ -49,7 +49,7 @@ export abstract class PostyBirbService<
       const err = new BadRequestException(
         `An entity with query '${JSON.stringify(where)}' already exists`
       );
-      this.logger.error(err);
+      this.logger.withError(err).error();
       throw err;
     }
   }
@@ -65,7 +65,7 @@ export abstract class PostyBirbService<
   }
 
   public remove(id: string) {
-    this.logger.info({ id }, `Removing entity '${id}'`);
+    this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
     return this.repository.delete(id);
   }
 

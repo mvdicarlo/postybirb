@@ -22,7 +22,9 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
   }
 
   async create(createDto: CreateTagGroupDto): Promise<TagGroup> {
-    this.logger.info(createDto, `Creating TagGroup '${createDto.name}'`);
+    this.logger
+      .withMetadata(createDto)
+      .info(`Creating TagGroup '${createDto.name}'`);
     await this.throwIfExists({ name: createDto.name });
     const tagGroup = this.repository.create(createDto);
     await this.repository.persistAndFlush(tagGroup);
@@ -30,7 +32,7 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
   }
 
   update(id: string, update: UpdateTagGroupDto) {
-    this.logger.info(update, `Updating TagGroup '${id}'`);
+    this.logger.withMetadata(update).info(`Updating TagGroup '${id}'`);
     return this.repository.update(id, update);
   }
 

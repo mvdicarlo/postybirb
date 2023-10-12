@@ -1,6 +1,5 @@
-import { Logger } from '@postybirb/logger';
-import { IAccount, DynamicObject } from '@postybirb/types';
-import pino from 'pino';
+import { Logger, PostyBirbLogger } from '@postybirb/logger';
+import { DynamicObject, IAccount } from '@postybirb/types';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 
@@ -10,7 +9,7 @@ import { PostyBirbRepository } from '../database/repositories/postybirb-reposito
  * @class WebsiteDataManager
  */
 export default class WebsiteDataManager<T extends DynamicObject> {
-  private readonly logger: pino.Logger;
+  private readonly logger: PostyBirbLogger;
 
   private readonly account: IAccount;
 
@@ -22,9 +21,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
-    this.logger = Logger(
-      `WebsiteData[${userAccount.website}:${userAccount.id}]`
-    );
+    this.logger = Logger();
     this.initialized = false;
   }
 
