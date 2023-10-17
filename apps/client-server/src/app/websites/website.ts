@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { Logger } from '@postybirb/logger';
+import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   DynamicObject,
   IAccount,
@@ -12,7 +12,6 @@ import {
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { session } from 'electron';
-import { Logger as PinoLogger } from 'pino';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
@@ -24,7 +23,7 @@ import WebsiteDataManager from './website-data-manager';
 export type UnknownWebsite = Website<any>;
 
 export abstract class Website<D extends DynamicObject> {
-  protected readonly logger: PinoLogger;
+  protected readonly logger: PostyBirbLogger;
 
   /**
    * User account info for reference primarily during posting and login.
@@ -119,7 +118,7 @@ export abstract class Website<D extends DynamicObject> {
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
-    this.logger = Logger(this.id);
+    this.logger = Logger();
     this.websiteDataStore = new WebsiteDataManager(userAccount);
     this.loginState = new LoginState();
   }

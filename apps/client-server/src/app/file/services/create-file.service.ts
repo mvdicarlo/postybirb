@@ -28,7 +28,7 @@ import { IsTestEnvironment } from '../../utils/test.util';
  */
 @Injectable()
 export class CreateFileService {
-  private readonly logger = Logger(CreateFileService.name);
+  private readonly logger = Logger();
 
   constructor(
     @InjectRepository(SubmissionFile)
@@ -56,7 +56,7 @@ export class CreateFileService {
     buf: Buffer
   ): Promise<SubmissionFile> {
     try {
-      this.logger.info(file, `Creating SubmissionFile entity`);
+      this.logger.withMetadata(file).info(`Creating SubmissionFile entity`);
       const entity = await this.createSubmissionFile(file, submission, buf);
       if (ImageUtil.isImage(file.mimetype, true)) {
         this.logger.info('[Mutation] Populating as Image');
@@ -65,7 +65,9 @@ export class CreateFileService {
 
       entity.file = this.createFileBufferEntity(entity, buf, 'primary');
       submission.files.add(entity);
-      this.logger.info({ id: entity.id }, 'SubmissionFile Created');
+      this.logger
+        .withMetadata({ id: entity.id })
+        .info('SubmissionFile Created');
       return entity;
     } catch (err) {
       this.logger.error(err.message, err.stack);

@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import * as ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import App from './app/app';
 import AppThemeProvider from './app/app-theme-provider';

@@ -21,7 +21,7 @@ import { IsTestEnvironment } from '../../utils/test.util';
  */
 @Injectable()
 export class UpdateFileService {
-  private readonly logger = Logger(UpdateFileService.name);
+  private readonly logger = Logger();
 
   constructor(
     private readonly createFileService: CreateFileService,

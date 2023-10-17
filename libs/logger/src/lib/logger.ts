@@ -1,121 +1,55 @@
-import * as pinoms from 'pino-multi-stream';
-import P, { pino } from 'pino';
-import * as rotator from 'file-stream-rotator';
-import { PostyBirbDirectories } from '@postybirb/fs';
-import { join } from 'path';
-import { v4 as uuid } from 'uuid';
+import { LogLayer, LoggerLibrary, LoggerType } from 'loglayer';
+import { Logger as WinstonLogger } from 'winston';
+import { serializeError } from './serializers/serialize-errors';
 
-let logger: pino.Logger;
+export type PostyBirbLogger = LogLayer<WinstonLogger>;
 
-export function initialize(): void {
-  const isTest = process.env.NODE_ENV === 'Test';
-  // @todo better check than always being true
-  const isDev = true;
+let log: PostyBirbLogger;
 
-  if (logger) {
-    throw new Error('Logger already initialized.');
-  }
-
-  const streams: unknown[] = [];
-  if (isDev || isTest) {
-    streams.push({ stream: pinoms.prettyStream() });
-  }
-
-  if (!isTest) {
-    streams.push(
-      rotator.getStream({
-        filename: join(PostyBirbDirectories.LOGS_DIRECTORY, 'pb-%DATE%.log'),
-        frequency: '1m',
-        verbose: false,
-        max_logs: '7d',
-        audit_file: join(PostyBirbDirectories.LOGS_DIRECTORY, 'audit.txt'),
-        date_format: 'YYYY-MM-DD',
-      })
-    );
-  }
-
-  logger = pinoms({ streams });
+function initializeTestLogger() {
+  if (log) return;
+  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+  const winston = require('winston');
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  const instance = winston.createLogger({
+    transports: [new winston.transports.Console()],
+  });
+  log = new LogLayer<WinstonLogger>({
+    enabled: false,
+    logger: {
+      instance: instance as unknown as LoggerLibrary,
+      type: LoggerType.WINSTON,
+    },
+    error: {
+      serializer: serializeError,
+    },
+  });
 }
 
-export function Logger(
-  name: string,
-  extra?: Record<string, string>
-): pino.Logger {
-  if (!logger) {
-    initialize();
-  }
+export function initializeLogger(instance: WinstonLogger): void {
+  if (log) return;
 
-  return logger.child({ module: name, ...extra });
+  log = new LogLayer<WinstonLogger>({
+    logger: {
+      instance: instance as unknown as LoggerLibrary,
+      type: LoggerType.WINSTON,
+    },
+    error: {
+      serializer: serializeError,
+    },
+  });
 }
 
-process.on('unhandledRejection', (err) => {
-  Logger('Process:unhandledRejection').error(err);
-});
-
-process.on('uncaughtException', (err) => {
-  Logger('Process:uncaughtException').error(err);
-});
-
-function processResult(result: unknown) {
-  return JSON.parse(
-    JSON.stringify(result, (key, value) => {
-      if (value instanceof Buffer) {
-        return `<Buffer ${value.length}>`;
-      }
-
-      if (value instanceof Array && value.length >= 50) {
-        return `<Array ${value.length}>`;
-      }
-
-      return value;
-    })
-  );
-}
-
-export function Log(level?: P.Level): MethodDecorator {
-  const assignedLevel = level ?? 'info';
-  return (
-    target: unknown,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-  ) => {
-    const l = Logger(target.constructor.name, {
-      function: propertyKey,
-      logId: uuid(),
-    });
-
-    if (process.env.NODE_ENV === 'Test') {
-      return;
+export function Logger() {
+  const isTestEnv = process.env.NODE_ENV === 'test';
+  if (isTestEnv) {
+    if (!log) {
+      initializeTestLogger();
     }
+  }
 
-    const originalValue = descriptor.value;
-    // eslint-disable-next-line no-param-reassign
-    descriptor.value = function value(...args: unknown[]) {
-      // l[assignedLevel](args);
-      try {
-        const ret = originalValue.apply(this, args);
-        if (ret instanceof Promise) {
-          return ret
-            .then((result) => {
-              if (result) {
-                l[assignedLevel](processResult(result));
-              }
-              return result;
-            })
-            .catch((err) => {
-              l.error(processResult(err));
-              throw err;
-            });
-        }
-
-        if (ret) {
-          l[assignedLevel](processResult(ret));
-        }
-        return ret;
-      } catch (err) {
-        l.error(err);
-        throw err;
-      }
-    };
-  };
+  if (!log) {
+    throw new Error('Logger not initialized');
+  }
+  return log.child();
 }

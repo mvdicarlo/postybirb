@@ -4,7 +4,7 @@ import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 import { INestApplication } from '@nestjs/common';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
-import * as contextMenu from 'electron-context-menu';
+import contextMenu from 'electron-context-menu';
 import App from './app/app';
 import ElectronEvents from './app/events/electron.events';
 import SquirrelEvents from './app/events/squirrel.events';
