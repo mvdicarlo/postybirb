@@ -3,6 +3,11 @@
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
   "version": "4.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
+  },
+  "private": true,
   "main": "dist/apps/postybirb/main.js",
   "scripts": {
     "nx": "nx",
@@ -43,7 +48,6 @@
     "setup": "run-s setup:husky",
     "setup:husky": "husky install"
   },
-  "private": true,
   "dependencies": {
     "@elastic/datemath": "^5.0.3",
     "@elastic/eui": "^85",
@@ -87,6 +91,7 @@
     "cronstrue": "^2.32.0",
     "document-register-element": "1.13.1",
     "electron-context-menu": "^3.1.1",
+    "electron-updater": "^6.1.4",
     "express": "^4.18.2",
     "fastq": "^1.13.0",
     "filesize": "^10.0.6",
