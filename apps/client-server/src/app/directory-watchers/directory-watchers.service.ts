@@ -71,16 +71,13 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
       await Promise.allSettled(promises);
 
       // Update metadata after all is processed
-      writeFile(metaFileName, JSON.stringify(meta, null, 1))
-        .then(() =>
-          this.logger.debug({}, `Metadata updated for '${metaFileName}'`)
-        )
-        .catch((err) => {
-          this.logger.error(
-            err,
-            `Failed to update metadata for '${metaFileName}'`
-          );
-        });
+      writeFile(metaFileName, JSON.stringify(meta, null, 1)).catch(
+        (err: Error) => {
+          this.logger
+            .withError(err)
+            .error(`Failed to update metadata for '${metaFileName}'`);
+        }
+      );
     } catch (e) {
       this.logger.error(e, `Failed to read directory ${watcher.path}`);
     }
@@ -170,7 +167,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
   }
 
   async update(id: string, update: UpdateDirectoryWatcherDto) {
-    this.logger.info(update, `Updating DirectoryWatcher '${id}'`);
+    this.logger.withMetadata(update).info(`Updating DirectoryWatcher '${id}'`);
     const entity = await this.repository.findById(id, { failOnMissing: true });
     const template = update.template
       ? await this.submissionService.findById(update.template, {

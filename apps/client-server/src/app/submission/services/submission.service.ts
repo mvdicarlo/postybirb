@@ -77,7 +77,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     createSubmissionDto: CreateSubmissionDto,
     file?: MulterFileInfo
   ): Promise<SubmissionEntity> {
-    this.logger.info(createSubmissionDto, 'Creating Submission');
+    this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
     const submission = this.repository.create({
       ...createSubmissionDto,
       isScheduled: false,
@@ -164,7 +164,9 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
    * @param {string} templateId
    */
   async applyOverridingTemplate(id: SubmissionId, templateId: SubmissionId) {
-    this.logger.info({ id, templateId }, 'Applying template to submission');
+    this.logger
+      .withMetadata({ id, templateId })
+      .info('Applying template to submission');
     const submission = await this.findById(id, { failOnMissing: true });
     const template: Submission = await this.findById(templateId, {
       failOnMissing: true,
@@ -209,7 +211,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
    * @param {UpdateSubmissionDto} update
    */
   async update(id: string, update: UpdateSubmissionDto) {
-    this.logger.info(update, `Updating Submission '${id}'`);
+    this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
 
     submission.isScheduled = update.isScheduled ?? submission.isScheduled;

@@ -5,7 +5,7 @@ import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import { FileSubmission } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
-import * as fastq from 'fastq';
+import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
 import { SubmissionFile } from '../database/entities';
@@ -22,7 +22,7 @@ import { UpdateFileService } from './services/update-file.service';
  */
 @Injectable()
 export class FileService {
-  private readonly logger = Logger(FileService.name);
+  private readonly logger = Logger();
 
   private readonly queue: queueAsPromised<Task, SubmissionFile> = fastq.promise<
     this,
@@ -86,7 +86,7 @@ export class FileService {
   private async doTask(task: Task): Promise<SubmissionFile> {
     task.file.originalname = this.sanitizeFilename(task.file.originalname);
     const buf: Buffer = await this.getFile(task.file.path, task.file.origin);
-    this.logger.info(task);
+    this.logger.withMetadata(task).info('Reading File');
     switch (task.type) {
       case TaskType.CREATE:
         // eslint-disable-next-line no-case-declarations

@@ -157,7 +157,7 @@ export class AccountService
       await website.onLogin();
     } catch (e) {
       if (e instanceof Error) {
-        this.logger.error(e);
+        this.logger.withError(e).error(`onLogin failed for ${website.id}`);
       }
     } finally {
       website.onAfterLogin();
@@ -207,10 +207,9 @@ export class AccountService
    * @return {*}  {Promise<Account>}
    */
   async create(createDto: CreateAccountDto): Promise<Account> {
-    this.logger.info(
-      createDto,
-      `Creating Account '${createDto.name}:${createDto.website}`
-    );
+    this.logger
+      .withMetadata(createDto)
+      .info(`Creating Account '${createDto.name}:${createDto.website}`);
     if (!this.websiteRegistry.canCreate(createDto.website)) {
       throw new BadRequestException(
         `Website ${createDto.website} is not supported.`
@@ -264,7 +263,7 @@ export class AccountService
   }
 
   async update(id: string, update: UpdateAccountDto) {
-    this.logger.info(update, `Updating Account '${id}'`);
+    this.logger.withMetadata(update).info(`Updating Account '${id}'`);
     return this.populateAccount(await this.repository.update(id, update));
   }
 
@@ -282,7 +281,7 @@ export class AccountService
    * @param {string} id
    */
   async clearAccountData(id: string) {
-    this.logger.info({ id }, `Clearing Account data for '${id}'`);
+    this.logger.withMetadata({ id }).info(`Clearing Account data for '${id}'`);
     const account = await this.findById(id);
     if (account) {
       const instance = this.websiteRegistry.findInstance(account);

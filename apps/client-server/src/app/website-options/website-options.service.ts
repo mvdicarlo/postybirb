@@ -134,7 +134,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   }
 
   update(id: string, update: UpdateWebsiteOptionsDto) {
-    this.logger.info(update, `Updating WebsiteOptions '${id}'`);
+    this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     return this.repository.update(id, update);
   }
 
@@ -150,7 +150,9 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     submission: Submission<ISubmissionMetadata>,
     title: string
   ): Promise<WebsiteOptions> {
-    this.logger.info({ id: submission.id }, 'Creating Default Website Options');
+    this.logger
+      .withMetadata({ id: submission.id })
+      .info('Creating Default Website Options');
     const options = this.repository.create(
       {
         isDefault: true,
