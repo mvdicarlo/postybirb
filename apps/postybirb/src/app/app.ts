@@ -30,7 +30,7 @@ export default class App {
   static nestApp: INestApplication;
 
   public static isDevelopmentMode() {
-    return environment.production;
+    return !environment.production;
   }
 
   private static onWindowAllClosed() {
