@@ -1,12 +1,23 @@
 import { HttpClient } from '../transports/http-client';
 
+interface ReleaseNoteInfo {
+  /**
+   * The version.
+   */
+  readonly version: string;
+  /**
+   * The note.
+   */
+  readonly note: string | null;
+}
+
 type UpdateState = {
   updateAvailable?: boolean;
   updateDownloaded?: boolean;
   updateDownloading?: boolean;
   updateError?: string;
   updateProgress?: number;
-  updateNotes?: string;
+  updateNotes?: ReleaseNoteInfo[];
 };
 
 class UpdateApi {

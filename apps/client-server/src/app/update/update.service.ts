@@ -4,13 +4,24 @@ import { Logger } from '@postybirb/logger';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
 import winston from 'winston';
 
+interface ReleaseNoteInfo {
+  /**
+   * The version.
+   */
+  readonly version: string;
+  /**
+   * The note.
+   */
+  readonly note: string | null;
+}
+
 type UpdateState = {
   updateAvailable?: boolean;
   updateDownloaded?: boolean;
   updateDownloading?: boolean;
   updateError?: string;
   updateProgress?: number;
-  updateNotes?: string;
+  updateNotes?: ReleaseNoteInfo[];
 };
 
 /**
@@ -40,8 +51,7 @@ export class UpdateService {
     autoUpdater.allowPrerelease = true;
 
     this.registerListeners();
-
-    setTimeout(() => this.checkForUpdates(), 10_000);
+    setTimeout(() => this.checkForUpdates(), 5_000);
   }
 
   private registerListeners() {
@@ -67,7 +77,7 @@ export class UpdateService {
     };
 
     setTimeout(() => {
-      autoUpdater.quitAndInstall();
+      autoUpdater.quitAndInstall(false, true);
     }, 1000);
   }
 
@@ -75,9 +85,7 @@ export class UpdateService {
     this.updateState = {
       ...this.updateState,
       updateAvailable: true,
-      updateNotes: Array.isArray(update.releaseNotes)
-        ? update.releaseNotes.join('\n\n')
-        : update.releaseNotes,
+      updateNotes: (update.releaseNotes as ReleaseNoteInfo[]) ?? [],
     };
   }
 
@@ -113,7 +121,11 @@ export class UpdateService {
   }
 
   public update() {
-    if (!this.updateState.updateAvailable) {
+    if (
+      !this.updateState.updateAvailable ||
+      this.updateState.updateDownloaded ||
+      this.updateState.updateDownloading
+    ) {
       return;
     }
 

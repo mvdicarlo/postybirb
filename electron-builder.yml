@@ -31,5 +31,5 @@ win:
   publisherName: Michael DiCarlo
   icon: icons/icon.ico
   target:
-    - nsis
-    - portable
+  #   - nsis
+  # - portable
