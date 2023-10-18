@@ -24,7 +24,7 @@ module.exports = defineConfig({
     'formatjs',
     'jest',
     'testing-library',
-  ],
+  ].filter(Boolean),
   parserOptions: {
     project: './tsconfig.base.json',
   },
