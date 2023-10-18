@@ -132,9 +132,6 @@ export class AccountService
    */
   private async executeOnLoginForInterval(interval: string | number) {
     const { websites } = this.loginRefreshTimers[interval];
-    this.logger.trace(
-      `Running login check on interval ${interval} for ${websites.length} websites`
-    );
     websites.forEach((website) => {
       this.websiteRegistry.getInstancesOf(website).forEach((instance) => {
         this.executeOnLogin(instance);

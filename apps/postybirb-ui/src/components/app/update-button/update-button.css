@@ -1,0 +1,15 @@
+.postybirb__update-button-css-override ul,
+.postybirb__update-button-css-override ol,
+.postybirb__update-button-css-override li {
+  list-style: disc !important;
+  margin-left: 0.75em;
+}
+
+.postybirb__update-button-css-override h2,
+.postybirb__update-button-css-override h3,
+.postybirb__update-button-css-override h4,
+.postybirb__update-button-css-override h5 {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 4px;
+}

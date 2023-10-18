@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router';
 import Keybinding, {
   useKeybinding,
 } from '../../components/app/keybinding/keybinding';
+import UpdateButton from '../../components/app/update-button/update-button';
 import {
   FileIcon,
   GearIcon,
@@ -132,14 +133,7 @@ export default function AppSideNav() {
           <AppSearch />
         </EuiErrorBoundary>
         <EuiSpacer size="s" />
-        {/* <EuiButton
-        color="success"
-        aria-label="Update PostyBirb"
-        fullWidth
-        iconType={ArrowUpIcon}
-      >
-        <FormattedMessage id="update" defaultMessage="Update" />
-      </EuiButton> */}
+        <UpdateButton />
         <EuiListGroup maxWidth="none" color="text" gutterSize="none" size="s">
           <EuiListGroupItem
             size="s"
