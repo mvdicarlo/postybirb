@@ -5,14 +5,15 @@ import {
   BrowserWindow,
   Menu,
   Tray,
+  WebContentsWillNavigateEventParams,
   globalShortcut,
   nativeImage,
   screen,
   shell,
 } from 'electron';
 import { join } from 'path';
-import { rendererAppPort } from './constants';
 import { environment } from '../environments/environment';
+import { rendererAppPort } from './constants';
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
@@ -30,7 +31,7 @@ export default class App {
   static nestApp: INestApplication;
 
   public static isDevelopmentMode() {
-    return environment.production;
+    return !environment.production;
   }
 
   private static onWindowAllClosed() {
@@ -46,10 +47,15 @@ export default class App {
     App.mainWindow = null;
   }
 
-  private static onRedirect(event: Event, url: string) {
+  private static onRedirect(
+    details: WebContentsWillNavigateEventParams & {
+      preventDefault: () => void;
+    }
+  ) {
+    const { url, preventDefault } = details;
     if (url !== App.mainWindow.webContents.getURL()) {
       // this is a normal external redirect, open it in a new browser window
-      event.preventDefault();
+      preventDefault();
       shell.openExternal(url);
     }
   }
@@ -111,18 +117,14 @@ export default class App {
       }
     });
 
-    // handle all external redirects in a new browser window
-    // App.mainWindow.webContents.on('will-navigate', App.onRedirect);
-    // App.mainWindow.webContents.on('new-window', (event, url, frameName, disposition, options) => {
-    //     App.onRedirect(event, url);
-    // });
-
     // Emitted when the window is closed.
     App.mainWindow.on('closed', () => {
       App.onClose();
     });
 
-    App.mainWindow.webContents.on('will-navigate', App.onRedirect);
+    App.mainWindow.webContents.on('will-navigate', (details) => {
+      App.onRedirect(details);
+    });
   }
 
   private static loadMainWindow() {

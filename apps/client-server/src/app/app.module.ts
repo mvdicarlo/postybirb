@@ -13,6 +13,7 @@ import { SettingsModule } from './settings/settings.module';
 import { SubmissionModule } from './submission/submission.module';
 import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
+import { UpdateModule } from './update/update.module';
 import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
@@ -37,6 +38,7 @@ import { WebsitesModule } from './websites/websites.module';
     TagConvertersModule,
     DirectoryWatchersModule,
     UserSpecifiedWebsiteOptionsModule,
+    UpdateModule,
   ],
   controllers: [AppController],
   providers: [AppService],

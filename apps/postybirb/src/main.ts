@@ -7,7 +7,6 @@ import { bootstrapClientServer } from 'apps/client-server/src/main';
 import contextMenu from 'electron-context-menu';
 import App from './app/app';
 import ElectronEvents from './app/events/electron.events';
-import SquirrelEvents from './app/events/squirrel.events';
 import { environment } from './environments/environment';
 import { startMetrics } from './metrics';
 
@@ -56,10 +55,7 @@ contextMenu();
 
 export default class Main {
   static initialize() {
-    if (SquirrelEvents.handleEvents()) {
-      // squirrel event handled (except first run event) and app will exit in 1000ms, so don't do anything else
-      app.quit();
-    }
+    // Nothing yet
   }
 
   static bootstrapClientServer(): Promise<INestApplication> {
