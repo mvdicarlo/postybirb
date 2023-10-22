@@ -3,15 +3,15 @@ const { defineConfig } = require('eslint-define-config');
 
 // Disable this annoying red lines under unformatted code
 // if there is prettier extensions installed
-let noPrettierExtension = !process.env.VSCODE_CWD;
+let prettierExtension = process.env.VSCODE_CWD;
 
 module.exports = defineConfig({
   root: true,
   ignorePatterns: ['**/*'],
   extends: [
-    noPrettierExtension
-      ? 'plugin:prettier/recommended'
-      : 'eslint-config-prettier',
+    prettierExtension
+      ? 'eslint-config-prettier'
+      : 'plugin:prettier/recommended',
     'airbnb',
     'airbnb/hooks',
     'airbnb-typescript',
@@ -20,7 +20,7 @@ module.exports = defineConfig({
   ],
   plugins: [
     '@nrwl/nx',
-    noPrettierExtension ? 'prettier' : '',
+    prettierExtension ? '' : 'prettier',
     'formatjs',
     'jest',
     'testing-library',
@@ -32,16 +32,16 @@ module.exports = defineConfig({
     {
       files: ['*.ts', '*.tsx', '*.js', '*.jsx'],
       rules: {
-        ...(noPrettierExtension
-          ? {
+        ...(prettierExtension
+          ? {}
+          : {
               'prettier/prettier': [
                 'error',
                 {
                   endOfLine: 'crlf',
                 },
               ],
-            }
-          : {}),
+            }),
         '@nrwl/nx/enforce-module-boundaries': [
           'error',
           {
