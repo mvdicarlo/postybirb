@@ -106,7 +106,7 @@
     "moment": "^2.29.4",
     "multer": "^1.4.3",
     "node-forge": "^0.10.0",
-    "postcss": "8.4.16",
+    "postcss": "8.4.31",
     "postcss-import": "^14.0.2",
     "postcss-inline-svg": "^5.0.0",
     "prop-types": "^15.8.1",
