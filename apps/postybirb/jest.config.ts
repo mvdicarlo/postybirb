@@ -2,14 +2,13 @@
 export default {
   displayName: 'postybirb',
   preset: '../../jest.preset.js',
-  globals: {},
+  globals: {
+    'ts-jest': {
+      tsConfig: '<rootDir>/tsconfig.spec.json',
+    },
+  },
   transform: {
-    '^.+\\.[tj]s$': [
-      'ts-jest',
-      {
-        tsConfig: '<rootDir>/tsconfig.spec.json',
-      },
-    ],
+    '^.+\\.[tj]s$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/postybirb',
