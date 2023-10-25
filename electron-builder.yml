@@ -8,8 +8,6 @@ publish:
 directories:
   buildResources: packaging-resources
   output: dist/packages
-files: 
-  - dist/apps
 
 mac:
   category: public.app-category.productivity

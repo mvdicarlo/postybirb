@@ -52,9 +52,7 @@ describe('PostyBirbFS', () => {
       }
 
       expect(err).toBeTruthy();
-      expect(err.message).toBe(
-        'Cannot read/write outside of PostyBirb directory'
-      );
+      expect(err.message).toBe('Cannot write outside of PostyBirb directory');
     });
   });
 
@@ -68,9 +66,7 @@ describe('PostyBirbFS', () => {
       }
 
       expect(err).toBeTruthy();
-      expect(err.message).toBe(
-        'Cannot read/write outside of PostyBirb directory'
-      );
+      expect(err.message).toBe('Cannot write outside of PostyBirb directory');
     });
   });
 });
