@@ -1,0 +1,82 @@
+{
+  "name": "postybirb-ui",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/postybirb-ui/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "compiler": "babel",
+        "outputPath": "dist/apps/postybirb-ui",
+        "index": "apps/postybirb-ui/src/index.html",
+        "baseHref": "/",
+        "main": "apps/postybirb-ui/src/main.tsx",
+        "polyfills": "apps/postybirb-ui/src/polyfills.ts",
+        "tsConfig": "apps/postybirb-ui/tsconfig.app.json",
+        "assets": ["apps/postybirb-ui/src/assets"],
+        "styles": ["apps/postybirb-ui/src/styles.css"],
+        "scripts": [],
+        "webpackConfig": "apps/postybirb-ui/webpack.config.js",
+        "isolatedConfig": true
+      },
+      "configurations": {
+        "development": {
+          "extractLicenses": false,
+          "optimization": false,
+          "sourceMap": true,
+          "vendorChunk": true
+        },
+        "production": {
+          "fileReplacements": [
+            {
+              "replace": "apps/postybirb-ui/src/environments/environment.ts",
+              "with": "apps/postybirb-ui/src/environments/environment.prod.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/webpack:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "postybirb-ui:build",
+        "hmr": true
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "postybirb-ui:build:development"
+        },
+        "production": {
+          "buildTarget": "postybirb-ui:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/postybirb-ui/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/apps/postybirb-ui"],
+      "options": {
+        "jestConfig": "apps/postybirb-ui/jest.config.ts",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}

@@ -10,5 +10,6 @@
       }
     }
   },
-  "tags": []
+  "tags": [],
+  "name": "utils-file-type"
 }
