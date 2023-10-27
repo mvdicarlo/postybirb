@@ -5,22 +5,11 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/webpack:webpack",
+      "executor": "@nx/vite:build",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "compiler": "babel",
-        "outputPath": "dist/apps/postybirb-ui",
-        "index": "apps/postybirb-ui/src/index.html",
-        "baseHref": "/",
-        "main": "apps/postybirb-ui/src/main.tsx",
-        "polyfills": "apps/postybirb-ui/src/polyfills.ts",
-        "tsConfig": "apps/postybirb-ui/tsconfig.app.json",
-        "assets": ["apps/postybirb-ui/src/assets"],
-        "styles": ["apps/postybirb-ui/src/styles.css"],
-        "scripts": [],
-        "webpackConfig": "apps/postybirb-ui/webpack.config.js",
-        "isolatedConfig": true
+        "outputPath": "dist/apps/postybirb-ui"
       },
       "configurations": {
         "development": {
@@ -46,7 +35,7 @@
       }
     },
     "serve": {
-      "executor": "@nx/webpack:dev-server",
+      "executor": "@nx/vite:dev-server",
       "defaultConfiguration": "development",
       "options": {
         "buildTarget": "postybirb-ui:build",
@@ -75,6 +64,21 @@
       "options": {
         "jestConfig": "apps/postybirb-ui/jest.config.ts",
         "passWithNoTests": true
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "postybirb-ui:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "postybirb-ui:build:development"
+        },
+        "production": {
+          "buildTarget": "postybirb-ui:build:production"
+        }
       }
     }
   },

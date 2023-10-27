@@ -41,12 +41,7 @@ import AppSearch from '../app-search';
 
 function AppImage() {
   return (
-    <img
-      src="/assets/app-icon.png"
-      alt="postybirb icon"
-      width="24"
-      height="24"
-    />
+    <img src="/app-icon.png" alt="postybirb icon" width="24" height="24" />
   );
 }
 
