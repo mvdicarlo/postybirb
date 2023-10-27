@@ -1,5 +1,6 @@
 {
-  "root": "libs/utils/file-type",
+  "name": "file-type",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/utils/file-type/src",
   "targets": {
     "lint": {
