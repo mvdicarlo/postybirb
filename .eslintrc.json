@@ -9,7 +9,7 @@
     "plugin:jest/recommended",
     "plugin:testing-library/react"
   ],
-  "plugins": ["@nrwl/nx", "prettier", "formatjs", "jest", "testing-library"],
+  "plugins": ["@nx", "prettier", "formatjs", "jest", "testing-library"],
   "parserOptions": {
     "project": "./tsconfig.base.json"
   },
@@ -23,7 +23,7 @@
             "endOfLine": "crlf"
           }
         ],
-        "@nrwl/nx/enforce-module-boundaries": [
+        "@nx/enforce-module-boundaries": [
           "error",
           {
             "enforceBuildableLibDependency": true,
@@ -40,12 +40,12 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
-      "extends": ["plugin:@nrwl/nx/typescript"],
+      "extends": ["plugin:@nx/typescript"],
       "rules": {}
     },
     {
       "files": ["*.js", "*.jsx"],
-      "extends": ["plugin:@nrwl/nx/javascript"],
+      "extends": ["plugin:@nx/javascript"],
       "rules": {}
     }
   ],

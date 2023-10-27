@@ -4,7 +4,7 @@
   "sourceRoot": "libs/utils/file-type/src",
   "targets": {
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/utils/file-type/**/*.ts"]
