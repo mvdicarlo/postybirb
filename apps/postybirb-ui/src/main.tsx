@@ -10,6 +10,7 @@ import EditSubmissionPage from './pages/submission/edit-submission-page';
 import SubmissionOutletPage from './pages/submission/submission-outlet-page';
 import NotFound from './pages/not-found/not-found';
 import HomePage from './pages/home/home-page';
+import './styles.css';
 
 // TODO react 18
 // const container = document.getElementById('app');
