@@ -36,10 +36,10 @@ export default function Keybinding(props: PropsWithChildren<KeybindingProps>) {
     }
 
     if (i > 0) {
-      bindings.push(<span>+</span>);
+      bindings.push(<span key={`${keyName}SPAN`}>+</span>);
     }
 
-    bindings.push(<kbd>{keyName}</kbd>);
+    bindings.push(<kbd key={keyName}>{keyName}</kbd>);
   });
 
   return (
