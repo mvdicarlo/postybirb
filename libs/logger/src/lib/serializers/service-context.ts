@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { CreateLogger, LLogger } from '../logger';
+import { Logger, PostyBirbLogger } from '../logger';
 
 type IServiceContextOptions = {
   requestId?: string;
@@ -10,7 +10,7 @@ export class ServiceContext {
 
   readonly operationName: string;
 
-  private logger: LLogger;
+  private logger: PostyBirbLogger;
 
   get log() {
     return this.logger.withMetadata({ epoch: Date.now() });
@@ -19,6 +19,6 @@ export class ServiceContext {
   constructor(operationName: string, options?: IServiceContextOptions) {
     this.operationName = operationName;
     this.requestId = options?.requestId ?? v4();
-    this.logger = CreateLogger().withContext(this);
+    this.logger = Logger().withContext(this);
   }
 }
