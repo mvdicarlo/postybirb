@@ -4,9 +4,9 @@
     "outDir": "../dist/out-tsc/tools",
     "rootDir": ".",
     "module": "commonjs",
-    "target": "es5",
+    "target": "ES2020",
     "types": ["node"],
-    "importHelpers": false
+    "importHelpers": true
   },
   "include": ["**/*.ts"]
 }

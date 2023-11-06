@@ -11,8 +11,10 @@ export default defineConfig({
 
   build: {
     dynamicImportVarsOptions: {
-      exclude: []
-  }
+      // Related to @elastic/eui/icons's dynamic import
+      // https://github.com/elastic/eui/issues/5463#issuecomment-1107665339
+      exclude: [],
+    },
   },
 
   preview: {
@@ -21,9 +23,4 @@ export default defineConfig({
   },
 
   plugins: [react(), nxViteTsPaths()],
-
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
 });

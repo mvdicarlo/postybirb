@@ -47,7 +47,8 @@
     "postinstall:copy-themes": "shx cp node_modules/@elastic/eui/dist/*.min.css apps/postybirb-ui/public",
     "postinstall:patch-package": "patch-package",
     "setup": "run-s setup:husky",
-    "setup:husky": "husky install"
+    "setup:husky": "husky install",
+    "tools:icons": "ts-node tools/generateIcons.ts"
   },
   "dependencies": {
     "@elastic/datemath": "^5.0.3",

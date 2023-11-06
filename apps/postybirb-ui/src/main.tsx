@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import './icons/icons';
 import App from './app/app';
 import AppThemeProvider from './app/app-theme-provider';
 import { SubmissionsPath } from './pages/route-paths';
