@@ -11,6 +11,7 @@
     ]
   },
   "include": [
+    "src",
     "jest.config.ts",
     "**/*.test.ts",
     "**/*.spec.ts",

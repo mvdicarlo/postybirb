@@ -6,14 +6,6 @@ export type PostyBirbLogger = LogLayer<WinstonLogger>;
 
 let log: PostyBirbLogger;
 
-function initializeTestLogger() {
-  const winston: typeof import('winston') = require('winston');
-  const instance = winston.createLogger({
-    transports: [new winston.transports.Console()],
-  });
-  initializeLogger(instance);
-}
-
 export function initializeLogger(instance: WinstonLogger): void {
   if (log) return;
 
@@ -26,6 +18,15 @@ export function initializeLogger(instance: WinstonLogger): void {
       serializer: serializeError,
     },
   });
+}
+
+function initializeTestLogger() {
+  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+  const winston: typeof import('winston') = require('winston');
+  const instance = winston.createLogger({
+    transports: [new winston.transports.Console()],
+  });
+  initializeLogger(instance);
 }
 
 export function Logger() {

@@ -1,7 +1,6 @@
 {
-  "npmScope": "postybirb",
   "affected": {
-    "defaultBase": "master"
+    "defaultBase": "main"
   },
   "tasksRunnerOptions": {
     "default": {
@@ -38,10 +37,7 @@
       "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
     },
     "lint": {
-      "inputs": [
-        "default",
-        "{workspaceRoot}/.eslintrc.js"
-      ]
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.js"]
     }
   },
   "namedInputs": {

@@ -1,13 +1,10 @@
 import { IntlProvider } from 'react-intl';
-import { createContext, useMemo, useState } from 'react';
-import { PropsWithChildren } from 'react-virtualized-auto-sizer/node_modules/@types/react';
+import { createContext, useMemo, useState, PropsWithChildren } from 'react';
 import locales from '@postybirb/translations';
 import { LS_LANGUAGE_KEY } from '../constants';
 
 function getLocaleData(locale: string) {
-  return (
-    locales[locale] ?? locales[locale.split('-')[0]] ?? (locales as any).en
-  );
+  return locales[locale] ?? locales[locale.split('-')[0]] ?? locales.en;
 }
 
 export type AppIntlContext = {
@@ -37,7 +34,7 @@ function AppIntlProvider({ children }: PropsWithChildren<any>): JSX.Element {
         locale={locale}
         messages={getLocaleData(locale)}
         defaultLocale="en"
-        onError={(p) => {
+        onError={() => {
           // nothing
         }}
       >

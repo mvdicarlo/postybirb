@@ -9,6 +9,12 @@ export default defineConfig({
     host: 'localhost',
   },
 
+  build: {
+    dynamicImportVarsOptions: {
+      exclude: []
+  }
+  },
+
   preview: {
     port: 4300,
     host: 'localhost',

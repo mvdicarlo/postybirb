@@ -15,6 +15,7 @@ export default class ElectronEvents {
 
 // Retrieve app version
 ipcMain.handle('get-app-version', () => {
+  // eslint-disable-next-line no-console
   console.log(`Fetching application version... [v${environment.version}]`);
 
   return environment.version;
