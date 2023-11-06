@@ -95,6 +95,7 @@ export default function SubmissionOptionsSection(
             <EuiButtonIcon
               color="danger"
               iconType="trash"
+              aria-label="Remove submission"
               style={{ verticalAlign: 'middle' }}
               onClick={() => {
                 // Remove option
