@@ -17,6 +17,8 @@ describe('formBuilder', () => {
           defaultValue: false,
           type: 'boolean',
           formField: 'switch',
+          row: 1000,
+          column: 0,
         },
       ],
     });
@@ -35,6 +37,8 @@ describe('formBuilder', () => {
           defaultValue: 'Hello',
           type: 'text',
           formField: 'input',
+          row: 1000,
+          column: 0,
         },
       ],
     });
@@ -60,6 +64,8 @@ describe('formBuilder', () => {
           defaultValue: test.testBoolean,
           type: 'boolean',
           formField: 'switch',
+          row: 1000,
+          column: 0,
         },
       ],
     });
