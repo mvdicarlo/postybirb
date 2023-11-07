@@ -8,8 +8,7 @@ function escapeName(name: string) {
   } else return name;
 }
 
-let code = `
-/* eslint-disable import/no-duplicates */
+let code = `/* eslint-disable import/no-duplicates */
 // NOTE: This file exists because of a known issue with EUI icons dynamic import.
 // https://github.com/elastic/eui/issues/5463#issuecomment-1107665339
 //
@@ -26,12 +25,10 @@ for (const [name, path] of Object.entries(iconsMap)) {
 }
 
 code += `
-
 type IconComponentNameType = typeof ICON_TYPES[0];
 type IconComponentCacheType = Record<IconComponentNameType, unknown>;
 
-const cachedIcons: IconComponentCacheType = {
-`;
+const cachedIcons: IconComponentCacheType = {`;
 
 for (const name of Object.keys(iconsMap)) {
   const escaped = escapeName(name);
@@ -41,6 +38,10 @@ for (const name of Object.keys(iconsMap)) {
 code += `
 };
 
-appendIconComponentCache(cachedIcons);`;
+appendIconComponentCache(cachedIcons);
+`;
 
-writeFileSync('./apps/postybirb-ui/src/icons/icons.ts', code.trim());
+writeFileSync(
+  './apps/postybirb-ui/src/icons/icons.ts',
+  code.replace(/\n/g, '\r\n')
+);
