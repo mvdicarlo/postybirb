@@ -17,7 +17,7 @@
     "make": "electron-builder -w",
     "test": "nx test",
     "test:client-server": "nx test client-server && rimraf test",
-    "lint": "nx workspace-lint && run-p --continue-on-error lint:*",
+    "lint": "run-p --continue-on-error lint:*",
     "lint:client-server": "nx lint client-server --fix",
     "lint:form-builder": "nx lint form-builder --fix",
     "lint:fs": "nx lint fs --fix",
