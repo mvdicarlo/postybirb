@@ -16,8 +16,8 @@ function setDefaultTags() {
 }
 
 function createLogger() {
-  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-  const winston = require('winston');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+  const winston: typeof import('winston') = require('winston');
   const { transports } = winston;
   const { combine, timestamp, prettyPrint } = winston.format;
   const consoleTransport = new transports.Console();

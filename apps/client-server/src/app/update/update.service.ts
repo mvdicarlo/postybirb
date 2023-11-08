@@ -15,7 +15,7 @@ interface ReleaseNoteInfo {
   readonly note: string | null;
 }
 
-type UpdateState = {
+export type UpdateState = {
   updateAvailable?: boolean;
   updateDownloaded?: boolean;
   updateDownloading?: boolean;

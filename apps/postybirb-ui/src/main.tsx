@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import './icons/icons';
 import App from './app/app';
 import AppThemeProvider from './app/app-theme-provider';
 import { SubmissionsPath } from './pages/route-paths';
@@ -10,6 +11,7 @@ import EditSubmissionPage from './pages/submission/edit-submission-page';
 import SubmissionOutletPage from './pages/submission/submission-outlet-page';
 import NotFound from './pages/not-found/not-found';
 import HomePage from './pages/home/home-page';
+import './styles.css';
 
 // TODO react 18
 // const container = document.getElementById('app');

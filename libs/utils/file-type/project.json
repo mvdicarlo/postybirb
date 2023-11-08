@@ -1,14 +1,16 @@
 {
-  "root": "libs/utils/file-type",
+  "name": "file-type",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/utils/file-type/src",
   "targets": {
     "lint": {
-      "executor": "@nrwl/linter:eslint",
+      "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": ["libs/utils/file-type/**/*.ts"]
       }
     }
   },
-  "tags": []
+  "tags": [],
+  "name": "utils-file-type"
 }

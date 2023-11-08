@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { INestApplication } from '@nestjs/common';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
@@ -87,6 +86,7 @@ Main.bootstrapClientServer()
     Main.bootstrapAppEvents();
   })
   .catch((err) => {
+    // eslint-disable-next-line no-console
     console.error(err);
     app.quit();
   });
