@@ -1,7 +1,8 @@
-import { Body, Controller, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Settings } from '../database/entities';
+import { Coerce } from '../utils/coerce.util';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
 
@@ -26,5 +27,19 @@ export class SettingsController extends PostyBirbController<Settings> {
     return this.service
       .update(id, updateSettingsDto)
       .then((entity) => entity.toJSON());
+  }
+
+  @Get('startup')
+  getStartupSettings() {
+    return this.service.getStartupSettings();
+  }
+
+  @Patch('startup/system-startup/:startAppOnSystemStartup')
+  updateOnSystemStartup(
+    @Param('startAppOnSystemStartup') startAppOnSystemStartup: string
+  ) {
+    return this.service.updateStartupSetting(
+      Coerce.boolean(startAppOnSystemStartup)
+    );
   }
 }
