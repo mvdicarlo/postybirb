@@ -1,11 +1,18 @@
 import { INestApplication } from '@nestjs/common';
-import { isOSX } from '@postybirb/utils/electron';
+import {
+  getStartupOptions,
+  isLinux,
+  isOSX,
+  onStartupOptionsUpdate,
+  setStartupOptions,
+} from '@postybirb/utils/electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
   BrowserWindow,
   Menu,
   Tray,
   WebContentsWillNavigateEventParams,
+  app,
   globalShortcut,
   nativeImage,
   screen,
@@ -36,6 +43,14 @@ export default class App {
 
   private static onWindowAllClosed() {
     if (process.platform !== 'darwin') {
+      try {
+        if (App.appTray) {
+          App.appTray.destroy();
+        }
+      } catch {
+        // Nothing should disable quitting
+      }
+
       App.application.quit();
     }
   }
@@ -148,6 +163,22 @@ export default class App {
           },
         },
         {
+          enabled: !isLinux(),
+          label: 'Launch on Startup',
+          type: 'checkbox',
+          checked: getStartupOptions().startAppOnSystemStartup,
+          click(event) {
+            const checked = event.checked;
+            app.setLoginItemSettings({
+              openAtLogin: event.checked,
+              path: app.getPath('exe'),
+            });
+            setStartupOptions({
+              startAppOnSystemStartup: checked,
+            });
+          },
+        },
+        {
           label: 'Quit',
           click() {
             App.application.quit();
@@ -167,8 +198,16 @@ export default class App {
       tray.setContextMenu(Menu.buildFromTemplate(trayItems));
       tray.setToolTip('PostyBirb');
       tray.on('click', () => App.showMainWindow());
-
+      onStartupOptionsUpdate(App.refreshAppTray);
       App.appTray = tray;
+    }
+  }
+
+  private static refreshAppTray() {
+    if (App.appTray) {
+      App.appTray.destroy();
+      App.appTray = null;
+      App.initAppTray();
     }
   }
 

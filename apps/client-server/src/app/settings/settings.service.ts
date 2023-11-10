@@ -1,6 +1,10 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
+import {
+  getStartupOptions,
+  setStartupOptions,
+} from '@postybirb/utils/electron';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
@@ -70,6 +74,17 @@ export class SettingsService
       event: SETTINGS_UPDATES,
       data: await this.findAll(),
     });
+  }
+
+  public getStartupSettings() {
+    return getStartupOptions();
+  }
+
+  /**
+   * Updates app startup setting.
+   */
+  public updateStartupSetting(startAppOnSystemStartup: boolean) {
+    setStartupOptions({ startAppOnSystemStartup });
   }
 
   /**
