@@ -12,7 +12,6 @@ type FieldEntry = {
 };
 
 function shouldGrow(entries: FieldEntry[]): boolean {
-  // eslint-disable-next-line no-restricted-syntax
   for (const entry of entries) {
     if (entry.value.grow) {
       return true;
