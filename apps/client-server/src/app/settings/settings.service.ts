@@ -1,10 +1,17 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable, OnModuleInit, Optional } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  OnModuleInit,
+  Optional,
+} from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
 import {
+  StartupOptions,
   getStartupOptions,
   setStartupOptions,
 } from '@postybirb/utils/electron';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
@@ -81,10 +88,24 @@ export class SettingsService
   }
 
   /**
-   * Updates app startup setting.
+   * Updates app startup settings.
    */
-  public updateStartupSetting(startAppOnSystemStartup: boolean) {
-    setStartupOptions({ startAppOnSystemStartup });
+  public updateStartupSettings(startUpOptions: Partial<StartupOptions>) {
+    if (startUpOptions.appDataPath) {
+      // eslint-disable-next-line no-param-reassign
+      startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
+    }
+
+    if (startUpOptions.port) {
+      // eslint-disable-next-line no-param-reassign
+      startUpOptions.port = startUpOptions.port.trim();
+      const port = parseInt(startUpOptions.port, 10);
+      if (Number.isNaN(port) || port < 1024 || port > 65535) {
+        throw new BadRequestException('Invalid port');
+      }
+    }
+
+    setStartupOptions({ ...startUpOptions });
   }
 
   /**

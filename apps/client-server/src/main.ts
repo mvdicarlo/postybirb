@@ -10,6 +10,7 @@ import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
+import { StartupOptions } from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
 import { AppModule } from './app/app.module';
@@ -31,7 +32,7 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   }
 }
 
-async function bootstrap(appPort?: number) {
+async function bootstrap(startupOptions: StartupOptions) {
   let app: INestApplication;
   if (!IsTestEnvironment()) {
     // TLS/SSL on non-test
@@ -84,7 +85,7 @@ async function bootstrap(appPort?: number) {
   PostyBirbDirectories.initializeDirectories();
   sharp.cache({ files: 0 });
 
-  const port = process.env.APP_PORT || appPort || 3333;
+  const port = startupOptions.port ?? 9487;
 
   await app.listen(port, () => {
     Logger.log(`Listening at https://localhost:${port}/${globalPrefix}`);
