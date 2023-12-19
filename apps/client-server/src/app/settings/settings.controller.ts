@@ -2,9 +2,9 @@ import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Settings } from '../database/entities';
-import { Coerce } from '../utils/coerce.util';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
+import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
 
 /**
  * CRUD operations for settings.
@@ -34,12 +34,8 @@ export class SettingsController extends PostyBirbController<Settings> {
     return this.service.getStartupSettings();
   }
 
-  @Patch('startup/system-startup/:startAppOnSystemStartup')
-  updateOnSystemStartup(
-    @Param('startAppOnSystemStartup') startAppOnSystemStartup: string
-  ) {
-    return this.service.updateStartupSetting(
-      Coerce.boolean(startAppOnSystemStartup)
-    );
+  @Patch('startup/system-startup')
+  updateStartupSettings(@Body() startupOptions: UpdateStartupSettingsDto) {
+    return this.service.updateStartupSettings(startupOptions);
   }
 }

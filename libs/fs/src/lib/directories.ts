@@ -1,18 +1,27 @@
+import { getStartupOptions } from '@postybirb/utils/electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 import { join } from 'path';
-import { ensureDirSync, deleteDirSync } from './fs';
+import { deleteDirSync, ensureDirSync } from './fs';
 
-const IS_TEST_DIRECTORY = process.env.NODE_ENV === 'test';
+function IsTestEnvironment(): boolean {
+  return (process.env.NODE_ENV || '').toLowerCase() === 'test';
+}
+
+const startupOpts = getStartupOptions();
+
+const IS_TEST_DIRECTORY = IsTestEnvironment();
 
 const DOCUMENTS_DIRECTORY = IS_TEST_DIRECTORY
   ? join('./', 'test')
-  : app.getPath('documents');
+  : startupOpts.appDataPath ?? app.getPath('documents');
 
 /**
  * Base PostyBirb document directory.
  */
-const POSTYBIRB_DIRECTORY = join(DOCUMENTS_DIRECTORY, 'PostyBirb');
+const POSTYBIRB_DIRECTORY = DOCUMENTS_DIRECTORY.endsWith('PostyBirb')
+  ? DOCUMENTS_DIRECTORY
+  : join(DOCUMENTS_DIRECTORY, 'PostyBirb');
 
 /** Directory that stores PostyBirb data. */
 const DATA_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'data');
@@ -35,10 +44,10 @@ function initializeDirectories() {
 }
 
 export {
-  POSTYBIRB_DIRECTORY,
   DATA_DIRECTORY,
-  TEMP_DIRECTORY,
   LOGS_DIRECTORY,
-  initializeDirectories,
+  POSTYBIRB_DIRECTORY,
+  TEMP_DIRECTORY,
   clearTempDirectory,
+  initializeDirectories,
 };

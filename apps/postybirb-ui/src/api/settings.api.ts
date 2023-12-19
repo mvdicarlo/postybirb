@@ -17,10 +17,10 @@ class SettingsApi {
     return this.client.patch(id, dto);
   }
 
-  updateOnSystemStartup(startAppOnSystemStartup: boolean) {
-    return this.client.patch(
-      `startup/system-startup/${startAppOnSystemStartup}`
-    );
+  updateSystemStartupSettings(
+    startAppOnSystemStartup: Partial<StartupOptions>
+  ) {
+    return this.client.patch(`startup/system-startup`, startAppOnSystemStartup);
   }
 }
 
