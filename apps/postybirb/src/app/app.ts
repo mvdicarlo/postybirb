@@ -1,11 +1,18 @@
 import { INestApplication } from '@nestjs/common';
-import { isOSX } from '@postybirb/utils/electron';
+import {
+  getStartupOptions,
+  isLinux,
+  isOSX,
+  onStartupOptionsUpdate,
+  setStartupOptions,
+} from '@postybirb/utils/electron';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
   BrowserWindow,
   Menu,
   Tray,
   WebContentsWillNavigateEventParams,
+  app,
   globalShortcut,
   nativeImage,
   screen,
@@ -17,7 +24,7 @@ import { rendererAppPort } from './constants';
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
-export default class App {
+export default class PostyBirb {
   // Keep a global reference of the window object, if you don't, the window will
   // be closed automatically when the JavaScript object is garbage collected.
   static mainWindow: Electron.BrowserWindow;
@@ -36,7 +43,15 @@ export default class App {
 
   private static onWindowAllClosed() {
     if (process.platform !== 'darwin') {
-      App.application.quit();
+      try {
+        if (PostyBirb.appTray) {
+          PostyBirb.appTray.destroy();
+        }
+      } catch {
+        // Nothing should disable quitting
+      }
+
+      PostyBirb.application.quit();
     }
   }
 
@@ -44,7 +59,7 @@ export default class App {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    App.mainWindow = null;
+    PostyBirb.mainWindow = null;
   }
 
   private static onRedirect(
@@ -53,7 +68,7 @@ export default class App {
     }
   ) {
     const { url, preventDefault } = details;
-    if (url !== App.mainWindow.webContents.getURL()) {
+    if (url !== PostyBirb.mainWindow.webContents.getURL()) {
       // this is a normal external redirect, open it in a new browser window
       preventDefault();
       shell.openExternal(url);
@@ -64,22 +79,22 @@ export default class App {
     // This method will be called when Electron has finished
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
-    App.initAppTray();
-    App.initMainWindow();
-    App.loadMainWindow();
+    PostyBirb.initAppTray();
+    PostyBirb.initMainWindow();
+    PostyBirb.loadMainWindow();
   }
 
   private static onActivate() {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (App.mainWindow === null) {
-      App.onReady();
+    if (PostyBirb.mainWindow === null) {
+      PostyBirb.onReady();
     }
   }
 
   private static async onQuit() {
-    if (App.nestApp) {
-      await App.nestApp.close();
+    if (PostyBirb.nestApp) {
+      await PostyBirb.nestApp.close();
     }
     process.exit();
   }
@@ -90,7 +105,7 @@ export default class App {
     const height = Math.min(720, workAreaSize.height || 720);
 
     // Create the browser window.
-    App.mainWindow = new BrowserWindow({
+    PostyBirb.mainWindow = new BrowserWindow({
       width,
       height,
       show: false,
@@ -105,52 +120,68 @@ export default class App {
         devTools: true,
       },
     });
-    App.mainWindow.setMenu(null);
-    App.mainWindow.center();
+    PostyBirb.mainWindow.setMenu(null);
+    PostyBirb.mainWindow.center();
 
     // if main window is ready to show, close the splash window and show the main window
-    App.mainWindow.once('ready-to-show', () => {
-      App.mainWindow.show();
+    PostyBirb.mainWindow.once('ready-to-show', () => {
+      PostyBirb.mainWindow.show();
 
-      if (App.isDevelopmentMode()) {
-        App.mainWindow.webContents.openDevTools();
+      if (PostyBirb.isDevelopmentMode()) {
+        PostyBirb.mainWindow.webContents.openDevTools();
       }
     });
 
     // Emitted when the window is closed.
-    App.mainWindow.on('closed', () => {
-      App.onClose();
+    PostyBirb.mainWindow.on('closed', () => {
+      PostyBirb.onClose();
     });
 
-    App.mainWindow.webContents.on('will-navigate', (details) => {
-      App.onRedirect(details);
+    PostyBirb.mainWindow.webContents.on('will-navigate', (details) => {
+      PostyBirb.onRedirect(details);
     });
   }
 
   private static loadMainWindow() {
     // load the index.html of the app.
     if (this.isDevelopmentMode()) {
-      App.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
+      PostyBirb.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
     } else {
-      App.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
+      PostyBirb.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
     }
   }
 
   private static initAppTray() {
-    if (!App.appTray) {
+    if (!PostyBirb.appTray) {
       const trayItems: Array<
         Electron.MenuItem | Electron.MenuItemConstructorOptions
       > = [
         {
           label: 'Open',
           click() {
-            App.showMainWindow();
+            PostyBirb.showMainWindow();
+          },
+        },
+        {
+          enabled: !isLinux(),
+          label: 'Launch on Startup',
+          type: 'checkbox',
+          checked: getStartupOptions().startAppOnSystemStartup,
+          click(event) {
+            const { checked } = event;
+            app.setLoginItemSettings({
+              openAtLogin: event.checked,
+              path: app.getPath('exe'),
+            });
+            setStartupOptions({
+              startAppOnSystemStartup: checked,
+            });
           },
         },
         {
           label: 'Quit',
           click() {
-            App.application.quit();
+            PostyBirb.application.quit();
           },
         },
       ];
@@ -166,50 +197,58 @@ export default class App {
       const tray = new Tray(image);
       tray.setContextMenu(Menu.buildFromTemplate(trayItems));
       tray.setToolTip('PostyBirb');
-      tray.on('click', () => App.showMainWindow());
+      tray.on('click', () => PostyBirb.showMainWindow());
+      onStartupOptionsUpdate(PostyBirb.refreshAppTray);
+      PostyBirb.appTray = tray;
+    }
+  }
 
-      App.appTray = tray;
+  private static refreshAppTray() {
+    if (PostyBirb.appTray) {
+      PostyBirb.appTray.destroy();
+      PostyBirb.appTray = null;
+      PostyBirb.initAppTray();
     }
   }
 
   private static showMainWindow() {
-    if (!App.mainWindow) {
-      App.onReady();
+    if (!PostyBirb.mainWindow) {
+      PostyBirb.onReady();
     } else {
-      if (App.mainWindow.isMinimized()) {
-        App.mainWindow.show();
+      if (PostyBirb.mainWindow.isMinimized()) {
+        PostyBirb.mainWindow.show();
       }
 
-      App.mainWindow.focus();
+      PostyBirb.mainWindow.focus();
     }
   }
 
-  static main(app: Electron.App, browserWindow: typeof BrowserWindow) {
+  static main(electronApp: Electron.App, browserWindow: typeof BrowserWindow) {
     globalShortcut.registerAll(['f5', 'CommandOrControl+R'], () => {
-      if (App.mainWindow) {
-        App.mainWindow.reload();
+      if (PostyBirb.mainWindow) {
+        PostyBirb.mainWindow.reload();
       }
     });
 
-    App.BrowserWindow = browserWindow;
-    App.application = app;
+    PostyBirb.BrowserWindow = browserWindow;
+    PostyBirb.application = electronApp;
 
-    App.application.on('window-all-closed', App.onWindowAllClosed); // Quit when all windows are closed.
-    App.application.on('ready', App.onReady); // App is ready to load data
-    App.application.on('activate', App.onActivate); // App is activated
-    App.application.on('second-instance', () => {
-      if (App.application.isReady()) {
-        App.onReady();
+    PostyBirb.application.on('window-all-closed', PostyBirb.onWindowAllClosed); // Quit when all windows are closed.
+    PostyBirb.application.on('ready', PostyBirb.onReady); // App is ready to load data
+    PostyBirb.application.on('activate', PostyBirb.onActivate); // App is activated
+    PostyBirb.application.on('second-instance', () => {
+      if (PostyBirb.application.isReady()) {
+        PostyBirb.onReady();
       }
     });
-    App.application.on('quit', App.onQuit);
+    PostyBirb.application.on('quit', PostyBirb.onQuit);
 
-    if (App.application.isReady()) {
-      App.onReady();
+    if (PostyBirb.application.isReady()) {
+      PostyBirb.onReady();
     }
   }
 
   static registerNestApp(nestApp: INestApplication) {
-    App.nestApp = nestApp;
+    PostyBirb.nestApp = nestApp;
   }
 }

@@ -18,8 +18,6 @@ import {
   WebsiteOptions,
 } from './entities';
 
-const DATABASE_PATH = join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db');
-
 const entities = [
   Account,
   AltFile,
@@ -39,10 +37,15 @@ const entities = [
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {
   entities,
   type: 'sqlite',
-  dbName: IsTestEnvironment() ? ':memory:' : DATABASE_PATH,
+  dbName: IsTestEnvironment()
+    ? ':memory:'
+    : join(PostyBirbDirectories.DATA_DIRECTORY, 'database.db'),
 };
 
 export const getDatabaseProvider = () => [
-  MikroOrmModule.forRoot({ ...mikroOrmOptions, allowGlobalContext: true }),
+  MikroOrmModule.forRoot({
+    ...mikroOrmOptions,
+    allowGlobalContext: true,
+  }),
   MikroOrmModule.forFeature({ entities }),
 ];

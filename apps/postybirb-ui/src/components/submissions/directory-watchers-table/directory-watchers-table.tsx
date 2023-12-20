@@ -99,9 +99,9 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
         >
           <EuiButton
             iconType="folderOpen"
-            disabled={!window.electron.pickDirectory}
+            disabled={!window?.electron?.pickDirectory}
             onClick={() => {
-              if (window.electron.pickDirectory) {
+              if (window.electron?.pickDirectory) {
                 window.electron.pickDirectory().then((path) => {
                   setState({ ...state, path: path ?? state.path });
                 });

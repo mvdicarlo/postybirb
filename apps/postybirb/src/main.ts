@@ -1,10 +1,11 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { app, BrowserWindow, powerSaveBlocker } from 'electron';
+/* eslint-disable @nrwl/nx/enforce-module-boundaries */
+/* eslint-disable import/no-extraneous-dependencies */
 import { INestApplication } from '@nestjs/common';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { getStartupOptions } from '@postybirb/utils/electron';
 import { bootstrapClientServer } from 'apps/client-server/src/main';
+import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 import contextMenu from 'electron-context-menu';
-import App from './app/app';
+import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
 import { environment } from './environments/environment';
 import { startMetrics } from './metrics';
@@ -58,35 +59,33 @@ export default class Main {
   }
 
   static bootstrapClientServer(): Promise<INestApplication> {
-    return bootstrapClientServer();
+    return bootstrapClientServer(getStartupOptions());
   }
 
   static bootstrapApp(nestApp: INestApplication) {
-    App.main(app, BrowserWindow);
-    App.registerNestApp(nestApp);
+    PostyBirb.main(app, BrowserWindow);
+    PostyBirb.registerNestApp(nestApp);
   }
 
   static bootstrapAppEvents() {
     ElectronEvents.bootstrapElectronEvents();
-
-    // initialize auto updater service
-    if (!App.isDevelopmentMode()) {
-      // UpdateEvents.initAutoUpdateService();
-    }
   }
 }
 
-// handle setup events as quickly as possible
-Main.initialize();
+async function start() {
+  try {
+    // handle setup events as quickly as possible
+    Main.initialize();
 
-// bootstrap app
-Main.bootstrapClientServer()
-  .then((nestApp) => {
+    // bootstrap app
+    const nestApp = await Main.bootstrapClientServer();
     Main.bootstrapApp(nestApp);
     Main.bootstrapAppEvents();
-  })
-  .catch((err) => {
+  } catch (e) {
     // eslint-disable-next-line no-console
-    console.error(err);
+    console.error(e);
     app.quit();
-  });
+  }
+}
+
+start();

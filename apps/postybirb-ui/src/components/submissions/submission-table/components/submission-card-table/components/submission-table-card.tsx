@@ -15,6 +15,8 @@ import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../../../../pages/route-paths';
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
 import {
+  ScheduleIcon,
+  SendIcon,
   SquareCheckedIcon,
   SquareIcon,
 } from '../../../../../shared/icons/Icons';
@@ -28,6 +30,7 @@ type SubmissionTableCardProps = {
   selected: boolean;
 };
 
+// TODO show issues with submission
 export function SubmissionTableCard(
   props: SubmissionTableCardProps
 ): JSX.Element {
@@ -71,6 +74,7 @@ export function SubmissionTableCard(
       >
         <EuiIcon type={selected ? SquareCheckedIcon : SquareIcon} />
       </EuiSplitPanel.Inner>
+
       <EuiSplitPanel.Inner paddingSize="none">
         <EuiFlexGroup justifyContent="flexStart" gutterSize="s">
           <EuiFlexItem grow={false}>
@@ -85,10 +89,35 @@ export function SubmissionTableCard(
           </EuiFlexItem>
         </EuiFlexGroup>
       </EuiSplitPanel.Inner>
+
       <EuiSplitPanel.Inner
         grow={false}
         className="postybirb__submission-card-actions"
       >
+        <EuiToolTip
+          content={
+            submission.schedule.scheduledFor ? (
+              <FormattedMessage id="schedule" defaultMessage="Schedule" />
+            ) : (
+              <FormattedMessage id="post" defaultMessage="Post" />
+            )
+          }
+        >
+          <EuiButtonIcon
+            iconType={
+              submission.schedule.scheduledFor ? ScheduleIcon : SendIcon
+            }
+            color="success"
+            aria-label={
+              submission.schedule.scheduledFor
+                ? 'Schedule submission'
+                : 'Post submission'
+            }
+            onClick={() => {
+              navToEdit(submission.id);
+            }}
+          />
+        </EuiToolTip>
         <EuiToolTip
           content={<FormattedMessage id="edit" defaultMessage="Edit" />}
         >
@@ -107,6 +136,7 @@ export function SubmissionTableCard(
         >
           <EuiButtonIcon
             iconType="listAdd"
+            color="accent"
             aria-label="Duplicate submission"
             onClick={() => {
               submissionApi.duplicate(submission.id);

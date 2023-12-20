@@ -1,7 +1,10 @@
-import { EuiDatePicker } from '@elastic/eui';
-import moment, { Moment } from 'moment';
-import { useEffect, useState } from 'react';
+import { EuiButtonIcon, EuiFieldText, EuiFormRow } from '@elastic/eui';
+import { ScheduleType } from '@postybirb/types';
+import cronstrue from 'cronstrue';
+import moment from 'moment';
+import { useState } from 'react';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
+import SubmissionSchedulerModal from '../../../../submission-scheduler/submission-scheduler-modal';
 
 type DefaultSubmissionScheduleFieldProps = {
   submission: SubmissionDto;
@@ -11,33 +14,46 @@ export function DefaultSubmissionScheduleField({
   submission,
 }: DefaultSubmissionScheduleFieldProps): JSX.Element {
   const { schedule } = submission;
+  const [isModalVisible, setModalVisible] = useState(false);
 
-  const [scheduledFor, setScheduledFor] = useState<Moment | undefined | null>(
-    schedule.scheduledFor ? moment(schedule.scheduledFor) : undefined
-  );
-
-  useEffect(() => {
-    setScheduledFor(
-      schedule.scheduledFor ? moment(schedule.scheduledFor) : undefined
-    );
-  }, [schedule.scheduledFor]);
+  let scheduleText = '';
+  if (schedule.scheduledFor) {
+    if (schedule.scheduleType === ScheduleType.RECURRING) {
+      scheduleText = schedule.scheduledFor;
+    } else {
+      scheduleText = moment(schedule.scheduledFor).format('lll');
+    }
+  }
 
   return (
-    <EuiDatePicker
-      className="euiFormControlLayout--compressed"
-      showTimeSelect
-      fullWidth
-      isInvalid={!submission.hasValidScheduleTime()}
-      selected={scheduledFor}
-      minDate={moment()}
-      onClear={() => {
-        setScheduledFor(undefined);
-        submission.updateSchedule(null);
-      }}
-      onChange={(date) => {
-        setScheduledFor(date);
-        submission.updateSchedule(date);
-      }}
-    />
+    <>
+      {isModalVisible ? (
+        <SubmissionSchedulerModal
+          submission={submission}
+          onClose={() => {
+            setModalVisible(false);
+          }}
+        />
+      ) : null}
+      <EuiFormRow
+        helpText={
+          schedule.scheduledFor &&
+          schedule.scheduleType === ScheduleType.RECURRING
+            ? cronstrue.toString(schedule.scheduledFor)
+            : null
+        }
+        onClickCapture={() => {
+          setModalVisible(true);
+        }}
+      >
+        <EuiFieldText
+          compressed
+          prepend={<EuiButtonIcon iconType="calendar" />}
+          placeholder="Scheduled time to post"
+          readOnly
+          value={scheduleText}
+        />
+      </EuiFormRow>
+    </>
   );
 }

@@ -3,6 +3,8 @@ import {
   faSquare,
   faSquareCheck,
   faFileLines,
+  faPaperPlane,
+  faCalendarCheck,
 } from '@fortawesome/free-regular-svg-icons';
 import {
   faArrowUp,
@@ -88,3 +90,5 @@ export const RedoIcon = FaIcon({ icon: faRotateRight });
 export const TagsIcon = FaIcon({ icon: faTags });
 export const UserTagIcon = FaIcon({ icon: faUserTag });
 export const TextFileIcon = FaIcon({ icon: faFileLines });
+export const SendIcon = FaIcon({ icon: faPaperPlane });
+export const ScheduleIcon = FaIcon({ icon: faCalendarCheck });
