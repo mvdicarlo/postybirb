@@ -24,7 +24,7 @@
 .postybirb__submission-card-table
   .postybirb__submission-card
   .postybirb__submission-card-actions {
-  display: flex;
+  /* display: flex; */
   align-items: center;
 }
 
