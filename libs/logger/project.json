@@ -10,6 +10,14 @@
         "lintFilePatterns": ["libs/logger/**/*.ts"]
       },
       "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/logger"],
+      "options": {
+        "jestConfig": "libs/logger/jest.config.ts",
+        "passWithNoTests": true
+      }
     }
   },
   "tags": []
