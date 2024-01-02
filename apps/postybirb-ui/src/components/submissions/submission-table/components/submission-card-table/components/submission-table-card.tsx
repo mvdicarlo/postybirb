@@ -5,12 +5,15 @@ import {
   EuiIcon,
   EuiImage,
   EuiSplitPanel,
+  EuiText,
   EuiToolTip,
 } from '@elastic/eui';
 import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
+import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router';
 import submissionApi from '../../../../../../api/submission.api';
+import websiteOptionsApi from '../../../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../../../../pages/route-paths';
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
@@ -30,13 +33,71 @@ type SubmissionTableCardProps = {
   selected: boolean;
 };
 
-// TODO show issues with submission
+function SubmissionCardValidationStatus(props: {
+  hasErrors: boolean;
+  hasWarnings: boolean;
+}) {
+  const { hasErrors, hasWarnings } = props;
+  if (hasErrors) {
+    return (
+      <EuiText color="danger" size="xs" className="text-center">
+        <EuiIcon type="alert" color="danger" className="mr-1" />
+        <FormattedMessage
+          id="submission.card.errors"
+          defaultMessage="Incomplete submission"
+        />
+      </EuiText>
+    );
+  }
+
+  if (hasWarnings) {
+    return (
+      <EuiText color="warning" size="xs" className="text-center">
+        <EuiIcon type="warning" color="warning" className="mr-1" />
+        <FormattedMessage
+          id="submission.card.warning"
+          defaultMessage="Submission has warnings"
+        />
+      </EuiText>
+    );
+  }
+
+  return null;
+}
+
 export function SubmissionTableCard(
   props: SubmissionTableCardProps
 ): JSX.Element {
   const { submission, selected, onSelect } = props;
   const { files } = submission;
   const history = useNavigate();
+  const { data: validationResult } = useQuery(
+    `submission-validation-${submission.id}`,
+    () =>
+      websiteOptionsApi.validateSubmission(submission.id).then((res) => {
+        let hasErrors = false;
+        let hasWarnings = false;
+        if (res.status === 200) {
+          res.body.forEach((validation) => {
+            if (validation.errors?.length) {
+              hasErrors = true;
+            }
+            if (validation.warnings?.length) {
+              hasWarnings = true;
+            }
+          });
+        }
+        return {
+          hasErrors,
+          hasWarnings,
+        };
+      })
+  );
+
+  const validationStatus = validationResult ?? {
+    hasErrors: false,
+    hasWarnings: false,
+  };
 
   let img: string | undefined;
   if (files.length) {
@@ -85,6 +146,7 @@ export function SubmissionTableCard(
             )}
           </EuiFlexItem>
           <EuiFlexItem>
+            <SubmissionCardValidationStatus {...validationStatus} />
             <SubmissionTableCardEditableFields submission={submission} />
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -108,13 +170,16 @@ export function SubmissionTableCard(
               submission.schedule.scheduledFor ? ScheduleIcon : SendIcon
             }
             color="success"
+            disabled={validationStatus.hasErrors}
             aria-label={
               submission.schedule.scheduledFor
                 ? 'Schedule submission'
                 : 'Post submission'
             }
             onClick={() => {
-              navToEdit(submission.id);
+              if (!validationStatus.hasErrors) {
+                navToEdit(submission.id);
+              }
             }}
           />
         </EuiToolTip>
