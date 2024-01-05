@@ -7,6 +7,7 @@ import {
   serialize,
 } from '@mikro-orm/core';
 import {
+  IPostRecord,
   ISubmission,
   ISubmissionDto,
   ISubmissionFile,
@@ -17,10 +18,11 @@ import {
 } from '@postybirb/types';
 
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { DirectoryWatcher } from './directory-watcher.entity';
+import { PostRecord } from './post-record.entity';
 import { PostyBirbEntity } from './postybirb-entity';
 import { SubmissionFile } from './submission-file.entity';
 import { WebsiteOptions } from './website-options.entity';
-import { DirectoryWatcher } from './directory-watcher.entity';
 
 /** @inheritdoc */
 @Entity({ customRepository: () => PostyBirbRepository })
@@ -64,6 +66,12 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   @Property({ type: 'json', nullable: false })
   metadata: T;
+
+  @OneToMany(() => PostRecord, (pr) => pr.parent, {
+    orphanRemoval: true,
+    eager: true,
+  })
+  posts: Collection<IPostRecord>;
 
   toJSON(): ISubmissionDto<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -4,6 +4,8 @@ export * from './database/entity.interface';
 export * from './directory-watcher/directory-watcher.interface';
 export * from './file/file-buffer.interface';
 export * from './file/file-dimensions.interface';
+export * from './post/post-record.interface';
+export * from './post/website-post-record.interface';
 export * from './settings/settings-options.interface';
 export * from './settings/settings.interface';
 export * from './submission/default-description-value';
