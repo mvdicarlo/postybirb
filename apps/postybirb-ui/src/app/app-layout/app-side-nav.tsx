@@ -112,7 +112,6 @@ export default function AppSideNav() {
     >
       <EuiCollapsibleNavGroup
         className="eui-yScroll"
-        initialIsOpen
         isCollapsible={false as true}
         background="dark"
         iconType={AppImage}

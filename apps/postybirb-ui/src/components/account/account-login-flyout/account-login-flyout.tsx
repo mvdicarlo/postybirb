@@ -16,9 +16,10 @@ import { AccountLoginContainer } from '../account-login-container/account-login-
 
 export function AccountLoginFlyout() {
   const [isOpen, toggle] = useFlyoutToggle('accountFlyoutVisible');
-  const { state: availableWebsites, isLoading } = useStore(WebsiteStore);
+  const { state: availableWebsites, isLoading: isLoadingWebsiteStore } =
+    useStore(WebsiteStore);
 
-  const { isLoading: isLoadingStore, state: settingsState } =
+  const { state: settings, isLoading: isLoadingSettings } =
     useStore(SettingsStore);
 
   const keybindingProps: KeybindingProps = {
@@ -48,9 +49,9 @@ export function AccountLoginFlyout() {
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
-        <Loading isLoading={isLoading && isLoadingStore}>
+        <Loading isLoading={isLoadingWebsiteStore && isLoadingSettings}>
           <AccountLoginContainer
-            settings={settingsState[0]}
+            settings={settings[0]}
             availableWebsites={availableWebsites || []}
           />
         </Loading>

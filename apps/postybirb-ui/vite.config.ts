@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import assets from 'vite-multiple-assets';
 
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/postybirb-ui',
@@ -22,5 +23,12 @@ export default defineConfig({
     host: 'localhost',
   },
 
-  plugins: [react(), nxViteTsPaths()],
+  plugins: [
+    react(),
+    nxViteTsPaths(),
+    assets(['./lang'], {
+      mimeTypes: { '.json': 'application/json' },
+      ssr: false,
+    }),
+  ],
 });

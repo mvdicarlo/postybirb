@@ -2135,6 +2135,13 @@
   dependencies:
     regenerator-runtime "^0.13.11"
 
+"@babel/runtime@^7.23.2":
+  version "7.23.6"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.6.tgz#c05e610dc228855dc92ef1b53d07389ed8ab521d"
+  integrity sha512-zHd0eUrf5GZoOWVCXp6koAKQTfZV07eit6bGPmJgnZdnSAvvZee6zniW2XMF7Cmc4ISOOnPy3QaSiIJGJkVEDQ==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
 "@babel/runtime@^7.7.6":
   version "7.18.3"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.18.3.tgz"
@@ -3022,6 +3029,16 @@
   version "4.10.0"
   resolved "https://registry.yarnpkg.com/@eslint-community/regexpp/-/regexpp-4.10.0.tgz#548f6de556857c8bb73bbee70c35dc82a2e74d63"
   integrity sha512-Cu96Sd2By9mCNTx2iyKOmq10v22jUVQv0lQnlGNy16oE9589yE+QADPbrMGCkA51cKZSg3Pu/aTJVTGfL/qjUA==
+
+"@eslint-types/import@^2.29.1":
+  version "2.29.1"
+  resolved "https://registry.yarnpkg.com/@eslint-types/import/-/import-2.29.1.tgz#450d3b3093cbec3d02e25c81da03441f9a3375ca"
+  integrity sha512-22yG9mnWk/mC6rQwtgzEbE/in7H7eA36v1eBVrVdYDeapylP/N0Qw0WPq83YSlQ1kM0B72az9FCZvlMfmwQ+YA==
+
+"@eslint-types/typescript-eslint@^6.17.0":
+  version "6.17.0"
+  resolved "https://registry.yarnpkg.com/@eslint-types/typescript-eslint/-/typescript-eslint-6.17.0.tgz#7f180d0d97cd87fa84defed46caa0e374e80094d"
+  integrity sha512-fPwdc27nXbsn69obhmOujFMxheimgs+Hf0iHCyq0s1w48iPpd0PgA/UvAs/PRUY/H9GYvrZDSvBTxtHLqnzb3A==
 
 "@eslint/eslintrc@^2.1.1":
   version "2.1.2"
@@ -9384,10 +9401,10 @@ eslint-config-prettier@^8.3.0:
   resolved "https://registry.npmjs.org/eslint-config-prettier/-/eslint-config-prettier-8.3.0.tgz"
   integrity sha512-BgZuLUSeKzvlL/VUjx/Yb787VQ26RU3gGjA3iiFvdsp/2bMfVIWUVP7tjxtjS0e+HP409cPlPvNkQloz8C91ew==
 
-eslint-define-config@^1.24.1:
-  version "1.24.1"
-  resolved "https://registry.yarnpkg.com/eslint-define-config/-/eslint-define-config-1.24.1.tgz#54254d2b2a280c74778ef21b9ccc39e6b56b9bc8"
-  integrity sha512-o36vBhPSWyIQlHoMqGhhcGmOOm2A2ccBVIdLTG/AWdm9YmjpsLpf+5ntf9LlHR6dduLREgxtGwvwPwSt7vnXJg==
+eslint-define-config@2:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-define-config/-/eslint-define-config-2.1.0.tgz#9708b3efd57637b6fb685d9c2fb6285b9acfbd71"
+  integrity sha512-QUp6pM9pjKEVannNAbSJNeRuYwW3LshejfyBBpjeMGaJjaDUpVps4C6KVR8R7dWZnD3i0synmrE36znjTkJvdQ==
 
 eslint-import-resolver-node@^0.3.6:
   version "0.3.6"
@@ -10891,6 +10908,13 @@ html-escaper@^2.0.0:
   resolved "https://registry.npmjs.org/html-escaper/-/html-escaper-2.0.2.tgz"
   integrity sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==
 
+html-parse-stringify@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/html-parse-stringify/-/html-parse-stringify-3.0.1.tgz#dfc1017347ce9f77c8141a507f233040c59c55d2"
+  integrity sha512-KknJ50kTInJ7qIScF3jeaFRpMpE8/lfiTdzf/twXyPBLAGrLRTmkz3AdTnKeh40X8k9L2fdYwEp/42WGXIRGcg==
+  dependencies:
+    void-elements "3.1.0"
+
 html-void-elements@^1.0.0:
   version "1.0.5"
   resolved "https://registry.npmjs.org/html-void-elements/-/html-void-elements-1.0.5.tgz"
@@ -11042,6 +11066,21 @@ hyphenate-style-name@^1.0.2:
   version "1.0.4"
   resolved "https://registry.npmjs.org/hyphenate-style-name/-/hyphenate-style-name-1.0.4.tgz"
   integrity sha512-ygGZLjmXfPHj+ZWh6LwbC37l43MhfztxetbFCoYTM2VjkIUpeHgSNn7QIyVFj7YQ1Wl9Cbw5sholVJPzWvC2MQ==
+
+i18next-electron-fs-backend@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/i18next-electron-fs-backend/-/i18next-electron-fs-backend-3.0.1.tgz#a394e42138b3a99d01a028748957d3cae0c34e11"
+  integrity sha512-Chh69vPlNOsYKsFWRgOR6aw5qZSxS1cBbJsIlDd70uNdumKWSSdNWnzsNWr3zSFRjdbYcu/FQBx6dGd8nuNjgg==
+  dependencies:
+    lodash.clonedeep "^4.5.0"
+    lodash.merge "^4.6.2"
+
+i18next@^23.7.11:
+  version "23.7.11"
+  resolved "https://registry.yarnpkg.com/i18next/-/i18next-23.7.11.tgz#ee4dfa58f9b27807ebf57d7c33a6c4a0bb4bf7c8"
+  integrity sha512-A/vOkw8vY99YHU9A1Td3I1dcTiYaPnwBWzrpVzfXUXSYgogK3cmBcmop/0cnXPc6QpUWIyqaugKNxRUEZVk9Nw==
+  dependencies:
+    "@babel/runtime" "^7.23.2"
 
 iconv-corefoundation@^1.1.7:
   version "1.1.7"
@@ -12951,6 +12990,11 @@ lodash.camelcase@^4.3.0:
   version "4.3.0"
   resolved "https://registry.npmjs.org/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz"
   integrity sha1-soqmKIorn8ZRA1x3EfZathkDMaY=
+
+lodash.clonedeep@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.clonedeep/-/lodash.clonedeep-4.5.0.tgz#e23f3f9c4f8fbdde872529c1071857a086e5ccef"
+  integrity sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==
 
 lodash.debounce@^4.0.8:
   version "4.0.8"
@@ -15291,6 +15335,14 @@ react-focus-on@^3.9.1:
     tslib "^2.3.1"
     use-callback-ref "^1.3.0"
     use-sidecar "^1.1.2"
+
+react-i18next@^13.5.0:
+  version "13.5.0"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-13.5.0.tgz#44198f747628267a115c565f0c736a50a76b1ab0"
+  integrity sha512-CFJ5NDGJ2MUyBohEHxljOq/39NQ972rh1ajnadG9BjTk+UXbHLq4z5DKEbEQBDoIhUmmbuS/fIMJKo6VOax1HA==
+  dependencies:
+    "@babel/runtime" "^7.22.5"
+    html-parse-stringify "^3.0.1"
 
 react-intl@^6.0.5:
   version "6.0.5"
@@ -18247,6 +18299,11 @@ vfile@^4.0.0, vfile@^4.2.1:
     unist-util-stringify-position "^2.0.0"
     vfile-message "^2.0.0"
 
+vite-multiple-assets@^1.2.10:
+  version "1.2.10"
+  resolved "https://registry.yarnpkg.com/vite-multiple-assets/-/vite-multiple-assets-1.2.10.tgz#2ea105c3057dd46ecad2fc3c5c385d87c320ebe3"
+  integrity sha512-G8PUqp4XRC0H6qYD4tzRFBSCv4tWAs30C/3Nzuz5QK57DpcSzOapQ6BUJrqYEEy2wU/od83B+hH/gOeXWTOFLg==
+
 vite-node@0.32.4:
   version "0.32.4"
   resolved "https://registry.yarnpkg.com/vite-node/-/vite-node-0.32.4.tgz#7b3f94af5a87c631fbc380ba662914bafbd04d80"
@@ -18310,6 +18367,11 @@ vitest@~0.32.0:
     vite "^3.0.0 || ^4.0.0"
     vite-node "0.32.4"
     why-is-node-running "^2.2.2"
+
+void-elements@3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/void-elements/-/void-elements-3.1.0.tgz#614f7fbf8d801f0bb5f0661f5b2f5785750e4f09"
+  integrity sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==
 
 w3c-hr-time@^1.0.2:
   version "1.0.2"
