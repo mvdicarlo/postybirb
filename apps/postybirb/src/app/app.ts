@@ -21,7 +21,6 @@ import {
 } from 'electron';
 import fs from 'fs';
 import { join } from 'path';
-import * as i18next from 'i18next-electron-fs-backend';
 import { environment } from '../environments/environment';
 import { rendererAppPort } from './constants';
 
@@ -55,8 +54,6 @@ export default class PostyBirb {
       }
 
       PostyBirb.application.quit();
-    } else {
-      i18next.clearMainBindings(ipcMain);
     }
   }
 
@@ -120,7 +117,6 @@ export default class PostyBirb {
         contextIsolation: true,
         backgroundThrottling: false,
         preload: join(__dirname, 'preload.js'),
-        sandbox: false, // allows import external modules in preload
         webviewTag: true,
         spellcheck: true,
         devTools: true,
@@ -128,8 +124,6 @@ export default class PostyBirb {
     });
     PostyBirb.mainWindow.setMenu(null);
     PostyBirb.mainWindow.center();
-
-    i18next.mainBindings(ipcMain, PostyBirb.mainWindow, fs);
 
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {

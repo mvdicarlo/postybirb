@@ -1,27 +1,13 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import backend from 'i18next-electron-fs-backend';
+import { i18n } from '@lingui/core';
+import { SettingsStore } from './stores/settings.store';
 
-i18n
-  .use(backend)
-  .use(initReactI18next)
-  .init({
-    backend: {
-      loadPath: 'lang/{{lng}}/default.json',
-      addPath: 'lang/{{lng}}/default.missing.json',
-      // for some reason settings this value to anything else breaks app
-      contextBridgeApiKey: 'api', // needs to match first parameter of contextBridge.exposeInMainWorld in preload file; defaults to "api"
-    },
+// TODO Maybe add rest api load logic and move lang folder to root
+// TODO Not sure because then we will get no fast refresh
+export async function loadCatalog(locale: string) {
+  const { messages } = await import(`./lang/${locale}.po`);
+  i18n.loadAndActivate({ locale, messages });
+}
 
-    debug: true,
-
-    saveMissing: true,
-
-    // allow keys to be phrases having `:`, `.`
-    nsSeparator: ':',
-    keySeparator: false,
-
-    fallbackLng: 'en',
-  });
-
-export default i18n;
+SettingsStore.updates.subscribe((e) => {
+  loadCatalog(e[0].settings.language);
+});

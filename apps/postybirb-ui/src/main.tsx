@@ -2,6 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './icons/icons';
+import { I18nProvider } from '@lingui/react';
+import { i18n } from '@lingui/core';
 import App from './app/app';
 import AppThemeProvider from './app/app-theme-provider';
 import { SubmissionsPath } from './pages/route-paths';
@@ -16,9 +18,11 @@ import './i18n';
 
 function Root() {
   return (
-    <AppThemeProvider>
-      <App />
-    </AppThemeProvider>
+    <I18nProvider i18n={i18n}>
+      <AppThemeProvider>
+        <App />
+      </AppThemeProvider>
+    </I18nProvider>
   );
 }
 

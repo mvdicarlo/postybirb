@@ -77,5 +77,13 @@ module.exports = defineConfig({
     'react/jsx-props-no-spreading': 'off',
     'react/react-in-jsx-scope': 'off',
     'import/no-extraneous-dependencies': 'warn',
+
+    // '@typescript-eslint/naming-convention': [
+    //   'error',
+    //   {
+    //     format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+    //     selector: ['objectLiteralProperty'],
+    //   },
+    // ],
   },
 });

@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-swc';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import assets from 'vite-multiple-assets';
+import { lingui } from '@lingui/vite-plugin';
 
 export default defineConfig({
   cacheDir: '../../node_modules/.vite/postybirb-ui',
@@ -24,8 +25,11 @@ export default defineConfig({
   },
 
   plugins: [
-    react(),
+    react({
+      plugins: [['@lingui/swc-plugin', {}]],
+    }),
     nxViteTsPaths(),
+    lingui(),
     assets(['./lang'], {
       mimeTypes: { '.json': 'application/json' },
       ssr: false,
