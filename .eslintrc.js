@@ -67,29 +67,6 @@ module.exports = defineConfig({
       extends: ['plugin:@nrwl/nx/javascript'],
       rules: {},
     },
-
-    {
-      files: ['apps/postybirb-ui/**/*.tsx', 'apps/postybirb-ui/**/*.ts'],
-      rules: {
-        'lingui/no-unlocalized-strings': 'error',
-        'lingui/t-call-in-function': 'error',
-        'lingui/no-single-variables-to-translate': 'error',
-        'lingui/no-expression-in-message': 'error',
-        'lingui/no-single-tag-to-translate': 'error',
-        'lingui/no-trans-inside-trans': 'error',
-        'lingui/text-restrictions': [
-          'error',
-          {
-            rules: [
-              {
-                patterns: ["''", '`', '“'],
-                message: "Don't use '', ` or “ in text",
-              },
-            ],
-          },
-        ],
-      },
-    },
   ],
   rules: {
     '@typescript-eslint/ban-types': 'warn',

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/macro';
 import { DynamicObject } from '@postybirb/types';
 import { FormattedMessage } from 'react-intl';
 
@@ -25,5 +26,5 @@ export default function Translation(props: TranslationProps): JSX.Element {
     return translation(props);
   }
 
-  return <p>Translation {id} not found</p>;
+  return <Trans>Translation {id} not found</Trans>;
 }
