@@ -11,7 +11,7 @@ import {
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useNavigate, useParams } from 'react-router';
 import SubmissionProvider, {
   useSubmission,
@@ -29,15 +29,9 @@ function EditSubmissionPageNavHeader() {
       {
         text:
           submission.type === SubmissionType.FILE ? (
-            <FormattedMessage
-              id="file-submissions"
-              defaultMessage="File Submissions"
-            />
+            <Trans id="file-submissions">File Submissions</Trans>
           ) : (
-            <FormattedMessage
-              id="message-submissions"
-              defaultMessage="Message Submissions"
-            />
+            <Trans id="message-submissions">Message Submissions</Trans>
           ),
         href: '#',
         onClick: (e) => {
@@ -71,10 +65,9 @@ function EditSubmissionPageNavHeader() {
             <EuiHeaderSection>
               <EuiTitle size="xs">
                 <h4>
-                  <FormattedMessage
-                    id="submissions.edit-page-header"
-                    defaultMessage="Edit Submission"
-                  />
+                  <Trans id="submissions.edit-page-header">
+                    Edit Submission
+                  </Trans>
                 </h4>
               </EuiTitle>
             </EuiHeaderSection>,
@@ -96,10 +89,7 @@ function EditSubmissionPageNavHeader() {
                     save();
                   }}
                 >
-                  <FormattedMessage
-                    id="submission.save"
-                    defaultMessage="Save"
-                  />
+                  <Trans id="submission.save">Save</Trans>
                 </EuiButton>
               </EuiHeaderSectionItem>
             </EuiHeaderSection>,

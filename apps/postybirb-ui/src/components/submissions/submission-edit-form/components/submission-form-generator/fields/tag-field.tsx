@@ -7,7 +7,7 @@ import { TagFieldType } from '@postybirb/form-builder';
 import { TagValue } from '@postybirb/types';
 import { uniq, uniqBy } from 'lodash';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { TagConverterStore } from '../../../../../../stores/tag-converter-store';
 import { TagGroupStore } from '../../../../../../stores/tag-group-store';
 import { useStore } from '../../../../../../stores/use-store';
@@ -139,12 +139,7 @@ export default function TagField(props: TagFieldProps) {
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
           checked={overrideDefault}
-          label={
-            <FormattedMessage
-              id="override-default"
-              defaultMessage="Override default"
-            />
-          }
+          label={<Trans id="override-default">Override default</Trans>}
           onChange={(e) => {
             setOverrideDefault(e.target.checked);
             option.data[propKey] = {

@@ -13,7 +13,7 @@ import {
 } from '@elastic/eui';
 import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useToggle } from 'react-use';
 import accountApi from '../../../api/account.api';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
@@ -71,9 +71,7 @@ function NameColumn(props: {
   return (
     <>
       <span>{name}</span>
-      <EuiToolTip
-        content={<FormattedMessage id="edit" defaultMessage="Edit" />}
-      >
+      <EuiToolTip content={<Trans>Edit</Trans>}>
         <EuiButtonIcon
           aria-label="Edit"
           iconType={PencilIcon}
@@ -216,7 +214,7 @@ function AccountLoginAction(props: {
           setIsVisible(true);
         }}
       >
-        <FormattedMessage id="login" defaultMessage="Login" />
+        <Trans context="action">Login</Trans>
       </EuiButton>
       {modal}
     </>
@@ -246,7 +244,7 @@ export default function AccountLoginCardTable(
   const columns: EuiBasicTableColumn<IAccountDto>[] = [
     {
       field: 'name',
-      name: <FormattedMessage id="name" defaultMessage="Name" />,
+      name: <Trans comment="Login account name">Name</Trans>,
       render: (name: string, record: IAccountDto<unknown>) => (
         <NameColumn
           key={name}
@@ -262,7 +260,7 @@ export default function AccountLoginCardTable(
     },
     {
       field: 'state',
-      name: <FormattedMessage id="status" defaultMessage="Status" />,
+      name: <Trans comment="Login status">Status</Trans>,
       render: (item: unknown) => {
         const { isLoggedIn, username, pending } = item as ILoginState;
         if (isLoggedIn) {
@@ -276,27 +274,21 @@ export default function AccountLoginCardTable(
         if (pending) {
           return (
             <EuiHealth color="primary">
-              <FormattedMessage
-                id="login.pending-login"
-                defaultMessage="Checking..."
-              />
+              <Trans comment="Login status checking">Checking...</Trans>
             </EuiHealth>
           );
         }
 
         return (
           <EuiHealth color="danger">
-            <FormattedMessage
-              id="login.not-logged-in"
-              defaultMessage="Not logged in"
-            />
+            <Trans comment="Login status">Not logged in</Trans>
           </EuiHealth>
         );
       },
     },
     {
       field: 'groups',
-      name: <FormattedMessage id="groups" defaultMessage="Groups" />,
+      name: <Trans>Groups</Trans>,
       render: (accountGroups: string[], record: IAccountDto<unknown>) => (
         <GroupsColumn
           groups={accountGroups}
@@ -312,7 +304,7 @@ export default function AccountLoginCardTable(
     },
     {
       field: 'id',
-      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      name: <Trans>Actions</Trans>,
       render: (id: string, record: IAccountDto<unknown>) => (
         <AccountActions account={record} website={website} />
       ),

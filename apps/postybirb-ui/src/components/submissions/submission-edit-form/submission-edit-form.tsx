@@ -7,7 +7,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { useSubmission } from '../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -147,7 +147,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection>
           <EuiTitle size="xs">
             <h4 data-anchor={defaultOptions.id}>
-              <FormattedMessage id="schedule" defaultMessage="Schedule" />
+              <Trans id="schedule">Schedule</Trans>
             </h4>
           </EuiTitle>
           <SubmissionScheduler
@@ -161,10 +161,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection key={defaultOptions.id}>
           <EuiTitle size="s">
             <h4 data-anchor={defaultOptions.id}>
-              <FormattedMessage
-                id="default-options"
-                defaultMessage="Default Options"
-              />
+              <Trans id="default-options">Default Options</Trans>
             </h4>
           </EuiTitle>
           <SubmissionOptionsSection

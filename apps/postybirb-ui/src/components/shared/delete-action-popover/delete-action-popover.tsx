@@ -1,6 +1,6 @@
 import { EuiButton, EuiPopover, EuiPopoverFooter, EuiText } from '@elastic/eui';
 import { KeyboardEvent, PropsWithChildren, useCallback, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useToast } from '../../../app/app-toast-provider';
 import { HttpResponse } from '../../../transports/http-client';
 
@@ -68,10 +68,7 @@ export default function DeleteActionPopover(
       <div>
         <EuiText size="s">
           <p>
-            <FormattedMessage
-              id="action.cannot-be-undone"
-              defaultMessage="This action cannot be undone."
-            />
+            <Trans>This action cannot be undone.</Trans>
           </p>
         </EuiText>
       </div>
@@ -85,7 +82,7 @@ export default function DeleteActionPopover(
           onClick={remove}
           onKeyUp={(event: KeyboardEvent) => onEnterKey(event, remove)}
         >
-          <FormattedMessage id="delete" defaultMessage="Delete" />
+          <Trans>Delete</Trans>
         </EuiButton>
       </EuiPopoverFooter>
     </EuiPopover>

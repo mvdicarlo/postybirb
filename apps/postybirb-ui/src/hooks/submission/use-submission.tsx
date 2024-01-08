@@ -14,7 +14,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import submissionApi from '../../api/submission.api';
 import websiteOptionsApi from '../../api/website-options.api';
@@ -158,12 +158,7 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
           addToast({
             id: Date.now().toString(),
             color: 'success',
-            text: (
-              <FormattedMessage
-                id="submission.save.success"
-                defaultMessage="Submission saved"
-              />
-            ),
+            text: <Trans id="submission.save.success">Submission saved</Trans>,
           });
           refetch();
         })

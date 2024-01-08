@@ -10,23 +10,21 @@ import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useLocalStorage } from 'react-use';
 
 const radios = [
   {
     id: ScheduleType.NONE,
-    label: <FormattedMessage id="schedule.none" defaultMessage="None" />,
+    label: <Trans id="schedule.none">None</Trans>,
   },
   {
     id: ScheduleType.SINGLE,
-    label: <FormattedMessage id="schedule.single" defaultMessage="Once" />,
+    label: <Trans id="schedule.single">Once</Trans>,
   },
   {
     id: ScheduleType.RECURRING,
-    label: (
-      <FormattedMessage id="schedule.recurring" defaultMessage="Recurring" />
-    ),
+    label: <Trans id="schedule.recurring">Recurring</Trans>,
   },
 ];
 

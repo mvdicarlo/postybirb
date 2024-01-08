@@ -131,7 +131,7 @@ function StartupSettings() {
   );
 }
 
-const languges = [
+const languages = [
   [msg`English`, 'en'],
   [msg`Russian`, 'ru'],
 ] as const;
@@ -146,15 +146,16 @@ function LanguageSettings() {
   const [options, setOptions] = useState<EuiSelectableOption[]>([]);
 
   useEffect(() => {
-    if (!isLoading)
+    // It should update only once
+    if (!isLoading && options.length === 0)
       setOptions(
-        languges.map(([label, content]) => ({
+        languages.map(([label, content]) => ({
           label: _(label),
           content,
           checked: content === settings.settings.language ? 'on' : undefined,
         }))
       );
-    // It should update only once
+      
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 

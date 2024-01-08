@@ -4,7 +4,7 @@ import {
   EuiFlyoutHeader,
   EuiTitle,
 } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import { AccountKeybinding } from '../../../shared/app-keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
@@ -43,7 +43,7 @@ export function AccountLoginFlyout() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <FormattedMessage id="accounts" defaultMessage="Accounts" />
+              <Trans>Accounts</Trans>
             </Keybinding>
           </div>
         </EuiTitle>

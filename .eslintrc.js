@@ -67,33 +67,39 @@ module.exports = defineConfig({
       extends: ['plugin:@nrwl/nx/javascript'],
       rules: {},
     },
+
+    {
+      files: ['apps/postybirb-ui/**/*.tsx', 'apps/postybirb-ui/**/*.ts'],
+      rules: {
+        'lingui/no-unlocalized-strings': 'error',
+        'lingui/t-call-in-function': 'error',
+        'lingui/no-single-variables-to-translate': 'error',
+        'lingui/no-expression-in-message': 'error',
+        'lingui/no-single-tag-to-translate': 'error',
+        'lingui/no-trans-inside-trans': 'error',
+        'lingui/text-restrictions': [
+          'error',
+          {
+            rules: [
+              {
+                patterns: ["''", '`', '“'],
+                message: "Don't use '', ` or “ in text",
+              },
+            ],
+          },
+        ],
+      },
+    },
   ],
   rules: {
     '@typescript-eslint/ban-types': 'warn',
+    'import/no-extraneous-dependencies': 'warn',
+
     'class-methods-use-this': 'off',
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/react-in-jsx-scope': 'off',
-    'import/no-extraneous-dependencies': 'warn',
-
-    'lingui/no-unlocalized-strings': 'error',
-    'lingui/t-call-in-function': 'error',
-    'lingui/no-single-variables-to-translate': 'error',
-    'lingui/no-expression-in-message': 'error',
-    'lingui/no-single-tag-to-translate': 'error',
-    'lingui/no-trans-inside-trans': 'error',
-    'lingui/text-restrictions': [
-      'error',
-      {
-        rules: [
-          {
-            patterns: ["''", '`', '“'],
-            message: 'Error message',
-          },
-        ],
-      },
-    ],
 
     '@typescript-eslint/naming-convention': [
       'error',

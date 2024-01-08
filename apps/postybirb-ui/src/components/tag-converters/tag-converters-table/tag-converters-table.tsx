@@ -13,7 +13,7 @@ import {
 } from '@elastic/eui';
 import { TagConverterDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -78,10 +78,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         id: Date.now().toString(),
         color: 'success',
         text: (
-          <FormattedMessage
-            id="update.success-tag-converter"
-            defaultMessage="Updated tag converter"
-          />
+          <Trans id="update.success-tag-converter">Updated tag converter</Trans>
         ),
       });
     });
@@ -104,8 +101,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           size="s"
           aria-label="Delete selected tag converters"
         >
-          <FormattedMessage id="delete" defaultMessage="Delete" />{' '}
-          {selectedItems.length}
+          <Trans id="delete">Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -117,7 +113,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const columns: Array<EuiBasicTableColumn<TagConverterDto>> = [
     {
       field: 'tag',
-      name: <FormattedMessage id="tag" defaultMessage="Tag" />,
+      name: <Trans id="tag">Tag</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, converter: TagConverterDto) => (
@@ -132,10 +128,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           )}
           error={
             <EuiText size="relative">
-              <FormattedMessage
-                id="duplicate.tag-converter"
-                defaultMessage="Duplicate tag"
-              />
+              <Trans id="duplicate.tag-converter">Duplicate tag</Trans>
             </EuiText>
           }
         >
@@ -155,7 +148,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
     },
     {
       field: 'convertTo',
-      name: <FormattedMessage id="websites" defaultMessage="Websites" />,
+      name: <Trans id="websites">Websites</Trans>,
       width: '60%',
       render: (_: string[], tagConverter: TagConverterDto) => (
         <div className="flex flex-wrap">
@@ -189,7 +182,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
       ),
     },
     {
-      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      name: <Trans id="actions">Actions</Trans>,
       width: '8%',
       actions: [
         {
@@ -210,7 +203,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                 saveChanges(converter);
               }}
             >
-              <FormattedMessage id="save" defaultMessage="Save" />
+              <Trans id="save">Save</Trans>
             </EuiButtonIcon>
           ),
         },
@@ -224,7 +217,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                 iconType="trash"
                 aria-label={`Delete tag converter ${converter.tag}`}
               >
-                <FormattedMessage id="delete" defaultMessage="Delete" />
+                <Trans id="delete">Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -243,7 +236,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
             aria-label="Create new tag group"
             onClick={createNewTagConverter}
           >
-            <FormattedMessage id="new" defaultMessage="New" />
+            <Trans id="new">New</Trans>
           </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>

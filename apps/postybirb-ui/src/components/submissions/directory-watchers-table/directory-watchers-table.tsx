@@ -18,7 +18,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
@@ -59,9 +59,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   return (
     <EuiPanel grow={false} className="postybirb-plus__directory-watcher-panel">
       <EuiForm>
-        <EuiFormRow
-          label={<FormattedMessage id="action" defaultMessage="Action" />}
-        >
+        <EuiFormRow label={<Trans id="action">Action</Trans>}>
           <EuiComboBox
             compressed
             singleSelection={{ asPlainText: true }}
@@ -76,10 +74,9 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
               switch (option.value) {
                 case DirectoryWatcherImportAction.NEW_SUBMISSION:
                   return (
-                    <FormattedMessage
-                      id="directory-watcher.import-action.new-submission"
-                      defaultMessage="Create new submission"
-                    />
+                    <Trans id="directory-watcher.import-action.new-submission">
+                      Create new submission
+                    </Trans>
                   );
                 default:
                   return option.label;
@@ -94,9 +91,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           />
         </EuiFormRow>
 
-        <EuiFormRow
-          label={<FormattedMessage id="folder" defaultMessage="Folder" />}
-        >
+        <EuiFormRow label={<Trans id="folder">Folder</Trans>}>
           <EuiButton
             iconType="folderOpen"
             disabled={!window?.electron?.pickDirectory}
@@ -112,9 +107,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           </EuiButton>
         </EuiFormRow>
         {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
-          <EuiFormRow
-            label={<FormattedMessage id="template" defaultMessage="Template" />}
-          >
+          <EuiFormRow label={<Trans id="template">Template</Trans>}>
             <TemplatePicker
               type={SubmissionType.FILE}
               selected={state.template}
@@ -196,10 +189,7 @@ export default function DirectoryWatchersTable() {
     <div className="postybirb-plus__directory-watchers-container">
       <EuiTitle size="xs">
         <h3>
-          <FormattedMessage
-            id="directory-watcher.header"
-            defaultMessage="Upload from folders"
-          />
+          <Trans id="directory-watcher.header">Upload from folders</Trans>
           <EuiButtonIcon
             iconType="plus"
             className="ml-2"

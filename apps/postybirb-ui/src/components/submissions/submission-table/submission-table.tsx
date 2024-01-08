@@ -6,7 +6,7 @@ import {
   EuiSpacer,
 } from '@elastic/eui';
 import { useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import 'regenerator-runtime';
 import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
@@ -82,10 +82,9 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
                     id: Date.now().toString(),
                     color: 'success',
                     text: (
-                      <FormattedMessage
-                        id="submission.submission-removed"
-                        defaultMessage="Submission removed"
-                      />
+                      <Trans id="submission.submission-removed">
+                        Submission removed
+                      </Trans>
                     ),
                   });
                   setSelectedSubmissionIds([]);

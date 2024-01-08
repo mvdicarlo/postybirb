@@ -12,7 +12,7 @@ import {
 import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { AccountId, DynamicObject, SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import userSpecifiedWebsiteOptionsApi from '../../../../../api/user-specified-website-options.api';
 import { useToast } from '../../../../../app/app-toast-provider';
 
@@ -82,10 +82,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
     <EuiModal onClose={onCloseModal}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <FormattedMessage
-            id="user-specified-options.modal.header"
-            defaultMessage="Choose Fields"
-          />
+          <Trans id="user-specified-options.modal.header">Choose Fields</Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -113,10 +110,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
                 addToast({
                   id: Date.now().toString(),
                   text: (
-                    <FormattedMessage
-                      id="default-options-saved"
-                      defaultMessage="Defaults saved"
-                    />
+                    <Trans id="default-options-saved">Defaults saved</Trans>
                   ),
                 });
               })
@@ -133,7 +127,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onCloseModal} disabled={isSaving}>
-          <FormattedMessage id="cancel" defaultMessage="Cancel" />
+          <Trans id="cancel">Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -142,7 +136,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
           isLoading={isSaving}
           disabled={isSaving}
         >
-          <FormattedMessage id="save" defaultMessage="Save" />
+          <Trans id="save">Save</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

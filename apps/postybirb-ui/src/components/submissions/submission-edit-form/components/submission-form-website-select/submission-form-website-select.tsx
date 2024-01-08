@@ -1,7 +1,7 @@
 import { EuiComboBox, EuiComboBoxOptionOption, EuiFormRow } from '@elastic/eui';
 import { IAccountDto, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useWebsites } from '../../../../../hooks/account/use-websites';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 
@@ -45,7 +45,7 @@ export function SubmissionFormWebsiteSelect() {
       aria-required
       fullWidth
       id="website-select"
-      label={<FormattedMessage id="form.websites" defaultMessage="Websites" />}
+      label={<Trans id="form.websites">Websites</Trans>}
       aria-label="Websites"
     >
       <EuiComboBox

@@ -8,7 +8,7 @@ import {
   EuiToolTip,
 } from '@elastic/eui';
 import { useCallback } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useNavigate } from 'react-router';
 import submissionApi from '../../../../../../api/submission.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
@@ -97,9 +97,9 @@ export function SubmissionTableCard(
         <EuiToolTip
           content={
             submission.schedule.scheduledFor ? (
-              <FormattedMessage id="schedule" defaultMessage="Schedule" />
+              <Trans id="schedule">Schedule</Trans>
             ) : (
-              <FormattedMessage id="post" defaultMessage="Post" />
+              <Trans id="post">Post</Trans>
             )
           }
         >
@@ -118,9 +118,7 @@ export function SubmissionTableCard(
             }}
           />
         </EuiToolTip>
-        <EuiToolTip
-          content={<FormattedMessage id="edit" defaultMessage="Edit" />}
-        >
+        <EuiToolTip content={<Trans id="edit">Edit</Trans>}>
           <EuiButtonIcon
             iconType="documentEdit"
             aria-label="Edit submission"
@@ -129,11 +127,7 @@ export function SubmissionTableCard(
             }}
           />
         </EuiToolTip>
-        <EuiToolTip
-          content={
-            <FormattedMessage id="duplicate" defaultMessage="Duplicate" />
-          }
-        >
+        <EuiToolTip content={<Trans id="duplicate">Duplicate</Trans>}>
           <EuiButtonIcon
             iconType="listAdd"
             color="accent"

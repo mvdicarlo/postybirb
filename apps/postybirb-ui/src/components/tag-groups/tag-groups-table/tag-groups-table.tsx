@@ -15,7 +15,7 @@ import {
 import { TagGroupDto } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -71,12 +71,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       addToast({
         id: Date.now().toString(),
         color: 'success',
-        text: (
-          <FormattedMessage
-            id="update.success-tag-group"
-            defaultMessage="Updated tag group"
-          />
-        ),
+        text: <Trans id="update.success-tag-group">Updated tag group</Trans>,
       });
     });
   };
@@ -96,8 +91,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
           size="s"
           aria-label="Delete selected tag groups"
         >
-          <FormattedMessage id="delete" defaultMessage="Delete" />{' '}
-          {selectedItems.length}
+          <Trans id="delete">Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -109,7 +103,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
   const columns: Array<EuiBasicTableColumn<TagGroupDto>> = [
     {
       field: 'name',
-      name: <FormattedMessage id="name" defaultMessage="Name" />,
+      name: <Trans id="name">Name</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, group: TagGroupDto) => (
@@ -123,10 +117,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
           )}
           error={
             <EuiText size="relative">
-              <FormattedMessage
-                id="duplicate.tag-group"
-                defaultMessage="Duplicate name"
-              />
+              <Trans id="duplicate.tag-group">Duplicate name</Trans>
             </EuiText>
           }
         >
@@ -146,7 +137,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
     },
     {
       field: 'tags',
-      name: <FormattedMessage id="tags" defaultMessage="Tags" />,
+      name: <Trans id="tags">Tags</Trans>,
       width: '60%',
       render: (tags: string[], tagGroup: TagGroupDto) => {
         const options = tags.map((tag) => ({
@@ -179,7 +170,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       },
     },
     {
-      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      name: <Trans id="actions">Actions</Trans>,
       width: '8%',
       actions: [
         {
@@ -200,7 +191,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
                 saveChanges(group);
               }}
             >
-              <FormattedMessage id="save" defaultMessage="Save" />
+              <Trans id="save">Save</Trans>
             </EuiButtonIcon>
           ),
         },
@@ -214,7 +205,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
                 iconType="trash"
                 aria-label={`Delete tag group ${group.name}`}
               >
-                <FormattedMessage id="delete" defaultMessage="Delete" />
+                <Trans id="delete">Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -233,7 +224,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
             aria-label="Create new tag group"
             onClick={createNewTagGroup}
           >
-            <FormattedMessage id="new" defaultMessage="New" />
+            <Trans id="new">New</Trans>
           </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>

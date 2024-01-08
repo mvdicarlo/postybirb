@@ -2,7 +2,7 @@ import { EuiCheckbox } from '@elastic/eui';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import { DescriptionValue } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { PostyBirbEditor } from '../../../../../shared/postybirb-editor/postybirb-editor';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
@@ -28,12 +28,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
           checked={overrideDefault}
-          label={
-            <FormattedMessage
-              id="override-default"
-              defaultMessage="Override default"
-            />
-          }
+          label={<Trans id="override-default">Override default</Trans>}
           onChange={(e) => {
             const descriptionValue = e.target.checked
               ? defaultOption.data.description?.description ?? ''

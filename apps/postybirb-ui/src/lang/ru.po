@@ -13,39 +13,388 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:97
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:84
+msgid "login.account-data-cleared"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:66
+msgid "account.data-update-success"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:23
+msgid "login.account-removed"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:138
+msgid "Accounts"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-flyout/account-login-flyout.tsx:46
+msgid "accounts"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:62
+msgid "action"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:307
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:156
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:185
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:173
+msgid "actions"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:60
+msgid "login.add-account"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:57
+msgid "Add account for {displayName}"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:107
+msgid "alt-text"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:99
 msgid "App Folder"
 msgstr "Папка приложения"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:71
+#: apps/postybirb-ui/src/app/app-settings.tsx:73
 msgid "App Server Port"
 msgstr "Порт сервера"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:216
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:295
+msgid "apply"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:141
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:287
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:130
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:51
+msgid "cancel"
+msgstr ""
+
+#. Login status checking
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:277
+msgid "Checking..."
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:85
+msgid "user-specified-options.modal.header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:222
+msgid "template.picker-modal-header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:43
+msgid "login.clear-data"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:150
+msgid "create"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:77
+msgid "directory-watcher.import-action.new-submission"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:234
 msgid "Dark theme"
 msgstr "Темная тема"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:138
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:164
+msgid "default-options"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:113
+msgid "default-options-saved"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:19
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:87
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:113
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:209
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:104
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:220
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:94
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:208
+msgid "delete"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:124
+msgid "dont-post-to"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card.tsx:130
+msgid "duplicate"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:135
+msgid "duplicate.submission-template"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:120
+msgid "duplicate.tag-group"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:131
+msgid "duplicate.tag-converter"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:74
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:197
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card.tsx:121
+msgid "edit"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:68
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:168
+msgid "submissions.edit-page-header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:164
+msgid "submissions.edit-page-header-template"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:135
 msgid "English"
 msgstr "Английский"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:151
+#: apps/postybirb-ui/src/app/app-toast-provider.tsx:64
+msgctxt "Error toast"
+msgid "Error"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:144
+msgid "File Submissions"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:32
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:83
+msgid "file-submissions"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:50
+msgid "submissions.file-page-header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:190
+msgid "filters"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:94
+msgid "folder"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/not-found/not-found.tsx:33
+msgid "page-not-found.go-back"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/not-found/not-found.tsx:26
+msgid "page-not-found.go-home"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:291
+msgid "Groups"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:126
+msgid "groups"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:184
+msgid "height"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:42
+msgid "hidden"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:22
+msgid "hide"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:136
+msgid "Home"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/home/home-page.tsx:11
+msgid "home.page-header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:96
+msgid "discord.webhook-help"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:192
+msgid "import-template"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:165
 msgid "Language"
 msgstr "Язык"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:216
+#: apps/postybirb-ui/src/app/app-settings.tsx:232
 msgid "Light theme"
 msgstr "Светлая тема"
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:217
+msgid "login"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:112
+msgid "Main navigation"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:149
+msgid "Message Submissions"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:34
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:85
+msgid "message-submissions"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:97
+msgid "submissions.message-page-header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:247
+msgid "login.account.name"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:113
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:121
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:106
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:44
+msgid "name"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:93
+msgid "submission.file-name"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-name-field.tsx:35
+msgid "default.name"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:234
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:239
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:227
+msgid "new"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:50
+msgid "no"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:153
+msgid "none"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:19
+msgid "schedule.none"
+msgstr ""
+
+#. Login status
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:284
+msgid "Not logged in"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:128
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:179
+msgid "off"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:114
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:165
+msgid "on"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:23
+msgid "schedule.single"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:52
 msgid "Open on startup"
 msgstr "Открывать при включении"
 
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:31
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:142
+msgid "override-default"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/not-found/not-found.tsx:11
+msgid "page-not-found.headaer"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card.tsx:102
+msgid "post"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/app-settings.tsx:47
 msgid "PostyBirb Startup Settings"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:58
+#: apps/postybirb-ui/src/app/app-settings.tsx:59
 msgid "PostyBirb will not open on startup"
 msgstr "PostyBirb не будет открываться при запуске"
 
@@ -53,30 +402,239 @@ msgstr "PostyBirb не будет открываться при запуске"
 msgid "PostyBirb will open on startup"
 msgstr "PostyBirb будет открываться при запуске"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:144
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:107
+msgid "primary"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:27
+msgid "schedule.recurring"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:208
+msgid "import.override-description"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:199
+msgid "import.override-title"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:136
 msgid "Russian"
 msgstr "Русский"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:120
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:177
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:139
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:206
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:194
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:119
+msgid "save"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:92
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:205
+msgid "submission.save"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:56
+msgid "leave-modal.save-first"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:87
+msgid "edit-form.set-default-options"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card.tsx:100
+msgid "schedule"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:37
+msgid "schedule.submission"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:125
 msgid "Select Folder"
 msgstr "Выбрать папку"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:153
+#: apps/postybirb-ui/src/app/app-settings.tsx:167
 msgid "Select language"
 msgstr "Выбрать язык"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:206
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:166
+#: apps/postybirb-ui/src/app/app-settings.tsx:220
 msgid "Settings"
 msgstr "Настройки"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:213
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:33
+msgid "show"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:150
+msgid "account.login.empty-filter"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:99
+msgid "account.login.hidden-filter"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:97
+msgid "submission.file-size"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/shared/error-alert/error-alert.tsx:23
+msgid "error-apology"
+msgstr ""
+
+#. Login status
+#: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:263
+msgid "Status"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-table/submission-table.tsx:85
+msgid "submission.submission-removed"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/hooks/submission/use-submission.tsx:161
+msgid "submission.save.success"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:54
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:103
+msgid "submissions"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:116
+msgid "tag"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:160
+msgid "Tag converters"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-flyout/tag-converters-flyout.tsx:40
+msgid "tag-converters"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:154
+msgid "Tag groups"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-flyout/tag-groups-flyout.tsx:40
+msgid "tag-groups"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:140
+msgid "tags"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:110
+msgid "template"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:61
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:110
+msgid "templates"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:227
 msgid "Theme"
 msgstr "Тема"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:99
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:64
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:71
+msgid "action.cannot-be-undone"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:101
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
 msgstr "Это папка, где приложение будет хранить данные. Вы должны перезапустить приложение чтобы применить изменения"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:73
+#: apps/postybirb-ui/src/app/app-settings.tsx:75
 msgid "This is the port the app server will run on. You must restart the app for this to take effect."
 msgstr "Это порт, который будет использован сервером. Вы должны перезапустить приложение чтобы применить настройки."
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:125
+msgid "thumbnail"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:48
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:77
+msgid "update"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:90
+msgid "update.success-submission-template"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:81
+msgid "update.success-tag-converter"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:74
+msgid "update.success-tag-group"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:192
+msgid "directory-watcher.header"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:90
+msgid "discord.webhook"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:48
+msgid "form.websites"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:151
+msgid "websites"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:212
+msgid "width"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:53
+msgid "yes"
+msgstr ""
+
+#. js-lingui-explicit-id
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:44
+msgid "leave-modal.title"
+msgstr ""
