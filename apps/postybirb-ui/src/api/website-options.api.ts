@@ -20,6 +20,10 @@ class WebsiteOptionsApi extends BaseApi<
   validate(dto: IValidateWebsiteOptionsDto) {
     return this.client.post<ValidationResult>('validate', dto);
   }
+
+  validateSubmission(submissionId: string) {
+    return this.client.get<ValidationResult[]>(`validate/${submissionId}`);
+  }
 }
 
 export default new WebsiteOptionsApi();
