@@ -13,10 +13,10 @@ import {
   EuiSwitch,
   EuiTitle,
 } from '@elastic/eui';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { useLingui } from '@lingui/react';
-import { Trans } from '@lingui/macro';
+import { Trans, msg } from '@lingui/macro';
 import settingsApi from '../api/settings.api';
 import Keybinding, {
   KeybindingProps,
@@ -43,17 +43,21 @@ function StartupSettings() {
     <Loading isLoading={isLoading}>
       <div>
         <EuiTitle size="xxs">
-          <h5>PostyBirb Startup Settings</h5>
+          <h5>
+            <Trans>PostyBirb Startup Settings</Trans>
+          </h5>
         </EuiTitle>
         <EuiSpacer size="s" />
         <EuiForm>
-          <EuiFormRow label={_('Open on startup')}>
+          <EuiFormRow label={<Trans>Open on startup</Trans>}>
             <EuiSwitch
               name="switch"
               label={
-                data?.startAppOnSystemStartup
-                  ? 'PostyBirb will open on startup'
-                  : 'PostyBirb will not open on startup'
+                data?.startAppOnSystemStartup ? (
+                  <Trans>PostyBirb will open on startup</Trans>
+                ) : (
+                  <Trans>PostyBirb will not open on startup</Trans>
+                )
               }
               onChange={(e) => {
                 settingsApi
@@ -92,10 +96,13 @@ function StartupSettings() {
             />
           </EuiFormRow>
           <EuiFormRow
-            label={_('App Folder')}
-            helpText={_(
-              'This is the folder where the app will store its data. You must restart the app for this to take effect.'
-            )}
+            label={<Trans>App Folder</Trans>}
+            helpText={
+              <Trans>
+                This is the folder where the app will store its data. You must
+                restart the app for this to take effect.
+              </Trans>
+            }
           >
             <EuiButton
               onClick={() => {
@@ -115,7 +122,7 @@ function StartupSettings() {
               }}
               iconType="folderClosed"
             >
-              {data?.appDataPath ?? 'Select Folder'}
+              {data?.appDataPath ?? _(msg`Select Folder`)}
             </EuiButton>
           </EuiFormRow>
         </EuiForm>
@@ -124,32 +131,39 @@ function StartupSettings() {
   );
 }
 
+const languges = [
+  [msg`English`, 'en'],
+  [msg`Russian`, 'ru'],
+] as const;
+
 function LanguageSettings() {
   const {
     state: [settings],
     reload: reloadSettings,
     isLoading,
   } = useStore(SettingsStore);
-  const { _: t } = useLingui();
+  const { _ } = useLingui();
+  const [options, setOptions] = useState<EuiSelectableOption[]>([]);
 
-  const [options, setOptions] = useState<EuiSelectableOption[]>([
-    {
-      label: 'English',
-      content: 'en',
-      checked: 'on',
-    },
-    {
-      content: 'ru',
-      label: 'Russian',
-    },
-  ]);
+  useEffect(() => {
+    if (!isLoading)
+      setOptions(
+        languges.map(([label, content]) => ({
+          label: _(label),
+          content,
+          checked: content === settings.settings.language ? 'on' : undefined,
+        }))
+      );
+    // It should update only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   return (
     <Loading isLoading={isLoading}>
       <EuiForm component="form" className="postybirb__settings">
         <EuiFormRow label={<Trans>Language</Trans>} hasChildLabel={false}>
           <EuiSelectable
-            aria-label={t('Select language')}
+            aria-label={_(msg`Select language`)}
             options={options}
             onChange={(newOptions: EuiSelectableOption[]) => {
               const selected = newOptions.find((e) => e.checked === 'on');
@@ -187,8 +201,6 @@ export default function AppSettings() {
 
   const [theme, setTheme] = useContext(AppThemeContext);
 
-  const { _: t } = useLingui();
-
   if (!isOpen) {
     return null;
   }
@@ -214,7 +226,13 @@ export default function AppSettings() {
           <EuiFormRow label={<Trans>Theme</Trans>} hasChildLabel={false}>
             <EuiSwitch
               name="switch"
-              label={theme === 'light' ? t('Light theme') : t('Dark theme')}
+              label={
+                theme === 'light' ? (
+                  <Trans>Light theme</Trans>
+                ) : (
+                  <Trans>Dark theme</Trans>
+                )
+              }
               onChange={() => {
                 setTheme(theme === 'light' ? 'dark' : 'light');
               }}

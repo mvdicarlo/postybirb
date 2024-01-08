@@ -88,6 +88,7 @@
     "document-register-element": "1.13.1",
     "electron-context-menu": "^3.1.1",
     "electron-updater": "^6.1.4",
+    "eslint-plugin-lingui": "^0.2.2",
     "express": "^4.18.2",
     "fastq": "^1.13.0",
     "filesize": "^10.0.6",

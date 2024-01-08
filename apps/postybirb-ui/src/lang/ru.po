@@ -13,13 +13,57 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:69
-msgid "App Server Port"
-msgstr ""
+#: apps/postybirb-ui/src/app/app-settings.tsx:97
+msgid "App Folder"
+msgstr "Папка приложения"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:150
+#: apps/postybirb-ui/src/app/app-settings.tsx:71
+msgid "App Server Port"
+msgstr "Порт сервера"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:216
+msgid "Dark theme"
+msgstr "Темная тема"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:138
+msgid "English"
+msgstr "Английский"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:151
 msgid "Language"
 msgstr "Язык"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:216
+msgid "Light theme"
+msgstr "Светлая тема"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:52
+msgid "Open on startup"
+msgstr "Открывать при включении"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:47
+msgid "PostyBirb Startup Settings"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:58
+msgid "PostyBirb will not open on startup"
+msgstr "PostyBirb не будет открываться при запуске"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:57
+msgid "PostyBirb will open on startup"
+msgstr "PostyBirb будет открываться при запуске"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:144
+msgid "Russian"
+msgstr "Русский"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:120
+msgid "Select Folder"
+msgstr "Выбрать папку"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:153
+msgid "Select language"
+msgstr "Выбрать язык"
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:206
 msgid "Settings"
@@ -29,6 +73,10 @@ msgstr "Настройки"
 msgid "Theme"
 msgstr "Тема"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:71
+#: apps/postybirb-ui/src/app/app-settings.tsx:99
+msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
+msgstr "Это папка, где приложение будет хранить данные. Вы должны перезапустить приложение чтобы применить изменения"
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:73
 msgid "This is the port the app server will run on. You must restart the app for this to take effect."
 msgstr "Это порт, который будет использован сервером. Вы должны перезапустить приложение чтобы применить настройки."

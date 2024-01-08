@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
-import assets from 'vite-multiple-assets';
+// import assets from 'vite-multiple-assets';
 import { lingui } from '@lingui/vite-plugin';
 
 export default defineConfig({
@@ -30,9 +30,9 @@ export default defineConfig({
     }),
     nxViteTsPaths(),
     lingui(),
-    assets(['./lang'], {
-      mimeTypes: { '.json': 'application/json' },
-      ssr: false,
-    }),
+    // assets(['./lang'], {
+    //   mimeTypes: { '.json': 'application/json' },
+    //   ssr: false,
+    // }),
   ],
 });

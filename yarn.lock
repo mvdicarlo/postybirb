@@ -5830,7 +5830,7 @@
     eslint-scope "^5.1.1"
     semver "^7.3.7"
 
-"@typescript-eslint/utils@5.62.0", "@typescript-eslint/utils@^5.60.1":
+"@typescript-eslint/utils@5.62.0", "@typescript-eslint/utils@^5.60.1", "@typescript-eslint/utils@^5.61.0":
   version "5.62.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/utils/-/utils-5.62.0.tgz#141e809c71636e4a75daa39faed2fb5f4b10df86"
   integrity sha512-n8oxjeb5aIbPFEtmQxQYOLI0i9n5ySBEY/ZEHHZqKQSFnxio1rv6dthascc9dLuwrL0RC5mPCxB7vnAVGAYWAQ==
@@ -9791,6 +9791,13 @@ eslint-plugin-jsx-a11y@6.6.1:
     language-tags "^1.0.5"
     minimatch "^3.1.2"
     semver "^6.3.0"
+
+eslint-plugin-lingui@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-lingui/-/eslint-plugin-lingui-0.2.2.tgz#22909b83da856832ec65b789f05b0455922c1a4e"
+  integrity sha512-orWu6o/IkCckLD0owLt+8fKy6SsIqIR9kz2L36KbCuAIfWg3dLRWC+XvuqQWEgJ4raRt+eoomTMunUJiBeogDQ==
+  dependencies:
+    "@typescript-eslint/utils" "^5.61.0"
 
 eslint-plugin-prettier@^4.0.0:
   version "4.0.0"
