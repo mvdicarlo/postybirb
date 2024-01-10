@@ -180,7 +180,6 @@ export class WebsiteRegistryService {
     const availableWebsites = this.getAvailableWebsites();
     // eslint-disable-next-line no-restricted-syntax
     for (const website of availableWebsites) {
-      // eslint-disable-next-line no-await-in-loop
       const accounts = await this.accountRepository.find({
         website: website.prototype.metadata.name,
       });
@@ -190,7 +189,6 @@ export class WebsiteRegistryService {
         displayName: website.prototype.metadata.displayName,
         usernameShortcut: website.prototype.usernameShortcut,
         metadata: website.prototype.metadata,
-        // eslint-disable-next-line no-await-in-loop
         accounts: accounts.map((account) => {
           const instance = this.findInstance(account);
           if (instance) {
