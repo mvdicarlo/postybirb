@@ -8,7 +8,7 @@ msgstr ""
 "Language: en_US\n"
 "Project-Id-Version: postybirb-leaftail\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-01-11 13:20\n"
+"PO-Revision-Date: 2024-01-11 13:24\n"
 "Last-Translator: \n"
 "Language-Team: English, United States\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -16,7 +16,7 @@ msgstr ""
 "X-Crowdin-Project-ID: 639602\n"
 "X-Crowdin-Language: en-US\n"
 "X-Crowdin-File: /i18n/lang/en.po\n"
-"X-Crowdin-File-ID: 8\n"
+"X-Crowdin-File-ID: 12\n"
 
 #. js-lingui-explicit-id
 #: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:84
