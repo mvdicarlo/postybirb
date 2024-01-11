@@ -15,8 +15,8 @@ msgstr ""
 "X-Crowdin-Project: postybirb-leaftail\n"
 "X-Crowdin-Project-ID: 639602\n"
 "X-Crowdin-Language: en-US\n"
-"X-Crowdin-File: /i18n/lang/en.po\n"
-"X-Crowdin-File-ID: 12\n"
+"X-Crowdin-File: /i18n/lang/ru.po\n"
+"X-Crowdin-File-ID: 14\n"
 
 #. js-lingui-explicit-id
 #: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:84
