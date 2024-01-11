@@ -34,7 +34,7 @@ export default function SubmissionSchedulerModal(
     <EuiModal onClose={onClose}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <Trans id="schedule.submission">Schedule Submission</Trans>
+          <Trans context="schedule.submission">Schedule Submission</Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -48,7 +48,7 @@ export default function SubmissionSchedulerModal(
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onClose}>
-          <Trans id="cancel">Cancel</Trans>
+          <Trans context="cancel">Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -74,7 +74,7 @@ export default function SubmissionSchedulerModal(
               });
           }}
         >
-          <Trans id="update">Update</Trans>
+          <Trans context="update">Update</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

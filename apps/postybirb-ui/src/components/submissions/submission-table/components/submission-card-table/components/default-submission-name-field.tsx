@@ -32,7 +32,7 @@ export function DefaultSubmissionNameField(
       prepend={
         // eslint-disable-next-line jsx-a11y/label-has-associated-control
         <label className="euiFormLabel euiFormControlLayout__prepend">
-          <Trans id="default.name">Name</Trans>
+          <Trans context="default.name">Name</Trans>
         </label>
       }
       isInvalid={!defaultOptions.title?.length}

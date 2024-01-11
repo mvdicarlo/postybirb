@@ -196,7 +196,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
     <>
       <EuiCheckbox
         checked={overrideTitle}
-        label={<Trans id="import.override-title">Replace title</Trans>}
+        label={<Trans context="import.override-title">Replace title</Trans>}
         id="import-template-override-title"
         onChange={() => {
           setOverrideTitle(!overrideTitle);
@@ -205,7 +205,9 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
       <EuiCheckbox
         checked={overrideDescription}
         label={
-          <Trans id="import.override-description">Replace description</Trans>
+          <Trans context="import.override-description">
+            Replace description
+          </Trans>
         }
         id="import-template-override-description"
         onChange={() => {
@@ -219,7 +221,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
     <EuiModal onClose={onClose}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <Trans id="template.picker-modal-header">Choose Templates</Trans>
+          <Trans context="template.picker-modal-header">Choose Templates</Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -284,7 +286,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onClose}>
-          <Trans id="cancel">Cancel</Trans>
+          <Trans context="cancel">Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -292,7 +294,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           fill
           disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
         >
-          <Trans id="apply">Apply</Trans>
+          <Trans context="apply">Apply</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

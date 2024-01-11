@@ -29,9 +29,9 @@ function EditSubmissionPageNavHeader() {
       {
         text:
           submission.type === SubmissionType.FILE ? (
-            <Trans id="file-submissions">File Submissions</Trans>
+            <Trans context="file-submissions">File Submissions</Trans>
           ) : (
-            <Trans id="message-submissions">Message Submissions</Trans>
+            <Trans context="message-submissions">Message Submissions</Trans>
           ),
         href: '#',
         onClick: (e) => {
@@ -65,7 +65,7 @@ function EditSubmissionPageNavHeader() {
             <EuiHeaderSection>
               <EuiTitle size="xs">
                 <h4>
-                  <Trans id="submissions.edit-page-header">
+                  <Trans context="submissions.edit-page-header">
                     Edit Submission
                   </Trans>
                 </h4>
@@ -89,7 +89,7 @@ function EditSubmissionPageNavHeader() {
                     save();
                   }}
                 >
-                  <Trans id="submission.save">Save</Trans>
+                  <Trans context="submission.save">Save</Trans>
                 </EuiButton>
               </EuiHeaderSectionItem>
             </EuiHeaderSection>,

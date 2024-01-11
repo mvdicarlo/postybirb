@@ -175,6 +175,7 @@ export default function AppSideNav() {
               iconType={e.icon.GroupItem}
               onClick={() => (e.onClick ?? e.keybinding.onActivate)()}
               showToolTip={false}
+              key={_(e.label)}
               label={
                 <EuiToolTip
                   position="right"

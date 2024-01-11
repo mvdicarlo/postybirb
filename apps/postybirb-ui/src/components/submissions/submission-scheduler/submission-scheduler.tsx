@@ -16,15 +16,15 @@ import { useLocalStorage } from 'react-use';
 const radios = [
   {
     id: ScheduleType.NONE,
-    label: <Trans id="schedule.none">None</Trans>,
+    label: <Trans context="schedule.none">None</Trans>,
   },
   {
     id: ScheduleType.SINGLE,
-    label: <Trans id="schedule.single">Once</Trans>,
+    label: <Trans context="schedule.single">Once</Trans>,
   },
   {
     id: ScheduleType.RECURRING,
-    label: <Trans id="schedule.recurring">Recurring</Trans>,
+    label: <Trans context="schedule.recurring">Recurring</Trans>,
   },
 ];
 

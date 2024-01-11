@@ -139,7 +139,7 @@ export default function TagField(props: TagFieldProps) {
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
           checked={overrideDefault}
-          label={<Trans id="override-default">Override default</Trans>}
+          label={<Trans context="override-default">Override default</Trans>}
           onChange={(e) => {
             setOverrideDefault(e.target.checked);
             option.data[propKey] = {

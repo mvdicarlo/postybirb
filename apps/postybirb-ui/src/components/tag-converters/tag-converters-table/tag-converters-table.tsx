@@ -78,7 +78,9 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         id: Date.now().toString(),
         color: 'success',
         text: (
-          <Trans id="update.success-tag-converter">Updated tag converter</Trans>
+          <Trans context="update.success-tag-converter">
+            Updated tag converter
+          </Trans>
         ),
       });
     });
@@ -101,7 +103,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           size="s"
           aria-label="Delete selected tag converters"
         >
-          <Trans id="delete">Delete</Trans> {selectedItems.length}
+          <Trans context="delete">Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -113,7 +115,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const columns: Array<EuiBasicTableColumn<TagConverterDto>> = [
     {
       field: 'tag',
-      name: <Trans id="tag">Tag</Trans>,
+      name: <Trans context="tag">Tag</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, converter: TagConverterDto) => (
@@ -128,7 +130,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           )}
           error={
             <EuiText size="relative">
-              <Trans id="duplicate.tag-converter">Duplicate tag</Trans>
+              <Trans context="duplicate.tag-converter">Duplicate tag</Trans>
             </EuiText>
           }
         >
@@ -148,7 +150,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
     },
     {
       field: 'convertTo',
-      name: <Trans id="websites">Websites</Trans>,
+      name: <Trans context="websites">Websites</Trans>,
       width: '60%',
       render: (_: string[], tagConverter: TagConverterDto) => (
         <div className="flex flex-wrap">
@@ -182,7 +184,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
       ),
     },
     {
-      name: <Trans id="actions">Actions</Trans>,
+      name: <Trans context="actions">Actions</Trans>,
       width: '8%',
       actions: [
         {
@@ -203,7 +205,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                 saveChanges(converter);
               }}
             >
-              <Trans id="save">Save</Trans>
+              <Trans context="save">Save</Trans>
             </EuiButtonIcon>
           ),
         },
@@ -217,7 +219,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                 iconType="trash"
                 aria-label={`Delete tag converter ${converter.tag}`}
               >
-                <Trans id="delete">Delete</Trans>
+                <Trans context="delete">Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -236,7 +238,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
             aria-label="Create new tag group"
             onClick={createNewTagConverter}
           >
-            <Trans id="new">New</Trans>
+            <Trans context="new">New</Trans>
           </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>

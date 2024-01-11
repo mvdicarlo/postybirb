@@ -84,7 +84,9 @@ export default function SubmissionOptionsSection(
                 setIsDefaultSaveModalVisible(true);
               }}
             >
-              <Trans id="edit-form.set-default-options">Save as default</Trans>
+              <Trans context="edit-form.set-default-options">
+                Save as default
+              </Trans>
             </EuiButtonEmpty>
           </EuiToolTip>
 

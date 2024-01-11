@@ -47,18 +47,18 @@ export default function FileSubmissionManagementPage() {
         bottomBorder
         iconType={FileIcon.Header}
         pageTitle={
-          <Trans id="submissions.file-page-header">File Submissions</Trans>
+          <Trans context="submissions.file-page-header">File Submissions</Trans>
         }
         tabs={[
           {
-            label: <Trans id="submissions">Submissions</Trans>,
+            label: <Trans context="submissions">Submissions</Trans>,
             isSelected: tab === 'submissions',
             onClick: () => {
               setTab('submissions');
             },
           },
           {
-            label: <Trans id="templates">Templates</Trans>,
+            label: <Trans context="templates">Templates</Trans>,
             isSelected: tab === 'templates',
             onClick: () => {
               setTab('templates');

@@ -82,7 +82,7 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
                     id: Date.now().toString(),
                     color: 'success',
                     text: (
-                      <Trans id="submission.submission-removed">
+                      <Trans context="submission.submission-removed">
                         Submission removed
                       </Trans>
                     ),

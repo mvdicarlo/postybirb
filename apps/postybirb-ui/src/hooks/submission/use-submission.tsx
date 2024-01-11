@@ -158,7 +158,9 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
           addToast({
             id: Date.now().toString(),
             color: 'success',
-            text: <Trans id="submission.save.success">Submission saved</Trans>,
+            text: (
+              <Trans context="submission.save.success">Submission saved</Trans>
+            ),
           });
           refetch();
         })

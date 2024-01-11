@@ -41,7 +41,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
         aria-label="Message submission name input"
         prepend={
           <EuiFormLabel htmlFor="message-input">
-            <Trans id="name">Name</Trans>
+            <Trans context="name">Name</Trans>
           </EuiFormLabel>
         }
         onKeyDown={(e) => {
@@ -94,20 +94,20 @@ export default function MessageSubmissionManagementPage() {
         bottomBorder
         iconType={MessageIcon.Header}
         pageTitle={
-          <Trans id="submissions.message-page-header">
+          <Trans context="submissions.message-page-header">
             Message Submissions
           </Trans>
         }
         tabs={[
           {
-            label: <Trans id="submissions">Submissions</Trans>,
+            label: <Trans context="submissions">Submissions</Trans>,
             isSelected: tab === 'submissions',
             onClick: () => {
               setTab('submissions');
             },
           },
           {
-            label: <Trans id="templates">Templates</Trans>,
+            label: <Trans context="templates">Templates</Trans>,
             isSelected: tab === 'templates',
             onClick: () => {
               setTab('templates');

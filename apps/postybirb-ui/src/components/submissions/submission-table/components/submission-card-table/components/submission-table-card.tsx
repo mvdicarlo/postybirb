@@ -160,9 +160,9 @@ export function SubmissionTableCard(
         <EuiToolTip
           content={
             submission.schedule.scheduledFor ? (
-              <Trans id="schedule">Schedule</Trans>
+              <Trans context="schedule">Schedule</Trans>
             ) : (
-              <Trans id="post">Post</Trans>
+              <Trans context="post">Post</Trans>
             )
           }
         >
@@ -184,7 +184,7 @@ export function SubmissionTableCard(
             }}
           />
         </EuiToolTip>
-        <EuiToolTip content={<Trans id="edit">Edit</Trans>}>
+        <EuiToolTip content={<Trans context="edit">Edit</Trans>}>
           <EuiButtonIcon
             iconType="documentEdit"
             aria-label="Edit submission"
@@ -193,7 +193,7 @@ export function SubmissionTableCard(
             }}
           />
         </EuiToolTip>
-        <EuiToolTip content={<Trans id="duplicate">Duplicate</Trans>}>
+        <EuiToolTip content={<Trans context="duplicate">Duplicate</Trans>}>
           <EuiButtonIcon
             iconType="listAdd"
             color="accent"

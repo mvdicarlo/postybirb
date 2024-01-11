@@ -90,11 +90,11 @@ function SharedDetails(props: FileDetailsProps) {
     description: NonNullable<ReactNode>;
   }> = [
     {
-      title: <Trans id="submission.file-name">Name</Trans>,
+      title: <Trans context="submission.file-name">Name</Trans>,
       description: file.fileName,
     },
     {
-      title: <Trans id="submission.file-size">Size</Trans>,
+      title: <Trans context="submission.file-size">Size</Trans>,
       description: <span>{filesize(file.size, { base: 2 }) as string}</span>,
     },
   ];
@@ -104,7 +104,10 @@ function SharedDetails(props: FileDetailsProps) {
       <EuiDescriptionList compressed listItems={listItems} type="column" />
       <EuiFlexGroup>
         <EuiFlexItem>
-          <EuiFormRow fullWidth label={<Trans id="alt-text">Alt Text</Trans>}>
+          <EuiFormRow
+            fullWidth
+            label={<Trans context="alt-text">Alt Text</Trans>}
+          >
             <EuiFieldText
               compressed
               fullWidth
@@ -121,7 +124,7 @@ function SharedDetails(props: FileDetailsProps) {
         <EuiFlexItem>
           <EuiFormRow
             fullWidth
-            label={<Trans id="dont-post-to">Don't post to</Trans>}
+            label={<Trans context="dont-post-to">Don't post to</Trans>}
           >
             <SimpleWebsiteSelect
               selected={ignoredWebsites}
@@ -181,7 +184,7 @@ function ImageDetails(props: FileDetailsProps) {
   return (
     <EuiFlexGroup>
       <EuiFlexItem>
-        <EuiFormRow label={<Trans id="height">Height</Trans>}>
+        <EuiFormRow label={<Trans context="height">Height</Trans>}>
           <EuiFieldNumber
             value={height}
             compressed
@@ -209,7 +212,7 @@ function ImageDetails(props: FileDetailsProps) {
       </EuiFlexItem>
 
       <EuiFlexItem>
-        <EuiFormRow label={<Trans id="width">Width</Trans>}>
+        <EuiFormRow label={<Trans context="width">Width</Trans>}>
           <EuiFieldNumber
             value={width}
             compressed

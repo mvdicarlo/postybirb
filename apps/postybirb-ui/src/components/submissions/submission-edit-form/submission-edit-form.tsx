@@ -147,7 +147,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection>
           <EuiTitle size="xs">
             <h4 data-anchor={defaultOptions.id}>
-              <Trans id="schedule">Schedule</Trans>
+              <Trans context="schedule">Schedule</Trans>
             </h4>
           </EuiTitle>
           <SubmissionScheduler
@@ -161,7 +161,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection key={defaultOptions.id}>
           <EuiTitle size="s">
             <h4 data-anchor={defaultOptions.id}>
-              <Trans id="default-options">Default Options</Trans>
+              <Trans context="default-options">Default Options</Trans>
             </h4>
           </EuiTitle>
           <SubmissionOptionsSection

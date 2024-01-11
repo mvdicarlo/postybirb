@@ -37,7 +37,7 @@ export function TagGroupsFlyout() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <Trans id="tag-groups">Tag Groups</Trans>
+              <Trans context="tag-groups">Tag Groups</Trans>
             </Keybinding>
           </div>
         </EuiTitle>

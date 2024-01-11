@@ -82,7 +82,9 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
     <EuiModal onClose={onCloseModal}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <Trans id="user-specified-options.modal.header">Choose Fields</Trans>
+          <Trans context="user-specified-options.modal.header">
+            Choose Fields
+          </Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -110,7 +112,9 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
                 addToast({
                   id: Date.now().toString(),
                   text: (
-                    <Trans id="default-options-saved">Defaults saved</Trans>
+                    <Trans context="default-options-saved">
+                      Defaults saved
+                    </Trans>
                   ),
                 });
               })
@@ -127,7 +131,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onCloseModal} disabled={isSaving}>
-          <Trans id="cancel">Cancel</Trans>
+          <Trans context="cancel">Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -136,7 +140,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
           isLoading={isSaving}
           disabled={isSaving}
         >
-          <Trans id="save">Save</Trans>
+          <Trans context="save">Save</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

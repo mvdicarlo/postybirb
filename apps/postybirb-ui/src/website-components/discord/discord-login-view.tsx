@@ -63,7 +63,7 @@ export default function DiscordLoginView(
               id,
               color: 'success',
               text: (
-                <Trans id="account.data-update-success">
+                <Trans context="account.data-update-success">
                   Account data updated.
                 </Trans>
               ),
@@ -87,13 +87,15 @@ export default function DiscordLoginView(
       }}
     >
       <EuiFormRow
-        label={<Trans id="discord.webhook">Webhook</Trans>}
+        label={<Trans context="discord.webhook">Webhook</Trans>}
         helpText={
           <EuiLink
             href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks"
             external
           >
-            <Trans id="discord.webhook-help">How to create a webhook</Trans>
+            <Trans context="discord.webhook-help">
+              How to create a webhook
+            </Trans>
           </EuiLink>
         }
       >
@@ -116,7 +118,7 @@ export default function DiscordLoginView(
           isLoading={isSubmitting}
           disabled={!isWebhookValid}
         >
-          <Trans id="save">Save</Trans>
+          <Trans context="save">Save</Trans>
         </EuiButton>
       </EuiFormRow>
     </EuiForm>

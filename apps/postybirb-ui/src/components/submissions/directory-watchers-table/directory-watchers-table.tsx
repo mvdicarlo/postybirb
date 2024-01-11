@@ -59,7 +59,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   return (
     <EuiPanel grow={false} className="postybirb-plus__directory-watcher-panel">
       <EuiForm>
-        <EuiFormRow label={<Trans id="action">Action</Trans>}>
+        <EuiFormRow label={<Trans context="action">Action</Trans>}>
           <EuiComboBox
             compressed
             singleSelection={{ asPlainText: true }}
@@ -74,7 +74,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
               switch (option.value) {
                 case DirectoryWatcherImportAction.NEW_SUBMISSION:
                   return (
-                    <Trans id="directory-watcher.import-action.new-submission">
+                    <Trans context="directory-watcher.import-action.new-submission">
                       Create new submission
                     </Trans>
                   );
@@ -91,7 +91,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           />
         </EuiFormRow>
 
-        <EuiFormRow label={<Trans id="folder">Folder</Trans>}>
+        <EuiFormRow label={<Trans context="folder">Folder</Trans>}>
           <EuiButton
             iconType="folderOpen"
             disabled={!window?.electron?.pickDirectory}
@@ -107,7 +107,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           </EuiButton>
         </EuiFormRow>
         {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
-          <EuiFormRow label={<Trans id="template">Template</Trans>}>
+          <EuiFormRow label={<Trans context="template">Template</Trans>}>
             <TemplatePicker
               type={SubmissionType.FILE}
               selected={state.template}
@@ -189,7 +189,7 @@ export default function DirectoryWatchersTable() {
     <div className="postybirb-plus__directory-watchers-container">
       <EuiTitle size="xs">
         <h3>
-          <Trans id="directory-watcher.header">Upload from folders</Trans>
+          <Trans context="directory-watcher.header">Upload from folders</Trans>
           <EuiButtonIcon
             iconType="plus"
             className="ml-2"

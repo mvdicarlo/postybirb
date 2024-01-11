@@ -28,7 +28,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
           checked={overrideDefault}
-          label={<Trans id="override-default">Override default</Trans>}
+          label={<Trans context="override-default">Override default</Trans>}
           onChange={(e) => {
             const descriptionValue = e.target.checked
               ? defaultOption.data.description?.description ?? ''

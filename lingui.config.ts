@@ -4,7 +4,7 @@ const config: LinguiConfig = {
   locales: ['en', 'ru'],
   catalogs: [
     {
-      path: 'apps/postybirb-ui/src/lang/{locale}',
+      path: 'lang/{locale}',
       include: ['apps/postybirb-ui/src'],
     },
   ],
