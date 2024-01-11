@@ -8,15 +8,15 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: postybirb-leaftail\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-01-11 13:20\n"
+"PO-Revision-Date: 2024-01-11 13:24\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
 "X-Crowdin-Project: postybirb-leaftail\n"
 "X-Crowdin-Project-ID: 639602\n"
 "X-Crowdin-Language: ru\n"
-"X-Crowdin-File: /i18n/lang/ru.po\n"
-"X-Crowdin-File-ID: 10\n"
+"X-Crowdin-File: /i18n/lang/en.po\n"
+"X-Crowdin-File-ID: 12\n"
 
 #. js-lingui-explicit-id
 #: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:84
@@ -535,7 +535,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:138
 #: apps/postybirb-ui/src/components/account/account-login-flyout/account-login-flyout.tsx:46
 msgid "Accounts"
-msgstr "Аккаунты"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:62
 msgctxt "action"
@@ -559,7 +559,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:57
 msgid "Add account for {displayName}"
-msgstr "Добавить учетную запись для {displayName}"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:109
 msgctxt "alt-text"
@@ -568,11 +568,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:99
 msgid "App Folder"
-msgstr "Папка приложения"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:73
 msgid "App Server Port"
-msgstr "Порт сервера приложений"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:297
 msgctxt "apply"
@@ -598,7 +598,7 @@ msgstr ""
 #. Login status checking
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:277
 msgid "Checking..."
-msgstr "Проверка..."
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:85
 msgctxt "user-specified-options.modal.header"
@@ -625,7 +625,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:234
 msgid "Dark theme"
-msgstr "Темная тема"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:164
 msgctxt "default-options"
@@ -703,12 +703,12 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:135
 msgid "English"
-msgstr "Russian"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-toast-provider.tsx:64
 msgctxt "Error toast"
 msgid "Error"
-msgstr "Ошибка"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:32
 msgctxt "file-submissions"
@@ -723,7 +723,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:144
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:89
 msgid "File Submissions"
-msgstr "Отправленные файлы"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:190
 msgid "Filters"
@@ -747,7 +747,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:291
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:126
 msgid "Groups"
-msgstr "Группы"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:187
 msgctxt "height"
@@ -767,7 +767,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:136
 #: apps/postybirb-ui/src/pages/home/home-page.tsx:11
 msgid "Home"
-msgstr "Домашний"
+msgstr ""
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:96
 msgctxt "discord.webhook-help"
@@ -780,11 +780,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:165
 msgid "Language"
-msgstr "Язык"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:232
 msgid "Light theme"
-msgstr "Светлая тема"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:217
 msgctxt "action"
@@ -793,7 +793,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:112
 msgid "Main navigation"
-msgstr "Основная навигация"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:34
 msgctxt "message-submissions"
@@ -808,7 +808,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:149
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
 msgid "Message Submissions"
-msgstr "Сообщение"
+msgstr ""
 
 #. Login account name
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:247
@@ -861,7 +861,7 @@ msgstr ""
 #. Login status
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:284
 msgid "Not logged in"
-msgstr "Не авторизован"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:128
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:179
@@ -880,7 +880,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:52
 msgid "Open on startup"
-msgstr "Открыть при запуске"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:31
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:142
@@ -900,15 +900,15 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:47
 msgid "PostyBirb Startup Settings"
-msgstr "PostyBirb Startup Settings"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:59
 msgid "PostyBirb will not open on startup"
-msgstr "PostyBirb не будет открыт при запуске"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:57
 msgid "PostyBirb will open on startup"
-msgstr "Открытие PostyBirb при запуске"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:107
 msgctxt "primary"
@@ -932,7 +932,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:136
 msgid "Russian"
-msgstr "Русский"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:175
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:207
@@ -975,16 +975,16 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:125
 msgid "Select Folder"
-msgstr "Выберите папку"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:167
 msgid "Select language"
-msgstr "Выберите язык"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:166
 #: apps/postybirb-ui/src/app/app-settings.tsx:220
 msgid "Settings"
-msgstr "Настройки"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:33
 msgid "Show"
@@ -1011,7 +1011,7 @@ msgstr ""
 #. Login status
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:263
 msgid "Status"
-msgstr "Статус"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/submission-table.tsx:85
 msgctxt "submission.submission-removed"
@@ -1036,7 +1036,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:160
 msgid "Tag converters"
-msgstr "Преобразователи тегов"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-flyout/tag-converters-flyout.tsx:40
 msgctxt "tag-converters"
@@ -1045,7 +1045,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:154
 msgid "Tag groups"
-msgstr "Группы тегов"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-flyout/tag-groups-flyout.tsx:40
 msgctxt "tag-groups"
@@ -1075,7 +1075,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:227
 msgid "Theme"
-msgstr "Тема"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:60
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:71
@@ -1084,11 +1084,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:101
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
-msgstr "Это папка, в которой приложение сохранит свои данные. Чтобы это произошло, необходимо перезапустить приложение."
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:75
 msgid "This is the port the app server will run on. You must restart the app for this to take effect."
-msgstr "Это порт, на котором будет запущен сервер приложений. Вам необходимо перезапустить приложение, чтобы оно вступило в силу."
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:125
 msgctxt "thumbnail"
