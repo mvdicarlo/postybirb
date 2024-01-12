@@ -37,8 +37,6 @@ export class PostService extends PostyBirbService<PostRecord> {
       const entities = await this.submissionRepository.find({
         isScheduled: true,
       });
-      // TODO change the schedule info to not overload cron field
-      // TODO ^ we will need to inject the 'next' time to run into the submission
       const now = Date.now();
       const sorted = entities
         .filter((e) => new Date(e.schedule.scheduledFor).getTime() <= now) // Only those that are ready to be posted.

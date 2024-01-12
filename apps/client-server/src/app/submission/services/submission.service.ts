@@ -91,6 +91,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       schedule: {
         scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
+        cron: undefined,
       },
       options: [],
       metadata: {},
@@ -225,6 +226,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     submission.schedule = {
       scheduledFor: update.scheduledFor ?? submission.schedule.scheduledFor,
       scheduleType: update.scheduleType ?? submission.schedule.scheduleType,
+      cron: update.cron ?? submission.schedule.cron,
     };
 
     // Ensure ISO format

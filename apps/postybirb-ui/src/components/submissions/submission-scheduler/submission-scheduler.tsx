@@ -12,6 +12,9 @@ import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
+import { Cron } from 'croner';
+
+const DEFAULT_CRON = '0 0 * * FRI';
 
 const radios = [
   {
@@ -63,21 +66,23 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
           <EuiFormRow
             label={
               <EuiLink href="https://crontab.cronhub.io/">
-                Cron Format <EuiIcon type="link" size="s" />
+                CRON Format <EuiIcon type="link" size="s" />
               </EuiLink>
             }
             helpText={
-              schedule.scheduledFor
-                ? cronstrue.toString(schedule.scheduledFor)
+              schedule.cron
+                ? `${cronstrue.toString(schedule.cron)} (${moment(
+                    schedule.scheduledFor
+                  ).format('lll')})`
                 : 'Invalid CRON string'
             }
           >
             <EuiFieldText
-              value={schedule.scheduledFor}
+              value={schedule.cron}
               onChange={(event) => {
                 onUpdate({
                   ...schedule,
-                  scheduledFor: event.target.value,
+                  cron: event.target.value,
                 });
               }}
             />
@@ -97,7 +102,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
             shadow={false}
             selected={momentDate}
             onChange={(newDate) => {
-              const dateStr = newDate?.toString();
+              const dateStr = newDate?.toISOString();
               onUpdate({ ...schedule, scheduledFor: dateStr });
               setLastUsedSchedule(dateStr);
               setLastKnownSetDate(dateStr);
@@ -115,7 +120,8 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
           options={radios}
           idSelected={schedule.scheduleType}
           onChange={(id) => {
-            switch (id as ScheduleType) {
+            const type = id as ScheduleType;
+            switch (type) {
               case ScheduleType.SINGLE: {
                 let date: string | undefined;
                 if (lastUsedSchedule) {
@@ -126,22 +132,25 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
                   }
                 }
                 onUpdate({
-                  scheduleType: id as ScheduleType,
+                  scheduleType: type,
                   scheduledFor: lastKnownSetDate ?? date,
+                  cron: undefined,
                 });
                 break;
               }
               case ScheduleType.RECURRING:
                 onUpdate({
-                  scheduleType: id as ScheduleType,
-                  scheduledFor: '0 0 * * FRI',
+                  scheduleType: type,
+                  cron: DEFAULT_CRON,
+                  scheduledFor: Cron(DEFAULT_CRON)?.nextRun()?.toISOString(),
                 });
                 break;
               case ScheduleType.NONE:
               default:
                 onUpdate({
-                  scheduleType: id as ScheduleType,
+                  scheduleType: type,
                   scheduledFor: undefined,
+                  cron: undefined,
                 });
                 break;
             }
