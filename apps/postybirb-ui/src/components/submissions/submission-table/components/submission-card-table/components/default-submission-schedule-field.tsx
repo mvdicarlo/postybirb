@@ -48,7 +48,7 @@ export function DefaultSubmissionScheduleField({
       >
         <EuiFieldText
           compressed
-          prepend={<EuiButtonIcon iconType="calendar" />}
+          prepend={<EuiButtonIcon iconType="calendar" aria-label="Schedule" />}
           placeholder="No schedule"
           readOnly
           value={scheduleText}

@@ -7,6 +7,7 @@ import { DatabaseModule } from '../database/database.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
+import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { PostService } from './post.service';
 
 describe('PostService', () => {
@@ -17,7 +18,12 @@ describe('PostService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule, SubmissionModule, AccountModule],
+      imports: [
+        DatabaseModule,
+        SubmissionModule,
+        AccountModule,
+        WebsiteOptionsModule,
+      ],
       providers: [PostService],
     }).compile();
 

@@ -23,8 +23,13 @@ import {
 import { cloneDeep } from 'lodash';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../../database/entities';
+import {
+  PostRecord,
+  Submission,
+  WebsiteOptions,
+} from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
+import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -38,12 +43,12 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
 
 /**
  * Service that handles the vast majority of submission management logic.
- *
  * @class SubmissionService
  */
 @Injectable()
 export class SubmissionService extends PostyBirbService<SubmissionEntity> {
   constructor(
+    dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Submission)
     repository: PostyBirbRepository<SubmissionEntity>,
     @Inject(forwardRef(() => WebsiteOptionsService))
@@ -53,6 +58,8 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     @Optional() webSocket: WSGateway
   ) {
     super(repository, webSocket);
+    // Listen to changes to PostRecord as it is a child of Submission
+    repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
   }
 
   /**
@@ -219,6 +226,17 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       scheduledFor: update.scheduledFor ?? submission.schedule.scheduledFor,
       scheduleType: update.scheduleType ?? submission.schedule.scheduleType,
     };
+
+    // Ensure ISO format
+    if (
+      submission.schedule.scheduleType === ScheduleType.SINGLE &&
+      submission.schedule.scheduledFor
+    ) {
+      submission.schedule.scheduledFor = new Date(
+        submission.schedule.scheduledFor
+      ).toISOString();
+    }
+
     submission.metadata = {
       ...submission.metadata,
       ...update.metadata,

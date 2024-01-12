@@ -12,6 +12,7 @@ import {
   IPostRecord,
   IWebsitePostRecord,
   PostRecordDto,
+  PostRecordState,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
@@ -19,7 +20,9 @@ import { Submission } from './submission.entity';
 import { WebsitePostRecord } from './website-post-record.entity';
 
 /** @inheritdoc */
-@Entity({ customRepository: () => PostyBirbRepository })
+@Entity({
+  customRepository: () => PostyBirbRepository,
+})
 export class PostRecord extends PostyBirbEntity implements IPostRecord {
   [EntityRepositoryType]?: PostyBirbRepository<PostRecord>;
 
@@ -43,8 +46,12 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
     mappedBy: 'parent',
     orphanRemoval: true,
     eager: true,
+    default: [],
   })
   children: Collection<IWebsitePostRecord>;
+
+  @Property({ type: 'string', nullable: false })
+  state: PostRecordState = PostRecordState.PENDING;
 
   toJSON(): PostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

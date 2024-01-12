@@ -76,7 +76,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   toJSON(): ISubmissionDto<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serialize(this as any, {
-      populate: ['files', 'options', 'options.account'],
+      populate: ['files', 'options', 'options.account', 'posts'],
     }) as ISubmissionDto<T>;
   }
 }
