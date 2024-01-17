@@ -7,12 +7,12 @@ import {
   EuiRadioGroup,
 } from '@elastic/eui';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
+import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
-import { Cron } from 'croner';
 
 const DEFAULT_CRON = '0 0 * * FRI';
 
@@ -62,6 +62,23 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
       case ScheduleType.NONE:
         return null;
       case ScheduleType.RECURRING:
+        // eslint-disable-next-line no-case-declarations
+        let cronHelp: JSX.Element | null = (
+          <FormattedMessage
+            id="schedule.cron.invalid"
+            defaultMessage="Invalid CRON string"
+          />
+        );
+        try {
+          cronHelp = schedule.cron ? (
+            <span>
+              {cronstrue.toString(schedule.cron)} (
+              {moment(schedule.scheduledFor).format('lll')})
+            </span>
+          ) : null;
+        } catch (e) {
+          // Do nothing
+        }
         return (
           <EuiFormRow
             label={
@@ -69,20 +86,23 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
                 CRON Format <EuiIcon type="link" size="s" />
               </EuiLink>
             }
-            helpText={
-              schedule.cron
-                ? `${cronstrue.toString(schedule.cron)} (${moment(
-                    schedule.scheduledFor
-                  ).format('lll')})`
-                : 'Invalid CRON string'
-            }
+            helpText={cronHelp}
           >
             <EuiFieldText
               value={schedule.cron}
               onChange={(event) => {
+                let scheduledFor;
+                try {
+                  scheduledFor = Cron(event.target.value)
+                    ?.nextRun()
+                    ?.toISOString();
+                } catch (e) {
+                  // Do nothing
+                }
                 onUpdate({
                   ...schedule,
                   cron: event.target.value,
+                  scheduledFor,
                 });
               }}
             />
@@ -123,17 +143,10 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
             const type = id as ScheduleType;
             switch (type) {
               case ScheduleType.SINGLE: {
-                let date: string | undefined;
-                if (lastUsedSchedule) {
-                  const lastUsedDate = new Date(lastUsedSchedule).getTime();
-                  const now = Date.now();
-                  if (now < lastUsedDate) {
-                    date = lastUsedSchedule;
-                  }
-                }
                 onUpdate({
                   scheduleType: type,
-                  scheduledFor: lastKnownSetDate ?? date,
+                  scheduledFor:
+                    lastUsedSchedule ?? moment().add(1, 'day').toISOString(),
                   cron: undefined,
                 });
                 break;
