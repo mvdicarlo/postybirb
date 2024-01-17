@@ -12,8 +12,10 @@ import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router';
+import postApi from '../../../../../../api/post.api';
 import submissionApi from '../../../../../../api/submission.api';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
+import { useToast } from '../../../../../../app/app-toast-provider';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../../../../pages/route-paths';
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
@@ -71,6 +73,7 @@ export function SubmissionTableCard(
   const { submission, selected, onSelect } = props;
   const { files } = submission;
   const history = useNavigate();
+  const { addToast, addErrorToast } = useToast();
   const { data: validationResult } = useQuery(
     `submission-validation-${submission.id}`,
     () =>
@@ -110,6 +113,11 @@ export function SubmissionTableCard(
     },
     [history]
   );
+
+  const canPost =
+    !validationStatus.hasErrors &&
+    submission.options.length > 1 &&
+    submission.posts.length === 0;
 
   return (
     <EuiSplitPanel.Outer
@@ -170,15 +178,31 @@ export function SubmissionTableCard(
               submission.schedule.scheduledFor ? ScheduleIcon : SendIcon
             }
             color="success"
-            disabled={validationStatus.hasErrors}
+            disabled={!canPost}
             aria-label={
               submission.schedule.scheduledFor
                 ? 'Schedule submission'
                 : 'Post submission'
             }
             onClick={() => {
-              if (!validationStatus.hasErrors) {
-                navToEdit(submission.id);
+              if (canPost) {
+                postApi
+                  .enqueue([submission.id])
+                  .then(() => {
+                    addToast({
+                      id: Date.now().toString(),
+                      color: 'success',
+                      title: (
+                        <FormattedMessage
+                          id="submission.enqueued"
+                          defaultMessage="Submission queued for posting"
+                        />
+                      ),
+                    });
+                  })
+                  .catch((res) => {
+                    addErrorToast(res);
+                  });
               }
             }}
           />

@@ -7,6 +7,7 @@ import {
   EuiModalHeader,
   EuiModalHeaderTitle,
 } from '@elastic/eui';
+import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import submissionApi from '../../../api/submission.api';
@@ -19,6 +20,38 @@ type SubmissionSchedulerModalProps = {
   onClose: () => void;
 };
 
+function isUndefinedOrEmpty(value: string | undefined) {
+  return value === undefined || value === '' || value === null;
+}
+
+function isBeforeToday(value: Date | string | undefined) {
+  if (value === undefined) {
+    return false;
+  }
+  const date = new Date(value);
+  const today = new Date();
+  return date < today;
+}
+
+function isValid(schedule: ISubmissionScheduleInfo) {
+  if (schedule.scheduleType === ScheduleType.NONE) {
+    return true;
+  }
+  if (schedule.scheduleType === ScheduleType.SINGLE) {
+    return (
+      !isUndefinedOrEmpty(schedule.scheduledFor) &&
+      !isBeforeToday(schedule.scheduledFor)
+    );
+  }
+  if (schedule.scheduleType === ScheduleType.RECURRING) {
+    return (
+      !isUndefinedOrEmpty(schedule.cron) &&
+      !isUndefinedOrEmpty(schedule.scheduledFor)
+    );
+  }
+  return false;
+}
+
 export default function SubmissionSchedulerModal(
   props: SubmissionSchedulerModalProps
 ) {
@@ -29,6 +62,7 @@ export default function SubmissionSchedulerModal(
 
   const hasChanges =
     JSON.stringify(submission.schedule) !== JSON.stringify(updateSchedule);
+  const valid = isValid(updateSchedule);
 
   return (
     <EuiModal onClose={onClose}>
@@ -56,7 +90,7 @@ export default function SubmissionSchedulerModal(
         <EuiButton
           type="submit"
           fill
-          disabled={!hasChanges}
+          disabled={!hasChanges || !valid}
           isLoading={isSaving}
           onClick={() => {
             setIsSaving(true);

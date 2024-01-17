@@ -11,6 +11,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsISO8601,
   IsObject,
   IsOptional,
   IsString,
@@ -24,11 +25,17 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
+  @IsISO8601()
   scheduledFor: string | null | undefined;
 
   @ApiProperty({ enum: ScheduleType })
   @IsEnum(ScheduleType)
   scheduleType: ScheduleType;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  cron: string | null | undefined;
 
   @ApiProperty()
   @IsOptional()

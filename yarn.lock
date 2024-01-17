@@ -8035,6 +8035,11 @@ cron@3.1.3:
     "@types/luxon" "~3.3.0"
     luxon "~3.4.0"
 
+croner@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/croner/-/croner-8.0.0.tgz#1652fea11a839e6c7ffe79366932318d19756508"
+  integrity sha512-NhZ7wV9L0nxbSJKYp6u+OHCytFv4RlCu0O6GsglJIZMpMqmtb0kcNNPS5lv1O8qclhDA1NffLSsGx2ftbWQamw==
+
 cronstrue@^2.32.0:
   version "2.32.0"
   resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-2.32.0.tgz#cb705bdd9ba76d5fd64be4e1df1f2eee7165dad9"
@@ -8912,15 +8917,6 @@ electron-updater@^6.1.4:
     semver "^7.3.8"
     tiny-typed-emitter "^2.1.0"
 
-electron@26:
-  version "26.4.0"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-26.4.0.tgz#3928aa878751ffda4f159777eac63b00c8d595b0"
-  integrity sha512-FUEFwmIlflLxImRtTmDp8CWpH4KqlyAwga6vauaz6+882SmyC3bJRhgqOIT5s6rMbW25WezNiaqfKqHDJjz3pw==
-  dependencies:
-    "@electron/get" "^2.0.0"
-    "@types/node" "^18.11.18"
-    extract-zip "^2.0.1"
-
 electron@^22.0.0:
   version "22.3.8"
   resolved "https://registry.yarnpkg.com/electron/-/electron-22.3.8.tgz#bd637381825d8007b3629aba165a89ba5c0f499b"
@@ -8928,6 +8924,15 @@ electron@^22.0.0:
   dependencies:
     "@electron/get" "^2.0.0"
     "@types/node" "^16.11.26"
+    extract-zip "^2.0.1"
+
+electron@^26:
+  version "26.6.5"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-26.6.5.tgz#1dc7ab977f67dd8dc5465db13c578ceb5f1d8a24"
+  integrity sha512-1zgit3HfMJmTgYQraZs72QJJuHlYOIvI7vk4bcIrVvU5vnA0lK3rQypEBpRB+DbfUz/0jYkvWiLPSdehBjKBFg==
+  dependencies:
+    "@electron/get" "^2.0.0"
+    "@types/node" "^18.11.18"
     extract-zip "^2.0.1"
 
 emitter-listener@^1.0.1, emitter-listener@^1.1.1:
