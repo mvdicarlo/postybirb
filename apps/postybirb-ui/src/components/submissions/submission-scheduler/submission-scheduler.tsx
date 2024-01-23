@@ -143,10 +143,20 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
             const type = id as ScheduleType;
             switch (type) {
               case ScheduleType.SINGLE: {
+                let date: string | undefined;
+                if (lastUsedSchedule) {
+                  const lastUsedDate = new Date(lastUsedSchedule).getTime();
+                  const now = Date.now();
+                  if (now < lastUsedDate) {
+                    date = lastUsedSchedule;
+                  }
+                }
                 onUpdate({
                   scheduleType: type,
                   scheduledFor:
-                    lastUsedSchedule ?? moment().add(1, 'day').toISOString(),
+                    lastKnownSetDate ??
+                    date ??
+                    moment().add(1, 'day').toISOString(),
                   cron: undefined,
                 });
                 break;

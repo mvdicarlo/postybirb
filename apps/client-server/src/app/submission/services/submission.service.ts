@@ -229,6 +229,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       cron: update.cron ?? submission.schedule.cron,
     };
 
+    if (submission.schedule.scheduleType === ScheduleType.NONE) {
+      submission.schedule.scheduledFor = undefined;
+      submission.schedule.cron = undefined;
+      submission.isScheduled = false;
+    }
+
     // Ensure ISO format
     if (
       submission.schedule.scheduleType === ScheduleType.SINGLE &&

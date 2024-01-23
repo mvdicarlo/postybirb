@@ -6,6 +6,7 @@ import {
   serialize,
 } from '@mikro-orm/core';
 import {
+  EntityId,
   IAccount,
   IPostRecord,
   IPostRecordMetadata,
@@ -36,7 +37,10 @@ export class WebsitePostRecord
   parent: IPostRecord;
 
   @Property({ type: 'json', nullable: false })
-  metadata: IPostRecordMetadata;
+  metadata: IPostRecordMetadata = {
+    sourceMap: {},
+    posted: [],
+  };
 
   @Property({
     type: 'date',
@@ -49,7 +53,7 @@ export class WebsitePostRecord
   account: IAccount;
 
   @Property({ type: 'json', nullable: true })
-  error?: IWebsiteError;
+  errors?: Record<EntityId, IWebsiteError>;
 
   toJSON(): WebsitePostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
