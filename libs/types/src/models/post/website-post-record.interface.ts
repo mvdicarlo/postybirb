@@ -1,5 +1,5 @@
 import { IAccount } from '../account/account.interface';
-import { IEntity } from '../database/entity.interface';
+import { EntityId, IEntity } from '../database/entity.interface';
 import { IPostRecord } from './post-record.interface';
 
 /**
@@ -33,10 +33,10 @@ export interface IWebsitePostRecord extends IEntity {
   account: IAccount;
 
   /**
-   * The error associated with the post record.
-   * @type {IWebsiteError}
+   * The error(s) associated with the post record.
+   * @type {Record<EntityId, IWebsiteError>}
    */
-  error?: IWebsiteError;
+  errors?: Record<EntityId, IWebsiteError>;
 }
 
 /**
@@ -45,10 +45,16 @@ export interface IWebsitePostRecord extends IEntity {
  */
 export interface IPostRecordMetadata {
   /**
-   * The url of the post.
-   * @type {string}
+   * The source Urls of each file in the post mapped to File Id.
+   * @type {Record<EntityId, string>}
    */
-  url?: string;
+  sourceMap: Record<EntityId, string>;
+
+  /**
+   * The File Ids that have successfully posted.
+   * @type {string[]}
+   */
+  posted: string[];
 }
 
 /**
@@ -56,6 +62,12 @@ export interface IPostRecordMetadata {
  * @interface IWebsiteError
  */
 export interface IWebsiteError {
+  /**
+   * The File Id that the error is associated with.
+   * @type {EntityId}
+   */
+  id: EntityId;
+
   /**
    * The error message.
    * @type {string}

@@ -118,6 +118,6 @@ export class SubmissionDto<
   }
 
   public isQueued(): boolean {
-    return this.posts.length > 0;
+    return this.posts.some((p) => p.completedAt === undefined);
   }
 }

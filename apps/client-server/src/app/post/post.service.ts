@@ -97,7 +97,7 @@ export class PostService extends PostyBirbService<PostRecord> {
 
     // Only remove those that are not marked as done as to protect the archived posts.
     const incomplete = existing.filter(
-      (e: PostRecord) => e.completedAt === undefined
+      (e: PostRecord) => e.completedAt !== undefined
     );
     await this.repository.removeAndFlush(incomplete);
   }

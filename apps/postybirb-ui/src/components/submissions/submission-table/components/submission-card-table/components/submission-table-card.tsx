@@ -1,30 +1,22 @@
 import {
-  EuiButtonIcon,
   EuiFlexGroup,
   EuiFlexItem,
   EuiIcon,
   EuiImage,
   EuiSplitPanel,
   EuiText,
-  EuiToolTip,
 } from '@elastic/eui';
-import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
-import { useNavigate } from 'react-router';
-import postApi from '../../../../../../api/post.api';
-import submissionApi from '../../../../../../api/submission.api';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
-import { useToast } from '../../../../../../app/app-toast-provider';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
-import { EditSubmissionPath } from '../../../../../../pages/route-paths';
+
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
 import {
-  ScheduleIcon,
-  SendIcon,
   SquareCheckedIcon,
   SquareIcon,
 } from '../../../../../shared/icons/Icons';
+import SubmissionTableCardActions from './submission-table-card-actions';
 import { SubmissionTableCardEditableFields } from './submission-table-card-editable-fields';
 
 type SubmissionCardOnSelect = (id: string) => void;
@@ -72,8 +64,6 @@ export function SubmissionTableCard(
 ): JSX.Element {
   const { submission, selected, onSelect } = props;
   const { files } = submission;
-  const history = useNavigate();
-  const { addToast, addErrorToast } = useToast();
   const { data: validationResult } = useQuery(
     `submission-validation-${submission.id}`,
     () =>
@@ -106,13 +96,6 @@ export function SubmissionTableCard(
   if (files.length) {
     img = `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`;
   }
-
-  const navToEdit = useCallback(
-    (id: string) => {
-      history(`${EditSubmissionPath}/${id}`);
-    },
-    [history]
-  );
 
   const canPost =
     !validationStatus.hasErrors &&
@@ -164,74 +147,7 @@ export function SubmissionTableCard(
         grow={false}
         className="postybirb__submission-card-actions"
       >
-        <EuiToolTip
-          content={
-            submission.schedule.scheduledFor ? (
-              <FormattedMessage id="schedule" defaultMessage="Schedule" />
-            ) : (
-              <FormattedMessage id="post" defaultMessage="Post" />
-            )
-          }
-        >
-          <EuiButtonIcon
-            iconType={
-              submission.schedule.scheduledFor ? ScheduleIcon : SendIcon
-            }
-            color="success"
-            disabled={!canPost}
-            aria-label={
-              submission.schedule.scheduledFor
-                ? 'Schedule submission'
-                : 'Post submission'
-            }
-            onClick={() => {
-              if (canPost) {
-                postApi
-                  .enqueue([submission.id])
-                  .then(() => {
-                    addToast({
-                      id: Date.now().toString(),
-                      color: 'success',
-                      title: (
-                        <FormattedMessage
-                          id="submission.enqueued"
-                          defaultMessage="Submission queued for posting"
-                        />
-                      ),
-                    });
-                  })
-                  .catch((res) => {
-                    addErrorToast(res);
-                  });
-              }
-            }}
-          />
-        </EuiToolTip>
-        <EuiToolTip
-          content={<FormattedMessage id="edit" defaultMessage="Edit" />}
-        >
-          <EuiButtonIcon
-            iconType="documentEdit"
-            aria-label="Edit submission"
-            onClick={() => {
-              navToEdit(submission.id);
-            }}
-          />
-        </EuiToolTip>
-        <EuiToolTip
-          content={
-            <FormattedMessage id="duplicate" defaultMessage="Duplicate" />
-          }
-        >
-          <EuiButtonIcon
-            iconType="listAdd"
-            color="accent"
-            aria-label="Duplicate submission"
-            onClick={() => {
-              submissionApi.duplicate(submission.id);
-            }}
-          />
-        </EuiToolTip>
+        <SubmissionTableCardActions submission={submission} canPost={canPost} />
       </EuiSplitPanel.Inner>
     </EuiSplitPanel.Outer>
   );
