@@ -16,4 +16,10 @@ export interface ISubmissionScheduleInfo {
    * @type {ScheduleType}
    */
   scheduleType: ScheduleType;
+
+  /**
+   * The CRON string for the schedule.
+   * @type {string}
+   */
+  cron?: string;
 }

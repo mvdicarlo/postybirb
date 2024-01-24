@@ -1,5 +1,7 @@
 import { EuiHeaderSectionItemButton, EuiIcon } from '@elastic/eui';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
+import { HttpResponse } from '../../../../../transports/http-client';
+import DeleteActionPopover from '../../../../shared/delete-action-popover/delete-action-popover';
 import {
   SquareFilledIcon,
   SquareIcon,
@@ -47,14 +49,22 @@ export function SubmissionTableActions(
   return (
     <>
       {selectBtn}
-      <EuiHeaderSectionItemButton
-        color="danger"
-        notification={selected.length}
-        disabled={selected.length === 0}
-        onClick={() => onDeleteSelected(selected)}
+      <DeleteActionPopover
+        onDelete={() => {
+          onDeleteSelected(selected);
+          return Promise.resolve<HttpResponse<{ success: boolean }>>({
+            body: { success: true },
+          } as HttpResponse<{ success: boolean }>);
+        }}
       >
-        <EuiIcon type="trash" />
-      </EuiHeaderSectionItemButton>
+        <EuiHeaderSectionItemButton
+          color="danger"
+          notification={selected.length}
+          disabled={selected.length === 0}
+        >
+          <EuiIcon type="trash" />
+        </EuiHeaderSectionItemButton>
+      </DeleteActionPopover>
     </>
   );
 }

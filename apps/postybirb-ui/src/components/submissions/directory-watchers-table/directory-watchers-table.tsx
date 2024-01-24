@@ -174,7 +174,7 @@ export default function DirectoryWatchersTable() {
   const watcherCards = useMemo(
     () =>
       (data || []).map((watcher) => (
-        <EuiFlexItem grow={false}>
+        <EuiFlexItem grow={false} key={`watcher-${watcher.id}`}>
           <DirectoryWatcherCard
             key={watcher.id}
             directoryWatcher={watcher}
@@ -191,6 +191,7 @@ export default function DirectoryWatchersTable() {
         <h3>
           <Trans context="directory-watcher.header">Upload from folders</Trans>
           <EuiButtonIcon
+            aria-label="Add folder watcher"
             iconType="plus"
             className="ml-2"
             onClick={() => {

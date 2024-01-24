@@ -77,7 +77,6 @@ module.exports = defineConfig({
     'import/prefer-default-export': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/react-in-jsx-scope': 'off',
-
     '@typescript-eslint/naming-convention': [
       'error',
       {
@@ -96,5 +95,6 @@ module.exports = defineConfig({
         format: ['PascalCase'],
       },
     ],
+    'no-await-in-loop': 'off'
   },
 });

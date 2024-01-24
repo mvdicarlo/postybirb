@@ -1,10 +1,12 @@
 import {
+  faCalendarCheck,
+  faCalendarXmark,
+  faCircleXmark,
+  faFileLines,
   faFloppyDisk,
+  faPaperPlane,
   faSquare,
   faSquareCheck,
-  faFileLines,
-  faPaperPlane,
-  faCalendarCheck,
 } from '@fortawesome/free-regular-svg-icons';
 import {
   faArrowUp,
@@ -13,12 +15,12 @@ import {
   faHome,
   faMessage,
   faPencil,
+  faRotateBack,
+  faRotateRight,
   faSquare as faSquareFilled,
   faSquareMinus,
-  faUserGroup,
-  faRotateRight,
-  faRotateBack,
   faTags,
+  faUserGroup,
   faUserTag,
 } from '@fortawesome/free-solid-svg-icons';
 import {
@@ -92,3 +94,5 @@ export const UserTagIcon = FaIcon({ icon: faUserTag });
 export const TextFileIcon = FaIcon({ icon: faFileLines });
 export const SendIcon = FaIcon({ icon: faPaperPlane });
 export const ScheduleIcon = FaIcon({ icon: faCalendarCheck });
+export const CancelScheduleIcon = FaIcon({ icon: faCalendarXmark });
+export const CancelIcon = FaIcon({ icon: faCircleXmark });
