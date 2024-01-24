@@ -62,10 +62,13 @@ export default class TestWebsite
     throw new Error('Method not implemented.');
   }
 
-  onValidateFileSubmission(
+  async onValidateFileSubmission(
     postData: PostData<FileSubmission, TestFileSubmission>
   ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+    return {
+      warnings: [],
+      errors: [],
+    };
   }
 
   onPostMessageSubmission(
@@ -75,10 +78,14 @@ export default class TestWebsite
     throw new Error('Method not implemented.');
   }
 
-  onValidateMessageSubmission(
+  async onValidateMessageSubmission(
     postData: PostData<MessageSubmission, TestMessageSubmission>
   ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+    const results: ValidationResult = {
+      warnings: [],
+      errors: [],
+    };
+    return results;
   }
 
   async onAuthorize(

@@ -19,7 +19,7 @@ export function DefaultSubmissionScheduleField({
   let scheduleText = '';
   if (schedule.scheduledFor) {
     if (schedule.scheduleType === ScheduleType.RECURRING) {
-      scheduleText = schedule.scheduledFor;
+      scheduleText = `${schedule.cron}`;
     } else {
       scheduleText = moment(schedule.scheduledFor).format('lll');
     }
@@ -37,9 +37,10 @@ export function DefaultSubmissionScheduleField({
       ) : null}
       <EuiFormRow
         helpText={
-          schedule.scheduledFor &&
-          schedule.scheduleType === ScheduleType.RECURRING
-            ? cronstrue.toString(schedule.scheduledFor)
+          schedule.cron && schedule.scheduleType === ScheduleType.RECURRING
+            ? `${cronstrue.toString(schedule.cron)} (${moment(
+                schedule.scheduledFor
+              ).format('lll')})`
             : null
         }
         onClickCapture={() => {
@@ -48,7 +49,7 @@ export function DefaultSubmissionScheduleField({
       >
         <EuiFieldText
           compressed
-          prepend={<EuiButtonIcon iconType="calendar" />}
+          prepend={<EuiButtonIcon iconType="calendar" aria-label="Schedule" />}
           placeholder="No schedule"
           readOnly
           value={scheduleText}

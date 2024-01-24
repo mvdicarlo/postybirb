@@ -6,6 +6,7 @@ import {
   Account,
   AltFile,
   DirectoryWatcher,
+  PostRecord,
   PrimaryFile,
   Settings,
   Submission,
@@ -16,6 +17,7 @@ import {
   UserSpecifiedWebsiteOptions,
   WebsiteData,
   WebsiteOptions,
+  WebsitePostRecord,
 } from './entities';
 
 const entities = [
@@ -32,6 +34,8 @@ const entities = [
   ThumbnailFile,
   UserSpecifiedWebsiteOptions,
   WebsiteData,
+  PostRecord,
+  WebsitePostRecord,
 ];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {

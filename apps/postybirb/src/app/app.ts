@@ -72,7 +72,7 @@ export default class PostyBirb {
     const { url, preventDefault } = details;
     if (url !== PostyBirb.mainWindow.webContents.getURL()) {
       // this is a normal external redirect, open it in a new browser window
-      preventDefault();
+      preventDefault(); // !BUG - causes a crash in current electron version
       shell.openExternal(url);
     }
   }
