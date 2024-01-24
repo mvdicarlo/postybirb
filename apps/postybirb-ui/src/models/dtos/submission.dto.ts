@@ -7,6 +7,7 @@ import {
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
   NULL_ACCOUNT_ID,
+  PostRecordDto,
   ScheduleType,
   SubmissionRating,
   SubmissionType,
@@ -38,14 +39,15 @@ export class SubmissionDto<
 
   updatedAt!: string;
 
+  posts!: PostRecordDto[];
+
   private defaultOption?: WebsiteOptionsDto;
 
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
     this.files = this.files ?? [];
-    if (!this.metadata) {
-      this.metadata = {} as T;
-    }
+    this.posts = this.posts ?? [];
+    this.metadata = this.metadata ?? ({} as T);
     if (!this.options) {
       this.options = [
         {
@@ -113,5 +115,9 @@ export class SubmissionDto<
 
   public getTemplateName() {
     return this.metadata.template?.name ?? 'Template';
+  }
+
+  public isQueued(): boolean {
+    return this.posts.some((p) => p.completedAt === undefined);
   }
 }

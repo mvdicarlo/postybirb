@@ -1,25 +1,22 @@
 import {
-  EuiButtonIcon,
   EuiFlexGroup,
   EuiFlexItem,
   EuiIcon,
   EuiImage,
   EuiSplitPanel,
-  EuiToolTip,
+  EuiText,
 } from '@elastic/eui';
-import { useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useNavigate } from 'react-router';
-import submissionApi from '../../../../../../api/submission.api';
+import { useQuery } from 'react-query';
+import websiteOptionsApi from '../../../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
-import { EditSubmissionPath } from '../../../../../../pages/route-paths';
+
 import { defaultTargetProvider } from '../../../../../../transports/http-client';
 import {
-  ScheduleIcon,
-  SendIcon,
   SquareCheckedIcon,
   SquareIcon,
 } from '../../../../../shared/icons/Icons';
+import SubmissionTableCardActions from './submission-table-card-actions';
 import { SubmissionTableCardEditableFields } from './submission-table-card-editable-fields';
 
 type SubmissionCardOnSelect = (id: string) => void;
@@ -30,25 +27,80 @@ type SubmissionTableCardProps = {
   selected: boolean;
 };
 
-// TODO show issues with submission
+function SubmissionCardValidationStatus(props: {
+  hasErrors: boolean;
+  hasWarnings: boolean;
+}) {
+  const { hasErrors, hasWarnings } = props;
+  if (hasErrors) {
+    return (
+      <EuiText color="danger" size="xs" className="text-center">
+        <EuiIcon type="alert" color="danger" className="mr-1" />
+        <FormattedMessage
+          id="submission.card.errors"
+          defaultMessage="Incomplete submission"
+        />
+      </EuiText>
+    );
+  }
+
+  if (hasWarnings) {
+    return (
+      <EuiText color="warning" size="xs" className="text-center">
+        <EuiIcon type="warning" color="warning" className="mr-1" />
+        <FormattedMessage
+          id="submission.card.warning"
+          defaultMessage="Submission has warnings"
+        />
+      </EuiText>
+    );
+  }
+
+  return null;
+}
+
 export function SubmissionTableCard(
   props: SubmissionTableCardProps
 ): JSX.Element {
   const { submission, selected, onSelect } = props;
   const { files } = submission;
-  const history = useNavigate();
+  const { data: validationResult } = useQuery(
+    `submission-validation-${submission.id}`,
+    () =>
+      websiteOptionsApi.validateSubmission(submission.id).then((res) => {
+        let hasErrors = false;
+        let hasWarnings = false;
+        if (res.status === 200) {
+          res.body.forEach((validation) => {
+            if (validation.errors?.length) {
+              hasErrors = true;
+            }
+            if (validation.warnings?.length) {
+              hasWarnings = true;
+            }
+          });
+        }
+        return {
+          hasErrors,
+          hasWarnings,
+        };
+      })
+  );
+
+  const validationStatus = validationResult ?? {
+    hasErrors: false,
+    hasWarnings: false,
+  };
 
   let img: string | undefined;
   if (files.length) {
     img = `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`;
   }
 
-  const navToEdit = useCallback(
-    (id: string) => {
-      history(`${EditSubmissionPath}/${id}`);
-    },
-    [history]
-  );
+  const canPost =
+    !validationStatus.hasErrors &&
+    submission.options.length > 1 &&
+    submission.posts.length === 0;
 
   return (
     <EuiSplitPanel.Outer
@@ -85,6 +137,7 @@ export function SubmissionTableCard(
             )}
           </EuiFlexItem>
           <EuiFlexItem>
+            <SubmissionCardValidationStatus {...validationStatus} />
             <SubmissionTableCardEditableFields submission={submission} />
           </EuiFlexItem>
         </EuiFlexGroup>
@@ -94,55 +147,7 @@ export function SubmissionTableCard(
         grow={false}
         className="postybirb__submission-card-actions"
       >
-        <EuiToolTip
-          content={
-            submission.schedule.scheduledFor ? (
-              <FormattedMessage id="schedule" defaultMessage="Schedule" />
-            ) : (
-              <FormattedMessage id="post" defaultMessage="Post" />
-            )
-          }
-        >
-          <EuiButtonIcon
-            iconType={
-              submission.schedule.scheduledFor ? ScheduleIcon : SendIcon
-            }
-            color="success"
-            aria-label={
-              submission.schedule.scheduledFor
-                ? 'Schedule submission'
-                : 'Post submission'
-            }
-            onClick={() => {
-              navToEdit(submission.id);
-            }}
-          />
-        </EuiToolTip>
-        <EuiToolTip
-          content={<FormattedMessage id="edit" defaultMessage="Edit" />}
-        >
-          <EuiButtonIcon
-            iconType="documentEdit"
-            aria-label="Edit submission"
-            onClick={() => {
-              navToEdit(submission.id);
-            }}
-          />
-        </EuiToolTip>
-        <EuiToolTip
-          content={
-            <FormattedMessage id="duplicate" defaultMessage="Duplicate" />
-          }
-        >
-          <EuiButtonIcon
-            iconType="listAdd"
-            color="accent"
-            aria-label="Duplicate submission"
-            onClick={() => {
-              submissionApi.duplicate(submission.id);
-            }}
-          />
-        </EuiToolTip>
+        <SubmissionTableCardActions submission={submission} canPost={canPost} />
       </EuiSplitPanel.Inner>
     </EuiSplitPanel.Outer>
   );

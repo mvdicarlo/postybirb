@@ -8,4 +8,5 @@ module.exports = {
   ...nxPreset,
   setupFiles: [join(basePath, 'jest.setup.ts')],
   verbose: false,
+  silent: true,
 };

@@ -7,6 +7,7 @@
     "type": "git",
     "url": "git+https://mvdicarlo@github.com/mvdicarlo/postybirb.git"
   },
+  "license": "BSD-3-Clause",
   "private": true,
   "main": "dist/apps/postybirb/main.js",
   "scripts": {
@@ -80,6 +81,7 @@
     "class-validator": "^0.13.1",
     "classnames": "^2.3.1",
     "compression": "^1.7.4",
+    "croner": "^8.0.0",
     "cronstrue": "^2.32.0",
     "document-register-element": "1.13.1",
     "electron-context-menu": "^3.1.1",
@@ -166,7 +168,7 @@
     "babel-jest": "29.4.3",
     "cypress": "^7.3.0",
     "dotenv": "10.0.0",
-    "electron": "26",
+    "electron": "^26",
     "eslint": "8.46.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^16.1.0",

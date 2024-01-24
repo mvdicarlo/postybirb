@@ -123,6 +123,7 @@ describe('SubmissionService', () => {
       },
       metadata: {},
       files: [],
+      posts: [],
       options: [
         {
           id: defaultOptions.id,
@@ -217,6 +218,7 @@ describe('SubmissionService', () => {
           updatedAt: file.updatedAt.toISOString(),
         },
       ],
+      posts: [],
       options: [
         {
           id: defaultOptions.id,

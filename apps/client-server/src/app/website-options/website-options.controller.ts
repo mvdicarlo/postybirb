@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -57,5 +57,13 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
   @ApiNotFoundResponse({ description: 'Submission not found.' })
   validate(@Body() validateOptionsDto: ValidateWebsiteOptionsDto) {
     return this.service.validateWebsiteOption(validateOptionsDto);
+  }
+
+  @Get('validate/:submissionId')
+  @ApiOkResponse({ description: 'Submission validation completed.' })
+  @ApiBadRequestResponse()
+  @ApiNotFoundResponse({ description: 'Submission not found.' })
+  validateSubmission(@Param('submissionId') submissionId: string) {
+    return this.service.validateSubmission(submissionId);
   }
 }

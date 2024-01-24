@@ -240,8 +240,49 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   }
 
   /**
+   * Validates all submission options for a submission.
+   * @param {string} submissionId
+   * @return {*}  {Promise<ValidationResult[]>}
+   */
+  async validateSubmission(submissionId: string) {
+    const websiteOptions = await this.repository.find({
+      submission: submissionId,
+    });
+
+    const defaultOption = websiteOptions.find((option) => option.isDefault)
+      ?.data ?? { ...DefaultWebsiteOptionsObject };
+
+    const results = await Promise.allSettled(
+      websiteOptions
+        .filter((option) => !option.isDefault)
+        .map((option) =>
+          this.validateWebsiteOption({
+            submission: submissionId,
+            account: option.account.id,
+            options: option.data,
+            defaultOptions: defaultOption,
+          })
+        )
+    );
+
+    return results.map((result) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      }
+
+      if (result.status === 'rejected') {
+        return result.reason;
+      }
+
+      throw new InternalServerErrorException(
+        `Unknown promise result: ${result}`
+      );
+    });
+  }
+
+  /**
    * Creates the simple post data required to post and validate a submission.
-   * NOTE: this will probably be split out later as real posting is considered.
+   * TODO: this will probably be split out later as real posting is considered.
    *
    * @private
    * @param {ISubmission} submission
