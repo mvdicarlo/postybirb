@@ -48,7 +48,6 @@ function getSideNav(
     },
   ];
 
-  // eslint-disable-next-line no-restricted-syntax
   for (const group of websiteGroups) {
     const { website, pairs } = group;
     const { displayName } = website;
@@ -81,7 +80,6 @@ export default function SubmissionEditForm() {
 
   const selectedWebsites = useMemo(() => {
     const selectedWebsiteOptions: PairedWebsiteOptions[] = [];
-    // eslint-disable-next-line no-restricted-syntax
     for (const group of websites) {
       const { accounts } = group;
       const selectedAccountPairs = accounts

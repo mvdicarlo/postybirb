@@ -5,7 +5,8 @@
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
       "rules": {
-        "react/require-default-props": "off"
+        "react/require-default-props": "off",
+        "no-restricted-syntax": "off"
       }
     },
     {

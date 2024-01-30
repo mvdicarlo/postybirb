@@ -1,4 +1,4 @@
-import { initializeLogger } from '@postybirb/logger';
+import { initializeLogger, SerializeDevLog } from '@postybirb/logger';
 import * as appInsights from 'applicationinsights';
 import { environment } from './environments/environment';
 
@@ -23,12 +23,14 @@ function createLogger() {
   const consoleTransport = new transports.Console();
   const w = winston.createLogger({
     level: environment.production ? 'info' : 'debug',
-    format: combine(timestamp(), prettyPrint()),
+    format: environment.production
+      ? combine(timestamp(), prettyPrint({ colorize: true }))
+      : new SerializeDevLog(),
     transports: [consoleTransport],
     rejectionHandlers: [consoleTransport],
     exceptionHandlers: [consoleTransport],
   });
-  initializeLogger(w);
+  initializeLogger(w, environment.production);
 }
 
 export function startMetrics() {
