@@ -12,6 +12,7 @@ import {
   IPostRecord,
   IWebsitePostRecord,
   PostRecordDto,
+  PostRecordResumeMode,
   PostRecordState,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
@@ -52,6 +53,9 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
 
   @Property({ type: 'string', nullable: false })
   state: PostRecordState = PostRecordState.PENDING;
+
+  @Property({ type: 'string', nullable: false })
+  resumeMode: PostRecordResumeMode = PostRecordResumeMode.CONTINUE;
 
   toJSON(): PostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

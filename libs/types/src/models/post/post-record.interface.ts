@@ -1,8 +1,8 @@
 import { Collection, Rel } from '@mikro-orm/core';
+import { PostRecordResumeMode, PostRecordState } from '../../enums';
 import { IEntity } from '../database/entity.interface';
 import { ISubmission } from '../submission/submission.interface';
 import { IWebsitePostRecord } from './website-post-record.interface';
-import { PostRecordState } from '../../enums';
 
 /**
  * Represents a record in queue to post (or already posted).
@@ -27,6 +27,13 @@ export interface IPostRecord extends IEntity {
    * @type {PostRecordState}
    */
   state: PostRecordState;
+
+  /**
+   * The resume mode of the post record.
+   * Relevant when a post record is requeued or resumed from an app termination.
+   * @type {PostRecordResumeMode}
+   */
+  resumeMode: PostRecordResumeMode;
 
   /**
    * The children of the post record.

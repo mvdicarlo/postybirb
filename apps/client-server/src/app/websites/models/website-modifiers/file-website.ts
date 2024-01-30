@@ -5,6 +5,7 @@ import {
   ValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
+import { CancellableToken } from '../../../post/models/cancellable-token';
 import { UnknownWebsite } from '../../website';
 
 export const FileWebsiteKey = 'FileModel';
@@ -22,7 +23,8 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, T>,
-    cancellationToken: unknown
+    files: unknown[],
+    cancellationToken: CancellableToken
   ): Promise<unknown>;
 
   onValidateFileSubmission(

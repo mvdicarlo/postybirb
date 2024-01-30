@@ -6,6 +6,7 @@ import {
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 
+import { CancellableToken } from '../../../post/models/cancellable-token';
 import { UnknownWebsite } from '../../website';
 
 export const MessageWebsiteKey = 'MessageModel';
@@ -21,12 +22,12 @@ export interface MessageWebsite<T extends IWebsiteFormFields> {
 
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, T>,
-    cancellationToken: unknown
+    cancellationToken: CancellableToken
   ): Promise<unknown>;
 
   onValidateMessageSubmission(
     postData: PostData<MessageSubmission, T>
-  ): Promise<ValidationResult<T>>;
+  ): Promise<ValidationResult>;
 }
 
 export function isMessageWebsite(

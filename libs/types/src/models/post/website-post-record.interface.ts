@@ -34,9 +34,10 @@ export interface IWebsitePostRecord extends IEntity {
 
   /**
    * The error(s) associated with the post record.
-   * @type {Record<EntityId, IWebsiteError>}
+   * Key is the epoch ISO timestamp of the error.
+   * @type {Record<string, IWebsiteError>}
    */
-  errors?: Record<EntityId, IWebsiteError>;
+  errors?: Record<string, IWebsiteError>;
 }
 
 /**
@@ -52,9 +53,9 @@ export interface IPostRecordMetadata {
 
   /**
    * The File Ids that have successfully posted.
-   * @type {string[]}
+   * @type {EntityId[]}
    */
-  posted: string[];
+  posted: EntityId[];
 }
 
 /**
@@ -63,10 +64,10 @@ export interface IPostRecordMetadata {
  */
 export interface IWebsiteError {
   /**
-   * The File Id that the error is associated with.
+   * The File Ids that the error is associated with.
    * @type {EntityId}
    */
-  id: EntityId;
+  files?: EntityId[];
 
   /**
    * The error message.
