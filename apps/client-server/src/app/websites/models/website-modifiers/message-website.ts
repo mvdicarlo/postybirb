@@ -2,6 +2,7 @@ import {
   IWebsiteFormFields,
   MessageSubmission,
   PostData,
+  PostResponse,
   ValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
@@ -23,7 +24,7 @@ export interface MessageWebsite<T extends IWebsiteFormFields> {
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, T>,
     cancellationToken: CancellableToken
-  ): Promise<unknown>;
+  ): Promise<PostResponse>;
 
   onValidateMessageSubmission(
     postData: PostData<MessageSubmission, T>

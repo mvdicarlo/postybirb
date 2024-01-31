@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Loaded } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
@@ -10,6 +11,7 @@ import {
   PostData,
   PostRecordResumeMode,
   PostRecordState,
+  PostResponse,
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
@@ -74,7 +76,6 @@ export class PostManagerService {
   /**
    * Starts a post attempt.
    * @param {PostRecord} entity
-   * @return {*}
    */
   public async startPost(entity: LoadedPostRecord) {
     if (this.currentPost) return;
@@ -95,7 +96,7 @@ export class PostManagerService {
     for (const websites of postOrder) {
       this.cancelToken.throwIfCancelled();
       await Promise.allSettled(
-        websites.map((w) => this.post(entity, w.record.id, w.instance))
+        websites.map((w) => this.post(entity, w.record, w.instance))
       );
     }
     this.cancelToken = null;
@@ -105,12 +106,12 @@ export class PostManagerService {
   /**
    * Posts to the given website.
    * @param {LoadedPostRecord} entity
-   * @param {EntityId} websitePostRecordId
+   * @param {IWebsitePostRecord} websitePostRecord
    * @param {Website<unknown>} instance
    */
   private async post(
     entity: LoadedPostRecord,
-    websitePostRecordId: EntityId,
+    websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>
   ) {
     const submission = entity.parent;
@@ -123,20 +124,21 @@ export class PostManagerService {
       }
       const data = this.preparePostData(submission, instance);
       await this.validatePostData(submission.type, data, instance);
-      let result: any = null;
       switch (submission.type) {
         case SubmissionType.FILE:
-          result = await this.handleFileSubmission(
+          await this.handleFileSubmission(
+            websitePostRecord,
             submission as unknown as FileSubmission,
-            instance
+            instance,
+            data as unknown as PostData<FileSubmission, never>
           );
           break;
         case SubmissionType.MESSAGE:
-          result = await (
-            instance as unknown as MessageWebsite<never>
-          ).onPostMessageSubmission(
-            data as unknown as PostData<FileSubmission, never>,
-            this.cancelToken
+          await this.handleMessageSubmission(
+            websitePostRecord,
+            submission as unknown as MessageSubmission,
+            instance,
+            data as unknown as PostData<MessageSubmission, never>
           );
           break;
         default:
@@ -144,19 +146,107 @@ export class PostManagerService {
             `Unknown Submission Type: Website '${instance.metadata.displayName}' does not support ${submission.type}`
           );
       }
-      // TODO handle result
     } catch (error) {
       this.logger
         .withError(error)
         .error(`Error posting to website: ${instance.id}`);
-      // TODO handle error
+      await this.handleFailureResult(websitePostRecord, {
+        exception: error,
+        additionalInfo: null,
+        message: `An unexpected error occurred while posting to ${
+          instance.metadata.displayName || instance.metadata.name
+        }`,
+      });
+    }
+    // TODO mark complete
+  }
+
+  private async handleSuccessResult(
+    websitePostRecord: IWebsitePostRecord,
+    res: PostResponse,
+    fileIds?: EntityId[]
+  ): Promise<void> {
+    if (fileIds?.length) {
+      fileIds.forEach((id) => {
+        websitePostRecord.metadata.sourceMap[id] = res.sourceUrl ?? null;
+        websitePostRecord.metadata.postedFiles.push(id);
+      });
+    } else {
+      // Only really applies to message submissions
+      websitePostRecord.metadata.source = res.sourceUrl ?? null;
+    }
+    await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
+  }
+
+  /**
+   * Handles a failure result from a website post.
+   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {PostResponse} res
+   * @param {EntityId[]} [fileIds]
+   */
+  private async handleFailureResult(
+    websitePostRecord: IWebsitePostRecord,
+    res: PostResponse,
+    fileIds?: EntityId[]
+  ): Promise<void> {
+    if (fileIds?.length) {
+      fileIds.forEach((id) => {
+        websitePostRecord.metadata.failedFiles.push(id);
+      });
+    }
+
+    if (res.exception) {
+      websitePostRecord.errors = websitePostRecord.errors ?? [];
+      websitePostRecord.errors.push({
+        files: fileIds,
+        message: res.message ?? res.exception.message,
+        stack: res.exception.stack,
+        stage: res.stage ?? 'unknown',
+        additionalInfo: res.additionalInfo,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
+  }
+
+  /**
+   * Handles posting a message submission.
+   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {MessageSubmission} submission
+   * @param {Website<unknown>} instance
+   * @param {PostData<MessageSubmission, never>} data
+   */
+  private async handleMessageSubmission(
+    websitePostRecord: IWebsitePostRecord,
+    submission: MessageSubmission,
+    instance: Website<unknown>,
+    data: PostData<MessageSubmission, never>
+  ): Promise<void> {
+    this.logger.info(`Posting message to ${instance.id}`);
+    const result = await (
+      instance as unknown as MessageWebsite<never>
+    ).onPostMessageSubmission(data, this.cancelToken);
+    if (result.exception) {
+      await this.handleFailureResult(websitePostRecord, result);
+    } else {
+      await this.handleSuccessResult(websitePostRecord, result);
     }
   }
 
+  /**
+   * Handles posting a file submission.
+   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {FileSubmission} submission
+   * @param {Website<unknown>} instance
+   * @param {PostData<FileSubmission, never>} data
+   */
   private async handleFileSubmission(
+    websitePostRecord: IWebsitePostRecord,
     submission: FileSubmission,
-    instance: Website<unknown>
-  ) {
+    instance: Website<unknown>,
+    data: PostData<FileSubmission, never>
+  ): Promise<void> {
     const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
     const orderedFiles = [];
     const files = submission.files.toArray();
@@ -168,18 +258,23 @@ export class PostManagerService {
     });
 
     const batches = chunk(orderedFiles, fileBatchSize);
+    // eslint-disable-next-line no-restricted-syntax
+    for (const batch of batches) {
+      const result = await (
+        instance as unknown as FileWebsite<never>
+      ).onPostFileSubmission(data, [], this.cancelToken);
+
+      const batchIds = batch.map((f) => f.id);
+      if (result.exception) {
+        await this.handleFailureResult(websitePostRecord, result, batchIds);
+      } else {
+        await this.handleSuccessResult(websitePostRecord, result, batchIds);
+      }
+    }
+    // TODO - Logging
     // TODO - Load files into memory
     // TODO - Resize files (if necessary) by file dimensions
     // TODO - Resize files (if necessary) by file size limits
-
-    result = await (
-      instance as unknown as FileWebsite<never>
-    ).onPostFileSubmission(
-      data as unknown as PostData<FileSubmission, never>,
-      this.cancelToken
-    );
-
-    return null;
   }
 
   /**

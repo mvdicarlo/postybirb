@@ -2,6 +2,7 @@ import {
   FileSubmission,
   IWebsiteFormFields,
   PostData,
+  PostResponse,
   ValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
@@ -25,7 +26,7 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
     postData: PostData<FileSubmission, T>,
     files: unknown[],
     cancellationToken: CancellableToken
-  ): Promise<unknown>;
+  ): Promise<PostResponse>;
 
   onValidateFileSubmission(
     postData: PostData<FileSubmission, T>

@@ -39,7 +39,8 @@ export class WebsitePostRecord
   @Property({ type: 'json', nullable: false })
   metadata: IPostRecordMetadata = {
     sourceMap: {},
-    posted: [],
+    postedFiles: [],
+    failedFiles: [],
   };
 
   @Property({
@@ -53,7 +54,7 @@ export class WebsitePostRecord
   account: IAccount;
 
   @Property({ type: 'json', nullable: true })
-  errors?: Record<EntityId, IWebsiteError>;
+  errors?: IWebsiteError[];
 
   toJSON(): WebsitePostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
