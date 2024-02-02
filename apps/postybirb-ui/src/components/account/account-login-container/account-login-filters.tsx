@@ -10,7 +10,7 @@ import {
 } from '@elastic/eui';
 import { ISettingsOptions, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { AccountFilterState } from '../../../models/app-states/account-filter-state';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 
@@ -39,7 +39,7 @@ function ShowHiddenWebsitesFilterDropdown(props: FilterDropdownProps) {
       hasActiveFilters={filterState.showHiddenWebsites}
       numActiveFilters={settings.hiddenWebsites?.length}
     >
-      <FormattedMessage id="hidden" defaultMessage="Hidden" />
+      <Trans comment="Website status">Hidden</Trans>
     </EuiFilterButton>
   );
 
@@ -96,10 +96,7 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage
-          id="account.login.hidden-filter"
-          defaultMessage="Show hidden"
-        />
+        <Trans>Show hidden</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
@@ -114,7 +111,7 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="on" defaultMessage="On" />
+        <Trans>On</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
@@ -128,7 +125,7 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="off" defaultMessage="Off" />
+        <Trans>Off</Trans>
       </EuiFilterButton>
       <ShowHiddenWebsitesFilterDropdown {...props} />
     </EuiFilterGroup>
@@ -150,10 +147,7 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage
-          id="account.login.empty-filter"
-          defaultMessage="Show empty"
-        />
+        <Trans comment="Account login empty filter">Show empty</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
@@ -168,7 +162,7 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="on" defaultMessage="On" />
+        <Trans>On</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
@@ -182,7 +176,7 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="off" defaultMessage="Off" />
+        <Trans>Off</Trans>
       </EuiFilterButton>
     </EuiFilterGroup>
   );
@@ -193,7 +187,7 @@ export function AccountLoginFilters(props: AccountLoginFiltersProps) {
     <EuiCard
       hasBorder
       className="postybirb__account-login-filters"
-      title={<FormattedMessage id="filters" defaultMessage="Filters" />}
+      title={<Trans>Filters</Trans>}
       titleSize="xs"
       layout="horizontal"
     >

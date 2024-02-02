@@ -27,7 +27,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
@@ -150,7 +150,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
         const idMap: EuiCheckboxGroupIdToSelectedMap = {};
         const checkboxOptions: EuiCheckboxGroupOption[] = [
           {
-            label: <FormattedMessage id="none" defaultMessage="None" />,
+            label: <Trans context="Template picker checkbox">None</Trans>,
             id: nullId,
           },
         ];
@@ -196,12 +196,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
     <>
       <EuiCheckbox
         checked={overrideTitle}
-        label={
-          <FormattedMessage
-            id="import.override-title"
-            defaultMessage="Replace title"
-          />
-        }
+        label={<Trans context="import.override-title">Replace title</Trans>}
         id="import-template-override-title"
         onChange={() => {
           setOverrideTitle(!overrideTitle);
@@ -210,10 +205,9 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
       <EuiCheckbox
         checked={overrideDescription}
         label={
-          <FormattedMessage
-            id="import.override-description"
-            defaultMessage="Replace description"
-          />
+          <Trans context="import.override-description">
+            Replace description
+          </Trans>
         }
         id="import-template-override-description"
         onChange={() => {
@@ -227,10 +221,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
     <EuiModal onClose={onClose}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <FormattedMessage
-            id="template.picker-modal-header"
-            defaultMessage="Choose Templates"
-          />
+          <Trans context="template.picker-modal-header">Choose Templates</Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -295,7 +286,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onClose}>
-          <FormattedMessage id="cancel" defaultMessage="Cancel" />
+          <Trans context="cancel">Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -303,7 +294,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           fill
           disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
         >
-          <FormattedMessage id="apply" defaultMessage="Apply" />
+          <Trans context="apply">Apply</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

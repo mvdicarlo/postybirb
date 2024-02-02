@@ -1,18 +1,22 @@
 import {
   EuiButton,
+  EuiErrorBoundary,
   EuiFieldNumber,
   EuiFlyout,
   EuiFlyoutBody,
   EuiFlyoutHeader,
   EuiForm,
   EuiFormRow,
+  EuiSelectable,
+  EuiSelectableOption,
   EuiSpacer,
   EuiSwitch,
   EuiTitle,
 } from '@elastic/eui';
-import { useContext } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { useContext, useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
+import { useLingui } from '@lingui/react';
+import { Trans, msg } from '@lingui/macro';
 import settingsApi from '../api/settings.api';
 import Keybinding, {
   KeybindingProps,
@@ -21,6 +25,9 @@ import Loading from '../components/shared/loading/loading';
 import { useFlyoutToggle } from '../hooks/use-flyout-toggle';
 import { SettingsKeybinding } from '../shared/app-keybindings';
 import { AppThemeContext } from './app-theme-provider';
+import { useStore } from '../stores/use-store';
+import { SettingsStore } from '../stores/settings.store';
+import { languages } from './languages';
 
 function StartupSettings() {
   const { data, isLoading, refetch } = useQuery(
@@ -31,53 +38,45 @@ function StartupSettings() {
     }
   );
 
+  const { _ } = useLingui();
+
   return (
     <Loading isLoading={isLoading}>
       <div>
         <EuiTitle size="xxs">
-          <h5>PostyBirb Startup Settings</h5>
+          <h5>
+            <Trans>PostyBirb Startup Settings</Trans>
+          </h5>
         </EuiTitle>
         <EuiSpacer size="s" />
         <EuiForm>
-          <EuiFormRow
-            label={
-              <FormattedMessage
-                id="settings.startup.label"
-                defaultMessage="Open on startup"
-              />
-            }
-          >
+          <EuiFormRow label={<Trans>Open on startup</Trans>}>
             <EuiSwitch
               name="switch"
               label={
-                data?.startAppOnSystemStartup
-                  ? 'PostyBirb will open on startup'
-                  : 'PostyBirb will not open on startup'
+                data?.startAppOnSystemStartup ? (
+                  <Trans>PostyBirb will open on startup</Trans>
+                ) : (
+                  <Trans>PostyBirb will not open on startup</Trans>
+                )
               }
               onChange={(e) => {
                 settingsApi
                   .updateSystemStartupSettings({
                     startAppOnSystemStartup: e.target.checked,
                   })
-                  .finally(() => {
-                    refetch();
-                  });
+                  .finally(refetch);
               }}
               checked={data?.startAppOnSystemStartup ?? false}
             />
           </EuiFormRow>
           <EuiFormRow
-            label={
-              <FormattedMessage
-                id="settings.port.label"
-                defaultMessage="App Server Port"
-              />
-            }
+            label={<Trans>App Server Port</Trans>}
             helpText={
-              <FormattedMessage
-                id="settings.port.help"
-                defaultMessage="This is the port the app server will run on. You must restart the app for this to take effect."
-              />
+              <Trans>
+                This is the port the app server will run on. You must restart
+                the app for this to take effect.
+              </Trans>
             }
           >
             <EuiFieldNumber
@@ -93,24 +92,17 @@ function StartupSettings() {
                   .updateSystemStartupSettings({
                     port: e.target.value?.trim(),
                   })
-                  .finally(() => {
-                    refetch();
-                  });
+                  .finally(refetch);
               }}
             />
           </EuiFormRow>
           <EuiFormRow
-            label={
-              <FormattedMessage
-                id="settings.app-directory.label"
-                defaultMessage="App Folder"
-              />
-            }
+            label={<Trans>App Folder</Trans>}
             helpText={
-              <FormattedMessage
-                id="settings.app-directory.help"
-                defaultMessage="This is the folder where the app will store its data. You must restart the app for this to take effect."
-              />
+              <Trans>
+                This is the folder where the app will store its data. You must
+                restart the app for this to take effect.
+              </Trans>
             }
           >
             <EuiButton
@@ -131,11 +123,71 @@ function StartupSettings() {
               }}
               iconType="folderClosed"
             >
-              {data?.appDataPath ?? 'Select Folder'}
+              {data?.appDataPath ?? _(msg`Select Folder`)}
             </EuiButton>
           </EuiFormRow>
         </EuiForm>
       </div>
+    </Loading>
+  );
+}
+
+function LanguageSettings() {
+  const {
+    state: [settings],
+    reload: reloadSettings,
+    isLoading,
+  } = useStore(SettingsStore);
+  const { _ } = useLingui();
+  const [options, setOptions] = useState<EuiSelectableOption[]>([]);
+
+  useEffect(() => {
+    // It should update only once
+    if (!isLoading && options.length === 0)
+      setOptions(
+        languages.map(([label, content]) => ({
+          label: _(label),
+          content,
+          checked: content === settings.settings.language ? 'on' : undefined,
+        }))
+      );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
+
+  const onChange = (newOptions: EuiSelectableOption[]) => {
+    const selected = newOptions.find((e) => e.checked === 'on');
+    if (!selected || !selected.content) return;
+
+    setOptions(newOptions);
+
+    // Because src/i18n.tsx is subscribed to settings changes we
+    // dont need to call setLocale or anything like this here
+    settingsApi
+      .update(settings.id, {
+        settings: {
+          ...settings.settings,
+          language: selected.content,
+        },
+      })
+      .finally(reloadSettings);
+  };;
+
+  return (
+    <Loading isLoading={isLoading}>
+      <EuiForm component="form" className="postybirb__settings">
+        <EuiFormRow label={<Trans>Language</Trans>} hasChildLabel={false}>
+          <EuiSelectable
+            aria-label={_(msg`Select language`)}
+            options={options}
+            listProps={{ bordered: true }}
+            singleSelection
+            onChange={onChange}
+          >
+            {(list) => list}
+          </EuiSelectable>
+        </EuiFormRow>
+      </EuiForm>
     </Loading>
   );
 }
@@ -164,35 +216,21 @@ export default function AppSettings() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <FormattedMessage id="settings" defaultMessage="Settings" />
+              <Trans>Settings</Trans>
             </Keybinding>
           </div>
         </EuiTitle>
       </EuiFlyoutHeader>
       <EuiFlyoutBody>
         <EuiForm component="form" className="postybirb__settings">
-          <EuiFormRow
-            label={
-              <FormattedMessage
-                id="settings.theme-label"
-                defaultMessage="Theme"
-              />
-            }
-            hasChildLabel={false}
-          >
+          <EuiFormRow label={<Trans>Theme</Trans>} hasChildLabel={false}>
             <EuiSwitch
               name="switch"
               label={
                 theme === 'light' ? (
-                  <FormattedMessage
-                    id="settings.light-theme"
-                    defaultMessage="Light"
-                  />
+                  <Trans>Light theme</Trans>
                 ) : (
-                  <FormattedMessage
-                    id="settings.dark-theme"
-                    defaultMessage="Dark"
-                  />
+                  <Trans>Dark theme</Trans>
                 )
               }
               onChange={() => {
@@ -202,6 +240,10 @@ export default function AppSettings() {
             />
           </EuiFormRow>
         </EuiForm>
+        <EuiSpacer />
+        <EuiErrorBoundary>
+          <LanguageSettings />
+        </EuiErrorBoundary>
         <EuiSpacer />
         <StartupSettings />
       </EuiFlyoutBody>

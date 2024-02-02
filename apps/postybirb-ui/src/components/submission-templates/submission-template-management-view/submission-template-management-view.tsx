@@ -14,7 +14,7 @@ import {
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { useEffect, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useNavigate } from 'react-router';
 import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
@@ -86,12 +86,7 @@ export default function SubmissionTemplateManagementView(
       addToast({
         id: Date.now().toString(),
         color: 'success',
-        text: (
-          <FormattedMessage
-            id="update.success-submission-template"
-            defaultMessage="Updated submission template"
-          />
-        ),
+        text: <Trans>Updated submission template</Trans>,
       });
     });
   };
@@ -111,8 +106,7 @@ export default function SubmissionTemplateManagementView(
           size="s"
           aria-label="Delete selected submission templates"
         >
-          <FormattedMessage id="delete" defaultMessage="Delete" />{' '}
-          {selectedItems.length}
+          <Trans>Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -120,7 +114,7 @@ export default function SubmissionTemplateManagementView(
   const tableColumns: Array<EuiBasicTableColumn<SubmissionDto>> = [
     {
       field: 'name',
-      name: <FormattedMessage id="name" defaultMessage="Name" />,
+      name: <Trans>Name</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, template: SubmissionDto) => (
@@ -134,10 +128,9 @@ export default function SubmissionTemplateManagementView(
           )}
           error={
             <EuiText size="relative">
-              <FormattedMessage
-                id="duplicate.submission-template"
-                defaultMessage="Duplicate name"
-              />
+              <Trans comment="Error on submission template edit/create">
+                Duplicate name
+              </Trans>
             </EuiText>
           }
         >
@@ -158,7 +151,7 @@ export default function SubmissionTemplateManagementView(
     {
       field: 'id',
       width: '20%',
-      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      name: <Trans>Actions</Trans>,
       render: (_: unknown, template: SubmissionDto) => (
         <div>
           <EuiButtonIcon
@@ -179,7 +172,7 @@ export default function SubmissionTemplateManagementView(
               saveChanges(template);
             }}
           >
-            <FormattedMessage id="save" defaultMessage="Save" />
+            <Trans>Save</Trans>
           </EuiButtonIcon>
           <EuiButtonIcon
             title="Edit"
@@ -199,7 +192,7 @@ export default function SubmissionTemplateManagementView(
               navToEdit(template.id);
             }}
           >
-            <FormattedMessage id="edit" defaultMessage="Edit" />
+            <Trans>Edit</Trans>
           </EuiButtonIcon>
           <DeleteActionPopover
             onDelete={() => submissionsApi.remove([template.id])}
@@ -211,7 +204,7 @@ export default function SubmissionTemplateManagementView(
               iconType="trash"
               aria-label={`Delete submission template ${template.getTemplateName()}`}
             >
-              <FormattedMessage id="delete" defaultMessage="Delete" />
+              <Trans>Delete</Trans>
             </EuiButtonIcon>
           </DeleteActionPopover>
         </div>
@@ -236,7 +229,7 @@ export default function SubmissionTemplateManagementView(
                 });
               }}
             >
-              <FormattedMessage id="new" defaultMessage="New" />
+              <Trans>New</Trans>
             </EuiButton>
           </EuiFlexItem>
           <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>

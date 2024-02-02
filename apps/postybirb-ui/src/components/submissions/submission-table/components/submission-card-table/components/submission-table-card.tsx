@@ -7,6 +7,7 @@ import {
   EuiText,
 } from '@elastic/eui';
 import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';

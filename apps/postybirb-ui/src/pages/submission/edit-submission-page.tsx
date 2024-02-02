@@ -17,7 +17,7 @@ import {
 } from '@elastic/eui';
 import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useNavigate, useParams } from 'react-router';
 import ReactRouterPrompt from 'react-router-prompt';
 import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
@@ -41,25 +41,25 @@ function BlockModal({
     <EuiModal onClose={onCancel}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <FormattedMessage
-            id="leave-modal.title"
-            defaultMessage="You have unsaved changes"
-          />
+          <Trans context="unsaved changes modal">
+            You have unsaved changes
+          </Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
-      <EuiModalBody>Are you sure you want to leave this page?</EuiModalBody>
+      <EuiModalBody>
+        <Trans context="unsaved changes modal">
+          Are you sure you want to leave this page?
+        </Trans>
+      </EuiModalBody>
       <EuiModalFooter>
         <EuiButton color="danger" onClick={onCancel}>
-          <FormattedMessage id="no" defaultMessage="No" />
+          <Trans context="unsaved changes modal">No</Trans>
         </EuiButton>
         <EuiButton onClick={onConfirm}>
-          <FormattedMessage id="yes" defaultMessage="Yes" />
+          <Trans context="unsaved changes modal">Yes</Trans>
         </EuiButton>
         <EuiButton onClick={onSave}>
-          <FormattedMessage
-            id="leave-modal.save-first"
-            defaultMessage="Save and Close"
-          />
+          <Trans context="unsaved changes modal">Save and Close</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>
@@ -86,15 +86,9 @@ function EditSubmissionPageNavHeader() {
       {
         text:
           submission.type === SubmissionType.FILE ? (
-            <FormattedMessage
-              id="file-submissions"
-              defaultMessage="File Submissions"
-            />
+            <Trans>File Submissions</Trans>
           ) : (
-            <FormattedMessage
-              id="message-submissions"
-              defaultMessage="Message Submissions"
-            />
+            <Trans>Message Submissions</Trans>
           ),
         href: '#',
         onClick: (e) => {
@@ -173,15 +167,9 @@ function EditSubmissionPageNavHeader() {
                 <EuiTitle size="xs">
                   <h4>
                     {submission.isTemplate() ? (
-                      <FormattedMessage
-                        id="submissions.edit-page-header-template"
-                        defaultMessage="Edit Template"
-                      />
+                      <Trans>Edit Template</Trans>
                     ) : (
-                      <FormattedMessage
-                        id="submissions.edit-page-header"
-                        defaultMessage="Edit Submission"
-                      />
+                      <Trans>Edit Submission</Trans>
                     )}
                   </h4>
                 </EuiTitle>
@@ -203,10 +191,7 @@ function EditSubmissionPageNavHeader() {
                       setImportTemplateVisible(true);
                     }}
                   >
-                    <FormattedMessage
-                      id="import-template"
-                      defaultMessage="Import Template"
-                    />
+                    <Trans>Import Template</Trans>
                   </EuiButton>
                 </EuiHeaderSectionItem>
                 <EuiHeaderSectionItem>
@@ -219,16 +204,12 @@ function EditSubmissionPageNavHeader() {
                       save();
                     }}
                   >
-                    <FormattedMessage
-                      id="submission.save"
-                      defaultMessage="Save"
-                    />
+                    <Trans>Save</Trans>
                   </EuiButton>
                 </EuiHeaderSectionItem>
                 <EuiHeaderSectionItem>
                   <EuiButtonIcon
                     aria-label="Close"
-                    title="Close"
                     color="danger"
                     iconType="cross"
                     className="ml-2"

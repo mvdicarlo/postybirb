@@ -4,7 +4,7 @@ import {
   EuiFlyoutHeader,
   EuiTitle,
 } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import { TagConvertersKeybinding } from '../../../shared/app-keybindings';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
@@ -37,10 +37,7 @@ export function TagConvertersFlyout() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <FormattedMessage
-                id="tag-converters"
-                defaultMessage="Tag Converters"
-              />
+              <Trans context="tag-converters">Tag Converters</Trans>
             </Keybinding>
           </div>
         </EuiTitle>

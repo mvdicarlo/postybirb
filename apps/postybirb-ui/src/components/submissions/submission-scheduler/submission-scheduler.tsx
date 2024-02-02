@@ -11,7 +11,7 @@ import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useLocalStorage } from 'react-use';
 
 const DEFAULT_CRON = '0 0 * * FRI';
@@ -19,17 +19,15 @@ const DEFAULT_CRON = '0 0 * * FRI';
 const radios = [
   {
     id: ScheduleType.NONE,
-    label: <FormattedMessage id="schedule.none" defaultMessage="None" />,
+    label: <Trans context="schedule.none">None</Trans>,
   },
   {
     id: ScheduleType.SINGLE,
-    label: <FormattedMessage id="schedule.single" defaultMessage="Once" />,
+    label: <Trans context="schedule.single">Once</Trans>,
   },
   {
     id: ScheduleType.RECURRING,
-    label: (
-      <FormattedMessage id="schedule.recurring" defaultMessage="Recurring" />
-    ),
+    label: <Trans context="schedule.recurring">Recurring</Trans>,
   },
 ];
 

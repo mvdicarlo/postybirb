@@ -1,6 +1,7 @@
 import { EuiButton, EuiButtonIcon, EuiToolTip } from '@elastic/eui';
 import { useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 
 type AccountLoginCardTitleProps = {
@@ -18,10 +19,7 @@ export default function AccountLoginCardTitle(
   const displayIcon = useMemo(
     () =>
       website.isHidden ? (
-        <EuiToolTip
-          position="right"
-          content={<FormattedMessage id="hide" defaultMessage="Hide" />}
-        >
+        <EuiToolTip position="right" content={<Trans>Hide</Trans>}>
           <EuiButtonIcon
             className="ml-1"
             iconType="eye"
@@ -32,10 +30,7 @@ export default function AccountLoginCardTitle(
           />
         </EuiToolTip>
       ) : (
-        <EuiToolTip
-          position="right"
-          content={<FormattedMessage id="show" defaultMessage="Show" />}
-        >
+        <EuiToolTip position="right" content={<Trans>Show</Trans>}>
           <EuiButtonIcon
             className="ml-1"
             iconType="eyeClosed"
@@ -49,6 +44,8 @@ export default function AccountLoginCardTitle(
     [displayName, onHide, website]
   );
 
+  const { _ } = useLingui();
+
   return (
     <span className="login-card-title">
       <span className="align-middle">{displayName}</span>
@@ -57,13 +54,10 @@ export default function AccountLoginCardTitle(
         <EuiButton
           size="s"
           iconType="plus"
-          aria-label={`Add account for ${displayName}`}
+          aria-label={_(msg`Add account for ${displayName}`)}
           onClick={onAddClick}
         >
-          <FormattedMessage
-            id="login.add-account"
-            defaultMessage="Add account"
-          />
+          <Trans>Add account</Trans>
         </EuiButton>
       </span>
     </span>

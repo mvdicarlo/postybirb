@@ -69,7 +69,7 @@ export class SettingsService
         this.logger.withMetadata(entity).debug('Default settings created');
       })
       .catch((err: Error) => {
-        this.logger.withError(err).error('Unablet to create default settings');
+        this.logger.withError(err).error('Unable to create default settings');
       });
   }
 
@@ -117,6 +117,7 @@ export class SettingsService
     this.logger
       .withMetadata(updateSettingsDto)
       .info(`Updating Settings '${id}'`);
+
     return this.repository.update(id, updateSettingsDto);
   }
 }

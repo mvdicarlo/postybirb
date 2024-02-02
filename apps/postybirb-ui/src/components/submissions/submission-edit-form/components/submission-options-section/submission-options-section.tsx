@@ -8,7 +8,7 @@ import {
 } from '@elastic/eui';
 import { ValidationMessage, ValidationResult } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { useSubmissionOptions } from '../../../../../hooks/submission/use-submission-options';
@@ -84,10 +84,9 @@ export default function SubmissionOptionsSection(
                 setIsDefaultSaveModalVisible(true);
               }}
             >
-              <FormattedMessage
-                id="edit-form.set-default-options"
-                defaultMessage="Save as default"
-              />
+              <Trans context="edit-form.set-default-options">
+                Save as default
+              </Trans>
             </EuiButtonEmpty>
           </EuiToolTip>
 

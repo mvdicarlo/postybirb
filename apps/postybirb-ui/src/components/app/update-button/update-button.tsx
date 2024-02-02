@@ -12,7 +12,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import updateApi from '../../../api/update.api';
 import { ArrowUpIcon } from '../../shared/icons/Icons';
@@ -45,7 +45,7 @@ export default function UpdateButton() {
             updateApi.startUpdate();
           }}
         >
-          <FormattedMessage id="update" defaultMessage="Update" />
+          <Trans comment="Update PostyBirb button">Update</Trans>
         </EuiButton>
       </EuiFlexItem>
       <EuiFlexItem grow={false}>

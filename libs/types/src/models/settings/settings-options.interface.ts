@@ -10,4 +10,9 @@ export interface ISettingsOptions {
    * @type {string[]}
    */
   hiddenWebsites: WebsiteId[];
+  /**
+   * Language that is used by i18next
+   * @type {string}
+   */
+  language: string;
 }

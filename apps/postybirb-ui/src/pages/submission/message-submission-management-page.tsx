@@ -8,7 +8,7 @@ import {
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
 import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
@@ -41,7 +41,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
         aria-label="Message submission name input"
         prepend={
           <EuiFormLabel htmlFor="message-input">
-            <FormattedMessage id="name" defaultMessage="Name" />
+            <Trans context="name">Name</Trans>
           </EuiFormLabel>
         }
         onKeyDown={(e) => {
@@ -94,25 +94,20 @@ export default function MessageSubmissionManagementPage() {
         bottomBorder
         iconType={MessageIcon.Header}
         pageTitle={
-          <FormattedMessage
-            id="submissions.message-page-header"
-            defaultMessage="Message Submissions"
-          />
+          <Trans context="submissions.message-page-header">
+            Message Submissions
+          </Trans>
         }
         tabs={[
           {
-            label: (
-              <FormattedMessage id="submissions" defaultMessage="Submissions" />
-            ),
+            label: <Trans context="submissions">Submissions</Trans>,
             isSelected: tab === 'submissions',
             onClick: () => {
               setTab('submissions');
             },
           },
           {
-            label: (
-              <FormattedMessage id="templates" defaultMessage="Templates" />
-            ),
+            label: <Trans context="templates">Templates</Trans>,
             isSelected: tab === 'templates',
             onClick: () => {
               setTab('templates');

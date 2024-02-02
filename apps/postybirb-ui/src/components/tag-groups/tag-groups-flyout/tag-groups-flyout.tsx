@@ -4,7 +4,7 @@ import {
   EuiFlyoutHeader,
   EuiTitle,
 } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { TagGroupsKeybinding } from '../../../shared/app-keybindings';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
@@ -37,7 +37,7 @@ export function TagGroupsFlyout() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <FormattedMessage id="tag-groups" defaultMessage="Tag Groups" />
+              <Trans context="tag-groups">Tag Groups</Trans>
             </Keybinding>
           </div>
         </EuiTitle>

@@ -14,7 +14,7 @@ import {
   ISubmissionFileDto,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { getReplaceFileUrl } from '../../../../../api/file-submission.api';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
@@ -104,7 +104,7 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-primary">
           <div className="text-center">
             <strong>
-              <FormattedMessage id="primary" defaultMessage="Primary" />
+              <Trans context="primary">Primary</Trans>
             </strong>
             <CardImageProvider {...file} />
             <div>
@@ -122,7 +122,7 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
           <div className="text-center">
             <strong>
-              <FormattedMessage id="thumbnail" defaultMessage="Thumbnail" />
+              <Trans context="thumbnail">Thumbnail</Trans>
             </strong>
             {file.hasThumbnail ? (
               <EuiImage
