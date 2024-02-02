@@ -18159,11 +18159,6 @@ tsconfig-paths@^4.1.2:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@2.5.2:
-  version "2.5.2"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.5.2.tgz#1b6f07185c881557b0ffa84b111a0106989e8338"
-  integrity sha512-5svOrSA2w3iGFDs1HibEVBGbDrAY82bFQ3HZ3ixB+88nsbsWQoKqDRb5UBYAUPEzbBn6dAp5gRNXglySbx1MlA==
-
 tslib@2.5.3:
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.5.3.tgz#24944ba2d990940e6e982c4bea147aba80209913"
@@ -18735,11 +18730,6 @@ vfile@^4.0.0, vfile@^4.2.1:
     is-buffer "^2.0.0"
     unist-util-stringify-position "^2.0.0"
     vfile-message "^2.0.0"
-
-vite-multiple-assets@^1.2.10:
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/vite-multiple-assets/-/vite-multiple-assets-1.2.10.tgz#2ea105c3057dd46ecad2fc3c5c385d87c320ebe3"
-  integrity sha512-G8PUqp4XRC0H6qYD4tzRFBSCv4tWAs30C/3Nzuz5QK57DpcSzOapQ6BUJrqYEEy2wU/od83B+hH/gOeXWTOFLg==
 
 vite-node@0.32.4:
   version "0.32.4"
