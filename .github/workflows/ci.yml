@@ -1,9 +1,8 @@
 name: CI
 on:
-  push:
+  pull_request:
     branches:
       - main
-  pull_request:
 
 # Needed for nx-set-shas when run on the main branch
 permissions:
@@ -41,10 +40,10 @@ jobs:
           fi
 
       - run: |
-          git add apps/postybirb-ui/src/**/*.po lang/
-          git commit -m 'chore: extract lang messages'
+          git add lang/
+          git commit -m 'ci: extract lang messages'
 
           git add ./
-          git commit -m 'lint: prettier and eslint fix'
+          git commit -m 'ci: prettier and eslint fix'
 
-          git push
+          git push origin HEAD
