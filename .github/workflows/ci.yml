@@ -28,30 +28,31 @@ jobs:
         with:
           node-version: 18
           cache: yarn
-          
-      - name: Install dependencies 
+
+      - name: Install dependencies
         run: yarn install --frozen-lockfile
 
       - name: Setup github SHA for NX affected
         uses: nrwl/nx-set-shas@v3
-        
+
         # This line is needed for nx affected to work when CI is running on a PR
-      - name: Track right branch 
+      - name: Track right branch
         run: npx exitzero git branch --track main origin/main
 
       - name: Extract keys
         run: yarn lingui:extract
-      
+
       - name: Lint
-        run: npx exitzero nx affected -t lint --fix
+        run: npx exitzero nx affected --parallel -t lint --fix
 
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          npx exitzero git add lang/ && git commit -m 'ci: extract lang messages'
+          npx exitzero "git add 'lang/' && git commit -m 'ci: extract lang messages'"
 
-          npx exitzero git add ./ && git commit -m 'ci: prettier and eslint fix'
+          npx exitzero "git add './' && git commit -m 'ci: prettier and eslint fix'"
+          exit 0
 
       - name: Push changes
         uses: ad-m/github-push-action@master
