@@ -1,3 +1,0 @@
-files:
-  - source: /lang/*.po
-    translation: /lang/%two_letters_code%-crowdin.po
