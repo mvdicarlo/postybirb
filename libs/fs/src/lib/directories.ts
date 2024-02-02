@@ -4,7 +4,6 @@ import { app } from 'electron';
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';
 
-
 function IsTestEnvironment(): boolean {
   return (process.env.NODE_ENV || '').toLowerCase() === 'test';
 }

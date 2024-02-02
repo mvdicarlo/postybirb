@@ -9,13 +9,13 @@ import {
 import { SubmissionType } from '@postybirb/types';
 import { useMemo, useState } from 'react';
 import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
 import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
-import { useLingui } from '@lingui/react';
 
 function isValidName(name: string): boolean {
   if (name && name.trim().length) {
