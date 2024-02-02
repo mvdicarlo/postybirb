@@ -83,7 +83,8 @@ export default function DiscordLoginView(
       }}
     >
       <EuiFormRow
-        label={<Trans context="discord.webhook">Webhook</Trans>}
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label="Webhook"
         helpText={
           <EuiLink
             href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks"

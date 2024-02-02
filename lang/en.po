@@ -92,15 +92,12 @@ msgid "Cancel"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:103
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:107
 msgid "Cancel post"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:33
 msgid "Cancel schedule"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:107
-msgid "Cancel submission"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:113
@@ -380,7 +377,7 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:92
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:93
 msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr ""
@@ -586,7 +583,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:204
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:92
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:210
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:117
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:118
 msgid "Save"
 msgstr ""
 
@@ -881,11 +878,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:192
 msgctxt "directory-watcher.header"
 msgid "Upload from folders"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
-msgctxt "discord.webhook"
-msgid "Webhook"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:52
