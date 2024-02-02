@@ -17,7 +17,6 @@ import { Website } from '../../website';
 import { TestFileSubmission } from './models/test-file-submission';
 import { TestMessageSubmission } from './models/test-message-submission';
 
-
 // Test
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')
