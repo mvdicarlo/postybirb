@@ -23,7 +23,7 @@ jobs:
       
       # Note: without this, Push changes step will fail.
       - name: Sync action repo with actual branch
-        run: git pull
+        run: git pull origin ${{ github.head_ref }}
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
