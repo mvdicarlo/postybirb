@@ -5,8 +5,8 @@ import {
   EuiFormRow,
   EuiLink,
 } from '@elastic/eui';
-import { useState } from 'react';
 import { Trans } from '@lingui/macro';
+import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { useToast } from '../../app/app-toast-provider';
 import HttpErrorResponse from '../../models/http-error-response';
@@ -62,11 +62,7 @@ export default function DiscordLoginView(
             addToast({
               id,
               color: 'success',
-              text: (
-                <Trans context="account.data-update-success">
-                  Account data updated.
-                </Trans>
-              ),
+              text: <Trans>Account data updated.</Trans>,
             });
           })
           .catch(({ error }: { error: HttpErrorResponse }) => {
@@ -87,7 +83,8 @@ export default function DiscordLoginView(
       }}
     >
       <EuiFormRow
-        label={<Trans context="discord.webhook">Webhook</Trans>}
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        label="Webhook"
         helpText={
           <EuiLink
             href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks"
@@ -118,7 +115,7 @@ export default function DiscordLoginView(
           isLoading={isSubmitting}
           disabled={!isWebhookValid}
         >
-          <Trans context="save">Save</Trans>
+          <Trans>Save</Trans>
         </EuiButton>
       </EuiFormRow>
     </EuiForm>

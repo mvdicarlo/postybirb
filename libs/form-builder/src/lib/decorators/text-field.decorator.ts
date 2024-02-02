@@ -17,7 +17,7 @@ export function TextField<T extends PrimitiveRecord>(
   if (!options.formField) {
     options.formField = 'input';
   }
-  return (target, propertyKey: any) => {
+  return (target, propertyKey: string) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }

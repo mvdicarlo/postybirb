@@ -8,8 +8,8 @@ import {
   EuiToolTip,
 } from '@elastic/eui';
 import { msg } from '@lingui/macro';
-import { useNavigate } from 'react-router';
 import { useLingui } from '@lingui/react';
+import { useNavigate } from 'react-router';
 import Keybinding, {
   useKeybinding,
 } from '../../components/app/keybinding/keybinding';
@@ -42,6 +42,7 @@ import AppSearch from '../app-search';
 
 function AppImage() {
   return (
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     <img src="/app-icon.png" alt="postybirb icon" width="24" height="24" />
   );
 }
@@ -120,6 +121,7 @@ export default function AppSideNav() {
         iconType={AppImage}
         iconSize="xl"
         title={
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           <span>
             PostyBirb
             <span className="text-xs ml-1">{window.electron.app_version}</span>
@@ -151,13 +153,13 @@ export default function AppSideNav() {
               icon: MessageIcon,
             },
             {
-              label: msg`Tag groups`,
+              label: msg`Tag Groups`,
               keybinding: tagGroupsKeybinding,
               onClick: toggleTagGroupsPage,
               icon: TagsIcon,
             },
             {
-              label: msg`Tag converters`,
+              label: msg`Tag Converters`,
               keybinding: tagConvertersKeybinding,
               onClick: toggleTagConvertersPage,
               icon: UserTagIcon,
@@ -168,26 +170,29 @@ export default function AppSideNav() {
               onClick: toggleSettings,
               icon: GearIcon,
             },
-          ].map((e) => (
-            <EuiListGroupItem
-              size="s"
-              aria-label={`PostyBirb ${_(e.label)} navigation`}
-              iconType={e.icon.GroupItem}
-              onClick={() => (e.onClick ?? e.keybinding.onActivate)()}
-              showToolTip={false}
-              key={_(e.label)}
-              label={
-                <EuiToolTip
-                  position="right"
-                  content={
-                    <Keybinding {...e.keybinding}>{_(e.label)}</Keybinding>
-                  }
-                >
-                  <span>{_(e.label)}</span>
-                </EuiToolTip>
-              }
-            />
-          ))}
+          ].map((e) => {
+            const navigationName = _(e.label);
+            return (
+              <EuiListGroupItem
+                size="s"
+                aria-label={_(msg`Navigate to ${navigationName}`)}
+                iconType={e.icon.GroupItem}
+                onClick={() => (e.onClick ?? e.keybinding.onActivate)()}
+                showToolTip={false}
+                key={_(e.label)}
+                label={
+                  <EuiToolTip
+                    position="right"
+                    content={
+                      <Keybinding {...e.keybinding}>{_(e.label)}</Keybinding>
+                    }
+                  >
+                    <span>{_(e.label)}</span>
+                  </EuiToolTip>
+                }
+              />
+            );
+          })}
         </EuiListGroup>
       </EuiCollapsibleNavGroup>
     </EuiPageSidebar>

@@ -11,8 +11,9 @@ import {
   EuiText,
   EuiTitle,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import updateApi from '../../../api/update.api';
 import { ArrowUpIcon } from '../../shared/icons/Icons';
@@ -28,6 +29,8 @@ export default function UpdateButton() {
     }
   );
 
+  const { _ } = useLingui();
+
   const show = data?.updateAvailable ?? false;
   const patchNotes = data?.updateNotes ?? [];
   const disable = (data?.updateDownloaded || data?.updateDownloading) ?? false;
@@ -37,7 +40,7 @@ export default function UpdateButton() {
         <EuiButton
           size="s"
           color="success"
-          aria-label="Update PostyBirb"
+          aria-label={_(msg`Update PostyBirb`)}
           fullWidth
           iconType={ArrowUpIcon}
           disabled={disable}
@@ -45,7 +48,7 @@ export default function UpdateButton() {
             updateApi.startUpdate();
           }}
         >
-          <Trans comment="Update PostyBirb button">Update</Trans>
+          <Trans comment={_(msg`Update PostyBirb button`)}>Update</Trans>
         </EuiButton>
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
@@ -53,11 +56,11 @@ export default function UpdateButton() {
           anchorPosition="rightCenter"
           button={
             <EuiButtonIcon
-              title="Patch Notes"
+              title={_(msg`Patch Notes`)}
               color="success"
               size="s"
               iconType="article"
-              aria-label="Information about the update"
+              aria-label={_(msg`Information about the update`)}
               onClick={() => {
                 setShowNotes(!showNotes);
               }}

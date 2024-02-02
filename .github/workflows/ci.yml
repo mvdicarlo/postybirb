@@ -3,6 +3,7 @@ on:
   pull_request:
     branches:
       - main
+      - '!weblate-postybirb-postybirb'
 
 # Needed for nx-set-shas when run on the main branch
 permissions:
@@ -28,33 +29,90 @@ jobs:
         with:
           node-version: 18
           cache: yarn
-          
-      - name: Install dependencies 
+
+      - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Setup github SHA for NX affected
+      - name: Set git SHA for NX affected
         uses: nrwl/nx-set-shas@v3
-        
-        # This line is needed for nx affected to work when CI is running on a PR
-      - name: Track right branch 
+
+      # Note: This step is needed for nx affected to work when CI is running on a PR
+      - name: Track right branch
         run: npx exitzero git branch --track main origin/main
 
-      - name: Extract keys
+      - name: Extract i18n keys
         run: yarn lingui:extract
-      
-      - name: Lint
-        run: npx exitzero nx affected -t lint --fix
+
+      - name: Lint changes affected by this pr
+        run: npx exitzero nx affected --parallel -t lint --fix
 
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          npx exitzero git add lang/ && git commit -m 'ci: extract lang messages'
+          npx exitzero "git add 'lang/' && git commit -m 'ci: extract i18n strings'"
 
-          npx exitzero git add ./ && git commit -m 'ci: prettier and eslint fix'
+          npx exitzero "git add './' && git commit -m 'ci: prettier and eslint fixes'"
+          exit 0
 
-      - name: Push changes
+      - name: Push changes back to PR
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
+
+      - name: Get latest SHA
+        run: |
+          echo "latest_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Move checks to the last commit
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const orig_sha = context.payload.pull_request.head.sha
+            const latest_sha = process.env.latest_sha
+            console.log({ orig_sha, latest_sha });
+            if (latest_sha === orig_sha) {
+              console.log("latest commit SHA matches original pr commit SHA, not moving annotations...");
+              return;
+            }
+
+            const check_runs = await github.rest.checks.listForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: orig_sha
+            })
+
+            const check_run = check_runs[0]
+
+            if (!check_run) {
+              console.log("No check runs found for SHA", orig_sha);
+              return;
+            }
+
+            const annotations = await github.rest.checks.listAnnotations({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              check_run_id: checks.id,
+            });
+
+            if (annotations.length < 1) {
+              console.log("Empty annotations for check_run_id", check.id)
+              return;
+            }
+
+            github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Lint',
+              head_sha: latest_sha,
+              status: 'completed',
+              conclusion: annotations.some(annotation => annotation.annotation_level === 'failure') ? 'failure' : 'success',
+              output: {
+                title: 'Linting Results',
+                summary: 'Linting results for the affected files',
+                annotations: annotations,
+              },
+            });
+            

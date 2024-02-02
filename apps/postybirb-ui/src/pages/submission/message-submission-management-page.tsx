@@ -6,10 +6,10 @@ import {
   EuiProgress,
   EuiSpacer,
 } from '@elastic/eui';
-import { SubmissionType } from '@postybirb/types';
-import { useMemo, useState } from 'react';
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import { SubmissionType } from '@postybirb/types';
+import { useMemo, useState } from 'react';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
 import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
@@ -43,7 +43,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
         aria-label={_(msg`Message submission name input`)}
         prepend={
           <EuiFormLabel htmlFor="message-input">
-            <Trans context="name">Name</Trans>
+            <Trans>Name</Trans>
           </EuiFormLabel>
         }
         onKeyDown={(e) => {
@@ -95,21 +95,17 @@ export default function MessageSubmissionManagementPage() {
       <EuiPageHeader
         bottomBorder
         iconType={MessageIcon.Header}
-        pageTitle={
-          <Trans context="submissions.message-page-header">
-            Message Submissions
-          </Trans>
-        }
+        pageTitle={<Trans>Message Submissions</Trans>}
         tabs={[
           {
-            label: <Trans context="submissions">Submissions</Trans>,
+            label: <Trans>Submissions</Trans>,
             isSelected: tab === 'submissions',
             onClick: () => {
               setTab('submissions');
             },
           },
           {
-            label: <Trans context="templates">Templates</Trans>,
+            label: <Trans>Templates</Trans>,
             isSelected: tab === 'templates',
             onClick: () => {
               setTab('templates');

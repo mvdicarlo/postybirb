@@ -37,7 +37,7 @@ export function TagConvertersFlyout() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <Trans context="tag-converters">Tag Converters</Trans>
+              <Trans>Tag Converters</Trans>
             </Keybinding>
           </div>
         </EuiTitle>

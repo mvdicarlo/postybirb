@@ -1,8 +1,8 @@
 import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
-import { useCallback } from 'react';
-import { useNavigate } from 'react-router';
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import postApi from '../../../../../../api/post.api';
 import submissionApi from '../../../../../../api/submission.api';
 import { useToast } from '../../../../../../app/app-toast-provider';
@@ -65,7 +65,7 @@ function ScheduleAction(props: SubmissionTableCardActionsProps) {
         iconType={ScheduleIcon}
         color="success"
         disabled={!canPost || submission.isScheduled || submission.isQueued()}
-        aria-label={_(msg`Schedule submission`)}
+        aria-label={_(msg`Schedule Submission`)}
         onClick={() => {
           if (canPost && !submission.isScheduled) {
             submissionApi
@@ -104,7 +104,7 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
       <EuiButtonIcon
         iconType={CancelIcon}
         color="warning"
-        aria-label={_(msg`Cancel submission`)}
+        aria-label={_(msg`Cancel post`)}
         onClick={() => {
           postApi
             .dequeue([submission.id])
@@ -171,7 +171,7 @@ export default function SubmissionTableCardActions(
       <EuiToolTip content={_(msg`Edit`)}>
         <EuiButtonIcon
           iconType="documentEdit"
-          aria-label={_(msg`Edit submission`)}
+          aria-label={_(msg`Edit Submission`)}
           onClick={() => {
             navToEdit(submission.id);
           }}

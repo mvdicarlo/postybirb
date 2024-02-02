@@ -1,7 +1,8 @@
 import { EuiComboBox, EuiComboBoxOptionOption, EuiFormRow } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { IAccountDto, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { useMemo } from 'react';
-import { Trans } from '@lingui/macro';
 import { useWebsites } from '../../../../../hooks/account/use-websites';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 
@@ -24,6 +25,8 @@ export function SubmissionFormWebsiteSelect() {
     [filteredAccounts]
   );
 
+  const { _ } = useLingui();
+
   const selectedOptions: EuiComboBoxOptionOption<IAccountDto>[] = useMemo(
     () =>
       submission.options
@@ -31,13 +34,13 @@ export function SubmissionFormWebsiteSelect() {
         .map((opt) => {
           const account = accounts.find((a) => a.id === opt.account);
           return {
-            label: account?.name ?? 'Unknown',
+            label: account?.name ?? _(msg`Unknown`),
             key: opt.account,
             value: account,
             prepend: <span>{account?.websiteInfo.websiteDisplayName} - </span>,
           };
         }),
-    [accounts, submission.options]
+    [_, accounts, submission.options]
   );
 
   return (
@@ -45,13 +48,13 @@ export function SubmissionFormWebsiteSelect() {
       aria-required
       fullWidth
       id="website-select"
-      label={<Trans context="form.websites">Websites</Trans>}
-      aria-label="Websites"
+      label={<Trans>Websites</Trans>}
+      aria-label={_(msg`Websites`)}
     >
       <EuiComboBox
         compressed
         fullWidth
-        aria-label="Websites"
+        aria-label={_(msg`Websites`)}
         options={options}
         selectedOptions={selectedOptions}
         onChange={(newOptions) => {

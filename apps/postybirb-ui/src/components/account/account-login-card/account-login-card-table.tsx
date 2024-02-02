@@ -11,11 +11,13 @@ import {
   EuiIcon,
   EuiToolTip,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useToggle } from 'react-use';
 import accountApi from '../../../api/account.api';
+import { sharedMessages } from '../../../i18n';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
 import { PencilIcon, SaveIcon } from '../../shared/icons/Icons';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
@@ -38,6 +40,7 @@ function NameColumn(props: {
   const { name, onNameUpdate } = props;
   const [isEditing, toggleEditing] = useToggle(false);
   const [editedName, setEditedName] = useState<string>(name);
+  const { _ } = useLingui();
 
   if (isEditing) {
     const isNameEditValid = !!editedName && editedName.trim().length > 0;
@@ -55,7 +58,7 @@ function NameColumn(props: {
         }}
         append={
           <EuiButtonIcon
-            aria-label="Save"
+            aria-label={_(msg`Save`)}
             iconType={SaveIcon}
             onClick={() => {
               onNameUpdate(editedName.trim());
@@ -73,7 +76,7 @@ function NameColumn(props: {
       <span>{name}</span>
       <EuiToolTip content={<Trans>Edit</Trans>}>
         <EuiButtonIcon
-          aria-label="Edit"
+          aria-label={_(msg`Edit`)}
           iconType={PencilIcon}
           onClick={() => toggleEditing(true)}
         />
@@ -173,7 +176,7 @@ function AccountLoginAction(props: {
   const { account, website } = props;
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  let loginMethod: JSX.Element = <div>No login component found.</div>;
+  let loginMethod: JSX.Element = <Trans>No login component found.</Trans>;
 
   if (website.loginType.type === 'user') {
     loginMethod = (
@@ -311,9 +314,17 @@ export default function AccountLoginCardTable(
     },
   ];
 
+  const { _ } = useLingui();
+
   if (!instances.length) {
     return null;
   }
 
-  return <EuiBasicTable items={instances} columns={columns} />;
+  return (
+    <EuiBasicTable
+      items={instances}
+      columns={columns}
+      noItemsMessage={_(sharedMessages.noItems)}
+    />
+  );
 }

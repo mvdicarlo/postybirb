@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/macro';
 import {
   BooleanFieldType,
   DescriptionFieldType,
@@ -17,7 +18,6 @@ import TagField from './fields/tag-field';
 
 type FieldGeneratorProps = SubmissionGeneratedFieldProps;
 
-// TODO figure out translation
 export default function FieldGenerator(props: FieldGeneratorProps) {
   const { propKey, option, field } = props;
   const key = `${option.id}-gen-${propKey}`;
@@ -76,6 +76,6 @@ export default function FieldGenerator(props: FieldGeneratorProps) {
         />
       );
     default:
-      return <div>Unsupported field type.</div>;
+      return <Trans>Unsupported field type.</Trans>;
   }
 }

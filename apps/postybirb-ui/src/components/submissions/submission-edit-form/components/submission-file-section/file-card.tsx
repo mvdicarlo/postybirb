@@ -8,13 +8,14 @@ import {
   EuiImage,
   EuiSplitPanel,
 } from '@elastic/eui';
+import { msg, Trans } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import {
   FileSubmissionMetadata,
   FileType,
   ISubmissionFileDto,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { Trans } from '@lingui/macro';
 import { getReplaceFileUrl } from '../../../../../api/file-submission.api';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
@@ -61,7 +62,7 @@ function CardImageProvider(file: ISubmissionFileDto) {
           <source src={src} type="audio/mp3" />
           <source src={src} type="audio/mpeg3" />
           <source src={src} type="audio/wav" />
-          Your browser does not support the audio tag.
+          <Trans>Your browser does not support the audio tag.</Trans>
         </audio>
       );
     case FileType.TEXT:
@@ -77,7 +78,7 @@ function CardImageProvider(file: ISubmissionFileDto) {
         <video width="150" height="100" controls>
           <source src={src} type="video/mp4" />
           <source src={src} type="video/ogg" />
-          Your browser does not support the video tag.
+          <Trans>Your browser does not support the video tag.</Trans>
         </video>
       );
     case FileType.UNKNOWN:
@@ -89,7 +90,7 @@ function CardImageProvider(file: ISubmissionFileDto) {
 
 function FileCard(props: SubmissionFileCardProps) {
   const { submission, updateView } = useSubmission();
-
+  const { _ } = useLingui();
   const { isDragging, file } = props;
   return (
     <EuiSplitPanel.Outer
@@ -104,12 +105,12 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-primary">
           <div className="text-center">
             <strong>
-              <Trans context="primary">Primary</Trans>
+              <Trans comment="Main file data">Primary</Trans>
             </strong>
             <CardImageProvider {...file} />
             <div>
               <FileUploadButton
-                label="Change file"
+                label={_(msg`Change file`)}
                 endpointPath={getReplaceFileUrl(submission.id, file.id, 'file')}
                 onComplete={(dto) => {
                   mergeSubmission(submission, dto, ['files', 'metadata']);
@@ -122,7 +123,7 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
           <div className="text-center">
             <strong>
-              <Trans context="thumbnail">Thumbnail</Trans>
+              <Trans>Thumbnail</Trans>
             </strong>
             {file.hasThumbnail ? (
               <EuiImage
@@ -138,7 +139,7 @@ function FileCard(props: SubmissionFileCardProps) {
               <FileUploadButton
                 compress
                 accept={['image/*']}
-                label="Change thumbnail"
+                label={_(msg`Change thumbnail`)}
                 endpointPath={getReplaceFileUrl(
                   submission.id,
                   file.id,

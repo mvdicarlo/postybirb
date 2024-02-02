@@ -4,6 +4,7 @@
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "plugins": ["lingui"],
       "rules": {
         "react/require-default-props": "off",
         "no-restricted-syntax": "off",

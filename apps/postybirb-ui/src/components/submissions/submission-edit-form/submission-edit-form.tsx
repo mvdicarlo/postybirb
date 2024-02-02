@@ -1,4 +1,6 @@
 import { EuiSideNav, EuiSideNavItemType, EuiTitle } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import {
   IAccountDto,
   IWebsiteFormFields,
@@ -7,16 +9,15 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { useMemo } from 'react';
-import { Trans } from '@lingui/macro';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { useSubmission } from '../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import SubmissionScheduler from '../submission-scheduler/submission-scheduler';
 import SubmissionFileSection from './components/submission-file-section/submission-file-section';
 import SubmissionFormSection from './components/submission-form-section/submission-form-section';
 import { SubmissionFormWebsiteSelect } from './components/submission-form-website-select/submission-form-website-select';
 import SubmissionOptionsSection from './components/submission-options-section/submission-options-section';
 import './submission-edit-form.css';
-import SubmissionScheduler from '../submission-scheduler/submission-scheduler';
 
 type PairedWebsiteOptions = {
   website: IWebsiteInfoDto;
@@ -27,6 +28,7 @@ type PairedWebsiteOptions = {
 };
 
 function scrollToAnchor(anchorId: string): void {
+  // eslint-disable-next-line lingui/text-restrictions
   const anchor = document.querySelector(`[data-anchor='${anchorId}']`);
   if (anchor) {
     anchor.scrollIntoView();
@@ -36,11 +38,12 @@ function scrollToAnchor(anchorId: string): void {
 function getSideNav(
   submission: SubmissionDto,
   defaultOptionsId: string,
-  websiteGroups: PairedWebsiteOptions[]
+  websiteGroups: PairedWebsiteOptions[],
+  _: ReturnType<typeof useLingui>['_']
 ): EuiSideNavItemType<unknown>[] {
   const sidenavOptions: EuiSideNavItemType<unknown>[] = [
     {
-      name: 'Default Options',
+      name: _(msg`Default Options`),
       id: defaultOptionsId,
       onClick: () => {
         scrollToAnchor(defaultOptionsId);
@@ -104,10 +107,13 @@ export default function SubmissionEditForm() {
     );
   }, [submission.options, websites]);
 
+  const { _ } = useLingui();
+
   const sidenavOptions: EuiSideNavItemType<unknown>[] = getSideNav(
     submission,
     defaultOptions.id,
-    selectedWebsites
+    selectedWebsites,
+    _
   );
 
   const optionSections = selectedWebsites.map(({ website, pairs }) => (
@@ -147,7 +153,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection>
           <EuiTitle size="xs">
             <h4 data-anchor={defaultOptions.id}>
-              <Trans context="schedule">Schedule</Trans>
+              <Trans>Schedule</Trans>
             </h4>
           </EuiTitle>
           <SubmissionScheduler
@@ -161,7 +167,7 @@ export default function SubmissionEditForm() {
         <SubmissionFormSection key={defaultOptions.id}>
           <EuiTitle size="s">
             <h4 data-anchor={defaultOptions.id}>
-              <Trans context="default-options">Default Options</Trans>
+              <Trans>Default Options</Trans>
             </h4>
           </EuiTitle>
           <SubmissionOptionsSection
