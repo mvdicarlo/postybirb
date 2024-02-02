@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
-import { net, ClientRequest, ClientRequestConstructorOptions } from 'electron';
-import { encode as encodeQueryString } from 'querystring';
-import urlEncoded from 'form-urlencoded';
-import FormData from 'form-data';
 import { getPartitionKey } from '@postybirb/utils/electron';
+import { ClientRequest, ClientRequestConstructorOptions, net } from 'electron';
+import FormData from 'form-data';
+import urlEncoded from 'form-urlencoded';
+import { encode as encodeQueryString } from 'querystring';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods
 const RESTRICTED_HEADERS: string[] = [
@@ -181,6 +181,7 @@ export class Http {
     let responseUrl: undefined | string;
 
     // TODO figure out if I need to call followRedirect even though follow is default behavior
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     req.on('redirect', (statusCode, method, redirectUrl, responseHeaders) => {
       responseUrl = redirectUrl;
     });

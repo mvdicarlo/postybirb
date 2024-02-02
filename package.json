@@ -15,7 +15,7 @@
     "start": "nx run-many --target=serve --projects=postybirb,postybirb-ui --parallel",
     "build": "nx run-many --target=build --projects=postybirb,postybirb-ui --parallel",
     "build:prod": "nx run-many --target=build --configuration=production --projects=postybirb,postybirb-ui --parallel",
-    "lingui:extract": "lingui extract",
+    "lingui:extract": "lingui extract --clean",
     "make": "electron-builder -w",
     "test": "nx test",
     "test:client-server": "nx test client-server && rimraf test",
