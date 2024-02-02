@@ -172,7 +172,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
       },
     },
     {
-      name: <Trans context="actions">Actions</Trans>,
+      name: <Trans>Actions</Trans>,
       width: '8%',
       actions: [
         {

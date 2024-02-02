@@ -13,7 +13,7 @@ import {
 } from '@elastic/eui';
 import { TagConverterDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
-import { Trans } from '@lingui/macro';
+import { Trans, msg } from '@lingui/macro';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -21,6 +21,7 @@ import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import './tag-converters-table.css';
+import { useLingui } from '@lingui/react';
 
 type TagConvertersTableProps = {
   tagConverters: TagConverterDto[];
@@ -112,6 +113,8 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
     onSelectionChange,
   };
 
+  const { _ } = useLingui();
+
   const columns: Array<EuiBasicTableColumn<TagConverterDto>> = [
     {
       field: 'tag',
@@ -152,7 +155,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
       field: 'convertTo',
       name: <Trans context="websites">Websites</Trans>,
       width: '60%',
-      render: (_: string[], tagConverter: TagConverterDto) => (
+      render: (__: string[], tagConverter: TagConverterDto) => (
         <div className="flex flex-wrap">
           {tagSupportingWebsites.map((website) => (
             <div className="mr-1">
@@ -184,30 +187,33 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
       ),
     },
     {
-      name: <Trans context="actions">Actions</Trans>,
+      name: <Trans>Actions</Trans>,
       width: '8%',
       actions: [
         {
-          render: (converter: TagConverterDto) => (
-            <EuiButtonIcon
-              aria-label={`Save changes for ${converter.tag}`}
-              color="primary"
-              iconType="save"
-              disabled={
-                !converter.tag.trim().length ||
-                records.some(
-                  (tagConverter) =>
-                    tagConverter.tag.trim() === converter.tag.trim() &&
-                    tagConverter.id !== converter.id
-                )
-              }
-              onClick={() => {
-                saveChanges(converter);
-              }}
-            >
-              <Trans context="save">Save</Trans>
-            </EuiButtonIcon>
-          ),
+          render: (converter: TagConverterDto) => {
+            const { tag } = converter;
+            return (
+              <EuiButtonIcon
+                aria-label={_(msg`Save changes for ${tag}`)}
+                color="primary"
+                iconType="save"
+                disabled={
+                  !converter.tag.trim().length ||
+                  records.some(
+                    (tagConverter) =>
+                      tagConverter.tag.trim() === converter.tag.trim() &&
+                      tagConverter.id !== converter.id
+                  )
+                }
+                onClick={() => {
+                  saveChanges(converter);
+                }}
+              >
+                <Trans context="save">Save</Trans>
+              </EuiButtonIcon>
+            );
+          },
         },
         {
           render: (converter: TagConverterDto) => (
@@ -217,7 +223,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
               <EuiButtonIcon
                 color="danger"
                 iconType="trash"
-                aria-label={`Delete tag converter ${converter.tag}`}
+                aria-label={_(msg`Delete tag converter ${converter.tag}`)}
               >
                 <Trans context="delete">Delete</Trans>
               </EuiButtonIcon>
