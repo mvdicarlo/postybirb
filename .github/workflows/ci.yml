@@ -43,38 +43,7 @@ jobs:
         run: yarn lingui:extract
 
       - name: Lint
-        run: npx exitzero nx affected -t lint --fix
-
-      - name: Display linting results on pull request
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const { data } = fs.existsSync('./lint-results.json') ? JSON.parse(fs.readFileSync('./lint-results.json', 'utf8')) : { data: [] };
-
-            const annotations = data.map(result => ({
-              path: result.filePath,
-              start_line: result.startLine,
-              end_line: result.endLine,
-              annotation_level: result.status === 'WARNING' ? 'warning' : 'failure',
-              title: result.ruleName,
-              message: result.failure,
-            }));
-
-            github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'Lint Check',
-              head_sha: context.payload.pull_request.head.sha,
-              status: 'completed',
-              conclusion: annotations.some(annotation => annotation.annotation_level === 'failure') ? 'failure' : 'success',
-              output: {
-                title: 'Linting Results',
-                summary: 'Linting results for the affected files',
-                annotations: annotations,
-              },
-            });
+        run: npx exitzero nx affected --parallel -t lint --fix
 
       - name: Commit changes
         run: |
