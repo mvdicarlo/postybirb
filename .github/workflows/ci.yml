@@ -52,6 +52,7 @@ jobs:
           npx exitzero git add lang/ && git commit -m 'ci: extract lang messages'
 
           npx exitzero git add ./ && git commit -m 'ci: prettier and eslint fix'
+          exit 0
 
       - name: Push changes
         uses: ad-m/github-push-action@master
