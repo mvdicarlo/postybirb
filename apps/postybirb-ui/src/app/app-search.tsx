@@ -2,6 +2,8 @@ import {
   EuiSelectableTemplateSitewide,
   EuiSelectableTemplateSitewideOption,
 } from '@elastic/eui';
+import { msg, t } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { SubmissionType } from '@postybirb/types';
 import { useNavigate } from 'react-router';
 import {
@@ -25,17 +27,18 @@ export default function AppSearch() {
   const history = useNavigate();
   const [globalState, setGlobalState] = useGlobalState();
   const { state: submissions } = useStore(SubmissionStore);
+  const { _ } = useLingui();
 
   const dashboardOptions: EuiSelectableTemplateSitewideOption[] = [
     {
       key: 'home',
-      label: 'Home',
+      label: _(msg`Home`),
       icon: {
         type: HomeIcon,
       },
       meta: [
         {
-          text: 'Dashboard',
+          text: _(msg`Dashboard`),
           type: 'dashboard',
         },
       ],
@@ -47,13 +50,13 @@ export default function AppSearch() {
     },
     {
       key: 'accounts',
-      label: 'Accounts',
+      label: _(msg`Accounts`),
       icon: {
         type: UserGroupIcon,
       },
       meta: [
         {
-          text: 'Dashboard',
+          text: _(msg`Dashboard`),
           type: 'dashboard',
         },
       ],
@@ -68,13 +71,13 @@ export default function AppSearch() {
     },
     {
       key: 'file-submissions',
-      label: 'File Submissions',
+      label: _(msg`File Submissions`),
       icon: {
         type: FileIcon,
       },
       meta: [
         {
-          text: 'Dashboard',
+          text: _(msg`Dashboard`),
           type: 'dashboard',
         },
       ],
@@ -86,13 +89,13 @@ export default function AppSearch() {
     },
     {
       key: 'message-submissions',
-      label: 'Message Submissions',
+      label: _(msg`Message Submissions`),
       icon: {
         type: MessageIcon,
       },
       meta: [
         {
-          text: 'Dashboard',
+          text: _(msg`Dashboard`),
           type: 'dashboard',
         },
       ],
@@ -104,13 +107,13 @@ export default function AppSearch() {
     },
     {
       key: 'settings',
-      label: 'Settings',
+      label: _(msg`Settings`),
       icon: {
         type: GearIcon,
       },
       meta: [
         {
-          text: 'Settings',
+          text: _(msg`Settings`),
           type: 'dashboard',
         },
       ],
@@ -130,17 +133,17 @@ export default function AppSearch() {
       const isFileType = s.type === SubmissionType.FILE;
       const sub = {
         key: s.id,
-        label: s.getDefaultOptions()?.data.title || 'Unknown submission',
+        label: s.getDefaultOptions()?.data.title || _(msg`Unknown submission`),
         icon: {
           type: isFileType ? FileIcon : MessageIcon,
         },
         meta: [
           {
-            text: 'Submission',
+            text: _(msg`Submission`),
             type: 'application',
           },
           {
-            text: isFileType ? 'File' : 'Message',
+            text: isFileType ? _(msg`File`) : t`Message`,
             type: 'deployment',
           },
         ],

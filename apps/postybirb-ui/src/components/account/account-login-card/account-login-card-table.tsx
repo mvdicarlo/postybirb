@@ -11,9 +11,10 @@ import {
   EuiIcon,
   EuiToolTip,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useToggle } from 'react-use';
 import accountApi from '../../../api/account.api';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
@@ -38,6 +39,7 @@ function NameColumn(props: {
   const { name, onNameUpdate } = props;
   const [isEditing, toggleEditing] = useToggle(false);
   const [editedName, setEditedName] = useState<string>(name);
+  const { _ } = useLingui();
 
   if (isEditing) {
     const isNameEditValid = !!editedName && editedName.trim().length > 0;
@@ -55,7 +57,7 @@ function NameColumn(props: {
         }}
         append={
           <EuiButtonIcon
-            aria-label="Save"
+            aria-label={_(msg`Save`)}
             iconType={SaveIcon}
             onClick={() => {
               onNameUpdate(editedName.trim());
@@ -73,7 +75,7 @@ function NameColumn(props: {
       <span>{name}</span>
       <EuiToolTip content={<Trans>Edit</Trans>}>
         <EuiButtonIcon
-          aria-label="Edit"
+          aria-label={_(msg`Edit`)}
           iconType={PencilIcon}
           onClick={() => toggleEditing(true)}
         />

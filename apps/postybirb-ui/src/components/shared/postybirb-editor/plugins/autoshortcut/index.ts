@@ -1,3 +1,4 @@
+/* eslint-disable lingui/no-unlocalized-strings */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import tinymce, { Editor, EditorSelection } from 'tinymce';
 

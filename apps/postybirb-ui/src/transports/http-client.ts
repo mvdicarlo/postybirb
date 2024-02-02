@@ -86,6 +86,7 @@ export class HttpClient {
     };
 
     if (bodyOrSearchParams instanceof FormData || !shouldUseBody) {
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       delete headers['Content-Type'];
     }
 
@@ -170,6 +171,7 @@ export class HttpClient {
   }
 
   private async processResponse<T>(res: Response): Promise<T> {
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     if (res.headers.get('Content-Type')?.includes('application/json')) {
       return this.processJson<T>(res);
     }

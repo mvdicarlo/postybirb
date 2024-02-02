@@ -6,10 +6,11 @@ import {
   EuiTitle,
   EuiToolTip,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
 import { ValidationMessage, ValidationResult } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { Trans } from '@lingui/macro';
 
+import { useLingui } from '@lingui/react';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { useSubmissionOptions } from '../../../../../hooks/submission/use-submission-options';
 import Translation from '../../../../translations/translation';
@@ -65,6 +66,8 @@ export default function SubmissionOptionsSection(
     [validations]
   );
 
+  const { _ } = useLingui();
+
   return (
     <EuiAccordion
       initialIsOpen
@@ -76,7 +79,11 @@ export default function SubmissionOptionsSection(
       }
       extraAction={
         <div>
-          <EuiToolTip content="Saves current values as the default for this account to be loaded in future submissions.">
+          <EuiToolTip
+            content={_(
+              msg`Saves current values as the default for this account to be loaded in future submissions.`
+            )}
+          >
             <EuiButtonEmpty
               className="mr-2"
               size="s"
@@ -94,7 +101,7 @@ export default function SubmissionOptionsSection(
             <EuiButtonIcon
               color="danger"
               iconType="trash"
-              aria-label="Remove submission"
+              aria-label={_(msg`Remove submission`)}
               style={{ verticalAlign: 'middle' }}
               onClick={() => {
                 // Remove option

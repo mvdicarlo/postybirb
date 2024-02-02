@@ -6,12 +6,12 @@ import {
   EuiLink,
   EuiRadioGroup,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useLocalStorage } from 'react-use';
 
 const DEFAULT_CRON = '0 0 * * FRI';
@@ -61,12 +61,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
         return null;
       case ScheduleType.RECURRING:
         // eslint-disable-next-line no-case-declarations
-        let cronHelp: JSX.Element | null = (
-          <FormattedMessage
-            id="schedule.cron.invalid"
-            defaultMessage="Invalid CRON string"
-          />
-        );
+        let cronHelp: JSX.Element | null = <Trans>Invalid CRON string</Trans>;
         try {
           cronHelp = schedule.cron ? (
             <span>
@@ -81,7 +76,9 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
           <EuiFormRow
             label={
               <EuiLink href="https://crontab.cronhub.io/">
-                CRON Format <EuiIcon type="link" size="s" />
+                <Trans>
+                  CRON format <EuiIcon type="link" size="s" />
+                </Trans>
               </EuiLink>
             }
             helpText={cronHelp}

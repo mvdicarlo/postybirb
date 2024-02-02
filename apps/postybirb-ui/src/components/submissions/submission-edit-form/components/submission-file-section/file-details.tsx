@@ -9,11 +9,12 @@ import {
   EuiFormRow,
   EuiSpacer,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
 import { isImage } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
-import { Trans } from '@lingui/macro';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
@@ -124,6 +125,7 @@ function SharedDetails(props: FileDetailsProps) {
         <EuiFlexItem>
           <EuiFormRow
             fullWidth
+            // eslint-disable-next-line react/no-unescaped-entities
             label={<Trans context="dont-post-to">Don't post to</Trans>}
           >
             <SimpleWebsiteSelect
@@ -249,6 +251,7 @@ function removeFile(submissionId: string, file: ISubmissionFileDto) {
 export function FileDetails(props: FileDetailsProps) {
   const { submission, updateView } = useSubmission();
   const { file } = props;
+  const { _ } = useLingui();
 
   const imageInfo = useMemo(() => {
     if (isImage(file.fileName)) {
@@ -262,7 +265,7 @@ export function FileDetails(props: FileDetailsProps) {
                 size="s"
                 className="mt-2"
                 iconType="trash"
-                aria-label={`Remove ${file.fileName}`}
+                aria-label={_(msg`Remove ${file.fileName}`)}
                 color="danger"
                 onClick={() => {
                   removeFile(submission.id, file).then((update) => {

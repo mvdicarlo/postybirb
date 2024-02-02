@@ -21,7 +21,6 @@ module.exports = defineConfig({
   plugins: [
     '@nrwl/nx',
     prettierExtension ? '' : 'prettier',
-    'lingui',
     'jest',
     'testing-library',
   ].filter(Boolean),

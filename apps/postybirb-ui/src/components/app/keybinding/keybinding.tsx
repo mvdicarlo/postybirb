@@ -32,6 +32,7 @@ export default function Keybinding(props: PropsWithChildren<KeybindingProps>) {
   keybinding.split('+').forEach((binding, i) => {
     let keyName = binding;
     if (keyName === 'Control') {
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       keyName = 'Ctrl';
     }
 

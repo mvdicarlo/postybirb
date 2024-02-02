@@ -1,4 +1,5 @@
 import { EuiFlexGroup, EuiFlexItem, EuiForm } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { FieldAggregateType } from '@postybirb/form-builder';
 import { SubmissionGeneratorProps } from '../../submission-form-props';
 import FieldGenerator from './field-generator';
@@ -40,7 +41,7 @@ export default function SubmissionFormGenerator(
   const { metadata, option } = props;
 
   if (!metadata) {
-    return <div>Unable to generate form.</div>;
+    return <Trans>Unable to generate form.</Trans>;
   }
 
   // Question why is the value an array again?

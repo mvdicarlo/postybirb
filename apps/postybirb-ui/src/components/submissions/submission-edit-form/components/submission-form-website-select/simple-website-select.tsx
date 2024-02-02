@@ -1,4 +1,6 @@
 import { EuiComboBox, EuiComboBoxOptionOption } from '@elastic/eui';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { useEffect, useState } from 'react';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../../stores/account.store';
@@ -16,6 +18,7 @@ export function SimpleWebsiteSelect(props: SimpleWebsiteSelectProps) {
     useStore(AccountStore);
 
   const [options, setOptions] = useState<EuiComboBoxOptionOption[]>([]);
+  const { _ } = useLingui();
 
   useEffect(() => {
     const opts: EuiComboBoxOptionOption[] = submission.options
@@ -23,9 +26,9 @@ export function SimpleWebsiteSelect(props: SimpleWebsiteSelectProps) {
         const account = accounts.find((a) => a.id === option.account);
         if (account) {
           return {
-            label: `${account.websiteInfo.websiteDisplayName || 'Unknown'} - ${
-              account.name
-            }`,
+            label: `${
+              account.websiteInfo.websiteDisplayName || _(msg`Unknown`)
+            } - ${account.name}`,
             key: account.id,
           };
         }
@@ -46,7 +49,7 @@ export function SimpleWebsiteSelect(props: SimpleWebsiteSelectProps) {
       fullWidth
       compressed
       isClearable
-      aria-label="Websites"
+      aria-label={_(msg`Websites`)}
       options={options}
       selectedOptions={selectedOptions}
       onChange={(newOptions) => {

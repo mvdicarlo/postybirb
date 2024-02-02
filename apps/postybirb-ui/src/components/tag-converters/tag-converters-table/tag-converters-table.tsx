@@ -36,6 +36,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const tableRef = useRef<EuiBasicTable | null>(null);
   const updateView = useUpdateView();
   const [records, setRecords] = useState(tagConverters); // Internal state to protect unsaved edits
+  const { _ } = useLingui();
 
   useEffect(() => {
     const newRecords = tagConverters.filter(
@@ -70,7 +71,11 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   };
 
   const createNewTagConverter = () => {
-    tagConvertersApi.create({ tag: `Tag ${Date.now()}`, convertTo: {} });
+    const defaultTagNameFromDate = Date.now();
+    tagConvertersApi.create({
+      tag: _(msg`Tag ${defaultTagNameFromDate}`),
+      convertTo: {},
+    });
   };
 
   const saveChanges = ({ id, tag, convertTo }: TagConverterDto) => {
@@ -102,7 +107,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           color="danger"
           iconType="trash"
           size="s"
-          aria-label="Delete selected tag converters"
+          aria-label={_(msg`Delete selected tag converters`)}
         >
           <Trans context="delete">Delete</Trans> {selectedItems.length}
         </EuiButton>
@@ -112,8 +117,6 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const selection: EuiTableSelectionType<TagConverterDto> = {
     onSelectionChange,
   };
-
-  const { _ } = useLingui();
 
   const columns: Array<EuiBasicTableColumn<TagConverterDto>> = [
     {
@@ -125,7 +128,11 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         <EuiFormRow
           fullWidth
           className="w-full"
-          label={<span style={{ visibility: 'hidden' }}>Empty</span>}
+          label={
+            <span style={{ visibility: 'hidden' }}>
+              <Trans comment="Empty tag">Empty</Trans>
+            </span>
+          }
           isInvalid={records.some(
             (tagConverter) =>
               tagConverter.tag.trim() === converter.tag.trim() &&
@@ -139,7 +146,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         >
           <EuiFieldText
             fullWidth
-            placeholder="Tag"
+            placeholder={_(msg`Tag`)}
             value={name}
             compressed
             onChange={(event) => {
@@ -241,7 +248,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           <EuiButton
             size="s"
             iconType="plus"
-            aria-label="Create new tag group"
+            aria-label={_(msg`Create new tag group`)}
             onClick={createNewTagConverter}
           >
             <Trans context="new">New</Trans>

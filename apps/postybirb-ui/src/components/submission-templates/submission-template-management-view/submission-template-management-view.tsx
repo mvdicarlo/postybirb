@@ -12,9 +12,10 @@ import {
   EuiTableSelectionType,
   EuiText,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { SubmissionType } from '@postybirb/types';
 import { useEffect, useMemo, useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useNavigate } from 'react-router';
 import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
@@ -97,6 +98,8 @@ export default function SubmissionTemplateManagementView(
     return res;
   };
 
+  const { _ } = useLingui();
+
   const deleteButton =
     selectedItems.length > 0 ? (
       <DeleteActionPopover onDelete={deleteSelectedItems}>
@@ -104,7 +107,7 @@ export default function SubmissionTemplateManagementView(
           color="danger"
           iconType="trash"
           size="s"
-          aria-label="Delete selected submission templates"
+          aria-label={_(msg`Delete selected submission templates`)}
         >
           <Trans>Delete</Trans> {selectedItems.length}
         </EuiButton>
@@ -136,7 +139,7 @@ export default function SubmissionTemplateManagementView(
         >
           <EuiFieldText
             fullWidth
-            placeholder="Name"
+            placeholder={_(msg`Name`)}
             value={template.getTemplateName()}
             compressed
             onChange={(event) => {
@@ -152,63 +155,64 @@ export default function SubmissionTemplateManagementView(
       field: 'id',
       width: '20%',
       name: <Trans>Actions</Trans>,
-      render: (_: unknown, template: SubmissionDto) => (
-        <div>
-          <EuiButtonIcon
-            title="Save"
-            aria-label={`Save changes for ${template.getTemplateName()}`}
-            color="primary"
-            iconType="save"
-            disabled={
-              !template.getTemplateName().trim().length ||
-              records.some(
-                (record) =>
-                  record.getTemplateName().trim() ===
-                    template.getTemplateName().trim() &&
-                  record.id !== template.id
-              )
-            }
-            onClick={() => {
-              saveChanges(template);
-            }}
-          >
-            <Trans>Save</Trans>
-          </EuiButtonIcon>
-          <EuiButtonIcon
-            title="Edit"
-            aria-label={`Edit ${template.getTemplateName()}`}
-            color="primary"
-            iconType="documentEdit"
-            disabled={
-              !template.getTemplateName().trim().length ||
-              records.some(
-                (record) =>
-                  record.getTemplateName().trim() ===
-                    template.getTemplateName().trim() &&
-                  record.id !== template.id
-              )
-            }
-            onClick={() => {
-              navToEdit(template.id);
-            }}
-          >
-            <Trans>Edit</Trans>
-          </EuiButtonIcon>
-          <DeleteActionPopover
-            onDelete={() => submissionsApi.remove([template.id])}
-          >
+      render: (__: unknown, template: SubmissionDto) => {
+        const templateName = template.getTemplateName();
+        return (
+          <div>
             <EuiButtonIcon
-              title="Delete"
-              className="ml-4"
-              color="danger"
-              iconType="trash"
-              aria-label={`Delete submission template ${template.getTemplateName()}`}
+              title={_(msg`Save`)}
+              aria-label={_(msg`Save changes for ${templateName}`)}
+              color="primary"
+              iconType="save"
+              disabled={
+                !templateName.trim().length ||
+                records.some(
+                  (record) =>
+                    record.getTemplateName().trim() === templateName.trim() &&
+                    record.id !== template.id
+                )
+              }
+              onClick={() => {
+                saveChanges(template);
+              }}
             >
-              <Trans>Delete</Trans>
+              <Trans>Save</Trans>
             </EuiButtonIcon>
-          </DeleteActionPopover>
-        </div>
-      ),
+            <EuiButtonIcon
+              title={_(msg`Edit`)}
+              aria-label={_(msg`Edit ${templateName}`)}
+              color="primary"
+              iconType="documentEdit"
+              disabled={
+                !templateName.trim().length ||
+                records.some(
+                  (record) =>
+                    record.getTemplateName().trim() === templateName.trim() &&
+                    record.id !== template.id
+                )
+              }
+              onClick={() => {
+                navToEdit(template.id);
+              }}
+            >
+              <Trans>Edit</Trans>
+            </EuiButtonIcon>
+            <DeleteActionPopover
+              onDelete={() => submissionsApi.remove([template.id])}
+            >
+              <EuiButtonIcon
+                title={_(msg`Delete`)}
+                className="ml-4"
+                color="danger"
+                iconType="trash"
+                aria-label={_(msg`Delete submission template ${templateName}`)}
+              >
+                <Trans>Delete</Trans>
+              </EuiButtonIcon>
+            </DeleteActionPopover>
+          </div>
+        );
+      },
     },
   ];
 
@@ -220,10 +224,11 @@ export default function SubmissionTemplateManagementView(
             <EuiButton
               size="s"
               iconType="plus"
-              aria-label="Create new submission template"
+              aria-label={_(msg`Create new submission template`)}
               onClick={() => {
+                const defaultNameFromTime = Date.now();
                 submissionsApi.create({
-                  name: `Submission Template ${Date.now()}`,
+                  name: _(msg`Submission Template ${defaultNameFromTime}`),
                   type,
                   isTemplate: true,
                 });

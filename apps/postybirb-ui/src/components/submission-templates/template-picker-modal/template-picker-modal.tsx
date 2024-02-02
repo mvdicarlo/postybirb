@@ -18,6 +18,8 @@ import {
   EuiCheckboxGroupIdToSelectedMap,
   EuiCheckboxGroupOption,
 } from '@elastic/eui/src/components/form/checkbox/checkbox_group';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import {
   AccountId,
   IAccountDto,
@@ -27,7 +29,6 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
@@ -55,7 +56,8 @@ type AccountGroup = {
 
 function groupWebsiteOptions(
   submissions: SubmissionDto[],
-  accounts: IAccountDto[]
+  accounts: IAccountDto[],
+  _: ReturnType<typeof useLingui>['_']
 ): Record<string, AccountGroup> {
   const groups: Record<string, AccountGroup> = {};
   submissions.forEach((submission) => {
@@ -64,9 +66,9 @@ function groupWebsiteOptions(
         accounts.find((a) => a.id === option.account) ??
         ({
           id: NULL_ACCOUNT_ID,
-          name: 'Default',
+          name: _(msg`Default`),
           websiteInfo: {
-            websiteDisplayName: 'Default',
+            websiteDisplayName: _(msg`Default`),
           },
         } as IAccountDto);
       if (!groups[account.id]) {
@@ -109,9 +111,10 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
       value: template,
     }));
 
+  const { _ } = useLingui();
   const submissionOptions: EuiComboBoxOptionOption<SubmissionDto>[] =
     submissions.map((submission) => ({
-      label: submission.getDefaultOptions().data.title ?? 'Unknown',
+      label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
       key: submission.id,
       value: submission,
     }));
@@ -119,12 +122,12 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   const options: EuiComboBoxOptionOption<SubmissionDto>[] = [
     {
       isGroupLabelOption: true,
-      label: 'Templates',
+      label: _(msg`Templates`),
       options: templateOptions,
     },
     {
       isGroupLabelOption: true,
-      label: 'Submissions',
+      label: _(msg`Submissions`),
       options: submissionOptions,
     },
   ];
@@ -140,7 +143,8 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   const selectedGroups = groupWebsiteOptions(
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     selectedTemplates.map((s) => s.value!),
-    accounts
+    accounts,
+    _
   );
 
   const groupedFormRows = selectedWebsiteOptions
@@ -160,7 +164,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
         group.submissions.forEach(({ submission, option }) => {
           checkboxOptions.push({
             id: option.id,
-            label: submission.getDefaultOptions().data.title ?? 'Unknown',
+            label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
           });
         });
 
@@ -168,7 +172,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           <EuiFormRow
             label={
               group.account.id === NULL_ACCOUNT_ID
-                ? 'Default'
+                ? _(msg`Default`)
                 : `${group.account.websiteInfo.websiteDisplayName} - ${group.account.name}`
             }
           >

@@ -3,11 +3,12 @@ import {
   EuiComboBox,
   EuiComboBoxOptionOption,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { TagFieldType } from '@postybirb/form-builder';
 import { TagValue } from '@postybirb/types';
 import { uniq, uniqBy } from 'lodash';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { TagConverterStore } from '../../../../../../stores/tag-converter-store';
 import { TagGroupStore } from '../../../../../../stores/tag-group-store';
 import { useStore } from '../../../../../../stores/use-store';
@@ -63,9 +64,10 @@ export default function TagField(props: TagFieldProps) {
     onUpdate();
   };
 
-  // TODO translate
+  const { _ } = useLingui();
+
   const tagOptions: EuiComboBoxOptionOption<string> = {
-    label: 'Tags',
+    label: _(msg`Tags`),
     isGroupLabelOption: true,
     options: tags.map((tag) => {
       const converter = tagConverters.find((c) => c.tag === tag.value);
@@ -83,14 +85,15 @@ export default function TagField(props: TagFieldProps) {
   // to satisfy component typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tagGroupOptions: EuiComboBoxOptionOption<any> = {
-    label: 'Tag Group',
+    label: _(msg`Tag Group`),
     isGroupLabelOption: true,
     options: tagGroups.map((tagGroup) => {
+      const tagList = tagGroup.tags.join();
       const group: EuiComboBoxOptionOption<string[]> = {
         label: `G: ${tagGroup.name}`,
         key: tagGroup.id,
         value: tagGroup.tags,
-        title: `Tags: ${tagGroup.tags.join()}`,
+        title: _(msg`Tags: ${tagList}`),
       };
 
       return group;
@@ -103,20 +106,20 @@ export default function TagField(props: TagFieldProps) {
   if (!option.isDefault && !value.overrideDefault) {
     defaultTags = defaultOption.tags.map((tag) => ({
       value: tag,
-      label: `(Default) ${tag}`,
+      label: _(msg`(Default) ${tag}`),
       key: tag,
     }));
 
     defaultGroupOptions = {
-      label: 'Default Tags',
+      label: _(msg`Default Tags`),
       isGroupLabelOption: true,
       options: defaultTags.map((tag) => {
         const converter = tagConverters.find((c) => c.tag === tag.value);
         if (converter && converter.convertTo[account?.website ?? '']) {
+          const originalTag = tag.value;
+          const convertedTag = converter.convertTo[account?.website ?? ''];
           // eslint-disable-next-line no-param-reassign
-          tag.label = `(Default) ${tag.value} → ${
-            converter.convertTo[account?.website ?? '']
-          }`;
+          tag.label = _(msg`(Default) ${originalTag} → ${convertedTag}`);
         }
 
         return tag;

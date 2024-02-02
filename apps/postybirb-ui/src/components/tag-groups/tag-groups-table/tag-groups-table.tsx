@@ -15,7 +15,8 @@ import {
 import { TagGroupDto } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
-import { Trans } from '@lingui/macro';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -62,8 +63,14 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
     setSelectedItems(selected);
   };
 
+  const { _ } = useLingui();
+
   const createNewTagGroup = () => {
-    tagGroupsApi.create({ name: `Tag Group ${Date.now()}`, tags: [] });
+    const defaultNameFromTime = Date.now();
+    tagGroupsApi.create({
+      name: _(msg`Tag Group ${defaultNameFromTime}`),
+      tags: [],
+    });
   };
 
   const saveChanges = ({ id, name, tags }: TagGroupDto) => {
@@ -91,7 +98,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
           color="danger"
           iconType="trash"
           size="s"
-          aria-label="Delete selected tag groups"
+          aria-label={_(msg`Delete selected tag groups`)}
         >
           <Trans context="delete">Delete</Trans> {selectedItems.length}
         </EuiButton>
@@ -125,7 +132,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
         >
           <EuiFieldText
             fullWidth
-            placeholder="Tag"
+            placeholder={_(msg`Tag`)}
             value={name}
             compressed
             onChange={(event) => {
@@ -178,7 +185,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
         {
           render: (group: TagGroupDto) => (
             <EuiButtonIcon
-              aria-label={`Save changes for ${group.name}`}
+              aria-label={_(msg`Save changes for ${group.name}`)}
               color="primary"
               iconType="save"
               disabled={
@@ -205,7 +212,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
               <EuiButtonIcon
                 color="danger"
                 iconType="trash"
-                aria-label={`Delete tag group ${group.name}`}
+                aria-label={_(msg`Delete tag group ${group.name}`)}
               >
                 <Trans context="delete">Delete</Trans>
               </EuiButtonIcon>
@@ -223,7 +230,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
           <EuiButton
             size="s"
             iconType="plus"
-            aria-label="Create new tag group"
+            aria-label={_(msg`Create new tag group`)}
             onClick={createNewTagGroup}
           >
             <Trans context="new">New</Trans>
