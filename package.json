@@ -183,7 +183,7 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^16.1.0",
     "eslint-config-prettier": "^8.3.0",
-    "eslint-define-config": "2",
+    "eslint-define-config": "^2.1.0",
     "eslint-plugin-cypress": "2.13.4",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-jest": "^27.2.1",
