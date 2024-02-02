@@ -1,9 +1,7 @@
 import { getStartupOptions } from '@postybirb/utils/electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';
-
 
 function IsTestEnvironment(): boolean {
   return (process.env.NODE_ENV || '').toLowerCase() === 'test';

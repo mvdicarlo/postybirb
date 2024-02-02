@@ -9724,7 +9724,7 @@ eslint-config-prettier@^8.3.0:
   resolved "https://registry.npmjs.org/eslint-config-prettier/-/eslint-config-prettier-8.3.0.tgz"
   integrity sha512-BgZuLUSeKzvlL/VUjx/Yb787VQ26RU3gGjA3iiFvdsp/2bMfVIWUVP7tjxtjS0e+HP409cPlPvNkQloz8C91ew==
 
-eslint-define-config@2:
+eslint-define-config@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/eslint-define-config/-/eslint-define-config-2.1.0.tgz#9708b3efd57637b6fb685d9c2fb6285b9acfbd71"
   integrity sha512-QUp6pM9pjKEVannNAbSJNeRuYwW3LshejfyBBpjeMGaJjaDUpVps4C6KVR8R7dWZnD3i0synmrE36znjTkJvdQ==
@@ -18735,11 +18735,6 @@ vfile@^4.0.0, vfile@^4.2.1:
     is-buffer "^2.0.0"
     unist-util-stringify-position "^2.0.0"
     vfile-message "^2.0.0"
-
-vite-multiple-assets@^1.2.10:
-  version "1.2.10"
-  resolved "https://registry.yarnpkg.com/vite-multiple-assets/-/vite-multiple-assets-1.2.10.tgz#2ea105c3057dd46ecad2fc3c5c385d87c320ebe3"
-  integrity sha512-G8PUqp4XRC0H6qYD4tzRFBSCv4tWAs30C/3Nzuz5QK57DpcSzOapQ6BUJrqYEEy2wU/od83B+hH/gOeXWTOFLg==
 
 vite-node@0.32.4:
   version "0.32.4"
