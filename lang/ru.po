@@ -1007,12 +1007,12 @@ msgctxt "edit-form.set-default-options"
 msgid "Save as default"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
+msgctxt "schedule"
 msgid "Schedule"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
-msgctxt "schedule"
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
 msgid "Schedule"
 msgstr ""
 
