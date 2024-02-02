@@ -2,7 +2,7 @@ import {
   EuiSelectableTemplateSitewide,
   EuiSelectableTemplateSitewideOption,
 } from '@elastic/eui';
-import { msg, t } from '@lingui/macro';
+import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { SubmissionType } from '@postybirb/types';
 import { useNavigate } from 'react-router';
@@ -143,7 +143,7 @@ export default function AppSearch() {
             type: 'application',
           },
           {
-            text: isFileType ? _(msg`File`) : t`Message`,
+            text: isFileType ? _(msg`File`) : _(msg`Message`),
             type: 'deployment',
           },
         ],
@@ -166,6 +166,7 @@ export default function AppSearch() {
   return (
     <EuiSelectableTemplateSitewide
       options={[...dashboardOptions, ...submissionOptions]}
+      searchProps={{ placeholder: _(msg`Search for anything...`) }}
       onChange={(options) => {
         const opt = options.find((o) => o.checked === 'on');
         if (opt && opt.data) {

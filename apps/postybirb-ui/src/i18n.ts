@@ -1,4 +1,5 @@
 import { i18n } from '@lingui/core';
+import { msg } from '@lingui/macro';
 import { SettingsStore } from './stores/settings.store';
 
 /**
@@ -19,3 +20,7 @@ async function setLocale(locale: string) {
 SettingsStore.updates.subscribe((e) => {
   setLocale(e[0].settings.language);
 });
+
+export const sharedMessages = {
+  noItems: msg`No items`,
+};

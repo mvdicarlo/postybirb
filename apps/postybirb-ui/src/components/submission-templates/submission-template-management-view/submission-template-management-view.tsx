@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router';
 import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
+import { sharedMessages } from '../../../i18n';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../pages/route-paths';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
@@ -250,6 +251,7 @@ export default function SubmissionTemplateManagementView(
         itemId="id"
         rowHeader="name"
         columns={tableColumns}
+        noItemsMessage={_(sharedMessages.noItems)}
       />
     </div>
   );

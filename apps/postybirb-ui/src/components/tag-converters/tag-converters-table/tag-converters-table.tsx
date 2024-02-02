@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
+import { sharedMessages } from '../../../i18n';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
@@ -160,7 +161,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
     },
     {
       field: 'convertTo',
-      name: <Trans >Websites</Trans>,
+      name: <Trans>Websites</Trans>,
       width: '60%',
       render: (__: string[], tagConverter: TagConverterDto) => (
         <div className="flex flex-wrap">
@@ -232,7 +233,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                 iconType="trash"
                 aria-label={_(msg`Delete tag converter ${converter.tag}`)}
               >
-                <Trans >Delete</Trans>
+                <Trans>Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -269,6 +270,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         isSelectable
         selection={selection}
         rowHeader="name"
+        noItemsMessage={_(sharedMessages.noItems)}
       />
     </>
   );

@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
+import { sharedMessages } from '../../../i18n';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import './tag-groups-table.css';
 
@@ -250,6 +251,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
         isSelectable
         selection={selection}
         rowHeader="name"
+        noItemsMessage={_(sharedMessages.noItems)}
       />
     </>
   );
