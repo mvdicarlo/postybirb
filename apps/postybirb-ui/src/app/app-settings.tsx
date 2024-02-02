@@ -27,6 +27,7 @@ import { SettingsKeybinding } from '../shared/app-keybindings';
 import { AppThemeContext } from './app-theme-provider';
 import { useStore } from '../stores/use-store';
 import { SettingsStore } from '../stores/settings.store';
+import { languages } from './languages';
 
 function StartupSettings() {
   const { data, isLoading, refetch } = useQuery(
@@ -131,11 +132,6 @@ function StartupSettings() {
   );
 }
 
-const languages = [
-  [msg`English`, 'en'],
-  [msg`Russian`, 'ru'],
-] as const;
-
 function LanguageSettings() {
   const {
     state: [settings],
@@ -155,9 +151,27 @@ function LanguageSettings() {
           checked: content === settings.settings.language ? 'on' : undefined,
         }))
       );
-      
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
+
+  const onChange = (newOptions: EuiSelectableOption[]) => {
+    const selected = newOptions.find((e) => e.checked === 'on');
+    if (!selected || !selected.content) return;
+
+    setOptions(newOptions);
+
+    // Because src/i18n.tsx is subscribed to settings changes we
+    // dont need to call setLocale or anything like this here
+    settingsApi
+      .update(settings.id, {
+        settings: {
+          ...settings.settings,
+          language: selected.content,
+        },
+      })
+      .finally(reloadSettings);
+  };;
 
   return (
     <Loading isLoading={isLoading}>
@@ -166,24 +180,9 @@ function LanguageSettings() {
           <EuiSelectable
             aria-label={_(msg`Select language`)}
             options={options}
-            onChange={(newOptions: EuiSelectableOption[]) => {
-              const selected = newOptions.find((e) => e.checked === 'on');
-              if (!selected || !selected.content) return;
-
-              // Because src/i18n.tsx is subscribed to settings
-              // change we dont need to call anything here
-              setOptions(newOptions);
-              settingsApi
-                .update(settings.id, {
-                  settings: {
-                    ...settings.settings,
-                    language: selected.content,
-                  },
-                })
-                .finally(reloadSettings);
-            }}
-            singleSelection
             listProps={{ bordered: true }}
+            singleSelection
+            onChange={onChange}
           >
             {(list) => list}
           </EuiSelectable>
