@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   DynamicObject,

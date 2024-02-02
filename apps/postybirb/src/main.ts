@@ -1,5 +1,4 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
-/* eslint-disable import/no-extraneous-dependencies */
 import { INestApplication } from '@nestjs/common';
 import { getStartupOptions } from '@postybirb/utils/electron';
 import { bootstrapClientServer } from 'apps/client-server/src/main';

@@ -3,7 +3,6 @@
  * between the frontend to the electron backend.
  */
 
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { app, ipcMain, dialog } from 'electron';
 import { environment } from '../../environments/environment';
 
