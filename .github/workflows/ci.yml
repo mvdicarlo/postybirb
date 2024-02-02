@@ -49,9 +49,9 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          npx exitzero git add lang/ && git commit -m 'ci: extract lang messages'
+          npx exitzero "git add 'lang/' && git commit -m 'ci: extract lang messages'"
 
-          npx exitzero git add ./ && git commit -m 'ci: prettier and eslint fix'
+          npx exitzero "git add './' && git commit -m 'ci: prettier and eslint fix'"
           exit 0
 
       - name: Push changes
