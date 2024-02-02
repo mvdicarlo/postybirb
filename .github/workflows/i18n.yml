@@ -4,7 +4,7 @@ on:
     types:
       - opened
     branches:
-      - 'i18n/**'
+      - 'main'
     paths:
       - 'apps/postybirb-ui/src/**.ts'
       - 'apps/postybirb-ui/src/**.tsx'
