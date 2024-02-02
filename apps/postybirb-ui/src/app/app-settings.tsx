@@ -171,7 +171,7 @@ function LanguageSettings() {
         },
       })
       .finally(reloadSettings);
-  };;
+  };
 
   return (
     <Loading isLoading={isLoading}>

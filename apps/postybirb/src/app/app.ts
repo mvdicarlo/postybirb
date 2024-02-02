@@ -6,7 +6,6 @@ import {
   onStartupOptionsUpdate,
   setStartupOptions,
 } from '@postybirb/utils/electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   BrowserWindow,
   Menu,
@@ -14,12 +13,10 @@ import {
   WebContentsWillNavigateEventParams,
   app,
   globalShortcut,
-  ipcMain,
   nativeImage,
   screen,
   shell,
 } from 'electron';
-import fs from 'fs';
 import { join } from 'path';
 import { environment } from '../environments/environment';
 import { rendererAppPort } from './constants';

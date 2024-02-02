@@ -8,7 +8,8 @@ import {
 } from '@elastic/eui';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { Trans } from '@lingui/macro';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
 import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
@@ -30,6 +31,7 @@ function createNewMessageSubmission(name: string) {
 
 function CreateMessageSubmissionForm(): JSX.Element {
   const [value, setValue] = useState('');
+  const { _ } = useLingui();
 
   return (
     <div>
@@ -38,7 +40,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
         fullWidth
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        aria-label="Message submission name input"
+        aria-label={_(msg`Message submission name input`)}
         prepend={
           <EuiFormLabel htmlFor="message-input">
             <Trans context="name">Name</Trans>
@@ -52,7 +54,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
         append={
           <EuiButtonIcon
             iconType="plus"
-            aria-label="Create message submission button"
+            aria-label={_(msg`Create message submission button`)}
             disabled={!isValidName(value)}
             onClick={() => createNewMessageSubmission(value)}
           />

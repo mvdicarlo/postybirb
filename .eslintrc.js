@@ -69,14 +69,19 @@ module.exports = defineConfig({
     },
   ],
   rules: {
-    '@typescript-eslint/ban-types': 'warn',
-    'import/no-extraneous-dependencies': 'warn',
-
     'class-methods-use-this': 'off',
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/react-in-jsx-scope': 'off',
+
+    '@typescript-eslint/ban-types': 'warn',
+    'import/no-extraneous-dependencies': [
+      'warn',
+      {
+        bundledDependencies: ['electron', 'triple-beam'],
+      },
+    ],
     '@typescript-eslint/naming-convention': [
       'error',
       {
@@ -95,6 +100,6 @@ module.exports = defineConfig({
         format: ['PascalCase'],
       },
     ],
-    'no-await-in-loop': 'off'
+    'no-await-in-loop': 'off',
   },
 });

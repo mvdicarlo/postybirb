@@ -1,3 +1,4 @@
+/* eslint-disable lingui/no-unlocalized-strings */
 export const SettingsKeybinding = 'Alt+S';
 export const AccountKeybinding = 'Alt+A';
 export const HomeKeybinding = 'Alt+H';

@@ -11,7 +11,6 @@ import {
   getStartupOptions,
   setStartupOptions,
 } from '@postybirb/utils/electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';

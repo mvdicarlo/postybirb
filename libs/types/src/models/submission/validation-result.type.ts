@@ -1,37 +1,43 @@
 export type ValidationResult<T extends object = object> = {
   /**
    * Non-blocking issues with the validated submission.
-   *
-   * @type {ValidationMessage[]}
    */
   warnings?: ValidationMessage<T>[];
 
   /**
    * Blocking issues with the validated submission.
-   *
-   * @type {ValidationMessage[]}
    */
   errors?: ValidationMessage<T>[];
 };
 
-export type ValidationMessage<T extends object> = {
+export type ValidationMessage<
+  T extends object,
+  ID extends keyof ValidationMessages = keyof ValidationMessages
+> = {
   /**
-   * Intl message id.
-   * @type {string}
+   * Localization message id.
    */
-  id: string;
+  id: ID;
 
   /**
    * Associates the message to a input field.
-   *
-   * @type {(keyof T | undefined)}
    */
   field?: keyof T;
 
   /**
-   * Potential values to fill in the message.
-   *
-   * @type {(Record<string, string | number>)}
+   * Values to fill in the message.
    */
-  values?: Record<string, string | number>;
+  values: ValidationMessages[ID];
+};
+
+/**
+ * Map containing validation id as key and values as value
+ */
+export type ValidationMessages = {
+  'validation.description.max-length': {
+    /**
+     * Max allowed description length
+     */
+    maxLength: number;
+  };
 };

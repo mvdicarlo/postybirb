@@ -1,0 +1,60 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+
+# Needed for nx-set-shas when run on the main branch
+permissions:
+  actions: read
+  contents: write
+  checks: write
+  pull-requests: write
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+        with:
+          # Note: without this, Push changes step will fail.
+          ref: ${{ github.head_ref }}
+          # Note: By default, the checkout action will only clone the latest commit of the branch, which will cause issues as Nx needs to compute the difference between the base and head. Using the fetch-depth: 0 parameter will clone the entire repository, which is not optimal but functional.
+          fetch-depth: 0
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+          
+      - name: Install dependencies 
+        run: yarn install --frozen-lockfile
+
+      - name: Setup github SHA for NX affected
+        uses: nrwl/nx-set-shas@v3
+        
+        # This line is needed for nx affected to work when CI is running on a PR
+      - name: Track right branch 
+        run: npx exitzero git branch --track main origin/main
+
+      - name: Extract keys
+        run: yarn lingui:extract
+      
+      - name: Lint
+        run: npx exitzero nx affected -t lint --fix
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          npx exitzero git add lang/ && git commit -m 'ci: extract lang messages'
+
+          npx exitzero git add ./ && git commit -m 'ci: prettier and eslint fix'
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.head_ref }}
