@@ -5,21 +5,23 @@ msgstr ""
 "POT-Creation-Date: 2024-01-07 14:44+0300\n"
 "PO-Revision-Date: 2024-02-02 13:10+0000\n"
 "Last-Translator: Leaftail <minec118@outlook.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\n"
+"Language-Team: Russian <https://hosted.weblate.org/projects/postybirb/"
+"postybirb/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:122
 msgid "(Default) {originalTag} → {convertedTag}"
-msgstr ""
+msgstr "(По умолчанию) {originalTag} → {convertedTag}"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:109
 msgid "(Default) {tag}"
-msgstr ""
+msgstr "(По умолчанию) {tag}"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-table-actions.tsx:82
 msgid "Account data cleared"
@@ -58,9 +60,9 @@ msgstr "Добавить аккаунт"
 msgid "Add account for {displayName}"
 msgstr "Добавить аккаунт для {displayName}"
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:194
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:198
 msgid "Add folder watcher"
-msgstr ""
+msgstr "Добавить мониторинг папки"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:110
 msgctxt "alt-text"
@@ -105,11 +107,11 @@ msgstr "Отменить пост"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:113
 msgid "Change file"
-msgstr ""
+msgstr "Сменить файл"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:142
 msgid "Change thumbnail"
-msgstr ""
+msgstr "Сменить шаблон"
 
 #. Login status checking
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:279
@@ -133,15 +135,15 @@ msgstr "Очистить данные аккаунта"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:215
 msgid "Close"
-msgstr ""
+msgstr "Закрыть"
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:62
 msgid "Composers"
-msgstr ""
+msgstr "Композиция"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/form-row.tsx:26
 msgid "Copy"
-msgstr ""
+msgstr "Копировать"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:150
 msgid "Create"
@@ -152,22 +154,21 @@ msgid "Create message submission button"
 msgstr "Кнопка создания текстового поста"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:56
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:78
 msgid "Create new submission"
-msgstr ""
+msgstr "Создать новый пост"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:227
 msgid "Create new submission template"
-msgstr ""
+msgstr "Создать новый шаблон поста"
 
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:251
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:233
 msgid "Create new tag group"
-msgstr ""
+msgstr "Создать новую группу тэгов"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:79
 msgid "CRON format <0/>"
-msgstr ""
+msgstr "Формат CRON <0/>"
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:233
 msgid "Dark theme"
@@ -178,23 +179,22 @@ msgstr "Темная тема"
 #: apps/postybirb-ui/src/app/app-search.tsx:80
 #: apps/postybirb-ui/src/app/app-search.tsx:98
 msgid "Dashboard"
-msgstr ""
+msgstr "Панель инструментов"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:69
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:71
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:175
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/radio-field.tsx:30
 msgid "Default"
-msgstr ""
+msgstr "По умолчанию"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:46
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:170
 msgid "Default Options"
-msgstr ""
+msgstr "Параметры по умолчанию"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:114
 msgid "Default Tags"
-msgstr ""
+msgstr "Тэги"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:115
 msgctxt "default-options-saved"
@@ -214,37 +214,40 @@ msgid "Delete"
 msgstr "Удалить"
 
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:217
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:112
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:235
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:103
 msgctxt "delete"
 msgid "Delete"
 msgstr "Удалить"
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:135
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:139
 msgid "Delete folder watcher"
-msgstr ""
+msgstr "Удалить мониторинг папки"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:110
 msgid "Delete selected submission templates"
-msgstr ""
+msgstr "Удалить выбранные шаблоны постов"
 
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:110
 msgid "Delete selected tag converters"
-msgstr ""
+msgstr "Удалить выбранные конвертеры тэгов"
 
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:101
 msgid "Delete selected tag groups"
-msgstr ""
+msgstr "Удалить выбранные группы тэгов"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:208
 msgid "Delete submission template {templateName}"
-msgstr ""
+msgstr "Удалить шаблон поста {templateName}"
 
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:233
 msgid "Delete tag converter {0}"
-msgstr ""
+msgstr "Удалить конвертер тегов {0}"
 
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:215
 msgid "Delete tag group {0}"
-msgstr ""
+msgstr "Удалить группу тегов {0}"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:14
 msgid "Description is greater than {maxLength} characters long"
@@ -287,12 +290,12 @@ msgstr "Редактировать"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 msgid "Edit {templateName}"
-msgstr ""
+msgstr "Редактировать {templateName}"
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:174
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
 msgid "Edit Submission"
-msgstr ""
+msgstr "Редактировать пост"
 
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:68
 msgctxt "submissions.edit-page-header"
@@ -300,14 +303,15 @@ msgid "Edit Submission"
 msgstr "Редактировать пост"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:173
+#, fuzzy
 msgid "Edit Template"
-msgstr ""
+msgstr "Изменить шаблон"
 
 #. Empty tag
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:104
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:108
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:133
 msgid "Empty"
-msgstr ""
+msgstr "Пусто"
 
 #: apps/postybirb-ui/src/app/languages.tsx:4
 msgid "English"
@@ -316,27 +320,26 @@ msgstr "Английский"
 #: apps/postybirb-ui/src/app/app-toast-provider.tsx:64
 msgctxt "Error toast"
 msgid "Error"
-msgstr ""
+msgstr "Ошибка"
 
 #: apps/postybirb-ui/src/app/app-search.tsx:146
 msgid "File"
-msgstr ""
+msgstr "Файл"
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:146
 #: apps/postybirb-ui/src/app/app-search.tsx:74
-#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:32
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:90
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:49
 msgid "File Submissions"
-msgstr ""
+msgstr "Посты с файлами"
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:59
+#, fuzzy
 msgid "Filter list"
-msgstr ""
+msgstr "Список фильтров"
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:195
 msgid "Filters"
-msgstr ""
+msgstr "Фильтры"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:92
 msgid "Folder"
@@ -344,22 +347,23 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:69
 msgid "Folder watcher type"
-msgstr ""
+msgstr "Вид мониторинга папки"
 
 #. Page not found
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:32
 msgid "Go back"
-msgstr ""
+msgstr "Вернуться назад"
 
 #. Page not found
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:25
 msgid "Go home"
-msgstr ""
+msgstr "Вернуть на главную"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:293
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:126
+#, fuzzy
 msgid "Groups"
-msgstr ""
+msgstr "Группы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:189
 msgid "Height"
@@ -367,44 +371,44 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:44
 msgid "Hidden"
-msgstr ""
+msgstr "Скрытые"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:22
 msgid "Hide"
-msgstr ""
+msgstr "Скрыть"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:26
 msgid "Hide {displayName}"
-msgstr ""
+msgstr "Скрыть {displayName}"
 
 #. Home page header
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:138
 #: apps/postybirb-ui/src/app/app-search.tsx:35
 #: apps/postybirb-ui/src/pages/home/home-page.tsx:11
 msgid "Home"
-msgstr ""
+msgstr "Главная"
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:92
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:96
 msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
-msgstr ""
+msgstr "Как создать webhook"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:197
 msgid "Import Template"
-msgstr ""
+msgstr "Импорт шаблона"
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card.tsx:39
 msgctxt "submission.card.errors"
 msgid "Incomplete submission"
-msgstr ""
+msgstr "Незавершенный пост"
 
 #: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:63
 msgid "Information about the update"
-msgstr ""
+msgstr "Информация об обновлении"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:64
 msgid "Invalid CRON string"
-msgstr ""
+msgstr "Неверная строка CRON"
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:179
 msgid "Language"
@@ -417,100 +421,95 @@ msgstr "Светлая тема"
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:219
 msgctxt "action"
 msgid "Login"
-msgstr ""
+msgstr "Войти"
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:113
 msgid "Main navigation"
-msgstr ""
+msgstr "Основная навигация"
 
 #: apps/postybirb-ui/src/app/app-search.tsx:146
 msgid "Message"
-msgstr ""
+msgstr "Сообщение"
 
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:43
 msgid "Message submission name input"
-msgstr ""
+msgstr "Ввод имени поста с текстом"
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:151
 #: apps/postybirb-ui/src/app/app-search.tsx:92
-#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:34
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:92
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:99
 msgid "Message Submissions"
-msgstr ""
+msgstr "Посты с текстом"
 
 #. Login account name
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:249
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:113
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:120
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:142
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:94
-#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:115
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:46
 msgid "Name"
-msgstr ""
+msgstr "Имя"
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-name-field.tsx:35
 msgctxt "default.name"
 msgid "Name"
-msgstr ""
+msgstr "Имя"
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:178
 msgid "Navigate to {navigationName}"
-msgstr ""
+msgstr "Перейти к {navigationName}"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:237
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:254
 msgid "New"
-msgstr ""
+msgstr "Новый"
 
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:254
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:236
 msgctxt "new"
 msgid "New"
-msgstr ""
+msgstr "Новый"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:57
 msgctxt "unsaved changes modal"
 msgid "No"
-msgstr ""
+msgstr "Нет"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:178
 msgid "No login component found."
-msgstr ""
+msgstr "Не найдено компонента входа."
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
 msgid "No schedule"
-msgstr ""
+msgstr "Не отложено"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:157
 msgctxt "Template picker checkbox"
 msgid "None"
-msgstr ""
+msgstr "Никакой"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:22
 msgctxt "schedule.none"
 msgid "None"
-msgstr ""
+msgstr "Никакой"
 
 #. Login status
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:286
 msgid "Not logged in"
-msgstr ""
+msgstr "Нет входа"
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:131
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:184
 msgid "Off"
-msgstr ""
+msgstr "Выкл"
 
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:117
 #: apps/postybirb-ui/src/components/account/account-login-container/account-login-filters.tsx:170
 msgid "On"
-msgstr ""
+msgstr "Вкл"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:26
 msgctxt "schedule.single"
 msgid "Once"
-msgstr ""
+msgstr "Один раз"
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:53
 msgid "Open on startup"
@@ -520,31 +519,32 @@ msgstr "Открывать при включении"
 msgid "Override default"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:31
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:145
 msgctxt "override-default"
 msgid "Override default"
-msgstr ""
+msgstr "Перезаписать значения по умолчанию"
 
 #. Page not found header
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:11
 msgid "Page not found"
-msgstr ""
+msgstr "Страница не найдена"
 
 #: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:59
 msgid "Patch Notes"
-msgstr ""
+msgstr "Примечания"
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:125
 msgid "Post"
-msgstr ""
+msgstr "Опубликовать"
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:130
 msgid "Post submission"
-msgstr ""
+msgstr "Опубликовать пост"
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:48
 msgid "PostyBirb Startup Settings"
-msgstr ""
+msgstr "PostyBirb Настройки запуска"
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:60
 msgid "PostyBirb will not open on startup"
@@ -562,25 +562,26 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:30
 msgctxt "schedule.recurring"
 msgid "Recurring"
-msgstr ""
+msgstr "Прямо"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:268
 msgid "Remove {0}"
-msgstr ""
+msgstr "Удалить {0}"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:104
 msgid "Remove submission"
-msgstr ""
+msgstr "Удалить пост"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:212
+#, fuzzy
 msgctxt "import.override-description"
 msgid "Replace description"
-msgstr ""
+msgstr "Заменить описание"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:203
 msgctxt "import.override-title"
 msgid "Replace title"
-msgstr ""
+msgstr "Заменить заголовок"
 
 #: apps/postybirb-ui/src/app/languages.tsx:5
 msgid "Russian"
@@ -589,50 +590,50 @@ msgstr "Русский"
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:60
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:163
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:179
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:143
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:220
-#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:203
-#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:92
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:210
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:117
 msgid "Save"
-msgstr ""
+msgstr "Сохранить"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:63
 msgctxt "unsaved changes modal"
 msgid "Save and Close"
-msgstr ""
+msgstr "Сохранить и закрыть"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:94
 msgctxt "edit-form.set-default-options"
 msgid "Save as default"
-msgstr ""
+msgstr "Сохранить по умолчанию"
 
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:188
 msgid "Save changes for {0}"
-msgstr ""
+msgstr "Сохранить изменения для {0}"
 
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:205
 msgid "Save changes for {tag}"
-msgstr ""
+msgstr "Сохранить изменения для {tag}"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:164
 msgid "Save changes for {templateName}"
-msgstr ""
+msgstr "Сохранить изменения для {templateName}"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:144
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:148
+#, fuzzy
 msgid "Save folder upload changes"
-msgstr ""
+msgstr "Сохранить изменения загрузки папки"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:84
-msgid "Saves current values as the default for this account to be loaded in future submissions."
+msgid ""
+"Saves current values as the default for this account to be loaded in future "
+"submissions."
 msgstr ""
+"Сохраняет текущие значения как по умолчанию для этой учетной записи, которая "
+"будет загружена в будущих постах."
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:156
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:57
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
 msgid "Schedule"
-msgstr ""
+msgstr "Отложить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:71
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:68
@@ -814,7 +815,9 @@ msgstr ""
 
 #. Page not found text
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:17
-msgid "The page you are looking for might have been removed or temporarily unavailable."
+msgid ""
+"The page you are looking for might have been removed or temporarily "
+"unavailable."
 msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:226
@@ -827,12 +830,20 @@ msgid "This action cannot be undone."
 msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:102
-msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
-msgstr "Это папка, где приложение будет хранить данные. Вы должны перезапустить приложение чтобы применить изменения."
+msgid ""
+"This is the folder where the app will store its data. You must restart the "
+"app for this to take effect."
+msgstr ""
+"Это папка, где приложение будет хранить данные. Вы должны перезапустить "
+"приложение чтобы применить изменения."
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:76
-msgid "This is the port the app server will run on. You must restart the app for this to take effect."
-msgstr "Это порт, который будет использован сервером. Вы должны перезапустить приложение чтобы применить настройки."
+msgid ""
+"This is the port the app server will run on. You must restart the app for "
+"this to take effect."
+msgstr ""
+"Это порт, который будет использован сервером. Вы должны перезапустить "
+"приложение чтобы применить настройки."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:126
 msgid "Thumbnail"
@@ -894,11 +905,13 @@ msgid "Updated tag group"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:192
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:196
 msgctxt "directory-watcher.header"
 msgid "Upload from folders"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:90
 msgctxt "discord.webhook"
 msgid "Webhook"
 msgstr ""
@@ -935,4 +948,161 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:81
 msgid "Your browser does not support the video tag."
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:66
+msgctxt "account.data-update-success"
+msgid "Account data updated."
+msgstr "Данные аккаунта обновлены."
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:64
+msgctxt "action"
+msgid "Action"
+msgstr "Действие"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:301
+msgctxt "apply"
+msgid "Apply"
+msgstr "Применить"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:293
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:134
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:85
+msgctxt "cancel"
+msgid "Cancel"
+msgstr "Отмена"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:79
+msgctxt "directory-watcher.import-action.new-submission"
+msgid "Create new submission"
+msgstr "Создать новый пост"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:170
+msgctxt "default-options"
+msgid "Default Options"
+msgstr "Опции по умолчанию"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:129
+msgctxt "dont-post-to"
+msgid "Don't post to"
+msgstr "Не выкладывать в"
+
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:32
+msgctxt "file-submissions"
+msgid "File Submissions"
+msgstr "Посты с файлами"
+
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:50
+msgctxt "submissions.file-page-header"
+msgid "File Submissions"
+msgstr "Посты с файлами"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:96
+msgctxt "folder"
+msgid "Folder"
+msgstr "Папка"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:189
+msgctxt "height"
+msgid "Height"
+msgstr "Высота"
+
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:34
+msgctxt "message-submissions"
+msgid "Message Submissions"
+msgstr "Посты с текстом"
+
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:99
+msgctxt "submissions.message-page-header"
+msgid "Message Submissions"
+msgstr "Посты с текстом"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:94
+msgctxt "submission.file-name"
+msgid "Name"
+msgstr "Имя"
+
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:115
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:46
+msgctxt "name"
+msgid "Name"
+msgstr "Имя"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:108
+msgctxt "primary"
+msgid "Primary"
+msgstr "Начальные"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:143
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:220
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:203
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:121
+msgctxt "save"
+msgid "Save"
+msgstr "Сохранить"
+
+#: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:92
+msgctxt "submission.save"
+msgid "Save"
+msgstr "Сохранить"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:156
+msgctxt "schedule"
+msgid "Schedule"
+msgstr "Отложка"
+
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:68
+msgid "Schedule submission"
+msgstr "Отложить пост"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:71
+msgctxt "schedule.submission"
+msgid "Schedule Submission"
+msgstr "Отложить пост"
+
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:54
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:105
+msgctxt "submissions"
+msgid "Submissions"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:124
+msgctxt "tag"
+msgid "Tag"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-flyout/tag-converters-flyout.tsx:40
+msgctxt "tag-converters"
+msgid "Tag Converters"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:112
+msgctxt "template"
+msgid "Template"
+msgstr ""
+
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:61
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:112
+msgctxt "templates"
+msgid "Templates"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:126
+msgctxt "thumbnail"
+msgid "Thumbnail"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:111
+msgctxt "update"
+msgid "Update"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:163
+msgctxt "websites"
+msgid "Websites"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:217
+msgctxt "width"
+msgid "Width"
 msgstr ""
