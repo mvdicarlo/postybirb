@@ -306,15 +306,12 @@ msgid "Edit {templateName}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:174
-msgid "Edit submission"
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
+msgid "Edit Submission"
 msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:68
 msgctxt "submissions.edit-page-header"
-msgid "Edit Submission"
-msgstr ""
-
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
 msgid "Edit Submission"
 msgstr ""
 
@@ -815,13 +812,13 @@ msgctxt "submissions"
 msgid "Submissions"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:149
-#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:135
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:124
+msgctxt "tag"
 msgid "Tag"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:124
-msgctxt "tag"
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:149
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:135
 msgid "Tag"
 msgstr ""
 
@@ -868,12 +865,12 @@ msgstr ""
 msgid "Tags: {tagList}"
 msgstr ""
 
-#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:119
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:112
+msgctxt "template"
 msgid "Template"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:112
-msgctxt "template"
+#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:119
 msgid "Template"
 msgstr ""
 

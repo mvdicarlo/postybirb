@@ -1,8 +1,8 @@
 import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
-import { useCallback } from 'react';
-import { useNavigate } from 'react-router';
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import postApi from '../../../../../../api/post.api';
 import submissionApi from '../../../../../../api/submission.api';
 import { useToast } from '../../../../../../app/app-toast-provider';
@@ -171,7 +171,7 @@ export default function SubmissionTableCardActions(
       <EuiToolTip content={_(msg`Edit`)}>
         <EuiButtonIcon
           iconType="documentEdit"
-          aria-label={_(msg`Edit submission`)}
+          aria-label={_(msg`Edit Submission`)}
           onClick={() => {
             navToEdit(submission.id);
           }}
