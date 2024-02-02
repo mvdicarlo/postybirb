@@ -14,17 +14,16 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Check out Git repository
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
-          cache: 'yarn'
-
-      
-      - run: yarn i --frozen-lockfile
+          node-version: 18
+          cache: yarn
+          
+      - run: yarn install --frozen-lockfile
 
       - uses: nrwl/nx-set-shas@v3
 
