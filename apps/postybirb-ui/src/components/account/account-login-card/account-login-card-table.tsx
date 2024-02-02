@@ -173,7 +173,7 @@ function AccountLoginAction(props: {
   const { account, website } = props;
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  let loginMethod: JSX.Element = <div>No login component found.</div>;
+  let loginMethod: JSX.Element = <Trans>No login component found.</Trans>;
 
   if (website.loginType.type === 'user') {
     loginMethod = (
