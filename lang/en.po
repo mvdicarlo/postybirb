@@ -752,9 +752,6 @@ msgid "Tag {defaultTagNameFromDate}"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:162
-msgid "Tag converters"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-flyout/tag-converters-flyout.tsx:40
 msgid "Tag Converters"
 msgstr ""
@@ -768,9 +765,6 @@ msgid "Tag Group {defaultNameFromTime}"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:156
-msgid "Tag groups"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-flyout/tag-groups-flyout.tsx:40
 msgid "Tag Groups"
 msgstr ""
@@ -887,14 +881,10 @@ msgid "Webhook"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:52
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:51
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:52
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:57
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:163
-msgid "Websites"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:51
-msgctxt "form.websites"
 msgid "Websites"
 msgstr ""
 

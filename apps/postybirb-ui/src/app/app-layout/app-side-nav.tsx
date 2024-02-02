@@ -8,8 +8,8 @@ import {
   EuiToolTip,
 } from '@elastic/eui';
 import { msg } from '@lingui/macro';
-import { useNavigate } from 'react-router';
 import { useLingui } from '@lingui/react';
+import { useNavigate } from 'react-router';
 import Keybinding, {
   useKeybinding,
 } from '../../components/app/keybinding/keybinding';
@@ -153,13 +153,13 @@ export default function AppSideNav() {
               icon: MessageIcon,
             },
             {
-              label: msg`Tag groups`,
+              label: msg`Tag Groups`,
               keybinding: tagGroupsKeybinding,
               onClick: toggleTagGroupsPage,
               icon: TagsIcon,
             },
             {
-              label: msg`Tag converters`,
+              label: msg`Tag Converters`,
               keybinding: tagConvertersKeybinding,
               onClick: toggleTagConvertersPage,
               icon: UserTagIcon,

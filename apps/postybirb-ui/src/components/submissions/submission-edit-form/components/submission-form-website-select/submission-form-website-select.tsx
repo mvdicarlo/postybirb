@@ -48,7 +48,7 @@ export function SubmissionFormWebsiteSelect() {
       aria-required
       fullWidth
       id="website-select"
-      label={<Trans context="form.websites">Websites</Trans>}
+      label={<Trans>Websites</Trans>}
       aria-label={_(msg`Websites`)}
     >
       <EuiComboBox
