@@ -1,5 +1,15 @@
 # Postybirb
 
+<div style='flex: 1'>
+<a href="https://github.com/mvdicarlo/postybirb/releases/latest">
+<img alt="GitHub Downloads (all assets, latest release)" src="https://img.shields.io/github/downloads/mvdicarlo/postybirb/latest/total">
+</a>
+<a href="https://hosted.weblate.org/engage/postybirb/">
+<img src="https://hosted.weblate.org/widget/postybirb/svg-badge.svg" alt="Translation status" />
+</a>
+<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/mvdicarlo/postybirb/build.yml">
+</div>
+
 ## About
 
 PostyBirb is an application that helps artists post art and other multimedia to
