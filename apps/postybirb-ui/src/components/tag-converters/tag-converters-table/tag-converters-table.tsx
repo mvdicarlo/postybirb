@@ -14,6 +14,7 @@ import {
 import { TagConverterDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
 import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -21,7 +22,6 @@ import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 import './tag-converters-table.css';
-import { useLingui } from '@lingui/react';
 
 type TagConvertersTableProps = {
   tagConverters: TagConverterDto[];
