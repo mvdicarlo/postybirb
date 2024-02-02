@@ -16,6 +16,9 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v3
+        with:
+          # Note: By default, the checkout action will only clone the latest commit of the branch, which will cause issues as Nx needs to compute the difference between the base and head. Using the fetch-depth: 0 parameter will clone the entire repository, which is not optimal but functional.
+          fetch-depth: 0
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
@@ -32,4 +35,16 @@ jobs:
       - name: Extract keys
         run: yarn lingui:extract
       
-      - run: npx nx affected -t lint --parallel=3
+      - run: |
+          if ! npx nx affected -t lint --fix; then
+            echo "::error:: Lint failed, check actions tab for more info"
+          fi
+
+      - run: |
+          git add apps/postybirb-ui/src/**/*.po lang/
+          git commit -m 'chore: extract lang messages'
+
+          git add ./
+          git commit -m 'lint: prettier and eslint fix'
+
+          git push
