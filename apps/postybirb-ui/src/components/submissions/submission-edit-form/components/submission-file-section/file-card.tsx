@@ -105,7 +105,7 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-primary">
           <div className="text-center">
             <strong>
-              <Trans context="primary">Primary</Trans>
+              <Trans comment='Main file data'>Primary</Trans>
             </strong>
             <CardImageProvider {...file} />
             <div>
@@ -123,7 +123,7 @@ function FileCard(props: SubmissionFileCardProps) {
         <EuiSplitPanel.Inner className="postybirb__file-card-thumbnail">
           <div className="text-center">
             <strong>
-              <Trans context="thumbnail">Thumbnail</Trans>
+              <Trans>Thumbnail</Trans>
             </strong>
             {file.hasThumbnail ? (
               <EuiImage

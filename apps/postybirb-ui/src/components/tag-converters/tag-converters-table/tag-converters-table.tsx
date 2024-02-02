@@ -11,10 +11,10 @@ import {
   EuiTableSelectionType,
   EuiText,
 } from '@elastic/eui';
-import { TagConverterDto } from '@postybirb/types';
-import { useEffect, useRef, useState } from 'react';
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import { TagConverterDto } from '@postybirb/types';
+import { useEffect, useRef, useState } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -109,7 +109,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           size="s"
           aria-label={_(msg`Delete selected tag converters`)}
         >
-          <Trans context="delete">Delete</Trans> {selectedItems.length}
+          <Trans>Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -121,7 +121,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const columns: Array<EuiBasicTableColumn<TagConverterDto>> = [
     {
       field: 'tag',
-      name: <Trans context="tag">Tag</Trans>,
+      name: <Trans>Tag</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, converter: TagConverterDto) => (
@@ -160,7 +160,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
     },
     {
       field: 'convertTo',
-      name: <Trans context="websites">Websites</Trans>,
+      name: <Trans >Websites</Trans>,
       width: '60%',
       render: (__: string[], tagConverter: TagConverterDto) => (
         <div className="flex flex-wrap">
@@ -217,7 +217,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                   saveChanges(converter);
                 }}
               >
-                <Trans context="save">Save</Trans>
+                <Trans>Save</Trans>
               </EuiButtonIcon>
             );
           },
@@ -232,7 +232,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                 iconType="trash"
                 aria-label={_(msg`Delete tag converter ${converter.tag}`)}
               >
-                <Trans context="delete">Delete</Trans>
+                <Trans >Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -251,7 +251,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
             aria-label={_(msg`Create new tag group`)}
             onClick={createNewTagConverter}
           >
-            <Trans context="new">New</Trans>
+            <Trans>New</Trans>
           </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>

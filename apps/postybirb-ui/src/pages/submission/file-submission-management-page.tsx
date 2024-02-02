@@ -4,9 +4,9 @@ import {
   EuiSpacer,
   useEuiTheme,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { FileIcon } from '../../components/shared/icons/Icons';
 import Uploader from '../../components/shared/uploader/uploader';
 import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
@@ -46,19 +46,17 @@ export default function FileSubmissionManagementPage() {
         css={{ background: euiTheme.colors.body }}
         bottomBorder
         iconType={FileIcon.Header}
-        pageTitle={
-          <Trans context="submissions.file-page-header">File Submissions</Trans>
-        }
+        pageTitle={<Trans>File Submissions</Trans>}
         tabs={[
           {
-            label: <Trans context="submissions">Submissions</Trans>,
+            label: <Trans>Submissions</Trans>,
             isSelected: tab === 'submissions',
             onClick: () => {
               setTab('submissions');
             },
           },
           {
-            label: <Trans context="templates">Templates</Trans>,
+            label: <Trans>Templates</Trans>,
             isSelected: tab === 'templates',
             onClick: () => {
               setTab('templates');

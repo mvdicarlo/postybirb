@@ -65,7 +65,7 @@ function ScheduleAction(props: SubmissionTableCardActionsProps) {
         iconType={ScheduleIcon}
         color="success"
         disabled={!canPost || submission.isScheduled || submission.isQueued()}
-        aria-label={_(msg`Schedule submission`)}
+        aria-label={_(msg`Schedule Submission`)}
         onClick={() => {
           if (canPost && !submission.isScheduled) {
             submissionApi

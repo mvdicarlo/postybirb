@@ -61,7 +61,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   return (
     <EuiPanel grow={false} className="postybirb-plus__directory-watcher-panel">
       <EuiForm>
-        <EuiFormRow label={<Trans context="action">Action</Trans>}>
+        <EuiFormRow label={<Trans>Action</Trans>}>
           <EuiComboBox
             compressed
             singleSelection={{ asPlainText: true }}
@@ -75,11 +75,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             renderOption={(option) => {
               switch (option.value) {
                 case DirectoryWatcherImportAction.NEW_SUBMISSION:
-                  return (
-                    <Trans context="directory-watcher.import-action.new-submission">
-                      Create new submission
-                    </Trans>
-                  );
+                  return <Trans>Create new submission</Trans>;
                 default:
                   return option.label;
               }
@@ -93,7 +89,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           />
         </EuiFormRow>
 
-        <EuiFormRow label={<Trans context="folder">Folder</Trans>}>
+        <EuiFormRow label={<Trans>Folder</Trans>}>
           <EuiButton
             iconType="folderOpen"
             disabled={!window?.electron?.pickDirectory}
@@ -109,7 +105,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           </EuiButton>
         </EuiFormRow>
         {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
-          <EuiFormRow label={<Trans context="template">Template</Trans>}>
+          <EuiFormRow label={<Trans>Template</Trans>}>
             <TemplatePicker
               type={SubmissionType.FILE}
               selected={state.template}

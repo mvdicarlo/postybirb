@@ -12,11 +12,11 @@ import {
   EuiTableSelectionType,
   EuiText,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { TagGroupDto } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
-import { Trans, msg } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
@@ -100,7 +100,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
           size="s"
           aria-label={_(msg`Delete selected tag groups`)}
         >
-          <Trans context="delete">Delete</Trans> {selectedItems.length}
+          <Trans>Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -112,7 +112,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
   const columns: Array<EuiBasicTableColumn<TagGroupDto>> = [
     {
       field: 'name',
-      name: <Trans context="name">Name</Trans>,
+      name: <Trans>Name</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, group: TagGroupDto) => (
@@ -200,7 +200,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
                 saveChanges(group);
               }}
             >
-              <Trans context="save">Save</Trans>
+              <Trans>Save</Trans>
             </EuiButtonIcon>
           ),
         },

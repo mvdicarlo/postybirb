@@ -91,7 +91,7 @@ function SharedDetails(props: FileDetailsProps) {
     description: NonNullable<ReactNode>;
   }> = [
     {
-      title: <Trans context="submission.file-name">Name</Trans>,
+      title: <Trans>Name</Trans>,
       description: file.fileName,
     },
     {
@@ -126,7 +126,7 @@ function SharedDetails(props: FileDetailsProps) {
           <EuiFormRow
             fullWidth
             // eslint-disable-next-line react/no-unescaped-entities
-            label={<Trans context="dont-post-to">Don't post to</Trans>}
+            label={<Trans>Don't post to</Trans>}
           >
             <SimpleWebsiteSelect
               selected={ignoredWebsites}
@@ -186,7 +186,7 @@ function ImageDetails(props: FileDetailsProps) {
   return (
     <EuiFlexGroup>
       <EuiFlexItem>
-        <EuiFormRow label={<Trans context="height">Height</Trans>}>
+        <EuiFormRow label={<Trans>Height</Trans>}>
           <EuiFieldNumber
             value={height}
             compressed
@@ -214,7 +214,7 @@ function ImageDetails(props: FileDetailsProps) {
       </EuiFlexItem>
 
       <EuiFlexItem>
-        <EuiFormRow label={<Trans context="width">Width</Trans>}>
+        <EuiFormRow label={<Trans>Width</Trans>}>
           <EuiFieldNumber
             value={width}
             compressed

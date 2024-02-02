@@ -290,7 +290,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onClose}>
-          <Trans context="cancel">Cancel</Trans>
+          <Trans>Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -298,7 +298,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           fill
           disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
         >
-          <Trans context="apply">Apply</Trans>
+          <Trans>Apply</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

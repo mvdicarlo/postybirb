@@ -9,10 +9,10 @@ import {
   EuiModalHeader,
   EuiModalHeaderTitle,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { AccountId, DynamicObject, SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
-import { Trans } from '@lingui/macro';
 import userSpecifiedWebsiteOptionsApi from '../../../../../api/user-specified-website-options.api';
 import { useToast } from '../../../../../app/app-toast-provider';
 
@@ -131,7 +131,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onCloseModal} disabled={isSaving}>
-          <Trans context="cancel">Cancel</Trans>
+          <Trans>Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -140,7 +140,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
           isLoading={isSaving}
           disabled={isSaving}
         >
-          <Trans context="save">Save</Trans>
+          <Trans>Save</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>
