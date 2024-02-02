@@ -9844,23 +9844,6 @@ eslint-plugin-react@7.31.11:
     semver "^6.3.0"
     string.prototype.matchall "^4.0.8"
 
-eslint-plugin-string-to-lingui@0.23.15:
-  version "0.23.15"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-string-to-lingui/-/eslint-plugin-string-to-lingui-0.23.15.tgz#92a0634d8264f19682d494f60721e32a5d24243b"
-  integrity sha512-T71aRTUSbTYeiqv9g7DJZ7S2YAm2oOwz4x44AHgeary9Q24bmRksk7+vgoUsJxNJR3efOQ8ed2gcnNDG4F/2dQ==
-  dependencies:
-    requireindex "1.2.0"
-    semver "^7.5.3"
-
-eslint-plugin-string-to-lingui@^0.23.17:
-  version "0.23.17"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-string-to-lingui/-/eslint-plugin-string-to-lingui-0.23.17.tgz#80961109dc9ae301724ed78c88d6327769093437"
-  integrity sha512-riwwYwrBO3lk4RYP14DfWpPDZexYY4sb21m1XTB9UPQUxT3bdkLHKjM/D1gMYdFbeuMp7avoOiTDd8hclZBbig==
-  dependencies:
-    eslint-plugin-string-to-lingui "0.23.15"
-    requireindex "1.2.0"
-    semver "^7.5.3"
-
 eslint-plugin-testing-library@^5.0.3:
   version "5.0.3"
   resolved "https://registry.npmjs.org/eslint-plugin-testing-library/-/eslint-plugin-testing-library-5.0.3.tgz"
@@ -16289,11 +16272,6 @@ require-in-the-middle@^7.1.1:
     debug "^4.1.1"
     module-details-from-path "^1.0.3"
     resolve "^1.22.1"
-
-requireindex@1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/requireindex/-/requireindex-1.2.0.tgz#3463cdb22ee151902635aa6c9535d4de9c2ef1ef"
-  integrity sha512-L9jEkOi3ASd9PYit2cwRfyppc9NoABujTP8/5gFcbERmo5jUoAKovIC3fsF17pkTnGsrByysqX+Kxd2OTNI1ww==
 
 requires-port@^1.0.0:
   version "1.0.0"

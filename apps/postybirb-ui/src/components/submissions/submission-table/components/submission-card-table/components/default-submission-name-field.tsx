@@ -1,7 +1,7 @@
 import { EuiFieldText } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { IWebsiteFormFields } from '@postybirb/types';
 import { useCallback } from 'react';
-import { Trans } from '@lingui/macro';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
 
@@ -32,7 +32,7 @@ export function DefaultSubmissionNameField(
       prepend={
         // eslint-disable-next-line jsx-a11y/label-has-associated-control
         <label className="euiFormLabel euiFormControlLayout__prepend">
-          <Trans context="default.name">Name</Trans>
+          <Trans>Name</Trans>
         </label>
       }
       isInvalid={!defaultOptions.title?.length}

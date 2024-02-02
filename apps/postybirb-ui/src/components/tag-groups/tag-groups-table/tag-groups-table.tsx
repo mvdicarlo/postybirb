@@ -146,7 +146,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
     },
     {
       field: 'tags',
-      name: <Trans context="tags">Tags</Trans>,
+      name: <Trans>Tags</Trans>,
       width: '60%',
       render: (tags: string[], tagGroup: TagGroupDto) => {
         const options = tags.map((tag) => ({
@@ -214,7 +214,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
                 iconType="trash"
                 aria-label={_(msg`Delete tag group ${group.name}`)}
               >
-                <Trans context="delete">Delete</Trans>
+                <Trans>Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -233,7 +233,7 @@ export default function TagGroupsTable(props: TagGroupsTableProps) {
             aria-label={_(msg`Create new tag group`)}
             onClick={createNewTagGroup}
           >
-            <Trans context="new">New</Trans>
+            <Trans>New</Trans>
           </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>

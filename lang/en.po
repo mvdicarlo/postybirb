@@ -210,11 +210,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:112
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:235
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:103
-msgid "Delete"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:217
-msgctxt "delete"
 msgid "Delete"
 msgstr ""
 
@@ -445,13 +441,9 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:120
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:142
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:94
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-name-field.tsx:35
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:115
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:46
-msgid "Name"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-name-field.tsx:35
-msgctxt "default.name"
 msgid "Name"
 msgstr ""
 
@@ -461,11 +453,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:237
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:254
-msgid "New"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:236
-msgctxt "new"
 msgid "New"
 msgstr ""
 
@@ -784,16 +772,11 @@ msgid "Tag groups"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-flyout/tag-groups-flyout.tsx:40
-msgctxt "tag-groups"
 msgid "Tag Groups"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:70
-msgid "Tags"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:149
-msgctxt "tags"
 msgid "Tags"
 msgstr ""
 
