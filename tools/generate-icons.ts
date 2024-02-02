@@ -25,7 +25,7 @@ for (const [name, path] of Object.entries(iconsMap)) {
 }
 
 code += `
-type IconComponentNameType = typeof ICON_TYPES[0];
+type IconComponentNameType = (typeof ICON_TYPES)[0];
 type IconComponentCacheType = Record<IconComponentNameType, unknown>;
 
 const cachedIcons: IconComponentCacheType = {`;

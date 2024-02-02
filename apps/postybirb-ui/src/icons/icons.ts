@@ -489,7 +489,7 @@ import { icon as tokenVectorDense } from '@elastic/eui/es/components/icon/assets
 import { icon as tokenDenseVector } from '@elastic/eui/es/components/icon/assets/tokenVectorDense';
 import { icon as tokenVectorSparse } from '@elastic/eui/es/components/icon/assets/tokenVectorSparse';
 
-type IconComponentNameType = typeof ICON_TYPES[0];
+type IconComponentNameType = (typeof ICON_TYPES)[0];
 type IconComponentCacheType = Record<IconComponentNameType, unknown>;
 
 const cachedIcons: IconComponentCacheType = {
