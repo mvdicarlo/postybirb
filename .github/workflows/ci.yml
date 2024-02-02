@@ -52,7 +52,7 @@ jobs:
           script: |
             const fs = require('fs');
             const { data } = fs.existsSync('./lint-results.json') ? JSON.parse(fs.readFileSync('./lint-results.json', 'utf8')) : { data: [] };
-            
+
             const annotations = data.map(result => ({
               path: result.filePath,
               start_line: result.startLine,
@@ -62,7 +62,7 @@ jobs:
               message: result.failure,
             }));
 
-            github.checks.create({
+            github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               name: 'Lint Check',
