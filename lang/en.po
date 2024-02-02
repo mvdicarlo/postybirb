@@ -539,14 +539,16 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:307
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:154
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:190
+#: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:175
 msgid "Actions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:187
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:175
-msgctxt "actions"
-msgid "Actions"
-msgstr ""
+#~ msgctxt "actions"
+#~ msgid "Actions"
+#~ msgstr ""
 
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:60
 msgid "Add account"
@@ -656,12 +658,16 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:106
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:222
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:107
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:228
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:96
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:210
 msgctxt "delete"
 msgid "Delete"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:226
+msgid "Delete tag converter {0}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:14
@@ -696,7 +702,7 @@ msgstr ""
 msgid "Duplicate submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:133
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:136
 msgctxt "duplicate.tag-converter"
 msgid "Duplicate tag"
 msgstr ""
@@ -874,7 +880,7 @@ msgstr ""
 msgid "New"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:241
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:247
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:229
 msgctxt "new"
 msgid "New"
@@ -985,7 +991,7 @@ msgid "Save"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:143
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:208
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:213
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:196
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:121
 msgctxt "save"
@@ -1005,6 +1011,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:87
 msgctxt "edit-form.set-default-options"
 msgid "Save as default"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:198
+msgid "Save changes for {tag}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
@@ -1102,7 +1112,7 @@ msgctxt "submissions"
 msgid "Submissions"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:118
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:121
 msgctxt "tag"
 msgid "Tag"
 msgstr ""
@@ -1190,7 +1200,7 @@ msgstr ""
 msgid "Updated submission template"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:81
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:82
 msgctxt "update.success-tag-converter"
 msgid "Updated tag converter"
 msgstr ""
@@ -1215,7 +1225,7 @@ msgctxt "form.websites"
 msgid "Websites"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:153
+#: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:156
 msgctxt "websites"
 msgid "Websites"
 msgstr ""
