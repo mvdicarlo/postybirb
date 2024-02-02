@@ -104,7 +104,7 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
       <EuiButtonIcon
         iconType={CancelIcon}
         color="warning"
-        aria-label={_(msg`Cancel submission`)}
+        aria-label={_(msg`Cancel post`)}
         onClick={() => {
           postApi
             .dequeue([submission.id])
