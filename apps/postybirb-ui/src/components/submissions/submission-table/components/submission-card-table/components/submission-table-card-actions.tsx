@@ -1,7 +1,8 @@
 import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
 import { useCallback } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { useNavigate } from 'react-router';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import postApi from '../../../../../../api/post.api';
 import submissionApi from '../../../../../../api/submission.api';
 import { useToast } from '../../../../../../app/app-toast-provider';
@@ -22,21 +23,18 @@ type SubmissionTableCardActionsProps = {
 function ScheduleAction(props: SubmissionTableCardActionsProps) {
   const { submission, canPost } = props;
   const { addToast, addErrorToast } = useToast();
+  const { _ } = useLingui();
 
   if (!submission.schedule.scheduledFor) {
     return null;
   }
 
   return submission.isScheduled ? (
-    <EuiToolTip
-      content={
-        <FormattedMessage id="unschedule" defaultMessage="Cancel schedule" />
-      }
-    >
+    <EuiToolTip content={_(msg`Cancel schedule`)}>
       <EuiButtonIcon
         iconType={CancelScheduleIcon}
         color="warning"
-        aria-label="Unschedule submission"
+        aria-label={_(msg`Unschedule submission`)}
         onClick={() => {
           if (submission.isScheduled) {
             submissionApi
@@ -51,12 +49,7 @@ function ScheduleAction(props: SubmissionTableCardActionsProps) {
                 addToast({
                   id: Date.now().toString(),
                   color: 'success',
-                  title: (
-                    <FormattedMessage
-                      id="submission.unscheduled"
-                      defaultMessage="Submission schedule cancelled"
-                    />
-                  ),
+                  title: _(msg`Submission schedule cancelled`),
                 });
               })
               .catch((res) => {
@@ -67,14 +60,12 @@ function ScheduleAction(props: SubmissionTableCardActionsProps) {
       />
     </EuiToolTip>
   ) : (
-    <EuiToolTip
-      content={<FormattedMessage id="schedule" defaultMessage="Schedule" />}
-    >
+    <EuiToolTip content={_(msg`Schedule`)}>
       <EuiButtonIcon
         iconType={ScheduleIcon}
         color="success"
         disabled={!canPost || submission.isScheduled || submission.isQueued()}
-        aria-label="Schedule submission"
+        aria-label={_(msg`Schedule submission`)}
         onClick={() => {
           if (canPost && !submission.isScheduled) {
             submissionApi
@@ -89,12 +80,7 @@ function ScheduleAction(props: SubmissionTableCardActionsProps) {
                 addToast({
                   id: Date.now().toString(),
                   color: 'success',
-                  title: (
-                    <FormattedMessage
-                      id="submission.scheduled"
-                      defaultMessage="Submission scheduled"
-                    />
-                  ),
+                  title: _(msg`Submission scheduled`),
                 });
               })
               .catch((res) => {
@@ -111,15 +97,14 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
   const { submission, canPost } = props;
   const { addToast, addErrorToast } = useToast();
   const isQueued = submission.isQueued();
+  const { _ } = useLingui();
 
   return isQueued ? (
-    <EuiToolTip
-      content={<FormattedMessage id="cancel" defaultMessage="Cancel post" />}
-    >
+    <EuiToolTip content={_(msg`Cancel post`)}>
       <EuiButtonIcon
         iconType={CancelIcon}
         color="warning"
-        aria-label="Cancel submission"
+        aria-label={_(msg`Cancel submission`)}
         onClick={() => {
           postApi
             .dequeue([submission.id])
@@ -127,12 +112,7 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
               addToast({
                 id: Date.now().toString(),
                 color: 'success',
-                title: (
-                  <FormattedMessage
-                    id="submission.dequeued"
-                    defaultMessage="Submission cancelled"
-                  />
-                ),
+                title: _(msg`Submission cancelled`),
               });
             })
             .catch((res) => {
@@ -142,12 +122,12 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
       />
     </EuiToolTip>
   ) : (
-    <EuiToolTip content={<FormattedMessage id="post" defaultMessage="Post" />}>
+    <EuiToolTip content={_(msg`Post`)}>
       <EuiButtonIcon
         iconType={SendIcon}
         color="success"
         disabled={!canPost}
-        aria-label="Post submission"
+        aria-label={_(msg`Post submission`)}
         onClick={() => {
           if (canPost) {
             postApi
@@ -156,12 +136,7 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
                 addToast({
                   id: Date.now().toString(),
                   color: 'success',
-                  title: (
-                    <FormattedMessage
-                      id="submission.enqueued"
-                      defaultMessage="Submission queued for posting"
-                    />
-                  ),
+                  title: _(msg`Submission queued for posting`),
                 });
               })
               .catch((res) => {
@@ -179,6 +154,7 @@ export default function SubmissionTableCardActions(
 ) {
   const { submission, canPost } = props;
   const { addToast, addErrorToast } = useToast();
+  const { _ } = useLingui();
 
   const history = useNavigate();
   const navToEdit = useCallback(
@@ -192,24 +168,20 @@ export default function SubmissionTableCardActions(
     <>
       <PostSubmissionAction {...props} />
       <ScheduleAction {...props} />
-      <EuiToolTip
-        content={<FormattedMessage id="edit" defaultMessage="Edit" />}
-      >
+      <EuiToolTip content={_(msg`Edit`)}>
         <EuiButtonIcon
           iconType="documentEdit"
-          aria-label="Edit submission"
+          aria-label={_(msg`Edit submission`)}
           onClick={() => {
             navToEdit(submission.id);
           }}
         />
       </EuiToolTip>
-      <EuiToolTip
-        content={<FormattedMessage id="duplicate" defaultMessage="Duplicate" />}
-      >
+      <EuiToolTip content={_(msg`Duplicate`)}>
         <EuiButtonIcon
           iconType="listAdd"
           color="accent"
-          aria-label="Duplicate submission"
+          aria-label={_(msg`Duplicate submission`)}
           onClick={() => {
             submissionApi.duplicate(submission.id);
           }}
