@@ -1,4 +1,5 @@
 # Postybirb
+![Translated badge](https://hosted.weblate.org/widgets/postybirb/?component=27943)
 
 ## About
 
@@ -16,11 +17,17 @@ implementation of websites where possible.
 
 You can find v3 [here](https://github.com/mvdicarlo/postybirb-plus).
 
+## Translation
+
+PostyBirb uses [Weblate](https://hosted.weblate.org/projects/postybirb/postybirb/) as transltion service
+
+Learn more: [Translation guide](./TRANSLATION.md)
+
 ## Project Setup
 
 1. `yarn install` Installs dependencies
 2. `yarn run setup` Installs hooks/husky
-3. `npm start` Starts app
+3. `yarn start` Starts app
 
 ### Recommended Plugins (VSCode)
 
