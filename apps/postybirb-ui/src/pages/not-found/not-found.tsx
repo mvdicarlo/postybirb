@@ -1,5 +1,5 @@
 import { EuiButton, EuiButtonEmpty, EuiEmptyPrompt } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useNavigate } from 'react-router';
 
 export default function NotFound() {
@@ -8,38 +8,28 @@ export default function NotFound() {
     <EuiEmptyPrompt
       title={
         <h2>
-          <FormattedMessage
-            id="page-not-found.headaer"
-            defaultMessage="Page not found"
-          />
+          <Trans comment="Page not found header">Page not found</Trans>
         </h2>
       }
       layout="vertical"
       body={
         <p>
-          <FormattedMessage
-            id="page-not-found.message"
-            defaultMessage="The page you are looking for might have been removed or temporarily
-          unavailable."
-          />
+          <Trans comment="Page not found text">
+            The page you are looking for might have been removed or temporarily
+            unavailable.
+          </Trans>
         </p>
       }
       actions={[
         <EuiButton color="primary" fill onClick={() => history('/')}>
-          <FormattedMessage
-            id="page-not-found.go-home"
-            defaultMessage="Go home"
-          />
+          <Trans comment="Page not found">Go home</Trans>
         </EuiButton>,
         <EuiButtonEmpty
           iconType="arrowLeft"
           flush="left"
           onClick={() => history(-1)}
         >
-          <FormattedMessage
-            id="page-not-found.go-back"
-            defaultMessage="Go back"
-          />
+          <Trans comment="Page not found">Go back</Trans>
         </EuiButtonEmpty>,
       ]}
     />

@@ -6,7 +6,7 @@ import {
   EuiSplitPanel,
   EuiText,
 } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import websiteOptionsApi from '../../../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../../../models/dtos/submission.dto';
@@ -36,10 +36,7 @@ function SubmissionCardValidationStatus(props: {
     return (
       <EuiText color="danger" size="xs" className="text-center">
         <EuiIcon type="alert" color="danger" className="mr-1" />
-        <FormattedMessage
-          id="submission.card.errors"
-          defaultMessage="Incomplete submission"
-        />
+        <Trans context="submission.card.errors">Incomplete submission</Trans>
       </EuiText>
     );
   }
@@ -48,10 +45,7 @@ function SubmissionCardValidationStatus(props: {
     return (
       <EuiText color="warning" size="xs" className="text-center">
         <EuiIcon type="warning" color="warning" className="mr-1" />
-        <FormattedMessage
-          id="submission.card.warning"
-          defaultMessage="Submission has warnings"
-        />
+        <Trans context="submission.card.warning">Submission has warnings</Trans>
       </EuiText>
     );
   }
@@ -107,6 +101,7 @@ export function SubmissionTableCard(
       className="postybirb__submission-card"
       direction="row"
       style={{
+        // eslint-disable-next-line lingui/no-unlocalized-strings
         border: selected ? '1px solid rgb(54, 162, 239)' : undefined,
       }}
     >

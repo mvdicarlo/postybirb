@@ -1,5 +1,5 @@
 import { EuiCallOut } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 
 export default function ErrorAlert(props: {
   error: string | object | undefined;
@@ -20,12 +20,7 @@ export default function ErrorAlert(props: {
   return (
     <EuiCallOut
       className="my-2"
-      title={
-        <FormattedMessage
-          id="error-apology"
-          defaultMessage="Sorry, there was an error"
-        />
-      }
+      title={<Trans>Sorry, there was an error</Trans>}
       iconType="alert"
       color="danger"
     >

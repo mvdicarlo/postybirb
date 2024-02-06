@@ -1,4 +1,6 @@
 import { EuiRadioGroup } from '@elastic/eui';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
 import classNames from 'classnames';
 import { useCallback, useMemo, useState } from 'react';
@@ -21,12 +23,13 @@ export default function RadioField(props: RadioFieldProps) {
     option.data[propKey] || field.defaultValue
   );
 
+  const { _ } = useLingui();
   const options = useMemo(
     () =>
       field.formField === 'rating' && !option.isDefault
-        ? [{ label: 'Default', value: undefined }, ...field.options]
+        ? [{ label: _(msg`Default`), value: undefined }, ...field.options]
         : field.options,
-    [field.formField, field.options, option.isDefault]
+    [_, field.formField, field.options, option.isDefault]
   );
 
   const onChange = useCallback((changeValue: string | undefined) => {
@@ -56,7 +59,7 @@ export default function RadioField(props: RadioFieldProps) {
           value: o.value ? o.value.toString() : undefined,
         }))}
         idSelected={`${option.id}-${propKey}-${value}`}
-        onChange={(_, newValue) => {
+        onChange={(__, newValue) => {
           onChange(newValue);
         }}
         name={`option-${option.id}-${propKey}`}

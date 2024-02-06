@@ -8,9 +8,10 @@ import {
   EuiSelectable,
   EuiSpacer,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { ISettingsOptions, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { AccountFilterState } from '../../../models/app-states/account-filter-state';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 
@@ -27,6 +28,7 @@ type FilterDropdownProps = Omit<AccountLoginFiltersProps, 'onFilterUpdate'>;
 function ShowHiddenWebsitesFilterDropdown(props: FilterDropdownProps) {
   const { availableWebsites, filterState, settings, onHide } = props;
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const { _ } = useLingui();
 
   const button = (
     <EuiFilterButton
@@ -39,7 +41,7 @@ function ShowHiddenWebsitesFilterDropdown(props: FilterDropdownProps) {
       hasActiveFilters={filterState.showHiddenWebsites}
       numActiveFilters={settings.hiddenWebsites?.length}
     >
-      <FormattedMessage id="hidden" defaultMessage="Hidden" />
+      <Trans comment={_(msg`Website status`)}>Hidden</Trans>
     </EuiFilterButton>
   );
 
@@ -54,17 +56,17 @@ function ShowHiddenWebsitesFilterDropdown(props: FilterDropdownProps) {
         allowExclusions
         searchable
         searchProps={{
-          placeholder: 'Filter list',
+          placeholder: _(msg`Filter list`),
           compressed: true,
         }}
-        aria-label="Composers"
+        aria-label={_(msg`Composers`)}
         options={availableWebsites.map((w) => ({
           key: w.id,
           label: w.displayName,
           checked: settings.hiddenWebsites.includes(w.id) ? 'on' : 'off',
           data: w,
         }))}
-        onChange={(_, __, changedOption) => {
+        onChange={(__, ___, changedOption) => {
           onHide({
             ...changedOption.data,
             isHidden: changedOption.checked === 'on',
@@ -84,11 +86,12 @@ function ShowHiddenWebsitesFilterDropdown(props: FilterDropdownProps) {
 
 function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
   const { filterState, onFilterUpdate } = props;
+  const { _ } = useLingui();
   return (
     <EuiFilterGroup compressed>
       <EuiFilterButton
         style={{ borderRadius: 0, width: 120 }}
-        aria-label="Show hidden websites filter"
+        aria-label={_(msg`Show hidden websites filter`)}
         onClick={() =>
           onFilterUpdate({
             ...filterState,
@@ -96,15 +99,12 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage
-          id="account.login.hidden-filter"
-          defaultMessage="Show hidden"
-        />
+        <Trans>Show hidden</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
         withNext
-        aria-label="Show hidden websites filter on"
+        aria-label={_(msg`Show hidden websites filter on`)}
         color={filterState.showHiddenWebsites ? 'primary' : undefined}
         hasActiveFilters={filterState.showHiddenWebsites}
         onClick={() =>
@@ -114,11 +114,11 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="on" defaultMessage="On" />
+        <Trans>On</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
-        aria-label="Show hidden websites filter off"
+        aria-label={_(msg`Show hidden websites filter off`)}
         hasActiveFilters={!filterState.showHiddenWebsites}
         color={!filterState.showHiddenWebsites ? 'primary' : undefined}
         onClick={() =>
@@ -128,7 +128,7 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="off" defaultMessage="Off" />
+        <Trans>Off</Trans>
       </EuiFilterButton>
       <ShowHiddenWebsitesFilterDropdown {...props} />
     </EuiFilterGroup>
@@ -137,11 +137,13 @@ function ShowHiddenWebsitesFilter(props: AccountLoginFiltersProps) {
 
 function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
   const { filterState, onFilterUpdate } = props;
+  const { _ } = useLingui();
+
   return (
     <EuiFilterGroup compressed>
       <EuiFilterButton
         style={{ borderRadius: 0, width: 120 }}
-        aria-label="Show empty websites filter"
+        aria-label={_(msg`Show empty websites filter`)}
         onClick={() =>
           onFilterUpdate({
             ...filterState,
@@ -150,15 +152,12 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage
-          id="account.login.empty-filter"
-          defaultMessage="Show empty"
-        />
+        <Trans comment={_(msg`Account login empty filter`)}>Show empty</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
         withNext
-        aria-label="Show empty websites filter on"
+        aria-label={_(msg`Show empty websites filter on`)}
         color={filterState.showWebsitesWithoutAccounts ? 'primary' : undefined}
         hasActiveFilters={filterState.showWebsitesWithoutAccounts}
         onClick={() =>
@@ -168,11 +167,11 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="on" defaultMessage="On" />
+        <Trans>On</Trans>
       </EuiFilterButton>
       <EuiFilterButton
         style={{ borderRadius: 0 }}
-        aria-label="Show empty websites filter off"
+        aria-label={_(msg`Show empty websites filter off`)}
         hasActiveFilters={!filterState.showWebsitesWithoutAccounts}
         color={!filterState.showWebsitesWithoutAccounts ? 'primary' : undefined}
         onClick={() =>
@@ -182,7 +181,7 @@ function ShowWebsitesWithoutAccountsFilter(props: AccountLoginFiltersProps) {
           })
         }
       >
-        <FormattedMessage id="off" defaultMessage="Off" />
+        <Trans>Off</Trans>
       </EuiFilterButton>
     </EuiFilterGroup>
   );
@@ -193,7 +192,7 @@ export function AccountLoginFilters(props: AccountLoginFiltersProps) {
     <EuiCard
       hasBorder
       className="postybirb__account-login-filters"
-      title={<FormattedMessage id="filters" defaultMessage="Filters" />}
+      title={<Trans>Filters</Trans>}
       titleSize="xs"
       layout="horizontal"
     >

@@ -11,12 +11,14 @@ import {
   EuiTableSelectionType,
   EuiText,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { TagConverterDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
+import { sharedMessages } from '../../../i18n';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
@@ -35,6 +37,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const tableRef = useRef<EuiBasicTable | null>(null);
   const updateView = useUpdateView();
   const [records, setRecords] = useState(tagConverters); // Internal state to protect unsaved edits
+  const { _ } = useLingui();
 
   useEffect(() => {
     const newRecords = tagConverters.filter(
@@ -69,7 +72,11 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   };
 
   const createNewTagConverter = () => {
-    tagConvertersApi.create({ tag: `Tag ${Date.now()}`, convertTo: {} });
+    const defaultTagNameFromDate = Date.now();
+    tagConvertersApi.create({
+      tag: _(msg`Tag ${defaultTagNameFromDate}`),
+      convertTo: {},
+    });
   };
 
   const saveChanges = ({ id, tag, convertTo }: TagConverterDto) => {
@@ -78,10 +85,9 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         id: Date.now().toString(),
         color: 'success',
         text: (
-          <FormattedMessage
-            id="update.success-tag-converter"
-            defaultMessage="Updated tag converter"
-          />
+          <Trans context="update.success-tag-converter">
+            Updated tag converter
+          </Trans>
         ),
       });
     });
@@ -102,10 +108,9 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           color="danger"
           iconType="trash"
           size="s"
-          aria-label="Delete selected tag converters"
+          aria-label={_(msg`Delete selected tag converters`)}
         >
-          <FormattedMessage id="delete" defaultMessage="Delete" />{' '}
-          {selectedItems.length}
+          <Trans>Delete</Trans> {selectedItems.length}
         </EuiButton>
       </DeleteActionPopover>
     ) : null;
@@ -117,14 +122,18 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
   const columns: Array<EuiBasicTableColumn<TagConverterDto>> = [
     {
       field: 'tag',
-      name: <FormattedMessage id="tag" defaultMessage="Tag" />,
+      name: <Trans>Tag</Trans>,
       sortable: true,
       truncateText: true,
       render: (name: string, converter: TagConverterDto) => (
         <EuiFormRow
           fullWidth
           className="w-full"
-          label={<span style={{ visibility: 'hidden' }}>Empty</span>}
+          label={
+            <span style={{ visibility: 'hidden' }}>
+              <Trans comment="Empty tag">Empty</Trans>
+            </span>
+          }
           isInvalid={records.some(
             (tagConverter) =>
               tagConverter.tag.trim() === converter.tag.trim() &&
@@ -132,16 +141,13 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           )}
           error={
             <EuiText size="relative">
-              <FormattedMessage
-                id="duplicate.tag-converter"
-                defaultMessage="Duplicate tag"
-              />
+              <Trans context="duplicate.tag-converter">Duplicate tag</Trans>
             </EuiText>
           }
         >
           <EuiFieldText
             fullWidth
-            placeholder="Tag"
+            placeholder={_(msg`Tag`)}
             value={name}
             compressed
             onChange={(event) => {
@@ -155,9 +161,9 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
     },
     {
       field: 'convertTo',
-      name: <FormattedMessage id="websites" defaultMessage="Websites" />,
+      name: <Trans>Websites</Trans>,
       width: '60%',
-      render: (_: string[], tagConverter: TagConverterDto) => (
+      render: (__: string[], tagConverter: TagConverterDto) => (
         <div className="flex flex-wrap">
           {tagSupportingWebsites.map((website) => (
             <div className="mr-1">
@@ -189,30 +195,33 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
       ),
     },
     {
-      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      name: <Trans>Actions</Trans>,
       width: '8%',
       actions: [
         {
-          render: (converter: TagConverterDto) => (
-            <EuiButtonIcon
-              aria-label={`Save changes for ${converter.tag}`}
-              color="primary"
-              iconType="save"
-              disabled={
-                !converter.tag.trim().length ||
-                records.some(
-                  (tagConverter) =>
-                    tagConverter.tag.trim() === converter.tag.trim() &&
-                    tagConverter.id !== converter.id
-                )
-              }
-              onClick={() => {
-                saveChanges(converter);
-              }}
-            >
-              <FormattedMessage id="save" defaultMessage="Save" />
-            </EuiButtonIcon>
-          ),
+          render: (converter: TagConverterDto) => {
+            const { tag } = converter;
+            return (
+              <EuiButtonIcon
+                aria-label={_(msg`Save changes for ${tag}`)}
+                color="primary"
+                iconType="save"
+                disabled={
+                  !converter.tag.trim().length ||
+                  records.some(
+                    (tagConverter) =>
+                      tagConverter.tag.trim() === converter.tag.trim() &&
+                      tagConverter.id !== converter.id
+                  )
+                }
+                onClick={() => {
+                  saveChanges(converter);
+                }}
+              >
+                <Trans>Save</Trans>
+              </EuiButtonIcon>
+            );
+          },
         },
         {
           render: (converter: TagConverterDto) => (
@@ -222,9 +231,9 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
               <EuiButtonIcon
                 color="danger"
                 iconType="trash"
-                aria-label={`Delete tag converter ${converter.tag}`}
+                aria-label={_(msg`Delete tag converter ${converter.tag}`)}
               >
-                <FormattedMessage id="delete" defaultMessage="Delete" />
+                <Trans>Delete</Trans>
               </EuiButtonIcon>
             </DeleteActionPopover>
           ),
@@ -240,10 +249,10 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
           <EuiButton
             size="s"
             iconType="plus"
-            aria-label="Create new tag group"
+            aria-label={_(msg`Create new tag group`)}
             onClick={createNewTagConverter}
           >
-            <FormattedMessage id="new" defaultMessage="New" />
+            <Trans>New</Trans>
           </EuiButton>
         </EuiFlexItem>
         <EuiFlexItem grow={false}>{deleteButton}</EuiFlexItem>
@@ -261,6 +270,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         isSelectable
         selection={selection}
         rowHeader="name"
+        noItemsMessage={_(sharedMessages.noItems)}
       />
     </>
   );

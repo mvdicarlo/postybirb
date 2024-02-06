@@ -9,16 +9,16 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { useNavigate, useParams } from 'react-router';
+import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import SubmissionProvider, {
   useSubmission,
 } from '../../hooks/submission/use-submission';
 import NotFound from '../not-found/not-found';
 import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
-import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 
 function EditSubmissionPageNavHeader() {
   const history = useNavigate();
@@ -29,15 +29,9 @@ function EditSubmissionPageNavHeader() {
       {
         text:
           submission.type === SubmissionType.FILE ? (
-            <FormattedMessage
-              id="file-submissions"
-              defaultMessage="File Submissions"
-            />
+            <Trans>File Submissions</Trans>
           ) : (
-            <FormattedMessage
-              id="message-submissions"
-              defaultMessage="Message Submissions"
-            />
+            <Trans>Message Submissions</Trans>
           ),
         href: '#',
         onClick: (e) => {
@@ -71,10 +65,9 @@ function EditSubmissionPageNavHeader() {
             <EuiHeaderSection>
               <EuiTitle size="xs">
                 <h4>
-                  <FormattedMessage
-                    id="submissions.edit-page-header"
-                    defaultMessage="Edit Submission"
-                  />
+                  <Trans context="submissions.edit-page-header">
+                    Edit Submission
+                  </Trans>
                 </h4>
               </EuiTitle>
             </EuiHeaderSection>,
@@ -96,10 +89,7 @@ function EditSubmissionPageNavHeader() {
                     save();
                   }}
                 >
-                  <FormattedMessage
-                    id="submission.save"
-                    defaultMessage="Save"
-                  />
+                  <Trans>Save</Trans>
                 </EuiButton>
               </EuiHeaderSectionItem>
             </EuiHeaderSection>,

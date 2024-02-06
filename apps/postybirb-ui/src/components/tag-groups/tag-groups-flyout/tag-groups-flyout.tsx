@@ -4,14 +4,14 @@ import {
   EuiFlyoutHeader,
   EuiTitle,
 } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
+import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import { TagGroupsKeybinding } from '../../../shared/app-keybindings';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
 import Keybinding, { KeybindingProps } from '../../app/keybinding/keybinding';
 import Loading from '../../shared/loading/loading';
 import TagGroupsTable from '../tag-groups-table/tag-groups-table';
-import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 
 export function TagGroupsFlyout() {
   const [isOpen, toggle] = useFlyoutToggle('tagGroupsFlyoutVisible');
@@ -37,7 +37,7 @@ export function TagGroupsFlyout() {
         <EuiTitle size="m">
           <div>
             <Keybinding displayOnly {...keybindingProps}>
-              <FormattedMessage id="tag-groups" defaultMessage="Tag Groups" />
+              <Trans>Tag Groups</Trans>
             </Keybinding>
           </div>
         </EuiTitle>

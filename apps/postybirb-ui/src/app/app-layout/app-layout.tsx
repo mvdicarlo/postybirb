@@ -19,8 +19,6 @@ export default function AppLayout() {
       <AppFlyouts />
 
       <EuiPageBody
-        hasBorder={false}
-        hasShadow={false}
         paddingSize="none"
         borderRadius="none"
         className={`postybirb__page-body ${theme}`}

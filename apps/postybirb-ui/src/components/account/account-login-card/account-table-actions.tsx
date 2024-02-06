@@ -6,30 +6,27 @@ import {
   EuiText,
   EuiToolTip,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import accountApi from '../../../api/account.api';
 import { useToast } from '../../../app/app-toast-provider';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
 
 export function DeleteAccountPopover(props: { id: string }) {
+  const { _ } = useLingui();
   const { id } = props;
 
   return (
     <EuiToolTip
-      content={<FormattedMessage id="delete" defaultMessage="Delete" />}
+      content={<Trans comment={_(msg`Delete account`)}>Delete</Trans>}
     >
       <DeleteActionPopover
         onDelete={() => accountApi.remove([id])}
-        successMessage={
-          <FormattedMessage
-            id="login.account-removed"
-            defaultMessage="Account removed"
-          />
-        }
+        successMessage={<Trans>Account removed</Trans>}
       >
         <EuiButtonIcon
-          aria-label="Delete"
+          aria-label={_(msg`Delete`)}
           className="ml-1"
           iconType="trash"
           color="danger"
@@ -42,23 +39,19 @@ export function DeleteAccountPopover(props: { id: string }) {
 export function ClearAccountDataPopover(props: { id: string }) {
   const { id } = props;
   const [isOpen, setOpen] = useState<boolean>(false);
+  const { _ } = useLingui();
   const { addToast, addErrorToast } = useToast();
+
+  const clearAccountDataLabel = <Trans>Clear account data</Trans>;
 
   return (
     <EuiPopover
       isOpen={isOpen}
       closePopover={() => setOpen(false)}
       button={
-        <EuiToolTip
-          content={
-            <FormattedMessage
-              id="login.clear-data"
-              defaultMessage="Clear account data"
-            />
-          }
-        >
+        <EuiToolTip content={clearAccountDataLabel}>
           <EuiButtonIcon
-            aria-label="Clear account data"
+            aria-label={_(msg`Clear account data`)}
             iconType="flag"
             color="warning"
             onClick={() => setOpen(true)}
@@ -69,10 +62,7 @@ export function ClearAccountDataPopover(props: { id: string }) {
       <div style={{ width: '300px' }}>
         <EuiText size="s">
           <p>
-            <FormattedMessage
-              id="action.cannot-be-undone"
-              defaultMessage="This action cannot be undone."
-            />
+            <Trans>This action cannot be undone.</Trans>
           </p>
         </EuiText>
       </div>
@@ -89,12 +79,7 @@ export function ClearAccountDataPopover(props: { id: string }) {
                 addToast({
                   id,
                   color: 'success',
-                  text: (
-                    <FormattedMessage
-                      id="login.account-data-cleared"
-                      defaultMessage="Account data cleared"
-                    />
-                  ),
+                  text: <Trans>Account data cleared</Trans>,
                 });
               })
               .catch((res) => {
@@ -102,7 +87,7 @@ export function ClearAccountDataPopover(props: { id: string }) {
               });
           }}
         >
-          <FormattedMessage id="login.clear-data" defaultMessage="Clear data" />
+          {clearAccountDataLabel}
         </EuiButton>
       </EuiPopoverFooter>
     </EuiPopover>

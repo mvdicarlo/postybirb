@@ -14,6 +14,8 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
+import { i18n } from '@lingui/core';
+import { msg } from '@lingui/macro';
 import submissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
@@ -114,7 +116,7 @@ export class SubmissionDto<
   }
 
   public getTemplateName() {
-    return this.metadata.template?.name ?? 'Template';
+    return this.metadata.template?.name ?? i18n.t(msg`Template`);
   }
 
   public isQueued(): boolean {

@@ -6,12 +6,12 @@ import {
   EuiLink,
   EuiRadioGroup,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { useLocalStorage } from 'react-use';
 
 const DEFAULT_CRON = '0 0 * * FRI';
@@ -19,17 +19,15 @@ const DEFAULT_CRON = '0 0 * * FRI';
 const radios = [
   {
     id: ScheduleType.NONE,
-    label: <FormattedMessage id="schedule.none" defaultMessage="None" />,
+    label: <Trans context="schedule.none">None</Trans>,
   },
   {
     id: ScheduleType.SINGLE,
-    label: <FormattedMessage id="schedule.single" defaultMessage="Once" />,
+    label: <Trans context="schedule.single">Once</Trans>,
   },
   {
     id: ScheduleType.RECURRING,
-    label: (
-      <FormattedMessage id="schedule.recurring" defaultMessage="Recurring" />
-    ),
+    label: <Trans context="schedule.recurring">Recurring</Trans>,
   },
 ];
 
@@ -63,12 +61,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
         return null;
       case ScheduleType.RECURRING:
         // eslint-disable-next-line no-case-declarations
-        let cronHelp: JSX.Element | null = (
-          <FormattedMessage
-            id="schedule.cron.invalid"
-            defaultMessage="Invalid CRON string"
-          />
-        );
+        let cronHelp: JSX.Element | null = <Trans>Invalid CRON string</Trans>;
         try {
           cronHelp = schedule.cron ? (
             <span>
@@ -83,7 +76,9 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
           <EuiFormRow
             label={
               <EuiLink href="https://crontab.cronhub.io/">
-                CRON Format <EuiIcon type="link" size="s" />
+                <Trans>
+                  CRON format <EuiIcon type="link" size="s" />
+                </Trans>
               </EuiLink>
             }
             helpText={cronHelp}

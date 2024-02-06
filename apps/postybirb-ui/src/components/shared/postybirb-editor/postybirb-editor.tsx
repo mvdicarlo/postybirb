@@ -1,3 +1,4 @@
+/* eslint-disable lingui/no-unlocalized-strings */
 import { Editor } from '@tinymce/tinymce-react';
 import sanizeHtml from 'sanitize-html';
 // TinyMCE so the global var exists

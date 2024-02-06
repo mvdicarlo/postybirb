@@ -1,7 +1,10 @@
 import { StrictMode } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import './icons/icons';
+import { I18nProvider } from '@lingui/react';
+import { i18n } from '@lingui/core';
+import { EuiErrorBoundary } from '@elastic/eui';
 import App from './app/app';
 import AppThemeProvider from './app/app-theme-provider';
 import { SubmissionsPath } from './pages/route-paths';
@@ -12,17 +15,17 @@ import SubmissionOutletPage from './pages/submission/submission-outlet-page';
 import NotFound from './pages/not-found/not-found';
 import HomePage from './pages/home/home-page';
 import './styles.css';
-
-// TODO react 18
-// const container = document.getElementById('app');
-// const root = createRoot(container); // createRoot(container!) if you use TypeScript
-// root.render(<App tab="home" />);
+import './i18n';
 
 function Root() {
   return (
-    <AppThemeProvider>
-      <App />
-    </AppThemeProvider>
+    <EuiErrorBoundary>
+      <I18nProvider i18n={i18n}>
+        <AppThemeProvider>
+          <App />
+        </AppThemeProvider>
+      </I18nProvider>
+    </EuiErrorBoundary>
   );
 }
 
@@ -61,11 +64,11 @@ const router = createBrowserRouter([
   },
 ]);
 
-ReactDOM.render(
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RouterProvider router={router} />
-  </StrictMode>,
-  document.getElementById('root')
+  </StrictMode>
 );
 
 declare global {

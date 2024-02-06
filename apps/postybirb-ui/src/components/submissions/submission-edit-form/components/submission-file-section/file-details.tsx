@@ -9,11 +9,12 @@ import {
   EuiFormRow,
   EuiSpacer,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
 import { isImage } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
@@ -90,15 +91,11 @@ function SharedDetails(props: FileDetailsProps) {
     description: NonNullable<ReactNode>;
   }> = [
     {
-      title: (
-        <FormattedMessage id="submission.file-name" defaultMessage="Name" />
-      ),
+      title: <Trans>Name</Trans>,
       description: file.fileName,
     },
     {
-      title: (
-        <FormattedMessage id="submission.file-size" defaultMessage="Size" />
-      ),
+      title: <Trans context="submission.file-size">Size</Trans>,
       description: <span>{filesize(file.size, { base: 2 }) as string}</span>,
     },
   ];
@@ -110,7 +107,7 @@ function SharedDetails(props: FileDetailsProps) {
         <EuiFlexItem>
           <EuiFormRow
             fullWidth
-            label={<FormattedMessage id="alt-text" defaultMessage="Alt Text" />}
+            label={<Trans context="alt-text">Alt Text</Trans>}
           >
             <EuiFieldText
               compressed
@@ -128,12 +125,8 @@ function SharedDetails(props: FileDetailsProps) {
         <EuiFlexItem>
           <EuiFormRow
             fullWidth
-            label={
-              <FormattedMessage
-                id="dont-post-to"
-                defaultMessage="Don't post to"
-              />
-            }
+            // eslint-disable-next-line react/no-unescaped-entities
+            label={<Trans>Don't post to</Trans>}
           >
             <SimpleWebsiteSelect
               selected={ignoredWebsites}
@@ -193,9 +186,7 @@ function ImageDetails(props: FileDetailsProps) {
   return (
     <EuiFlexGroup>
       <EuiFlexItem>
-        <EuiFormRow
-          label={<FormattedMessage id="height" defaultMessage="Height" />}
-        >
+        <EuiFormRow label={<Trans>Height</Trans>}>
           <EuiFieldNumber
             value={height}
             compressed
@@ -223,9 +214,7 @@ function ImageDetails(props: FileDetailsProps) {
       </EuiFlexItem>
 
       <EuiFlexItem>
-        <EuiFormRow
-          label={<FormattedMessage id="width" defaultMessage="Width" />}
-        >
+        <EuiFormRow label={<Trans>Width</Trans>}>
           <EuiFieldNumber
             value={width}
             compressed
@@ -262,6 +251,7 @@ function removeFile(submissionId: string, file: ISubmissionFileDto) {
 export function FileDetails(props: FileDetailsProps) {
   const { submission, updateView } = useSubmission();
   const { file } = props;
+  const { _ } = useLingui();
 
   const imageInfo = useMemo(() => {
     if (isImage(file.fileName)) {
@@ -275,7 +265,7 @@ export function FileDetails(props: FileDetailsProps) {
                 size="s"
                 className="mt-2"
                 iconType="trash"
-                aria-label={`Remove ${file.fileName}`}
+                aria-label={_(msg`Remove ${file.fileName}`)}
                 color="danger"
                 onClick={() => {
                   removeFile(submission.id, file).then((update) => {

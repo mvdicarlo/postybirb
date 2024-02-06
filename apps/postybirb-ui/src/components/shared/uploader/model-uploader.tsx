@@ -93,6 +93,7 @@ export default function ModalUploader(props: UploaderProps) {
         open={isOpen}
         uppy={uppy}
         theme={theme}
+        // eslint-disable-next-line lingui/no-unlocalized-strings
         plugins={['Webcam', 'ImageEditor']}
         width="100%"
         onRequestClose={onClose}

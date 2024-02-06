@@ -1,4 +1,6 @@
 import { EuiButtonIcon, EuiFieldText, EuiFormRow } from '@elastic/eui';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { ScheduleType } from '@postybirb/types';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
@@ -25,6 +27,8 @@ export function DefaultSubmissionScheduleField({
     }
   }
 
+  const { _ } = useLingui();
+
   return (
     <>
       {isModalVisible ? (
@@ -49,8 +53,10 @@ export function DefaultSubmissionScheduleField({
       >
         <EuiFieldText
           compressed
-          prepend={<EuiButtonIcon iconType="calendar" aria-label="Schedule" />}
-          placeholder="No schedule"
+          prepend={
+            <EuiButtonIcon iconType="calendar" aria-label={_(msg`Schedule`)} />
+          }
+          placeholder={_(msg`No schedule`)}
           readOnly
           value={scheduleText}
         />

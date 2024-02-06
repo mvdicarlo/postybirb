@@ -1,6 +1,7 @@
 import { EuiButton, EuiButtonIcon, EuiToolTip } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { useMemo } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 
 type AccountLoginCardTitleProps = {
@@ -14,39 +15,33 @@ export default function AccountLoginCardTitle(
 ) {
   const { website, onHide, onAddClick } = props;
   const { displayName } = website;
-
+  const { _ } = useLingui();
   const displayIcon = useMemo(
     () =>
       website.isHidden ? (
-        <EuiToolTip
-          position="right"
-          content={<FormattedMessage id="hide" defaultMessage="Hide" />}
-        >
+        <EuiToolTip position="right" content={<Trans>Hide</Trans>}>
           <EuiButtonIcon
             className="ml-1"
             iconType="eye"
-            aria-label={`Hide ${displayName}`}
+            aria-label={_(msg`Hide ${displayName}`)}
             onClick={() => {
               onHide(website);
             }}
           />
         </EuiToolTip>
       ) : (
-        <EuiToolTip
-          position="right"
-          content={<FormattedMessage id="show" defaultMessage="Show" />}
-        >
+        <EuiToolTip position="right" content={<Trans>Show</Trans>}>
           <EuiButtonIcon
             className="ml-1"
             iconType="eyeClosed"
-            aria-label={`Unhide ${displayName}`}
+            aria-label={_(msg`Unhide ${displayName}`)}
             onClick={() => {
               onHide(website);
             }}
           />
         </EuiToolTip>
       ),
-    [displayName, onHide, website]
+    [_, displayName, onHide, website]
   );
 
   return (
@@ -57,13 +52,10 @@ export default function AccountLoginCardTitle(
         <EuiButton
           size="s"
           iconType="plus"
-          aria-label={`Add account for ${displayName}`}
+          aria-label={_(msg`Add account for ${displayName}`)}
           onClick={onAddClick}
         >
-          <FormattedMessage
-            id="login.add-account"
-            defaultMessage="Add account"
-          />
+          <Trans>Add account</Trans>
         </EuiButton>
       </span>
     </span>

@@ -1,5 +1,7 @@
 /* eslint-disable react/require-default-props */
 import { EuiComboBox, EuiComboBoxOptionOption } from '@elastic/eui';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { ISubmissionDto, SubmissionType } from '@postybirb/types';
 import { useCallback, useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -22,8 +24,11 @@ export default function SubmissionPicker(props: SubmissionPickerProps) {
     (submission) => submission.type === type
   );
 
+  const { _ } = useLingui();
+
   const options = filteredSubmissions.map((submission) => ({
-    label: submission.getDefaultOptions().data.title || 'Unknown submission',
+    label:
+      submission.getDefaultOptions().data.title || _(msg`Unknown submission`),
     value: submission,
   }));
 

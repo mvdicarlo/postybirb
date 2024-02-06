@@ -9,10 +9,10 @@ import {
   EuiModalHeader,
   EuiModalHeaderTitle,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { AccountId, DynamicObject, SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import userSpecifiedWebsiteOptionsApi from '../../../../../api/user-specified-website-options.api';
 import { useToast } from '../../../../../app/app-toast-provider';
 
@@ -82,10 +82,9 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
     <EuiModal onClose={onCloseModal}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <FormattedMessage
-            id="user-specified-options.modal.header"
-            defaultMessage="Choose Fields"
-          />
+          <Trans context="user-specified-options.modal.header">
+            Choose Fields
+          </Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -113,10 +112,9 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
                 addToast({
                   id: Date.now().toString(),
                   text: (
-                    <FormattedMessage
-                      id="default-options-saved"
-                      defaultMessage="Defaults saved"
-                    />
+                    <Trans context="default-options-saved">
+                      Defaults saved
+                    </Trans>
                   ),
                 });
               })
@@ -133,7 +131,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onCloseModal} disabled={isSaving}>
-          <FormattedMessage id="cancel" defaultMessage="Cancel" />
+          <Trans>Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -142,7 +140,7 @@ export default function UserSpecifiedWebsiteOptionsSaveModal(
           isLoading={isSaving}
           disabled={isSaving}
         >
-          <FormattedMessage id="save" defaultMessage="Save" />
+          <Trans>Save</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>
