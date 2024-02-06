@@ -18,7 +18,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: yarn install
+          cache: yarn
+          
+      - run: yarn install --frozen-lockfile
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
