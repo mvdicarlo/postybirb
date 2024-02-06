@@ -14,7 +14,7 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    # if: '!startsWith(github.head_ref, "releases/")'
+    if: github.head_ref != 'bbb'
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
