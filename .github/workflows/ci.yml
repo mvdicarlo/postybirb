@@ -16,6 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     if: github.head_ref != 'weblate-postybirb-postybirb'
     steps:
+      - name: Info
+        run: |
+          echo 'repository: ${{ github.repository }}'
+          echo 'head ref: ${{ github.head_ref }}'
+          echo 'ref: ${{ github.ref }}'
+          echo 'head ref: ${{ github.head_ref }}'
+
       - name: Check out Git repository
         uses: actions/checkout@v4
         with:
