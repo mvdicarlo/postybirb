@@ -14,7 +14,7 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
-    if: github.head_ref != 'bbb'
+    if: github.head_ref != 'weblate-postybirb-postybirb'
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v4
