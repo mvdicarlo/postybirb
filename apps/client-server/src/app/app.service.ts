@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 
 @Injectable()
