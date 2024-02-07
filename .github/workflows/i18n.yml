@@ -1,0 +1,47 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+
+# Needed for nx-set-shas when run on the main branch
+permissions:
+  actions: read
+  contents: write
+  checks: write
+  pull-requests: write
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    if: github.head_ref != 'weblate-postybirb-postybirb'
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          cache: yarn
+
+        # Note: This flags needed to speed up ci
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
+
+        # Extracts i18n strings from code
+      - name: Extract i18n keys
+        run: yarn lingui:extract
+
+        # It commits extracted i18n string and eslint/prettier fixes
+      - name: Commit changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          npx exitzero "git add 'lang/' && git commit -m 'ci: extract i18n strings'"
+          exit 0
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
