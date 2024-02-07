@@ -23,27 +23,30 @@ jobs:
           fetch-depth: 0
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
           cache: yarn
 
+        # Note: This flags needed to speed up build
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --prefer-offline
 
       - name: Set git SHA for NX affected
         uses: nrwl/nx-set-shas@v3
 
-      # Note: This step is needed for nx affected to work when CI is running on a PR
+        # Note: This step is needed for nx affected to work when CI is running on a PR
       - name: Track right branch
         run: npx exitzero git branch --track main origin/main
 
+        # Extracts i18n strings from code
       - name: Extract i18n keys
         run: yarn lingui:extract
 
+        # Note: Added linting & formatting on pull requests because why not
       - name: Lint changes affected by this pr
         run: npx exitzero nx affected --parallel -t lint --fix
 
+        # It commits extracted i18n string and eslint/prettier fixes
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -59,7 +62,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.head_ref }}
 
-      - name: Get latest SHA
+      - name: Get latest commit SHA
         run: |
           echo "latest_sha=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
@@ -71,18 +74,24 @@ jobs:
             const orig_sha = context.payload.pull_request.head.sha
             const latest_sha = process.env.latest_sha
             console.log({ orig_sha, latest_sha });
+
             if (latest_sha === orig_sha) {
-              console.log("latest commit SHA matches original pr commit SHA, not moving annotations...");
+              console.log("Latest commit SHA matches original pull request commit SHA, not moving annotations...");
               return;
             }
 
-            const check_runs = await github.rest.checks.listForRef({
+            const checks_list = await github.rest.checks.listForRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: orig_sha
             })
 
-            const check_run = check_runs[0]
+            try {
+              const check_run = checks_list.check_runs[0]
+            } catch (e) {
+              console.error(e);
+              console.error({ checks_list });
+            }
 
             if (!check_run) {
               console.log("No check runs found for SHA", orig_sha);
@@ -92,11 +101,11 @@ jobs:
             const annotations = await github.rest.checks.listAnnotations({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              check_run_id: checks.id,
+              check_run_id: check_run.id,
             });
 
             if (annotations.length < 1) {
-              console.log("Empty annotations for check_run_id", check.id)
+              console.log("Empty annotations for check_run_id", check_run.id)
               return;
             }
 
@@ -113,4 +122,8 @@ jobs:
                 annotations: annotations,
               },
             });
-            
+        
+      # Actually this does nothing except for ignoring failed pushes
+      - name: Finish
+        if: ${{ !cancelled() }}
+        run: echo 'Done!'
