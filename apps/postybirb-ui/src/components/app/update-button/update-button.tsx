@@ -48,7 +48,9 @@ export default function UpdateButton() {
             updateApi.startUpdate();
           }}
         >
-          <Trans comment={_(msg`Update PostyBirb button`)}>Update</Trans>
+          <Trans comment="Update PostyBirb button on top of screen">
+            Update
+          </Trans>
         </EuiButton>
       </EuiFlexItem>
       <EuiFlexItem grow={false}>
