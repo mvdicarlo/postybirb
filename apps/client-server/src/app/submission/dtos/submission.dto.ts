@@ -1,18 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  WebsiteOptionsDto,
   ISubmissionDto,
-  IWebsiteFormFields,
   ISubmissionFileDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
+  IWebsiteFormFields,
+  PostRecordDto,
   SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IsArray, IsBoolean, IsObject, IsString } from 'class-validator';
 
 export class SubmissionDto<T extends ISubmissionMetadata = ISubmissionMetadata>
   implements ISubmissionDto<T>
 {
+  posts: PostRecordDto[];
+
   /**
    * Submission type.
    * @type {SubmissionType}

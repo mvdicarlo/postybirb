@@ -25,7 +25,7 @@ export function RatingField<T extends PrimitiveRecord>(
   options.type = TYPE_KEY;
   options.formField = TYPE_KEY;
   options.layout = options.layout ?? 'horizontal';
-  return (target, propertyKey: string) => {
+  return (target, propertyKey) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }

@@ -27,7 +27,7 @@ export function SelectField<T extends PrimitiveRecord>(
   options.type = TYPE_KEY;
   options.formField = 'select';
   options.allowMultiple = options.allowMultiple ?? false;
-  return (target, propertyKey: string) => {
+  return (target, propertyKey) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }

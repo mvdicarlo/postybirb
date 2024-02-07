@@ -21,7 +21,7 @@ export function DescriptionField<T extends PrimitiveRecord>(
   if (!options.i18nLabel) {
     options.i18nLabel = 'form.descriptions';
   }
-  return (target, propertyKey: string) => {
+  return (target, propertyKey) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }
