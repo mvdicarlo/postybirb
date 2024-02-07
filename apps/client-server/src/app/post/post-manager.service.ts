@@ -1,11 +1,13 @@
 /* eslint-disable no-param-reassign */
-import { Loaded } from '@mikro-orm/core';
+import { Loaded, Reference } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
   FileSubmission,
+  FileType,
+  ISubmissionFile,
   IWebsitePostRecord,
   MessageSubmission,
   PostData,
@@ -15,6 +17,7 @@ import {
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import {
   PostRecord,
@@ -29,6 +32,7 @@ import { MessageWebsite } from '../websites/models/website-modifiers/message-web
 import { Website } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
+import { PostFileResizerService } from './post-file-resizer.service';
 import { PostService } from './post.service';
 
 type LoadedPostRecord = Loaded<PostRecord, never>;
@@ -55,7 +59,8 @@ export class PostManagerService {
     @InjectRepository(WebsitePostRecord)
     private readonly websitePostRecordRepository: PostyBirbRepository<WebsitePostRecord>,
     private readonly postService: PostService,
-    private readonly websiteRegistry: WebsiteRegistryService
+    private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly resizerService: PostFileResizerService
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -86,6 +91,15 @@ export class PostManagerService {
     await this.postRepository.update(entity.id, {
       state: PostRecordState.PROCESSING,
     });
+
+    // Ensure parent (submission) is loaded
+    // TODO - check Rel tag usage vs Ref
+    //! TODO - Really need to write a test for this service sooner than later to verify this
+    if (entity.parent instanceof Reference) {
+      if (!entity.parent.isInitialized()) {
+        entity.parent = await entity.parent.load({ populate: ['files'] });
+      }
+    }
 
     await this.createWebsitePostRecords(entity);
     this.logger.info(`Creating post order`);
@@ -124,6 +138,7 @@ export class PostManagerService {
       }
       const data = this.preparePostData(submission, instance);
       await this.validatePostData(submission.type, data, instance);
+      this.cancelToken.throwIfCancelled();
       switch (submission.type) {
         case SubmissionType.FILE:
           await this.handleFileSubmission(
@@ -248,8 +263,8 @@ export class PostManagerService {
     data: PostData<FileSubmission, never>
   ): Promise<void> {
     const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
-    const orderedFiles = [];
-    const files = submission.files.toArray();
+    const orderedFiles: Loaded<ISubmissionFile[]> = [];
+    const files = submission.files.getItems();
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
       if (file) {
@@ -257,12 +272,33 @@ export class PostManagerService {
       }
     });
 
+    // TODO - Figure out where similar mime check should be done - Probably verify function
+
     const batches = chunk(orderedFiles, fileBatchSize);
+    const filePostableInstance = instance as unknown as FileWebsite<never>;
     // eslint-disable-next-line no-restricted-syntax
     for (const batch of batches) {
+      this.cancelToken.throwIfCancelled();
+      this.logger.info(`Posting file batch to ${instance.id}`);
+
+      const processedFiles = Promise.all(
+        batch.map((f) => {
+          const fileType = getFileType(f.mimeType);
+          if (fileType === FileType.IMAGE) {
+            const resizeParams = filePostableInstance.calculateImageResize(f);
+            if (resizeParams) {
+              // TODO - Figure out what to do about thumbnails. Check if used and process?
+              return this.resizerService.resize(f);
+            }
+          }
+
+          return Promise.resolve(f);
+        })
+      );
+
       const result = await (
         instance as unknown as FileWebsite<never>
-      ).onPostFileSubmission(data, [], this.cancelToken);
+      ).onPostFileSubmission(data, processedFiles, this.cancelToken);
 
       const batchIds = batch.map((f) => f.id);
       if (result.exception) {
@@ -272,6 +308,7 @@ export class PostManagerService {
       }
     }
     // TODO - Logging
+    // TODO - Consider dynamic file resize requirements function within a website
     // TODO - Load files into memory
     // TODO - Resize files (if necessary) by file dimensions
     // TODO - Resize files (if necessary) by file size limits

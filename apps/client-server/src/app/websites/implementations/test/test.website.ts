@@ -1,13 +1,16 @@
 import {
-  ILoginState,
-  IWebsiteFormFields,
   FileSubmission,
+  ILoginState,
+  ISubmissionFile,
+  IWebsiteFormFields,
   MessageSubmission,
   PostData,
+  PostResponse,
   ValidationResult,
 } from '@postybirb/types';
 import { TestMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
+import { CancellableToken } from '../../../post/models/cancellable-token';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -16,6 +19,7 @@ import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import { TestFileSubmission } from './models/test-file-submission';
 import { TestMessageSubmission } from './models/test-message-submission';
+import { ImageResizeProps } from '../../../post/models/image-resize-props';
 
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')
@@ -55,10 +59,15 @@ export default class TestWebsite
     return new this.MessageModel();
   }
 
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+    throw new Error('Method not implemented.');
+  }
+
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
+    files: unknown[],
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
@@ -73,8 +82,8 @@ export default class TestWebsite
 
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, TestMessageSubmission>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 

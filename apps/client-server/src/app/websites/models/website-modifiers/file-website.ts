@@ -1,5 +1,6 @@
 import {
   FileSubmission,
+  ISubmissionFile,
   IWebsiteFormFields,
   PostData,
   PostResponse,
@@ -8,6 +9,7 @@ import {
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { UnknownWebsite } from '../../website';
+import { ImageResizeProps } from '../../../post/models/image-resize-props';
 
 export const FileWebsiteKey = 'FileModel';
 
@@ -21,6 +23,8 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
   supportsAdditionalFiles: boolean;
 
   createFileModel(): T;
+
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined;
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, T>,
