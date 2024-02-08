@@ -1,14 +1,18 @@
 import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   FileSubmission,
+  ILoginState,
+  ISubmissionFile,
   MessageSubmission,
   PostData,
+  PostResponse,
   ValidationResult,
 } from '@postybirb/types';
 import { FurAffinityMetadata } from '@postybirb/website-metadata';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
+import { CancellableToken } from '../../../post/models/cancellable-token';
+import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcuts.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -64,13 +68,18 @@ export default class FurAffinity
   }
 
   createFileModel(): FurAffinityFileSubmission {
+    return new this.FileModel();
+  }
+
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     throw new Error('Method not implemented.');
   }
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, FurAffinityFileSubmission>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
+    files: unknown[],
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
@@ -81,13 +90,13 @@ export default class FurAffinity
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
-    throw new Error('Method not implemented.');
+    return new this.MessageModel();
   }
 
   onPostMessageSubmission(
     postData: PostData<FileSubmission, FurAffinityMessageSubmission>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 

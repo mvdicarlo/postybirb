@@ -298,7 +298,7 @@ export class PostManagerService {
 
       const result = await (
         instance as unknown as FileWebsite<never>
-      ).onPostFileSubmission(data, processedFiles, this.cancelToken);
+      ).onPostFileSubmission(data, processedFiles as any, this.cancelToken);
 
       const batchIds = batch.map((f) => f.id);
       if (result.exception) {
@@ -355,7 +355,9 @@ export class PostManagerService {
 
     const submission = entity.parent;
     // eslint-disable-next-line prefer-destructuring
-    const options: WebsiteOptions<never>[] = submission.options;
+    const options: WebsiteOptions<never>[] = submission.options.filter(
+      (o) => !o.isDefault
+    );
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
       (o) =>

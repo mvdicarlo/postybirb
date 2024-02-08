@@ -194,7 +194,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
    */
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto
-  ): Promise<ValidationResult<IWebsiteFormFields>> {
+  ): Promise<ValidationResult> {
     const {
       defaultOptions,
       options,
@@ -219,7 +219,6 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       isFileWebsite(websiteInstance)
     ) {
       return websiteInstance.onValidateFileSubmission(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         postData as unknown as PostData<FileSubmission, IWebsiteFormFields>
       );
     }
@@ -229,7 +228,6 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       isMessageWebsite(websiteInstance)
     ) {
       return websiteInstance.onValidateMessageSubmission(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         postData as unknown as PostData<MessageSubmission, IWebsiteFormFields>
       );
     }
