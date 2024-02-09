@@ -262,6 +262,7 @@ export class PostManagerService {
     instance: Website<unknown>,
     data: PostData<FileSubmission, never>
   ): Promise<void> {
+    // Order files based on submission order
     const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
     const files = submission.files.getItems();
@@ -274,13 +275,14 @@ export class PostManagerService {
 
     // TODO - Figure out where similar mime check should be done - Probably verify function
 
+    // Split files into batches based on instance file batch size
     const batches = chunk(orderedFiles, fileBatchSize);
     const filePostableInstance = instance as unknown as FileWebsite<never>;
     // eslint-disable-next-line no-restricted-syntax
     for (const batch of batches) {
       this.cancelToken.throwIfCancelled();
-      this.logger.info(`Posting file batch to ${instance.id}`);
 
+      // Resize files if necessary
       const processedFiles = Promise.all(
         batch.map((f) => {
           const fileType = getFileType(f.mimeType);
@@ -288,7 +290,10 @@ export class PostManagerService {
             const resizeParams = filePostableInstance.calculateImageResize(f);
             if (resizeParams) {
               // TODO - Figure out what to do about thumbnails. Check if used and process?
-              return this.resizerService.resize(f);
+              return this.resizerService.resize({
+                file: f,
+                resize: resizeParams,
+              });
             }
           }
 
@@ -296,6 +301,9 @@ export class PostManagerService {
         })
       );
 
+      // Post
+      this.cancelToken.throwIfCancelled();
+      this.logger.info(`Posting file batch to ${instance.id}`);
       const result = await (
         instance as unknown as FileWebsite<never>
       ).onPostFileSubmission(data, processedFiles as any, this.cancelToken);
