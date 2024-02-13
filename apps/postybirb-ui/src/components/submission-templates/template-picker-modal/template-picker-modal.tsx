@@ -28,9 +28,9 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { TransHook } from 'apps/postybirb-ui/src/hooks/use-trans';
 import { useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
+import { TransHook } from '../../../hooks/use-trans';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { SubmissionStore } from '../../../stores/submission.store';

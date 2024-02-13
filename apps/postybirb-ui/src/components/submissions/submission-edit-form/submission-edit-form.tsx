@@ -8,10 +8,10 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { TransHook } from 'apps/postybirb-ui/src/hooks/use-trans';
 import { useMemo } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { useSubmission } from '../../../hooks/submission/use-submission';
+import { TransHook } from '../../../hooks/use-trans';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import SubmissionScheduler from '../submission-scheduler/submission-scheduler';
 import SubmissionFileSection from './components/submission-file-section/submission-file-section';
