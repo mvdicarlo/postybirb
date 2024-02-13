@@ -289,6 +289,7 @@ export class PostManagerService {
           if (fileType === FileType.IMAGE) {
             const resizeParams = filePostableInstance.calculateImageResize(f);
             if (resizeParams) {
+              // TODO - Pass in user-assigned resize as well
               // TODO - Figure out what to do about thumbnails. Check if used and process?
               return this.resizerService.resize({
                 file: f,

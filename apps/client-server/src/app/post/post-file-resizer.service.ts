@@ -2,12 +2,15 @@ import { wrap } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { ISubmissionFile } from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
+import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { ImageUtil } from '../file/utils/image.util';
 import { ImageResizeProps } from './models/image-resize-props';
+import { PostingFile } from './models/posting-file';
 
 type ResizeRequest = {
   file: ISubmissionFile;
@@ -23,31 +26,37 @@ type ResizeRequest = {
 export class PostFileResizerService {
   private readonly logger = Logger();
 
-  private readonly queue: queueAsPromised<ResizeRequest, ISubmissionFile> =
+  private readonly queue: queueAsPromised<ResizeRequest, PostingFile> =
     fastq.promise<this, ResizeRequest>(
       this,
       this.process,
       Math.min(cpus().length, 4)
     );
 
-  public async resize(request: ResizeRequest): Promise<ISubmissionFile> {
+  public async resize(request: ResizeRequest): Promise<PostingFile> {
     return this.queue.push(request);
   }
 
-  private async process(request: ResizeRequest): Promise<ISubmissionFile> {
+  private async process(request: ResizeRequest): Promise<PostingFile> {
     const { file, resize } = request;
     await wrap(file).init(true, ['file']); // ensure primary file is loaded
     let sharpInstance = ImageUtil.load(file.file.buffer);
+    let hasBeenModified = false;
     if (resize.width || resize.height) {
-      sharpInstance = await this.resizeImage(
-        sharpInstance,
-        resize.width,
-        resize.height
-      );
+      // Check if resizing is even worth it
+      if (resize.width < file.file.width || resize.height < file.file.height) {
+        hasBeenModified = true;
+        sharpInstance = await this.resizeImage(
+          sharpInstance,
+          resize.width,
+          resize.height
+        );
+      }
     }
 
     if (resize.maxBytes && file.file.buffer.length > resize.maxBytes) {
       if (this.isFileTooLarge(sharpInstance, resize.maxBytes)) {
+        hasBeenModified = true;
         sharpInstance = await this.scaleDownImage(
           sharpInstance,
           resize.maxBytes,
@@ -57,7 +66,28 @@ export class PostFileResizerService {
       }
     }
 
-    return null;
+    if (hasBeenModified) {
+      return {
+        buffer: await sharpInstance.toBuffer(),
+        fileName: this.normalizeFileName(file),
+        fileType: getFileType(file.fileName),
+        id: file.id,
+        mimeType: file.mimeType,
+      };
+    }
+
+    return {
+      buffer: file.file.buffer,
+      fileName: this.normalizeFileName(file),
+      fileType: getFileType(file.fileName),
+      id: file.id,
+      mimeType: file.mimeType,
+    };
+  }
+
+  private normalizeFileName(file: ISubmissionFile): string {
+    const { ext } = parse(file.fileName);
+    return `${file.id}${ext}`;
   }
 
   private async resizeImage(instance: Sharp, width: number, height: number) {
