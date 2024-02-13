@@ -1,16 +1,11 @@
-import forge from 'node-forge';
 import { Logger } from '@postybirb/logger';
 import { app } from 'electron';
 import { mkdir, readFile, stat, writeFile } from 'fs/promises';
+import forge from 'node-forge';
 import { join } from 'path';
 
-declare module 'node-forge' {
-  export const options: {
-    usePureJavaScript: boolean;
-  };
-}
-
-forge.options.usePureJavaScript = true;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(forge as any).options.usePureJavaScript = true;
 
 export class SSL {
   static async getOrCreateSSL(): Promise<{ key: string; cert: string }> {
