@@ -28,6 +28,7 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
+import { TransHook } from 'apps/postybirb-ui/src/hooks/use-trans';
 import { useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -57,7 +58,7 @@ type AccountGroup = {
 function groupWebsiteOptions(
   submissions: SubmissionDto[],
   accounts: IAccountDto[],
-  _: ReturnType<typeof useLingui>['_']
+  _: TransHook
 ): Record<string, AccountGroup> {
   const groups: Record<string, AccountGroup> = {};
   submissions.forEach((submission) => {

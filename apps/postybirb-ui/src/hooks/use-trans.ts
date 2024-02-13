@@ -8,3 +8,5 @@ export function useTrans() {
   const { _ } = useLingui();
   return _;
 }
+
+export type TransHook = ReturnType<typeof useTrans>;

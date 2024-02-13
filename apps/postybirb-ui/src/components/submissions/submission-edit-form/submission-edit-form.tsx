@@ -8,6 +8,7 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
+import { TransHook } from 'apps/postybirb-ui/src/hooks/use-trans';
 import { useMemo } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { useSubmission } from '../../../hooks/submission/use-submission';
@@ -39,7 +40,7 @@ function getSideNav(
   submission: SubmissionDto,
   defaultOptionsId: string,
   websiteGroups: PairedWebsiteOptions[],
-  _: ReturnType<typeof useLingui>['_']
+  _: TransHook
 ): EuiSideNavItemType<unknown>[] {
   const sidenavOptions: EuiSideNavItemType<unknown>[] = [
     {
