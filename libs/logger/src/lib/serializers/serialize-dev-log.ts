@@ -2,8 +2,12 @@
 import util from 'util';
 import winston from 'winston';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { MESSAGE, SPLAT, LEVEL } from 'triple-beam';
+import { LEVEL, MESSAGE, SPLAT } from 'triple-beam';
 import { isErrorLike } from './serialize-errors';
+
+// For some reason combining already existing formatters
+// Was not enough to make logging look like NestJS
+// So i decided to create custom seriliazer
 
 export class SerializeDevLog {
   timestamp = winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss.SSS A' });
@@ -36,15 +40,15 @@ export class SerializeDevLog {
     });
     let clearCtxString = stringifiedCtx !== '{}' ? `\n${stringifiedCtx}` : '';
 
-    // Add error.
+    // Add error
     if (isErrorLike(err)) {
       clearCtxString += '\n';
       if (err instanceof Error) {
         // Util inspect applies some nice formatting
-        // to the error when it is class instance
+        // to the error when it is Error instance
         clearCtxString += util.inspect(err, { colors: true });
       } else {
-        // Note that stack already includes type and message
+        // Stack already includes error.type and error.message
         clearCtxString += err.stack;
       }
     }

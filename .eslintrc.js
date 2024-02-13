@@ -69,6 +69,7 @@ module.exports = defineConfig({
   ],
   rules: {
     'class-methods-use-this': 'off',
+    'no-await-in-loop': 'off',
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-props-no-spreading': 'off',
@@ -78,7 +79,9 @@ module.exports = defineConfig({
     'import/no-extraneous-dependencies': [
       'warn',
       {
-        bundledDependencies: ['electron', 'triple-beam'],
+        // These dependencies will be considered
+        // as bundled and no warning will be shown
+        bundledDependencies: ['electron'],
       },
     ],
     '@typescript-eslint/naming-convention': [
@@ -99,6 +102,5 @@ module.exports = defineConfig({
         format: ['PascalCase'],
       },
     ],
-    'no-await-in-loop': 'off',
   },
 });

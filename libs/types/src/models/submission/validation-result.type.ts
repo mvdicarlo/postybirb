@@ -33,7 +33,7 @@ export type ValidationMessage<
 /**
  * Map containing validation id as key and values as value
  */
-export type ValidationMessages = {
+export interface ValidationMessages {
   'validation.description.max-length': {
     /**
      * Max allowed description length

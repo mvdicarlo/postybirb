@@ -18,7 +18,7 @@ You can find v3 [here](https://github.com/mvdicarlo/postybirb-plus).
 
 ## Translation
 
-![Translated badge](https://hosted.weblate.org/widget/postybirb/postybirb/287x66-black.png)
+![Translation status badge](https://hosted.weblate.org/widget/postybirb/postybirb/287x66-black.png)
 
 PostyBirb uses [Weblate](https://hosted.weblate.org/projects/postybirb/postybirb/) as transltion service
 
