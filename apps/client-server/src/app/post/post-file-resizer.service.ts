@@ -2,11 +2,9 @@ import { wrap } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { ISubmissionFile } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
-import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { ImageUtil } from '../file/utils/image.util';
 import { ImageResizeProps } from './models/image-resize-props';
@@ -39,7 +37,9 @@ export class PostFileResizerService {
 
   private async process(request: ResizeRequest): Promise<PostingFile> {
     const { file, resize } = request;
-    await wrap(file).init(true, ['file']); // ensure primary file is loaded
+    if (!file.file) {
+      await wrap(file).init(true, ['file']); // ensure primary file is loaded
+    }
     let sharpInstance = ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
     if (resize.width || resize.height) {
@@ -67,27 +67,10 @@ export class PostFileResizerService {
     }
 
     if (hasBeenModified) {
-      return {
-        buffer: await sharpInstance.toBuffer(),
-        fileName: this.normalizeFileName(file),
-        fileType: getFileType(file.fileName),
-        id: file.id,
-        mimeType: file.mimeType,
-      };
+      return new PostingFile(file, await sharpInstance.toBuffer());
     }
 
-    return {
-      buffer: file.file.buffer,
-      fileName: this.normalizeFileName(file),
-      fileType: getFileType(file.fileName),
-      id: file.id,
-      mimeType: file.mimeType,
-    };
-  }
-
-  private normalizeFileName(file: ISubmissionFile): string {
-    const { ext } = parse(file.fileName);
-    return `${file.id}${ext}`;
+    return new PostingFile(file);
   }
 
   private async resizeImage(instance: Sharp, width: number, height: number) {
@@ -132,10 +115,14 @@ export class PostFileResizerService {
       }
 
       s = await this.resizeImage(
-        instance,
+        instance, // scale against original only
         metadata.width * resizePercent,
         metadata.height * resizePercent
       );
+
+      if (!(await this.isFileTooLarge(s, maxBytes))) {
+        return s;
+      }
     }
 
     if (await this.isFileTooLarge(s, maxBytes)) {

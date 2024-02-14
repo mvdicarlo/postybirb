@@ -8,8 +8,9 @@ import {
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
-import { UnknownWebsite } from '../../website';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
+import { UnknownWebsite } from '../../website';
 
 export const FileWebsiteKey = 'FileModel';
 
@@ -28,7 +29,7 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, T>,
-    files: unknown[],
+    files: PostingFile[],
     cancellationToken: CancellableToken
   ): Promise<PostResponse>;
 

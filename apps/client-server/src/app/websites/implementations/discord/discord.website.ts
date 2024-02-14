@@ -12,6 +12,7 @@ import { DiscordMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -66,7 +67,7 @@ export default class Discord
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
-    files: unknown[],
+    files: PostingFile[],
     cancellationToken: CancellableToken
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');

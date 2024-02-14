@@ -20,6 +20,7 @@ import { Website } from '../../website';
 import { TestFileSubmission } from './models/test-file-submission';
 import { TestMessageSubmission } from './models/test-message-submission';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
 
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')
@@ -65,7 +66,7 @@ export default class TestWebsite
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
-    files: unknown[],
+    files: PostingFile[],
     cancellationToken: CancellableToken
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');

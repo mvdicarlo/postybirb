@@ -13,6 +13,7 @@ import { load } from 'cheerio';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcuts.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -77,7 +78,7 @@ export default class FurAffinity
 
   onPostFileSubmission(
     postData: PostData<FileSubmission, FurAffinityFileSubmission>,
-    files: unknown[],
+    files: PostingFile[],
     cancellationToken: CancellableToken
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');

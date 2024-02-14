@@ -10,6 +10,7 @@ import {
   ISubmissionFile,
   IWebsitePostRecord,
   MessageSubmission,
+  ModifiedFileDimension,
   PostData,
   PostRecordResumeMode,
   PostRecordState,
@@ -32,6 +33,8 @@ import { MessageWebsite } from '../websites/models/website-modifiers/message-web
 import { Website } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
+import { PostingFile } from './models/posting-file';
+import { PostParserService } from './parsers/post-parser.service';
 import { PostFileResizerService } from './post-file-resizer.service';
 import { PostService } from './post.service';
 
@@ -60,7 +63,8 @@ export class PostManagerService {
     private readonly websitePostRecordRepository: PostyBirbRepository<WebsitePostRecord>,
     private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
-    private readonly resizerService: PostFileResizerService
+    private readonly resizerService: PostFileResizerService,
+    private readonly postParserService: PostParserService
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -94,7 +98,6 @@ export class PostManagerService {
 
     // Ensure parent (submission) is loaded
     // TODO - check Rel tag usage vs Ref
-    //! TODO - Really need to write a test for this service sooner than later to verify this
     if (entity.parent instanceof Reference) {
       if (!entity.parent.isInitialized()) {
         entity.parent = await entity.parent.load({ populate: ['files'] });
@@ -128,6 +131,8 @@ export class PostManagerService {
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>
   ) {
+    // TODO - run a verify on the instance to ensure it's still valid
+    // TODO - consider doing a login check
     const submission = entity.parent;
     try {
       const supportedTypes = instance.getSupportedTypes();
@@ -136,7 +141,13 @@ export class PostManagerService {
           `Website '${instance.metadata.displayName}' does not support ${submission.type}`
         );
       }
-      const data = this.preparePostData(submission, instance);
+      const data = this.preparePostData(
+        submission,
+        instance,
+        submission.options.find(
+          (o) => o.account.id === websitePostRecord.account.id
+        )
+      );
       await this.validatePostData(submission.type, data, instance);
       this.cancelToken.throwIfCancelled();
       switch (submission.type) {
@@ -273,8 +284,6 @@ export class PostManagerService {
       }
     });
 
-    // TODO - Figure out where similar mime check should be done - Probably verify function
-
     // Split files into batches based on instance file batch size
     const batches = chunk(orderedFiles, fileBatchSize);
     const filePostableInstance = instance as unknown as FileWebsite<never>;
@@ -283,13 +292,16 @@ export class PostManagerService {
       this.cancelToken.throwIfCancelled();
 
       // Resize files if necessary
-      const processedFiles = Promise.all(
+      const processedFiles: PostingFile[] = await Promise.all(
         batch.map((f) => {
           const fileType = getFileType(f.mimeType);
           if (fileType === FileType.IMAGE) {
-            const resizeParams = filePostableInstance.calculateImageResize(f);
+            const resizeParams = this.getResizeParameters(
+              submission,
+              filePostableInstance,
+              f
+            );
             if (resizeParams) {
-              // TODO - Pass in user-assigned resize as well
               // TODO - Figure out what to do about thumbnails. Check if used and process?
               return this.resizerService.resize({
                 file: f,
@@ -298,7 +310,7 @@ export class PostManagerService {
             }
           }
 
-          return Promise.resolve(f);
+          return Promise.resolve(new PostingFile(f));
         })
       );
 
@@ -307,7 +319,7 @@ export class PostManagerService {
       this.logger.info(`Posting file batch to ${instance.id}`);
       const result = await (
         instance as unknown as FileWebsite<never>
-      ).onPostFileSubmission(data, processedFiles as any, this.cancelToken);
+      ).onPostFileSubmission(data, processedFiles, this.cancelToken);
 
       const batchIds = batch.map((f) => f.id);
       if (result.exception) {
@@ -316,11 +328,35 @@ export class PostManagerService {
         await this.handleSuccessResult(websitePostRecord, result, batchIds);
       }
     }
-    // TODO - Logging
-    // TODO - Consider dynamic file resize requirements function within a website
-    // TODO - Load files into memory
-    // TODO - Resize files (if necessary) by file dimensions
-    // TODO - Resize files (if necessary) by file size limits
+  }
+
+  private getResizeParameters(
+    submission: FileSubmission,
+    instance: FileWebsite<never>,
+    file: ISubmissionFile
+  ) {
+    const params = instance.calculateImageResize(file);
+
+    const fileParams: ModifiedFileDimension =
+      submission.metadata[file.id]?.dimensions;
+    if (fileParams) {
+      if (fileParams.width) {
+        params.width = Math.min(
+          file.width,
+          fileParams.width,
+          params.width ?? Infinity
+        );
+      }
+      if (fileParams.height) {
+        params.height = Math.min(
+          file.height,
+          fileParams.height,
+          params.height ?? Infinity
+        );
+      }
+    }
+
+    return params;
   }
 
   /**
@@ -409,14 +445,15 @@ export class PostManagerService {
    * Parses descriptions, tags, etc.
    * @param {Submission} submission
    * @param {Website<unknown>} instance
+   * @param {WebsiteOptions<never>} websiteOptions
    * @return {*}  {PostData<Submission, never>}
    */
   private preparePostData(
     submission: Submission,
-    instance: Website<unknown>
+    instance: Website<unknown>,
+    websiteOptions: WebsiteOptions<never>
   ): PostData<Submission, never> {
-    // TODO parser logic
-    return null;
+    return this.postParserService.parse(submission, instance, websiteOptions);
   }
 
   /**
