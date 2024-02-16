@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Loaded, Reference } from '@mikro-orm/core';
+import { Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
@@ -15,6 +15,7 @@ import {
   PostRecordResumeMode,
   PostRecordState,
   PostResponse,
+  SubmissionId,
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
@@ -77,7 +78,25 @@ export class PostManagerService {
       const nextToPost = await this.postService.getNext();
       if (nextToPost && this.currentPost?.id !== nextToPost.id) {
         this.logger.info(`Found next post to post: ${nextToPost.id}`);
-        await this.startPost(nextToPost);
+        this.startPost(nextToPost);
+      }
+    }
+  }
+
+  /**
+   * Cancels the current post if it is running and matches the Id.
+   * To be used when an external event occurs that requires the current post to be cancelled.
+   * i.e. the submission is deleted.
+   * @param {SubmissionId} id
+   */
+  public async cancelIfRunning(id: SubmissionId) {
+    if (this.currentPost) {
+      if (!this.currentPost.parent) {
+        const loaded = await wrap(this.currentPost).init(true, ['parent']);
+        if (loaded.parent.id === id) {
+          this.logger.info(`Cancelling current post`);
+          this.cancelToken.cancel();
+        }
       }
     }
   }
@@ -87,37 +106,63 @@ export class PostManagerService {
    * @param {PostRecord} entity
    */
   public async startPost(entity: LoadedPostRecord) {
-    if (this.currentPost) return;
-    this.cancelToken = new CancellableToken();
+    try {
+      if (this.currentPost) return;
+      this.cancelToken = new CancellableToken();
 
-    this.logger.withMetadata(entity.toJSON()).info(`Initializing post`);
-    this.currentPost = entity;
-    await this.postRepository.update(entity.id, {
-      state: PostRecordState.PROCESSING,
-    });
+      this.logger.withMetadata(entity.toJSON()).info(`Initializing post`);
+      this.currentPost = entity;
+      await this.postRepository.update(entity.id, {
+        state: PostRecordState.PROCESSING,
+      });
 
-    // Ensure parent (submission) is loaded
-    // TODO - check Rel tag usage vs Ref
-    if (entity.parent instanceof Reference) {
-      if (!entity.parent.isInitialized()) {
-        entity.parent = await entity.parent.load({ populate: ['files'] });
+      // Ensure parent (submission) is loaded
+      if (!entity.parent) {
+        entity = await wrap(entity).init(true, ['parent']);
       }
+
+      await this.createWebsitePostRecords(entity);
+
+      // Posts order occurs in batched groups
+      // Standard websites first, then websites that accept external source urls
+      this.logger.info(`Creating post order`);
+      const postOrderGroups = this.getPostOrder(entity);
+
+      this.logger.info(`Posting to websites`);
+      // eslint-disable-next-line no-restricted-syntax
+      for (const websites of postOrderGroups) {
+        this.cancelToken.throwIfCancelled();
+        await Promise.allSettled(
+          websites.map((w) => this.post(entity, w.record, w.instance))
+        );
+      }
+      await this.finishPost(entity);
+      this.logger.info(`Finished posting to websites`);
+    } catch (error) {
+      this.logger.withError(error).error(`Error posting`);
+      await this.finishPost(entity);
+      throw error;
+    } finally {
+      this.check();
+    }
+  }
+
+  private async finishPost(entity: LoadedPostRecord) {
+    if (this.currentPost) {
+      this.currentPost = null;
+      this.cancelToken = null;
     }
 
-    await this.createWebsitePostRecords(entity);
-    this.logger.info(`Creating post order`);
-    const postOrder = this.getPostOrder(entity);
-
-    this.logger.info(`Posting to websites`);
-    // eslint-disable-next-line no-restricted-syntax
-    for (const websites of postOrder) {
-      this.cancelToken.throwIfCancelled();
-      await Promise.allSettled(
-        websites.map((w) => this.post(entity, w.record, w.instance))
-      );
-    }
+    this.currentPost = null;
     this.cancelToken = null;
-    this.logger.info(`Finished posting to websites`);
+
+    const allCompleted = entity.children
+      .toArray()
+      .every((c) => !!c.completedAt);
+    await this.postRepository.update(entity.id, {
+      state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
+      completedAt: new Date(),
+    });
   }
 
   /**
@@ -131,16 +176,20 @@ export class PostManagerService {
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>
   ) {
-    // TODO - run a verify on the instance to ensure it's still valid
-    // TODO - consider doing a login check
+    // TODO - Need to consider cancellation scenarios - i.e. if the submission is deleted, or an update occurs
+    if (!instance.getLoginState().isLoggedIn) {
+      throw new Error('Not logged in');
+    }
+
     const submission = entity.parent;
     try {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
-        throw new BadRequestException(
+        throw new Error(
           `Website '${instance.metadata.displayName}' does not support ${submission.type}`
         );
       }
+      // TODO - Still need to actually implement data prep
       const data = this.preparePostData(
         submission,
         instance,
@@ -148,30 +197,9 @@ export class PostManagerService {
           (o) => o.account.id === websitePostRecord.account.id
         )
       );
+      // TODO - Are there any other 'generic' validations that can be done here?
       await this.validatePostData(submission.type, data, instance);
-      this.cancelToken.throwIfCancelled();
-      switch (submission.type) {
-        case SubmissionType.FILE:
-          await this.handleFileSubmission(
-            websitePostRecord,
-            submission as unknown as FileSubmission,
-            instance,
-            data as unknown as PostData<FileSubmission, never>
-          );
-          break;
-        case SubmissionType.MESSAGE:
-          await this.handleMessageSubmission(
-            websitePostRecord,
-            submission as unknown as MessageSubmission,
-            instance,
-            data as unknown as PostData<MessageSubmission, never>
-          );
-          break;
-        default:
-          throw new BadRequestException(
-            `Unknown Submission Type: Website '${instance.metadata.displayName}' does not support ${submission.type}`
-          );
-      }
+      await this.attemptToPost(submission, websitePostRecord, instance, data);
     } catch (error) {
       this.logger
         .withError(error)
@@ -184,9 +212,46 @@ export class PostManagerService {
         }`,
       });
     }
-    // TODO mark complete
   }
 
+  private async attemptToPost(
+    submission: Submission,
+    websitePostRecord: IWebsitePostRecord,
+    instance: Website<unknown>,
+    data: PostData<Submission, never>
+  ) {
+    this.cancelToken.throwIfCancelled();
+    switch (submission.type) {
+      case SubmissionType.FILE:
+        await this.handleFileSubmission(
+          websitePostRecord,
+          submission as unknown as FileSubmission,
+          instance,
+          data as unknown as PostData<FileSubmission, never>
+        );
+        break;
+      case SubmissionType.MESSAGE:
+        await this.handleMessageSubmission(
+          websitePostRecord,
+          submission as unknown as MessageSubmission,
+          instance,
+          data as unknown as PostData<MessageSubmission, never>
+        );
+        break;
+      default:
+        throw new Error(
+          `Unknown Submission Type: Website '${instance.metadata.displayName}' does not support ${submission.type}`
+        );
+    }
+  }
+
+  /**
+   * Handles a successful result from a website post.
+   * Marks the post as completed and updates the metadata.
+   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {PostResponse} res
+   * @param {EntityId[]} [fileIds]
+   */
   private async handleSuccessResult(
     websitePostRecord: IWebsitePostRecord,
     res: PostResponse,
@@ -201,6 +266,7 @@ export class PostManagerService {
       // Only really applies to message submissions
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
+    websitePostRecord.completedAt = new Date();
     await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
   }
 
@@ -361,16 +427,20 @@ export class PostManagerService {
 
   /**
    * Gets the post order for the given post record.
+   * Additionally filters out any websites that have already been completed.
    * @param {LoadedPostRecord} entity
    * @return {*}  {Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]>}
    */
   private getPostOrder(
     entity: LoadedPostRecord
   ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
-    const websitePairs = entity.children.toArray().map((c) => ({
-      record: c,
-      instance: this.websiteRegistry.findInstance(c.account),
-    }));
+    const websitePairs = entity.children
+      .toArray()
+      .filter((c) => !!c.completedAt) // Only post to those that haven't been completed
+      .map((c) => ({
+        record: c,
+        instance: this.websiteRegistry.findInstance(c.account),
+      }));
 
     const standardWebsites = []; // Post first
     const externalSourceWebsites = []; // Post last
@@ -390,7 +460,6 @@ export class PostManagerService {
    * Will update existing website post records if they exist based
    * on the resume mode.
    * @param {PostRecord} entity
-   * @memberof PostManagerService
    */
   private async createWebsitePostRecords(entity: LoadedPostRecord) {
     // If there are existing website post records, update them if necessary based on mode.
@@ -399,7 +468,6 @@ export class PostManagerService {
     }
 
     const submission = entity.parent;
-    // eslint-disable-next-line prefer-destructuring
     const options: WebsiteOptions<never>[] = submission.options.filter(
       (o) => !o.isDefault
     );
@@ -431,7 +499,6 @@ export class PostManagerService {
       case PostRecordResumeMode.RESTART:
         entity.children.removeAll();
         await this.postRepository.persistAndFlush(entity);
-        // TODO verify this actually clears the array
         break;
       case PostRecordResumeMode.RETRY:
       case PostRecordResumeMode.CONTINUE:

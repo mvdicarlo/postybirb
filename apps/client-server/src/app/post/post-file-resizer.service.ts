@@ -36,9 +36,10 @@ export class PostFileResizerService {
   }
 
   private async process(request: ResizeRequest): Promise<PostingFile> {
-    const { file, resize } = request;
+    const { resize } = request;
+    let { file } = request;
     if (!file.file) {
-      await wrap(file).init(true, ['file']); // ensure primary file is loaded
+      file = await wrap(file).init(true, ['file']); // ensure primary file is loaded
     }
     let sharpInstance = ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
