@@ -692,6 +692,10 @@ msgstr ""
 msgid "Sorry, there was an error"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/languages.tsx:6
+msgid "Spanish"
+msgstr ""
+
 #. Login status
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:266
 msgid "Status"

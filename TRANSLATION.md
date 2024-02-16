@@ -5,7 +5,7 @@ Go to [PostyBirb site](https://hosted.weblate.org/projects/postybirb/postybirb/)
 
 ## Add new language
 
-To add new language you need to add [language 2-letter code](https://www.loc.gov/standards/iso639-2/php/code_list.php) to this files:
+To add new language you need to add [language 2-letter code](https://www.loc.gov/standards/iso639-2/php/code_list.php) to these files:
 
 - [lingui.config.ts](./lingui.config.ts)
-- [languages.ts](./apps/postybirb-ui/src/app/languages.tsx)
+- [languages.tsx](./apps/postybirb-ui/src/app/languages.tsx)
