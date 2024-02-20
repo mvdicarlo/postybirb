@@ -1,5 +1,5 @@
-import { useState, createContext, PropsWithChildren, useCallback } from 'react';
 import { EuiProvider } from '@elastic/eui';
+import { PropsWithChildren, createContext, useCallback, useState } from 'react';
 import { LS_THEME_KEY } from '../constants';
 
 let themeOnStart: ThemeColors = localStorage.getItem(
@@ -7,6 +7,7 @@ let themeOnStart: ThemeColors = localStorage.getItem(
 ) as ThemeColors;
 
 if (!themeOnStart) {
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   themeOnStart = window.matchMedia('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';

@@ -1,8 +1,7 @@
-import forge from 'node-forge';
 import { Logger } from '@postybirb/logger';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { app } from 'electron';
 import { mkdir, readFile, stat, writeFile } from 'fs/promises';
+import forge from 'node-forge';
 import { join } from 'path';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

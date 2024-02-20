@@ -6,9 +6,10 @@ import {
   EuiProgress,
   EuiSpacer,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { SubmissionType } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import submissionsApi from '../../api/submission.api';
 import { MessageIcon } from '../../components/shared/icons/Icons';
 import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
@@ -30,6 +31,7 @@ function createNewMessageSubmission(name: string) {
 
 function CreateMessageSubmissionForm(): JSX.Element {
   const [value, setValue] = useState('');
+  const { _ } = useLingui();
 
   return (
     <div>
@@ -38,10 +40,10 @@ function CreateMessageSubmissionForm(): JSX.Element {
         fullWidth
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        aria-label="Message submission name input"
+        aria-label={_(msg`Message submission name input`)}
         prepend={
           <EuiFormLabel htmlFor="message-input">
-            <FormattedMessage id="name" defaultMessage="Name" />
+            <Trans>Name</Trans>
           </EuiFormLabel>
         }
         onKeyDown={(e) => {
@@ -52,7 +54,7 @@ function CreateMessageSubmissionForm(): JSX.Element {
         append={
           <EuiButtonIcon
             iconType="plus"
-            aria-label="Create message submission button"
+            aria-label={_(msg`Create message submission button`)}
             disabled={!isValidName(value)}
             onClick={() => createNewMessageSubmission(value)}
           />
@@ -93,26 +95,17 @@ export default function MessageSubmissionManagementPage() {
       <EuiPageHeader
         bottomBorder
         iconType={MessageIcon.Header}
-        pageTitle={
-          <FormattedMessage
-            id="submissions.message-page-header"
-            defaultMessage="Message Submissions"
-          />
-        }
+        pageTitle={<Trans>Message Submissions</Trans>}
         tabs={[
           {
-            label: (
-              <FormattedMessage id="submissions" defaultMessage="Submissions" />
-            ),
+            label: <Trans>Submissions</Trans>,
             isSelected: tab === 'submissions',
             onClick: () => {
               setTab('submissions');
             },
           },
           {
-            label: (
-              <FormattedMessage id="templates" defaultMessage="Templates" />
-            ),
+            label: <Trans>Templates</Trans>,
             isSelected: tab === 'templates',
             onClick: () => {
               setTab('templates');

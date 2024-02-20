@@ -11,11 +11,13 @@ import {
   EuiIcon,
   EuiToolTip,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { useToggle } from 'react-use';
 import accountApi from '../../../api/account.api';
+import { sharedMessages } from '../../../i18n';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
 import { PencilIcon, SaveIcon } from '../../shared/icons/Icons';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
@@ -38,6 +40,7 @@ function NameColumn(props: {
   const { name, onNameUpdate } = props;
   const [isEditing, toggleEditing] = useToggle(false);
   const [editedName, setEditedName] = useState<string>(name);
+  const { _ } = useLingui();
 
   if (isEditing) {
     const isNameEditValid = !!editedName && editedName.trim().length > 0;
@@ -55,7 +58,7 @@ function NameColumn(props: {
         }}
         append={
           <EuiButtonIcon
-            aria-label="Save"
+            aria-label={_(msg`Save`)}
             iconType={SaveIcon}
             onClick={() => {
               onNameUpdate(editedName.trim());
@@ -71,11 +74,9 @@ function NameColumn(props: {
   return (
     <>
       <span>{name}</span>
-      <EuiToolTip
-        content={<FormattedMessage id="edit" defaultMessage="Edit" />}
-      >
+      <EuiToolTip content={<Trans>Edit</Trans>}>
         <EuiButtonIcon
-          aria-label="Edit"
+          aria-label={_(msg`Edit`)}
           iconType={PencilIcon}
           onClick={() => toggleEditing(true)}
         />
@@ -175,7 +176,7 @@ function AccountLoginAction(props: {
   const { account, website } = props;
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  let loginMethod: JSX.Element = <div>No login component found.</div>;
+  let loginMethod: JSX.Element = <Trans>No login component found.</Trans>;
 
   if (website.loginType.type === 'user') {
     loginMethod = (
@@ -216,7 +217,7 @@ function AccountLoginAction(props: {
           setIsVisible(true);
         }}
       >
-        <FormattedMessage id="login" defaultMessage="Login" />
+        <Trans context="action">Login</Trans>
       </EuiButton>
       {modal}
     </>
@@ -246,7 +247,7 @@ export default function AccountLoginCardTable(
   const columns: EuiBasicTableColumn<IAccountDto>[] = [
     {
       field: 'name',
-      name: <FormattedMessage id="name" defaultMessage="Name" />,
+      name: <Trans comment="Login account name">Name</Trans>,
       render: (name: string, record: IAccountDto<unknown>) => (
         <NameColumn
           key={name}
@@ -262,7 +263,7 @@ export default function AccountLoginCardTable(
     },
     {
       field: 'state',
-      name: <FormattedMessage id="status" defaultMessage="Status" />,
+      name: <Trans comment="Login status">Status</Trans>,
       render: (item: unknown) => {
         const { isLoggedIn, username, pending } = item as ILoginState;
         if (isLoggedIn) {
@@ -276,27 +277,21 @@ export default function AccountLoginCardTable(
         if (pending) {
           return (
             <EuiHealth color="primary">
-              <FormattedMessage
-                id="login.pending-login"
-                defaultMessage="Checking..."
-              />
+              <Trans comment="Login status checking">Checking...</Trans>
             </EuiHealth>
           );
         }
 
         return (
           <EuiHealth color="danger">
-            <FormattedMessage
-              id="login.not-logged-in"
-              defaultMessage="Not logged in"
-            />
+            <Trans comment="Login status">Not logged in</Trans>
           </EuiHealth>
         );
       },
     },
     {
       field: 'groups',
-      name: <FormattedMessage id="groups" defaultMessage="Groups" />,
+      name: <Trans>Groups</Trans>,
       render: (accountGroups: string[], record: IAccountDto<unknown>) => (
         <GroupsColumn
           groups={accountGroups}
@@ -312,16 +307,24 @@ export default function AccountLoginCardTable(
     },
     {
       field: 'id',
-      name: <FormattedMessage id="actions" defaultMessage="Actions" />,
+      name: <Trans>Actions</Trans>,
       render: (id: string, record: IAccountDto<unknown>) => (
         <AccountActions account={record} website={website} />
       ),
     },
   ];
 
+  const { _ } = useLingui();
+
   if (!instances.length) {
     return null;
   }
 
-  return <EuiBasicTable items={instances} columns={columns} />;
+  return (
+    <EuiBasicTable
+      items={instances}
+      columns={columns}
+      noItemsMessage={_(sharedMessages.noItems)}
+    />
+  );
 }

@@ -6,8 +6,9 @@ import {
   EuiSpacer,
 } from '@elastic/eui';
 import { useCallback, useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans, msg } from '@lingui/macro';
 import 'regenerator-runtime';
+import { useLingui } from '@lingui/react';
 import submissionsApi from '../../../api/submission.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -82,10 +83,9 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
                     id: Date.now().toString(),
                     color: 'success',
                     text: (
-                      <FormattedMessage
-                        id="submission.submission-removed"
-                        defaultMessage="Submission removed"
-                      />
+                      <Trans context="submission.submission-removed">
+                        Submission removed
+                      </Trans>
                     ),
                   });
                   setSelectedSubmissionIds([]);
@@ -111,6 +111,8 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
     [selectedSubmissionIds, submissions]
   );
 
+  const { _ } = useLingui();
+
   return (
     <div className="postybirb__submission-table-container">
       <EuiHeader style={{ position: 'sticky', top: 64 }}>
@@ -122,7 +124,7 @@ export function SubmissionTable(props: SubmissionTableProps): JSX.Element {
               fullWidth
               compressed
               value={searchValue}
-              aria-label="Submission table search field"
+              aria-label={_(msg`Submission table search field`)}
               name="submission-table-search"
               onChange={(e) => {
                 setSearchValue(e.target.value);

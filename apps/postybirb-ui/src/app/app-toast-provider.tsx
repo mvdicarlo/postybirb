@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { HttpResponse } from '../transports/http-client';
 
 export type AppToastContext = {
@@ -61,7 +61,7 @@ export function AppToastProvider({ children }: PropsWithChildren<unknown>) {
         text: <span>{res.error.message}</span>,
         title: (
           <div>
-            <FormattedMessage id="error" defaultMessage="Error" />
+            <Trans context="Error toast">Error</Trans>
             <span> </span>
             <span>
               {res.error.statusCode} - {res.error.error}

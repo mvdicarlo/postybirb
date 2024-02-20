@@ -1,5 +1,5 @@
 import { EuiPageHeader, EuiSpacer } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { HomeIcon } from '../../components/shared/icons/Icons';
 
 export default function HomePage() {
@@ -8,9 +8,7 @@ export default function HomePage() {
       <EuiPageHeader
         bottomBorder
         iconType={HomeIcon.Header}
-        pageTitle={
-          <FormattedMessage id="home.page-header" defaultMessage="Home" />
-        }
+        pageTitle={<Trans comment="Home page header">Home</Trans>}
       />
       <EuiSpacer />
     </>

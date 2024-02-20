@@ -12,13 +12,14 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import {
   DirectoryWatcherDto,
   DirectoryWatcherImportAction,
   SubmissionType,
 } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { useQuery } from 'react-query';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
@@ -48,10 +49,11 @@ function hasChanged(
 function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   const { directoryWatcher, refetch } = props;
   const [state, setState] = useState({ ...directoryWatcher });
+  const { _ } = useLingui();
 
   const options = [
     {
-      label: 'Create new submission',
+      label: _(msg`Create new submission`),
       value: DirectoryWatcherImportAction.NEW_SUBMISSION,
     },
   ];
@@ -59,14 +61,12 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
   return (
     <EuiPanel grow={false} className="postybirb-plus__directory-watcher-panel">
       <EuiForm>
-        <EuiFormRow
-          label={<FormattedMessage id="action" defaultMessage="Action" />}
-        >
+        <EuiFormRow label={<Trans>Action</Trans>}>
           <EuiComboBox
             compressed
             singleSelection={{ asPlainText: true }}
             isClearable={false}
-            aria-label="Folder watcher type"
+            aria-label={_(msg`Folder watcher type`)}
             options={options}
             selectedOptions={[
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -75,12 +75,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             renderOption={(option) => {
               switch (option.value) {
                 case DirectoryWatcherImportAction.NEW_SUBMISSION:
-                  return (
-                    <FormattedMessage
-                      id="directory-watcher.import-action.new-submission"
-                      defaultMessage="Create new submission"
-                    />
-                  );
+                  return <Trans>Create new submission</Trans>;
                 default:
                   return option.label;
               }
@@ -94,9 +89,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           />
         </EuiFormRow>
 
-        <EuiFormRow
-          label={<FormattedMessage id="folder" defaultMessage="Folder" />}
-        >
+        <EuiFormRow label={<Trans>Folder</Trans>}>
           <EuiButton
             iconType="folderOpen"
             disabled={!window?.electron?.pickDirectory}
@@ -108,13 +101,11 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
               }
             }}
           >
-            {state.path || 'Empty'}
+            {state.path || _(msg`Empty`)}
           </EuiButton>
         </EuiFormRow>
         {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
-          <EuiFormRow
-            label={<FormattedMessage id="template" defaultMessage="Template" />}
-          >
+          <EuiFormRow label={<Trans>Template</Trans>}>
             <TemplatePicker
               type={SubmissionType.FILE}
               selected={state.template}
@@ -141,7 +132,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             <EuiButtonIcon
               iconType="trash"
               color="danger"
-              aria-label="Delete folder watcher"
+              aria-label={_(msg`Delete folder watcher`)}
             />
           </DeleteActionPopover>
         </EuiFlexItem>
@@ -150,7 +141,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             disabled={!hasChanged(directoryWatcher, state)}
             iconType={SaveIcon}
             color="primary"
-            aria-label="Save folder upload changes"
+            aria-label={_(msg`Save folder upload changes`)}
             isDisabled={!state.path}
             onClick={() => {
               directoryWatchersApi
@@ -192,16 +183,15 @@ export default function DirectoryWatchersTable() {
     [data, refetch]
   );
 
+  const { _ } = useLingui();
+
   return (
     <div className="postybirb-plus__directory-watchers-container">
       <EuiTitle size="xs">
         <h3>
-          <FormattedMessage
-            id="directory-watcher.header"
-            defaultMessage="Upload from folders"
-          />
+          <Trans context="directory-watcher.header">Upload from folders</Trans>
           <EuiButtonIcon
-            aria-label="Add folder watcher"
+            aria-label={_(msg`Add folder watcher`)}
             iconType="plus"
             className="ml-2"
             onClick={() => {

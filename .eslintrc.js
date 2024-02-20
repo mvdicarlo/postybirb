@@ -21,7 +21,6 @@ module.exports = defineConfig({
   plugins: [
     '@nrwl/nx',
     prettierExtension ? '' : 'prettier',
-    'formatjs',
     'jest',
     'testing-library',
   ].filter(Boolean),
@@ -69,14 +68,39 @@ module.exports = defineConfig({
     },
   ],
   rules: {
-    '@typescript-eslint/ban-types': 'warn',
     'class-methods-use-this': 'off',
-    'formatjs/no-offset': 'error',
+    'no-await-in-loop': 'off',
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/react-in-jsx-scope': 'off',
-    'import/no-extraneous-dependencies': 'warn',
-    'no-await-in-loop': 'off'
+
+    '@typescript-eslint/ban-types': 'warn',
+    'import/no-extraneous-dependencies': [
+      'warn',
+      {
+        // These dependencies will be considered
+        // as bundled and no warning will be shown
+        bundledDependencies: ['electron'],
+      },
+    ],
+    '@typescript-eslint/naming-convention': [
+      'error',
+      {
+        selector: 'variable',
+        format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+
+        // Allow const { _ } = useLingui()
+        leadingUnderscore: 'allow',
+      },
+      {
+        selector: 'function',
+        format: ['camelCase', 'PascalCase'],
+      },
+      {
+        selector: 'typeLike',
+        format: ['PascalCase'],
+      },
+    ],
   },
 });

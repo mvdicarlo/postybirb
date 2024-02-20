@@ -1,5 +1,7 @@
 /* eslint-disable react/jsx-no-useless-fragment */
 import { EuiButtonIcon, EuiCopy, EuiFormRow, EuiText } from '@elastic/eui';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { PropsWithChildren, useMemo } from 'react';
 import Translation from '../../../../translations/translation';
 import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
@@ -14,14 +16,14 @@ type FormRowProps = PropsWithChildren<SubmissionGeneratedFieldProps> & {
 
 export default function FormRow(props: FormRowProps) {
   const { validations, children, field, propKey, option, copyValue } = props;
-
+  const { _ } = useLingui();
   const copyBtn = useMemo(
     () =>
       copyValue ? (
         <EuiCopy textToCopy={copyValue}>
           {(copy) => (
             <EuiButtonIcon
-              aria-label="Copy"
+              aria-label={_(msg`Copy`)}
               iconType="copy"
               iconSize="s"
               onClick={copy}
@@ -29,7 +31,7 @@ export default function FormRow(props: FormRowProps) {
           )}
         </EuiCopy>
       ) : null,
-    [copyValue]
+    [copyValue, _]
   );
 
   return (

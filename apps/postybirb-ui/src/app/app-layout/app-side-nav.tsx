@@ -7,7 +7,8 @@ import {
   EuiSpacer,
   EuiToolTip,
 } from '@elastic/eui';
-import { FormattedMessage } from 'react-intl';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { useNavigate } from 'react-router';
 import Keybinding, {
   useKeybinding,
@@ -41,6 +42,7 @@ import AppSearch from '../app-search';
 
 function AppImage() {
   return (
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     <img src="/app-icon.png" alt="postybirb icon" width="24" height="24" />
   );
 }
@@ -104,20 +106,22 @@ export default function AppSideNav() {
   useKeybinding(tagGroupsKeybinding);
   useKeybinding(tagConvertersKeybinding);
 
+  const { _ } = useLingui();
+
   return (
     <EuiPageSidebar
-      aria-label="Main navigation"
+      aria-label={_(msg`Main navigation`)}
       sticky
       className="euiFlyout euiFlyout--push euiFlyout--left"
     >
       <EuiCollapsibleNavGroup
         className="eui-yScroll"
-        initialIsOpen
         isCollapsible={false as true}
         background="dark"
         iconType={AppImage}
         iconSize="xl"
         title={
+          // eslint-disable-next-line lingui/no-unlocalized-strings
           <span>
             PostyBirb
             <span className="text-xs ml-1">{window.electron.app_version}</span>
@@ -130,157 +134,65 @@ export default function AppSideNav() {
         <EuiSpacer size="s" />
         <UpdateButton />
         <EuiListGroup maxWidth="none" color="text" gutterSize="none" size="s">
-          <EuiListGroupItem
-            size="s"
-            aria-label="PostyBirb home"
-            iconType={HomeIcon.GroupItem}
-            onClick={() => homeKeybinding.onActivate()}
-            showToolTip={false}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...homeKeybinding}>
-                    <FormattedMessage id="home" defaultMessage="Home" />
-                  </Keybinding>
+          {...[
+            { label: msg`Home`, keybinding: homeKeybinding, icon: HomeIcon },
+            {
+              label: msg`Accounts`,
+              keybinding: accountKeybinding,
+              onClick: toggleAccountLoginPage,
+              icon: UserGroupIcon,
+            },
+            {
+              label: msg`File Submissions`,
+              keybinding: fileSubmissionsKeybinding,
+              icon: FileIcon,
+            },
+            {
+              label: msg`Message Submissions`,
+              keybinding: messageSubmissionsKeybinding,
+              icon: MessageIcon,
+            },
+            {
+              label: msg`Tag Groups`,
+              keybinding: tagGroupsKeybinding,
+              onClick: toggleTagGroupsPage,
+              icon: TagsIcon,
+            },
+            {
+              label: msg`Tag Converters`,
+              keybinding: tagConvertersKeybinding,
+              onClick: toggleTagConvertersPage,
+              icon: UserTagIcon,
+            },
+            {
+              label: msg`Settings`,
+              keybinding: settingsKeybinding,
+              onClick: toggleSettings,
+              icon: GearIcon,
+            },
+          ].map((e) => {
+            const navigationName = _(e.label);
+            return (
+              <EuiListGroupItem
+                size="s"
+                aria-label={_(msg`Navigate to ${navigationName}`)}
+                iconType={e.icon.GroupItem}
+                onClick={() => (e.onClick ?? e.keybinding.onActivate)()}
+                showToolTip={false}
+                key={_(e.label)}
+                label={
+                  <EuiToolTip
+                    position="right"
+                    content={
+                      <Keybinding {...e.keybinding}>{_(e.label)}</Keybinding>
+                    }
+                  >
+                    <span>{_(e.label)}</span>
+                  </EuiToolTip>
                 }
-              >
-                <FormattedMessage id="home" defaultMessage="Home" />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
-            aria-label="PostyBirb login accounts"
-            size="s"
-            iconType={UserGroupIcon.GroupItem}
-            onClick={() => toggleAccountLoginPage()}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...accountKeybinding}>
-                    <FormattedMessage id="accounts" defaultMessage="Accounts" />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage id="accounts" defaultMessage="Accounts" />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
-            size="s"
-            aria-label="PostyBirb file submissions"
-            iconType={FileIcon.GroupItem}
-            onClick={() => fileSubmissionsKeybinding.onActivate()}
-            showToolTip={false}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...fileSubmissionsKeybinding}>
-                    <FormattedMessage
-                      id="file-submissions"
-                      defaultMessage="File Submissions"
-                    />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage
-                  id="file-submissions"
-                  defaultMessage="File Submissions"
-                />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
-            size="s"
-            aria-label="PostyBirb message submissions"
-            iconType={MessageIcon.GroupItem}
-            onClick={() => messageSubmissionsKeybinding.onActivate()}
-            showToolTip={false}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...messageSubmissionsKeybinding}>
-                    <FormattedMessage
-                      id="message-submissions"
-                      defaultMessage="Message Submissions"
-                    />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage
-                  id="message-submissions"
-                  defaultMessage="Message Submissions"
-                />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
-            aria-label="PostyBirb tag groups"
-            size="s"
-            iconType={TagsIcon.GroupItem}
-            onClick={() => toggleTagGroupsPage()}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...tagGroupsKeybinding}>
-                    <FormattedMessage
-                      id="tag-groups"
-                      defaultMessage="Tag Groups"
-                    />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage id="tag-groups" defaultMessage="Tag Groups" />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
-            aria-label="PostyBirb tag converters"
-            size="s"
-            iconType={UserTagIcon.GroupItem}
-            onClick={() => toggleTagConvertersPage()}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding {...tagConvertersKeybinding}>
-                    <FormattedMessage
-                      id="tag-converters"
-                      defaultMessage="Tag Converters"
-                    />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage
-                  id="tag-converters"
-                  defaultMessage="Tag Converters"
-                />
-              </EuiToolTip>
-            }
-          />
-          <EuiListGroupItem
-            size="s"
-            aria-label="PostyBirb settings"
-            iconType={GearIcon.GroupItem}
-            onClick={() => toggleSettings()}
-            showToolTip={false}
-            label={
-              <EuiToolTip
-                position="right"
-                content={
-                  <Keybinding displayOnly {...settingsKeybinding}>
-                    <FormattedMessage id="settings" defaultMessage="Settings" />
-                  </Keybinding>
-                }
-              >
-                <FormattedMessage id="settings" defaultMessage="Settings" />
-              </EuiToolTip>
-            }
-          />
+              />
+            );
+          })}
         </EuiListGroup>
       </EuiCollapsibleNavGroup>
     </EuiPageSidebar>

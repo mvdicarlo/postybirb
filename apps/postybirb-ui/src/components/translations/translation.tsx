@@ -1,29 +1,32 @@
-import { DynamicObject } from '@postybirb/types';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
+import { ValidationMessage, ValidationMessages } from '@postybirb/types';
 
-const translations: Record<string, (props: TranslationProps) => JSX.Element> = {
-  'validation.description.max-length': (
-    props: TranslationProps
-  ): JSX.Element => (
-    <FormattedMessage
-      {...props}
-      defaultMessage="Description is greater than {maxLength, number} characters long"
-    />
-  ),
+type TranslationsMap = {
+  [K in keyof ValidationMessages]: (
+    props: Omit<ValidationMessage<object, K>, 'field' | 'id'>
+  ) => JSX.Element;
 };
 
-type TranslationProps = {
-  id: string;
-  // eslint-disable-next-line react/require-default-props, react/no-unused-prop-types
-  values?: DynamicObject;
+export const TranslationMessages: Partial<TranslationsMap> = {
+  'validation.description.max-length': (props) => {
+    const maxLength = props.values?.maxLength ?? 0;
+    return (
+      <Trans>Description is greater than {maxLength} characters long</Trans>
+    );
+  },
 };
 
-export default function Translation(props: TranslationProps): JSX.Element {
+export default function Translation(
+  props: Omit<ValidationMessage<object>, 'field'>
+): JSX.Element {
   const { id } = props;
-  const translation = translations[id];
-  if (translation !== undefined) {
-    return translation(props);
+  const translation = TranslationMessages[id];
+  if (translation) {
+    return translation(
+      // @ts-expect-error Typescript does not know union type
+      props
+    );
   }
 
-  return <p>Translation {id} not found</p>;
+  return <Trans>Translation {id} not found</Trans>;
 }

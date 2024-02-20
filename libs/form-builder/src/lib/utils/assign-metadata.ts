@@ -7,10 +7,12 @@ import { PrimitiveRecord } from '../types/primitive-record';
 
 export function assignMetadata<T extends PrimitiveRecord>(
   target: object,
-  propertyKey: string,
+  propertyKey: string | symbol,
   fieldKey: string,
   options: FieldAggregateType<T>
 ): void {
+  if (typeof propertyKey === 'symbol') return;
+
   const proto = target.constructor;
   const fields: FormBuilderMetadata<T> =
     Reflect.getMetadata(METADATA_KEY, proto) || {};

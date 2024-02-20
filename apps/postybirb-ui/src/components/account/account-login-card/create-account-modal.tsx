@@ -13,7 +13,7 @@ import {
   EuiModalHeaderTitle,
 } from '@elastic/eui';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import accountApi from '../../../api/account.api';
 import { DisplayableWebsiteLoginInfo } from '../../../models/displayable-website-login-info';
 import ErrorAlert from '../../shared/error-alert/error-alert';
@@ -110,9 +110,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
               });
           }}
         >
-          <EuiFormRow
-            label={<FormattedMessage id="name" defaultMessage="Name" />}
-          >
+          <EuiFormRow label={<Trans>Name</Trans>}>
             <EuiFieldText
               name="accountName"
               required
@@ -125,9 +123,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
               }}
             />
           </EuiFormRow>
-          <EuiFormRow
-            label={<FormattedMessage id="groups" defaultMessage="Groups" />}
-          >
+          <EuiFormRow label={<Trans>Groups</Trans>}>
             <EuiComboBox
               isClearable
               options={groupOptions}
@@ -142,7 +138,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onCloseModal} disabled={isCreating}>
-          <FormattedMessage id="cancel" defaultMessage="Cancel" />
+          <Trans>Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -151,7 +147,7 @@ export default function CreateAccountModal(props: CreateAccountModalProps) {
           isLoading={isCreating}
           disabled={!accountName.length}
         >
-          <FormattedMessage id="create" defaultMessage="Create" />
+          <Trans>Create</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

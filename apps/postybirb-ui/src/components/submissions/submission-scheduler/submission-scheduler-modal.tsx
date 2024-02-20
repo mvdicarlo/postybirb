@@ -7,9 +7,9 @@ import {
   EuiModalHeader,
   EuiModalHeaderTitle,
 } from '@elastic/eui';
+import { Trans } from '@lingui/macro';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
 import submissionApi from '../../../api/submission.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import ErrorAlert from '../../shared/error-alert/error-alert';
@@ -68,10 +68,7 @@ export default function SubmissionSchedulerModal(
     <EuiModal onClose={onClose}>
       <EuiModalHeader>
         <EuiModalHeaderTitle>
-          <FormattedMessage
-            id="schedule.submission"
-            defaultMessage="Schedule Submission"
-          />
+          <Trans>Schedule Submission</Trans>
         </EuiModalHeaderTitle>
       </EuiModalHeader>
       <EuiModalBody>
@@ -85,7 +82,7 @@ export default function SubmissionSchedulerModal(
       </EuiModalBody>
       <EuiModalFooter>
         <EuiButtonEmpty onClick={onClose}>
-          <FormattedMessage id="cancel" defaultMessage="Cancel" />
+          <Trans>Cancel</Trans>
         </EuiButtonEmpty>
         <EuiButton
           type="submit"
@@ -111,7 +108,7 @@ export default function SubmissionSchedulerModal(
               });
           }}
         >
-          <FormattedMessage id="update" defaultMessage="Update" />
+          <Trans>Update</Trans>
         </EuiButton>
       </EuiModalFooter>
     </EuiModal>

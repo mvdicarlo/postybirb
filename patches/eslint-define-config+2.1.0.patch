@@ -1,0 +1,14 @@
+diff --git a/node_modules/eslint-define-config/package.json b/node_modules/eslint-define-config/package.json
+index 425604e..809375c 100644
+--- a/node_modules/eslint-define-config/package.json
++++ b/node_modules/eslint-define-config/package.json
+@@ -80,8 +80,7 @@
+   "packageManager": "pnpm@8.13.1",
+   "engines": {
+     "node": ">=18.0.0",
+-    "npm": ">=9.0.0",
+-    "pnpm": ">=8.6.0"
++    "npm": ">=9.0.0"
+   },
+   "scripts": {
+     "clean": "rimraf coverage .eslintcache dist pnpm-lock.yaml node_modules",

@@ -6,7 +6,6 @@ import {
   onStartupOptionsUpdate,
   setStartupOptions,
 } from '@postybirb/utils/electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {
   BrowserWindow,
   Menu,

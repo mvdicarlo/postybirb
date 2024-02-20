@@ -14,7 +14,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { FormattedMessage } from 'react-intl';
+import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import submissionApi from '../../api/submission.api';
 import websiteOptionsApi from '../../api/website-options.api';
@@ -159,10 +159,7 @@ function useSubmissionInternal(id: SubmissionId): SubmissionProviderContext {
             id: Date.now().toString(),
             color: 'success',
             text: (
-              <FormattedMessage
-                id="submission.save.success"
-                defaultMessage="Submission saved"
-              />
+              <Trans context="submission.save.success">Submission saved</Trans>
             ),
           });
           refetch();

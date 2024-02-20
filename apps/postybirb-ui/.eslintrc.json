@@ -4,9 +4,27 @@
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "plugins": ["lingui"],
       "rules": {
         "react/require-default-props": "off",
-        "no-restricted-syntax": "off"
+        "no-restricted-syntax": "off",
+        "lingui/no-unlocalized-strings": "error",
+        "lingui/t-call-in-function": "error",
+        "lingui/no-single-variables-to-translate": "error",
+        "lingui/no-expression-in-message": "error",
+        "lingui/no-single-tag-to-translate": "error",
+        "lingui/no-trans-inside-trans": "error",
+        "lingui/text-restrictions": [
+          "error",
+          {
+            "rules": [
+              {
+                "patterns": ["''", "`", "“"],
+                "message": "Don't use '', ` or “ in text"
+              }
+            ]
+          }
+        ]
       }
     },
     {

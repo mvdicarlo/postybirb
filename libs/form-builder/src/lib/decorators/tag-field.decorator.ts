@@ -21,7 +21,7 @@ export function TagField<T extends PrimitiveRecord>(
   if (!options.i18nLabel) {
     options.i18nLabel = 'form.tags';
   }
-  return (target, propertyKey: any) => {
+  return (target, propertyKey) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);
   };
 }

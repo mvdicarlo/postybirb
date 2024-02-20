@@ -11,7 +11,6 @@ import {
   getStartupOptions,
   setStartupOptions,
 } from '@postybirb/utils/electron';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
@@ -69,7 +68,7 @@ export class SettingsService
         this.logger.withMetadata(entity).debug('Default settings created');
       })
       .catch((err: Error) => {
-        this.logger.withError(err).error('Unablet to create default settings');
+        this.logger.withError(err).error('Unable to create default settings');
       });
   }
 
@@ -117,6 +116,7 @@ export class SettingsService
     this.logger
       .withMetadata(updateSettingsDto)
       .info(`Updating Settings '${id}'`);
+
     return this.repository.update(id, updateSettingsDto);
   }
 }

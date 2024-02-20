@@ -74,6 +74,7 @@ export default function Uploader(props: UploaderProps) {
       <Dashboard
         uppy={uppy}
         theme={theme}
+        // eslint-disable-next-line lingui/no-unlocalized-strings
         plugins={['Webcam', 'ImageEditor']}
         width="100%"
         height="450px"
