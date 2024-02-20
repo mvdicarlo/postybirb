@@ -1,3 +1,4 @@
+import { EntityId } from '../../database/entity.interface';
 import { ISubmissionMetadata } from '../submission-metadata.interface';
 import { FileMetadata } from './file-metadata.type';
 
@@ -10,9 +11,11 @@ import { FileMetadata } from './file-metadata.type';
 export type FileSubmissionMetadata = ISubmissionMetadata & {
   /**
    * The order of files for a submission.
-   * @type {string[]}
+   * Keyed by File Id.
+   * @type {EntityId[]}
    */
-  order: string[];
+  order: EntityId[];
+
   /**
    * Stores file specific metadata modifications (i.e. h/w alt text).
    * @type {FileMetadata}

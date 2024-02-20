@@ -1,12 +1,18 @@
 import {
-  ILoginState,
   FileSubmission,
+  ILoginState,
+  ISubmissionFile,
+  IWebsiteFormFields,
   MessageSubmission,
   PostData,
+  PostResponse,
   ValidationResult,
 } from '@postybirb/types';
 import { DiscordMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
+import { CancellableToken } from '../../../post/models/cancellable-token';
+import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -48,17 +54,22 @@ export default class Discord
   }
 
   createMessageModel(): DiscordMessageSubmission {
-    throw new Error('Method not implemented.');
+    return new this.MessageModel();
   }
 
   createFileModel(): DiscordFileSubmission {
+    return new this.FileModel();
+  }
+
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     throw new Error('Method not implemented.');
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, DiscordFileSubmission>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
+    postData: PostData<FileSubmission, IWebsiteFormFields>,
+    files: PostingFile[],
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
@@ -70,8 +81,8 @@ export default class Discord
 
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, DiscordMessageSubmission>,
-    cancellationToken: unknown
-  ): Promise<unknown> {
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 

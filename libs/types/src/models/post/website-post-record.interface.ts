@@ -34,9 +34,9 @@ export interface IWebsitePostRecord extends IEntity {
 
   /**
    * The error(s) associated with the post record.
-   * @type {Record<EntityId, IWebsiteError>}
+   * @type {IWebsiteError[]}
    */
-  errors?: Record<EntityId, IWebsiteError>;
+  errors?: IWebsiteError[];
 }
 
 /**
@@ -45,6 +45,12 @@ export interface IWebsitePostRecord extends IEntity {
  */
 export interface IPostRecordMetadata {
   /**
+   * The source Url of the post (for message submissions).
+   * @type {string}
+   */
+  source?: string;
+
+  /**
    * The source Urls of each file in the post mapped to File Id.
    * @type {Record<EntityId, string>}
    */
@@ -52,9 +58,15 @@ export interface IPostRecordMetadata {
 
   /**
    * The File Ids that have successfully posted.
-   * @type {string[]}
+   * @type {EntityId[]}
    */
-  posted: string[];
+  postedFiles: EntityId[];
+
+  /**
+   * The File Ids that have unsuccessfully posted.
+   * @type {EntityId[]}
+   */
+  failedFiles: EntityId[];
 }
 
 /**
@@ -63,10 +75,10 @@ export interface IPostRecordMetadata {
  */
 export interface IWebsiteError {
   /**
-   * The File Id that the error is associated with.
+   * The File Ids that the error is associated with.
    * @type {EntityId}
    */
-  id: EntityId;
+  files?: EntityId[];
 
   /**
    * The error message.
@@ -89,8 +101,12 @@ export interface IWebsiteError {
   /**
    * Any additional error logging info that may be useful.
    * @type {*}
-   * @memberof IWebsiteError
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  additionalInfo?: any;
+  additionalInfo?: unknown;
+
+  /**
+   * The timestamp of the error.
+   * @type {string}
+   */
+  timestamp: string;
 }

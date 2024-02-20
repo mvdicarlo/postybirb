@@ -10,14 +10,13 @@ import {
   NullAccount,
   SubmissionType,
 } from '@postybirb/types';
-import { Class } from 'type-fest';
+import { AccountService } from '../account/account.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
-import { AccountService } from '../account/account.service';
 
 @Injectable()
 export class FormGeneratorService {
@@ -51,22 +50,22 @@ export class FormGeneratorService {
     const data = instance.getWebsiteData();
 
     // Get form model
-    let FormModel: Class<IWebsiteFormFields> = null;
+    let formModel: IWebsiteFormFields = null;
     if (request.type === SubmissionType.MESSAGE && isMessageWebsite(instance)) {
-      FormModel = instance.MessageModel;
+      formModel = instance.createMessageModel();
     }
 
     if (request.type === SubmissionType.FILE && isFileWebsite(instance)) {
-      FormModel = instance.FileModel;
+      formModel = instance.createFileModel();
     }
 
-    if (!FormModel) {
+    if (!formModel) {
       throw new BadRequestException(
         `Website instance does not support ${request.type}`
       );
     }
 
-    const form = formBuilder(new FormModel(), data);
+    const form = formBuilder(formModel, data);
     return this.populateUserDefaults(form, request.accountId, request.type);
   }
 

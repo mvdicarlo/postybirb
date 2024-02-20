@@ -125,4 +125,18 @@ export class PostService extends PostyBirbService<PostRecord> {
 
     return true;
   }
+
+  /**
+   * Returns the next post record to be posted.
+   * @return {*}  {Promise<PostRecord>}
+   */
+  async getNext(): Promise<PostRecord> {
+    const entity = await this.repository.findOne(
+      {
+        completedAt: null,
+      },
+      { orderBy: { createdAt: 'ASC' } }
+    );
+    return entity;
+  }
 }

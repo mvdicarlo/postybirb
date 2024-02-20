@@ -1,4 +1,6 @@
-export type ValidationResult<T extends object = object> = {
+import { IWebsiteFormFields } from './website-form-fields.interface';
+
+export type ValidationResult<T extends IWebsiteFormFields = never> = {
   /**
    * Non-blocking issues with the validated submission.
    */

@@ -1,10 +1,15 @@
 import {
   FileSubmission,
+  ISubmissionFile,
   IWebsiteFormFields,
   PostData,
+  PostResponse,
   ValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
+import { CancellableToken } from '../../../post/models/cancellable-token';
+import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
 import { UnknownWebsite } from '../../website';
 
 export const FileWebsiteKey = 'FileModel';
@@ -20,10 +25,13 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
 
   createFileModel(): T;
 
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined;
+
   onPostFileSubmission(
     postData: PostData<FileSubmission, T>,
-    cancellationToken: unknown
-  ): Promise<unknown>;
+    files: PostingFile[],
+    cancellationToken: CancellableToken
+  ): Promise<PostResponse>;
 
   onValidateFileSubmission(
     postData: PostData<FileSubmission, T>
