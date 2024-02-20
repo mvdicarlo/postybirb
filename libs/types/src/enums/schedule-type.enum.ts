@@ -6,13 +6,13 @@ export enum ScheduleType {
   /**
    * Indicates no schedule.
    */
-  NONE = 'none',
+  NONE = 'NONE',
   /**
    * Indicates a single schedule occurrence.
    */
-  SINGLE = 'single',
+  SINGLE = 'SINGLE',
   /**
    * Indicates a recurring schedule occurrence.
    */
-  RECURRING = 'recurring',
+  RECURRING = 'RECURRING',
 }

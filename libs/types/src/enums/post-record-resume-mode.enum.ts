@@ -6,15 +6,15 @@ export enum PostRecordResumeMode {
   /**
    * Will continue only unattempted children.
    */
-  CONTINUE = 'continue',
+  CONTINUE = 'CONTINUE',
 
   /**
    * Will attempt to retry all failed children.
    */
-  RETRY = 'retry',
+  RETRY = 'RETRY',
 
   /**
    * Will restart the entire post record.
    */
-  RESTART = 'restart',
+  RESTART = 'RESTART',
 }
