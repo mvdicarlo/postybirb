@@ -281,12 +281,6 @@ export class PostManagerService {
     res: PostResponse,
     fileIds?: EntityId[]
   ): Promise<void> {
-    if (fileIds?.length) {
-      fileIds.forEach((id) => {
-        websitePostRecord.metadata.failedFiles.push(id);
-      });
-    }
-
     if (res.exception) {
       websitePostRecord.errors = websitePostRecord.errors ?? [];
       websitePostRecord.errors.push({
@@ -342,7 +336,11 @@ export class PostManagerService {
     // Order files based on submission order
     const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
-    const files = submission.files.getItems();
+    const files = submission.files.getItems().filter(
+      // Only post files that haven't been posted
+      // Ensures CONTINUED posts don't post files that have already been posted.
+      (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1
+    );
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
       if (file) {
@@ -383,6 +381,7 @@ export class PostManagerService {
       // Post
       this.cancelToken.throwIfCancelled();
       this.logger.info(`Posting file batch to ${instance.id}`);
+      // TODO - Do something with nextBatchNumber
       const result = await (
         instance as unknown as FileWebsite<never>
       ).onPostFileSubmission(data, processedFiles, this.cancelToken);
@@ -392,8 +391,20 @@ export class PostManagerService {
         await this.handleFailureResult(websitePostRecord, result, batchIds);
       } else {
         await this.handleSuccessResult(websitePostRecord, result, batchIds);
+        await this.markFilesAsPosted(websitePostRecord, submission, batch);
       }
     }
+  }
+
+  private async markFilesAsPosted(
+    websitePostRecord: IWebsitePostRecord,
+    submission: FileSubmission,
+    files: ISubmissionFile[]
+  ) {
+    const fileIds = files.map((f) => f.id);
+    websitePostRecord.metadata.nextBatchNumber += 1;
+    websitePostRecord.metadata.postedFiles.push(...fileIds);
+    await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
   }
 
   private getResizeParameters(
@@ -500,7 +511,18 @@ export class PostManagerService {
         entity.children.removeAll();
         await this.postRepository.persistAndFlush(entity);
         break;
-      case PostRecordResumeMode.RETRY:
+      case PostRecordResumeMode.CONTINUE_RETRY:
+        await Promise.all(
+          entity.children
+            .toArray()
+            .filter((c) => !c.completedAt)
+            .map((c) => {
+              // Easiest way to reset the record is to remove it and re-add it
+              entity.children.remove(c as unknown as IWebsitePostRecord);
+              return this.postRepository.persistAndFlush(entity);
+            })
+        );
+        break;
       case PostRecordResumeMode.CONTINUE:
       default:
       // Nothing to do

@@ -63,10 +63,11 @@ export interface IPostRecordMetadata {
   postedFiles: EntityId[];
 
   /**
-   * The File Ids that have unsuccessfully posted.
-   * @type {EntityId[]}
+   * The next batch number.
+   * More of an internal tracker for resuming posts.
+   * @type {number}
    */
-  failedFiles: EntityId[];
+  nextBatchNumber: number;
 }
 
 /**

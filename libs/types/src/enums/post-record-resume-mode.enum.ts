@@ -4,14 +4,15 @@
  */
 export enum PostRecordResumeMode {
   /**
-   * Will continue only unattempted children.
+   * Will continue only unattempted/failed children.
+   * Continues from last successful batched file.
    */
   CONTINUE = 'CONTINUE',
 
   /**
-   * Will attempt to retry all failed children.
+   * Same as CONTINUE, but also restarts all files in a post record.
    */
-  RETRY = 'RETRY',
+  CONTINUE_RETRY = 'RETRY',
 
   /**
    * Will restart the entire post record.

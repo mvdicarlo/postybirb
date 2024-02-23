@@ -6,7 +6,6 @@ import {
   serialize,
 } from '@mikro-orm/core';
 import {
-  EntityId,
   IAccount,
   IPostRecord,
   IPostRecordMetadata,
@@ -40,7 +39,7 @@ export class WebsitePostRecord
   metadata: IPostRecordMetadata = {
     sourceMap: {},
     postedFiles: [],
-    failedFiles: [],
+    nextBatchNumber: 1,
   };
 
   @Property({
