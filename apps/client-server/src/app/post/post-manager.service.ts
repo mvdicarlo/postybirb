@@ -34,6 +34,7 @@ import { MessageWebsite } from '../websites/models/website-modifiers/message-web
 import { Website } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
+import { ImageResizeProps } from './models/image-resize-props';
 import { PostingFile } from './models/posting-file';
 import { PostParserService } from './parsers/post-parser.service';
 import { PostFileResizerService } from './post-file-resizer.service';
@@ -358,23 +359,20 @@ export class PostManagerService {
       // Resize files if necessary
       const processedFiles: PostingFile[] = await Promise.all(
         batch.map((f) => {
+          let resizeParams: ImageResizeProps | undefined;
           const fileType = getFileType(f.mimeType);
           if (fileType === FileType.IMAGE) {
-            const resizeParams = this.getResizeParameters(
+            resizeParams = this.getResizeParameters(
               submission,
               filePostableInstance,
               f
             );
-            if (resizeParams) {
-              // TODO - Figure out what to do about thumbnails. Check if used and process?
-              return this.resizerService.resize({
-                file: f,
-                resize: resizeParams,
-              });
-            }
           }
 
-          return Promise.resolve(new PostingFile(f));
+          return this.resizerService.resize({
+            file: f,
+            resize: resizeParams,
+          });
         })
       );
 

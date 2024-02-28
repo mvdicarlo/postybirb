@@ -1,18 +1,20 @@
 import { wrap } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { ISubmissionFile } from '@postybirb/types';
+import { FileType, IFileBuffer, ISubmissionFile } from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
+import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { ImageUtil } from '../file/utils/image.util';
 import { ImageResizeProps } from './models/image-resize-props';
-import { PostingFile } from './models/posting-file';
+import { PostingFile, ThumbnailOptions } from './models/posting-file';
 
 type ResizeRequest = {
   file: ISubmissionFile;
-  resize: ImageResizeProps;
+  resize?: ImageResizeProps;
 };
 
 /**
@@ -41,6 +43,21 @@ export class PostFileResizerService {
     if (!file.file) {
       file = await wrap(file).init(true, ['file']); // ensure primary file is loaded
     }
+
+    return new PostingFile(
+      await this.processPrimaryFile(file, resize),
+      await this.processThumbnailFile(file)
+    );
+  }
+
+  private async processPrimaryFile(
+    file: ISubmissionFile,
+    resize?: ImageResizeProps
+  ): Promise<IFileBuffer> {
+    if (!resize) {
+      return file.file;
+    }
+
     let sharpInstance = ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
     if (resize.width || resize.height) {
@@ -68,10 +85,54 @@ export class PostFileResizerService {
     }
 
     if (hasBeenModified) {
-      return new PostingFile(file, await sharpInstance.toBuffer());
+      const m = await sharpInstance.metadata();
+      return {
+        ...file.file,
+        fileName: `${file.id}.${m.format}`,
+        buffer: await sharpInstance.toBuffer(),
+        mimeType: `image/${m.format}`,
+      };
     }
 
-    return new PostingFile(file);
+    return file.file;
+  }
+
+  private async processThumbnailFile(
+    file: ISubmissionFile
+  ): Promise<ThumbnailOptions | undefined> {
+    let thumb = file.thumbnail;
+    const shouldProcessThumbnail =
+      !!thumb || getFileType(file.fileName) === FileType.IMAGE;
+
+    if (!shouldProcessThumbnail) {
+      return undefined;
+    }
+
+    thumb = thumb ?? { ...file.file }; // Ensure file to process
+
+    let instance = ImageUtil.load(thumb.buffer);
+    let width: number;
+    let height: number;
+    const metadata = await instance.metadata();
+    // Chose the larger dimension to scale down
+    if (metadata.width >= metadata.height) {
+      width = 500;
+    } else {
+      height = 500;
+    }
+    instance = await this.resizeImage(instance, width, height);
+    const extension = metadata.hasAlpha ? '.png' : '.jpeg';
+    if (metadata.hasAlpha) {
+      instance = instance.png();
+    } else {
+      instance = instance.jpeg({ quality: 99 });
+    }
+
+    const { name } = parse(thumb.fileName);
+    return {
+      buffer: await instance.toBuffer(),
+      fileName: `${name}${extension}`,
+    };
   }
 
   private async resizeImage(instance: Sharp, width: number, height: number) {

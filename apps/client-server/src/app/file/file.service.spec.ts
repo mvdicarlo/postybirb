@@ -10,6 +10,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -17,7 +18,6 @@ import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
 import { CreateFileService } from './services/create-file.service';
 import { UpdateFileService } from './services/update-file.service';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 
 describe('FileService', () => {
   let testFile: Buffer | null = null;
@@ -38,12 +38,12 @@ describe('FileService', () => {
   function createMulterData(path: string): MulterFileInfo {
     return {
       fieldname: 'file',
-      originalname: 'powerbear.jpg',
+      originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/jpeg',
       size: testFile.length,
       destination: '',
-      filename: 'powerbear.jpg',
+      filename: 'small_image.jpg',
       path,
       origin: undefined,
     };
@@ -57,7 +57,7 @@ describe('FileService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../test-files/powerbear.jpg'));
+    testFile = readFileSync(join(__dirname, '../test-files/small_image.jpg'));
   });
 
   beforeEach(async () => {
@@ -127,12 +127,12 @@ describe('FileService', () => {
     const path2 = setup();
     const updateFileInfo = {
       fieldname: 'file',
-      originalname: 'powerbear.jpg',
+      originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/png',
       size: testFile.length,
       destination: '',
-      filename: 'powerbear.jpg',
+      filename: 'small_image.jpg',
       path: path2,
       origin: undefined,
     };
