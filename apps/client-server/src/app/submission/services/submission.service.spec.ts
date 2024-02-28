@@ -3,9 +3,9 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionType,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionType,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -34,7 +34,7 @@ describe('SubmissionService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../../test-files/powerbear.jpg'));
+    testFile = readFileSync(join(__dirname, '../../test-files/small_image.jpg'));
   });
 
   beforeEach(async () => {
@@ -87,12 +87,12 @@ describe('SubmissionService', () => {
   function createMulterData(path: string): MulterFileInfo {
     return {
       fieldname: 'file',
-      originalname: 'powerbear.jpg',
+      originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/jpeg',
       size: testFile.length,
       destination: '',
-      filename: 'powerbear.jpg',
+      filename: 'small_image.jpg',
       path,
       origin: undefined,
     };

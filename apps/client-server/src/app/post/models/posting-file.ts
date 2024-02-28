@@ -1,6 +1,11 @@
-import { FileType, ISubmissionFile } from '@postybirb/types';
+import { FileType, IFileBuffer } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
+
+export type ThumbnailOptions = {
+  buffer: Buffer;
+  fileName: string;
+};
 
 export class PostingFile {
   public readonly buffer: Buffer;
@@ -13,15 +18,18 @@ export class PostingFile {
 
   public readonly id: string;
 
-  public constructor(file: ISubmissionFile, buffer?: Buffer) {
-    this.buffer = buffer ?? file.file.buffer;
+  public readonly thumbnail?: ThumbnailOptions;
+
+  public constructor(file: IFileBuffer, thumbnail?: ThumbnailOptions) {
+    this.buffer = file.buffer;
     this.mimeType = file.mimeType;
     this.fileType = getFileType(file.fileName);
     this.fileName = this.normalizeFileName(file);
     this.id = file.id;
+    this.thumbnail = thumbnail;
   }
 
-  private normalizeFileName(file: ISubmissionFile): string {
+  private normalizeFileName(file: IFileBuffer): string {
     const { ext } = parse(file.fileName);
     return `${file.id}${ext}`;
   }

@@ -29,38 +29,48 @@ describe('PostFileResizerService', () => {
     }
   });
 
-  beforeAll(() => {
-    testFile = readFileSync(join(__dirname, '../test-files/powerbear.jpg'));
-    file = {
-      id: 'a',
-      fileName: 'test.jpg',
+  function createFile(
+    fileName: string,
+    mimeType: string,
+    height: number,
+    width: number,
+    buf: Buffer
+  ): ISubmissionFile {
+    return {
+      id: 'test',
+      fileName,
       hash: 'test',
-      mimeType: 'image/jpeg',
+      mimeType,
       size: testFile.length,
       hasThumbnail: false,
       createdAt: new Date(),
       updatedAt: new Date(),
       submission: {} as ISubmission<never>,
-      width: 138,
-      height: 202,
+      width,
+      height,
       props: {
         hasCustomThumbnail: false,
-        width: 138,
-        height: 202,
+        width,
+        height,
       },
       file: {
         parent: {} as ISubmissionFile,
-        fileName: 'test.jpg',
-        mimeType: 'image/jpeg',
+        fileName,
+        mimeType,
         id: 'test',
-        buffer: testFile,
-        size: testFile.length,
-        width: 138,
-        height: 202,
+        buffer: buf,
+        size: buf.length,
+        width,
+        height,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     };
+  }
+
+  beforeAll(() => {
+    testFile = readFileSync(join(__dirname, '../test-files/small_image.jpg'));
+    file = createFile('test.jpg', 'image/jpeg', 202, 138, testFile);
   });
 
   afterAll(async () => {
@@ -78,7 +88,8 @@ describe('PostFileResizerService', () => {
     const metadata = await ImageUtil.load(resized.buffer).metadata();
     expect(metadata.width).toBe(100);
     expect(metadata.height).toBeLessThan(202);
-    expect(resized.fileName).toBe('a.jpg');
+    expect(resized.fileName).toBe('test.jpeg');
+    expect(resized.thumbnail).toBeDefined();
   });
 
   it('should not resize image', async () => {
@@ -87,7 +98,7 @@ describe('PostFileResizerService', () => {
     const metadata = await ImageUtil.load(resized.buffer).metadata();
     expect(metadata.width).toBe(file.width);
     expect(metadata.height).toBe(file.height);
-    expect(resized.fileName).toBe('a.jpg');
+    expect(resized.fileName).toBe('test.jpg');
   });
 
   it('should scale down image', async () => {
@@ -96,6 +107,10 @@ describe('PostFileResizerService', () => {
       resize: { maxBytes: testFile.length - 1000 },
     });
     expect(resized.buffer.length).toBeLessThan(testFile.length);
+    expect(resized.thumbnail?.buffer.length).toBeLessThan(testFile.length);
+    expect(resized.fileName).toBe('test.jpeg');
+    expect(resized.thumbnail?.fileName).toBe('test.jpeg');
+    expect(resized.mimeType).toBe('image/jpeg');
   });
 
   it('should fail to scale down image', async () => {
@@ -105,5 +120,37 @@ describe('PostFileResizerService', () => {
         resize: { maxBytes: -1 },
       })
     ).rejects.toThrow();
+  });
+
+  it('should convert png thumbnail without alpha to jpeg', async () => {
+    const noAlphaFile = readFileSync(
+      join(__dirname, '../test-files/png_no_alpha.png')
+    );
+    const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
+    const resized = await service.resize({
+      file: tf,
+      resize: { maxBytes: noAlphaFile.length - 1000 },
+    });
+
+    expect(resized.buffer.length).toBeLessThan(noAlphaFile.length);
+    expect(resized.fileName).toBe('test.png');
+    expect(resized.thumbnail?.buffer.length).toBeLessThan(noAlphaFile.length);
+    expect(resized.thumbnail?.fileName).toBe('test.jpeg');
+  });
+
+  it('should not convert png thumbnail with alpha to jpeg', async () => {
+    const noAlphaFile = readFileSync(
+      join(__dirname, '../test-files/png_with_alpha.png')
+    );
+    const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
+    const resized = await service.resize({
+      file: tf,
+      resize: { maxBytes: noAlphaFile.length - 1000 },
+    });
+
+    expect(resized.buffer.length).toBeLessThan(noAlphaFile.length);
+    expect(resized.fileName).toBe('test.png');
+    expect(resized.thumbnail?.buffer.length).toBeLessThan(noAlphaFile.length);
+    expect(resized.thumbnail?.fileName).toBe('test.png');
   });
 });
