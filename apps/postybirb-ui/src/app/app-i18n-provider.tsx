@@ -2,13 +2,13 @@ import { EuiFlexGroup, EuiLoadingSpinner } from '@elastic/eui';
 import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { useCallback, useEffect, useState } from 'react';
-import { SettingsStore } from '../../stores/settings.store';
+import { SettingsStore } from '../stores/settings.store';
 
-type I18nProviderProps = {
+type AppI18nProviderProps = {
   children: React.ReactNode;
 };
 
-export function I18nProvider(props: I18nProviderProps) {
+export function AppI18nProvider(props: AppI18nProviderProps) {
   const [loaded, setLoaded] = useState(false);
 
   const setLocale = useCallback(
