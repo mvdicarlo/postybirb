@@ -19,7 +19,7 @@ jobs:
         with:
           cache: yarn
           
-        # Note: This flags needed to speed up build
+        # Note: These flags needed to speed up build
       - name: Install dependencies
         run: yarn install --frozen-lockfile --prefer-offline
 
