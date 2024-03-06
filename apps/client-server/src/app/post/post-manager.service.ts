@@ -396,6 +396,7 @@ export class PostManagerService {
                     resizeParams = {
                       ...resizeParams,
                       width: userDefinedDimensions.width,
+                      height: userDefinedDimensions.height,
                     };
                   }
                 }
