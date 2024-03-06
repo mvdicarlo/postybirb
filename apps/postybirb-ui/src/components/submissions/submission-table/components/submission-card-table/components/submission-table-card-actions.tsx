@@ -152,8 +152,7 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
 export default function SubmissionTableCardActions(
   props: SubmissionTableCardActionsProps
 ) {
-  const { submission, canPost } = props;
-  const { addToast, addErrorToast } = useToast();
+  const { submission } = props;
   const { _ } = useLingui();
 
   const history = useNavigate();

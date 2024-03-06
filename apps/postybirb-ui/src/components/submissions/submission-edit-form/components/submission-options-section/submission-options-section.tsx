@@ -21,7 +21,7 @@ import UserSpecifiedWebsiteOptionsSaveModal from './user-specified-website-optio
 type SubmissionOptionsSectionProps = SubmissionSectionProps;
 
 function ValidationMessages(props: {
-  messages: ValidationMessage<object>[];
+  messages: ValidationMessage[];
   type: keyof ValidationResult;
 }): JSX.Element {
   const { messages, type } = props;
@@ -68,6 +68,10 @@ export default function SubmissionOptionsSection(
 
   const { _ } = useLingui();
 
+  const x = _(
+    msg`Saves current values as the default for this account to be loaded in future submissions.`
+  )
+
   return (
     <EuiAccordion
       initialIsOpen
@@ -80,9 +84,7 @@ export default function SubmissionOptionsSection(
       extraAction={
         <div>
           <EuiToolTip
-            content={_(
-              msg`Saves current values as the default for this account to be loaded in future submissions.`
-            )}
+            content={x}
           >
             <EuiButtonEmpty
               className="mr-2"
@@ -101,7 +103,7 @@ export default function SubmissionOptionsSection(
             <EuiButtonIcon
               color="danger"
               iconType="trash"
-              aria-label={_(msg`Remove submission`)}
+              aria-label={_(msg`Remove website from submission`)}
               style={{ verticalAlign: 'middle' }}
               onClick={() => {
                 // Remove option

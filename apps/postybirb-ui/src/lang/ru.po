@@ -73,7 +73,7 @@ msgstr "Папка приложения"
 msgid "App Server Port"
 msgstr "Порт сервера"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:301
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:302
 msgid "Apply"
 msgstr "Применить"
 
@@ -83,7 +83,7 @@ msgid "Are you sure you want to leave this page?"
 msgstr "Вы уверены чио хотите уйти с этой страницы?"
 
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:141
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:293
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:294
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:134
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:85
 msgid "Cancel"
@@ -116,7 +116,7 @@ msgctxt "user-specified-options.modal.header"
 msgid "Choose Fields"
 msgstr "Выберите поля"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:228
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:229
 msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
 msgstr "Выберите шаблоны"
@@ -175,15 +175,15 @@ msgstr "Темная тема"
 msgid "Dashboard"
 msgstr "Панель инструментов"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:69
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:71
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:175
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:70
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:72
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:176
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/radio-field.tsx:30
 msgid "Default"
 msgstr "По умолчанию"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:46
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:170
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:47
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:171
 msgid "Default Options"
 msgstr "Параметры по умолчанию"
 
@@ -245,7 +245,7 @@ msgstr "Описание больше, чем {maxLength} символов дл�
 msgid "Don't post to"
 msgstr "Не публиковать в"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:180
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:179
 msgid "Duplicate"
 msgstr "Дублировать"
 
@@ -259,7 +259,7 @@ msgctxt "duplicate.tag-group"
 msgid "Duplicate name"
 msgstr "Имя копии"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:184
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:183
 msgid "Duplicate submission"
 msgstr "Дублировать пост"
 
@@ -272,7 +272,7 @@ msgstr "Дублировать тэг"
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:79
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:199
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:171
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:170
 msgid "Edit"
 msgstr "Редактировать"
 
@@ -280,7 +280,7 @@ msgstr "Редактировать"
 msgid "Edit {templateName}"
 msgstr "Редактировать {templateName}"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:174
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:173
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
 msgid "Edit Submission"
 msgstr "Редактировать пост"
@@ -389,7 +389,7 @@ msgctxt "submission.card.errors"
 msgid "Incomplete submission"
 msgstr "Незавершенный пост"
 
-#: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:63
+#: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:65
 msgid "Information about the update"
 msgstr "Информация об обновлении"
 
@@ -457,7 +457,7 @@ msgctxt "unsaved changes modal"
 msgid "No"
 msgstr "Нет"
 
-#: apps/postybirb-ui/src/i18n.ts:25
+#: apps/postybirb-ui/src/components/translations/shared-messages.tsx:4
 msgid "No items"
 msgstr "Нечего отобразить"
 
@@ -469,7 +469,7 @@ msgstr "Не найдено компонента входа."
 msgid "No schedule"
 msgstr "Не отложено"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:157
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:158
 msgctxt "Template picker checkbox"
 msgid "None"
 msgstr "Никакой"
@@ -517,7 +517,7 @@ msgstr "Перезаписать значения по умолчанию"
 msgid "Page not found"
 msgstr "Страница не найдена"
 
-#: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:59
+#: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:61
 msgid "Patch Notes"
 msgstr "Примечания"
 
@@ -559,12 +559,12 @@ msgstr "Удалить {0}"
 msgid "Remove submission"
 msgstr "Удалить пост"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:212
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:213
 msgctxt "import.override-description"
 msgid "Replace description"
 msgstr "Заменить описание"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:203
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:204
 msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Заменить заголовок"
@@ -615,7 +615,7 @@ msgstr "Сохранить изменения загрузки папки"
 msgid "Saves current values as the default for this account to be loaded in future submissions."
 msgstr "Сохраняет текущие значения как по умолчанию для этой учетной записи, которая будет загружена в будущих постах."
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:156
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:157
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:57
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
 msgid "Schedule"
@@ -690,6 +690,10 @@ msgstr "Размер"
 msgid "Sorry, there was an error"
 msgstr "Простите, произошла ошибка"
 
+#: apps/postybirb-ui/src/app/languages.tsx:6
+msgid "Spanish"
+msgstr ""
+
 #. Login status
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:266
 msgid "Status"
@@ -738,7 +742,7 @@ msgstr "Поиск по посту"
 msgid "Submission Template {defaultNameFromTime}"
 msgstr "Шаблон поста {defaultNameFromTime}"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:130
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:131
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:52
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:101
 msgid "Submissions"
@@ -786,7 +790,7 @@ msgstr "Тэги: {tagList}"
 msgid "Template"
 msgstr "Шаблон"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:125
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:126
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:59
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:108
 msgid "Templates"
@@ -818,7 +822,7 @@ msgstr "Это порт, который будет использован сер
 msgid "Thumbnail"
 msgstr "Набросок (Маленькая картинка)"
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:28
+#: apps/postybirb-ui/src/components/translations/translation.tsx:31
 msgid "Translation {id} not found"
 msgstr "Перевод {id} не найден"
 
@@ -830,8 +834,8 @@ msgstr "Не удалось создать форму."
 msgid "Unhide {displayName}"
 msgstr "Показать {displayName}"
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:117
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:167
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:118
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:168
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:30
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:37
 msgid "Unknown"
@@ -850,6 +854,7 @@ msgstr "Отменить отложку поста"
 msgid "Unsupported field type."
 msgstr "Неподдерживаемый тип поля."
 
+#. Update PostyBirb button on top of screen
 #: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:51
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:111
 msgid "Update"
@@ -877,6 +882,10 @@ msgstr "Обновленная группа тегов"
 msgctxt "directory-watcher.header"
 msgid "Upload from folders"
 msgstr "Загрузка из папок"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-validation.tsx:16
+msgid "Webhook name {name} is invalid"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:52
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:51
