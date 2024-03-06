@@ -13,7 +13,7 @@ export type ValidationResult<T extends IWebsiteFormFields = never> = {
 };
 
 export type ValidationMessage<
-  T extends object,
+  T extends object = never,
   ID extends keyof ValidationMessages = keyof ValidationMessages
 > = {
   /**

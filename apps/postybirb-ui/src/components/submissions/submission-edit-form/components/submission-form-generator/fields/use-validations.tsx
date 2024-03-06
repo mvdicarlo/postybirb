@@ -3,8 +3,8 @@ import { useMemo } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 
 export type UseValidationResult = {
-  warnings: ValidationMessage<object>[];
-  errors: ValidationMessage<object>[];
+  warnings: ValidationMessage[];
+  errors: ValidationMessage[];
   isInvalid: boolean;
 };
 
@@ -14,10 +14,10 @@ export default function useValidations(
   const { validation, option, propKey } = props;
   const validationMsgs = useMemo(() => {
     const validations = validation.find((v) => v.id === option.id);
-    const warnings: ValidationMessage<object>[] = (
+    const warnings: ValidationMessage[] = (
       validations?.result.warnings || []
     ).filter((warning) => warning.field === propKey);
-    const errors: ValidationMessage<object>[] = (
+    const errors: ValidationMessage[] = (
       validations?.result.errors || []
     ).filter((error) => error.field === propKey);
 

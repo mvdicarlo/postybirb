@@ -30,5 +30,5 @@ export type SubmissionGeneratedFieldProps<T = FieldAggregateType<any>> =
 
 export type SubmissionValidationResult = {
   id: string;
-  result: ValidationResult<object>;
+  result: ValidationResult;
 };
