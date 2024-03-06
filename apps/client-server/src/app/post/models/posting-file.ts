@@ -1,4 +1,9 @@
-import { FileType, IFileBuffer, SubmissionFileId } from '@postybirb/types';
+import {
+  FileMetadataFields,
+  FileType,
+  IFileBuffer,
+  SubmissionFileId,
+} from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 
@@ -18,7 +23,7 @@ export class PostingFile {
 
   public readonly fileName: string;
 
-  public altText?: string;
+  public metadata: FileMetadataFields;
 
   public readonly thumbnail?: ThumbnailOptions;
 
@@ -40,8 +45,8 @@ export class PostingFile {
     return `${file.id}${ext}`;
   }
 
-  public withAltText(altText: string): PostingFile {
-    this.altText = altText;
+  public withMetadata(metadata: FileMetadataFields): PostingFile {
+    this.metadata = metadata;
     return this;
   }
 }

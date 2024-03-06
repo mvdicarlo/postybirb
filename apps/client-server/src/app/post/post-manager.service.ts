@@ -408,7 +408,14 @@ export class PostManagerService {
             });
           })
         )
-      ).map((f) => f.withAltText(metadata[f.id]?.altText ?? ''));
+      ).map((f) =>
+        f.withMetadata(
+          metadata[f.id] ?? {
+            ignoredWebsites: [],
+            dimensions: null,
+          }
+        )
+      );
 
       // Post
       this.cancelToken.throwIfCancelled();

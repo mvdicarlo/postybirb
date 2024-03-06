@@ -13,13 +13,15 @@ export type FileMetadataFields = {
    * The alternative text for the file.
    * @type {string}
    */
-  altText: string;
+  altText?: string;
+
   /**
    * The dimensions of the file for different websites.
    * Currently only supports 'default'
    * @type {Record<AccountId, ModifiedFileDimension>}
    */
   dimensions: Record<AccountId, ModifiedFileDimension>;
+
   /**
    * The list of websites where the file is ignored.
    * @type {AccountId[]}
