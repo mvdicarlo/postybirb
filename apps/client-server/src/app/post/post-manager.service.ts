@@ -5,6 +5,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
+  FileMetadataFields,
   FileSubmission,
   FileType,
   ISubmissionFile,
@@ -337,11 +338,18 @@ export class PostManagerService {
     // Order files based on submission order
     const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
-    const files = submission.files.getItems().filter(
-      // Only post files that haven't been posted
-      // Ensures CONTINUED posts don't post files that have already been posted.
-      (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1
-    );
+    const metadata = submission.metadata.fileMetadata;
+    const files = submission.files
+      .getItems()
+      .filter(
+        // Filter out files that have been marked by the user as ignored for this website.
+        (f) => !metadata[f.id]?.ignoredWebsites?.includes(instance.accountId)
+      )
+      .filter(
+        // Only post files that haven't been posted
+        // Ensures CONTINUED posts don't post files that have already been posted.
+        (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1
+      );
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
       if (file) {
@@ -357,23 +365,57 @@ export class PostManagerService {
       this.cancelToken.throwIfCancelled();
 
       // Resize files if necessary
-      const processedFiles: PostingFile[] = await Promise.all(
-        batch.map((f) => {
-          let resizeParams: ImageResizeProps | undefined;
-          const fileType = getFileType(f.mimeType);
-          if (fileType === FileType.IMAGE) {
-            resizeParams = this.getResizeParameters(
-              submission,
-              filePostableInstance,
-              f
-            );
-          }
+      const processedFiles: PostingFile[] = (
+        await Promise.all(
+          batch.map((f) => {
+            const fileMetadata: FileMetadataFields = submission.metadata[f.id];
+            let resizeParams: ImageResizeProps | undefined;
+            const fileType = getFileType(f.mimeType);
+            if (fileType === FileType.IMAGE) {
+              resizeParams = this.getResizeParameters(
+                submission,
+                filePostableInstance,
+                f
+              );
 
-          return this.resizerService.resize({
-            file: f,
-            resize: resizeParams,
-          });
-        })
+              // User defined dimensions
+              const userDefinedDimensions =
+                // eslint-disable-next-line @typescript-eslint/dot-notation
+                fileMetadata?.dimensions['default'] ??
+                fileMetadata?.dimensions[instance.accountId];
+              if (userDefinedDimensions) {
+                if (
+                  userDefinedDimensions.width &&
+                  userDefinedDimensions.height
+                ) {
+                  resizeParams = resizeParams ?? {};
+                  if (
+                    userDefinedDimensions.width > resizeParams.width &&
+                    userDefinedDimensions.height > resizeParams.height
+                  ) {
+                    resizeParams = {
+                      ...resizeParams,
+                      width: userDefinedDimensions.width,
+                      height: userDefinedDimensions.height,
+                    };
+                  }
+                }
+              }
+            }
+
+            return this.resizerService.resize({
+              file: f,
+              resize: resizeParams,
+            });
+          })
+        )
+      ).map((f) =>
+        f.withMetadata(
+          metadata[f.id] ?? {
+            ignoredWebsites: [],
+            dimensions: null,
+          }
+        )
       );
 
       // Post
