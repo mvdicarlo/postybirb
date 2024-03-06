@@ -4,7 +4,6 @@ on:
     branches:
       - main
 
-# Needed for nx-set-shas when run on the main branch
 permissions:
   actions: read
   contents: write
@@ -24,7 +23,7 @@ jobs:
         with:
           cache: yarn
 
-        # Note: This flags needed to speed up ci
+        # Note: These flags needed to speed up ci
       - name: Install dependencies
         run: yarn install --frozen-lockfile --prefer-offline
 
@@ -37,6 +36,7 @@ jobs:
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          git pull
           npx exitzero "git add 'lang/' && git commit -m 'ci: extract i18n strings'"
           exit 0
 

@@ -17,9 +17,9 @@ import { IAccountDto, ILoginState, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { useToggle } from 'react-use';
 import accountApi from '../../../api/account.api';
-import { sharedMessages } from '../../../i18n';
 import { getCustomLoginComponent } from '../../../website-components/custom-login-components';
 import { PencilIcon, SaveIcon } from '../../shared/icons/Icons';
+import { SharedMessages } from '../../translations/shared-messages';
 import AccountLoginModal from '../account-login-modal/account-login-modal';
 import AccountLoginWebview from '../account-login-webview/account-login-webview';
 import {
@@ -324,7 +324,7 @@ export default function AccountLoginCardTable(
     <EuiBasicTable
       items={instances}
       columns={columns}
-      noItemsMessage={_(sharedMessages.noItems)}
+      noItemsMessage={_(SharedMessages.noItems)}
     />
   );
 }

@@ -18,10 +18,10 @@ import { useEffect, useRef, useState } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
 import { useToast } from '../../../app/app-toast-provider';
 import { useUpdateView } from '../../../hooks/use-update-view';
-import { sharedMessages } from '../../../i18n';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
+import { SharedMessages } from '../../translations/shared-messages';
 import './tag-converters-table.css';
 
 type TagConvertersTableProps = {
@@ -270,7 +270,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
         isSelectable
         selection={selection}
         rowHeader="name"
-        noItemsMessage={_(sharedMessages.noItems)}
+        noItemsMessage={_(SharedMessages.noItems)}
       />
     </>
   );

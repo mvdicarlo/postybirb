@@ -1,7 +1,7 @@
 import { EuiProvider } from '@elastic/eui';
 import { useContext } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import AppIntlProvider from './app-intl-provider';
+import { AppI18nProvider } from './app-i18n-provider';
 import AppLayout from './app-layout/app-layout';
 import { AppThemeContext } from './app-theme-provider';
 import { AppToastProvider } from './app-toast-provider';
@@ -20,13 +20,13 @@ export default function App() {
   return (
     <div className="postybirb">
       <EuiProvider colorMode={theme}>
-        <QueryClientProvider client={queryClient}>
-          <AppIntlProvider>
+        <AppI18nProvider>
+          <QueryClientProvider client={queryClient}>
             <AppToastProvider>
               <AppLayout />
             </AppToastProvider>
-          </AppIntlProvider>
-        </QueryClientProvider>
+          </QueryClientProvider>
+        </AppI18nProvider>
       </EuiProvider>
     </div>
   );
