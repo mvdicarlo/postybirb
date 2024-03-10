@@ -33,15 +33,10 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
 
       const uppyLocale = uppyLocales[locale];
       try {
-        // Instead of exporting separate variable/hook/context
-        // just set uppy right here, so all components will
-        // receive update on the locale change
         i18n.uppy = (
           await import(`../../public/uppy-i18n/${uppyLocale}.js`)
         ).default;
       } catch (error) {
-        // Note: instead of not loading i18n for the whole
-        // application, show helpfull error message to the console
         // eslint-disable-next-line no-console
         console.error(
           // eslint-disable-next-line lingui/no-unlocalized-strings
@@ -57,9 +52,11 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
   );
 
   useEffect(() => {
-    SettingsStore.updates.subscribe((e) => {
+    const { unsubscribe } = SettingsStore.updates.subscribe((e) => {
       setLocale(e[0].settings.language);
     });
+
+    return unsubscribe;
   }, [setLocale]);
 
   const [tooLongLoading, setTooLongLoading] = useState(false);
@@ -87,7 +84,7 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
       </EuiFlexGroup>
       {tooLongLoading &&
         // eslint-disable-next-line lingui/no-unlocalized-strings
-        'Loading takes too much time, please check console if there is any error.'}
+        'Loading takes too much time, please check the console for the errors.'}
     </EuiFlexGroup>
   );
 }
