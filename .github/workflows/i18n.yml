@@ -41,7 +41,7 @@ jobs:
           
           git add apps/postybirb-ui/src/lang/*
           # ignore when nothing to commit
-          exitzero "git commit -m 'ci: extract i18n messages'"
+          yarn exitzero "git commit -m 'ci: extract i18n messages'"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
