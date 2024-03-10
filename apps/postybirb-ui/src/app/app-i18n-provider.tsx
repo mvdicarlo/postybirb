@@ -19,7 +19,9 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
       //
       // We dont need to cache these imported messages
       // because browser's import call does it automatically
-      const { messages } = await import(`../../lang/${locale}.po`);
+      // eslint-disable-next-line no-param-reassign
+      locale = locale ?? 'en';
+      const { messages } = await import(`../lang/${locale}.po`);
       i18n.loadAndActivate({ locale, messages });
       if (!loaded) setLoaded(true);
     },

@@ -17,7 +17,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
 };
 
 export default function Translation(
-  props: Omit<ValidationMessage<object>, 'field'>
+  props: Omit<ValidationMessage, 'field'>
 ): JSX.Element {
   const { id } = props;
   const translation = TranslationMessages[id];

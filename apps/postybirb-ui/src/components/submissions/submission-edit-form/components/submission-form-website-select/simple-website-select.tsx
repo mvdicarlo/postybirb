@@ -1,6 +1,7 @@
 import { EuiComboBox, EuiComboBoxOptionOption } from '@elastic/eui';
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import { AccountId } from '@postybirb/types';
 import { useEffect, useState } from 'react';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../../stores/account.store';
@@ -9,7 +10,7 @@ import { useStore } from '../../../../../stores/use-store';
 type SimpleWebsiteSelectProps = {
   onChange: (websitesIds: string[]) => void;
   submission: SubmissionDto;
-  selected: string[]; // AccountIds
+  selected: AccountId[];
 };
 
 export function SimpleWebsiteSelect(props: SimpleWebsiteSelectProps) {

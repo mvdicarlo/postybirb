@@ -45,6 +45,7 @@ export class PostFileResizerService {
     }
 
     return new PostingFile(
+      file.id,
       await this.processPrimaryFile(file, resize),
       await this.processThumbnailFile(file)
     );

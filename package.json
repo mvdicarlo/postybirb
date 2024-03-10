@@ -40,6 +40,7 @@
     "postinstall:deps": "exitzero electron-builder install-app-deps",
     "postinstall:copy-themes": "shx cp node_modules/@elastic/eui/dist/*.min.css apps/postybirb-ui/public",
     "postinstall:patch-package": "patch-package",
+    "postinstall:i18n": "lingui extract --clean",
     "setup": "run-s setup:husky",
     "setup:husky": "husky install",
     "tools:icons": "ts-node tools/generate-icons.ts"

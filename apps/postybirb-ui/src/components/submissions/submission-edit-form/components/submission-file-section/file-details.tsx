@@ -11,7 +11,11 @@ import {
 } from '@elastic/eui';
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
+import {
+  AccountId,
+  FileSubmissionMetadata,
+  ISubmissionFileDto,
+} from '@postybirb/types';
 import { isImage } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import { ReactNode, useCallback, useMemo, useState } from 'react';
@@ -69,7 +73,7 @@ function SharedDetails(props: FileDetailsProps) {
   const providedIgnoredWebsites = fileMetadata.ignoredWebsites ?? [];
 
   const [altText, setAltText] = useState<string>(providedAltText);
-  const [ignoredWebsites, setIgnoredWebsites] = useState<string[]>(
+  const [ignoredWebsites, setIgnoredWebsites] = useState<AccountId[]>(
     providedIgnoredWebsites
   );
 
