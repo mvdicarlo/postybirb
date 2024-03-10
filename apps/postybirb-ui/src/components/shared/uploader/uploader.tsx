@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react';
 import Uppy from '@uppy/core';
 import DropTarget from '@uppy/drop-target';
 import ImageEditor from '@uppy/image-editor';
@@ -16,11 +17,13 @@ type UploaderProps = {
 
 export default function Uploader(props: UploaderProps) {
   const [theme] = useContext(AppThemeContext);
+  const { i18n } = useLingui();
   const { endpointPath, onComplete } = props;
 
   const uppy = useMemo(() => {
     const u = new Uppy({
       autoProceed: false,
+      locale: i18n.uppy,
     });
 
     u.use(Webcam)
@@ -65,7 +68,7 @@ export default function Uploader(props: UploaderProps) {
     });
 
     return u;
-  }, [endpointPath, onComplete]);
+  }, [endpointPath, onComplete, i18n.uppy]);
 
   useEffect(() => () => uppy.close(), [uppy]);
 

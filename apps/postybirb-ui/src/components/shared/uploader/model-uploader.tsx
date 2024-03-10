@@ -1,4 +1,5 @@
 /* eslint-disable react/require-default-props */
+import { useLingui } from '@lingui/react';
 import { ISubmissionDto } from '@postybirb/types';
 import Compressor from '@uppy/compressor';
 import Uppy from '@uppy/core';
@@ -21,11 +22,13 @@ type UploaderProps = {
 
 export default function ModalUploader(props: UploaderProps) {
   const [theme] = useContext(AppThemeContext);
+  const { i18n } = useLingui();
   const { accept, compress, isOpen, endpointPath, onClose, onComplete } = props;
 
   const uppy = useMemo(() => {
     const u = new Uppy({
       autoProceed: false,
+      locale: i18n.uppy,
       restrictions: {
         maxNumberOfFiles: 1,
         allowedFileTypes: accept,
@@ -82,7 +85,7 @@ export default function ModalUploader(props: UploaderProps) {
 
     return u;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpointPath, onComplete, compress]);
+  }, [endpointPath, onComplete, compress, i18n.uppy]);
 
   useEffect(() => () => uppy.close(), [uppy]);
 
