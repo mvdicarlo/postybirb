@@ -3,7 +3,7 @@ import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Locale as UppyLocale } from '@uppy/core';
 import { useCallback, useEffect, useState } from 'react';
-import { SettingsStore } from '../stores/settings.store';
+import { useSettings } from '../stores/use-settings';
 import { uppyLocales } from './languages';
 
 declare module '@lingui/core' {
@@ -18,6 +18,7 @@ type AppI18nProviderProps = {
 
 export function AppI18nProvider(props: AppI18nProviderProps) {
   const [loaded, setLoaded] = useState(false);
+  const { settings } = useSettings();
 
   const setLocale = useCallback(
     async (locale: string) => {
@@ -52,12 +53,10 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
   );
 
   useEffect(() => {
-    const { unsubscribe } = SettingsStore.updates.subscribe((e) => {
-      setLocale(e[0].settings.language);
-    });
-
-    return unsubscribe;
-  }, [setLocale]);
+    if (settings) {
+      setLocale(settings.language);
+    }
+  }, [settings, setLocale]);
 
   const [tooLongLoading, setTooLongLoading] = useState(false);
   useEffect(() => {

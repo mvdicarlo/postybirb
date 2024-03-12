@@ -13,10 +13,10 @@ import {
   EuiSwitch,
   EuiTitle,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { useContext, useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { useLingui } from '@lingui/react';
-import { Trans, msg } from '@lingui/macro';
 import settingsApi from '../api/settings.api';
 import Keybinding, {
   KeybindingProps,
@@ -24,9 +24,8 @@ import Keybinding, {
 import Loading from '../components/shared/loading/loading';
 import { useFlyoutToggle } from '../hooks/use-flyout-toggle';
 import { SettingsKeybinding } from '../shared/app-keybindings';
+import { useSettings } from '../stores/use-settings';
 import { AppThemeContext } from './app-theme-provider';
-import { useStore } from '../stores/use-store';
-import { SettingsStore } from '../stores/settings.store';
 import { languages } from './languages';
 
 function StartupSettings() {
@@ -133,11 +132,7 @@ function StartupSettings() {
 }
 
 function LanguageSettings() {
-  const {
-    state: [settings],
-    reload: reloadSettings,
-    isLoading,
-  } = useStore(SettingsStore);
+  const { settingsId, settings, reloadSettings, isLoading } = useSettings();
   const { _ } = useLingui();
   const [options, setOptions] = useState<EuiSelectableOption[]>([]);
 
@@ -148,7 +143,7 @@ function LanguageSettings() {
         languages.map(([label, content]) => ({
           label: _(label),
           content,
-          checked: content === settings.settings.language ? 'on' : undefined,
+          checked: content === settings.language ? 'on' : undefined,
         }))
       );
 
@@ -164,9 +159,9 @@ function LanguageSettings() {
     // Because src/i18n.tsx is subscribed to settings changes we
     // dont need to call setLocale or anything like this here
     settingsApi
-      .update(settings.id, {
+      .update(settingsId, {
         settings: {
-          ...settings.settings,
+          ...settings,
           language: selected.content,
         },
       })
