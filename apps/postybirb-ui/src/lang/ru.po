@@ -60,7 +60,7 @@ msgstr "Добавить аккаунт для {displayName}"
 msgid "Add folder watcher"
 msgstr "Добавить мониторинг папки"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:110
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:114
 msgctxt "alt-text"
 msgid "Alt Text"
 msgstr "Alt текст"
@@ -241,7 +241,7 @@ msgstr "Удалить группу тегов {0}"
 msgid "Description is greater than {maxLength} characters long"
 msgstr "Описание больше, чем {maxLength} символов длиной"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:129
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:133
 msgid "Don't post to"
 msgstr "Не публиковать в"
 
@@ -352,7 +352,7 @@ msgstr "Вернуть на главную"
 msgid "Groups"
 msgstr "Группы"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:189
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:193
 msgid "Height"
 msgstr "Высота"
 
@@ -435,7 +435,7 @@ msgstr "Посты с текстом"
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:113
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:121
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:143
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:94
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:98
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-name-field.tsx:35
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:116
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:46
@@ -551,13 +551,13 @@ msgctxt "schedule.recurring"
 msgid "Recurring"
 msgstr "Прямо"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:268
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:272
 msgid "Remove {0}"
 msgstr "Удалить {0}"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:104
-msgid "Remove submission"
-msgstr "Удалить пост"
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:106
+msgid "Remove website from submission"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:213
 msgctxt "import.override-description"
@@ -590,7 +590,7 @@ msgctxt "unsaved changes modal"
 msgid "Save and Close"
 msgstr "Сохранить и закрыть"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:94
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:96
 msgctxt "edit-form.set-default-options"
 msgid "Save as default"
 msgstr "Сохранить по умолчанию"
@@ -611,7 +611,7 @@ msgstr "Сохранить изменения для {templateName}"
 msgid "Save folder upload changes"
 msgstr "Сохранить изменения загрузки папки"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:84
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:72
 msgid "Saves current values as the default for this account to be loaded in future submissions."
 msgstr "Сохраняет текущие значения как по умолчанию для этой учетной записи, которая будет загружена в будущих постах."
 
@@ -681,7 +681,7 @@ msgstr "Показывать скрытый фильтр сайтов выкл"
 msgid "Show hidden websites filter on"
 msgstr "Показывать скрытый фильтр сайтов вкл"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:98
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:102
 msgctxt "submission.file-size"
 msgid "Size"
 msgstr "Размер"
@@ -836,7 +836,7 @@ msgstr "Показать {displayName}"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:118
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:168
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:30
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:31
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:37
 msgid "Unknown"
 msgstr "Неизвестно"
@@ -887,7 +887,7 @@ msgstr "Загрузка из папок"
 msgid "Webhook name {name} is invalid"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:52
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:53
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:51
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:52
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:57
@@ -895,7 +895,7 @@ msgstr ""
 msgid "Websites"
 msgstr "Сайты"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:217
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:221
 msgid "Width"
 msgstr "Ширина"
 

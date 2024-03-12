@@ -1,4 +1,4 @@
-name: CI
+name: i18n CI
 on:
   push:
     branches:
@@ -35,10 +35,13 @@ jobs:
       - name: Commit changes
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git pull
-          npx exitzero "git add 'lang/' && git commit -m 'ci: extract i18n strings'"
-          exit 0
+          git config --local user.name "github-actions[bot]"   
+          # pull only from main branch so it will not fetch all tags
+          git pull origin main
+          
+          git add apps/postybirb-ui/src/lang/*
+          # ignore when nothing to commit
+          yarn exitzero "git commit -m 'ci: extract i18n messages'"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
