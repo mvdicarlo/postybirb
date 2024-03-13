@@ -1,7 +1,7 @@
 import { EuiCheckbox } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DescriptionValue } from '@postybirb/types';
+import { DescriptionValue, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { useState } from 'react';
 import { PostyBirbEditor } from '../../../../../shared/postybirb-editor/postybirb-editor';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
@@ -24,7 +24,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
 
   return (
     <FormRow {...props} validations={validation}>
-      {option.account ? (
+      {option.account !== NULL_ACCOUNT_ID ? (
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
           checked={overrideDefault}
