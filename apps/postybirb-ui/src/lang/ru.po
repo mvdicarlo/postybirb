@@ -65,11 +65,11 @@ msgctxt "alt-text"
 msgid "Alt Text"
 msgstr "Alt текст"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:100
+#: apps/postybirb-ui/src/app/app-settings.tsx:99
 msgid "App Folder"
 msgstr "Папка приложения"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:74
+#: apps/postybirb-ui/src/app/app-settings.tsx:73
 msgid "App Server Port"
 msgstr "Порт сервера"
 
@@ -164,7 +164,7 @@ msgstr "Создать новую группу тэгов"
 msgid "CRON format <0/>"
 msgstr "Формат CRON <0/>"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:233
+#: apps/postybirb-ui/src/app/app-settings.tsx:228
 msgid "Dark theme"
 msgstr "Темная тема"
 
@@ -397,11 +397,11 @@ msgstr "Информация об обновлении"
 msgid "Invalid CRON string"
 msgstr "Неверная строка CRON"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:179
+#: apps/postybirb-ui/src/app/app-settings.tsx:174
 msgid "Language"
 msgstr "Язык"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:231
+#: apps/postybirb-ui/src/app/app-settings.tsx:226
 msgid "Light theme"
 msgstr "Светлая тема"
 
@@ -499,7 +499,7 @@ msgctxt "schedule.single"
 msgid "Once"
 msgstr "Один раз"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:53
+#: apps/postybirb-ui/src/app/app-settings.tsx:52
 msgid "Open on startup"
 msgstr "Открывать при включении"
 
@@ -529,15 +529,15 @@ msgstr "Опубликовать"
 msgid "Post submission"
 msgstr "Опубликовать пост"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:48
+#: apps/postybirb-ui/src/app/app-settings.tsx:47
 msgid "PostyBirb Startup Settings"
 msgstr "PostyBirb Настройки запуска"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:60
+#: apps/postybirb-ui/src/app/app-settings.tsx:59
 msgid "PostyBirb will not open on startup"
 msgstr "PostyBirb не будет открываться при запуске"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:58
+#: apps/postybirb-ui/src/app/app-settings.tsx:57
 msgid "PostyBirb will open on startup"
 msgstr "PostyBirb будет открываться при запуске"
 
@@ -630,18 +630,18 @@ msgstr "Отложить пост"
 msgid "Search for anything..."
 msgstr "Искать что угодно..."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:126
+#: apps/postybirb-ui/src/app/app-settings.tsx:125
 msgid "Select Folder"
 msgstr "Выбрать папку"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:181
+#: apps/postybirb-ui/src/app/app-settings.tsx:176
 msgid "Select language"
 msgstr "Выбрать язык"
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:168
 #: apps/postybirb-ui/src/app/app-search.tsx:110
 #: apps/postybirb-ui/src/app/app-search.tsx:116
-#: apps/postybirb-ui/src/app/app-settings.tsx:219
+#: apps/postybirb-ui/src/app/app-settings.tsx:214
 msgid "Settings"
 msgstr "Настройки"
 
@@ -801,7 +801,7 @@ msgstr "Шаблоны"
 msgid "The page you are looking for might have been removed or temporarily unavailable."
 msgstr "Страница, которую вы ищете, могла быть удалена или временно недоступна."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:226
+#: apps/postybirb-ui/src/app/app-settings.tsx:221
 msgid "Theme"
 msgstr "Тема"
 
@@ -810,11 +810,11 @@ msgstr "Тема"
 msgid "This action cannot be undone."
 msgstr "Это действие нельзя отменить."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:102
+#: apps/postybirb-ui/src/app/app-settings.tsx:101
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
 msgstr "Это папка, где приложение будет хранить данные. Вы должны перезапустить приложение чтобы применить изменения."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:76
+#: apps/postybirb-ui/src/app/app-settings.tsx:75
 msgid "This is the port the app server will run on. You must restart the app for this to take effect."
 msgstr "Это порт, который будет использован сервером. Вы должны перезапустить приложение чтобы применить настройки."
 

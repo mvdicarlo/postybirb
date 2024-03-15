@@ -45,6 +45,7 @@ export default function DescriptionField(props: DescriptionFieldProps) {
       ) : null}
       {overrideDefault || option.isDefault ? (
         <PostyBirbEditor
+          inline={field.inline}
           value={description}
           onChange={(descriptionValue) => {
             setDescription(descriptionValue);

@@ -1,5 +1,5 @@
 import { EuiSpacer } from '@elastic/eui';
-import { RatingFieldType } from '@postybirb/form-builder';
+import { DescriptionFieldType } from '@postybirb/form-builder';
 import { cloneDeep, debounce } from 'lodash';
 import { useCallback } from 'react';
 import submissionApi from '../../../../../../api/submission.api';
@@ -39,9 +39,10 @@ function DefaultSubmissionFields(
 
   Object.values(form ?? {}).forEach((field) => {
     const f = field[0];
-    f.column = 0;
-    (f as RatingFieldType).layout = 'horizontal';
+    (f as DescriptionFieldType).inline = true;
   });
+
+  delete form?.title;
 
   return (
     <SubmissionFormGenerator

@@ -129,17 +129,28 @@ const tinyMceSettings: RawEditorOptions = {
 };
 
 type PostyBirbEditorProps = {
+  inline?: boolean;
   value: string;
   onChange: (newValue: string) => void;
 };
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
-  const { value, onChange } = props;
+  const { inline, value, onChange } = props;
   // note that skin and content_css is disabled to avoid the normal
   // loading process and is instead loaded as a string via content_style
+  const settings = { ...tinyMceSettings, inline: !!inline };
   return (
     <Editor
-      init={tinyMceSettings as never}
+      init={settings as never}
+      onInit={(_, editor) => {
+        if (inline) {
+          editor.bodyElement?.classList.add(
+            ...'euiFieldText euiFieldText--fullWidth euiFieldText--compressed'.split(
+              ' '
+            )
+          );
+        }
+      }}
       value={value || ''}
       onEditorChange={(newValue) => {
         onChange(newValue);

@@ -69,7 +69,6 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
             aria-label={_(msg`Folder watcher type`)}
             options={options}
             selectedOptions={[
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               options.find((o) => o.value === state.importAction)!,
             ]}
             renderOption={(option) => {
@@ -91,6 +90,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
 
         <EuiFormRow label={<Trans>Folder</Trans>}>
           <EuiButton
+            size="s"
             iconType="folderOpen"
             disabled={!window?.electron?.pickDirectory}
             onClick={() => {
@@ -119,7 +119,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           </EuiFormRow>
         ) : null}
       </EuiForm>
-      <EuiHorizontalRule />
+      <EuiHorizontalRule margin="m" />
       <EuiFlexGroup alignItems="center" justifyContent="center">
         <EuiFlexItem grow={false}>
           <DeleteActionPopover

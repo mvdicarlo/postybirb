@@ -67,11 +67,11 @@ msgctxt "alt-text"
 msgid "Alt Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:100
+#: apps/postybirb-ui/src/app/app-settings.tsx:99
 msgid "App Folder"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:74
+#: apps/postybirb-ui/src/app/app-settings.tsx:73
 msgid "App Server Port"
 msgstr ""
 
@@ -166,7 +166,7 @@ msgstr ""
 msgid "CRON format <0/>"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:233
+#: apps/postybirb-ui/src/app/app-settings.tsx:228
 msgid "Dark theme"
 msgstr ""
 
@@ -399,11 +399,11 @@ msgstr ""
 msgid "Invalid CRON string"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:179
+#: apps/postybirb-ui/src/app/app-settings.tsx:174
 msgid "Language"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:231
+#: apps/postybirb-ui/src/app/app-settings.tsx:226
 msgid "Light theme"
 msgstr ""
 
@@ -501,7 +501,7 @@ msgctxt "schedule.single"
 msgid "Once"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:53
+#: apps/postybirb-ui/src/app/app-settings.tsx:52
 msgid "Open on startup"
 msgstr ""
 
@@ -531,15 +531,15 @@ msgstr ""
 msgid "Post submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:48
+#: apps/postybirb-ui/src/app/app-settings.tsx:47
 msgid "PostyBirb Startup Settings"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:60
+#: apps/postybirb-ui/src/app/app-settings.tsx:59
 msgid "PostyBirb will not open on startup"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:58
+#: apps/postybirb-ui/src/app/app-settings.tsx:57
 msgid "PostyBirb will open on startup"
 msgstr ""
 
@@ -632,18 +632,18 @@ msgstr ""
 msgid "Search for anything..."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:126
+#: apps/postybirb-ui/src/app/app-settings.tsx:125
 msgid "Select Folder"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:181
+#: apps/postybirb-ui/src/app/app-settings.tsx:176
 msgid "Select language"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:168
 #: apps/postybirb-ui/src/app/app-search.tsx:110
 #: apps/postybirb-ui/src/app/app-search.tsx:116
-#: apps/postybirb-ui/src/app/app-settings.tsx:219
+#: apps/postybirb-ui/src/app/app-settings.tsx:214
 msgid "Settings"
 msgstr ""
 
@@ -803,7 +803,7 @@ msgstr ""
 msgid "The page you are looking for might have been removed or temporarily unavailable."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:226
+#: apps/postybirb-ui/src/app/app-settings.tsx:221
 msgid "Theme"
 msgstr ""
 
@@ -812,11 +812,11 @@ msgstr ""
 msgid "This action cannot be undone."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:102
+#: apps/postybirb-ui/src/app/app-settings.tsx:101
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:76
+#: apps/postybirb-ui/src/app/app-settings.tsx:75
 msgid "This is the port the app server will run on. You must restart the app for this to take effect."
 msgstr ""
 
