@@ -1,4 +1,4 @@
-import { EuiButtonIcon, EuiToolTip } from '@elastic/eui';
+import { EuiButtonEmpty, EuiButtonIcon, EuiToolTip } from '@elastic/eui';
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { useCallback } from 'react';
@@ -100,52 +100,54 @@ function PostSubmissionAction(props: SubmissionTableCardActionsProps) {
   const { _ } = useLingui();
 
   return isQueued ? (
-    <EuiToolTip content={_(msg`Cancel post`)}>
-      <EuiButtonIcon
-        iconType={CancelIcon}
-        color="warning"
-        aria-label={_(msg`Cancel post`)}
-        onClick={() => {
+    <EuiButtonEmpty
+      iconType={CancelIcon}
+      color="warning"
+      size="s"
+      aria-label={_(msg`Cancel post`)}
+      onClick={() => {
+        postApi
+          .dequeue([submission.id])
+          .then(() => {
+            addToast({
+              id: Date.now().toString(),
+              color: 'success',
+              title: _(msg`Submission cancelled`),
+            });
+          })
+          .catch((res) => {
+            addErrorToast(res);
+          });
+      }}
+    >
+      {_(msg`Cancel post`)}
+    </EuiButtonEmpty>
+  ) : (
+    <EuiButtonEmpty
+      iconType={SendIcon}
+      size="s"
+      color="success"
+      disabled={!canPost}
+      aria-label={_(msg`Post submission`)}
+      onClick={() => {
+        if (canPost) {
           postApi
-            .dequeue([submission.id])
+            .enqueue([submission.id])
             .then(() => {
               addToast({
                 id: Date.now().toString(),
                 color: 'success',
-                title: _(msg`Submission cancelled`),
+                title: _(msg`Submission queued for posting`),
               });
             })
             .catch((res) => {
               addErrorToast(res);
             });
-        }}
-      />
-    </EuiToolTip>
-  ) : (
-    <EuiToolTip content={_(msg`Post`)}>
-      <EuiButtonIcon
-        iconType={SendIcon}
-        color="success"
-        disabled={!canPost}
-        aria-label={_(msg`Post submission`)}
-        onClick={() => {
-          if (canPost) {
-            postApi
-              .enqueue([submission.id])
-              .then(() => {
-                addToast({
-                  id: Date.now().toString(),
-                  color: 'success',
-                  title: _(msg`Submission queued for posting`),
-                });
-              })
-              .catch((res) => {
-                addErrorToast(res);
-              });
-          }
-        }}
-      />
-    </EuiToolTip>
+        }
+      }}
+    >
+      {_(msg`Post`)}
+    </EuiButtonEmpty>
   );
 }
 
@@ -164,28 +166,38 @@ export default function SubmissionTableCardActions(
   );
 
   return (
-    <>
-      <PostSubmissionAction {...props} />
-      <ScheduleAction {...props} />
-      <EuiToolTip content={_(msg`Edit`)}>
-        <EuiButtonIcon
+    <div className="postybirb__submission-card-actions">
+      <div>
+        <PostSubmissionAction {...props} />
+      </div>
+      <div>
+        <ScheduleAction {...props} />
+      </div>
+      <div>
+        <EuiButtonEmpty
+          size="s"
           iconType="documentEdit"
           aria-label={_(msg`Edit Submission`)}
           onClick={() => {
             navToEdit(submission.id);
           }}
-        />
-      </EuiToolTip>
-      <EuiToolTip content={_(msg`Duplicate`)}>
-        <EuiButtonIcon
+        >
+          {_(msg`Edit`)}
+        </EuiButtonEmpty>
+      </div>
+      <div>
+        <EuiButtonEmpty
           iconType="listAdd"
           color="accent"
+          size="s"
           aria-label={_(msg`Duplicate submission`)}
           onClick={() => {
             submissionApi.duplicate(submission.id);
           }}
-        />
-      </EuiToolTip>
-    </>
+        >
+          {_(msg`Duplicate`)}
+        </EuiButtonEmpty>
+      </div>
+    </div>
   );
 }

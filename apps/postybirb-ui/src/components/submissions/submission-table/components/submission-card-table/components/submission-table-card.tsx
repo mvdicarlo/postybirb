@@ -126,23 +126,20 @@ export function SubmissionTableCard(
         <EuiFlexGroup justifyContent="flexStart" gutterSize="s">
           <EuiFlexItem grow={false}>
             {img ? (
-              <EuiImage allowFullScreen alt="image" src={img} />
+              <EuiImage height={50} allowFullScreen alt="image" src={img} />
             ) : (
               <div style={{ display: 'none' }} />
             )}
+            <SubmissionTableCardActions
+              submission={submission}
+              canPost={canPost}
+            />
           </EuiFlexItem>
           <EuiFlexItem>
             <SubmissionCardValidationStatus {...validationStatus} />
             <SubmissionTableCardEditableFields submission={submission} />
           </EuiFlexItem>
         </EuiFlexGroup>
-      </EuiSplitPanel.Inner>
-
-      <EuiSplitPanel.Inner
-        grow={false}
-        className="postybirb__submission-card-actions"
-      >
-        <SubmissionTableCardActions submission={submission} canPost={canPost} />
       </EuiSplitPanel.Inner>
     </EuiSplitPanel.Outer>
   );
