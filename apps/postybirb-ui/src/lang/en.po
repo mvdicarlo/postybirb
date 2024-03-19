@@ -79,6 +79,10 @@ msgstr ""
 msgid "Apply"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-table-actions/submission-table-actions.tsx:42
+msgid "Apply Template"
+msgstr ""
+
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:51
 msgctxt "unsaved changes modal"
 msgid "Are you sure you want to leave this page?"
@@ -91,8 +95,8 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:103
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:107
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:123
 msgid "Cancel post"
 msgstr ""
 
@@ -149,7 +153,7 @@ msgid "Create message submission button"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:56
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:78
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:77
 msgid "Create new submission"
 msgstr ""
 
@@ -247,7 +251,7 @@ msgstr ""
 msgid "Don't post to"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:179
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:198
 msgid "Duplicate"
 msgstr ""
 
@@ -261,7 +265,7 @@ msgctxt "duplicate.tag-group"
 msgid "Duplicate name"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:183
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:193
 msgid "Duplicate submission"
 msgstr ""
 
@@ -274,7 +278,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:79
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:199
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:170
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:185
 msgid "Edit"
 msgstr ""
 
@@ -282,7 +286,7 @@ msgstr ""
 msgid "Edit {templateName}"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:173
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:180
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
 msgid "Edit Submission"
 msgstr ""
@@ -331,7 +335,7 @@ msgstr ""
 msgid "Filters"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:92
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:91
 msgid "Folder"
 msgstr ""
 
@@ -467,7 +471,7 @@ msgstr ""
 msgid "No login component found."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:61
 msgid "No schedule"
 msgstr ""
 
@@ -523,11 +527,11 @@ msgstr ""
 msgid "Patch Notes"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:125
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:149
 msgid "Post"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:130
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:131
 msgid "Post submission"
 msgstr ""
 
@@ -618,7 +622,7 @@ msgid "Saves current values as the default for this account to be loaded in futu
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:157
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:57
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
 msgid "Schedule"
 msgstr ""
@@ -714,7 +718,7 @@ msgctxt "submission.card.warning"
 msgid "Submission has warnings"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:139
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:140
 msgid "Submission queued for posting"
 msgstr ""
 

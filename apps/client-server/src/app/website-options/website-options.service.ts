@@ -116,9 +116,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       .toArray()
       .find((option) => option.account.id === account.id);
     if (exists) {
-      // throw new BadRequestException(
-      //   `Submission option with account id ${account.id} already exists on ${submission.id}. Use update operation instead.`
-      // );
+      // Opt to just update the existing option
       return this.update(exists.id, { data: createDto.data });
     }
 

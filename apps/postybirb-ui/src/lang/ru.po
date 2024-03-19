@@ -77,6 +77,10 @@ msgstr "Порт сервера"
 msgid "Apply"
 msgstr "Применить"
 
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-table-actions/submission-table-actions.tsx:42
+msgid "Apply Template"
+msgstr ""
+
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:51
 msgctxt "unsaved changes modal"
 msgid "Are you sure you want to leave this page?"
@@ -89,8 +93,8 @@ msgstr "Вы уверены чио хотите уйти с этой стран�
 msgid "Cancel"
 msgstr "Отмена"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:103
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:107
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:123
 msgid "Cancel post"
 msgstr "Отменить пост"
 
@@ -147,7 +151,7 @@ msgid "Create message submission button"
 msgstr "Кнопка создания текстового поста"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:56
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:78
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:77
 msgid "Create new submission"
 msgstr "Создать новый пост"
 
@@ -245,7 +249,7 @@ msgstr "Описание больше, чем {maxLength} символов дл�
 msgid "Don't post to"
 msgstr "Не публиковать в"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:179
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:198
 msgid "Duplicate"
 msgstr "Дублировать"
 
@@ -259,7 +263,7 @@ msgctxt "duplicate.tag-group"
 msgid "Duplicate name"
 msgstr "Имя копии"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:183
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:193
 msgid "Duplicate submission"
 msgstr "Дублировать пост"
 
@@ -272,7 +276,7 @@ msgstr "Дублировать тэг"
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:79
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:199
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:170
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:185
 msgid "Edit"
 msgstr "Редактировать"
 
@@ -280,7 +284,7 @@ msgstr "Редактировать"
 msgid "Edit {templateName}"
 msgstr "Редактировать {templateName}"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:173
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:180
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
 msgid "Edit Submission"
 msgstr "Редактировать пост"
@@ -329,7 +333,7 @@ msgstr "Список фильтров"
 msgid "Filters"
 msgstr "Фильтры"
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:92
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:91
 msgid "Folder"
 msgstr "Папка"
 
@@ -465,7 +469,7 @@ msgstr "Нечего отобразить"
 msgid "No login component found."
 msgstr "Не найдено компонента входа."
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:61
 msgid "No schedule"
 msgstr "Не отложено"
 
@@ -521,11 +525,11 @@ msgstr "Страница не найдена"
 msgid "Patch Notes"
 msgstr "Примечания"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:125
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:149
 msgid "Post"
 msgstr "Опубликовать"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:130
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:131
 msgid "Post submission"
 msgstr "Опубликовать пост"
 
@@ -616,7 +620,7 @@ msgid "Saves current values as the default for this account to be loaded in futu
 msgstr "Сохраняет текущие значения как по умолчанию для этой учетной записи, которая будет загружена в будущих постах."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:157
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:57
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
 msgid "Schedule"
 msgstr "Отложить"
@@ -712,7 +716,7 @@ msgctxt "submission.card.warning"
 msgid "Submission has warnings"
 msgstr "Пост содержит ошибки"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:139
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:140
 msgid "Submission queued for posting"
 msgstr "Пост в очереди"
 

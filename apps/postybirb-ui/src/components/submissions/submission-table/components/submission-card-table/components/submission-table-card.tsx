@@ -126,7 +126,7 @@ export function SubmissionTableCard(
         <EuiFlexGroup justifyContent="flexStart" gutterSize="s">
           <EuiFlexItem grow={false}>
             {img ? (
-              <EuiImage height={50} allowFullScreen alt="image" src={img} />
+              <EuiImage allowFullScreen alt="image" src={img} />
             ) : (
               <div style={{ display: 'none' }} />
             )}
