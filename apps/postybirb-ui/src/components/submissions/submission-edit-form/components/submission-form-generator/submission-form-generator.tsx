@@ -44,7 +44,7 @@ export default function SubmissionFormGenerator(
     return <Trans>Unable to generate form.</Trans>;
   }
 
-  // Question why is the value an array again?
+  // TODO - Question why is the value an array again?
   const entries = Object.entries(metadata)
     .map(([key, value]) => ({ key, value: value[0] }))
     .sort((a, b) => {

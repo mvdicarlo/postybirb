@@ -6,7 +6,7 @@ import {
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { TagFieldType } from '@postybirb/form-builder';
-import { TagValue } from '@postybirb/types';
+import { NULL_ACCOUNT_ID, TagValue } from '@postybirb/types';
 import { uniq, uniqBy } from 'lodash';
 import { useState } from 'react';
 import { TagConverterStore } from '../../../../../../stores/tag-converter-store';
@@ -138,7 +138,7 @@ export default function TagField(props: TagFieldProps) {
       validations={validation}
       copyValue={value.tags.join(', ')}
     >
-      {option.account ? (
+      {option.account !== NULL_ACCOUNT_ID ? (
         <EuiCheckbox
           id={`cb-${option.id}-${propKey}-override`}
           checked={overrideDefault}

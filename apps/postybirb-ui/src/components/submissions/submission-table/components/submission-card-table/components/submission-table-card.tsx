@@ -130,19 +130,16 @@ export function SubmissionTableCard(
             ) : (
               <div style={{ display: 'none' }} />
             )}
+            <SubmissionTableCardActions
+              submission={submission}
+              canPost={canPost}
+            />
           </EuiFlexItem>
           <EuiFlexItem>
             <SubmissionCardValidationStatus {...validationStatus} />
             <SubmissionTableCardEditableFields submission={submission} />
           </EuiFlexItem>
         </EuiFlexGroup>
-      </EuiSplitPanel.Inner>
-
-      <EuiSplitPanel.Inner
-        grow={false}
-        className="postybirb__submission-card-actions"
-      >
-        <SubmissionTableCardActions submission={submission} canPost={canPost} />
       </EuiSplitPanel.Inner>
     </EuiSplitPanel.Outer>
   );

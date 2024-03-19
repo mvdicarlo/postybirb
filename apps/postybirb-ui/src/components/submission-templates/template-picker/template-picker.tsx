@@ -24,6 +24,7 @@ export default function TemplatePicker(props: TemplatePickerProps) {
 
   return (
     <EuiComboBox
+      compressed
       singleSelection
       options={templates}
       selectedOptions={

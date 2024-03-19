@@ -1,4 +1,4 @@
-import { EuiFlexGrid, EuiFlexItem } from '@elastic/eui';
+import { EuiFlexGrid, EuiFlexItem, useIsWithinBreakpoints } from '@elastic/eui';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { SubmissionTableCard } from './components/submission-table-card';
@@ -16,6 +16,7 @@ export function SubmissionCardTable({
   selectedSubmissionIds,
   onSelect,
 }: SubmissionCardTableProps): JSX.Element {
+  const isLarge = useIsWithinBreakpoints(['xl']);
   const cards = useMemo(
     () =>
       submissions.map((s) => (
@@ -32,7 +33,7 @@ export function SubmissionCardTable({
 
   return (
     <div className="postybirb__submission-card-table">
-      <EuiFlexGrid columns={2}>{cards}</EuiFlexGrid>
+      <EuiFlexGrid columns={isLarge ? 2 : 1}>{cards}</EuiFlexGrid>
     </div>
   );
 }

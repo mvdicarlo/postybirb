@@ -40,6 +40,7 @@ export function DefaultSubmissionScheduleField({
         />
       ) : null}
       <EuiFormRow
+        fullWidth
         helpText={
           schedule.cron && schedule.scheduleType === ScheduleType.RECURRING
             ? `${cronstrue.toString(schedule.cron)} (${moment(
@@ -53,6 +54,7 @@ export function DefaultSubmissionScheduleField({
       >
         <EuiFieldText
           compressed
+          fullWidth
           prepend={
             <EuiButtonIcon iconType="calendar" aria-label={_(msg`Schedule`)} />
           }
