@@ -1,6 +1,6 @@
 /* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { INestApplication } from '@nestjs/common';
-import { getStartupOptions } from '@postybirb/utils/electron';
+import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 import contextMenu from 'electron-context-menu';
@@ -18,6 +18,10 @@ if (!isOnlyInstance) {
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
 app.commandLine.appendSwitch('disable-background-timer-throttling');
 app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
+
+// Inject environment for use in preload
+process.env.POSTYBIRB_PORT = PostyBirbEnvConfig.port;
+process.env.POSTYBIRB_VERSION = environment.version;
 
 // Setup Metrics
 startMetrics();
@@ -47,9 +51,6 @@ app.on(
   }
 );
 
-process.env.APP_PORT = process.env.APP_PORT ?? '9487';
-process.env.APP_VERSION = environment.version;
-
 contextMenu();
 
 export default class Main {
@@ -58,7 +59,7 @@ export default class Main {
   }
 
   static bootstrapClientServer(): Promise<INestApplication> {
-    return bootstrapClientServer(getStartupOptions());
+    return bootstrapClientServer();
   }
 
   static bootstrapApp(nestApp: INestApplication) {
@@ -78,8 +79,13 @@ async function start() {
 
     // bootstrap app
     const nestApp = await Main.bootstrapClientServer();
-    Main.bootstrapApp(nestApp);
-    Main.bootstrapAppEvents();
+    if (PostyBirbEnvConfig.headless) {
+      // eslint-disable-next-line no-console
+      console.log('Headless mode enabled.');
+    } else {
+      Main.bootstrapApp(nestApp);
+      Main.bootstrapAppEvents();
+    }
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error(e);

@@ -103,6 +103,7 @@
     "lodash": "^4.17.21",
     "loglayer": "^2.1.0",
     "mime": "^3.0.0",
+    "minimist": "^1.2.8",
     "moment": "^2.29.4",
     "multer": "^1.4.3",
     "node-forge": "^0.10.0",
