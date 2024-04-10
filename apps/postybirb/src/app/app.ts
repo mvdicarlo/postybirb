@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import {
+  PostyBirbEnvConfig,
   getStartupOptions,
   isLinux,
   isOSX,
@@ -146,7 +147,9 @@ export default class PostyBirb {
     if (this.isDevelopmentMode()) {
       PostyBirb.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
     } else {
-      PostyBirb.mainWindow.loadURL(`https://localhost:${process.env.APP_PORT}`);
+      PostyBirb.mainWindow.loadURL(
+        `https://localhost:${PostyBirbEnvConfig.port}`
+      );
     }
   }
 
