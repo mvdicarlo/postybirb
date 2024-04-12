@@ -76,7 +76,7 @@ export class PostManagerService {
   /**
    * Checks for any posts that need to be posted.
    */
-  public async check() {
+  private async check() {
     if (!IsTestEnvironment()) {
       const nextToPost = await this.postService.getNext();
       if (nextToPost && this.currentPost?.id !== nextToPost.id) {

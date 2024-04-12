@@ -99,7 +99,7 @@ export class PostService extends PostyBirbService<PostRecord> {
 
     if (created.length > 0) {
       // Attempt to start the post manager if it is not already running.
-      this.postManagerService.check();
+      this.postManagerService.startPost(await this.getNext());
     }
 
     return created;
