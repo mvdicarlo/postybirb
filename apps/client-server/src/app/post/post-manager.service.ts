@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
@@ -64,6 +64,7 @@ export class PostManagerService {
     private readonly postRepository: PostyBirbRepository<PostRecord>,
     @InjectRepository(WebsitePostRecord)
     private readonly websitePostRecordRepository: PostyBirbRepository<WebsitePostRecord>,
+    @Inject(forwardRef(() => PostService))
     private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
@@ -75,11 +76,11 @@ export class PostManagerService {
   /**
    * Checks for any posts that need to be posted.
    */
-  private async check() {
+  public async check() {
     if (!IsTestEnvironment()) {
       const nextToPost = await this.postService.getNext();
       if (nextToPost && this.currentPost?.id !== nextToPost.id) {
-        this.logger.info(`Found next post to post: ${nextToPost.id}`);
+        this.logger.info(`Found next to post: ${nextToPost.id}`);
         this.startPost(nextToPost);
       }
     }
@@ -115,7 +116,7 @@ export class PostManagerService {
       this.logger.withMetadata(entity.toJSON()).info(`Initializing post`);
       this.currentPost = entity;
       await this.postRepository.update(entity.id, {
-        state: PostRecordState.PROCESSING,
+        state: PostRecordState.RUNNING,
       });
 
       // Ensure parent (submission) is loaded
@@ -150,11 +151,6 @@ export class PostManagerService {
   }
 
   private async finishPost(entity: LoadedPostRecord) {
-    if (this.currentPost) {
-      this.currentPost = null;
-      this.cancelToken = null;
-    }
-
     this.currentPost = null;
     this.cancelToken = null;
 
@@ -612,7 +608,7 @@ export class PostManagerService {
     }
 
     if (result?.errors?.length) {
-      throw new BadRequestException('Submission contains validation errors');
+      throw new Error('Submission contains validation errors');
     }
   }
 }

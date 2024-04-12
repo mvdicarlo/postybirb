@@ -4,7 +4,7 @@
  */
 export enum PostRecordState {
   PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
+  RUNNING = 'RUNNING',
   DONE = 'DONE',
   FAILED = 'FAILED',
 }

@@ -1,7 +1,8 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SubmissionId } from '@postybirb/types';
+import { Cron as CronGenerator } from 'croner';
 import { uniq } from 'lodash';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { PostRecord, Submission } from '../database/entities';
@@ -10,6 +11,7 @@ import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { QueuePostRecordRequestDto } from './dtos/queue-post-record.dto';
+import { PostManagerService } from './post-manager.service';
 
 /**
  * Handles enqueue and dequeue of post records.
@@ -18,6 +20,8 @@ import { QueuePostRecordRequestDto } from './dtos/queue-post-record.dto';
 @Injectable()
 export class PostService extends PostyBirbService<PostRecord> {
   constructor(
+    @Inject(forwardRef(() => PostManagerService))
+    private readonly postManagerService: PostManagerService,
     @InjectRepository(PostRecord)
     repository: PostyBirbRepository<PostRecord>,
     @InjectRepository(Submission)
@@ -46,6 +50,17 @@ export class PostService extends PostyBirbService<PostRecord> {
             new Date(b.schedule.scheduledFor).getTime()
         ); // Sort by oldest first.
       this.enqueue({ ids: sorted.map((s) => s.id) });
+
+      sorted
+        .filter((s) => s.schedule.cron)
+        .forEach((s) => {
+          const next = CronGenerator(s.schedule.cron).nextRun()?.toISOString();
+          if (next) {
+            // eslint-disable-next-line no-param-reassign
+            s.schedule.scheduledFor = next;
+            this.submissionRepository.persistAndFlush(s);
+          }
+        });
     }
   }
 
@@ -61,6 +76,7 @@ export class PostService extends PostyBirbService<PostRecord> {
     });
 
     // Filter out any already queued that are not in a completed state.
+    // It may be better to move completed to a separate table to avoid this check.
     const unqueued = uniq(
       request.ids.filter(
         (id) => !existing.some((e) => e.parent.id === id && !e.completedAt)
@@ -81,6 +97,11 @@ export class PostService extends PostyBirbService<PostRecord> {
       }
     }
 
+    if (created.length > 0) {
+      // Attempt to start the post manager if it is not already running.
+      this.postManagerService.check();
+    }
+
     return created;
   }
 
@@ -99,6 +120,8 @@ export class PostService extends PostyBirbService<PostRecord> {
     const incomplete = existing.filter(
       (e: PostRecord) => e.completedAt !== undefined
     );
+
+    request.ids.forEach(this.postManagerService.cancelIfRunning);
     await this.repository.removeAndFlush(incomplete);
   }
 
