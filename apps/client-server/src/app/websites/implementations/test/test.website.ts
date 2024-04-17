@@ -3,12 +3,12 @@ import {
   ILoginState,
   ISubmissionFile,
   IWebsiteFormFields,
+  IWebsiteMetadata,
   MessageSubmission,
   PostData,
   PostResponse,
   ValidationResult,
 } from '@postybirb/types';
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';

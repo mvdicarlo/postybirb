@@ -6,8 +6,11 @@ import {
   Optional,
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
-import { NULL_ACCOUNT_ID, NullAccount } from '@postybirb/types';
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import {
+  IWebsiteMetadata,
+  NULL_ACCOUNT_ID,
+  NullAccount,
+} from '@postybirb/types';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Account } from '../database/entities';

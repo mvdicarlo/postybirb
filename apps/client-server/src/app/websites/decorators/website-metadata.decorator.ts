@@ -1,4 +1,4 @@
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
+import { IWebsiteMetadata } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 

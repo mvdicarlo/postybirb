@@ -3,13 +3,13 @@ import {
   DynamicObject,
   IAccount,
   ILoginState,
+  IWebsiteMetadata,
   LoginState,
   SubmissionType,
   UsernameShortcut,
   WebsiteLoginType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { session } from 'electron';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
