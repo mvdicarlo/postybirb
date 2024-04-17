@@ -6,6 +6,7 @@ import {
   IWebsiteMetadata,
   LoginState,
   SubmissionType,
+  TagSupport,
   UsernameShortcut,
   WebsiteLoginType,
 } from '@postybirb/types';
@@ -46,6 +47,12 @@ export abstract class Website<D extends DynamicObject> {
   public readonly metadata: IWebsiteMetadata;
 
   /**
+   * Do not set this manually.
+   * This property is filled with the {SupportsTags} decorator.
+   */
+  public readonly tagSupport: TagSupport;
+
+  /**
    * Do not set this manually. Apply with {@LoginType} decorator
    * A property used to define how a user will login through the UI.
    * @type {UserLoginType} - User will login through a webview using the provided url.
@@ -71,9 +78,9 @@ export abstract class Website<D extends DynamicObject> {
    * Username shortcut that is used for modifying links to users for websites that
    * support it.
    *
-   * Should ideally be set using the {@SupportsUsernameShortcut} decorator.
+   * Should only be set using the {@SupportsUsernameShortcut} decorator.
    */
-  public readonly usernameShortcut: UsernameShortcut;
+  public readonly usernameShortcut?: UsernameShortcut;
 
   /**
    * Reference Id of a website instance.

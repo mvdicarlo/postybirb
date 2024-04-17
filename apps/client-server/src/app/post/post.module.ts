@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database/database.module';
-import { PostParsersModule } from '../post-parsers/parsers.module';
+import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsitesModule } from '../websites/websites.module';

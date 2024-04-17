@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { IWebsiteMetadata } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
@@ -16,11 +17,10 @@ export function WebsiteMetadata(metadata: IWebsiteMetadata) {
       m.refreshInterval = 60 * 60_000;
     }
 
-    if (metadata.supportsTags === undefined) {
-      m.supportsTags = true;
+    if (!constructor.prototype.tagSupport) {
+      constructor.prototype.tagSupport = { supportsTags: false };
     }
 
-    // eslint-disable-next-line no-param-reassign
     constructor.prototype.metadata = { ...m };
   };
 }

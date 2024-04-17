@@ -9,7 +9,7 @@ import { AppService } from './app.service';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
-import { PostParsersModule } from './post-parsers/parsers.module';
+import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
 import { SettingsModule } from './settings/settings.module';
 import { SubmissionModule } from './submission/submission.module';

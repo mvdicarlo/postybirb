@@ -39,14 +39,27 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
     return this.repository.update(id, update);
   }
 
-  async convert(instance: Website<unknown>, tag: string): Promise<string> {
-    const converter = await this.repository.findOne({ tag });
-    if (!converter) return tag;
-    return (
-      converter.convertTo[instance.metadata.name] ??
-      converter.convertTo.default ??
-      tag
-    );
+  // TODO - write tests for this
+  /**
+   * Converts a list of tags using user defined conversion table.
+   *
+   * @param {Website<unknown>} instance
+   * @param {string[]} tags
+   * @return {*}  {Promise<string[]>}
+   */
+  async convert(instance: Website<unknown>, tags: string[]): Promise<string[]> {
+    const converters = await this.repository.find({ tag: { $in: tags } });
+    return tags.map((tag) => {
+      const converter = converters.find((c) => c.tag === tag);
+      if (!converter) {
+        return tag;
+      }
+      return (
+        converter.convertTo[instance.metadata.name] ??
+        converter.convertTo.default ??
+        tag
+      );
+    });
   }
 
   protected async emit() {

@@ -1,19 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  DefaultTagValue,
   IWebsiteFormFields,
   PostData,
-  SubmissionRating,
-  TagValue,
   UsernameShortcut,
 } from '@postybirb/types';
-import { uniq } from 'lodash';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Submission, WebsiteOptions } from '../database/entities';
-import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UnknownWebsite, Website } from '../websites/website';
+import { RatingParserService } from './rating-parser.service';
+import { TagParserService } from './tag-parser.service';
 
+// TODO - write tests for this
 @Injectable()
 export class PostParsersService {
   private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
@@ -21,7 +19,8 @@ export class PostParsersService {
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
-    private readonly tagConvertersService: TagConvertersService
+    private readonly tagParser: TagParserService,
+    private readonly ratingParser: RatingParserService
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -41,10 +40,10 @@ export class PostParsersService {
     const defaultOptions: WebsiteOptions = submission.options.find(
       (o) => o.isDefault
     );
-    const tags = await this.parseTags(
+    const tags = await this.tagParser.parse(
       instance,
-      defaultOptions.data.tags ?? DefaultTagValue,
-      websiteOptions.data.tags ?? DefaultTagValue
+      defaultOptions,
+      websiteOptions
     );
     return {
       submission,
@@ -52,32 +51,8 @@ export class PostParsersService {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
-        rating: this.parseRating(
-          defaultOptions.data.rating ?? SubmissionRating.GENERAL,
-          websiteOptions.data.rating ?? SubmissionRating.GENERAL
-        ),
+        rating: this.ratingParser.parse(defaultOptions, websiteOptions),
       },
-    };
-  }
-
-  private parseRating(
-    defaultRating: SubmissionRating,
-    websiteRating: SubmissionRating
-  ): SubmissionRating {
-    return websiteRating ?? defaultRating ?? SubmissionRating.GENERAL;
-  }
-
-  private async parseTags(
-    instance: Website<unknown>,
-    defaultTags: TagValue,
-    websiteTags: TagValue
-  ): Promise<TagValue> {
-    const tags = websiteTags.overrideDefault
-      ? websiteTags.tags
-      : [...defaultTags.tags, ...websiteTags.tags];
-    return {
-      overrideDefault: websiteTags.overrideDefault,
-      tags: uniq(tags),
     };
   }
 }

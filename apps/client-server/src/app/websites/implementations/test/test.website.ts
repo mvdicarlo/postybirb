@@ -14,6 +14,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsTags } from '../../decorators/supports-tags.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
@@ -29,6 +30,7 @@ export const TestMetadata: IWebsiteMetadata = {
 
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')
+@SupportsTags()
 export default class TestWebsite
   extends Website<{ test: string }>
   implements
