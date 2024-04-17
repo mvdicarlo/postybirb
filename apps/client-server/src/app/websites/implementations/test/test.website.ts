@@ -8,9 +8,11 @@ import {
   PostResponse,
   ValidationResult,
 } from '@postybirb/types';
-import { TestMetadata } from '@postybirb/website-metadata';
+import { IWebsiteMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
+import { ImageResizeProps } from '../../../post/models/image-resize-props';
+import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -19,8 +21,11 @@ import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import { TestFileSubmission } from './models/test-file-submission';
 import { TestMessageSubmission } from './models/test-message-submission';
-import { ImageResizeProps } from '../../../post/models/image-resize-props';
-import { PostingFile } from '../../../post/models/posting-file';
+
+export const TestMetadata: IWebsiteMetadata = {
+  name: 'test',
+  displayName: 'Test',
+};
 
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')

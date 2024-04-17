@@ -9,6 +9,8 @@ import { AppService } from './app.service';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
+import { PostParsersModule } from './post-parsers/parsers.module';
+import { PostModule } from './post/post.module';
 import { SettingsModule } from './settings/settings.module';
 import { SubmissionModule } from './submission/submission.module';
 import { TagConvertersModule } from './tag-converters/tag-converters.module';
@@ -18,7 +20,6 @@ import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-opti
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
 import { WebsitesModule } from './websites/websites.module';
-import { PostModule } from './post/post.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PostModule } from './post/post.module';
     UserSpecifiedWebsiteOptionsModule,
     UpdateModule,
     PostModule,
+    PostParsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

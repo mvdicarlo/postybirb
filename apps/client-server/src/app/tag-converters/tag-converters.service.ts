@@ -6,6 +6,7 @@ import { TagConverter } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { WSGateway } from '../web-socket/web-socket-gateway';
+import { Website } from '../websites/website';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 
@@ -36,6 +37,16 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
   update(id: string, update: UpdateTagConverterDto) {
     this.logger.withMetadata(update).info(`Updating TagConverter '${id}'`);
     return this.repository.update(id, update);
+  }
+
+  async convert(instance: Website<unknown>, tag: string): Promise<string> {
+    const converter = await this.repository.findOne({ tag });
+    if (!converter) return tag;
+    return (
+      converter.convertTo[instance.metadata.name] ??
+      converter.convertTo.default ??
+      tag
+    );
   }
 
   protected async emit() {

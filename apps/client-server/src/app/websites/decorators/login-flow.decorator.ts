@@ -20,7 +20,7 @@ export function UserLoginFlow(url: string) {
 }
 
 /**
- * Idenfifies the website as  having a custom login flow.
+ * Identifies the website as having a custom login flow.
  * Meaning that they will login through a custom provided form / component.
  * Defaults the name of the class if no name is provided.
  * @param {string} [loginComponentName]

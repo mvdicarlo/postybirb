@@ -8,7 +8,6 @@ import {
   PostResponse,
   ValidationResult,
 } from '@postybirb/types';
-import { DiscordMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
@@ -23,7 +22,11 @@ import { DiscordAccountData } from './models/discord-account-data';
 import { DiscordFileSubmission } from './models/discord-file-submission';
 import { DiscordMessageSubmission } from './models/discord-message-submission';
 
-@WebsiteMetadata(DiscordMetadata)
+@WebsiteMetadata({
+  name: 'discord',
+  displayName: 'Discord',
+  supportsTags: false,
+})
 @CustomLoginFlow()
 export default class Discord
   extends Website<DiscordAccountData>

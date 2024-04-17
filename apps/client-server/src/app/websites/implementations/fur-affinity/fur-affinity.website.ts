@@ -8,7 +8,6 @@ import {
   PostResponse,
   ValidationResult,
 } from '@postybirb/types';
-import { FurAffinityMetadata } from '@postybirb/website-metadata';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -25,7 +24,10 @@ import { FurAffinityAccountData } from './models/fur-affinity-account-data';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
 import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission';
 
-@WebsiteMetadata(FurAffinityMetadata)
+@WebsiteMetadata({
+  name: 'fur-affinity',
+  displayName: 'Fur Affinity',
+})
 @UserLoginFlow('https://furaffinity.net/login')
 @SupportsUsernameShortcut({
   id: 'fa',

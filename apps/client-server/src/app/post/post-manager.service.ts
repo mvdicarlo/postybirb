@@ -9,6 +9,7 @@ import {
   FileSubmission,
   FileType,
   ISubmissionFile,
+  IWebsiteFormFields,
   IWebsitePostRecord,
   MessageSubmission,
   ModifiedFileDimension,
@@ -29,6 +30,7 @@ import {
   WebsitePostRecord,
 } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { IsTestEnvironment } from '../utils/test.util';
 import { FileWebsite } from '../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -37,7 +39,6 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
 import { ImageResizeProps } from './models/image-resize-props';
 import { PostingFile } from './models/posting-file';
-import { PostParserService } from './parsers/post-parser.service';
 import { PostFileResizerService } from './post-file-resizer.service';
 import { PostService } from './post.service';
 
@@ -68,7 +69,7 @@ export class PostManagerService {
     private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
-    private readonly postParserService: PostParserService
+    private readonly postParserService: PostParsersService
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -188,7 +189,7 @@ export class PostManagerService {
         );
       }
       // TODO - Still need to actually implement data prep
-      const data = this.preparePostData(
+      const data = await this.preparePostData(
         submission,
         instance,
         submission.options.find(
@@ -216,7 +217,7 @@ export class PostManagerService {
     submission: Submission,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
-    data: PostData<Submission, never>
+    data: PostData<Submission, IWebsiteFormFields>
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
@@ -576,8 +577,8 @@ export class PostManagerService {
   private preparePostData(
     submission: Submission,
     instance: Website<unknown>,
-    websiteOptions: WebsiteOptions<never>
-  ): PostData<Submission, never> {
+    websiteOptions: WebsiteOptions
+  ): Promise<PostData<Submission, IWebsiteFormFields>> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }
 
@@ -589,7 +590,7 @@ export class PostManagerService {
    */
   private async validatePostData(
     type: SubmissionType,
-    data: PostData<Submission, never>,
+    data: PostData<Submission, IWebsiteFormFields>,
     instance: Website<unknown>
   ) {
     let result: ValidationResult;
