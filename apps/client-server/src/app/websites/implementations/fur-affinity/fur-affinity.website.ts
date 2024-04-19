@@ -14,6 +14,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsTags } from '../../decorators/supports-tags.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcuts.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -35,6 +36,7 @@ import { FurAffinityMessageSubmission } from './models/fur-affinity-message-subm
   url: 'https://furaffinity.net/user/$1',
 })
 @SupportsTags()
+@SupportsFiles(['image/png', 'image/jpeg'])
 export default class FurAffinity
   extends Website<FurAffinityAccountData>
   implements
@@ -45,8 +47,6 @@ export default class FurAffinity
 
   MessageModel: Class<FurAffinityMessageSubmission> =
     FurAffinityMessageSubmission;
-
-  supportsAdditionalFiles = false;
 
   protected BASE_URL = 'https://furaffinity.net';
 

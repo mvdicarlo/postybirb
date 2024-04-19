@@ -333,7 +333,7 @@ export class PostManagerService {
     data: PostData<FileSubmission, never>
   ): Promise<void> {
     // Order files based on submission order
-    const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
+    const fileBatchSize = Math.max(instance.fileOptions.fileBatchSize ?? 1, 1);
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
@@ -493,7 +493,7 @@ export class PostManagerService {
     const standardWebsites = []; // Post first
     const externalSourceWebsites = []; // Post last
     websitePairs.forEach((w) => {
-      if (w.instance.metadata.acceptsExternalSources) {
+      if (w.instance.fileOptions?.acceptsExternalSourceUrls) {
         externalSourceWebsites.push(w);
       } else {
         standardWebsites.push(w);

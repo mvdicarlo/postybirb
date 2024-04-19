@@ -13,6 +13,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -25,17 +26,19 @@ import { DiscordMessageSubmission } from './models/discord-message-submission';
 @WebsiteMetadata({
   name: 'discord',
   displayName: 'Discord',
-  supportsTags: false,
 })
 @CustomLoginFlow()
+@SupportsFiles({
+  acceptedMimeTypes: [],
+  acceptedFileSizes: {},
+  fileBatchSize: 10,
+})
 export default class Discord
   extends Website<DiscordAccountData>
   implements
     FileWebsite<DiscordFileSubmission>,
     MessageWebsite<DiscordMessageSubmission>
 {
-  supportsAdditionalFiles = true;
-
   FileModel: Class<DiscordFileSubmission> = DiscordFileSubmission;
 
   MessageModel: Class<DiscordMessageSubmission> = DiscordMessageSubmission;

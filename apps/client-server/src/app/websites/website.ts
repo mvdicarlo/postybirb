@@ -8,12 +8,14 @@ import {
   SubmissionType,
   TagSupport,
   UsernameShortcut,
+  WebsiteFileOptions,
   WebsiteLoginType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { TagParserFunction } from './decorators/supports-tags.decorator';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import { FileWebsiteKey } from './models/website-modifiers/file-website';
 import { MessageWebsiteKey } from './models/website-modifiers/message-website';
@@ -51,6 +53,18 @@ export abstract class Website<D extends DynamicObject> {
    * This property is filled with the {SupportsTags} decorator.
    */
   public readonly tagSupport: TagSupport;
+
+  /**
+   * Do not set this manually.
+   * This property is filled with the {SupportsTags} decorator.
+   */
+  public readonly tagParser: TagParserFunction;
+
+  /**
+   * Do not set this manually.
+   * This property is filled with the {SupportsFiles} decorator.
+   */
+  public readonly fileOptions?: WebsiteFileOptions;
 
   /**
    * Do not set this manually. Apply with {@LoginType} decorator

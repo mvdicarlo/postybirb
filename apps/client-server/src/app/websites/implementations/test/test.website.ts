@@ -14,6 +14,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsTags } from '../../decorators/supports-tags.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -31,6 +32,7 @@ export const TestMetadata: IWebsiteMetadata = {
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')
 @SupportsTags()
+@SupportsFiles(['image/png', 'image/jpeg'])
 export default class TestWebsite
   extends Website<{ test: string }>
   implements
@@ -41,8 +43,6 @@ export default class TestWebsite
   FileModel: Class<TestFileSubmission> = TestFileSubmission;
 
   MessageModel: Class<TestMessageSubmission> = TestMessageSubmission;
-
-  supportsAdditionalFiles = false;
 
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
     test: true,

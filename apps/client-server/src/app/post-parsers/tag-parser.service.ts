@@ -22,12 +22,19 @@ export class TagParserService {
     const defaultTags = defaultOptions.data.tags ?? DefaultTagValue;
     const websiteTags = websiteOptions.data.tags ?? DefaultTagValue;
 
-    const tags: string[] = await this.tagConvertersService.convert(
+    let tags: string[] = await this.tagConvertersService.convert(
       instance,
       websiteTags.overrideDefault
         ? websiteTags.tags
         : [...defaultTags.tags, ...websiteTags.tags]
     );
+
+    tags = tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
+
+    if (instance.tagParser) {
+      tags = tags.map(instance.tagParser);
+    }
+
     return {
       overrideDefault: websiteTags.overrideDefault,
       tags: uniq(tags).slice(0, instance.tagSupport.maxTags ?? Infinity),

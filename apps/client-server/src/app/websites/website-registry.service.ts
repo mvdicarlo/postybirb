@@ -190,6 +190,7 @@ export class WebsiteRegistryService {
         usernameShortcut: website.prototype.usernameShortcut,
         metadata: website.prototype.metadata,
         tagSupport: website.prototype.tagSupport,
+        fileOptions: website.prototype.fileOptions,
         accounts: accounts.map((account) => {
           const instance = this.findInstance(account);
           if (instance) {
