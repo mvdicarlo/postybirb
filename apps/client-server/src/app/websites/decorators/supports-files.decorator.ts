@@ -1,7 +1,7 @@
-/* eslint-disable no-param-reassign */
 import { WebsiteFileOptions } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
+import { injectWebsiteDecoratorProps } from './website-decorator-props';
 
 export function SupportsFiles(websiteFileOptions: WebsiteFileOptions);
 export function SupportsFiles(acceptedMimeTypes: string[]);
@@ -23,6 +23,8 @@ export function SupportsFiles(
       ...websiteFileOptions,
     };
 
-    constructor.prototype.supportsFiles = websiteFileOptions;
+    injectWebsiteDecoratorProps(constructor, {
+      fileOptions: websiteFileOptions,
+    });
   };
 }

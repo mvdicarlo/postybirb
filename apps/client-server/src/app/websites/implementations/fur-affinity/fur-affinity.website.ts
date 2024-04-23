@@ -16,7 +16,7 @@ import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsTags } from '../../decorators/supports-tags.decorator';
-import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcuts.decorator';
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';

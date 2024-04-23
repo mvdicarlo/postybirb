@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import { SubmissionRating } from '@postybirb/types';
-import { WebsiteOptions } from '../database/entities';
+import { WebsiteOptions } from '../../../database/entities';
 
-@Injectable()
-export class RatingParserService {
+export class RatingParser {
   public parse(
     defaultOptions: WebsiteOptions,
     websiteOptions: WebsiteOptions

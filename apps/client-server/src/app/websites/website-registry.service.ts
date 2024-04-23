@@ -15,6 +15,7 @@ import { PostyBirbRepository } from '../database/repositories/postybirb-reposito
 import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
+import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
@@ -49,23 +50,22 @@ export class WebsiteRegistryService {
     this.logger.debug('Registering websites');
     Object.values({ ...this.websiteImplementations }).forEach(
       (website: Class<UnknownWebsite>) => {
-        if (!website.prototype.metadata.name) {
-          throw new Error(`${website.name} is missing metadata field 'name'`);
-        }
-
         if (
-          !website.prototype.loginUrl &&
-          !website.prototype.loginComponentName
+          !validateWebsiteDecoratorProps(
+            this.logger,
+            website.name,
+            website.prototype.decoratedProps
+          )
         ) {
-          this.logger.warn(
-            `${website.name} is missing a login method. Please apply the UserLoginWebsite or CustomLoginWebsite interface.`
-          );
+          this.logger.error(`Failed to register website: ${website.name}`);
+          return;
         }
 
         this.logger.debug(
-          `Registered website: ${website.prototype.metadata.name}`
+          `Registered website: ${website.prototype.decoratedProps.metadata.name}`
         );
-        this.availableWebsites[website.prototype.metadata.name] = website;
+        this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
+          website;
       }
     );
     accountRepository.addUpdateListener(
@@ -154,9 +154,9 @@ export class WebsiteRegistryService {
    * @param {Class<UnknownWebsite>} website
    */
   public getInstancesOf(website: Class<UnknownWebsite>): UnknownWebsite[] {
-    if (this.websiteInstances[website.prototype.metadata.name]) {
+    if (this.websiteInstances[website.prototype.decoratedProps.metadata.name]) {
       return Object.values(
-        this.websiteInstances[website.prototype.metadata.name]
+        this.websiteInstances[website.prototype.decoratedProps.metadata.name]
       );
     }
 
@@ -181,16 +181,16 @@ export class WebsiteRegistryService {
     // eslint-disable-next-line no-restricted-syntax
     for (const website of availableWebsites) {
       const accounts = await this.accountRepository.find({
-        website: website.prototype.metadata.name,
+        website: website.prototype.decoratedProps.metadata.name,
       });
       dtos.push({
-        loginType: website.prototype.loginType,
-        id: website.prototype.metadata.name,
-        displayName: website.prototype.metadata.displayName,
-        usernameShortcut: website.prototype.usernameShortcut,
-        metadata: website.prototype.metadata,
-        tagSupport: website.prototype.tagSupport,
-        fileOptions: website.prototype.fileOptions,
+        loginType: website.prototype.decoratedProps.loginFlow,
+        id: website.prototype.decoratedProps.metadata.name,
+        displayName: website.prototype.decoratedProps.metadata.displayName,
+        usernameShortcut: website.prototype.decoratedProps.usernameShortcut,
+        metadata: website.prototype.decoratedProps.metadata,
+        tagSupport: website.prototype.decoratedProps.tagSupport,
+        fileOptions: website.prototype.decoratedProps.fileOptions,
         accounts: accounts.map((account) => {
           const instance = this.findInstance(account);
           if (instance) {
@@ -203,7 +203,8 @@ export class WebsiteRegistryService {
             // eslint-disable-next-line no-param-reassign
             account.websiteInfo = {
               websiteDisplayName:
-                instance.metadata.displayName || instance.metadata.name,
+                instance.decoratedProps.metadata.displayName ||
+                instance.decoratedProps.metadata.name,
               supports: instance.getSupportedTypes(),
             };
           }

@@ -185,7 +185,7 @@ export class PostManagerService {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
         throw new Error(
-          `Website '${instance.metadata.displayName}' does not support ${submission.type}`
+          `Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
         );
       }
       // TODO - Still need to actually implement data prep
@@ -207,7 +207,8 @@ export class PostManagerService {
         exception: error,
         additionalInfo: null,
         message: `An unexpected error occurred while posting to ${
-          instance.metadata.displayName || instance.metadata.name
+          instance.decoratedProps.metadata.displayName ||
+          instance.decoratedProps.metadata.name
         }`,
       });
     }
@@ -239,7 +240,7 @@ export class PostManagerService {
         break;
       default:
         throw new Error(
-          `Unknown Submission Type: Website '${instance.metadata.displayName}' does not support ${submission.type}`
+          `Unknown Submission Type: Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
         );
     }
   }
@@ -333,7 +334,10 @@ export class PostManagerService {
     data: PostData<FileSubmission, never>
   ): Promise<void> {
     // Order files based on submission order
-    const fileBatchSize = Math.max(instance.fileOptions.fileBatchSize ?? 1, 1);
+    const fileBatchSize = Math.max(
+      instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
+      1
+    );
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
@@ -493,7 +497,7 @@ export class PostManagerService {
     const standardWebsites = []; // Post first
     const externalSourceWebsites = []; // Post last
     websitePairs.forEach((w) => {
-      if (w.instance.fileOptions?.acceptsExternalSourceUrls) {
+      if (w.instance.decoratedProps.fileOptions?.acceptsExternalSourceUrls) {
         externalSourceWebsites.push(w);
       } else {
         standardWebsites.push(w);

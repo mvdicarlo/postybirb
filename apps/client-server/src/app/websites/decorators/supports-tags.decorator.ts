@@ -1,7 +1,7 @@
-/* eslint-disable no-param-reassign */
 import { TagSupport, UnlimitedTags } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
+import { injectWebsiteDecoratorProps } from './website-decorator-props';
 
 export type TagParserFunction = (tag: string) => string;
 
@@ -23,8 +23,8 @@ export function SupportsTags(
 ) {
   const tagSupport: TagSupport =
     typeof tagSupportOrFunction === 'function'
-      ? UnlimitedTags
-      : tagSupportOrFunction;
+      ? UnlimitedTags()
+      : tagSupportOrFunction ?? UnlimitedTags();
 
   const tagParserFunction: TagParserFunction =
     typeof tagSupportOrFunction === 'function'
@@ -39,10 +39,11 @@ export function SupportsTags(
       tagSupport.maxTags = Infinity;
     }
   }
-  if (tagSupport === undefined) {
-    return function website(constructor: Class<UnknownWebsite>) {
-      constructor.prototype.tagSupport = UnlimitedTags;
-      constructor.prototype.tagParser = tagParser ?? tagParserFunction;
-    };
-  }
+
+  return function website(constructor: Class<UnknownWebsite>) {
+    injectWebsiteDecoratorProps(constructor, {
+      tagSupport,
+      tagParser: tagParser ?? tagParserFunction,
+    });
+  };
 }

@@ -10,8 +10,8 @@ type NoTagSupport = {
   supportsTags: false;
 };
 
-export const UnlimitedTags: SupportsTags = {
+export const UnlimitedTags = () => ({
   supportsTags: true,
   maxTags: Infinity,
   minTags: 0,
-};
+});

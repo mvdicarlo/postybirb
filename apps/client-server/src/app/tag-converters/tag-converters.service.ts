@@ -55,7 +55,7 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
         return tag;
       }
       return (
-        converter.convertTo[instance.metadata.name] ??
+        converter.convertTo[instance.decoratedProps.metadata.name] ??
         converter.convertTo.default ??
         tag
       );

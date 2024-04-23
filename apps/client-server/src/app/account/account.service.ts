@@ -102,8 +102,8 @@ export class AccountService
     const availableWebsites = this.websiteRegistry.getAvailableWebsites();
     availableWebsites.forEach((website) => {
       const interval: number =
-        (website.prototype.metadata as IWebsiteMetadata).refreshInterval ??
-        60_000 * 60;
+        (website.prototype.decoratedProps.metadata as IWebsiteMetadata)
+          .refreshInterval ?? 60_000 * 60;
       if (!this.loginRefreshTimers[interval]) {
         this.loginRefreshTimers[interval] = {
           websites: [],
@@ -254,7 +254,8 @@ export class AccountService
       // eslint-disable-next-line no-param-reassign
       account.websiteInfo = {
         websiteDisplayName:
-          instance.metadata.displayName || instance.metadata.name,
+          instance.decoratedProps.metadata.displayName ||
+          instance.decoratedProps.metadata.name,
         supports: instance.getSupportedTypes(),
       };
     }

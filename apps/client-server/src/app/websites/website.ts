@@ -3,19 +3,14 @@ import {
   DynamicObject,
   IAccount,
   ILoginState,
-  IWebsiteMetadata,
   LoginState,
-  SubmissionType,
-  TagSupport,
-  UsernameShortcut,
-  WebsiteFileOptions,
-  WebsiteLoginType,
+  SubmissionType
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { TagParserFunction } from './decorators/supports-tags.decorator';
+import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import { FileWebsiteKey } from './models/website-modifiers/file-website';
 import { MessageWebsiteKey } from './models/website-modifiers/message-website';
@@ -43,37 +38,11 @@ export abstract class Website<D extends DynamicObject> {
   protected readonly loginState: LoginState;
 
   /**
-   * Do not set this manually.
-   * This property is filled with the {WebsiteMetadata} decorator.
+   * Properties set by website decorators such as {@link WebsiteMetadata}.
+   * These should only be set by a decorator.
+   * @type {WebsiteDecoratorProps}
    */
-  public readonly metadata: IWebsiteMetadata;
-
-  /**
-   * Do not set this manually.
-   * This property is filled with the {SupportsTags} decorator.
-   */
-  public readonly tagSupport: TagSupport;
-
-  /**
-   * Do not set this manually.
-   * This property is filled with the {SupportsTags} decorator.
-   */
-  public readonly tagParser: TagParserFunction;
-
-  /**
-   * Do not set this manually.
-   * This property is filled with the {SupportsFiles} decorator.
-   */
-  public readonly fileOptions?: WebsiteFileOptions;
-
-  /**
-   * Do not set this manually. Apply with {@LoginType} decorator
-   * A property used to define how a user will login through the UI.
-   * @type {UserLoginType} - User will login through a webview using the provided url.
-   * @type {CustomLoginType} - User will login through a custom login flow created by the implementer.
-   * @type {WebsiteLoginType}
-   */
-  public readonly loginType: WebsiteLoginType;
+  public readonly decoratedProps: WebsiteDecoratorProps;
 
   /**
    * Base website URL user for reference during website calls.
@@ -87,14 +56,6 @@ export abstract class Website<D extends DynamicObject> {
    * Just an extra protection to reduce unnecessary passing of sensitive keys.
    */
   public abstract readonly externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<D>;
-
-  /**
-   * Username shortcut that is used for modifying links to users for websites that
-   * support it.
-   *
-   * Should only be set using the {@SupportsUsernameShortcut} decorator.
-   */
-  public readonly usernameShortcut?: UsernameShortcut;
 
   /**
    * Reference Id of a website instance.

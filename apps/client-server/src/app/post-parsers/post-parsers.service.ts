@@ -7,24 +7,28 @@ import {
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Submission, WebsiteOptions } from '../database/entities';
-import { UnknownWebsite, Website } from '../websites/website';
-import { RatingParserService } from './rating-parser.service';
-import { TagParserService } from './tag-parser.service';
+import { UnknownWebsite } from '../websites/website';
+import { RatingParser } from './parsers/class-based/rating-parser';
+import { TitleParser } from './parsers/class-based/title-parser';
+import { TagParserService } from './parsers/service-based/tag-parser.service';
 
 // TODO - write tests for this
 @Injectable()
 export class PostParsersService {
   private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
 
+  private readonly ratingParser: RatingParser = new RatingParser();
+
+  private readonly titleParser: TitleParser = new TitleParser();
+
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
-    private readonly tagParser: TagParserService,
-    private readonly ratingParser: RatingParserService
+    private readonly tagParser: TagParserService
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
-        website.prototype.usernameShortcut;
+        website.prototype.decoratedProps.usernameShortcut;
       if (shortcut) {
         this.websiteShortcuts[shortcut.id] = shortcut;
       }
@@ -34,7 +38,7 @@ export class PostParsersService {
   // TODO - fix submission save form not seeing a rating field change as an update
   public async parse(
     submission: Submission,
-    instance: Website<unknown>,
+    instance: UnknownWebsite,
     websiteOptions: WebsiteOptions
   ): Promise<PostData<Submission, IWebsiteFormFields>> {
     const defaultOptions: WebsiteOptions = submission.options.find(
@@ -51,6 +55,7 @@ export class PostParsersService {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
+        title: this.titleParser.parse(instance, defaultOptions, websiteOptions),
         rating: this.ratingParser.parse(defaultOptions, websiteOptions),
       },
     };
