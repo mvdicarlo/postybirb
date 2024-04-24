@@ -1,5 +1,5 @@
 import { SubmissionRating } from '@postybirb/types';
-import { WebsiteOptions } from '../../../database/entities';
+import { WebsiteOptions } from '../../database/entities';
 
 export class RatingParser {
   public parse(

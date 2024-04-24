@@ -8,9 +8,9 @@ import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { UnknownWebsite } from '../websites/website';
-import { RatingParser } from './parsers/class-based/rating-parser';
-import { TitleParser } from './parsers/class-based/title-parser';
-import { TagParserService } from './parsers/service-based/tag-parser.service';
+import { RatingParser } from './parsers/rating-parser';
+import { TagParserService } from './parsers/tag-parser.service';
+import { TitleParserService } from './parsers/title-parser.service';
 
 // TODO - write tests for this
 @Injectable()
@@ -19,12 +19,11 @@ export class PostParsersService {
 
   private readonly ratingParser: RatingParser = new RatingParser();
 
-  private readonly titleParser: TitleParser = new TitleParser();
-
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
-    private readonly tagParser: TagParserService
+    private readonly tagParser: TagParserService,
+    private readonly titleParser: TitleParserService
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -55,7 +54,12 @@ export class PostParsersService {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
-        title: this.titleParser.parse(instance, defaultOptions, websiteOptions),
+        title: await this.titleParser.parse(
+          submission,
+          instance,
+          defaultOptions,
+          websiteOptions
+        ),
         rating: this.ratingParser.parse(defaultOptions, websiteOptions),
       },
     };

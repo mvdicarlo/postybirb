@@ -8,12 +8,15 @@ type TextFormField = 'input' | 'textarea';
 const TYPE_KEY = 'text';
 
 export type TextFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
-  FieldType<T, string, TextFormField>;
+  FieldType<T, string, TextFormField> & {
+    maxLength?: number;
+  };
 
 export function TextField<T extends PrimitiveRecord>(
   options: TextFieldType<T>
 ): PropertyDecorator {
   options.type = TYPE_KEY;
+  options.maxLength = options.maxLength ?? undefined;
   if (!options.formField) {
     options.formField = 'input';
   }

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DefaultTagValue, TagValue } from '@postybirb/types';
 import { uniq } from 'lodash';
-import { WebsiteOptions } from '../../../database/entities';
-import { TagConvertersService } from '../../../tag-converters/tag-converters.service';
-import { Website } from '../../../websites/website';
+import { WebsiteOptions } from '../../database/entities';
+import { TagConvertersService } from '../../tag-converters/tag-converters.service';
+import { Website } from '../../websites/website';
 
 // TODO - write tests for this
 @Injectable()

@@ -17,7 +17,13 @@ export default function InputField(props: InputFieldProps) {
   );
 
   return (
-    <FormRow {...props} validations={validation} copyValue={value}>
+    <FormRow
+      {...props}
+      validations={validation}
+      copyValue={value}
+      maxLength={field.maxLength}
+      maxLengthValue={value?.length}
+    >
       {field.formField === 'input' ? (
         <EuiFieldText
           required={field.required}
@@ -26,6 +32,7 @@ export default function InputField(props: InputFieldProps) {
           value={value}
           isInvalid={validation.isInvalid}
           placeholder={defaultValue}
+          maxLength={field.maxLength}
           onChange={(e) => {
             setValue(e.target.value);
           }}
@@ -42,6 +49,7 @@ export default function InputField(props: InputFieldProps) {
           compressed
           value={value}
           isInvalid={validation.isInvalid}
+          maxLength={field.maxLength}
           onChange={(e) => {
             setValue(e.target.value);
           }}

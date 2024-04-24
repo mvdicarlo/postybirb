@@ -12,10 +12,23 @@ type FormRowProps = PropsWithChildren<SubmissionGeneratedFieldProps> & {
   validations?: UseValidationResult;
   // eslint-disable-next-line react/require-default-props
   copyValue?: string;
+  // eslint-disable-next-line react/require-default-props
+  maxLength?: number;
+  // eslint-disable-next-line react/require-default-props
+  maxLengthValue?: number;
 };
 
 export default function FormRow(props: FormRowProps) {
-  const { validations, children, field, propKey, option, copyValue } = props;
+  const {
+    validations,
+    children,
+    field,
+    propKey,
+    option,
+    copyValue,
+    maxLength,
+    maxLengthValue,
+  } = props;
   const { _ } = useLingui();
   const copyBtn = useMemo(
     () =>
@@ -40,7 +53,9 @@ export default function FormRow(props: FormRowProps) {
       aria-required={field.required}
       fullWidth
       id={`option-${option.id}-${propKey}`}
-      label={field.label}
+      label={`${field.label}${
+        maxLength ? ` (${maxLengthValue ?? 0} / ${maxLength})` : ''
+      }`}
       aria-label={field.label}
       isInvalid={validations?.isInvalid}
       error={validations?.errors.map((error) => (
