@@ -1,5 +1,4 @@
 import { EuiSpacer } from '@elastic/eui';
-import { DescriptionFieldType } from '@postybirb/form-builder';
 import { cloneDeep, debounce } from 'lodash';
 import { useCallback } from 'react';
 import submissionApi from '../../../../../../api/submission.api';
@@ -36,11 +35,6 @@ function DefaultSubmissionFields(
     [defaultOptions]
   );
   if (!defaultOptions || isLoading) return null;
-
-  Object.values(form ?? {}).forEach((field) => {
-    const f = field[0];
-    (f as DescriptionFieldType).inline = true;
-  });
 
   delete form?.title;
 

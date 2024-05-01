@@ -5,12 +5,12 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  IWebsiteFormFields,
   DefaultDescriptionValue,
+  DefaultTagValue,
   DescriptionValue,
+  IWebsiteFormFields,
   SubmissionRating,
   TagValue,
-  DefaultTagValue,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
 
@@ -23,7 +23,7 @@ export class TestMessageSubmission implements IWebsiteFormFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: DefaultDescriptionValue,
+    defaultValue: DefaultDescriptionValue(),
   })
   description: DescriptionValue;
 

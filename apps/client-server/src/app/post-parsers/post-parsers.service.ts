@@ -34,7 +34,6 @@ export class PostParsersService {
     });
   }
 
-  // TODO - fix submission save form not seeing a rating field change as an update
   public async parse(
     submission: Submission,
     instance: UnknownWebsite,

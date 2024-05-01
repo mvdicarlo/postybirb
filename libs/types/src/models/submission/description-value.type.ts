@@ -1,3 +1,5 @@
+import { Block } from '@blocknote/core';
+
 /**
  * An object representing a description value.
  * @typedef {Object} DescriptionValue
@@ -13,7 +15,17 @@ export type DescriptionValue = {
 
   /**
    * The description value.
-   * @type {string}
+   * @type {Description}
    */
-  description: string;
+  description: Description;
 };
+
+export type Description = Block[];
+
+export const DefaultDescription = (): Description => [];
+
+/** Default tag value @type {DescriptionValue} */
+export const DefaultDescriptionValue = (): DescriptionValue => ({
+  overrideDefault: false,
+  description: DefaultDescription(),
+});

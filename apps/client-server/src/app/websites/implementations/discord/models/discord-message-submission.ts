@@ -4,8 +4,9 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  IWebsiteFormFields,
+  DefaultDescription,
   DescriptionValue,
+  IWebsiteFormFields,
   SubmissionRating,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
@@ -23,7 +24,7 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
     label: 'Description',
     defaultValue: {
       overrideDefault: false,
-      description: '',
+      description: DefaultDescription(),
     },
     row: 3,
     column: 1,

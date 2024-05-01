@@ -99,15 +99,16 @@ export default class Discord
       warnings: [],
     };
 
-    if (postData.options.description.description.trim().length > 2_000) {
-      result.warnings.push({
-        id: 'validation.description.max-length',
-        field: 'description',
-        values: {
-          maxLength: 2_000,
-        },
-      });
-    }
+    // TODO - update validation
+    // if (postData.options.description.description.trim().length > 2_000) {
+    //   result.warnings.push({
+    //     id: 'validation.description.max-length',
+    //     field: 'description',
+    //     values: {
+    //       maxLength: 2_000,
+    //     },
+    //   });
+    // }
 
     return result;
   }

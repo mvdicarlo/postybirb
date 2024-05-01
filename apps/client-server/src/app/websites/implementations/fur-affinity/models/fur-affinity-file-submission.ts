@@ -36,7 +36,7 @@ export class FurAffinityFileSubmission implements IWebsiteFormFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: DefaultDescriptionValue,
+    defaultValue: DefaultDescriptionValue(),
     row: 3,
     column: 1,
   })

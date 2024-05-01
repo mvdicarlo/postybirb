@@ -3,7 +3,7 @@ import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
 import classNames from 'classnames';
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import FormRow from '../form-row';
 import useValidations from './use-validations';
@@ -32,12 +32,11 @@ export default function RadioField(props: RadioFieldProps) {
     [_, field.formField, field.options, option.isDefault]
   );
 
-  const onChange = useCallback((changeValue: string | undefined) => {
+  const onChange = (changeValue: string | undefined) => {
     option.data[propKey] = changeValue;
     setValue(changeValue);
     onUpdate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   return (
     <FormRow {...props} validations={validation}>

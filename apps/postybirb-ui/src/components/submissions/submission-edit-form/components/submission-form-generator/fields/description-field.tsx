@@ -1,7 +1,12 @@
 import { EuiCheckbox } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
 import { DescriptionFieldType } from '@postybirb/form-builder';
-import { DescriptionValue, NULL_ACCOUNT_ID } from '@postybirb/types';
+import {
+  DefaultDescription,
+  Description,
+  DescriptionValue,
+  NULL_ACCOUNT_ID,
+} from '@postybirb/types';
 import { useState } from 'react';
 import { PostyBirbEditor } from '../../../../../shared/postybirb-editor/postybirb-editor';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
@@ -18,8 +23,8 @@ export default function DescriptionField(props: DescriptionFieldProps) {
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
     value.overrideDefault
   );
-  const [description, setDescription] = useState<string>(
-    value.description || ''
+  const [description, setDescription] = useState<Description>(
+    value.description || {}
   );
 
   return (
@@ -31,8 +36,9 @@ export default function DescriptionField(props: DescriptionFieldProps) {
           label={<Trans>Override default</Trans>}
           onChange={(e) => {
             const descriptionValue = e.target.checked
-              ? defaultOption.data.description?.description ?? ''
-              : '';
+              ? defaultOption.data.description?.description ??
+                DefaultDescription()
+              : DefaultDescription();
             setDescription(descriptionValue);
             setOverrideDefault(e.target.checked);
             option.data[propKey] = {
@@ -45,7 +51,6 @@ export default function DescriptionField(props: DescriptionFieldProps) {
       ) : null}
       {overrideDefault || option.isDefault ? (
         <PostyBirbEditor
-          inline={field.inline}
           value={description}
           onChange={(descriptionValue) => {
             setDescription(descriptionValue);

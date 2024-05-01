@@ -9,9 +9,7 @@ type DescriptionFormField = 'description';
 const TYPE_KEY = 'description';
 
 export type DescriptionFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
-  FieldType<T, DescriptionValue, DescriptionFormField> & {
-    inline?: boolean;
-  };
+  FieldType<T, DescriptionValue, DescriptionFormField>;
 
 export function DescriptionField<T extends PrimitiveRecord>(
   options: DescriptionFieldType<T>

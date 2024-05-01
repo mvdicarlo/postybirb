@@ -6,12 +6,12 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  IWebsiteFormFields,
+  DefaultDescriptionValue,
+  DefaultTagValue,
   DescriptionValue,
+  IWebsiteFormFields,
   SubmissionRating,
   TagValue,
-  DefaultTagValue,
-  DefaultDescriptionValue,
 } from '@postybirb/types';
 
 export const DefaultRatingOptions: RatingOption[] = [
@@ -36,7 +36,7 @@ export const DefaultRatingOptions: RatingOption[] = [
 export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
   title: '',
   tags: DefaultTagValue,
-  description: DefaultDescriptionValue,
+  description: DefaultDescriptionValue(),
   rating: SubmissionRating.GENERAL,
 };
 

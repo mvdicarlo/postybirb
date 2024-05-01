@@ -30,7 +30,7 @@ export class TestFileSubmission implements IWebsiteFormFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: DefaultDescriptionValue,
+    defaultValue: DefaultDescriptionValue(),
   })
   description: DescriptionValue;
 
