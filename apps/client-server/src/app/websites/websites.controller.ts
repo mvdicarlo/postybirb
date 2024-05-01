@@ -22,7 +22,7 @@ export class WebsitesController {
     status: 500,
     description: 'An error occurred while performing authorization operation.',
   })
-  getWebsiteData(
+  performOAuthStep(
     @Body() oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>
   ) {
     return this.websiteRegistryService.performOAuthStep(oauthRequestDto);

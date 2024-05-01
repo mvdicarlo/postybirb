@@ -21,7 +21,6 @@ export const FileWebsiteKey = 'FileModel';
  */
 export interface FileWebsite<T extends IWebsiteFormFields> {
   FileModel: Class<T>;
-  supportsAdditionalFiles: boolean;
 
   createFileModel(): T;
 

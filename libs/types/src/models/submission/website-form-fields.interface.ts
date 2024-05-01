@@ -1,6 +1,6 @@
 import { SubmissionRating } from '../../enums';
-import { DescriptionValue } from './description-value.type';
 import { TagValue } from '../tag/tag-value.type';
+import { DescriptionValue } from './description-value.type';
 
 /**
  * An interface representing the base fields for a submission.

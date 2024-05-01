@@ -8,14 +8,15 @@ import {
   PostResponse,
   ValidationResult,
 } from '@postybirb/types';
-import { FurAffinityMetadata } from '@postybirb/website-metadata';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
-import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcuts.decorator';
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
+import { SupportsTags } from '../../decorators/supports-tags.decorator';
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -25,12 +26,17 @@ import { FurAffinityAccountData } from './models/fur-affinity-account-data';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
 import { FurAffinityMessageSubmission } from './models/fur-affinity-message-submission';
 
-@WebsiteMetadata(FurAffinityMetadata)
+@WebsiteMetadata({
+  name: 'fur-affinity',
+  displayName: 'Fur Affinity',
+})
 @UserLoginFlow('https://furaffinity.net/login')
 @SupportsUsernameShortcut({
   id: 'fa',
   url: 'https://furaffinity.net/user/$1',
 })
+@SupportsTags()
+@SupportsFiles(['image/png', 'image/jpeg'])
 export default class FurAffinity
   extends Website<FurAffinityAccountData>
   implements
@@ -41,8 +47,6 @@ export default class FurAffinity
 
   MessageModel: Class<FurAffinityMessageSubmission> =
     FurAffinityMessageSubmission;
-
-  supportsAdditionalFiles = false;
 
   protected BASE_URL = 'https://furaffinity.net';
 
