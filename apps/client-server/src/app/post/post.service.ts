@@ -70,6 +70,9 @@ export class PostService extends PostyBirbService<PostRecord> {
    * @return {*}  {Promise<string[]>}
    */
   async enqueue(request: QueuePostRecordRequestDto): Promise<string[]> {
+    if (request.ids.length === 0) {
+      return [];
+    }
     this.logger.debug(`Enqueueing ${request.ids} post records.`);
     const existing = await this.repository.find({
       parent: { $in: request.ids },

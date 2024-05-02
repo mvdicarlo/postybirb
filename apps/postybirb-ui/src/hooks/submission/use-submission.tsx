@@ -45,7 +45,6 @@ function hasChanges(original?: SubmissionDto, update?: SubmissionDto): boolean {
     return true;
   }
 
-  console.log(update?.options, original?.options);
   if (JSON.stringify(update?.options) !== JSON.stringify(original?.options)) {
     return true;
   }
