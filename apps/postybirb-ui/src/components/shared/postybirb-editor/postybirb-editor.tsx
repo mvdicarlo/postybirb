@@ -1,12 +1,5 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import {
-  BlockNoteSchema,
-  defaultBlockSpecs,
-  defaultInlineContentSpecs,
-  defaultStyleSpecs,
-  filterSuggestionItems,
-  insertOrUpdateBlock,
-} from '@blocknote/core';
+import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import {
   BlockNoteView,
@@ -15,50 +8,17 @@ import {
   useCreateBlockNote,
 } from '@blocknote/react';
 import '@blocknote/react/style.css';
-import { Description } from '@postybirb/types';
-import { HR } from './custom/hr';
+import { Description, UsernameShortcut } from '@postybirb/types';
+import { useStore } from '../../../stores/use-store';
+import { WebsiteStore } from '../../../stores/website.store';
+import { insertHr } from './custom/hr';
+import { getUsernameShortcutsMenuItems } from './custom/username-shortcut';
+import { schema } from './schema';
 
 type PostyBirbEditorProps = {
   value: Description;
   onChange: (newValue: Description) => void;
 };
-
-const getModifiedBlockSpecs = () => {
-  const blockSpecs: Record<string, unknown> = {
-    ...defaultBlockSpecs,
-    hr: HR,
-  };
-
-  delete blockSpecs.table;
-  delete blockSpecs.image;
-
-  return blockSpecs;
-};
-
-const schema = BlockNoteSchema.create({
-  blockSpecs: {
-    ...(getModifiedBlockSpecs() as unknown as typeof defaultBlockSpecs),
-  },
-  inlineContentSpecs: {
-    ...defaultInlineContentSpecs,
-  },
-  styleSpecs: {
-    ...defaultStyleSpecs,
-  },
-});
-
-const insertHr = (editor: typeof schema.BlockNoteEditor) => ({
-  title: 'Horizontal Rule',
-  onItemClick: () => {
-    insertOrUpdateBlock(editor, {
-      type: 'hr',
-    } as never);
-  },
-  aliases: ['hr'],
-  group: 'Basic blocks',
-  icon: <div>-</div>,
-  subtext: 'Inserts a horizontal rule',
-});
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const { value, onChange } = props;
@@ -66,7 +26,13 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const editor = useCreateBlockNote({
     initialContent: value?.length ? value : undefined,
     schema,
-  });
+  }) as unknown as BlockNoteEditor;
+
+  const { state: websites } = useStore(WebsiteStore);
+  const shortcuts: UsernameShortcut[] =
+    websites
+      ?.filter((w) => w.usernameShortcut)
+      .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
   // Renders the editor instance using a React component.
   return (
@@ -86,6 +52,20 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           // Gets all default slash menu items and `insertAlert` item.
           filterSuggestionItems(
             [...getDefaultReactSlashMenuItems(editor), insertHr(editor)],
+            query
+          )
+        }
+      />
+      <SuggestionMenuController
+        // eslint-disable-next-line lingui/text-restrictions
+        triggerCharacter="`"
+        getItems={async (query) =>
+          // Gets the mentions menu items
+          filterSuggestionItems(
+            getUsernameShortcutsMenuItems(
+              editor as unknown as typeof schema.BlockNoteEditor,
+              shortcuts
+            ),
             query
           )
         }

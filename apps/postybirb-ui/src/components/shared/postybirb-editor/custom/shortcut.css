@@ -1,0 +1,8 @@
+.ce > span:empty {
+  font-style: italic;
+  border-bottom: 1px dashed lightsalmon;
+  width: 6px;
+  height: 1rem;
+  vertical-align: text-bottom;
+  display: inline-block;
+}
