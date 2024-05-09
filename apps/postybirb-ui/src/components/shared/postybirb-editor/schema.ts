@@ -1,8 +1,8 @@
 import {
-    BlockNoteSchema,
-    defaultBlockSpecs,
-    defaultInlineContentSpecs,
-    defaultStyleSpecs,
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+  defaultStyleSpecs,
 } from '@blocknote/core';
 import { HR } from './custom/hr';
 import { InlineUsernameShortcut } from './custom/username-shortcut';

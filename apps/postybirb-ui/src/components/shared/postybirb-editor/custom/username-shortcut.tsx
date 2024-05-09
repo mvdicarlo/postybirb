@@ -90,9 +90,6 @@ function Shortcut(props: {
         childList: true,
         subtree: true,
         attributes: true,
-        characterData: true,
-        characterDataOldValue: true,
-        attributeOldValue: true,
       });
     }
     return () => {
