@@ -449,7 +449,7 @@ export const DescriptionSchema = Object.freeze({
       type: 'username',
       propSchema: {
         id: {
-          default: '1715252911811',
+          default: '',
         },
         shortcut: {
           default: '',
