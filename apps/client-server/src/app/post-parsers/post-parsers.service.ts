@@ -33,18 +33,28 @@ export class PostParsersService {
       defaultOptions,
       websiteOptions
     );
+
+    const title = await this.titleParser.parse(
+      submission,
+      instance,
+      defaultOptions,
+      websiteOptions
+    );
+
     return {
       submission,
       options: {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
-        title: await this.titleParser.parse(
-          submission,
+        description: await this.descriptionParser.parse(
           instance,
           defaultOptions,
-          websiteOptions
+          websiteOptions,
+          tags,
+          title
         ),
+        title,
         rating: this.ratingParser.parse(defaultOptions, websiteOptions),
       },
     };

@@ -34,6 +34,12 @@ interface IDescriptionTextNode extends IDescriptionNode<'text'> {
   styles: Styles;
 }
 
+type ShortcutEnabledFields = {
+  defaultDescription?: string;
+  title?: string;
+  tags?: string[];
+};
+
 abstract class DescriptionNode<Type = string>
   implements IDescriptionNode<Type>
 {
@@ -56,6 +62,8 @@ abstract class DescriptionNode<Type = string>
 
   abstract toString(): string;
 }
+
+export type CustomDescriptionParser = (node: DescriptionNode) => string;
 
 class DescriptionBlockNode
   extends DescriptionNode<IDescriptionBlockNode['type']>
@@ -242,7 +250,8 @@ export class DescriptionNodeTree {
 
   constructor(
     nodes: Array<IDescriptionBlockNode>,
-    shortcuts: Record<string, UsernameShortcut>
+    shortcuts: Record<string, UsernameShortcut>,
+    fieldShortcuts: ShortcutEnabledFields
   ) {
     this.nodes = [];
     nodes.forEach((node) => {
@@ -287,5 +296,15 @@ export class DescriptionNodeTree {
     const converter = turndownService ?? new TurndownService();
     const html = this.toHtml();
     return converter.turndown(html);
+  }
+
+  /**
+   * Allows for custom parsing of the description tree.
+   *
+   * @param {(node: DescriptionNode) => void} cb
+   * @return {*}  {string}
+   */
+  public parseCustom(cb: (node: DescriptionNode) => void): string {
+    return this.nodes.map(cb).join('\n');
   }
 }

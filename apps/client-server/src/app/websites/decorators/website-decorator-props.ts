@@ -1,5 +1,7 @@
 import {
   CustomLoginType,
+  DescriptionSupport,
+  DescriptionType,
   IWebsiteMetadata,
   TagSupport,
   UserLoginType,
@@ -12,6 +14,14 @@ import { UnknownWebsite } from '../website';
 import { TagParserFunction } from './supports-tags.decorator';
 
 export type WebsiteDecoratorProps = {
+  /**
+   * Set by {@link SupportsDescription}
+   *
+   * Defines the description support for a website.
+   * @type {DescriptionType}
+   */
+  descriptionSupport: DescriptionSupport;
+
   /**
    * Set by {@link SupportsTags}
    *
@@ -69,6 +79,11 @@ export type WebsiteDecoratorProps = {
 
 export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
   return {
+    descriptionSupport: {
+      supportsDescriptionType: DescriptionType.NONE,
+      maxDescriptionLength: 0,
+      minDescriptionLength: 0,
+    },
     tagSupport: { supportsTags: false },
     tagParser: (tag) => tag,
     fileOptions: undefined,

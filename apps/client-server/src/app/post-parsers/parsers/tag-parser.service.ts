@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DefaultTagValue, TagValue } from '@postybirb/types';
+import { DefaultTagValue } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { WebsiteOptions } from '../../database/entities';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
@@ -14,9 +14,9 @@ export class TagParserService {
     instance: Website<unknown>,
     defaultOptions: WebsiteOptions,
     websiteOptions: WebsiteOptions
-  ): Promise<TagValue> {
+  ): Promise<string[]> {
     if (!instance.decoratedProps.tagSupport.supportsTags) {
-      return { ...DefaultTagValue };
+      return [...DefaultTagValue.tags];
     }
 
     const defaultTags = defaultOptions.data.tags ?? DefaultTagValue;
@@ -35,12 +35,9 @@ export class TagParserService {
       tags = tags.map(instance.decoratedProps.tagParser);
     }
 
-    return {
-      overrideDefault: websiteTags.overrideDefault,
-      tags: uniq(tags).slice(
-        0,
-        instance.decoratedProps.tagSupport.maxTags ?? Infinity
-      ),
-    };
+    return uniq(tags).slice(
+      0,
+      instance.decoratedProps.tagSupport.maxTags ?? Infinity
+    );
   }
 }

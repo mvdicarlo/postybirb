@@ -1,5 +1,6 @@
 import { Http } from '@postybirb/http';
 import {
+  DescriptionType,
   FileSubmission,
   ILoginState,
   ISubmissionFile,
@@ -14,6 +15,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsDescription } from '../../decorators/supports-description.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsTags } from '../../decorators/supports-tags.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -21,6 +23,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { FurAffinityAccountData } from './models/fur-affinity-account-data';
 import { FurAffinityFileSubmission } from './models/fur-affinity-file-submission';
@@ -37,11 +40,13 @@ import { FurAffinityMessageSubmission } from './models/fur-affinity-message-subm
 })
 @SupportsTags()
 @SupportsFiles(['image/png', 'image/jpeg'])
+@SupportsDescription(DescriptionType.CUSTOM)
 export default class FurAffinity
   extends Website<FurAffinityAccountData>
   implements
     FileWebsite<FurAffinityFileSubmission>,
-    MessageWebsite<FurAffinityMessageSubmission>
+    MessageWebsite<FurAffinityMessageSubmission>,
+    WithCustomDescriptionParser
 {
   FileModel: Class<FurAffinityFileSubmission> = FurAffinityFileSubmission;
 
@@ -109,5 +114,13 @@ export default class FurAffinity
     postData: PostData<MessageSubmission, FurAffinityMessageSubmission>
   ): Promise<ValidationResult> {
     throw new Error('Method not implemented.');
+  }
+
+  onDescriptionParse(): string {
+    throw new Error('Method not implemented.');
+  }
+
+  onAfterDescriptionParse(description: string): string {
+    return description;
   }
 }
