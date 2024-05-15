@@ -43,6 +43,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       slashMenu={false}
       onChange={() => {
         onChange(editor.document);
+        console.log(editor.document);
       }}
     >
       <SuggestionMenuController

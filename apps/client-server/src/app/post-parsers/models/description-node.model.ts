@@ -4,7 +4,7 @@
 
 import { UsernameShortcut } from '@postybirb/types';
 import { TurndownService } from 'turndown';
-import { DescriptionSchema } from './schemas/description-schema';
+import { DescriptionSchema } from '../schemas/description-schema';
 
 const BlockTypes = Object.keys(DescriptionSchema.blockSchema);
 const InlineTypes = Object.keys(DescriptionSchema.inlineContentSchema);

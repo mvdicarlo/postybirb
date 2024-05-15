@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { TextFieldType } from '@postybirb/form-builder';
-import { Submission, WebsiteOptions } from '../../database/entities';
+import { IWebsiteOptions } from '@postybirb/types';
+import { Submission } from '../../database/entities';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
 import { UnknownWebsite } from '../../websites/website';
+
+type TitleType = { title: TextFieldType[] };
 
 @Injectable()
 export class TitleParserService {
@@ -11,25 +14,24 @@ export class TitleParserService {
   public async parse(
     submission: Submission,
     instance: UnknownWebsite,
-    defaultOptions: WebsiteOptions,
-    websiteOptions: WebsiteOptions
+    defaultOptions: IWebsiteOptions,
+    websiteOptions: IWebsiteOptions
   ): Promise<string> {
-    const defaultForm = await this.formGeneratorService.getDefaultForm(
-      submission.type
-    );
-    const websiteForm = await this.formGeneratorService.generateForm({
-      type: submission.type,
-      accountId: instance.accountId,
-    });
+    const defaultForm: TitleType =
+      (await this.formGeneratorService.getDefaultForm(
+        submission.type
+      )) as TitleType;
+    const websiteForm: TitleType =
+      (await this.formGeneratorService.generateForm({
+        type: submission.type,
+        accountId: instance.accountId,
+      })) as TitleType;
 
     const title = websiteOptions.data.title ?? defaultOptions.data.title ?? '';
     const field: TextFieldType =
-      (websiteForm.fields.find(
-        (f) => f.label.toLowerCase() === 'title'
-      ) as TextFieldType) ??
-      (defaultForm.fields.find(
-        (f) => f.label.toLowerCase() === 'title'
-      ) as TextFieldType);
+      websiteForm?.title[0] ??
+      defaultForm?.title[0] ??
+      ({ maxLength: Infinity } as TextFieldType);
     const maxLength = field?.maxLength ?? Infinity;
 
     return title.trim().slice(0, maxLength);

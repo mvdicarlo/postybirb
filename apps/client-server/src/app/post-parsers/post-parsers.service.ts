@@ -1,6 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IWebsiteFormFields, PostData } from '@postybirb/types';
-import { WEBSITE_IMPLEMENTATIONS } from '../constants';
+import { Injectable } from '@nestjs/common';
+import {
+  IWebsiteFormFields,
+  IWebsiteOptions,
+  PostData,
+} from '@postybirb/types';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { UnknownWebsite } from '../websites/website';
 import { DescriptionParserService } from './parsers/description-parser.service';
@@ -14,7 +17,6 @@ export class PostParsersService {
   private readonly ratingParser: RatingParser = new RatingParser();
 
   constructor(
-    @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly tagParser: TagParserService,
     private readonly titleParser: TitleParserService,
     private readonly descriptionParser: DescriptionParserService
@@ -23,7 +25,7 @@ export class PostParsersService {
   public async parse(
     submission: Submission,
     instance: UnknownWebsite,
-    websiteOptions: WebsiteOptions
+    websiteOptions: IWebsiteOptions
   ): Promise<PostData<Submission, IWebsiteFormFields>> {
     const defaultOptions: WebsiteOptions = submission.options.find(
       (o) => o.isDefault

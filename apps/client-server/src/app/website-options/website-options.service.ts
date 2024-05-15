@@ -11,7 +11,6 @@ import {
   AccountId,
   DynamicObject,
   FileSubmission,
-  ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
   MessageSubmission,
@@ -25,6 +24,7 @@ import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { DefaultWebsiteOptionsObject } from '../websites/models/default-website-options';
@@ -48,7 +48,8 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     private readonly submissionService: SubmissionService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService,
-    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService
+    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
+    private readonly postParserService: PostParsersService
   ) {
     super(repository);
   }
@@ -193,12 +194,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto
   ): Promise<ValidationResult> {
-    const {
-      defaultOptions,
-      options,
-      account: accountId,
-      submission: submissionId,
-    } = validate;
+    const { options, account: accountId, submission: submissionId } = validate;
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });
@@ -207,10 +203,19 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     });
     const websiteInstance = this.websiteRegistry.findInstance(account);
 
-    const postData = await this.getPostData(
+    const postData = await this.postParserService.parse(
       submission,
-      defaultOptions,
-      options
+      websiteInstance,
+      {
+        // Wrap the options in a WebsiteOptions object
+        account,
+        submission,
+        data: options,
+        isDefault: false,
+        id: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
     );
     if (
       submission.type === SubmissionType.FILE &&
@@ -274,53 +279,5 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         `Unknown promise result: ${result}`
       );
     });
-  }
-
-  /**
-   * Creates the simple post data required to post and validate a submission.
-   * TODO: this will probably be split out later as real posting is considered.
-   *
-   * @private
-   * @param {ISubmission} submission
-   * @param {IWebsiteFormFields} defaultOptions
-   * @param {IWebsiteFormFields} options
-   * @return {*}  {Promise<PostData<ISubmission<ISubmissionMetadata>, IWebsiteFormFields>>}
-   */
-  private async getPostData(
-    submission: ISubmission,
-    defaultOptions: IWebsiteFormFields,
-    options: IWebsiteFormFields
-  ): Promise<PostData<ISubmission<ISubmissionMetadata>, IWebsiteFormFields>> {
-    const data: PostData<ISubmission, IWebsiteFormFields> = {
-      submission,
-      options,
-    };
-
-    if (defaultOptions) {
-      if (!data.options.description) {
-        data.options.description = defaultOptions.description;
-      }
-
-      // Override description
-      // TODO put description through parser once that is figured out
-      if (data.options.description.overrideDefault === false) {
-        data.options.description = defaultOptions.description;
-      }
-
-      if (!data.options.tags) {
-        data.options.tags = defaultOptions.tags;
-      }
-
-      // Merge tags
-      if (data.options.tags.overrideDefault === false) {
-        data.options.tags.tags.push(...defaultOptions.tags.tags);
-      }
-    } else {
-      throw new InternalServerErrorException(
-        `Default options not found for submission ${submission.id}`
-      );
-    }
-
-    return data;
   }
 }

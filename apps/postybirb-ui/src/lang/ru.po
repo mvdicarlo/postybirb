@@ -507,7 +507,7 @@ msgstr "Один раз"
 msgid "Open on startup"
 msgstr "Открывать при включении"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:31
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:36
 msgid "Override default"
 msgstr "Перезаписать значения по умолчанию"
 

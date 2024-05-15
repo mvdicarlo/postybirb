@@ -1,10 +1,9 @@
-import { SubmissionRating } from '@postybirb/types';
-import { WebsiteOptions } from '../../database/entities';
+import { IWebsiteOptions, SubmissionRating } from '@postybirb/types';
 
 export class RatingParser {
   public parse(
-    defaultOptions: WebsiteOptions,
-    websiteOptions: WebsiteOptions
+    defaultOptions: IWebsiteOptions,
+    websiteOptions: IWebsiteOptions
   ): SubmissionRating {
     return (
       websiteOptions.data.rating ??

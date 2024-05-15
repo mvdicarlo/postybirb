@@ -131,6 +131,38 @@ function StartupSettings() {
   );
 }
 
+function AdSettings() {
+  const { settingsId, settings, reloadSettings, isLoading } = useSettings();
+
+  return (
+    <Loading isLoading={isLoading}>
+      <EuiForm component="form" className="postybirb__settings">
+        <EuiFormRow label={<Trans>Ad</Trans>} hasChildLabel={false}>
+          <EuiSwitch
+            name="switch"
+            label={
+              <Trans>
+                Allow PostyBirb to insert an Ad into the description.
+              </Trans>
+            }
+            onChange={(e) => {
+              settingsApi
+                .update(settingsId, {
+                  settings: {
+                    ...settings,
+                    allowAd: e.target.checked,
+                  },
+                })
+                .finally(reloadSettings);
+            }}
+            checked={settings?.allowAd === undefined ? true : settings.allowAd}
+          />
+        </EuiFormRow>
+      </EuiForm>
+    </Loading>
+  );
+}
+
 function LanguageSettings() {
   const { settingsId, settings, reloadSettings, isLoading } = useSettings();
   const { _ } = useLingui();
@@ -239,6 +271,8 @@ export default function AppSettings() {
         <EuiErrorBoundary>
           <LanguageSettings />
         </EuiErrorBoundary>
+        <EuiSpacer />
+        <AdSettings />
         <EuiSpacer />
         <StartupSettings />
       </EuiFlyoutBody>

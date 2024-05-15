@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DefaultTagValue } from '@postybirb/types';
+import { DefaultTagValue, IWebsiteOptions } from '@postybirb/types';
 import { uniq } from 'lodash';
-import { WebsiteOptions } from '../../database/entities';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
 import { Website } from '../../websites/website';
 
@@ -12,8 +11,8 @@ export class TagParserService {
 
   public async parse(
     instance: Website<unknown>,
-    defaultOptions: WebsiteOptions,
-    websiteOptions: WebsiteOptions
+    defaultOptions: IWebsiteOptions,
+    websiteOptions: IWebsiteOptions
   ): Promise<string[]> {
     if (!instance.decoratedProps.tagSupport.supportsTags) {
       return [...DefaultTagValue.tags];
