@@ -75,6 +75,13 @@ export type WebsiteDecoratorProps = {
    * @type {UsernameShortcut}
    */
   usernameShortcut?: UsernameShortcut;
+
+  /**
+   * Disable Ads in description by using {@link DisableAdSupport}
+   *
+   * @type {boolean}
+   */
+  allowAd: boolean;
 };
 
 export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
@@ -89,6 +96,7 @@ export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
     fileOptions: undefined,
     loginFlow: undefined,
     metadata: undefined,
+    allowAd: true,
   };
 }
 

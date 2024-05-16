@@ -79,7 +79,11 @@ export class DescriptionParserService {
     }
 
     const settings = await this.settingsService.getDefaultSettings();
-    const { allowAd } = settings.settings;
+    let { allowAd } = settings.settings;
+
+    if (!instance.decoratedProps.allowAd) {
+      allowAd = false;
+    }
 
     const descriptionValue = websiteOptions.data.description?.overrideDefault
       ? websiteOptions.data.description.description
