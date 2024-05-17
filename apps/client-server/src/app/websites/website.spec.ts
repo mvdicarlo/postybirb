@@ -56,7 +56,7 @@ describe('Website', () => {
   });
 
   it('should set website metadata', () => {
-    expect(TestWebsite.prototype.metadata).toEqual({
+    expect(TestWebsite.prototype.decoratedProps).toEqual({
       ...TestMetadata,
       refreshInterval: 60_000 * 60,
       supportsTags: true,

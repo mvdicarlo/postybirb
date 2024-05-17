@@ -4,7 +4,6 @@ import { uniq } from 'lodash';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
 import { Website } from '../../websites/website';
 
-// TODO - write tests for this
 @Injectable()
 export class TagParserService {
   constructor(private readonly tagConvertersService: TagConvertersService) {}
