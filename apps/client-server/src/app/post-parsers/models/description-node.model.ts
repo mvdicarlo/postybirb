@@ -187,6 +187,8 @@ class DescriptionInlineNode
   }
 }
 
+// TODO - incorrect assumption, a text node is also an inline node
+// Might be able to just merge the two or just return the text node?
 class DescriptionTextNode
   extends DescriptionNode<IDescriptionTextNode['type']>
   implements IDescriptionTextNode
