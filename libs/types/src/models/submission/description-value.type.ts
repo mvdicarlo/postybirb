@@ -14,6 +14,18 @@ export type DescriptionValue = {
   overrideDefault: boolean;
 
   /**
+   * Indicates whether the tags should be inserted at the end of the description.
+   * @type {boolean}
+   */
+  insertTags?: boolean;
+
+  /**
+   * Indicates whether the title should be inserted at the beginning of the description.
+   * @type {boolean}
+   */
+  insertTitle?: boolean;
+
+  /**
    * The description value.
    * @type {Description}
    */
@@ -28,4 +40,6 @@ export const DefaultDescription = (): Description => [];
 export const DefaultDescriptionValue = (): DescriptionValue => ({
   overrideDefault: false,
   description: DefaultDescription(),
+  insertTags: undefined,
+  insertTitle: undefined,
 });

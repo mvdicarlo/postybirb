@@ -1,6 +1,10 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { SubmissionRating, SubmissionType } from '@postybirb/types';
+import {
+  DefaultDescription,
+  SubmissionRating,
+  SubmissionType,
+} from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
@@ -87,7 +91,7 @@ describe('PostManagerService', () => {
       },
       description: {
         overrideDefault: true,
-        description: 'Test Description',
+        description: DefaultDescription(),
       },
       rating: SubmissionRating.GENERAL,
     };

@@ -1,4 +1,4 @@
-import { EuiCheckbox } from '@elastic/eui';
+import { EuiCheckbox, EuiFlexGroup } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import {
@@ -23,31 +23,77 @@ export default function DescriptionField(props: DescriptionFieldProps) {
   const [overrideDefault, setOverrideDefault] = useState<boolean>(
     value.overrideDefault
   );
+  const [insertTitle, setInsertTitle] = useState<boolean | undefined>(
+    value.insertTitle
+  );
+  const [insertTags, setInsertTags] = useState<boolean | undefined>(
+    value.insertTags
+  );
   const [description, setDescription] = useState<Description>(
     value.description || {}
   );
 
+  const isDefaultAccount = option.account === NULL_ACCOUNT_ID;
+  const checkboxOptions: JSX.Element[] = [];
+  if (!isDefaultAccount) {
+    checkboxOptions.push(
+      <EuiCheckbox
+        id={`cb-${option.id}-${propKey}-override`}
+        checked={overrideDefault}
+        label={<Trans>Override default</Trans>}
+        onChange={(e) => {
+          const descriptionValue = e.target.checked
+            ? defaultOption.data.description?.description ??
+              DefaultDescription()
+            : DefaultDescription();
+          setDescription(descriptionValue);
+          setOverrideDefault(e.target.checked);
+          option.data[propKey] = {
+            description: descriptionValue,
+            overrideDefault: e.target.checked,
+          };
+          onUpdate();
+        }}
+      />
+    );
+  }
+
+  checkboxOptions.push(
+    <EuiCheckbox
+      id={`cb-${option.id}-${propKey}-insertTitle`}
+      checked={insertTitle}
+      label={<Trans>Insert title at start</Trans>}
+      onChange={(e) => {
+        setInsertTitle(e.target.checked);
+        option.data[propKey] = {
+          ...value,
+          insertTitle: e.target.checked,
+        };
+        onUpdate();
+      }}
+    />
+  );
+
+  checkboxOptions.push(
+    <EuiCheckbox
+      id={`cb-${option.id}-${propKey}-insertTags`}
+      checked={insertTags}
+      label={<Trans>Insert tags at end</Trans>}
+      onChange={(e) => {
+        setInsertTags(e.target.checked);
+        option.data[propKey] = {
+          ...value,
+          insertTags: e.target.checked,
+        };
+        onUpdate();
+      }}
+    />
+  );
+
   return (
     <FormRow {...props} validations={validation}>
-      {option.account !== NULL_ACCOUNT_ID ? (
-        <EuiCheckbox
-          id={`cb-${option.id}-${propKey}-override`}
-          checked={overrideDefault}
-          label={<Trans>Override default</Trans>}
-          onChange={(e) => {
-            const descriptionValue = e.target.checked
-              ? defaultOption.data.description?.description ??
-                DefaultDescription()
-              : DefaultDescription();
-            setDescription(descriptionValue);
-            setOverrideDefault(e.target.checked);
-            option.data[propKey] = {
-              description: descriptionValue,
-              overrideDefault: e.target.checked,
-            };
-            onUpdate();
-          }}
-        />
+      {checkboxOptions.length ? (
+        <EuiFlexGroup>{checkboxOptions}</EuiFlexGroup>
       ) : null}
       {overrideDefault || option.isDefault ? (
         <PostyBirbEditor

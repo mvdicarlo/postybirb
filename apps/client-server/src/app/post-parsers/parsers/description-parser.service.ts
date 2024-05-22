@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  Description,
   DescriptionType,
   IWebsiteOptions,
   UsernameShortcut,
@@ -10,45 +9,14 @@ import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { SettingsService } from '../../settings/settings.service';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
-import { DescriptionNodeTree } from '../models/description-node.model';
+import {
+  DescriptionNodeTree,
+  InsertionOptions,
+} from '../models/description-node/description-node-tree';
 
-// TODO - write tests for this
 @Injectable()
 export class DescriptionParserService {
   private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
-
-  private readonly ad: Description = [
-    {
-      id: 'ad-spacing',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      },
-      content: [],
-      children: [],
-    },
-    {
-      id: 'ad',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      },
-      content: [
-        {
-          type: 'link',
-          href: 'https://postybirb.com',
-          content: [
-            { type: 'text', text: 'Posted using PostyBirb', styles: {} },
-          ],
-        },
-      ],
-      children: [],
-    },
-  ];
 
   constructor(
     private readonly settingsService: SettingsService,
@@ -89,15 +57,17 @@ export class DescriptionParserService {
       ? websiteOptions.data.description.description
       : defaultOptions.data.description.description;
 
-    if (allowAd) {
-      descriptionValue.push(...this.ad);
-    }
+    const insertionOptions: InsertionOptions = {
+      insertTitle: websiteOptions.data.description.insertTitle
+        ? title
+        : undefined,
+      insertTags: websiteOptions.data.description.insertTags ? tags : undefined,
+      insertAd: allowAd,
+    };
 
-    // TODO - still need to implement title and tag injectors
-    // NOTE - tag injection may need to happen post-parse to be able to determine fit
-    // Might be better to just have checkbox flags for injecting title, tags, and default description
     const tree = new DescriptionNodeTree(
       descriptionValue as never,
+      insertionOptions,
       this.websiteShortcuts,
       {
         title,

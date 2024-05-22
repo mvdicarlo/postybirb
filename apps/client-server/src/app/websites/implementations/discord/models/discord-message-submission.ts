@@ -4,7 +4,7 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  DefaultDescription,
+  DefaultDescriptionValue,
   DescriptionValue,
   IWebsiteFormFields,
   SubmissionRating,
@@ -22,10 +22,7 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: DefaultDescription(),
-    },
+    defaultValue: DefaultDescriptionValue(),
     row: 3,
     column: 1,
   })

@@ -1,4 +1,4 @@
-import { CustomDescriptionParser } from '../../../post-parsers/models/description-node.model';
+import { CustomDescriptionParser } from '../../../post-parsers/models/description-node/description-node-tree';
 
 export interface WithCustomDescriptionParser {
   /**
