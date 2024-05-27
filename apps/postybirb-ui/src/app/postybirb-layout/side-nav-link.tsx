@@ -1,12 +1,14 @@
-import { NavLink, Tooltip } from '@mantine/core';
-import { useCallback } from 'react';
+import { Kbd, NavLink, Tooltip } from '@mantine/core';
+import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import tinykeys from 'tinykeys';
 import { GlobalState } from '../../global-state';
 import { useFlyoutToggle } from '../../hooks/use-flyout-toggle';
 
 interface SideNavLinkType {
   icon: JSX.Element;
   label: JSX.Element;
+  kbd?: string;
 }
 
 interface SideNavLinkHrefProps extends SideNavLinkType {
@@ -33,30 +35,65 @@ function BaseNavLink(
       active: boolean;
     }
 ) {
-  const { active, icon, label, collapsed, onClick } = props;
+  const { kbd, active, icon, label, collapsed, onClick } = props;
+
+  useEffect(() => {
+    const unsubscribe = !kbd
+      ? () => {}
+      : tinykeys(window, {
+          [kbd]: onClick,
+        });
+
+    return () => unsubscribe();
+  }, [kbd, onClick]);
 
   const onClickCapture = useCallback(
     (
-      e: React.BaseSyntheticEvent<
+      e?: React.BaseSyntheticEvent<
         MouseEvent,
         EventTarget & HTMLAnchorElement,
         EventTarget
       >
     ) => {
-      e.preventDefault();
-      e.stopPropagation();
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       onClick();
     },
     [onClick]
   );
 
+  const kbdEl = kbd ? (
+    <Kbd style={{ verticalAlign: 'middle' }} ml="sm" size="xs">
+      {kbd}
+    </Kbd>
+  ) : null;
+
   return (
-    <Tooltip withArrow position="right" disabled={!collapsed} label={label}>
+    <Tooltip
+      withArrow
+      position="right"
+      disabled={!collapsed}
+      label={
+        <span>
+          {label}
+          {kbdEl}
+        </span>
+      }
+    >
       <NavLink
         active={active}
         href="#"
         leftSection={icon}
-        label={collapsed ? null : label}
+        label={
+          collapsed ? null : (
+            <span>
+              {label}
+              {kbdEl}
+            </span>
+          )
+        }
         onClick={onClickCapture}
       />
     </Tooltip>

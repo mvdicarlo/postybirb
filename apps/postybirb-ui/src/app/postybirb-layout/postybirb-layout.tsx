@@ -14,6 +14,15 @@ import {
     HomePath,
     MessageSubmissionPath,
 } from '../../pages/route-paths';
+import {
+    AccountKeybinding,
+    FileSubmissionsKeybinding,
+    HomeKeybinding,
+    MessageSubmissionsKeybinding,
+    SettingsKeybinding,
+} from '../../shared/app-keybindings';
+import { AccountDrawer } from './drawers/account-drawer';
+import { SettingsDrawer } from './drawers/settings-drawer';
 import { LanguagePicker } from './language-picker';
 import { SideNavLink, SideNavLinkProps } from './side-nav-link';
 import { ThemePicker } from './theme-picker';
@@ -29,18 +38,20 @@ const navigationTargets: (SideNavLinkProps & {
   key: string;
 })[] = [
   {
-    type: 'link',
-    key: 'home',
-    icon: <IconHome />,
-    label: <Trans>Home</Trans>,
-    location: HomePath,
-  },
-  {
     type: 'drawer',
     key: 'home',
     globalStateKey: 'accountFlyoutVisible',
     icon: <IconUser />,
     label: <Trans>Accounts</Trans>,
+    kbd: AccountKeybinding,
+  },
+  {
+    type: 'link',
+    key: 'home',
+    icon: <IconHome />,
+    label: <Trans>Home</Trans>,
+    location: HomePath,
+    kbd: HomeKeybinding,
   },
   {
     type: 'link',
@@ -48,6 +59,7 @@ const navigationTargets: (SideNavLinkProps & {
     icon: <IconFile />,
     label: <Trans>Post Files</Trans>,
     location: FileSubmissionPath,
+    kbd: FileSubmissionsKeybinding,
   },
   {
     type: 'link',
@@ -55,6 +67,7 @@ const navigationTargets: (SideNavLinkProps & {
     icon: <IconMessage />,
     label: <Trans>Send Messages</Trans>,
     location: MessageSubmissionPath,
+    kbd: MessageSubmissionsKeybinding,
   },
   {
     type: 'drawer',
@@ -62,6 +75,7 @@ const navigationTargets: (SideNavLinkProps & {
     globalStateKey: 'settingsVisible',
     icon: <IconSettings />,
     label: <Trans>Settings</Trans>,
+    kbd: SettingsKeybinding,
   },
 ];
 
@@ -76,7 +90,7 @@ export function PostyBirbLayout() {
       }}
       padding="md"
     >
-      <AppShell.Navbar>
+      <AppShell.Navbar id="postybirb__navbar">
         <Box ta="center" p="5">
           <AppImage />
           <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
@@ -97,7 +111,9 @@ export function PostyBirbLayout() {
         </Box>
       </AppShell.Navbar>
       <AppShell.Main>
-        <Box className="postybirb__layout" pos="relative">
+        <Box id="postybirb__main" className="postybirb__layout" pos="relative">
+          <AccountDrawer />
+          <SettingsDrawer />
           <Outlet />
         </Box>
       </AppShell.Main>
