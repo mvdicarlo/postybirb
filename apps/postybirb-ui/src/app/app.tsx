@@ -1,11 +1,17 @@
 import { EuiProvider } from '@elastic/eui';
+import { MantineProvider, createTheme } from '@mantine/core';
+import '@mantine/core/styles.css';
 import { useContext } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { AppI18nProvider } from './app-i18n-provider';
-import AppLayout from './app-layout/app-layout';
 import { AppThemeContext } from './app-theme-provider';
 import { AppToastProvider } from './app-toast-provider';
 import './app.css';
+import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
+
+const mantineTheme = createTheme({
+  /** Put your mantine theme override here */
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,13 +26,15 @@ export default function App() {
   return (
     <div className="postybirb">
       <EuiProvider colorMode={theme}>
-        <AppI18nProvider>
-          <QueryClientProvider client={queryClient}>
-            <AppToastProvider>
-              <AppLayout />
-            </AppToastProvider>
-          </QueryClientProvider>
-        </AppI18nProvider>
+        <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
+          <AppI18nProvider>
+            <QueryClientProvider client={queryClient}>
+              <AppToastProvider>
+                <PostyBirbLayout />
+              </AppToastProvider>
+            </QueryClientProvider>
+          </AppI18nProvider>
+        </MantineProvider>
       </EuiProvider>
     </div>
   );

@@ -50,6 +50,10 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/app-settings.tsx:140
+msgid "Ad"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-title.tsx:58
 msgid "Add account"
 msgstr ""
@@ -60,6 +64,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:194
 msgid "Add folder watcher"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/app-settings.tsx:144
+msgid "Allow PostyBirb to insert an Ad into the description."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:114
@@ -170,7 +178,7 @@ msgstr ""
 msgid "CRON format <0/>"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:228
+#: apps/postybirb-ui/src/app/app-settings.tsx:260
 msgid "Dark theme"
 msgstr ""
 
@@ -399,15 +407,23 @@ msgstr ""
 msgid "Information about the update"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:81
+msgid "Insert tags at end"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:65
+msgid "Insert title at start"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:64
 msgid "Invalid CRON string"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:174
+#: apps/postybirb-ui/src/app/app-settings.tsx:206
 msgid "Language"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:226
+#: apps/postybirb-ui/src/app/app-settings.tsx:258
 msgid "Light theme"
 msgstr ""
 
@@ -509,7 +525,7 @@ msgstr ""
 msgid "Open on startup"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:36
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/description-field.tsx:43
 msgid "Override default"
 msgstr ""
 
@@ -640,14 +656,14 @@ msgstr ""
 msgid "Select Folder"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:176
+#: apps/postybirb-ui/src/app/app-settings.tsx:208
 msgid "Select language"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:168
 #: apps/postybirb-ui/src/app/app-search.tsx:110
 #: apps/postybirb-ui/src/app/app-search.tsx:116
-#: apps/postybirb-ui/src/app/app-settings.tsx:214
+#: apps/postybirb-ui/src/app/app-settings.tsx:246
 msgid "Settings"
 msgstr ""
 
@@ -807,7 +823,7 @@ msgstr ""
 msgid "The page you are looking for might have been removed or temporarily unavailable."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:221
+#: apps/postybirb-ui/src/app/app-settings.tsx:253
 msgid "Theme"
 msgstr ""
 

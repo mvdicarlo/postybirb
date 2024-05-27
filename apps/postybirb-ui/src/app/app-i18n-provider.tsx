@@ -3,7 +3,7 @@ import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Locale as UppyLocale } from '@uppy/core';
 import { useCallback, useEffect, useState } from 'react';
-import { useSettings } from '../stores/use-settings';
+import { use18n } from '../hooks/use-i18n';
 import { uppyLocales } from './languages';
 
 declare module '@lingui/core' {
@@ -17,11 +17,11 @@ type AppI18nProviderProps = {
 };
 
 export function AppI18nProvider(props: AppI18nProviderProps) {
+  const [locale] = use18n();
   const [loaded, setLoaded] = useState(false);
-  const { settings } = useSettings();
 
   const setLocale = useCallback(
-    async (locale: string) => {
+    async (lang: string) => {
       // Vite plugin lingui automatically convert .po
       // files into plain json during production build
       // and vite converts dynamic import into the path map
@@ -29,10 +29,10 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
       // We dont need to cache these imported messages
       // because browser's import call does it automatically
       // eslint-disable-next-line no-param-reassign
-      locale = locale ?? 'en';
-      const { messages } = await import(`../lang/${locale}.po`);
+      lang = lang ?? 'en';
+      const { messages } = await import(`../lang/${lang}.po`);
 
-      const uppyLocale = uppyLocales[locale];
+      const uppyLocale = uppyLocales[lang];
       try {
         i18n.uppy = (
           await import(`../../public/uppy-i18n/${uppyLocale}.js`)
@@ -41,22 +41,20 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
         // eslint-disable-next-line no-console
         console.error(
           // eslint-disable-next-line lingui/no-unlocalized-strings
-          `Failed to load uppy locale for ${locale}, mapped: ${uppyLocale}, error:`,
+          `Failed to load uppy locale for ${lang}, mapped: ${uppyLocale}, error:`,
           error
         );
       }
 
-      i18n.loadAndActivate({ locale, messages });
+      i18n.loadAndActivate({ locale: lang, messages });
       if (!loaded) setLoaded(true);
     },
     [loaded]
   );
 
   useEffect(() => {
-    if (settings) {
-      setLocale(settings.language);
-    }
-  }, [settings, setLocale]);
+    setLocale(locale);
+  }, [locale, setLocale]);
 
   const [tooLongLoading, setTooLongLoading] = useState(false);
   useEffect(() => {
