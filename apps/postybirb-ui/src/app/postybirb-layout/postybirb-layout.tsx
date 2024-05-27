@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { AppShell, Box, Burger } from '@mantine/core';
+import { AppShell, Box, Burger, ScrollArea } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
     IconFile,
@@ -24,6 +24,7 @@ import {
 import { AccountDrawer } from './drawers/account-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
 import { LanguagePicker } from './language-picker';
+import { PostyBirbUpdateButton } from './postybirb-update-button';
 import { SideNavLink, SideNavLinkProps } from './side-nav-link';
 import { ThemePicker } from './theme-picker';
 
@@ -91,24 +92,31 @@ export function PostyBirbLayout() {
       padding="md"
     >
       <AppShell.Navbar id="postybirb__navbar">
-        <Box ta="center" p="5">
-          <AppImage />
-          <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
-        </Box>
-        <Box ta="center">
-          <Burger opened={!sideNavToggled} onClick={toggleSideNav} size="md" />
-        </Box>
-        <Box ta="center">
-          <ThemePicker />
-        </Box>
-        <Box ta="center">
-          <LanguagePicker />
-        </Box>
-        <Box ta={sideNavToggled ? 'center' : undefined}>
-          {navigationTargets.map((target) => (
-            <SideNavLink {...target} collapsed={sideNavToggled} />
-          ))}
-        </Box>
+        <AppShell.Section>
+          <Box ta="center" p="5">
+            <AppImage />
+            <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
+          </Box>
+          <Box ta="center">
+            <Burger
+              opened={!sideNavToggled}
+              onClick={toggleSideNav}
+              size="md"
+            />
+          </Box>
+          <Box ta="center">
+            <PostyBirbUpdateButton />
+            <ThemePicker />
+            <LanguagePicker />
+          </Box>
+        </AppShell.Section>
+        <AppShell.Section grow component={ScrollArea} scrollbars="y">
+          <Box ta="center">
+            {navigationTargets.map((target) => (
+              <SideNavLink {...target} collapsed={sideNavToggled} />
+            ))}
+          </Box>
+        </AppShell.Section>
       </AppShell.Navbar>
       <AppShell.Main>
         <Box id="postybirb__main" className="postybirb__layout" pos="relative">
