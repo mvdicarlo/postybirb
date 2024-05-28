@@ -22,7 +22,15 @@ interface SideNavLinkDrawerProps extends SideNavLinkType {
   globalStateKey: keyof GlobalState;
 }
 
-export type SideNavLinkProps = SideNavLinkDrawerProps | SideNavLinkHrefProps;
+interface SideNavLinkCustomProps extends SideNavLinkType {
+  type: 'custom';
+  onClick: () => void;
+}
+
+export type SideNavLinkProps =
+  | SideNavLinkDrawerProps
+  | SideNavLinkHrefProps
+  | SideNavLinkCustomProps;
 
 type ExtendedSideNavLinkProps = SideNavLinkProps & {
   collapsed: boolean;
@@ -85,9 +93,11 @@ function BaseNavLink(
       <NavLink
         active={active}
         href="#"
-        leftSection={icon}
+        leftSection={collapsed ? null : icon}
         label={
-          collapsed ? null : (
+          collapsed ? (
+            icon
+          ) : (
             <span>
               {label}
               {kbdEl}
@@ -134,11 +144,18 @@ export function LocationNavLink(
 }
 
 export function SideNavLink(
-  props: SideNavLinkProps & ExtendedSideNavLinkProps
+  props: SideNavLinkProps &
+    ExtendedSideNavLinkProps & {
+      onClick?: () => void;
+    }
 ) {
   const { type } = props;
   if (type === 'link') {
     return <LocationNavLink {...props} />;
+  }
+  if (type === 'custom') {
+    const { onClick } = props;
+    return <BaseNavLink {...props} active={false} onClick={onClick} />;
   }
   return <DrawerNavLink {...props} />;
 }

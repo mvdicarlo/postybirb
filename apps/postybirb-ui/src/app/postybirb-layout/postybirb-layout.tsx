@@ -1,10 +1,18 @@
+/* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/macro';
-import { AppShell, Box, Burger, ScrollArea } from '@mantine/core';
+import {
+    AppShell,
+    Box,
+    Burger,
+    ScrollArea
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
+import { spotlight } from '@mantine/spotlight';
 import {
     IconFile,
     IconHome,
     IconMessage,
+    IconSearch,
     IconSettings,
     IconUser,
 } from '@tabler/icons-react';
@@ -21,9 +29,11 @@ import {
     MessageSubmissionsKeybinding,
     SettingsKeybinding,
 } from '../../shared/app-keybindings';
-import { AccountDrawer } from './drawers/account-drawer';
+import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
 import { LanguagePicker } from './language-picker';
+import classes from './postybirb-layout.module.css';
+import { PostybirbSpotlight } from './postybirb-spotlight';
 import { PostyBirbUpdateButton } from './postybirb-update-button';
 import { SideNavLink, SideNavLinkProps } from './side-nav-link';
 import { ThemePicker } from './theme-picker';
@@ -40,7 +50,7 @@ const navigationTargets: (SideNavLinkProps & {
 })[] = [
   {
     type: 'drawer',
-    key: 'home',
+    key: 'accounts',
     globalStateKey: 'accountFlyoutVisible',
     icon: <IconUser />,
     label: <Trans>Accounts</Trans>,
@@ -56,7 +66,7 @@ const navigationTargets: (SideNavLinkProps & {
   },
   {
     type: 'link',
-    key: 'home',
+    key: 'post',
     icon: <IconFile />,
     label: <Trans>Post Files</Trans>,
     location: FileSubmissionPath,
@@ -64,7 +74,7 @@ const navigationTargets: (SideNavLinkProps & {
   },
   {
     type: 'link',
-    key: 'home',
+    key: 'message',
     icon: <IconMessage />,
     label: <Trans>Send Messages</Trans>,
     location: MessageSubmissionPath,
@@ -72,7 +82,7 @@ const navigationTargets: (SideNavLinkProps & {
   },
   {
     type: 'drawer',
-    key: 'home',
+    key: 'settings',
     globalStateKey: 'settingsVisible',
     icon: <IconSettings />,
     label: <Trans>Settings</Trans>,
@@ -111,7 +121,21 @@ export function PostyBirbLayout() {
           </Box>
         </AppShell.Section>
         <AppShell.Section grow component={ScrollArea} scrollbars="y">
-          <Box ta="center">
+          <Box
+            ta="center"
+            className={`${classes.postybirb__sidenav} ${
+              sideNavToggled ? classes.collapsed : ''
+            }`}
+          >
+            <SideNavLink
+              key="search"
+              label={<Trans>Search</Trans>}
+              type="custom"
+              onClick={() => spotlight.toggle()}
+              icon={<IconSearch />}
+              kbd="Ctrl+K"
+              collapsed={sideNavToggled}
+            />
             {navigationTargets.map((target) => (
               <SideNavLink {...target} collapsed={sideNavToggled} />
             ))}
@@ -120,6 +144,7 @@ export function PostyBirbLayout() {
       </AppShell.Navbar>
       <AppShell.Main>
         <Box id="postybirb__main" className="postybirb__layout" pos="relative">
+          <PostybirbSpotlight />
           <AccountDrawer />
           <SettingsDrawer />
           <Outlet />
