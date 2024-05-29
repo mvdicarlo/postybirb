@@ -73,8 +73,8 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
             <CloseButton
               variant="transparent"
               onClick={() => {
-                onClose();
                 accountApi.refreshLogin(account.id);
+                onClose();
               }}
             />
           </div>

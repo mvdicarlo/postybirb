@@ -1,9 +1,11 @@
-import { Trans } from '@lingui/macro';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import {
     ActionIcon,
     Box,
     Button,
     Card,
+    Input,
     Popover,
     Table,
     Text,
@@ -11,7 +13,12 @@ import {
     Tooltip,
 } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
-import { IconLogin2, IconRestore, IconTrash } from '@tabler/icons-react';
+import {
+    IconEdit,
+    IconLogin2,
+    IconRestore,
+    IconTrash,
+} from '@tabler/icons-react';
 import accountApi from '../../../../api/account.api';
 
 type WebsiteCardProps = {
@@ -22,10 +29,24 @@ type WebsiteCardProps = {
   ) => void;
 };
 
+const NewAccountProps = (): IAccountDto =>
+  ({
+    id: '',
+    name: '',
+    groups: [],
+    state: {
+      isLoggedIn: true,
+      username: '-',
+    },
+  } as unknown as IAccountDto);
+
 // TODO - Add function
-// TODO - Rename function
 function AccountTable(props: WebsiteCardProps) {
   const { accounts, website, onLogin } = props;
+  const { _ } = useLingui();
+
+  const accountsAndNewAccount = [...accounts, { ...NewAccountProps() }];
+
   return (
     <Table>
       <Table.Thead>
@@ -42,15 +63,49 @@ function AccountTable(props: WebsiteCardProps) {
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        {accounts.map((account) => (
-          <Table.Tr key={account.id}>
-            <Table.Td>{account.name}</Table.Td>
+        {accountsAndNewAccount.map((account) => (
+          <Table.Tr key={JSON.stringify(account)}>
+            <Table.Td>
+              <Input
+                variant="unstyled"
+                rightSection={<IconEdit size={14} />}
+                defaultValue={account.name}
+                placeholder={
+                  account.id === ''
+                    ? _(msg`Enter name to add new account`)
+                    : _(msg`Name`)
+                }
+                onBlur={(e) => {
+                  if (
+                    e.target.value.trim() &&
+                    e.target.value !== account.name
+                  ) {
+                    if (account.id === '') {
+                      accountApi
+                        .create({
+                          name: e.target.value.trim(),
+                          website: website.id,
+                          groups: [],
+                        })
+                        .finally(() => {
+                          onLogin(null);
+                        });
+                    } else {
+                      accountApi.update(account.id, {
+                        name: e.target.value.trim(),
+                        groups: [],
+                      });
+                    }
+                  }
+                }}
+              />
+            </Table.Td>
             <Table.Td>
               <Text c={account.state.isLoggedIn ? 'green' : 'red'}>
                 {account.state.isLoggedIn ? (
                   account.state.username ?? <Trans>Unknown</Trans>
                 ) : (
-                  <Trans>Username</Trans>
+                  <Trans>Not logged in</Trans>
                 )}
               </Text>
             </Table.Td>
