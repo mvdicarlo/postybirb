@@ -10,20 +10,22 @@ import {
     Title,
     Tooltip,
 } from '@mantine/core';
-import { IAccountDto } from '@postybirb/types';
+import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { IconLogin2, IconRestore, IconTrash } from '@tabler/icons-react';
 import accountApi from '../../../../api/account.api';
-import { DisplayableWebsiteLoginInfo } from '../../../../models/displayable-website-login-info';
 
 type WebsiteCardProps = {
   accounts: IAccountDto[];
-  website: DisplayableWebsiteLoginInfo;
+  website: IWebsiteInfoDto;
+  onLogin: (
+    login: { account: IAccountDto; website: IWebsiteInfoDto } | null
+  ) => void;
 };
 
 // TODO - Add function
 // TODO - Rename function
-function AccountTable(props: Pick<WebsiteCardProps, 'accounts'>) {
-  const { accounts } = props;
+function AccountTable(props: WebsiteCardProps) {
+  const { accounts, website, onLogin } = props;
   return (
     <Table>
       <Table.Thead>
@@ -74,7 +76,9 @@ function AccountTable(props: Pick<WebsiteCardProps, 'accounts'>) {
                       color="red"
                       leftSection={<IconTrash />}
                       onClick={() => {
-                        accountApi.remove([account.id]);
+                        accountApi.remove([account.id]).finally(() => {
+                          onLogin(null);
+                        });
                       }}
                     >
                       <Trans>Delete</Trans>
@@ -103,7 +107,9 @@ function AccountTable(props: Pick<WebsiteCardProps, 'accounts'>) {
                       color="red"
                       leftSection={<IconRestore />}
                       onClick={() => {
-                        accountApi.clear(account.id);
+                        accountApi.clear(account.id).finally(() => {
+                          onLogin(null);
+                        });
                       }}
                     >
                       <Trans>Clear</Trans>
@@ -112,7 +118,12 @@ function AccountTable(props: Pick<WebsiteCardProps, 'accounts'>) {
                 </Popover.Dropdown>
               </Popover>
               <Tooltip label={<Trans>Login</Trans>}>
-                <ActionIcon ml="lg" flex="1" variant="subtle">
+                <ActionIcon
+                  ml="lg"
+                  flex="1"
+                  variant="subtle"
+                  onClick={() => onLogin({ account, website })}
+                >
                   <IconLogin2 />
                 </ActionIcon>
               </Tooltip>

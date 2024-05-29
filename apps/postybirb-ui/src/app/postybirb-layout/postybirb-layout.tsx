@@ -1,33 +1,28 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/macro';
-import {
-    AppShell,
-    Box,
-    Burger,
-    ScrollArea
-} from '@mantine/core';
+import { AppShell, Box, Burger, ScrollArea } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { spotlight } from '@mantine/spotlight';
 import {
-    IconFile,
-    IconHome,
-    IconMessage,
-    IconSearch,
-    IconSettings,
-    IconUser,
+  IconFile,
+  IconHome,
+  IconMessage,
+  IconSearch,
+  IconSettings,
+  IconUser,
 } from '@tabler/icons-react';
 import { Outlet } from 'react-router';
 import {
-    FileSubmissionPath,
-    HomePath,
-    MessageSubmissionPath,
+  FileSubmissionPath,
+  HomePath,
+  MessageSubmissionPath,
 } from '../../pages/route-paths';
 import {
-    AccountKeybinding,
-    FileSubmissionsKeybinding,
-    HomeKeybinding,
-    MessageSubmissionsKeybinding,
-    SettingsKeybinding,
+  AccountKeybinding,
+  FileSubmissionsKeybinding,
+  HomeKeybinding,
+  MessageSubmissionsKeybinding,
+  SettingsKeybinding,
 } from '../../shared/app-keybindings';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
@@ -136,9 +131,12 @@ export function PostyBirbLayout() {
               kbd="Ctrl+K"
               collapsed={sideNavToggled}
             />
-            {navigationTargets.map((target) => (
-              <SideNavLink {...target} collapsed={sideNavToggled} />
-            ))}
+            {navigationTargets.map((target) => {
+              const { key, ...rest } = target;
+              return (
+                <SideNavLink key={key} {...rest} collapsed={sideNavToggled} />
+              );
+            })}
           </Box>
         </AppShell.Section>
       </AppShell.Navbar>
