@@ -1,6 +1,7 @@
 import { EuiProvider } from '@elastic/eui';
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
+import '@mantine/dropzone/styles.css';
 import '@mantine/spotlight/styles.css';
 import { useContext } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';

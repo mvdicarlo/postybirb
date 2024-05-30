@@ -7,7 +7,7 @@ import HomePage from './pages/home/home-page';
 import NotFound from './pages/not-found/not-found';
 import { SubmissionsPath } from './pages/route-paths';
 import EditSubmissionPage from './pages/submission/edit-submission-page';
-import FileSubmissionManagementPage from './pages/submission/file-submission-management-page';
+import { FileSubmissionManagementPage2 } from './pages/submission/file-submission-management-page';
 import MessageSubmissionManagementPage from './pages/submission/message-submission-management-page';
 import SubmissionOutletPage from './pages/submission/submission-outlet-page';
 
@@ -43,7 +43,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'file',
-            element: <FileSubmissionManagementPage />,
+            element: <FileSubmissionManagementPage2 />,
           },
           {
             path: 'edit/:id',
