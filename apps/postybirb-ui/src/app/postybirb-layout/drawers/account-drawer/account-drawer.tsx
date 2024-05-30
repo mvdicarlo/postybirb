@@ -30,6 +30,7 @@ export function AccountDrawer() {
       <Drawer
         className="account-drawer"
         closeOnClickOutside
+        size="lg"
         ml={-marginOffset}
         portalProps={{
           target: getPortalTarget(),
