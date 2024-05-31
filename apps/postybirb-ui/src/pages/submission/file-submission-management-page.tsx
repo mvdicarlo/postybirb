@@ -6,16 +6,19 @@ import {
 } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
 import {
+  ActionIcon,
   Box,
-  Card,
+  Divider,
   Flex,
   Group,
   Image,
   Loader,
+  Paper,
   ScrollArea,
   SimpleGrid,
   Space,
   Text,
+  Tooltip,
   rem,
 } from '@mantine/core';
 import {
@@ -25,12 +28,13 @@ import {
   MS_WORD_MIME_TYPE,
   PDF_MIME_TYPE,
 } from '@mantine/dropzone';
-import { FileType, SubmissionType } from '@postybirb/types';
-import { getFileType } from '@postybirb/utils/file-type';
+import { SubmissionType } from '@postybirb/types';
 import {
   IconFile,
   IconPhoto,
+  IconPhotoEdit,
   IconTemplate,
+  IconTrash,
   IconUpload,
   IconX,
 } from '@tabler/icons-react';
@@ -54,15 +58,20 @@ const TEXT_MIME_TYPES = [
   'text/*',
 ];
 
-function Preview({ file }: { file: FileWithPath }) {
+function Preview({
+  file,
+  onEdit,
+}: {
+  file: FileWithPath;
+  onEdit: (file: FileWithPath) => void;
+}) {
   const imageUrl = URL.createObjectURL(file);
-  const imageType = getFileType(file.name);
-  const height = '100px';
-  const width = '100px';
+  const height = '75px';
+  const width = '75px';
 
-  switch (imageType) {
-    case FileType.IMAGE:
-      return (
+  return (
+    <Paper shadow="md">
+      <Tooltip label={file.name} position="top" withArrow>
         <Image
           src={imageUrl}
           onLoad={() => URL.revokeObjectURL(imageUrl)}
@@ -70,31 +79,32 @@ function Preview({ file }: { file: FileWithPath }) {
           height={height}
           width={width}
         />
-      );
-    case FileType.VIDEO:
-      return (
-        // eslint-disable-next-line jsx-a11y/media-has-caption
-        <video src={imageUrl} controls height={height} width={width} />
-      );
-    case FileType.AUDIO:
-      return (
-        // eslint-disable-next-line jsx-a11y/media-has-caption
-        <audio src={imageUrl} controls />
-      );
-    default:
-      return (
-        <Card ta="center">
-          <IconFile />
-          <Text>{file.name}</Text>
-        </Card>
-      );
-  }
+      </Tooltip>
+      <Divider mb="4" />
+      <Group mx="xl" grow>
+        <Tooltip label={<Trans>Crop</Trans>} position="top" withArrow>
+          <ActionIcon variant="subtle" onClick={() => onEdit(file)}>
+            <IconPhotoEdit />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label={<Trans>Delete</Trans>} position="top" withArrow>
+          <ActionIcon variant="subtle" c="red">
+            <IconTrash />
+          </ActionIcon>
+        </Tooltip>
+      </Group>
+    </Paper>
+  );
 }
 
 const VIDEO_MIME_TYPES = ['video/mp4', 'video/x-m4v', 'video/*'];
 
 function FileUploadSection() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
+
+  const imageFiles = files.filter(
+    (file) => file.type.startsWith('image/') && !file.type.includes('gif')
+  );
 
   return (
     <Box>
@@ -151,19 +161,24 @@ function FileUploadSection() {
             <div>
               <Text size="xl" inline>
                 <Trans>Drag images here or click to select files</Trans>
+                <Text size="sm" c="dimmed" inline mt={7} lineClamp={2}>
+                  {files.length ? files.map((f) => f.name).join(', ') : null}
+                </Text>
               </Text>
             </div>
           </Group>
         </Dropzone>
 
-        {files.length ? (
-          <ScrollArea flex="7" h={250}>
-            <SimpleGrid
-              flex="7"
-              cols={{ base: 1, sm: 4 }}
-              mt={files.length > 0 ? 'xl' : 0}
-            >
-              {files.map((file) => (
+        {imageFiles.length ? (
+          <ScrollArea
+            flex="7"
+            h={250}
+            bg="var(--mantine-color-dark-filled)"
+            p="md"
+            style={{ borderRadius: 'var(--mantine-radius-md)' }}
+          >
+            <SimpleGrid flex="7" cols={{ base: 1, sm: 4 }}>
+              {imageFiles.map((file) => (
                 <Preview file={file} key={file.name} />
               ))}
             </SimpleGrid>
