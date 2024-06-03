@@ -107,6 +107,10 @@ msgctxt "unsaved changes modal"
 msgid "Are you sure you want to leave this page?"
 msgstr "Вы уверены чио хотите уйти с этой страницы?"
 
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:59
+msgid "Auto Importers (File Watcher)"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:141
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:294
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:134
@@ -184,6 +188,10 @@ msgstr "Кнопка создания текстового поста"
 msgid "Create new submission"
 msgstr "Создать новый пост"
 
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:286
+msgid "Create new submission for each file"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:228
 msgid "Create new submission template"
 msgstr "Создать новый шаблон поста"
@@ -196,6 +204,10 @@ msgstr "Создать новую группу тэгов"
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:79
 msgid "CRON format <0/>"
 msgstr "Формат CRON <0/>"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:107
+msgid "Crop"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/app-settings.tsx:260
 msgid "Dark theme"
@@ -237,6 +249,7 @@ msgstr "Опции по умолчанию сохранены"
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:113
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:205
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:211
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:113
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:113
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:236
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:104
@@ -283,6 +296,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:133
 msgid "Don't post to"
 msgstr "Не публиковать в"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:253
+msgid "Drag images here or click to select files"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:198
 msgid "Duplicate"
@@ -360,8 +377,8 @@ msgstr "Файл"
 #: apps/postybirb-ui/src/app/app-search.tsx:74
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:32
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:90
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:40
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:94
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:46
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:106
 msgid "File Submissions"
 msgstr "Посты с файлами"
 
@@ -840,8 +857,8 @@ msgid "Submission Template {defaultNameFromTime}"
 msgstr "Шаблон поста {defaultNameFromTime}"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:131
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:43
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:97
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:49
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:109
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:101
 msgid "Submissions"
 msgstr "Посты"
@@ -889,8 +906,8 @@ msgid "Template"
 msgstr "Шаблон"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:126
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:48
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:104
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:54
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:116
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:108
 msgid "Templates"
 msgstr "Шаблоны"
@@ -978,6 +995,10 @@ msgstr "Обновленный конвертер тегов"
 msgctxt "update.success-tag-group"
 msgid "Updated tag group"
 msgstr "Обновленная группа тегов"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:295
+msgid "Upload"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:192
 msgctxt "directory-watcher.header"

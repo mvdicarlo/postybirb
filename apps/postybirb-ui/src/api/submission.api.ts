@@ -31,6 +31,15 @@ class SubmissionsApi extends BaseApi<
   updateTemplateName(id: SubmissionId, dto: IUpdateSubmissionTemplateNameDto) {
     return this.client.patch(`template/${id}`, dto);
   }
+
+  createFileSubmission(type: SubmissionType, files: File[]) {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+    formData.append('type', type);
+    return this.client.post('', formData);
+  }
 }
 
 export default new SubmissionsApi();
