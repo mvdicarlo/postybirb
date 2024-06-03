@@ -76,7 +76,7 @@ describe('FormGeneratorService', () => {
         {
           column: 1,
           defaultValue: {
-            description: '',
+            description: [],
             overrideDefault: false,
           },
           formField: 'description',
@@ -151,7 +151,7 @@ describe('FormGeneratorService', () => {
         {
           column: 1,
           defaultValue: {
-            description: '',
+            description: [],
             overrideDefault: false,
           },
           formField: 'description',
@@ -224,7 +224,7 @@ describe('FormGeneratorService', () => {
         {
           column: 1,
           defaultValue: {
-            description: '',
+            description: [],
             overrideDefault: false,
           },
           formField: 'description',

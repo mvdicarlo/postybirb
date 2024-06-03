@@ -3,9 +3,9 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionType,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionType,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -16,16 +16,20 @@ import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
+import { PostParsersModule } from '../../post-parsers/post-parsers.module';
+import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { WebsitesModule } from '../../websites/websites.module';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionService } from './submission.service';
 
+// TODO fix whatever is going on here
 describe('SubmissionService', () => {
   let testFile: Buffer | null = null;
   let service: SubmissionService;
@@ -34,12 +38,20 @@ describe('SubmissionService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../../test-files/small_image.jpg'));
+    testFile = readFileSync(
+      join(__dirname, '../../test-files/small_image.jpg')
+    );
   });
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule, AccountModule],
+      imports: [
+        DatabaseModule,
+        AccountModule,
+        WebsitesModule,
+        UserSpecifiedWebsiteOptionsModule,
+        PostParsersModule,
+      ],
       providers: [
         SubmissionService,
         CreateFileService,

@@ -6,10 +6,17 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
+import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
+import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
+import { TitleParserService } from '../post-parsers/parsers/title-parser.service';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
@@ -76,6 +83,13 @@ describe('FileService', () => {
         WebsiteRegistryService,
         WebsiteOptionsService,
         WebsiteImplProvider,
+        PostParsersService,
+        TagParserService,
+        DescriptionParserService,
+        TitleParserService,
+        TagConvertersService,
+        SettingsService,
+        FormGeneratorService,
       ],
     }).compile();
 

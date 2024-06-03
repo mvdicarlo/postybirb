@@ -47,7 +47,7 @@ describe('WebsiteRegistryService', () => {
     Object.assign(account, {
       name: 'test',
       id: 'test',
-      website: TestWebsite.prototype.metadata.name,
+      website: TestWebsite.prototype.decoratedProps.metadata.name,
     });
 
     const instance = await service.create(account);
@@ -62,7 +62,7 @@ describe('WebsiteRegistryService', () => {
     Object.assign(account, {
       name: 'test',
       id: 'test',
-      website: TestWebsite.prototype.metadata.name,
+      website: TestWebsite.prototype.decoratedProps.metadata.name,
     });
 
     const instance = await service.create(account);
