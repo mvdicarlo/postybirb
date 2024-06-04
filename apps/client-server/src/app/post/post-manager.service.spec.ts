@@ -9,9 +9,12 @@ import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { DatabaseModule } from '../database/database.module';
+import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
+import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
 import { CreateWebsiteOptionsDto } from '../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
@@ -19,6 +22,7 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
 import { PostFileResizerService } from './post-file-resizer.service';
 import { PostManagerService } from './post-manager.service';
+import { PostModule } from './post.module';
 import { PostService } from './post.service';
 
 describe('PostManagerService', () => {
@@ -39,6 +43,9 @@ describe('PostManagerService', () => {
         AccountModule,
         WebsiteOptionsModule,
         WebsitesModule,
+        UserSpecifiedWebsiteOptionsModule,
+        PostParsersModule,
+        PostModule,
       ],
       providers: [PostManagerService, PostService, PostFileResizerService],
     }).compile();
@@ -46,6 +53,7 @@ describe('PostManagerService', () => {
     service = module.get<PostManagerService>(PostManagerService);
     submissionService = module.get<SubmissionService>(SubmissionService);
     accountService = module.get<AccountService>(AccountService);
+    const settingsService = module.get<SettingsService>(SettingsService);
     websiteOptionsService = module.get<WebsiteOptionsService>(
       WebsiteOptionsService
     );
@@ -60,6 +68,7 @@ describe('PostManagerService', () => {
       // none
     }
     await accountService.onModuleInit();
+    await settingsService.onModuleInit();
   });
 
   function createSubmissionDto(): CreateSubmissionDto {

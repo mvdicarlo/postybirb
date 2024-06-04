@@ -3,6 +3,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
+  DefaultDescriptionValue,
   NULL_ACCOUNT_ID,
   ScheduleType,
   SubmissionType,
@@ -150,10 +151,7 @@ describe('SubmissionService', () => {
               overrideDefault: false,
               tags: [],
             },
-            description: {
-              overrideDefault: false,
-              description: '',
-            },
+            description: DefaultDescriptionValue(),
             title: 'Test',
           },
         },
@@ -245,10 +243,7 @@ describe('SubmissionService', () => {
               overrideDefault: false,
               tags: [],
             },
-            description: {
-              overrideDefault: false,
-              description: '',
-            },
+            description: DefaultDescriptionValue(),
             title: 'Test',
           },
         },

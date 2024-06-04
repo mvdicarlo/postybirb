@@ -271,12 +271,8 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         return result.value;
       }
 
-      if (result.status === 'rejected') {
-        return result.reason;
-      }
-
       throw new InternalServerErrorException(
-        `Unknown promise result: ${result}`
+        `Unknown promise result: ${result.reason}`
       );
     });
   }

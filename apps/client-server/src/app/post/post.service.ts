@@ -119,13 +119,17 @@ export class PostService extends PostyBirbService<PostRecord> {
       parent: { $in: request.ids },
     });
 
+    // TODO - reconsider what happens to a cancelled post since it seems to have strange behavior.
+    // Is it best to not remove it if it is already in a post state and just mark it as cancelled?
+
     // Only remove those that are not marked as done as to protect the archived posts.
     const incomplete = existing.filter(
-      (e: PostRecord) => e.completedAt !== undefined
+      (e: PostRecord) => e.completedAt === undefined
     );
 
-    request.ids.forEach(this.postManagerService.cancelIfRunning);
-    await this.repository.removeAndFlush(incomplete);
+    request.ids.forEach((id) => this.postManagerService.cancelIfRunning(id));
+    await Promise.all(incomplete.map((i) => this.remove(i.id)));
+    await this.repository.flush();
   }
 
   /**

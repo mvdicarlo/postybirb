@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Loaded, wrap } from '@mikro-orm/core';
+import { EntityDTO, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
@@ -87,6 +87,17 @@ export class PostManagerService {
     }
   }
 
+  private async protectedUpdate(
+    entity: LoadedPostRecord,
+    data: Partial<EntityDTO<Loaded<LoadedPostRecord, never>>>
+  ) {
+    const exists = await this.postRepository.findOne(entity.id);
+    if (!exists) {
+      throw new Error(`Entity ${entity.id} not found in database`);
+    }
+    await this.postRepository.update(entity.id, data);
+  }
+
   /**
    * Cancels the current post if it is running and matches the Id.
    * To be used when an external event occurs that requires the current post to be cancelled.
@@ -116,7 +127,7 @@ export class PostManagerService {
 
       this.logger.withMetadata(entity.toJSON()).info(`Initializing post`);
       this.currentPost = entity;
-      await this.postRepository.update(entity.id, {
+      await this.protectedUpdate(entity, {
         state: PostRecordState.RUNNING,
       });
 
@@ -158,7 +169,19 @@ export class PostManagerService {
     const allCompleted = entity.children
       .toArray()
       .every((c) => !!c.completedAt);
-    await this.postRepository.update(entity.id, {
+    const entityInDb = await this.postRepository.findOne(entity.id);
+    if (!entityInDb && !allCompleted) {
+      this.logger.error(
+        `Entity ${entity.id} not found in database. It may have been deleted while posting.`
+      );
+      return;
+    }
+    if (!entityInDb) {
+      this.logger.warn(
+        `Entity ${entity.id} not found in database. It may have been deleted while posting. Updating anyways due to all websites being completed.`
+      );
+    }
+    await this.protectedUpdate(entity, {
       state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
       completedAt: new Date(),
     });
