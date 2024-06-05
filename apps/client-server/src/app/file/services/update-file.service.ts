@@ -14,7 +14,6 @@ import { PostyBirbRepository } from '../../database/repositories/postybirb-repos
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 import { CreateFileService } from './create-file.service';
-import { IsTestEnvironment } from '../../utils/test.util';
 
 /**
  * A Service for updating existing SubmissionFile entities.
@@ -156,15 +155,6 @@ export class UpdateFileService {
   private async getImageDetails(file: MulterFileInfo, buf: Buffer) {
     if (ImageUtil.isImage(file.mimetype, false)) {
       const sharpInstance = ImageUtil.load(buf);
-
-      if (IsTestEnvironment()) {
-        return {
-          height: 100,
-          width: 100,
-          buffer: buf,
-          sharpInstance,
-        };
-      }
 
       const { height, width } = await sharpInstance.metadata();
       return { buffer: buf, width, height, sharpInstance };

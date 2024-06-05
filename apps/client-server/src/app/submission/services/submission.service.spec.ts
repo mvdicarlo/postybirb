@@ -199,8 +199,8 @@ describe('SubmissionService', () => {
             dimensions: {
               default: {
                 fileId: file.id,
-                height: 100,
-                width: 100,
+                height: 202,
+                width: 138,
               },
             },
             ignoredWebsites: [],
@@ -215,8 +215,8 @@ describe('SubmissionService', () => {
           fileName: fileInfo.originalname,
           hasThumbnail: true,
           hash: file.hash,
-          height: 100,
-          width: 100,
+          height: 202,
+          width: 138,
           id: file.id,
           mimeType: fileInfo.mimetype,
           props: {
