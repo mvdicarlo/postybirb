@@ -16,6 +16,7 @@ import SubmissionTemplateManagementView from '../../components/submission-templa
 import DirectoryWatchersTable from '../../components/submissions/directory-watchers-table/directory-watchers-table';
 import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
 import { SubmissionUploader } from '../../components/submissions/submission-uploader/submission-uploader';
+import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
@@ -30,11 +31,14 @@ export function FileSubmissionManagementPage2() {
     return <Loader />;
   }
 
-  console.log(fileSubmissions);
-
   let display = null;
   if (activeTab === 'submissions') {
-    display = null;
+    display = (
+      <SubmissionView
+        submissions={fileSubmissions}
+        type={SubmissionType.FILE}
+      />
+    );
   } else if (activeTab === 'templates') {
     display = null;
   } else if (activeTab === 'file-watcher') {

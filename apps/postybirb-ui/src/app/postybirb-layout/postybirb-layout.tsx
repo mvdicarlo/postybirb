@@ -94,7 +94,6 @@ export function PostyBirbLayout() {
         width: sideNavToggled ? 60 : 240,
         breakpoint: 'sm',
       }}
-      padding="md"
     >
       <AppShell.Navbar id="postybirb__navbar">
         <AppShell.Section>
@@ -141,11 +140,13 @@ export function PostyBirbLayout() {
         </AppShell.Section>
       </AppShell.Navbar>
       <AppShell.Main>
-        <Box id="postybirb__main" className="postybirb__layout" pos="relative">
+        <Box id="postybirb__main" className={classes.postybirb__layout}>
           <PostybirbSpotlight />
           <AccountDrawer />
           <SettingsDrawer />
-          <Outlet />
+          <Box className="postybirb__content" p="md">
+            <Outlet />
+          </Box>
         </Box>
       </AppShell.Main>
     </AppShell>
