@@ -38,6 +38,13 @@ export class DirectoryWatcher
   })
   template?: Rel<Submission>;
 
+  constructor(directoryWatcher: IDirectoryWatcher) {
+    super();
+    this.path = directoryWatcher.path;
+    this.importAction = directoryWatcher.importAction;
+    this.template = directoryWatcher.template as Submission;
+  }
+
   toJSON(): DirectoryWatcherDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serialize(this as any, {

@@ -1,3 +1,5 @@
+import { i18n } from '@lingui/core';
+import { msg } from '@lingui/macro';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
@@ -14,8 +16,6 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
-import { i18n } from '@lingui/core';
-import { msg } from '@lingui/macro';
 import submissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
@@ -61,8 +61,8 @@ export class SubmissionDto<
           isDefault: true,
           data: {
             title: '',
-            tags: DefaultTagValue,
-            description: DefaultDescriptionValue,
+            tags: DefaultTagValue(),
+            description: DefaultDescriptionValue(),
             rating: SubmissionRating.GENERAL,
           },
         },

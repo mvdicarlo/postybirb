@@ -20,12 +20,12 @@ export class TitleParserService {
     const defaultForm: TitleType =
       (await this.formGeneratorService.getDefaultForm(
         submission.type
-      )) as TitleType;
+      )) as unknown as TitleType;
     const websiteForm: TitleType =
       (await this.formGeneratorService.generateForm({
         type: submission.type,
         accountId: instance.accountId,
-      })) as TitleType;
+      })) as unknown as TitleType;
 
     const title = websiteOptions.data.title ?? defaultOptions.data.title ?? '';
     const field: TextFieldType =

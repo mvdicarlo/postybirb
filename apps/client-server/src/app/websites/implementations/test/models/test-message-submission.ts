@@ -18,7 +18,7 @@ export class TestMessageSubmission implements IWebsiteFormFields {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue() })
   tags: TagValue;
 
   @DescriptionField({

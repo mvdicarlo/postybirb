@@ -97,10 +97,12 @@ msgid "Apply"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-table-actions/submission-table-actions.tsx:42
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-actions.tsx:121
 msgid "Apply Template"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:53
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-actions.tsx:92
 msgid "Are you sure you want to delete this? This action cannot be undone."
 msgstr ""
 
@@ -109,7 +111,7 @@ msgctxt "unsaved changes modal"
 msgid "Are you sure you want to leave this page?"
 msgstr ""
 
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:59
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:65
 msgid "Auto Importers (File Watcher)"
 msgstr ""
 
@@ -190,7 +192,7 @@ msgstr ""
 msgid "Create new submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:286
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:371
 msgid "Create new submission for each file"
 msgstr ""
 
@@ -207,7 +209,8 @@ msgstr ""
 msgid "CRON format <0/>"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:107
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:108
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:188
 msgid "Crop"
 msgstr ""
 
@@ -251,7 +254,8 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:113
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:205
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:211
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:113
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:114
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-actions.tsx:105
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:113
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:236
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:104
@@ -299,11 +303,12 @@ msgstr ""
 msgid "Don't post to"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:253
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:331
 msgid "Drag images here or click to select files"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:198
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:54
 msgid "Duplicate"
 msgstr ""
 
@@ -331,6 +336,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:199
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:185
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:57
 msgid "Edit"
 msgstr ""
 
@@ -379,8 +385,8 @@ msgstr ""
 #: apps/postybirb-ui/src/app/app-search.tsx:74
 #: apps/postybirb-ui/src/pages/submission-template/edit-submission-template-page.tsx:32
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:90
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:46
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:106
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:52
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:112
 msgid "File Submissions"
 msgstr ""
 
@@ -608,6 +614,7 @@ msgid "Patch Notes"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:149
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:65
 msgid "Post"
 msgstr ""
 
@@ -728,7 +735,8 @@ msgstr ""
 msgid "Schedule Submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:127
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:126
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-actions.tsx:139
 msgid "Search"
 msgstr ""
 
@@ -859,8 +867,8 @@ msgid "Submission Template {defaultNameFromTime}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:131
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:49
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:109
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:55
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:115
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:101
 msgid "Submissions"
 msgstr ""
@@ -908,8 +916,8 @@ msgid "Template"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:126
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:54
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:116
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:60
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:122
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:108
 msgid "Templates"
 msgstr ""
@@ -938,6 +946,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-card.tsx:126
 msgid "Thumbnail"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:76
+msgid "TODO"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:31
@@ -998,7 +1010,7 @@ msgctxt "update.success-tag-group"
 msgid "Updated tag group"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:295
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:236
 msgid "Upload"
 msgstr ""
 

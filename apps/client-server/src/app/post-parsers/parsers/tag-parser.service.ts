@@ -14,11 +14,11 @@ export class TagParserService {
     websiteOptions: IWebsiteOptions
   ): Promise<string[]> {
     if (!instance.decoratedProps.tagSupport.supportsTags) {
-      return [...DefaultTagValue.tags];
+      return [...DefaultTagValue().tags];
     }
 
-    const defaultTags = defaultOptions.data.tags ?? DefaultTagValue;
-    const websiteTags = websiteOptions.data.tags ?? DefaultTagValue;
+    const defaultTags = defaultOptions.data.tags ?? DefaultTagValue();
+    const websiteTags = websiteOptions.data.tags ?? DefaultTagValue();
 
     let tags: string[] = await this.tagConvertersService.convert(
       instance,

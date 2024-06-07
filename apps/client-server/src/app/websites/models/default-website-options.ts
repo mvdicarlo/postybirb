@@ -35,7 +35,7 @@ export const DefaultRatingOptions: RatingOption[] = [
 
 export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
   title: '',
-  tags: DefaultTagValue,
+  tags: DefaultTagValue(),
   description: DefaultDescriptionValue(),
   rating: SubmissionRating.GENERAL,
 };
@@ -45,24 +45,21 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
     label: 'Title',
     defaultValue: DefaultWebsiteOptionsObject.title,
     required: true,
-    row: 0,
-    column: 1,
+    gridSpan: 12,
   })
   title: string;
 
   @TagField({
     label: 'Tags',
     defaultValue: DefaultWebsiteOptionsObject.tags,
-    row: 2,
-    column: 1,
+    gridSpan: 12,
   })
   tags: TagValue;
 
   @DescriptionField({
     label: 'Description',
     defaultValue: DefaultWebsiteOptionsObject.description,
-    row: 3,
-    column: 1,
+    gridSpan: 9,
   })
   description: DescriptionValue;
 
@@ -71,8 +68,7 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
     defaultValue: DefaultWebsiteOptionsObject.rating,
     options: DefaultRatingOptions,
     required: true,
-    row: 0,
-    column: 0,
+    gridSpan: 3,
     layout: 'vertical',
   })
   rating: SubmissionRating;

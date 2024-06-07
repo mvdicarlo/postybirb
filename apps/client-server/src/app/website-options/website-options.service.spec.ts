@@ -111,7 +111,7 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
+      tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
@@ -144,7 +144,7 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
+      tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
@@ -165,7 +165,7 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
+      tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
@@ -186,7 +186,7 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
+      tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
@@ -202,7 +202,7 @@ describe('WebsiteOptionsService', () => {
     const update = await service.update(record.id, {
       data: {
         title: 'title updated',
-        tags: DefaultTagValue,
+        tags: DefaultTagValue(),
         description: DefaultDescriptionValue(),
         rating: SubmissionRating.GENERAL,
       },

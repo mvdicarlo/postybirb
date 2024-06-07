@@ -73,6 +73,14 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   })
   posts: Collection<IPostRecord>;
 
+  constructor(submission: ISubmission<T>) {
+    super();
+    this.type = submission.type;
+    this.isScheduled = submission.isScheduled;
+    this.schedule = submission.schedule;
+    this.metadata = submission.metadata;
+  }
+
   toJSON(): ISubmissionDto<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serialize(this as any, {

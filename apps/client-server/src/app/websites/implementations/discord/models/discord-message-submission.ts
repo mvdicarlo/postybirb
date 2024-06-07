@@ -15,16 +15,14 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
   @TextField({
     label: 'Title',
     defaultValue: '',
-    row: 0,
-    column: 1,
+    gridSpan: 12,
   })
   title: string;
 
   @DescriptionField({
     label: 'Description',
     defaultValue: DefaultDescriptionValue(),
-    row: 3,
-    column: 1,
+    gridSpan: 9,
   })
   description: DescriptionValue;
 
@@ -33,8 +31,7 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
     defaultValue: undefined,
     options: DefaultRatingOptions,
     required: true,
-    row: 0,
-    column: 0,
+    gridSpan: 3,
     layout: 'vertical',
   })
   rating: SubmissionRating;

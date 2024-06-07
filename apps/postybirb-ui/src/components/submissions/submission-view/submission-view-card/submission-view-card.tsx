@@ -1,23 +1,25 @@
 import { Trans } from '@lingui/macro';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Card,
-    Flex,
-    Group,
-    Image,
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Flex,
+  Group,
+  Image,
+  ScrollArea,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconCopy,
-    IconEdit,
-    IconSend,
-    IconSquare,
-    IconSquareFilled,
+  IconCopy,
+  IconEdit,
+  IconSend,
+  IconSquare,
+  IconSquareFilled,
 } from '@tabler/icons-react';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { defaultTargetProvider } from '../../../../transports/http-client';
+import { WebsiteOptionForm } from '../../../form/website-option-form/website-option-form';
 
 type SubmissionViewCardProps = {
   submission: SubmissionDto;
@@ -68,14 +70,23 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
         </Flex>
       </Card.Section>
       <Card.Section pt="4">
-        <Flex>
-          {type === SubmissionType.FILE && src ? (
-            <Image h={75} w={75} fit="fill" src={src} />
-          ) : null}
-          <Box mx="xs" flex="10">
-            Hi
-          </Box>
-        </Flex>
+        <ScrollArea h={300}>
+          <Flex>
+            {type === SubmissionType.FILE && src ? (
+              <Image h={75} w={75} fit="fill" src={src} />
+            ) : null}
+
+            <Box mx="xs" flex="10">
+              {submission.options.map((option) => (
+                <WebsiteOptionForm
+                  key={option.id}
+                  option={option}
+                  type={type}
+                />
+              ))}
+            </Box>
+          </Flex>
+        </ScrollArea>
       </Card.Section>
     </Card>
   );

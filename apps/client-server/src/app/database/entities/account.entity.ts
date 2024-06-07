@@ -73,6 +73,13 @@ export class Account extends PostyBirbEntity implements IAccount {
     supports: [],
   };
 
+  constructor(account: IAccount) {
+    super();
+    this.name = account.name;
+    this.website = account.website;
+    this.groups = account.groups;
+  }
+
   toJSON(): IAccountDto {
     return serialize(this) as IAccountDto;
   }

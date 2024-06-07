@@ -57,6 +57,14 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
   @Property({ type: 'string', nullable: false })
   resumeMode: PostRecordResumeMode = PostRecordResumeMode.CONTINUE;
 
+  constructor(postRecord: IPostRecord) {
+    super();
+    this.parent = postRecord.parent as Submission;
+    this.completedAt = postRecord.completedAt;
+    this.state = postRecord.state;
+    this.resumeMode = postRecord.resumeMode;
+  }
+
   toJSON(): PostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serialize(this as any, { populate: ['children'] }) as PostRecordDto;

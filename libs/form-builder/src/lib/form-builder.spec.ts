@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
-import { formBuilder } from './form-builder';
 import { BooleanField, TextField } from './decorators';
+import { formBuilder } from './form-builder';
 
 describe('formBuilder', () => {
   it('should build boolean types', () => {
@@ -11,16 +11,14 @@ describe('formBuilder', () => {
     }
 
     expect(formBuilder(new BooleanType(), {})).toEqual({
-      field: [
-        {
-          label: 'boolean field',
-          defaultValue: false,
-          type: 'boolean',
-          formField: 'switch',
-          row: 1000,
-          column: 0,
-        },
-      ],
+      field: {
+        label: 'boolean field',
+        defaultValue: false,
+        type: 'boolean',
+        formField: 'switch',
+        gridSpan: 12,
+        row: 0,
+      },
     });
   });
 
@@ -31,16 +29,14 @@ describe('formBuilder', () => {
     }
 
     expect(formBuilder(new TextType(), {})).toEqual({
-      field: [
-        {
-          label: 'text field',
-          defaultValue: 'Hello',
-          type: 'text',
-          formField: 'input',
-          row: 1000,
-          column: 0,
-        },
-      ],
+      field: {
+        label: 'text field',
+        defaultValue: 'Hello',
+        type: 'text',
+        formField: 'input',
+        gridSpan: 12,
+        row: 0,
+      },
     });
   });
 
@@ -57,17 +53,15 @@ describe('formBuilder', () => {
     }
 
     expect(formBuilder(new BooleanType(), test)).toEqual({
-      field: [
-        {
-          label: 'boolean field',
-          defaultFrom: 'testBoolean',
-          defaultValue: test.testBoolean,
-          type: 'boolean',
-          formField: 'switch',
-          row: 1000,
-          column: 0,
-        },
-      ],
+      field: {
+        label: 'boolean field',
+        defaultFrom: 'testBoolean',
+        defaultValue: test.testBoolean,
+        type: 'boolean',
+        formField: 'switch',
+        gridSpan: 12,
+        row: 0,
+      },
     });
   });
 });
