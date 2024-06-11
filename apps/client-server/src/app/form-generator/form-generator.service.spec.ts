@@ -74,7 +74,7 @@ describe('FormGeneratorService', () => {
     expect(messageForm).toEqual({
       description: [
         {
-          column: 1,
+          col: 1,
           defaultValue: {
             description: [],
             overrideDefault: false,
@@ -88,7 +88,7 @@ describe('FormGeneratorService', () => {
       ],
       rating: [
         {
-          column: 0,
+          col: 0,
           defaultValue: SubmissionRating.ADULT,
           formField: 'rating',
           label: 'Rating',
@@ -118,7 +118,7 @@ describe('FormGeneratorService', () => {
       ],
       tags: [
         {
-          column: 1,
+          col: 1,
           defaultValue: {
             overrideDefault: false,
             tags: [],
@@ -132,7 +132,7 @@ describe('FormGeneratorService', () => {
       ],
       title: [
         {
-          column: 1,
+          col: 1,
           defaultValue: '',
           formField: 'input',
           label: 'Title',
@@ -149,7 +149,7 @@ describe('FormGeneratorService', () => {
     expect(messageForm).toEqual({
       description: [
         {
-          column: 1,
+          col: 1,
           defaultValue: {
             description: [],
             overrideDefault: false,
@@ -163,7 +163,7 @@ describe('FormGeneratorService', () => {
       ],
       rating: [
         {
-          column: 0,
+          col: 0,
           defaultValue: 'GENERAL',
           formField: 'rating',
           label: 'Rating',
@@ -193,7 +193,7 @@ describe('FormGeneratorService', () => {
       ],
       tags: [
         {
-          column: 1,
+          col: 1,
           defaultValue: {
             overrideDefault: false,
             tags: [],
@@ -207,7 +207,7 @@ describe('FormGeneratorService', () => {
       ],
       title: [
         {
-          column: 1,
+          col: 1,
           defaultValue: '',
           formField: 'input',
           label: 'Title',
@@ -222,7 +222,7 @@ describe('FormGeneratorService', () => {
     expect(fileForm).toEqual({
       description: [
         {
-          column: 1,
+          col: 1,
           defaultValue: {
             description: [],
             overrideDefault: false,
@@ -236,7 +236,7 @@ describe('FormGeneratorService', () => {
       ],
       rating: [
         {
-          column: 0,
+          col: 0,
           defaultValue: 'GENERAL',
           formField: 'rating',
           label: 'Rating',
@@ -266,7 +266,7 @@ describe('FormGeneratorService', () => {
       ],
       tags: [
         {
-          column: 1,
+          col: 1,
           defaultValue: {
             overrideDefault: false,
             tags: [],
@@ -280,7 +280,7 @@ describe('FormGeneratorService', () => {
       ],
       title: [
         {
-          column: 1,
+          col: 1,
           defaultValue: '',
           formField: 'input',
           label: 'Title',

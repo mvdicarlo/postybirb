@@ -21,12 +21,12 @@ export function assignMetadata<T extends PrimitiveRecord>(
     fields[propertyKey] = options;
   }
 
-  if (options.gridSpan === undefined) {
-    options.gridSpan = 12;
+  if (options.row === undefined) {
+    options.row = Number.MAX_SAFE_INTEGER;
   }
 
-  if (options.row === undefined) {
-    options.row = 0;
+  if (options.col === undefined) {
+    options.col = 0;
   }
 
   fields[propertyKey] = options;

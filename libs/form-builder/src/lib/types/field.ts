@@ -47,12 +47,17 @@ export type FieldType<T extends PrimitiveRecord, V, F extends string> = {
   type?: string;
 
   /**
-   * Width of the field in the grid.
+   * Whether the component should grow to fill the available space.
    */
-  gridSpan?: number;
+  grow?: boolean;
 
   /**
    * The row in the grid.
    */
   row?: number;
+
+  /**
+   * The column in the grid.
+   */
+  col?: number;
 };

@@ -45,21 +45,24 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
     label: 'Title',
     defaultValue: DefaultWebsiteOptionsObject.title,
     required: true,
-    gridSpan: 12,
+    col: 1,
+    row: 0,
   })
   title: string;
 
   @TagField({
     label: 'Tags',
     defaultValue: DefaultWebsiteOptionsObject.tags,
-    gridSpan: 12,
+    col: 1,
+    row: 1,
   })
   tags: TagValue;
 
   @DescriptionField({
     label: 'Description',
     defaultValue: DefaultWebsiteOptionsObject.description,
-    gridSpan: 9,
+    col: 1,
+    row: 3,
   })
   description: DescriptionValue;
 
@@ -68,7 +71,8 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
     defaultValue: DefaultWebsiteOptionsObject.rating,
     options: DefaultRatingOptions,
     required: true,
-    gridSpan: 3,
+    col: 0,
+    row: 0,
     layout: 'vertical',
   })
   rating: SubmissionRating;

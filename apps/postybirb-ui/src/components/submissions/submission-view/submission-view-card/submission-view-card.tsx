@@ -34,6 +34,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
   const src = files.length
     ? `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`
     : null;
+  const defaultOption = submission.getDefaultOptions();
   return (
     <Card shadow="xs" withBorder={isSelected}>
       <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
@@ -73,14 +74,21 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
         <ScrollArea h={300}>
           <Flex>
             {type === SubmissionType.FILE && src ? (
-              <Image h={75} w={75} fit="fill" src={src} />
+              <Image
+                h={75}
+                w={75}
+                fit="fill"
+                src={src}
+                style={{ position: 'sticky', top: 0 }}
+              />
             ) : null}
 
             <Box mx="xs" flex="10">
-              {submission.options.map((option) => (
+              {submission.options.map((options) => (
                 <WebsiteOptionForm
-                  key={option.id}
-                  option={option}
+                  key={options.id}
+                  defaultOption={defaultOption}
+                  option={options}
                   type={type}
                 />
               ))}

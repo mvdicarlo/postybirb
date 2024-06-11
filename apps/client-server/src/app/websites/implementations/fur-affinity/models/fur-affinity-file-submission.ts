@@ -26,17 +26,19 @@ export class FurAffinityFileSubmission implements IWebsiteFormFields {
     label: 'Title',
     defaultValue: '',
     required: true,
-    gridSpan: 12,
+    row: 0,
+    col: 1,
   })
   title: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue(), gridSpan: 12 })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue(), row: 2, col: 1 })
   tags: TagValue;
 
   @DescriptionField({
     label: 'Description',
     defaultValue: DefaultDescriptionValue(),
-    gridSpan: 9,
+    row: 3,
+    col: 1,
   })
   description: DescriptionValue;
 
@@ -45,7 +47,8 @@ export class FurAffinityFileSubmission implements IWebsiteFormFields {
     defaultValue: undefined,
     options: DefaultRatingOptions,
     required: true,
-    gridSpan: 3,
+    row: 0,
+    col: 0,
     layout: 'vertical',
   })
   rating: SubmissionRating;

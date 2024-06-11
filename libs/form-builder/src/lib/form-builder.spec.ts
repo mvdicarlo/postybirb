@@ -16,8 +16,8 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'switch',
-        gridSpan: 12,
-        row: 0,
+        row: Number.MAX_SAFE_INTEGER,
+        col: Number.MAX_SAFE_INTEGER,
       },
     });
   });
@@ -34,8 +34,8 @@ describe('formBuilder', () => {
         defaultValue: 'Hello',
         type: 'text',
         formField: 'input',
-        gridSpan: 12,
-        row: 0,
+        row: Number.MAX_SAFE_INTEGER,
+        col: Number.MAX_SAFE_INTEGER,
       },
     });
   });
@@ -59,8 +59,8 @@ describe('formBuilder', () => {
         defaultValue: test.testBoolean,
         type: 'boolean',
         formField: 'switch',
-        gridSpan: 12,
-        row: 0,
+        row: Number.MAX_SAFE_INTEGER,
+        col: Number.MAX_SAFE_INTEGER,
       },
     });
   });
