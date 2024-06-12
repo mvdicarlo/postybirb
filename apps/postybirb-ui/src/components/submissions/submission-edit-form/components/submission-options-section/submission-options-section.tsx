@@ -13,7 +13,7 @@ import { useMemo, useState } from 'react';
 import { useLingui } from '@lingui/react';
 import { useSubmission } from '../../../../../hooks/submission/use-submission';
 import { useSubmissionOptions } from '../../../../../hooks/submission/use-submission-options';
-import Translation from '../../../../translations/translation';
+import { ValidationTranslation } from '../../../../translations/translation';
 import { SubmissionSectionProps } from '../../submission-form-props';
 import SubmissionFormGenerator from '../submission-form-generator/submission-form-generator';
 import UserSpecifiedWebsiteOptionsSaveModal from './user-specified-website-options-save-modal';
@@ -34,7 +34,7 @@ function ValidationMessages(props: {
           <EuiCallOut
             color={type === 'errors' ? 'danger' : 'warning'}
             size="s"
-            title={<Translation id={m.id} values={m.values} />}
+            title={<ValidationTranslation id={m.id} values={m.values} />}
             iconType="alert"
           />
         ))}
@@ -70,7 +70,7 @@ export default function SubmissionOptionsSection(
 
   const x = _(
     msg`Saves current values as the default for this account to be loaded in future submissions.`
-  )
+  );
 
   return (
     <EuiAccordion
@@ -83,9 +83,7 @@ export default function SubmissionOptionsSection(
       }
       extraAction={
         <div>
-          <EuiToolTip
-            content={x}
-          >
+          <EuiToolTip content={x}>
             <EuiButtonEmpty
               className="mr-2"
               size="s"

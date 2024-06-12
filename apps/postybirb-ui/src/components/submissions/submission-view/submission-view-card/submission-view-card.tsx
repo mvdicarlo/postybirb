@@ -90,6 +90,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                   defaultOption={defaultOption}
                   option={options}
                   type={type}
+                  submission={submission}
                 />
               ))}
             </Box>

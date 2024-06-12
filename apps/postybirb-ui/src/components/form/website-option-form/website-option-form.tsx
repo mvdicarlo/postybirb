@@ -1,31 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Trans } from '@lingui/macro';
-import { Box, Flex, Loader, Title } from '@mantine/core';
+import { Alert, Box, Flex, Loader, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {
-    FieldAggregateType,
-    FormBuilderMetadata,
+  FieldAggregateType,
+  FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import {
-    IAccountDto,
-    NULL_ACCOUNT_ID,
-    NullAccount,
-    SubmissionType,
-    WebsiteOptionsDto,
+  AccountId,
+  IAccountDto,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  NullAccount,
+  SubmissionId,
+  SubmissionType,
+  ValidationMessage,
+  ValidationResult,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
+import websiteOptionsApi from '../../../api/website-options.api';
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
+import { ValidationTranslation } from '../../translations/translation';
 import { Field } from '../fields/field';
 
 type WebsiteOptionFormProps = {
   option: WebsiteOptionsDto;
   type: SubmissionType;
   defaultOption: WebsiteOptionsDto;
+  submission: SubmissionDto;
 };
 
 type InnerFormProps = {
+  account: AccountId;
+  submission: SubmissionId;
   formFields: FormBuilderMetadata<never>;
   option: WebsiteOptionsDto;
   defaultOption: WebsiteOptionsDto;
@@ -59,19 +70,86 @@ function shouldGrow(entries: FieldEntry[]): boolean {
   return false;
 }
 
-function InnerForm({ formFields, option, defaultOption }: InnerFormProps) {
+function ValidationMessages(props: {
+  messages: ValidationMessage[];
+  type: keyof ValidationResult;
+}): JSX.Element {
+  const { messages, type } = props;
+  // Only display messages without fields
+  return (
+    <>
+      {messages
+        .filter((m) => m.field === undefined)
+        .map((m) => (
+          <Alert
+            c={type === 'errors' ? 'red' : 'orange'}
+            title={<ValidationTranslation id={m.id} values={m.values} />}
+          />
+        ))}
+    </>
+  );
+}
+
+function InnerForm({
+  formFields,
+  option,
+  defaultOption,
+  account,
+  submission,
+}: InnerFormProps) {
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
-      ...Object.values(formFields).reduce(
-        (acc, field) => ({ ...acc, [field.label]: field.defaultValue }),
+      ...Object.entries(formFields).reduce(
+        (acc, [key, field]) => ({
+          ...acc,
+          [key]:
+            option.data[key as keyof IWebsiteFormFields] || field.defaultValue,
+        }),
         {}
       ),
     },
     onValuesChange(values, previous) {
       console.log(values, previous);
+      // TODO - figure out how to start the revalidation
+      // Chickens and eggs problem
     },
   });
+  const { isLoading, data: validations } = useQuery(
+    `website-option-${option.id}-validations`,
+    () =>
+      option.isDefault
+        ? Promise.resolve({
+            errors: [],
+            warnings: [],
+          })
+        : websiteOptionsApi
+            .validate({
+              defaultOptions: defaultOption.data,
+              account,
+              submission,
+              options: form.values as IWebsiteFormFields,
+            })
+            .then((res) => res.body)
+  );
+
+  const optionValidations = validations || {
+    errors: [],
+    warnings: [],
+  };
+  const validationAlerts = Object.entries(optionValidations).map(
+    ([key, value]) => (
+      <ValidationMessages
+        key={key}
+        messages={value}
+        type={key as keyof ValidationResult}
+      />
+    )
+  );
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   // split form into cols
   const cols: Record<string, FieldEntry[]> = {};
@@ -83,15 +161,9 @@ function InnerForm({ formFields, option, defaultOption }: InnerFormProps) {
     cols[col].push({ key, field });
   });
 
-  //   <Input.Wrapper
-  //   label={field.label}
-  //   w={field.type === 'rating' ? '100px' : '100%'}
-  // >
-  //   <Input w="100%" />
-  // </Input.Wrapper>
-
   return (
     <Box>
+      {validationAlerts}
       <Flex gap="xs">
         {Object.entries(cols).map(([col, fields]) => {
           const grow = shouldGrow(fields);
@@ -137,7 +209,7 @@ function getAccount(accountId: string, accounts: IAccountDto[]): IAccountDto {
 
 export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
   const { state: accounts } = useStore(AccountStore);
-  const { option, type, defaultOption } = props;
+  const { option, type, defaultOption, submission } = props;
   const { account } = option;
   const { isLoading: isLoadingFormFields, data: formFields } = useQuery(
     `website-option-${option.id}`,
@@ -173,6 +245,7 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
       </Box>
     );
   }
+
   return (
     <Box>
       <Title order={4}>{accountName}</Title>
@@ -180,6 +253,8 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
         formFields={formFields}
         option={option}
         defaultOption={defaultOption}
+        account={account}
+        submission={submission.id}
       />
     </Box>
   );

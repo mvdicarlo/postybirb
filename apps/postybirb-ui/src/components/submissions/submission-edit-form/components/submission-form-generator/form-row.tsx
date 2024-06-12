@@ -3,7 +3,7 @@ import { EuiButtonIcon, EuiCopy, EuiFormRow, EuiText } from '@elastic/eui';
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { PropsWithChildren, useMemo } from 'react';
-import Translation from '../../../../translations/translation';
+import { ValidationTranslation } from '../../../../translations/translation';
 import { SubmissionGeneratedFieldProps } from '../../submission-form-props';
 import { UseValidationResult } from './fields/use-validations';
 
@@ -59,11 +59,11 @@ export default function FormRow(props: FormRowProps) {
       aria-label={field.label}
       isInvalid={validations?.isInvalid}
       error={validations?.errors.map((error) => (
-        <Translation id={error.id} values={error.values} />
+        <ValidationTranslation id={error.id} values={error.values} />
       ))}
       helpText={validations?.warnings.map((warning) => (
         <EuiText color="warning" size="xs">
-          <Translation id={warning.id} values={warning.values} />
+          <ValidationTranslation id={warning.id} values={warning.values} />
         </EuiText>
       ))}
     >

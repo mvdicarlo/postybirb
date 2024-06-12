@@ -1,37 +1,26 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { useLingui } from '@lingui/react';
-import { Input } from '@mantine/core';
-import { TextFieldType } from '@postybirb/form-builder';
-import { externalTranslations } from '../../../external-translations';
+import { RadioFieldType, TextFieldType } from '@postybirb/form-builder';
 import { FormFieldProps } from './form-field.type';
 import { InputField } from './input-field';
+import { RadioField } from './radio-field';
 
 export function Field(props: FormFieldProps): JSX.Element | null {
   const { field } = props;
-  const { _ } = useLingui();
 
   let formField: JSX.Element | null = null;
   switch (field.formField) {
     case 'input':
+    case 'textarea':
       formField = <InputField {...(props as FormFieldProps<TextFieldType>)} />;
+      break;
+    case 'radio':
+    case 'rating':
+      formField = <RadioField {...(props as FormFieldProps<RadioFieldType>)} />;
       break;
     default:
       formField = <div>Unknown field type: {field.formField}</div>;
   }
 
-  // eslint-disable-next-line prefer-const
-  let { label, i18nLabel } = field;
-  const i18n = i18nLabel || label;
-  const translationLabel = externalTranslations[i18n];
-  if (!translationLabel) {
-    console.warn('Missing translation for field', field);
-  } else {
-    label = _(translationLabel);
-  }
-
-  return (
-    <Input.Wrapper required={field.required} label={label}>
-      {formField}
-    </Input.Wrapper>
-  );
+  // TODO - Happily merge external translation and the shared translations.
+  return formField;
 }

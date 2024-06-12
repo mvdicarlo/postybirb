@@ -1,7 +1,7 @@
 import { EuiCheckbox, EuiFormRow, EuiSwitch, EuiText } from '@elastic/eui';
 import { BooleanFieldType } from '@postybirb/form-builder';
 import { useState } from 'react';
-import Translation from '../../../../../translations/translation';
+import { ValidationTranslation } from '../../../../../translations/translation';
 import { SubmissionGeneratedFieldProps } from '../../../submission-form-props';
 import useValidations from './use-validations';
 
@@ -18,11 +18,11 @@ export default function BooleanField(props: InputFieldProps) {
     <EuiFormRow
       fullWidth
       error={validations?.errors.map((error) => (
-        <Translation id={error.id} values={error.values} />
+        <ValidationTranslation id={error.id} values={error.values} />
       ))}
       helpText={validations?.warnings.map((warning) => (
         <EuiText color="warning" size="s">
-          <Translation id={warning.id} values={warning.values} />
+          <ValidationTranslation id={warning.id} values={warning.values} />
         </EuiText>
       ))}
       isInvalid={validations.isInvalid}

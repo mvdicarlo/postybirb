@@ -44,9 +44,8 @@ export default function SubmissionFormGenerator(
     return <Trans>Unable to generate form.</Trans>;
   }
 
-  // TODO - Question why is the value an array again?
   const entries = Object.entries(metadata)
-    .map(([key, value]) => ({ key, value: value[0] }))
+    .map(([key, value]) => ({ key, value }))
     .sort((a, b) => {
       const value1 = a.value;
       const value2 = b.value;
@@ -57,7 +56,7 @@ export default function SubmissionFormGenerator(
   const columns: Record<string, FieldEntry[]> = {};
 
   entries.forEach((entry) => {
-    const column = entry.value.column || 0;
+    const column = entry.value.col || 0;
     if (!columns[column]) {
       columns[column] = [];
     }

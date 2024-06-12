@@ -11,7 +11,6 @@ import { RatingParser } from './parsers/rating-parser';
 import { TagParserService } from './parsers/tag-parser.service';
 import { TitleParserService } from './parsers/title-parser.service';
 
-// TODO - write tests for this
 @Injectable()
 export class PostParsersService {
   private readonly ratingParser: RatingParser = new RatingParser();

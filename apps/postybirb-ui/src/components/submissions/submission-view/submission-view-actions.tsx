@@ -2,25 +2,25 @@
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Flex,
-    Group,
-    Indicator,
-    Input,
-    Paper,
-    Popover,
-    Text,
+  ActionIcon,
+  Box,
+  Button,
+  Flex,
+  Group,
+  Indicator,
+  Input,
+  Paper,
+  Popover,
+  Text,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
-    IconSearch,
-    IconSquare,
-    IconSquareFilled,
-    IconSquareMinus,
-    IconTemplate,
-    IconTrash,
+  IconSearch,
+  IconSquare,
+  IconSquareFilled,
+  IconSquareMinus,
+  IconTemplate,
+  IconTrash,
 } from '@tabler/icons-react';
 import submissionApi from '../../../api/submission.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -100,6 +100,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
             leftSection={<IconTrash />}
             onClick={() => {
               submissionApi.remove(selectedSubmissions.map((s) => s.id));
+              onSelect([]);
             }}
           >
             <Trans>Delete</Trans>
@@ -121,7 +122,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
           <Trans>Apply Template</Trans>
         </Button>
       </Popover.Target>
-      <Popover.Dropdown>Hi</Popover.Dropdown>
+      <Popover.Dropdown>TODO</Popover.Dropdown>
     </Popover>
   );
 

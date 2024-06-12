@@ -14,7 +14,7 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   return (
     <Grid>
       {submissions.map((submission) => (
-        <Grid.Col span={6}>
+        <Grid.Col span={6} key={`card-${submission.id}`}>
           <SubmissionViewCard
             key={submission.id}
             submission={submission}
