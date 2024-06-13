@@ -18,6 +18,8 @@ import {
   ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
+import { debounce } from 'lodash';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
@@ -57,7 +59,6 @@ function shouldGrow(entries: FieldEntry[]): boolean {
       case 'checkbox':
       case 'radio':
       case 'rating':
-      case 'switch':
         break;
       case 'input':
       case 'tag':
@@ -97,6 +98,38 @@ function InnerForm({
   account,
   submission,
 }: InnerFormProps) {
+  const [validations, setValidations] = useState<ValidationResult>({
+    errors: [],
+    warnings: [],
+  });
+  const fetchValidation = useRef<((value: IWebsiteFormFields) => void) | null>(
+    null
+  );
+
+  useEffect(() => {
+    const fetchData = async (value: IWebsiteFormFields) => {
+      if (option.isDefault) {
+        setValidations({
+          errors: [],
+          warnings: [],
+        });
+      } else {
+        const res = await websiteOptionsApi.validate({
+          defaultOptions: defaultOption.data,
+          account,
+          submission,
+          options: value ?? option.data,
+        });
+
+        setValidations(res.body);
+      }
+    };
+
+    fetchData(option.data);
+    fetchValidation.current = debounce(fetchData, 1_200);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
@@ -111,27 +144,11 @@ function InnerForm({
     },
     onValuesChange(values, previous) {
       console.log(values, previous);
-      // TODO - figure out how to start the revalidation
-      // Chickens and eggs problem
+      if (fetchValidation.current) {
+        fetchValidation.current(values as IWebsiteFormFields);
+      }
     },
   });
-  const { isLoading, data: validations } = useQuery(
-    `website-option-${option.id}-validations`,
-    () =>
-      option.isDefault
-        ? Promise.resolve({
-            errors: [],
-            warnings: [],
-          })
-        : websiteOptionsApi
-            .validate({
-              defaultOptions: defaultOption.data,
-              account,
-              submission,
-              options: form.values as IWebsiteFormFields,
-            })
-            .then((res) => res.body)
-  );
 
   const optionValidations = validations || {
     errors: [],
@@ -146,10 +163,6 @@ function InnerForm({
       />
     )
   );
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   // split form into cols
   const cols: Record<string, FieldEntry[]> = {};

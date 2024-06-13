@@ -1,5 +1,10 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { RadioFieldType, TextFieldType } from '@postybirb/form-builder';
+import {
+  BooleanFieldType,
+  RadioFieldType,
+  TextFieldType,
+} from '@postybirb/form-builder';
+import { BooleanField } from './boolean-field';
 import { FormFieldProps } from './form-field.type';
 import { InputField } from './input-field';
 import { RadioField } from './radio-field';
@@ -16,6 +21,11 @@ export function Field(props: FormFieldProps): JSX.Element | null {
     case 'radio':
     case 'rating':
       formField = <RadioField {...(props as FormFieldProps<RadioFieldType>)} />;
+      break;
+    case 'checkbox':
+      formField = (
+        <BooleanField {...(props as FormFieldProps<BooleanFieldType>)} />
+      );
       break;
     default:
       formField = <div>Unknown field type: {field.formField}</div>;

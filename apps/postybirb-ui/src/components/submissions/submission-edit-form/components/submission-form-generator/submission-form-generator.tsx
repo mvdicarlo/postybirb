@@ -22,7 +22,6 @@ function shouldGrow(entries: FieldEntry[]): boolean {
       case 'checkbox':
       case 'radio':
       case 'rating':
-      case 'switch':
         break;
       case 'input':
       case 'tag':
