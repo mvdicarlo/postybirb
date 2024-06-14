@@ -2,12 +2,14 @@
 import {
   BooleanFieldType,
   RadioFieldType,
+  TagFieldType,
   TextFieldType,
 } from '@postybirb/form-builder';
 import { BooleanField } from './boolean-field';
 import { FormFieldProps } from './form-field.type';
 import { InputField } from './input-field';
 import { RadioField } from './radio-field';
+import { TagField } from './tag-field';
 
 export function Field(props: FormFieldProps): JSX.Element | null {
   const { field } = props;
@@ -26,6 +28,9 @@ export function Field(props: FormFieldProps): JSX.Element | null {
       formField = (
         <BooleanField {...(props as FormFieldProps<BooleanFieldType>)} />
       );
+      break;
+    case 'tag':
+      formField = <TagField {...(props as FormFieldProps<TagFieldType>)} />;
       break;
     default:
       formField = <div>Unknown field type: {field.formField}</div>;
