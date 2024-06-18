@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Trans } from '@lingui/macro';
-import { Alert, Box, Flex, Loader, Title } from '@mantine/core';
+import { Alert, Box, Flex, Loader, Stack, Title } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {
   FieldAggregateType,
@@ -19,7 +19,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
@@ -130,6 +130,18 @@ function InnerForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const save = useCallback(
+    debounce(
+      (values) =>
+        websiteOptionsApi.update(option.id, {
+          data: values as IWebsiteFormFields,
+        }),
+      1_200
+    ),
+    []
+  );
+
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {
@@ -142,11 +154,11 @@ function InnerForm({
         {}
       ),
     },
-    onValuesChange(values, previous) {
-      console.log(values, previous);
+    onValuesChange(values) {
       if (fetchValidation.current) {
         fetchValidation.current(values as IWebsiteFormFields);
       }
+      save(values);
     },
   });
 
@@ -181,7 +193,8 @@ function InnerForm({
         {Object.entries(cols).map(([col, fields]) => {
           const grow = shouldGrow(fields);
           return (
-            <div
+            <Stack
+              gap="xs"
               key={col}
               style={{
                 flexGrow: grow ? '1' : '0',
@@ -201,7 +214,7 @@ function InnerForm({
                     validation={[]}
                   />
                 ))}
-            </div>
+            </Stack>
           );
         })}
       </Flex>

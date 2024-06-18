@@ -8,6 +8,7 @@ import {
   Group,
   Image,
   ScrollArea,
+  Stack,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import {
@@ -20,6 +21,7 @@ import {
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { defaultTargetProvider } from '../../../../transports/http-client';
 import { WebsiteOptionForm } from '../../../form/website-option-form/website-option-form';
+import { WebsiteSelect } from '../../../form/website-select/website-select';
 
 type SubmissionViewCardProps = {
   submission: SubmissionDto;
@@ -84,15 +86,24 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
             ) : null}
 
             <Box mx="xs" flex="10">
-              {submission.options.map((options) => (
-                <WebsiteOptionForm
-                  key={options.id}
-                  defaultOption={defaultOption}
-                  option={options}
-                  type={type}
+              <Stack gap="xs">
+                <WebsiteSelect
                   submission={submission}
+                  onSelect={(selectedAccounts) => {
+                    // TODO create website option with populated defaults
+                    console.log('onSelect', selectedAccounts);
+                  }}
                 />
-              ))}
+                {submission.options.map((options) => (
+                  <WebsiteOptionForm
+                    key={options.id}
+                    defaultOption={defaultOption}
+                    option={options}
+                    type={type}
+                    submission={submission}
+                  />
+                ))}
+              </Stack>
             </Box>
           </Flex>
         </ScrollArea>

@@ -1,14 +1,17 @@
-/* eslint-disable lingui/no-unlocalized-strings */
 import {
   BooleanFieldType,
+  DescriptionFieldType,
   RadioFieldType,
+  SelectFieldType,
   TagFieldType,
   TextFieldType,
 } from '@postybirb/form-builder';
 import { BooleanField } from './boolean-field';
+import { DescriptionField } from './description-field';
 import { FormFieldProps } from './form-field.type';
 import { InputField } from './input-field';
 import { RadioField } from './radio-field';
+import { SelectField } from './select-field';
 import { TagField } from './tag-field';
 
 export function Field(props: FormFieldProps): JSX.Element | null {
@@ -16,6 +19,13 @@ export function Field(props: FormFieldProps): JSX.Element | null {
 
   let formField: JSX.Element | null = null;
   switch (field.formField) {
+    case 'description':
+      formField = (
+        <DescriptionField
+          {...(props as FormFieldProps<DescriptionFieldType>)}
+        />
+      );
+      break;
     case 'input':
     case 'textarea':
       formField = <InputField {...(props as FormFieldProps<TextFieldType>)} />;
@@ -32,7 +42,13 @@ export function Field(props: FormFieldProps): JSX.Element | null {
     case 'tag':
       formField = <TagField {...(props as FormFieldProps<TagFieldType>)} />;
       break;
+    case 'select':
+      formField = (
+        <SelectField {...(props as FormFieldProps<SelectFieldType>)} />
+      );
+      break;
     default:
+      // eslint-disable-next-line lingui/no-unlocalized-strings
       formField = <div>Unknown field type: {field.formField}</div>;
   }
 

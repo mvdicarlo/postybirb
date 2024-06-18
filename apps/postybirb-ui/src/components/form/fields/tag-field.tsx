@@ -1,13 +1,5 @@
 import { Trans } from '@lingui/macro';
-import {
-    Box,
-    Checkbox,
-    ComboboxItem,
-    ComboboxItemGroup,
-    Pill,
-    TagsInput,
-    Text,
-} from '@mantine/core';
+import { Box, Checkbox, Pill, TagsInput, Text } from '@mantine/core';
 import { TagFieldType } from '@postybirb/form-builder';
 import { Tag, TagGroupDto, TagValue } from '@postybirb/types';
 import { uniq } from 'lodash';
@@ -36,37 +28,47 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const tagsProps = form.getInputProps(`${propKey}.tags`);
   const tagValue = tagsProps.defaultValue as Tag[];
 
-  const tagGroupsOptions: ComboboxItemGroup<ComboboxItem>[] = tagGroups.map(
-    (tagGroup) => ({
-      label: `GROUP:${tagGroup.name}`,
-      value: `group:${JSON.stringify(tagGroup)}`,
-      disabled: containsAllTagsInGroup(tagValue, tagGroup),
-    })
-  );
+  const tagGroupsOptions = tagGroups.map((tagGroup) => ({
+    label: `GROUP:${tagGroup.name}`,
+    value: `group:${JSON.stringify(tagGroup)}`,
+    disabled: containsAllTagsInGroup(tagValue, tagGroup),
+  }));
 
-  // TODO min/max, filter default tags out, copy btn, converters
+  const updateTags = (tags: Tag[]) => {
+    if (defaultOption && !overrideProps.value) {
+      const defaultTags = defaultOption.tags || [];
+
+      form.setFieldValue(
+        `${propKey}.tags`,
+        uniq(tags.filter((tag) => !defaultTags.includes(tag)))
+      );
+    } else {
+      form.setFieldValue(`${propKey}.tags`, uniq(tags));
+    }
+  };
+
+  // TODO converters
   return (
     <Box>
       {option.isDefault ? null : (
         <Checkbox
           {...overrideProps}
+          checked={overrideProps.defaultValue || false}
           label={<Trans context="override-default">Override default</Trans>}
         />
       )}
       <FieldLabel {...props} validationState={validations}>
         <TagsInput
           clearable
+          required={field.required}
           value={tagValue}
           data={[...tagGroupsOptions]}
           onOptionSubmit={(tag) => {
             if (tag.startsWith(TAG_GROUP_LABEL)) {
               const group: TagGroupDto = JSON.parse(tag.slice(6));
-              form.setFieldValue(
-                `${propKey}.tags`,
-                uniq([...tagValue, ...group.tags])
-              );
+              updateTags([...tagValue, ...group.tags]);
             } else {
-              form.setFieldValue(`${propKey}.tags`, uniq([...tagValue, tag]));
+              updateTags([...tagValue, tag]);
             }
           }}
           onClear={() => form.setFieldValue(`${propKey}.tags`, [])}
@@ -75,10 +77,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
             const newTags = tags
               .filter((tag) => !tag.startsWith(TAG_GROUP_LABEL))
               .filter((tag) => !tagValue.includes(tag));
-            form.setFieldValue(
-              `${propKey}.tags`,
-              uniq([...tagValue, ...newTags])
-            );
+            updateTags([...tagValue, ...newTags]);
           }}
           renderOption={(tagOption) => {
             const { value } = tagOption.option;
