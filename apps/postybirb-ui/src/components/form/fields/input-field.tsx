@@ -1,7 +1,4 @@
-import {
-  TextInput,
-  Textarea,
-} from '@mantine/core';
+import { TextInput, Textarea } from '@mantine/core';
 import { TextFieldType } from '@postybirb/form-builder';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
@@ -16,7 +13,7 @@ type CommonFieldProps = {
 function TextField(props: FormFieldProps<TextFieldType> & CommonFieldProps) {
   const { propKey, form, field, defaultValue } = props;
   const inputProps = form.getInputProps(propKey);
-  const value = inputProps.value || '';
+  const value = inputProps.defaultValue || '';
   return (
     <TextInput
       {...inputProps}
@@ -39,7 +36,7 @@ function TextAreaField(
 ) {
   const { propKey, form, field, defaultValue } = props;
   const inputProps = form.getInputProps(propKey);
-  const value = inputProps.value || '';
+  const value = inputProps.defaultValue || '';
 
   return (
     <Textarea

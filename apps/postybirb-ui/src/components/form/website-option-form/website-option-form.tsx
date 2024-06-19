@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Trans } from '@lingui/macro';
-import { Alert, Box, Flex, Loader, Stack, Title } from '@mantine/core';
+import { Alert, Box, Flex, Loader, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {
   FieldAggregateType,
@@ -8,12 +8,8 @@ import {
 } from '@postybirb/form-builder';
 import {
   AccountId,
-  IAccountDto,
   IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  NullAccount,
   SubmissionId,
-  SubmissionType,
   ValidationMessage,
   ValidationResult,
   WebsiteOptionsDto,
@@ -24,15 +20,11 @@ import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
-import { AccountStore } from '../../../stores/account.store';
-import { useStore } from '../../../stores/use-store';
 import { ValidationTranslation } from '../../translations/translation';
 import { Field } from '../fields/field';
 
 type WebsiteOptionFormProps = {
   option: WebsiteOptionsDto;
-  type: SubmissionType;
-  defaultOption: WebsiteOptionsDto;
   submission: SubmissionDto;
 };
 
@@ -149,7 +141,9 @@ function InnerForm({
         (acc, [key, field]) => ({
           ...acc,
           [key]:
-            option.data[key as keyof IWebsiteFormFields] || field.defaultValue,
+            option.data[key as keyof IWebsiteFormFields] === undefined
+              ? field.defaultValue
+              : option.data[key as keyof IWebsiteFormFields],
         }),
         {}
       ),
@@ -222,43 +216,17 @@ function InnerForm({
   );
 }
 
-function getAccount(accountId: string, accounts: IAccountDto[]): IAccountDto {
-  const account = accounts.find((a) => a.id === accountId);
-  if (!account) {
-    // Hacky but should work for what is needed by the fields.
-    return {
-      ...new NullAccount(),
-    } as unknown as IAccountDto;
-  }
-  return account;
-}
-
 export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
-  const { state: accounts } = useStore(AccountStore);
-  const { option, type, defaultOption, submission } = props;
+  const { option, submission } = props;
   const { account } = option;
   const { isLoading: isLoadingFormFields, data: formFields } = useQuery(
     `website-option-${option.id}`,
     () =>
       formGeneratorApi
-        .getForm({ accountId: account, type })
+        .getForm({ accountId: account, type: submission.type })
         .then((res) => res.body)
   );
-
-  const acc = getAccount(account, accounts);
-  const accountName =
-    // eslint-disable-next-line no-nested-ternary
-    acc.name === NULL_ACCOUNT_ID ? (
-      <Trans>Default</Trans>
-    ) : acc.websiteInfo.websiteDisplayName ? (
-      <span>
-        {acc.websiteInfo.websiteDisplayName} - {acc.name}
-      </span>
-    ) : null;
-
-  if (!accountName) {
-    return <Trans>Account not found</Trans>;
-  }
+  const defaultOption = submission.getDefaultOptions();
 
   if (isLoadingFormFields) {
     return <Loader />;
@@ -273,15 +241,12 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
   }
 
   return (
-    <Box>
-      <Title order={4}>{accountName}</Title>
-      <InnerForm
-        formFields={formFields}
-        option={option}
-        defaultOption={defaultOption}
-        account={account}
-        submission={submission.id}
-      />
-    </Box>
+    <InnerForm
+      formFields={formFields}
+      option={option}
+      defaultOption={defaultOption}
+      account={account}
+      submission={submission.id}
+    />
   );
 }

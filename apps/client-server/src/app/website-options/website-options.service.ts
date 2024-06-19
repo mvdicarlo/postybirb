@@ -24,6 +24,7 @@ import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
@@ -49,7 +50,8 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService,
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
-    private readonly postParserService: PostParsersService
+    private readonly postParserService: PostParsersService,
+    private readonly formGeneratorService: FormGeneratorService
   ) {
     super(repository);
   }
@@ -121,9 +123,29 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       return this.update(exists.id, { data: createDto.data });
     }
 
-    const submissionOptions = this.repository.create({
+    const formFields =
+      account.id === NULL_ACCOUNT_ID
+        ? await this.formGeneratorService.getDefaultForm(submission.type)
+        : await this.formGeneratorService.generateForm({
+            accountId: account.id,
+            type: submission.type,
+          });
+    // Populate with the form fields to get the default values
+    const websiteData: IWebsiteFormFields = {
+      ...Object.entries(formFields).reduce(
+        (acc, [key, field]) => ({
+          ...acc,
+          [key]:
+            createDto.data?.[key as keyof IWebsiteFormFields] === undefined
+              ? field.defaultValue
+              : createDto.data?.[key as keyof IWebsiteFormFields],
+        }),
+        {} as IWebsiteFormFields
+      ),
+    };
+    const submissionOptions = new WebsiteOptions({
       submission,
-      data: createDto.data,
+      data: websiteData,
       account,
     });
 

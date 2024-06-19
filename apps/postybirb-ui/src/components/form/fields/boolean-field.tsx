@@ -7,9 +7,11 @@ import { FormFieldProps } from './form-field.type';
 export function BooleanField(props: FormFieldProps<BooleanFieldType>) {
   const { propKey, field, form } = props;
   const { _ } = useLingui();
+  const valueProps = form.getInputProps(propKey);
   return (
     <Checkbox
-      {...form.getInputProps(propKey)}
+      {...valueProps}
+      defaultChecked={valueProps.defaultValue || false}
       label={getTranslatedLabel(field, _)}
     />
   );

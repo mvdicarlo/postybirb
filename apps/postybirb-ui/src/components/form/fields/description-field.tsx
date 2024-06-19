@@ -9,7 +9,7 @@ import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
 
 export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
-  const { form, propKey } = props;
+  const { form, propKey, option } = props;
   const defaultOption = useDefaultOption<DescriptionValue>(props);
   const validations = useValidations(props);
 
@@ -26,7 +26,7 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
             mb="4"
             {...overrideProps}
             checked={overrideProps.defaultValue || false}
-            label={<Trans>Override Default</Trans>}
+            label={<Trans>Use custom description</Trans>}
           />
         )}
         <Checkbox
@@ -41,12 +41,16 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
           checked={insertTagsProps.defaultValue || false}
           label={<Trans>Insert tags at end</Trans>}
         />
-        <PostyBirbEditor
-          value={descriptionProps.defaultValue || []}
-          onChange={(descriptionValue) => {
-            form.setFieldValue(`${propKey}.description`, descriptionValue);
-          }}
-        />
+        {overrideProps.defaultValue || option.isDefault ? (
+          <div style={{ position: 'relative' }}>
+            <PostyBirbEditor
+              value={descriptionProps.defaultValue || []}
+              onChange={(descriptionValue) => {
+                form.setFieldValue(`${propKey}.description`, descriptionValue);
+              }}
+            />
+          </div>
+        ) : null}
       </FieldLabel>
     </Box>
   );

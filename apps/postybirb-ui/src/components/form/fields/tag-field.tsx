@@ -50,14 +50,17 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   // TODO converters
   return (
     <Box>
-      {option.isDefault ? null : (
-        <Checkbox
-          {...overrideProps}
-          checked={overrideProps.defaultValue || false}
-          label={<Trans context="override-default">Override default</Trans>}
-        />
-      )}
       <FieldLabel {...props} validationState={validations}>
+        {option.isDefault ? null : (
+          <Checkbox
+            mb="4"
+            {...overrideProps}
+            checked={overrideProps.defaultValue || false}
+            label={
+              <Trans context="override-default">Ignore default tags</Trans>
+            }
+          />
+        )}
         <TagsInput
           clearable
           required={field.required}

@@ -7,20 +7,33 @@ import {
   Flex,
   Group,
   Image,
+  Loader,
   ScrollArea,
   Stack,
 } from '@mantine/core';
-import { SubmissionType } from '@postybirb/types';
 import {
+  AccountId,
+  IAccountDto,
+  IWebsiteFormFields,
+  NullAccount,
+  ScheduleType,
+  SubmissionType,
+  WebsiteOptionsDto,
+} from '@postybirb/types';
+import {
+  IconCalendar,
   IconCopy,
   IconEdit,
   IconSend,
   IconSquare,
   IconSquareFilled,
 } from '@tabler/icons-react';
+import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
+import { AccountStore } from '../../../../stores/account.store';
+import { useStore } from '../../../../stores/use-store';
 import { defaultTargetProvider } from '../../../../transports/http-client';
-import { WebsiteOptionForm } from '../../../form/website-option-form/website-option-form';
+import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../../form/website-select/website-select';
 
 type SubmissionViewCardProps = {
@@ -30,6 +43,7 @@ type SubmissionViewCardProps = {
 };
 
 export function SubmissionViewCard(props: SubmissionViewCardProps) {
+  const { isLoading, state: accounts } = useStore(AccountStore);
   const { submission, onSelect, isSelected } = props;
   const { type } = submission;
   const { files } = submission;
@@ -37,6 +51,26 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     ? `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`
     : null;
   const defaultOption = submission.getDefaultOptions();
+
+  const optionsGroupedByAccount = submission.options
+    .filter((o) => !o.isDefault)
+    .reduce((acc, option) => {
+      if (!acc[option.account]) {
+        acc[option.account] = {
+          account: accounts.find((a) => a.id === option.account)!,
+          options: [],
+        };
+      }
+      acc[option.account].options.push(option);
+      return acc;
+    }, {} as Record<AccountId, { account: IAccountDto; options: WebsiteOptionsDto[] }>);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  // TODO - Unschedule / Cancel post buttons
+  // TODO - Ensure notifications are sent when post scheduled/unscheduled/sent to post, etc.
   return (
     <Card shadow="xs" withBorder={isSelected}>
       <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
@@ -61,18 +95,31 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
             <Button size="xs" variant="subtle" leftSection={<IconEdit />}>
               <Trans>Edit</Trans>
             </Button>
-            <Button
-              size="xs"
-              variant="subtle"
-              c="teal"
-              leftSection={<IconSend />}
-            >
-              <Trans>Post</Trans>
-            </Button>
+            {submission.schedule.scheduleType !== ScheduleType.NONE ? (
+              <Button
+                disabled={submission.isQueued()}
+                size="xs"
+                variant="subtle"
+                c="teal"
+                leftSection={<IconCalendar />}
+              >
+                <Trans>Schedule</Trans>
+              </Button>
+            ) : (
+              <Button
+                disabled={submission.isQueued()}
+                size="xs"
+                variant="subtle"
+                c="teal"
+                leftSection={<IconSend />}
+              >
+                <Trans>Post</Trans>
+              </Button>
+            )}
           </Group>
         </Flex>
       </Card.Section>
-      <Card.Section pt="4">
+      <Card.Section py="4">
         <ScrollArea h={300}>
           <Flex>
             {type === SubmissionType.FILE && src ? (
@@ -90,19 +137,62 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                 <WebsiteSelect
                   submission={submission}
                   onSelect={(selectedAccounts) => {
-                    // TODO create website option with populated defaults
-                    console.log('onSelect', selectedAccounts);
+                    const existingOptions = submission.options.filter(
+                      (o) => !o.isDefault
+                    );
+                    const removedOptions: WebsiteOptionsDto[] = [];
+                    const newAccounts: AccountId[] = [];
+                    selectedAccounts.forEach((account) => {
+                      const exists = existingOptions.find(
+                        (o) => o.account === account.id
+                      );
+                      if (!exists) {
+                        newAccounts.push(account.id);
+                      }
+                    });
+                    existingOptions.forEach((option) => {
+                      const exists = selectedAccounts.find(
+                        (a) => a.id === option.account
+                      );
+                      if (!exists) {
+                        removedOptions.push(option);
+                      }
+                    });
+                    removedOptions.forEach((option) => {
+                      websiteOptionsApi.remove([option.id]);
+                    });
+                    newAccounts.forEach((account) => {
+                      websiteOptionsApi.create({
+                        account,
+                        submission: submission.id,
+                        data: {} as IWebsiteFormFields,
+                      });
+                    });
                   }}
                 />
-                {submission.options.map((options) => (
-                  <WebsiteOptionForm
-                    key={options.id}
-                    defaultOption={defaultOption}
-                    option={options}
-                    type={type}
-                    submission={submission}
-                  />
-                ))}
+                <WebsiteOptionGroupSection
+                  options={[defaultOption]}
+                  submission={submission}
+                  account={new NullAccount() as unknown as IAccountDto}
+                />
+                {Object.entries(optionsGroupedByAccount)
+                  .sort((a, b) => {
+                    const aAccount = a[1].account;
+                    const bAccount = b[1].account;
+                    return (
+                      aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
+                    ).localeCompare(
+                      bAccount.websiteInfo.websiteDisplayName ?? bAccount.name
+                    );
+                  })
+                  .map(([accountId, group]) => (
+                    <WebsiteOptionGroupSection
+                      key={accountId}
+                      options={group.options}
+                      submission={submission}
+                      account={group.account}
+                    />
+                  ))}
               </Stack>
             </Box>
           </Flex>

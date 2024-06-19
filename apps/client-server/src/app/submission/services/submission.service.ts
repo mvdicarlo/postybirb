@@ -60,6 +60,9 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     super(repository, webSocket);
     // Listen to changes to PostRecord as it is a child of Submission
     repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
+    repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
+      this.emit()
+    );
   }
 
   /**
