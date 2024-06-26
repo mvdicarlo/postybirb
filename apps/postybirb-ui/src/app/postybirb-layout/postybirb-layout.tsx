@@ -9,6 +9,7 @@ import {
   IconMessage,
   IconSearch,
   IconSettings,
+  IconTags,
   IconUser,
 } from '@tabler/icons-react';
 import { Outlet } from 'react-router';
@@ -23,9 +24,11 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
+  TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
+import { TagGroupDrawer } from './drawers/tag-group-drawer';
 import { LanguagePicker } from './language-picker';
 import classes from './postybirb-layout.module.css';
 import { PostybirbSpotlight } from './postybirb-spotlight';
@@ -46,7 +49,7 @@ const navigationTargets: (SideNavLinkProps & {
   {
     type: 'drawer',
     key: 'accounts',
-    globalStateKey: 'accountFlyoutVisible',
+    globalStateKey: 'accountDrawerVisible',
     icon: <IconUser />,
     label: <Trans>Accounts</Trans>,
     kbd: AccountKeybinding,
@@ -77,8 +80,16 @@ const navigationTargets: (SideNavLinkProps & {
   },
   {
     type: 'drawer',
+    key: 'tag-groups',
+    icon: <IconTags />,
+    label: <Trans>Tag Groups</Trans>,
+    globalStateKey: 'tagGroupsDrawerVisible',
+    kbd: TagGroupsKeybinding,
+  },
+  {
+    type: 'drawer',
     key: 'settings',
-    globalStateKey: 'settingsVisible',
+    globalStateKey: 'settingsDrawerVisible',
     icon: <IconSettings />,
     label: <Trans>Settings</Trans>,
     kbd: SettingsKeybinding,
@@ -144,6 +155,7 @@ export function PostyBirbLayout() {
           <PostybirbSpotlight />
           <AccountDrawer />
           <SettingsDrawer />
+          <TagGroupDrawer />
           <Box className="postybirb__content" p="md">
             <Outlet />
           </Box>

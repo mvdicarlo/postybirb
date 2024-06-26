@@ -94,6 +94,13 @@ export class SubmissionController extends PostyBirbController<Submission> {
       .then((entity) => entity.toJSON());
   }
 
+  @Patch('reorder/:id/:index')
+  @ApiOkResponse({ description: 'Submission reordered.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async reorder(@Param('id') id: SubmissionId, @Param('index') index: number) {
+    return this.service.reorder(id, index);
+  }
+
   @Patch('template/:id')
   @ApiOkResponse({ description: 'Submission updated.' })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })

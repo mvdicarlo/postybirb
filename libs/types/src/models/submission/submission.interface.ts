@@ -60,4 +60,10 @@ export interface ISubmission<
    * @type {Collection<IPostRecord>}
    */
   posts: Collection<IPostRecord>;
+
+  /**
+   * The index of the submission for display purposes.
+   * @type {number}
+   */
+  order: number;
 }

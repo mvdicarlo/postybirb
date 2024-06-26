@@ -2,8 +2,8 @@ import { Kbd, NavLink, Tooltip } from '@mantine/core';
 import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import tinykeys from 'tinykeys';
-import { GlobalState } from '../../global-state';
-import { useFlyoutToggle } from '../../hooks/use-flyout-toggle';
+import { DrawerGlobalState } from './drawers/drawer-global-state';
+import { useDrawerToggle } from './drawers/use-drawer-toggle';
 
 interface SideNavLinkType {
   icon: JSX.Element;
@@ -19,7 +19,7 @@ interface SideNavLinkHrefProps extends SideNavLinkType {
 interface SideNavLinkDrawerProps extends SideNavLinkType {
   // eslint-disable-next-line react/no-unused-prop-types
   type: 'drawer';
-  globalStateKey: keyof GlobalState;
+  globalStateKey: keyof DrawerGlobalState;
 }
 
 interface SideNavLinkCustomProps extends SideNavLinkType {
@@ -114,7 +114,7 @@ function DrawerNavLink(
   props: SideNavLinkDrawerProps & ExtendedSideNavLinkProps
 ) {
   const { globalStateKey } = props;
-  const [state, toggleFlyout] = useFlyoutToggle(globalStateKey);
+  const [state, toggleFlyout] = useDrawerToggle(globalStateKey);
   const onClick = useCallback(() => {
     toggleFlyout();
   }, [toggleFlyout]);

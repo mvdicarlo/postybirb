@@ -22,11 +22,11 @@ import Keybinding, {
   KeybindingProps,
 } from '../components/app/keybinding/keybinding';
 import Loading from '../components/shared/loading/loading';
-import { useFlyoutToggle } from '../hooks/use-flyout-toggle';
 import { SettingsKeybinding } from '../shared/app-keybindings';
 import { useSettings } from '../stores/use-settings';
 import { AppThemeContext } from './app-theme-provider';
 import { languages } from './languages';
+import { useDrawerToggle } from './postybirb-layout/drawers/use-drawer-toggle';
 
 function StartupSettings() {
   const { data, isLoading, refetch } = useQuery(
@@ -220,7 +220,7 @@ function LanguageSettings() {
 }
 
 export default function AppSettings() {
-  const [isOpen, toggle] = useFlyoutToggle('settingsVisible');
+  const [isOpen, toggle] = useDrawerToggle('settingsVisible');
   const keybindingProps: KeybindingProps = {
     keybinding: SettingsKeybinding,
     onActivate: () => {},

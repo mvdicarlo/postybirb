@@ -12,9 +12,9 @@ import {
 import { IconFolder, IconRouter } from '@tabler/icons-react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../api/settings.api';
-import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
 import { useSettings } from '../../../stores/use-settings';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
+import { useDrawerToggle } from './use-drawer-toggle';
 
 function DescriptionSettings() {
   const { settingsId, settings, reloadSettings } = useSettings();
@@ -133,7 +133,7 @@ function AppSettings() {
 }
 
 export function SettingsDrawer() {
-  const [visible, toggle] = useFlyoutToggle('settingsVisible');
+  const [visible, toggle] = useDrawerToggle('settingsDrawerVisible');
   return (
     <Drawer
       withOverlay={false}
@@ -144,7 +144,7 @@ export function SettingsDrawer() {
       }}
       overlayProps={{
         left: getOverlayOffset(),
-        zIndex: 0,
+        zIndex: 100,
       }}
       trapFocus
       opened={visible}

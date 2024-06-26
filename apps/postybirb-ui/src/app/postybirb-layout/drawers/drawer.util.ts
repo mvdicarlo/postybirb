@@ -1,4 +1,4 @@
-export const marginOffset = 14;
+export const marginOffset = 0;
 
 export function getPortalTarget() {
   return document.getElementById('postybirb__main')!;

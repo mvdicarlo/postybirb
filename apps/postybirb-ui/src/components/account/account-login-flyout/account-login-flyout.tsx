@@ -5,7 +5,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
-import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
+import { useDrawerToggle } from '../../../app/postybirb-layout/drawers/use-drawer-toggle';
 import { AccountKeybinding } from '../../../shared/app-keybindings';
 import { SettingsStore } from '../../../stores/settings.store';
 import { useStore } from '../../../stores/use-store';
@@ -15,7 +15,7 @@ import Loading from '../../shared/loading/loading';
 import { AccountLoginContainer } from '../account-login-container/account-login-container';
 
 export function AccountLoginFlyout() {
-  const [isOpen, toggle] = useFlyoutToggle('accountFlyoutVisible');
+  const [isOpen, toggle] = useDrawerToggle('accountFlyoutVisible');
   const { state: availableWebsites, isLoading: isLoadingWebsiteStore } =
     useStore(WebsiteStore);
 

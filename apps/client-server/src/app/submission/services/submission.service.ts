@@ -88,7 +88,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     file?: MulterFileInfo
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
-    const submission = this.repository.create({
+    const submission = new Submission({
       ...createSubmissionDto,
       isScheduled: false,
       schedule: {
@@ -96,8 +96,6 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         scheduleType: ScheduleType.NONE,
         cron: undefined,
       },
-      options: [],
-      metadata: {},
     });
 
     if (createSubmissionDto.isTemplate) {
@@ -105,6 +103,23 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         name: createSubmissionDto.name.trim(),
       };
     }
+
+    let name = 'New submission';
+    if (createSubmissionDto.name) {
+      name = createSubmissionDto.name;
+    } else if (file) {
+      name = file.filename;
+    }
+
+    submission.options.add(
+      await this.submissionOptionsService.createDefaultSubmissionOptions(
+        submission,
+        name
+      )
+    );
+
+    submission.order = (await this.repository.count()) + 1;
+    await this.repository.persist(submission);
 
     switch (createSubmissionDto.type) {
       case SubmissionType.MESSAGE: {
@@ -134,7 +149,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         }
 
         await this.fileSubmissionService.populate(
-          submission as FileSubmission,
+          submission as unknown as FileSubmission,
           createSubmissionDto,
           file
         );
@@ -148,20 +163,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       }
     }
 
-    let name = 'New submission';
-    if (createSubmissionDto.name) {
-      name = createSubmissionDto.name;
-    } else if (file) {
-      name = file.filename;
-    }
-
-    submission.options.add(
-      await this.submissionOptionsService.createDefaultSubmissionOptions(
-        submission,
-        name
-      )
-    );
-
+    // Re-save to capture any mutations during population
     await this.repository.persistAndFlush(submission);
     this.emit();
     return submission;
@@ -393,5 +395,39 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     }
 
     throw new BadRequestException(`Submission '${id}' is not a template`);
+  }
+
+  async reorder(id: SubmissionId, index: number) {
+    const allSubmissions = (await this.repository.findAll()).sort(
+      (a, b) => a.order - b.order
+    );
+    const movedSubmissionIndex = allSubmissions.findIndex((s) => s.id === id);
+    if (movedSubmissionIndex === -1) {
+      throw new NotFoundException(`Submission '${id}' not found`);
+    }
+
+    if (index === movedSubmissionIndex) {
+      return;
+    }
+
+    // Remove the submission from its current position
+    const [movedSubmission] = allSubmissions.splice(movedSubmissionIndex, 1);
+
+    // Adjust index if necessary
+    if (index > allSubmissions.length) {
+      index = allSubmissions.length;
+    }
+
+    // Insert the submission at the new index
+    allSubmissions.splice(index, 0, movedSubmission);
+
+    // Update the order property for all submissions
+    allSubmissions.forEach((submission, i) => {
+      submission.order = i;
+    });
+
+    // Save changes
+    await this.repository.persistAndFlush(allSubmissions);
+    this.emit();
   }
 }

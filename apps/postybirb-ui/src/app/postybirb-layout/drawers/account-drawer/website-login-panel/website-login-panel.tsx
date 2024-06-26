@@ -53,8 +53,8 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
     return null;
   }
 
-  const totalOffset = offset - 13;
-  const widthOffset = offset + getOverlayOffset() - 13;
+  const totalOffset = offset - 1;
+  const widthOffset = offset + getOverlayOffset() - 1;
   return (
     <Box
       p="sm"

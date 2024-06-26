@@ -13,7 +13,6 @@ import {
   MessageIcon,
   UserGroupIcon,
 } from '../components/shared/icons/Icons';
-import { useGlobalState } from '../global-state';
 import {
   EditSubmissionPath,
   FileSubmissionPath,
@@ -22,10 +21,11 @@ import {
 } from '../pages/route-paths';
 import { SubmissionStore } from '../stores/submission.store';
 import { useStore } from '../stores/use-store';
+import { useDrawerGlobalState } from './postybirb-layout/drawers/drawer-global-state';
 
 export default function AppSearch() {
   const history = useNavigate();
-  const [globalState, setGlobalState] = useGlobalState();
+  const [globalState, setGlobalState] = useDrawerGlobalState();
   const { state: submissions } = useStore(SubmissionStore);
   const { _ } = useLingui();
 

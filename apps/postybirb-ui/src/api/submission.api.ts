@@ -40,6 +40,10 @@ class SubmissionsApi extends BaseApi<
     formData.append('type', type);
     return this.client.post('', formData);
   }
+
+  reorder(id: SubmissionId, index: number) {
+    return this.client.patch(`reorder/${id}/${index}`);
+  }
 }
 
 export default new SubmissionsApi();

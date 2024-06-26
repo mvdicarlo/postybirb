@@ -71,6 +71,9 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
 
   // TODO - Unschedule / Cancel post buttons
   // TODO - Ensure notifications are sent when post scheduled/unscheduled/sent to post, etc.
+  // TODO - drag and drop to change order of submissions
+  // TODO - Tag converter and tag group
+  // TODO - User default options
   return (
     <Card shadow="xs" withBorder={isSelected}>
       <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
@@ -124,6 +127,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
           <Flex>
             {type === SubmissionType.FILE && src ? (
               <Image
+                loading="lazy"
                 h={75}
                 w={75}
                 fit="fill"

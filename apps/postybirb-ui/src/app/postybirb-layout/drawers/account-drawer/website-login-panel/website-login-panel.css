@@ -6,7 +6,7 @@
   z-index: 1000;
   background-color: var(--mantine-color-body);
   border-left: 1px solid var(--mantine-color-gray-filled);
-  margin-top: -14px;
+  margin-top: 0px;
 }
 
 .postybirb__website-login-panel__header {

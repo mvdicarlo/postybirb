@@ -23,7 +23,6 @@ import {
   UserGroupIcon,
   UserTagIcon,
 } from '../../components/shared/icons/Icons';
-import { useFlyoutToggle } from '../../hooks/use-flyout-toggle';
 import {
   FileSubmissionPath,
   HomePath,
@@ -39,6 +38,7 @@ import {
   TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
 import AppSearch from '../app-search';
+import { useDrawerToggle } from '../postybirb-layout/drawers/use-drawer-toggle';
 
 function AppImage() {
   return (
@@ -50,12 +50,12 @@ function AppImage() {
 export default function AppSideNav() {
   const history = useNavigate();
 
-  const [, toggleAccountLoginPage] = useFlyoutToggle('accountFlyoutVisible');
-  const [, toggleTagGroupsPage] = useFlyoutToggle('tagGroupsFlyoutVisible');
-  const [, toggleTagConvertersPage] = useFlyoutToggle(
+  const [, toggleAccountLoginPage] = useDrawerToggle('accountFlyoutVisible');
+  const [, toggleTagGroupsPage] = useDrawerToggle('tagGroupsFlyoutVisible');
+  const [, toggleTagConvertersPage] = useDrawerToggle(
     'tagConvertersFlyoutVisible'
   );
-  const [, toggleSettings] = useFlyoutToggle('settingsVisible');
+  const [, toggleSettings] = useDrawerToggle('settingsVisible');
 
   const settingsKeybinding = {
     keybinding: SettingsKeybinding,

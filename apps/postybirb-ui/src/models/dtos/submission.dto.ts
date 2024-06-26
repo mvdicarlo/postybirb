@@ -43,6 +43,8 @@ export class SubmissionDto<
 
   posts!: PostRecordDto[];
 
+  order!: number;
+
   private defaultOption?: WebsiteOptionsDto;
 
   constructor(entity: ISubmissionDto) {
@@ -50,6 +52,7 @@ export class SubmissionDto<
     this.files = this.files ?? [];
     this.posts = this.posts ?? [];
     this.metadata = this.metadata ?? ({} as T);
+    this.order = this.order ?? 0;
     if (!this.options) {
       this.options = [
         {

@@ -5,7 +5,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
-import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
+import { useDrawerToggle } from '../../../app/postybirb-layout/drawers/use-drawer-toggle';
 import { TagGroupsKeybinding } from '../../../shared/app-keybindings';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
@@ -14,7 +14,7 @@ import Loading from '../../shared/loading/loading';
 import TagGroupsTable from '../tag-groups-table/tag-groups-table';
 
 export function TagGroupsFlyout() {
-  const [isOpen, toggle] = useFlyoutToggle('tagGroupsFlyoutVisible');
+  const [isOpen, toggle] = useDrawerToggle('tagGroupsFlyoutVisible');
   const { state, isLoading } = useStore(TagGroupStore);
 
   const keybindingProps: KeybindingProps = {

@@ -2,6 +2,8 @@ import { EuiProvider } from '@elastic/eui';
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/dropzone/styles.css';
+import { Notifications } from '@mantine/notifications';
+import '@mantine/notifications/styles.css';
 import '@mantine/spotlight/styles.css';
 import { useContext } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -30,6 +32,7 @@ export default function App() {
       <EuiProvider colorMode={theme}>
         <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
           <AppI18nProvider>
+            <Notifications />
             <QueryClientProvider client={queryClient}>
               <AppToastProvider>
                 <PostyBirbLayout />

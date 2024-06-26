@@ -3,18 +3,18 @@ import { Drawer, Loader, Space, Stack } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { useWebsites } from '../../../../hooks/account/use-websites';
-import { useFlyoutToggle } from '../../../../hooks/use-flyout-toggle';
 import {
   getOverlayOffset,
   getPortalTarget,
   marginOffset,
 } from '../drawer.util';
+import { useDrawerToggle } from '../use-drawer-toggle';
 import { WebsiteCard } from './website-card';
 import { WebsiteLoginPanel } from './website-login-panel/website-login-panel';
 import { WebsiteVisibilityPicker } from './website-visibility-picker';
 
 export function AccountDrawer() {
-  const [visible, toggle] = useFlyoutToggle('accountFlyoutVisible');
+  const [visible, toggle] = useDrawerToggle('accountDrawerVisible');
   const { accounts, isLoading, filteredWebsites } = useWebsites();
   const [loginAccount, setLoginAccount] = useState<{
     account: IAccountDto;
@@ -37,7 +37,7 @@ export function AccountDrawer() {
         }}
         overlayProps={{
           left: getOverlayOffset(),
-          zIndex: 0,
+          zIndex: 100,
         }}
         trapFocus
         opened={visible}

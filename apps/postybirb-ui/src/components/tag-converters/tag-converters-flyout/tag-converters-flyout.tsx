@@ -5,7 +5,7 @@ import {
   EuiTitle,
 } from '@elastic/eui';
 import { Trans } from '@lingui/macro';
-import { useFlyoutToggle } from '../../../hooks/use-flyout-toggle';
+import { useDrawerToggle } from '../../../app/postybirb-layout/drawers/use-drawer-toggle';
 import { TagConvertersKeybinding } from '../../../shared/app-keybindings';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { useStore } from '../../../stores/use-store';
@@ -14,7 +14,7 @@ import Loading from '../../shared/loading/loading';
 import TagConvertersTable from '../tag-converters-table/tag-converters-table';
 
 export function TagConvertersFlyout() {
-  const [isOpen, toggle] = useFlyoutToggle('tagConvertersFlyoutVisible');
+  const [isOpen, toggle] = useDrawerToggle('tagConvertersFlyoutVisible');
   const { state, isLoading } = useStore(TagConverterStore);
 
   const keybindingProps: KeybindingProps = {

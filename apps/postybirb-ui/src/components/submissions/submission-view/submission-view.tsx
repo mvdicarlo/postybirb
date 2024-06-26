@@ -29,7 +29,6 @@ export function SubmissionView(props: SubmissionViewProps) {
   const [nameFilter, setNameFilter] = useState<string>('');
 
   const submissionsToView = filterSubmissions(submissions, nameFilter);
-
   return (
     <Box>
       <Stack gap="sm">

@@ -174,14 +174,11 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     this.logger
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
-    const options = this.repository.create(
-      {
-        isDefault: true,
-        submission,
-        account: await this.accountService.findById(NULL_ACCOUNT_ID),
-      },
-      { persist: false }
-    );
+    const options = new WebsiteOptions({
+      isDefault: true,
+      submission,
+      account: await this.accountService.findById(NULL_ACCOUNT_ID),
+    });
 
     await this.populateDefaultWebsiteOptions(submission.type, options, title);
     return options;

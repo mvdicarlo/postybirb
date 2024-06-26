@@ -29,8 +29,8 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const tagValue = tagsProps.defaultValue as Tag[];
 
   const tagGroupsOptions = tagGroups.map((tagGroup) => ({
-    label: `GROUP:${tagGroup.name}`,
-    value: `group:${JSON.stringify(tagGroup)}`,
+    label: `${TAG_GROUP_LABEL}${tagGroup.name}`,
+    value: `${TAG_GROUP_LABEL}${JSON.stringify(tagGroup)}`,
     disabled: containsAllTagsInGroup(tagValue, tagGroup),
   }));
 
@@ -68,7 +68,9 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           data={[...tagGroupsOptions]}
           onOptionSubmit={(tag) => {
             if (tag.startsWith(TAG_GROUP_LABEL)) {
-              const group: TagGroupDto = JSON.parse(tag.slice(6));
+              const group: TagGroupDto = JSON.parse(
+                tag.slice(TAG_GROUP_LABEL.length)
+              );
               updateTags([...tagValue, ...group.tags]);
             } else {
               updateTags([...tagValue, tag]);
@@ -80,12 +82,17 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
             const newTags = tags
               .filter((tag) => !tag.startsWith(TAG_GROUP_LABEL))
               .filter((tag) => !tagValue.includes(tag));
+            if (newTags.length === 0) {
+              return;
+            }
             updateTags([...tagValue, ...newTags]);
           }}
           renderOption={(tagOption) => {
             const { value } = tagOption.option;
             if (value.startsWith(TAG_GROUP_LABEL)) {
-              const group: TagGroupDto = JSON.parse(value.slice(6));
+              const group: TagGroupDto = JSON.parse(
+                value.slice(TAG_GROUP_LABEL.length)
+              );
               return (
                 <Box>
                   <Pill c="teal" mr="xs">
