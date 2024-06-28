@@ -2,8 +2,7 @@ import { Trans } from '@lingui/macro';
 import { Box, Checkbox, Pill, TagsInput, Text } from '@mantine/core';
 import { TagFieldType } from '@postybirb/form-builder';
 import { Tag, TagGroupDto, TagValue } from '@postybirb/types';
-import { uniq } from 'lodash';
-import { TagConverterStore } from '../../../stores/tag-converter-store';
+import { flatten, uniq } from 'lodash';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
 import { useDefaultOption } from '../hooks/use-default-option';
@@ -17,11 +16,10 @@ function containsAllTagsInGroup(tags: Tag[], group: TagGroupDto): boolean {
   return group.tags.every((tag) => tags.includes(tag));
 }
 
+// TODO - figure out some way to support indicating a tag converter is being used
 export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const { field, form, propKey, option } = props;
   const { state: tagGroups } = useStore(TagGroupStore);
-  // TODO - use tagConverters
-  const { state: tagConverters } = useStore(TagConverterStore);
   const defaultOption = useDefaultOption<TagValue>(props);
   const validations = useValidations(props);
 
@@ -30,7 +28,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const tagValue = tagsProps.defaultValue as Tag[];
 
   const tagGroupsOptions = tagGroups.map((tagGroup) => ({
-    label: `${TAG_GROUP_LABEL}${tagGroup.name}`,
+    label: `${TAG_GROUP_LABEL}${JSON.stringify(tagGroup)}`,
     value: `${TAG_GROUP_LABEL}${JSON.stringify(tagGroup)}`,
     disabled: containsAllTagsInGroup(tagValue, tagGroup),
   }));
@@ -48,6 +46,10 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
     }
   };
 
+  const totalTags: number = overrideProps.defaultValue
+    ? tagValue.length
+    : [...tagValue, ...(defaultOption?.tags || [])].length;
+
   return (
     <Box>
       <FieldLabel {...props} validationState={validations}>
@@ -55,7 +57,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           <Checkbox
             mb="4"
             {...overrideProps}
-            checked={overrideProps.defaultValue || false}
+            defaultChecked={overrideProps.defaultValue || false}
             label={
               <Trans context="override-default">Ignore default tags</Trans>
             }
@@ -66,26 +68,25 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           required={field.required}
           value={tagValue}
           data={[...tagGroupsOptions]}
-          onOptionSubmit={(tag) => {
-            if (tag.startsWith(TAG_GROUP_LABEL)) {
-              const group: TagGroupDto = JSON.parse(
-                tag.slice(TAG_GROUP_LABEL.length)
-              );
-              updateTags([...tagValue, ...group.tags]);
-            } else {
-              updateTags([...tagValue, tag]);
-            }
-          }}
           onClear={() => form.setFieldValue(`${propKey}.tags`, [])}
+          description={
+            field.maxTags ? `${totalTags ?? 0} / ${field.maxTags}` : undefined
+          }
           onChange={(tags) => {
             // Need to support , which is only detectable when the array contains values not in the tagValue
-            const newTags = tags
-              .filter((tag) => !tag.startsWith(TAG_GROUP_LABEL))
-              .filter((tag) => !tagValue.includes(tag));
-            if (newTags.length === 0) {
-              return;
-            }
-            updateTags([...tagValue, ...newTags]);
+            const newTags = flatten(
+              tags.map((tag) => {
+                if (tag.startsWith(TAG_GROUP_LABEL)) {
+                  const group: TagGroupDto = JSON.parse(
+                    tag.slice(TAG_GROUP_LABEL.length)
+                  );
+                  return group.tags;
+                }
+
+                return tag;
+              })
+            );
+            updateTags([...newTags]);
           }}
           renderOption={(tagOption) => {
             const { value } = tagOption.option;
@@ -106,6 +107,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
                 </Box>
               );
             }
+
             return <Text>{value}</Text>;
           }}
         />
