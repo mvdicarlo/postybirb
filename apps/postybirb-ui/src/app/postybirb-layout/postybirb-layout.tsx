@@ -10,6 +10,7 @@ import {
   IconSearch,
   IconSettings,
   IconTags,
+  IconTransform,
   IconUser,
 } from '@tabler/icons-react';
 import { Outlet } from 'react-router';
@@ -24,10 +25,12 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
+  TagConvertersKeybinding,
   TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
+import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
 import { LanguagePicker } from './language-picker';
 import classes from './postybirb-layout.module.css';
@@ -85,6 +88,14 @@ const navigationTargets: (SideNavLinkProps & {
     label: <Trans>Tag Groups</Trans>,
     globalStateKey: 'tagGroupsDrawerVisible',
     kbd: TagGroupsKeybinding,
+  },
+  {
+    type: 'drawer',
+    key: 'tag-groups',
+    icon: <IconTransform />,
+    label: <Trans>Tag Converters</Trans>,
+    globalStateKey: 'tagConvertersDrawerVisible',
+    kbd: TagConvertersKeybinding,
   },
   {
     type: 'drawer',
@@ -156,6 +167,7 @@ export function PostyBirbLayout() {
           <AccountDrawer />
           <SettingsDrawer />
           <TagGroupDrawer />
+          <TagConverterDrawer />
           <Box className="postybirb__content" p="md">
             <Outlet />
           </Box>

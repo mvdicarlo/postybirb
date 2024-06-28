@@ -4,18 +4,20 @@ import {
     Button,
     Drawer,
     Fieldset,
+    Group,
     Loader,
     Stack,
     TagsInput,
     TextInput,
+    Title,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ICreateTagGroupDto, TagGroupDto } from '@postybirb/types';
+import { IconTrash } from '@tabler/icons-react';
 import { useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
-import AppSettings from '../../app-settings';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
@@ -23,9 +25,19 @@ function isValidTagGroup(tagGroup: ICreateTagGroupDto) {
   return tagGroup.name.trim().length > 0 && tagGroup.tags.length > 0;
 }
 
+function areEqual(
+  old: Pick<ICreateTagGroupDto, 'name' | 'tags'>,
+  current: Pick<ICreateTagGroupDto, 'name' | 'tags'>
+) {
+  return JSON.stringify(old) === JSON.stringify(current);
+}
+
 function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
   const { tagGroup } = props;
-  const [state, setState] = useState(JSON.parse(JSON.stringify(tagGroup)));
+  const [state, setState] = useState<ICreateTagGroupDto>({
+    name: tagGroup.name,
+    tags: tagGroup.tags,
+  });
   return (
     <>
       <TextInput
@@ -44,6 +56,12 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
         clearable
         value={state.tags}
         label={<Trans>Tags</Trans>}
+        onClear={() => {
+          setState({
+            ...state,
+            tags: [],
+          });
+        }}
         onChange={(value) =>
           setState({
             ...state,
@@ -51,31 +69,44 @@ function ExistingTagGroup(props: { tagGroup: TagGroupDto }) {
           })
         }
       />
-      <Button
-        mt="sm"
-        fullWidth
-        disabled={!isValidTagGroup(state)}
-        onClick={() => {
-          tagGroupsApi
-            .update(tagGroup.id, state)
-            .then(() => {
-              notifications.show({
-                title: state.name,
-                message: <Trans>Tag group updated</Trans>,
-                color: 'green',
+      <Group mt="sm" grow>
+        <Button
+          variant="light"
+          disabled={
+            !isValidTagGroup(state) ||
+            areEqual({ name: tagGroup.name, tags: tagGroup.tags }, state)
+          }
+          onClick={() => {
+            tagGroupsApi
+              .update(tagGroup.id, state)
+              .then(() => {
+                notifications.show({
+                  title: state.name,
+                  message: <Trans>Tag group updated</Trans>,
+                  color: 'green',
+                });
+              })
+              .catch(() => {
+                notifications.show({
+                  title: state.name,
+                  message: <Trans>Failed to update</Trans>,
+                  color: 'red',
+                });
               });
-            })
-            .catch(() => {
-              notifications.show({
-                title: state.name,
-                message: <Trans>Failed to update</Trans>,
-                color: 'red',
-              });
-            });
-        }}
-      >
-        <Trans>Update</Trans>
-      </Button>
+          }}
+        >
+          <Trans>Update</Trans>
+        </Button>
+        <Button
+          variant="light"
+          color="red"
+          onClick={() => {
+            tagGroupsApi.remove([tagGroup.id]);
+          }}
+        >
+          <IconTrash />
+        </Button>
+      </Group>
     </>
   );
 }
@@ -94,7 +125,13 @@ function TagGroups() {
   return (
     <Box>
       <Stack gap="md">
-        <Fieldset legend={<Trans>Create new tag group</Trans>}>
+        <Fieldset
+          legend={
+            <Box mx="4">
+              <Trans>Create new tag group</Trans>
+            </Box>
+          }
+        >
           <TextInput
             required
             value={newGroupFields.name}
@@ -161,10 +198,13 @@ export function TagGroupDrawer() {
       trapFocus
       opened={visible}
       onClose={() => toggle()}
-      title={<Trans>Tag Groups</Trans>}
+      title={
+        <Title order={5}>
+          <Trans>Tag Groups</Trans>
+        </Title>
+      }
     >
       <Stack gap="xl">
-        <AppSettings />
         <TagGroups />
       </Stack>
     </Drawer>

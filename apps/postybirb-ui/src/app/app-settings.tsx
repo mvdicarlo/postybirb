@@ -220,7 +220,7 @@ function LanguageSettings() {
 }
 
 export default function AppSettings() {
-  const [isOpen, toggle] = useDrawerToggle('settingsVisible');
+  const [isOpen, toggle] = useDrawerToggle('settingsDrawerVisible');
   const keybindingProps: KeybindingProps = {
     keybinding: SettingsKeybinding,
     onActivate: () => {},

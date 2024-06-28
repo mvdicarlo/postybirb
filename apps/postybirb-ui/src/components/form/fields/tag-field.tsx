@@ -20,6 +20,7 @@ function containsAllTagsInGroup(tags: Tag[], group: TagGroupDto): boolean {
 export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const { field, form, propKey, option } = props;
   const { state: tagGroups } = useStore(TagGroupStore);
+  // TODO - use tagConverters
   const { state: tagConverters } = useStore(TagConverterStore);
   const defaultOption = useDefaultOption<TagValue>(props);
   const validations = useValidations(props);
@@ -47,7 +48,6 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
     }
   };
 
-  // TODO converters
   return (
     <Box>
       <FieldLabel {...props} validationState={validations}>

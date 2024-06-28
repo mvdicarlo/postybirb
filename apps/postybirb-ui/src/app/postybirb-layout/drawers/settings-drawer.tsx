@@ -149,7 +149,11 @@ export function SettingsDrawer() {
       trapFocus
       opened={visible}
       onClose={() => toggle()}
-      title={<Trans>Settings</Trans>}
+      title={
+        <Title order={5}>
+          <Trans>Settings</Trans>
+        </Title>
+      }
     >
       <Stack gap="xl">
         <AppSettings />
