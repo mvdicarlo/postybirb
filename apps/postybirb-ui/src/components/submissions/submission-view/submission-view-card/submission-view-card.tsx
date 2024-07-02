@@ -52,18 +52,34 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     : null;
   const defaultOption = submission.getDefaultOptions();
 
-  const optionsGroupedByAccount = submission.options
+  const optionsGroupedByWebsiteId = submission.options
     .filter((o) => !o.isDefault)
     .reduce((acc, option) => {
-      if (!acc[option.account]) {
-        acc[option.account] = {
-          account: accounts.find((a) => a.id === option.account)!,
+      const account = accounts.find((a) => a.id === option.account)!;
+      const websiteId = account.website;
+      if (!acc[websiteId]) {
+        acc[websiteId] = {
+          account,
           options: [],
         };
       }
-      acc[option.account].options.push(option);
+      acc[websiteId].options.push(option);
       return acc;
     }, {} as Record<AccountId, { account: IAccountDto; options: WebsiteOptionsDto[] }>);
+
+  const removeAccount = (account: IAccountDto) => {
+    const options = submission.options
+      .filter((o) => o.account !== account.id)
+      .filter((o) => !o.isDefault);
+    websiteOptionsApi.remove(submission.options.map((o) => o.id));
+    options.forEach((o) => {
+      websiteOptionsApi.create({
+        account: o.account,
+        submission: submission.id,
+        data: o.data,
+      });
+    });
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -72,8 +88,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
   // TODO - Unschedule / Cancel post buttons
   // TODO - Ensure notifications are sent when post scheduled/unscheduled/sent to post, etc.
   // TODO - drag and drop to change order of submissions
-  // TODO - Tag converter and tag group
-  // TODO - User default options
+  // TODO - website bar theme based off theme color (and description field)
   return (
     <Card shadow="xs" withBorder={isSelected}>
       <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
@@ -123,7 +138,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
         </Flex>
       </Card.Section>
       <Card.Section py="4">
-        <ScrollArea h={300}>
+        <ScrollArea h={400}>
           <Flex>
             {type === SubmissionType.FILE && src ? (
               <Image
@@ -179,7 +194,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                   submission={submission}
                   account={new NullAccount() as unknown as IAccountDto}
                 />
-                {Object.entries(optionsGroupedByAccount)
+                {Object.entries(optionsGroupedByWebsiteId)
                   .sort((a, b) => {
                     const aAccount = a[1].account;
                     const bAccount = b[1].account;
@@ -195,6 +210,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                       options={group.options}
                       submission={submission}
                       account={group.account}
+                      onRemoveAccount={removeAccount}
                     />
                   ))}
               </Stack>

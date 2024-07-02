@@ -13,8 +13,7 @@ type FieldLabelProps = FormFieldProps & {
 };
 
 export function getTranslatedLabel(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  field: FieldAggregateType<any>,
+  field: FieldAggregateType<never>,
   converter: (msg: MessageDescriptor) => string
 ): string {
   // eslint-disable-next-line prefer-const

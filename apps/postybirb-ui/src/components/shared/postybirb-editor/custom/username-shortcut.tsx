@@ -2,11 +2,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { BlockNoteEditor } from '@blocknote/core';
 import {
-    DefaultReactSuggestionItem,
-    createReactInlineContentSpec,
-    useBlockNoteEditor,
+  DefaultReactSuggestionItem,
+  createReactInlineContentSpec,
+  useBlockNoteEditor,
 } from '@blocknote/react';
-import { EuiBadge } from '@elastic/eui';
+import { Badge } from '@mantine/core';
 import { UsernameShortcut } from '@postybirb/types';
 import { useCallback, useEffect, useRef } from 'react';
 import { useStore } from '../../../../stores/use-store';
@@ -102,7 +102,9 @@ function Shortcut(props: {
 
   return (
     <span ref={ref}>
-      <EuiBadge color="hollow">{el}</EuiBadge>
+      <Badge variant="outline" radius="xs" tt="none">
+        {el}
+      </Badge>
     </span>
   );
 }
@@ -146,10 +148,15 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       }, [editor, props.inlineContent.props.id]);
 
       return (
-        <span>
-          <EuiBadge color="hollow" contentEditable={false}>
+        <span style={{ verticalAlign: 'text-bottom' }}>
+          <Badge
+            variant="outline"
+            contentEditable={false}
+            radius="xs"
+            tt="uppercase"
+          >
             {props.inlineContent.props.shortcut} ({website})
-          </EuiBadge>
+          </Badge>
           <Shortcut item={props.contentRef} onStale={onStale} />
         </span>
       );

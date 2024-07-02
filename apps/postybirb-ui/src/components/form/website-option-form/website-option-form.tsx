@@ -9,7 +9,6 @@ import {
 import {
   AccountId,
   IWebsiteFormFields,
-  SubmissionId,
   ValidationMessage,
   ValidationResult,
   WebsiteOptionsDto,
@@ -22,18 +21,23 @@ import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { ValidationTranslation } from '../../translations/translation';
 import { Field } from '../fields/field';
+import { UserSpecifiedWebsiteOptionsSaveModal } from '../user-specified-website-options-modal/user-specified-website-options-modal';
 
 type WebsiteOptionFormProps = {
   option: WebsiteOptionsDto;
   submission: SubmissionDto;
+  userSpecifiedModalVisible: boolean;
+  onUserSpecifiedModalClosed: () => void;
 };
 
 type InnerFormProps = {
   account: AccountId;
-  submission: SubmissionId;
+  submission: SubmissionDto;
   formFields: FormBuilderMetadata<never>;
   option: WebsiteOptionsDto;
   defaultOption: WebsiteOptionsDto;
+  userSpecifiedModalVisible: boolean;
+  userSpecifiedModalClosed: () => void;
 };
 
 type FieldEntry = {
@@ -89,6 +93,8 @@ function InnerForm({
   defaultOption,
   account,
   submission,
+  userSpecifiedModalVisible,
+  userSpecifiedModalClosed,
 }: InnerFormProps) {
   const [validations, setValidations] = useState<ValidationResult>({
     errors: [],
@@ -109,7 +115,7 @@ function InnerForm({
         const res = await websiteOptionsApi.validate({
           defaultOptions: defaultOption.data,
           account,
-          submission,
+          submission: submission.id,
           options: value ?? option.data,
         });
 
@@ -182,6 +188,14 @@ function InnerForm({
 
   return (
     <Box>
+      <UserSpecifiedWebsiteOptionsSaveModal
+        opened={userSpecifiedModalVisible}
+        onClose={userSpecifiedModalClosed}
+        account={account}
+        form={formFields}
+        type={submission.type}
+        values={form.getValues()}
+      />
       {validationAlerts}
       <Flex gap="xs">
         {Object.entries(cols).map(([col, fields]) => {
@@ -201,7 +215,7 @@ function InnerForm({
                   <Field
                     propKey={entry.key}
                     defaultOption={defaultOption}
-                    field={entry.field as unknown as FieldAggregateType<any>}
+                    field={entry.field as unknown as FieldAggregateType<never>}
                     form={form}
                     key={entry.key}
                     option={option as unknown as WebsiteOptionsDto<never>}
@@ -217,7 +231,12 @@ function InnerForm({
 }
 
 export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
-  const { option, submission } = props;
+  const {
+    option,
+    submission,
+    onUserSpecifiedModalClosed,
+    userSpecifiedModalVisible,
+  } = props;
   const { account } = option;
   const { isLoading: isLoadingFormFields, data: formFields } = useQuery(
     `website-option-${option.id}`,
@@ -246,7 +265,9 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
       option={option}
       defaultOption={defaultOption}
       account={account}
-      submission={submission.id}
+      submission={submission}
+      userSpecifiedModalVisible={userSpecifiedModalVisible}
+      userSpecifiedModalClosed={onUserSpecifiedModalClosed}
     />
   );
 }

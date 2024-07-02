@@ -4,7 +4,7 @@ import { FieldAggregateType } from '@postybirb/form-builder';
 import { IWebsiteFormFields, WebsiteOptionsDto } from '@postybirb/types';
 import { SubmissionValidationResult } from '../../submissions/submission-edit-form/submission-form-props';
 
-export type FormFieldProps<T = FieldAggregateType<any>> = {
+export type FormFieldProps<T = FieldAggregateType<never>> = {
   defaultOption: WebsiteOptionsDto<IWebsiteFormFields>;
   field: T;
   form: UseFormReturnType<
