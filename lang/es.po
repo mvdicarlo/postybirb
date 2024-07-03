@@ -1,5 +1,15 @@
 msgid ""
-msgstr "Report-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-03-12 17:37+0000\nLast-Translator: gallegonovato <fran-carro@hotmail.es>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nMIME-Version: 1.0\nContent-Type: text/plain; charset=UTF-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.5-dev\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:122
 msgid "(Default) {originalTag} → {convertedTag}"
@@ -50,22 +60,26 @@ msgstr "Añadir cuenta para {displayName}"
 msgid "Add folder watcher"
 msgstr "Añadir observador de carpeta"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:110
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:114
 msgctxt "alt-text"
 msgid "Alt Text"
 msgstr "Texto alternativo"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:100
+#: apps/postybirb-ui/src/app/app-settings.tsx:99
 msgid "App Folder"
 msgstr "Folder de applicación"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:74
+#: apps/postybirb-ui/src/app/app-settings.tsx:73
 msgid "App Server Port"
 msgstr "Puerto del Servidor de la Aplicación"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:302
 msgid "Apply"
 msgstr "Aplicar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-table-actions/submission-table-actions.tsx:42
+msgid "Apply Template"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:51
 msgctxt "unsaved changes modal"
@@ -79,8 +93,8 @@ msgstr "¿Está seguro que quiere dejar esta página?"
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:103
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:107
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:123
 msgid "Cancel post"
 msgstr "Cancelar post"
 
@@ -137,7 +151,7 @@ msgid "Create message submission button"
 msgstr "Crear botón de envío de mensaje"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:56
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:78
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:77
 msgid "Create new submission"
 msgstr "Crear nueva publicación"
 
@@ -154,7 +168,7 @@ msgstr "Crear un nuevo grupo de etiquetas"
 msgid "CRON format <0/>"
 msgstr "Formato CRON <0/>"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:233
+#: apps/postybirb-ui/src/app/app-settings.tsx:228
 msgid "Dark theme"
 msgstr "Modo Oscuro"
 
@@ -231,11 +245,11 @@ msgstr "Borrar el grupo de etiquetas {0}"
 msgid "Description is greater than {maxLength} characters long"
 msgstr "La descripción sobrepasa los {maxLength} caracteres"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:129
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:133
 msgid "Don't post to"
 msgstr "No publicar en"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:180
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:198
 msgid "Duplicate"
 msgstr "Duplicar"
 
@@ -249,7 +263,7 @@ msgctxt "duplicate.tag-group"
 msgid "Duplicate name"
 msgstr "Nombre duplicado"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:184
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:193
 msgid "Duplicate submission"
 msgstr "Duplicar publicación"
 
@@ -262,7 +276,7 @@ msgstr "Duplicar etiqueta"
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:79
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:199
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:171
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:185
 msgid "Edit"
 msgstr "Editar"
 
@@ -270,7 +284,7 @@ msgstr "Editar"
 msgid "Edit {templateName}"
 msgstr "Editar {templateName}"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:174
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:180
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:175
 msgid "Edit Submission"
 msgstr "Editar publicación"
@@ -319,7 +333,7 @@ msgstr "Filtrar lista"
 msgid "Filters"
 msgstr "Filtros"
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:92
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:91
 msgid "Folder"
 msgstr "Carpeta"
 
@@ -342,7 +356,7 @@ msgstr "Ir a la página principal"
 msgid "Groups"
 msgstr "Grupos"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:189
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:193
 msgid "Height"
 msgstr "Altura"
 
@@ -387,11 +401,11 @@ msgstr "Información sobre la actualización"
 msgid "Invalid CRON string"
 msgstr "String CRON inválido"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:179
+#: apps/postybirb-ui/src/app/app-settings.tsx:174
 msgid "Language"
 msgstr "Idioma"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:231
+#: apps/postybirb-ui/src/app/app-settings.tsx:226
 msgid "Light theme"
 msgstr "Modo claro"
 
@@ -425,7 +439,7 @@ msgstr "Publicaciones de Mensajes"
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:113
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:121
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:143
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:94
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:98
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-name-field.tsx:35
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:116
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:46
@@ -447,7 +461,7 @@ msgctxt "unsaved changes modal"
 msgid "No"
 msgstr "No"
 
-#: apps/postybirb-ui/src/i18n.ts:25
+#: apps/postybirb-ui/src/components/translations/shared-messages.tsx:4
 msgid "No items"
 msgstr "Sin artículos"
 
@@ -455,7 +469,7 @@ msgstr "Sin artículos"
 msgid "No login component found."
 msgstr "No se encontró un componente de inicio de sesión."
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:61
 msgid "No schedule"
 msgstr "No programado"
 
@@ -489,7 +503,7 @@ msgctxt "schedule.single"
 msgid "Once"
 msgstr "Una vez"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:53
+#: apps/postybirb-ui/src/app/app-settings.tsx:52
 msgid "Open on startup"
 msgstr "Abrir al iniciar"
 
@@ -511,23 +525,23 @@ msgstr "Página no encontrada"
 msgid "Patch Notes"
 msgstr "Notas de Parche"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:125
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:149
 msgid "Post"
 msgstr "Publicar"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:130
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:131
 msgid "Post submission"
 msgstr "Publicación"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:48
+#: apps/postybirb-ui/src/app/app-settings.tsx:47
 msgid "PostyBirb Startup Settings"
 msgstr "Ajustes de Inicio de PostyBirb"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:60
+#: apps/postybirb-ui/src/app/app-settings.tsx:59
 msgid "PostyBirb will not open on startup"
 msgstr "PostyBirb no se abrirá al inicio"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:58
+#: apps/postybirb-ui/src/app/app-settings.tsx:57
 msgid "PostyBirb will open on startup"
 msgstr "PostyBirb se abrirá al inicio"
 
@@ -541,13 +555,13 @@ msgctxt "schedule.recurring"
 msgid "Recurring"
 msgstr "Recurrente"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:268
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:272
 msgid "Remove {0}"
 msgstr "Remover {0}"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:104
-msgid "Remove submission"
-msgstr "Remover publicación"
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:106
+msgid "Remove website from submission"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:213
 msgctxt "import.override-description"
@@ -580,7 +594,7 @@ msgctxt "unsaved changes modal"
 msgid "Save and Close"
 msgstr "Guardar y Cerrar"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:94
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:96
 msgctxt "edit-form.set-default-options"
 msgid "Save as default"
 msgstr "Guardar como predeterminado"
@@ -601,12 +615,12 @@ msgstr "Guardar cambios para {templateName}"
 msgid "Save folder upload changes"
 msgstr "Guardar cambios de carpeta de publicación"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:84
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/submission-options-section.tsx:72
 msgid "Saves current values as the default for this account to be loaded in future submissions."
 msgstr "Guarda los valores como predeterminados para esta cuenta para cargarlos en publicaciones futuras."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:157
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:57
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
 msgid "Schedule"
 msgstr "Programar"
@@ -620,18 +634,18 @@ msgstr "Programar Publicación"
 msgid "Search for anything..."
 msgstr "Buscar..."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:126
+#: apps/postybirb-ui/src/app/app-settings.tsx:125
 msgid "Select Folder"
 msgstr "Seleccionar Carpeta"
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:181
+#: apps/postybirb-ui/src/app/app-settings.tsx:176
 msgid "Select language"
 msgstr "Seleccionar Idioma"
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:168
 #: apps/postybirb-ui/src/app/app-search.tsx:110
 #: apps/postybirb-ui/src/app/app-search.tsx:116
-#: apps/postybirb-ui/src/app/app-settings.tsx:219
+#: apps/postybirb-ui/src/app/app-settings.tsx:214
 msgid "Settings"
 msgstr "Ajustes"
 
@@ -671,7 +685,7 @@ msgstr "Mostrar filtro de sitios ocultos apagado"
 msgid "Show hidden websites filter on"
 msgstr "Mostrar filtro de sitios ocultos encendido"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:98
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:102
 msgctxt "submission.file-size"
 msgid "Size"
 msgstr "Tamaño"
@@ -702,7 +716,7 @@ msgctxt "submission.card.warning"
 msgid "Submission has warnings"
 msgstr "Publicación tiene advertencias"
 
-#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:139
+#: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:140
 msgid "Submission queued for posting"
 msgstr "Publicación puesta en cola para ser publicada"
 
@@ -791,7 +805,7 @@ msgstr "Plantillas"
 msgid "The page you are looking for might have been removed or temporarily unavailable."
 msgstr "La página que está buscando puede haber sido removida o estar no disponible temporalmente ."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:226
+#: apps/postybirb-ui/src/app/app-settings.tsx:221
 msgid "Theme"
 msgstr "Tema"
 
@@ -800,11 +814,11 @@ msgstr "Tema"
 msgid "This action cannot be undone."
 msgstr "Esta acción no se puede deshacer."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:102
+#: apps/postybirb-ui/src/app/app-settings.tsx:101
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
 msgstr "Esta es la carpeta donde la aplicación guarda sus datos. Debe de reiniciar la aplicación para que esto tome efecto."
 
-#: apps/postybirb-ui/src/app/app-settings.tsx:76
+#: apps/postybirb-ui/src/app/app-settings.tsx:75
 msgid "This is the port the app server will run on. You must restart the app for this to take effect."
 msgstr "Este es el puerto en el que el servidor de la aplicación se ejecutará. Necesitará reiniciar la aplicación para que esto tome efecto."
 
@@ -826,7 +840,7 @@ msgstr "Mostrar {displayName}"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:118
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:168
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:30
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:31
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:37
 msgid "Unknown"
 msgstr "Desconocido"
@@ -877,7 +891,7 @@ msgstr "Subir desde carpeta"
 msgid "Webhook name {name} is invalid"
 msgstr "Nombre {name} del Webhook es inválido"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:52
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/simple-website-select.tsx:53
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:51
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:52
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-website-select/submission-form-website-select.tsx:57
@@ -885,7 +899,7 @@ msgstr "Nombre {name} del Webhook es inválido"
 msgid "Websites"
 msgstr "Sitios"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:217
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-file-section/file-details.tsx:221
 msgid "Width"
 msgstr "Ancho"
 

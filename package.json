@@ -39,9 +39,6 @@
     "postinstall": "run-p --continue-on-error postinstall:*",
     "postinstall:deps": "exitzero electron-builder install-app-deps",
     "postinstall:copy-themes": "shx cp node_modules/@elastic/eui/dist/*.min.css apps/postybirb-ui/public",
-    "postinstall:copy-uppy-i18n": "shx cp -r node_modules/@uppy/locales/lib/*[!.map].js apps/postybirb-ui/public/uppy-i18n/",
-    "postinstall:patch-package": "patch-package",
-    "postinstall:i18n": "lingui extract --clean",
     "setup": "run-s setup:husky",
     "setup:husky": "husky install",
     "tools:icons": "ts-node tools/generate-icons.ts"

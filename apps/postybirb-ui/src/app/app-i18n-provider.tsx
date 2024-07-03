@@ -30,12 +30,14 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
       // because browser's import call does it automatically
       // eslint-disable-next-line no-param-reassign
       locale = locale ?? 'en';
-      const { messages } = await import(`../lang/${locale}.po`);
+      const { messages } = await import(`../../../../lang/${locale}.po`);
 
       const uppyLocale = uppyLocales[locale];
       try {
         i18n.uppy = (
-          await import(`../../public/uppy-i18n/${uppyLocale}.js`)
+          await import(
+            `../../../../node_modules/@uppy/locales/lib/${uppyLocale}.js`
+          )
         ).default;
       } catch (error) {
         // eslint-disable-next-line no-console
