@@ -1,11 +1,10 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { TestMetadata } from '@postybirb/website-metadata';
 import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { WebsiteImplProvider } from './implementations';
-import TestWebsite from './implementations/test/test.website';
+import TestWebsite, { TestMetadata } from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('Website', () => {

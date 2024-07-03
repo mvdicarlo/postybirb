@@ -1,14 +1,17 @@
-import { IWebsiteMetadata } from '@postybirb/website-metadata';
-import { UsernameShortcut } from './username-shortcut.dto';
-import { WebsiteLoginType } from '../../models/website/website-login-type';
 import { WebsiteId } from '../../models';
+import { WebsiteLoginType } from '../../models/website/website-login-type';
+import { IWebsiteMetadata, TagSupport } from '../../website-modifiers';
+import { UsernameShortcut } from '../../website-modifiers/username-shortcut';
+import { WebsiteFileOptions } from '../../website-modifiers/website-file-options';
 import { IAccountDto } from '../account/account.dto';
 
 export interface IWebsiteInfoDto {
   id: WebsiteId;
   displayName: string;
   loginType: WebsiteLoginType;
-  usernameShortcut: UsernameShortcut;
+  usernameShortcut?: UsernameShortcut;
   metadata: IWebsiteMetadata;
   accounts: IAccountDto[];
+  tagSupport: TagSupport;
+  fileOptions?: WebsiteFileOptions;
 }
