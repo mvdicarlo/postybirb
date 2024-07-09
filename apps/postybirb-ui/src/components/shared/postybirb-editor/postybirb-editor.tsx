@@ -8,6 +8,7 @@ import {
   useCreateBlockNote,
 } from '@blocknote/react';
 import '@blocknote/react/style.css';
+import { useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
@@ -21,6 +22,7 @@ type PostyBirbEditorProps = {
 };
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
+  const theme = useMantineColorScheme();
   const { value, onChange } = props;
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
@@ -37,6 +39,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
   // Renders the editor instance using a React component.
   return (
     <BlockNoteView
+      theme={theme.colorScheme === 'light' ? 'light' : 'dark'}
       editor={editor}
       imageToolbar={false}
       tableHandles={false}

@@ -35,8 +35,8 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:140
 #: apps/postybirb-ui/src/app/app-search.tsx:53
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:48
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:51
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
 #: apps/postybirb-ui/src/components/account/account-login-flyout/account-login-flyout.tsx:46
 msgid "Accounts"
 msgstr ""
@@ -119,6 +119,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:294
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:134
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:85
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:115
 msgid "Cancel"
 msgstr ""
 
@@ -142,6 +143,10 @@ msgstr ""
 #. Login status checking
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:280
 msgid "Checking..."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:36
+msgid "Choose Fields"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:85
@@ -205,6 +210,11 @@ msgstr ""
 msgid "Create new submission template"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:131
+msgid "Create new tag converter"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:131
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:252
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:234
 msgid "Create new tag group"
@@ -231,7 +241,7 @@ msgid "Dashboard"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/radio-field.tsx:27
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:26
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:43
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:70
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:72
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:176
@@ -248,6 +258,7 @@ msgstr ""
 msgid "Default Tags"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:77
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:115
 msgctxt "default-options-saved"
 msgid "Defaults saved"
@@ -319,7 +330,7 @@ msgid "Drag images here or click to select files"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:198
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:96
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:54
 msgid "Duplicate"
 msgstr ""
 
@@ -347,7 +358,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:183
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:199
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:185
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:99
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:64
 msgid "Edit"
 msgstr ""
 
@@ -388,6 +399,23 @@ msgctxt "Error toast"
 msgid "Error"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:47
+msgid "Failed to duplicate"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:95
+msgid "Failed to queue submission"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:86
+msgid "Failed to save defaults"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:85
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:92
+msgid "Failed to update"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/app-search.tsx:146
 msgid "File"
 msgstr ""
@@ -420,6 +448,11 @@ msgstr ""
 msgid "Go back"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:46
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:138
+msgid "Group Name"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:294
 #: apps/postybirb-ui/src/components/account/account-login-card/create-account-modal.tsx:126
 msgid "Groups"
@@ -444,7 +477,7 @@ msgstr ""
 #. Home page header
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:138
 #: apps/postybirb-ui/src/app/app-search.tsx:35
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:58
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:64
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:24
 #: apps/postybirb-ui/src/pages/home/home-page.tsx:11
 msgid "Home"
@@ -455,7 +488,7 @@ msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:60
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:62
 msgctxt "override-default"
 msgid "Ignore default tags"
 msgstr ""
@@ -587,7 +620,7 @@ msgstr ""
 #. Login status
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:146
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:287
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:40
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:92
 msgid "Not logged in"
 msgstr ""
 
@@ -632,7 +665,7 @@ msgid "Patch Notes"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:149
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:119
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:102
 msgid "Post"
 msgstr ""
 
@@ -644,7 +677,7 @@ msgstr ""
 msgid "Post a message"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:66
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:72
 msgid "Post Files"
 msgstr ""
 
@@ -704,7 +737,10 @@ msgstr ""
 msgid "Russian"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:190
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:171
 #: apps/postybirb-ui/src/components/account/account-login-card/account-login-card-table.tsx:61
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:96
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:164
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-management-view/submission-template-management-view.tsx:180
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-options-section/user-specified-website-options-save-modal.tsx:143
@@ -738,6 +774,16 @@ msgstr ""
 msgid "Save changes for {templateName}"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:48
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:106
+msgid "Save current form values as the default values for future submissions"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:55
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:121
+msgid "Save defaults"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:144
 msgid "Save folder upload changes"
 msgstr ""
@@ -749,7 +795,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:157
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/default-submission-schedule-field.tsx:59
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:63
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:109
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:74
 msgid "Schedule"
 msgstr ""
 
@@ -758,7 +804,7 @@ msgstr ""
 msgid "Schedule Submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:126
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:148
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-actions.tsx:140
 msgid "Search"
 msgstr ""
@@ -775,7 +821,7 @@ msgstr ""
 msgid "Select language"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:74
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:80
 msgid "Send Messages"
 msgstr ""
 
@@ -783,8 +829,8 @@ msgstr ""
 #: apps/postybirb-ui/src/app/app-search.tsx:110
 #: apps/postybirb-ui/src/app/app-search.tsx:116
 #: apps/postybirb-ui/src/app/app-settings.tsx:246
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:152
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:83
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:154
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
 msgid "Settings"
 msgstr ""
 
@@ -854,9 +900,17 @@ msgstr ""
 msgid "Submission cancelled"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:41
+msgid "Submission duplicated"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card.tsx:48
 msgctxt "submission.card.warning"
 msgid "Submission has warnings"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:89
+msgid "Submission queued"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-table/components/submission-card-table/components/submission-table-card-actions.tsx:140
@@ -895,6 +949,7 @@ msgstr ""
 msgid "Submissions"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:138
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:125
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-table/tag-converters-table.tsx:150
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:136
@@ -905,7 +960,13 @@ msgstr ""
 msgid "Tag {defaultTagNameFromDate}"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:78
+msgid "Tag converter updated"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:162
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:223
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:96
 #: apps/postybirb-ui/src/components/tag-converters/tag-converters-flyout/tag-converters-flyout.tsx:40
 msgid "Tag Converters"
 msgstr ""
@@ -918,11 +979,19 @@ msgstr ""
 msgid "Tag Group {defaultNameFromTime}"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:85
+msgid "Tag group updated"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/app-layout/app-side-nav.tsx:156
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:203
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:88
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-flyout/tag-groups-flyout.tsx:40
 msgid "Tag Groups"
 msgstr ""
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/fields/tag-field.tsx:70
 #: apps/postybirb-ui/src/components/tag-groups/tag-groups-table/tag-groups-table.tsx:150
 #: apps/postybirb-ui/src/external-translations.ts:6
@@ -934,7 +1003,7 @@ msgid "Tags: {tagList}"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-table/directory-watchers-table.tsx:108
-#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:122
+#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:126
 msgid "Template"
 msgstr ""
 
@@ -978,7 +1047,7 @@ msgstr ""
 msgid "Translation {id} not found"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:238
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:257
 msgid "Unable to display form"
 msgstr ""
 
@@ -1012,6 +1081,8 @@ msgid "Unsupported field type."
 msgstr ""
 
 #. Update PostyBirb button on top of screen
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:91
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:98
 #: apps/postybirb-ui/src/components/app/update-button/update-button.tsx:51
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler-modal.tsx:111
 msgid "Update"

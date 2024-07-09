@@ -1,11 +1,8 @@
-import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
   Box,
-  Button,
   Card,
   Flex,
-  Group,
   Image,
   Loader,
   ScrollArea,
@@ -16,18 +13,10 @@ import {
   IAccountDto,
   IWebsiteFormFields,
   NullAccount,
-  ScheduleType,
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import {
-  IconCalendar,
-  IconCopy,
-  IconEdit,
-  IconSend,
-  IconSquare,
-  IconSquareFilled,
-} from '@tabler/icons-react';
+import { IconSquare, IconSquareFilled } from '@tabler/icons-react';
 import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../stores/account.store';
@@ -35,6 +24,7 @@ import { useStore } from '../../../../stores/use-store';
 import { defaultTargetProvider } from '../../../../transports/http-client';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../../form/website-select/website-select';
+import { SubmissionViewCardActions } from './submission-view-card-actions';
 
 type SubmissionViewCardProps = {
   submission: SubmissionDto;
@@ -85,10 +75,8 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     return <Loader />;
   }
 
-  // TODO - Unschedule / Cancel post buttons
-  // TODO - Ensure notifications are sent when post scheduled/unscheduled/sent to post, etc.
   // TODO - drag and drop to change order of submissions
-  // TODO - website bar theme based off theme color (and description field)
+  // TODO - scheduler
   return (
     <Card shadow="xs" withBorder={isSelected}>
       <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
@@ -101,40 +89,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
           >
             {isSelected ? <IconSquareFilled /> : <IconSquare />}
           </ActionIcon>
-          <Group gap="xs">
-            <Button
-              size="xs"
-              variant="subtle"
-              c="pink"
-              leftSection={<IconCopy />}
-            >
-              <Trans>Duplicate</Trans>
-            </Button>
-            <Button size="xs" variant="subtle" leftSection={<IconEdit />}>
-              <Trans>Edit</Trans>
-            </Button>
-            {submission.schedule.scheduleType !== ScheduleType.NONE ? (
-              <Button
-                disabled={submission.isQueued()}
-                size="xs"
-                variant="subtle"
-                c="teal"
-                leftSection={<IconCalendar />}
-              >
-                <Trans>Schedule</Trans>
-              </Button>
-            ) : (
-              <Button
-                disabled={submission.isQueued()}
-                size="xs"
-                variant="subtle"
-                c="teal"
-                leftSection={<IconSend />}
-              >
-                <Trans>Post</Trans>
-              </Button>
-            )}
-          </Group>
+          <SubmissionViewCardActions submission={submission} />
         </Flex>
       </Card.Section>
       <Card.Section py="4">

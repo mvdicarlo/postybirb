@@ -13,6 +13,7 @@ import {
   ScheduleType,
   SubmissionRating,
   SubmissionType,
+  ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
@@ -45,6 +46,8 @@ export class SubmissionDto<
 
   order!: number;
 
+  validations!: ValidationResult[];
+
   private defaultOption?: WebsiteOptionsDto;
 
   constructor(entity: ISubmissionDto) {
@@ -53,6 +56,7 @@ export class SubmissionDto<
     this.posts = this.posts ?? [];
     this.metadata = this.metadata ?? ({} as T);
     this.order = this.order ?? 0;
+    this.validations = this.validations ?? [];
     if (!this.options) {
       this.options = [
         {

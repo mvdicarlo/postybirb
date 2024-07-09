@@ -1,7 +1,8 @@
 import {
   ISubmission,
-  IWebsiteFormFields,
   ISubmissionMetadata,
+  IWebsiteFormFields,
+  ValidationResult,
 } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
 import { PostRecordDto } from '../post/post-record.dto';
@@ -14,4 +15,5 @@ export type ISubmissionDto<
   files: ISubmissionFileDto[];
   options: WebsiteOptionsDto<IWebsiteFormFields>[];
   posts: PostRecordDto[];
+  validations: ValidationResult[];
 };

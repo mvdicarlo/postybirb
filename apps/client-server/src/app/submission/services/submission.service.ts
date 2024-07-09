@@ -13,6 +13,8 @@ import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
   FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
   MessageSubmission,
   NULL_ACCOUNT_ID,
   ScheduleType,
@@ -52,7 +54,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     @InjectRepository(Submission)
     repository: PostyBirbRepository<SubmissionEntity>,
     @Inject(forwardRef(() => WebsiteOptionsService))
-    private readonly submissionOptionsService: WebsiteOptionsService,
+    private readonly websiteOptionsService: WebsiteOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway
@@ -71,13 +73,27 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
   public async emit() {
     super.emit({
       event: SUBMISSION_UPDATES,
-      data: (await this.findAll()).map((s) => s.toJSON()),
+      data: await this.findAllAsDto(),
     });
+  }
+
+  public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
+    const all = await super.findAll();
+    return Promise.all(
+      all.map(
+        async (s) =>
+          ({
+            ...s.toJSON(),
+            validations: await this.websiteOptionsService.validateSubmission(
+              s.id
+            ),
+          } as ISubmissionDto<ISubmissionMetadata>)
+      )
+    );
   }
 
   /**
    * Creates a submission.
-   * @todo need to make transactional
    *
    * @param {CreateSubmissionDto} createSubmissionDto
    * @param {MulterFileInfo} [file]
@@ -112,7 +128,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     }
 
     submission.options.add(
-      await this.submissionOptionsService.createDefaultSubmissionOptions(
+      await this.websiteOptionsService.createDefaultSubmissionOptions(
         submission,
         name
       )
@@ -196,7 +212,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     const options = template.options.getItems();
     const newOptions = await Promise.all(
       options.map(async (option) => {
-        const newOption = await this.submissionOptionsService.createOption(
+        const newOption = await this.websiteOptionsService.createOption(
           submission,
           option.account,
           option.data,
@@ -260,9 +276,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     // Removes unused website options
     if (update.deletedWebsiteOptions?.length) {
       update.deletedWebsiteOptions.forEach((deletedOptionId) => {
-        optionChanges.push(
-          this.submissionOptionsService.remove(deletedOptionId)
-        );
+        optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
       });
     }
 
@@ -271,13 +285,13 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       update.newOrUpdatedOptions.forEach((option) => {
         if (option.createdAt) {
           optionChanges.push(
-            this.submissionOptionsService.update(option.id, {
+            this.websiteOptionsService.update(option.id, {
               data: option.data,
             })
           );
         } else {
           optionChanges.push(
-            this.submissionOptionsService.create({
+            this.websiteOptionsService.create({
               account: option.account,
               data: option.data,
               submission: submission.id,

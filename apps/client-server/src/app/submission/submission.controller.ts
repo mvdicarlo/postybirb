@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -15,7 +16,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { SubmissionId, SubmissionType } from '@postybirb/types';
+import { IEntityDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
@@ -34,6 +35,11 @@ import { SubmissionService } from './services/submission.service';
 export class SubmissionController extends PostyBirbController<Submission> {
   constructor(readonly service: SubmissionService) {
     super(service);
+  }
+
+  @Get()
+  async findAll(): Promise<IEntityDto[]> {
+    return this.service.findAllAsDto();
   }
 
   @Post()

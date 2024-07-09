@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Group,
+  Paper,
   Space,
   Stack,
   Title,
@@ -61,16 +62,11 @@ export function WebsiteOptionGroupSection(
 
   return (
     <Box>
-      <Title
-        p="4"
-        order={4}
-        pos="sticky"
-        top={0}
-        style={{ zIndex: 99, borderRadius: 4 }}
-        bg="var(--mantine-color-gray-9)"
-      >
-        {accountName}
-      </Title>
+      <Paper pos="sticky" top={0} style={{ zIndex: 99 }}>
+        <Title p="4" order={4}>
+          {accountName}
+        </Title>
+      </Paper>
       <Space h="4" />
       <Stack>
         {options.map((option) => (

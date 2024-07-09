@@ -1,6 +1,6 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/macro';
-import { AppShell, Box, Burger, ScrollArea } from '@mantine/core';
+import { AppShell, Box, Burger, Divider, ScrollArea } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { spotlight } from '@mantine/spotlight';
 import {
@@ -91,7 +91,7 @@ const navigationTargets: (SideNavLinkProps & {
   },
   {
     type: 'drawer',
-    key: 'tag-groups',
+    key: 'tag-converters',
     icon: <IconTransform />,
     label: <Trans>Tag Converters</Trans>,
     globalStateKey: 'tagConvertersDrawerVisible',
@@ -121,7 +121,7 @@ export function PostyBirbLayout() {
         <AppShell.Section>
           <Box ta="center" p="5">
             <AppImage />
-            <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
+            <Divider size="md" />
           </Box>
           <Box ta="center">
             <Burger

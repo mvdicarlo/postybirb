@@ -4,8 +4,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import {
   AccountId,
@@ -290,9 +289,15 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         return result.value;
       }
 
-      throw new InternalServerErrorException(
-        `Unknown promise result: ${result.reason}`
-      );
+      this.logger.error('Failed to validate website option', result.reason);
+      return {
+        errors: [
+          {
+            id: 'validation.error.unknown',
+            values: {},
+          },
+        ],
+      };
     });
   }
 }
