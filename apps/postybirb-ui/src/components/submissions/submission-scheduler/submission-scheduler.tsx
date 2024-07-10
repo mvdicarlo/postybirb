@@ -14,15 +14,15 @@ const DEFAULT_CRON = '0 0 * * FRI';
 const radios = [
   {
     id: ScheduleType.NONE,
-    label: <Trans context="schedule.none">None</Trans>,
+    label: <Trans context="internalSchedule.none">None</Trans>,
   },
   {
     id: ScheduleType.SINGLE,
-    label: <Trans context="schedule.single">Once</Trans>,
+    label: <Trans context="internalSchedule.single">Once</Trans>,
   },
   {
     id: ScheduleType.RECURRING,
-    label: <Trans context="schedule.recurring">Recurring</Trans>,
+    label: <Trans context="internalSchedule.recurring">Recurring</Trans>,
   },
 ];
 
@@ -35,36 +35,36 @@ const key = 'last-used-schedule';
 
 export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
   const { schedule, onChange } = props;
-  const [scheduleType, setScheduleType] = useState<ScheduleType | null>(
-    schedule.scheduleType
-  );
   // For recall of recently set time within this specific component
   const [lastKnownSetDate, setLastKnownSetDate] = useState(
     schedule.scheduledFor
   );
+  const [internalSchedule, setInternalSchedule] =
+    useState<ISubmissionScheduleInfo>(schedule);
   // For recall of recently set submissions
   const [lastUsedSchedule, setLastUsedSchedule] = useLocalStorage<
     string | undefined
   >(key);
   const onUpdate = useCallback(
     (newSchedule: ISubmissionScheduleInfo) => {
+      setInternalSchedule(newSchedule);
       onChange(newSchedule);
     },
-    [onChange]
+    [onChange, setInternalSchedule]
   );
 
   const datePicker = useMemo(() => {
-    switch (scheduleType) {
+    switch (internalSchedule.scheduleType) {
       case ScheduleType.NONE:
         return null;
       case ScheduleType.RECURRING:
         // eslint-disable-next-line no-case-declarations
         let cronHelp: JSX.Element | null = <Trans>Invalid CRON string</Trans>;
         try {
-          cronHelp = schedule.cron ? (
+          cronHelp = internalSchedule.cron ? (
             <span>
-              {cronstrue.toString(schedule.cron)} (
-              {moment(schedule.scheduledFor).format('lll')})
+              {cronstrue.toString(internalSchedule.cron)} (
+              {moment(internalSchedule.scheduledFor).format('lll')})
             </span>
           ) : null;
         } catch (e) {
@@ -79,7 +79,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
               </Anchor>
             }
             description={cronHelp}
-            value={schedule.cron}
+            value={internalSchedule.cron}
             onChange={(event) => {
               let scheduledFor;
               try {
@@ -99,7 +99,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
         );
       case ScheduleType.SINGLE:
       default: {
-        const date = new Date(schedule.scheduledFor as string);
+        const date = new Date(internalSchedule.scheduledFor as string);
         return (
           <DateTimePicker
             clearable
@@ -119,16 +119,22 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
         );
       }
     }
-  }, [onUpdate, schedule, scheduleType, setLastUsedSchedule]);
+  }, [
+    internalSchedule.cron,
+    internalSchedule.scheduleType,
+    internalSchedule.scheduledFor,
+    onUpdate,
+    schedule,
+    setLastUsedSchedule,
+  ]);
 
   return (
     <Box className="postybirb__submission-scheduler">
       <Flex>
         <Radio.Group
-          defaultValue={scheduleType}
+          defaultValue={internalSchedule.scheduleType}
           onChange={(id) => {
             const type = id as ScheduleType;
-            setScheduleType(type);
             switch (type) {
               case ScheduleType.SINGLE: {
                 let date: string | undefined;
