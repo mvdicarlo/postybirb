@@ -71,6 +71,7 @@ export function WebsiteOptionGroupSection(
       <Stack>
         {options.map((option) => (
           <Box
+            key={option.id}
             style={{
               marginLeft: isDefaultAccount
                 ? 0

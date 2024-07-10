@@ -1,9 +1,11 @@
+import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
   Box,
   Card,
   Flex,
   Image,
+  Input,
   Loader,
   ScrollArea,
   Stack,
@@ -11,12 +13,16 @@ import {
 import {
   AccountId,
   IAccountDto,
+  ISubmissionScheduleInfo,
   IWebsiteFormFields,
   NullAccount,
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconSquare, IconSquareFilled } from '@tabler/icons-react';
+import { debounce } from 'lodash';
+import { useCallback } from 'react';
+import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../stores/account.store';
@@ -24,6 +30,7 @@ import { useStore } from '../../../../stores/use-store';
 import { defaultTargetProvider } from '../../../../transports/http-client';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../../form/website-select/website-select';
+import SubmissionScheduler from '../../submission-scheduler/submission-scheduler';
 import { SubmissionViewCardActions } from './submission-view-card-actions';
 
 type SubmissionViewCardProps = {
@@ -71,12 +78,27 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedUpdate = useCallback(
+    debounce((schedule: ISubmissionScheduleInfo) => {
+      submissionApi.update(submission.id, {
+        isScheduled: submission.isScheduled,
+        scheduledFor: schedule.scheduledFor,
+        scheduleType: schedule.scheduleType,
+        deletedWebsiteOptions: [],
+        newOrUpdatedOptions: [],
+        metadata: submission.metadata,
+      });
+    }, 1_000),
+    [submission]
+  );
+
   if (isLoading) {
     return <Loader />;
   }
 
   // TODO - drag and drop to change order of submissions
-  // TODO - scheduler
+  // ! TODO - Fix all internal anchor/links to use the old way of opening a window as the current form is busted
   return (
     <Card shadow="xs" withBorder={isSelected}>
       <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
@@ -108,6 +130,14 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
 
             <Box mx="xs" flex="10">
               <Stack gap="xs">
+                <Input.Wrapper label={<Trans>Schedule</Trans>}>
+                  <SubmissionScheduler
+                    schedule={submission.schedule}
+                    onChange={(schedule) => {
+                      debouncedUpdate(schedule);
+                    }}
+                  />
+                </Input.Wrapper>
                 <WebsiteSelect
                   submission={submission}
                   onSelect={(selectedAccounts) => {

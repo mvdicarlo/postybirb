@@ -1,13 +1,8 @@
-import {
-  EuiDatePicker,
-  EuiFieldText,
-  EuiFormRow,
-  EuiIcon,
-  EuiLink,
-  EuiRadioGroup,
-} from '@elastic/eui';
 import { Trans } from '@lingui/macro';
+import { Anchor, Box, Flex, Radio, TextInput } from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
 import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
+import { IconLink } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
@@ -40,6 +35,9 @@ const key = 'last-used-schedule';
 
 export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
   const { schedule, onChange } = props;
+  const [scheduleType, setScheduleType] = useState<ScheduleType | null>(
+    schedule.scheduleType
+  );
   // For recall of recently set time within this specific component
   const [lastKnownSetDate, setLastKnownSetDate] = useState(
     schedule.scheduledFor
@@ -56,7 +54,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
   );
 
   const datePicker = useMemo(() => {
-    switch (schedule.scheduleType) {
+    switch (scheduleType) {
       case ScheduleType.NONE:
         return null;
       case ScheduleType.RECURRING:
@@ -73,49 +71,44 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
           // Do nothing
         }
         return (
-          <EuiFormRow
+          <TextInput
             label={
-              <EuiLink href="https://crontab.cronhub.io/">
-                <Trans>
-                  CRON format <EuiIcon type="link" size="s" />
-                </Trans>
-              </EuiLink>
+              <Anchor href="https://crontab.cronhub.io/" c="blue">
+                <Trans>CRON Format</Trans>{' '}
+                <IconLink size="1em" style={{ verticalAlign: 'middle' }} />
+              </Anchor>
             }
-            helpText={cronHelp}
-          >
-            <EuiFieldText
-              value={schedule.cron}
-              onChange={(event) => {
-                let scheduledFor;
-                try {
-                  scheduledFor = Cron(event.target.value)
-                    ?.nextRun()
-                    ?.toISOString();
-                } catch (e) {
-                  // Do nothing
-                }
-                onUpdate({
-                  ...schedule,
-                  cron: event.target.value,
-                  scheduledFor,
-                });
-              }}
-            />
-          </EuiFormRow>
+            description={cronHelp}
+            value={schedule.cron}
+            onChange={(event) => {
+              let scheduledFor;
+              try {
+                scheduledFor = Cron(event.target.value)
+                  ?.nextRun()
+                  ?.toISOString();
+              } catch (e) {
+                // Do nothing
+              }
+              onUpdate({
+                ...schedule,
+                cron: event.target.value,
+                scheduledFor,
+              });
+            }}
+          />
         );
       case ScheduleType.SINGLE:
       default: {
         const date = new Date(schedule.scheduledFor as string);
-        const momentDate = !Number.isNaN(date.getTime())
-          ? moment(date)
-          : undefined;
-        const now = moment();
         return (
-          <EuiDatePicker
-            showTimeSelect
-            minDate={now}
-            shadow={false}
-            selected={momentDate}
+          <DateTimePicker
+            clearable
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            valueFormat="YYYY-MM-DD HH:mm A"
+            highlightToday
+            minDate={new Date()}
+            value={date}
+            submitButtonProps={{ display: 'none' }}
             onChange={(newDate) => {
               const dateStr = newDate?.toISOString();
               onUpdate({ ...schedule, scheduledFor: dateStr });
@@ -126,16 +119,16 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
         );
       }
     }
-  }, [onUpdate, schedule, setLastUsedSchedule]);
+  }, [onUpdate, schedule, scheduleType, setLastUsedSchedule]);
 
   return (
-    <div className="postybirb__submission-scheduler">
-      <div className="flex">
-        <EuiRadioGroup
-          options={radios}
-          idSelected={schedule.scheduleType}
+    <Box className="postybirb__submission-scheduler">
+      <Flex>
+        <Radio.Group
+          defaultValue={scheduleType}
           onChange={(id) => {
             const type = id as ScheduleType;
+            setScheduleType(type);
             switch (type) {
               case ScheduleType.SINGLE: {
                 let date: string | undefined;
@@ -173,9 +166,13 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
                 break;
             }
           }}
-        />
+        >
+          {radios.map((radio) => (
+            <Radio key={radio.id} value={radio.id} label={radio.label} />
+          ))}
+        </Radio.Group>
         <div className="ml-3 flex-1">{datePicker}</div>
-      </div>
-    </div>
+      </Flex>
+    </Box>
   );
 }

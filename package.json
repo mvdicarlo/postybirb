@@ -61,7 +61,7 @@
     "@lingui/macro": "^4.7.0",
     "@lingui/react": "^4.7.0",
     "@mantine/core": "^7.10.0",
-    "@mantine/dates": "^7.10.0",
+    "@mantine/dates": "^7.11.1",
     "@mantine/dropzone": "^7.10.0",
     "@mantine/form": "^7.10.1",
     "@mantine/hooks": "^7.10.0",

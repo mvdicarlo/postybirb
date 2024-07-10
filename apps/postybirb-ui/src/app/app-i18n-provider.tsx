@@ -1,6 +1,7 @@
 import { EuiFlexGroup, EuiLoadingSpinner } from '@elastic/eui';
 import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
+import { DatesProvider } from '@mantine/dates';
 import { Locale as UppyLocale } from '@uppy/core';
 import { useCallback, useEffect, useState } from 'react';
 import { use18n } from '../hooks/use-i18n';
@@ -16,7 +17,7 @@ type AppI18nProviderProps = {
   children: React.ReactNode;
 };
 
-export function AppI18nProvider(props: AppI18nProviderProps) {
+export function AppI18nProvider({ children }: AppI18nProviderProps) {
   const [locale] = use18n();
   const [loaded, setLoaded] = useState(false);
 
@@ -67,7 +68,11 @@ export function AppI18nProvider(props: AppI18nProviderProps) {
   }, []);
 
   if (loaded) {
-    return <LinguiI18nProvider i18n={i18n} {...props} />;
+    return (
+      <LinguiI18nProvider i18n={i18n}>
+        <DatesProvider settings={{ locale }}>{children}</DatesProvider>
+      </LinguiI18nProvider>
+    );
   }
 
   return (

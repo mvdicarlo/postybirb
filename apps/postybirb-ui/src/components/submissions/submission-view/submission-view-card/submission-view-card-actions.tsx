@@ -4,12 +4,12 @@ import { Button, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ScheduleType } from '@postybirb/types';
 import {
-    IconCalendar,
-    IconCalendarCancel,
-    IconCancel,
-    IconCopy,
-    IconEdit,
-    IconSend,
+  IconCalendar,
+  IconCalendarCancel,
+  IconCancel,
+  IconCopy,
+  IconEdit,
+  IconSend,
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router';
 import postApi from '../../../../api/post.api';
@@ -95,7 +95,7 @@ export function SubmissionViewCardActions(
             }
             size="xs"
             variant="subtle"
-            c="teal"
+            c={hasOptions ? 'teal' : 'grey'}
             leftSection={<IconCalendar />}
             onClick={() => {
               submissionApi
