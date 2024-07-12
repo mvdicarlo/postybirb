@@ -97,7 +97,6 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     return <Loader />;
   }
 
-  // TODO - drag and drop to change order of submissions
   // ! TODO - Fix all internal anchor/links to use the old way of opening a window as the current form is busted
   return (
     <Card shadow="xs" withBorder={isSelected}>

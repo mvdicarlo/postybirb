@@ -1,39 +1,38 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/macro';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Checkbox,
-    Flex,
-    Group,
-    Image,
-    Modal,
-    Paper,
-    ScrollArea,
-    Stack,
-    Text,
-    Tooltip,
-    rem,
+  ActionIcon,
+  Box,
+  Button,
+  Flex,
+  Group,
+  Image,
+  Modal,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Tooltip,
+  rem,
 } from '@mantine/core';
 import {
-    Dropzone,
-    FileWithPath,
-    IMAGE_MIME_TYPE,
-    MS_WORD_MIME_TYPE,
-    PDF_MIME_TYPE,
+  Dropzone,
+  FileWithPath,
+  IMAGE_MIME_TYPE,
+  MS_WORD_MIME_TYPE,
+  PDF_MIME_TYPE,
 } from '@mantine/dropzone';
 import { FileType, SubmissionType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-    IconDeviceAudioTape,
-    IconPhoto,
-    IconPhotoEdit,
-    IconTextCaption,
-    IconTrash,
-    IconUpload,
-    IconVideo,
-    IconX,
+  IconDeviceAudioTape,
+  IconPhoto,
+  IconPhotoEdit,
+  IconTextCaption,
+  IconTrash,
+  IconUpload,
+  IconVideo,
+  IconX,
 } from '@tabler/icons-react';
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
@@ -241,13 +240,10 @@ function UploadButton({
 export function SubmissionUploader() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [cropFile, setCropFile] = useState<FileWithPath | null>(null);
-  const [createManySubmissions, setCreateManySubmissions] = useState(true);
 
   const imageFiles = files.filter(
     (file) => file.type.startsWith('image/') && !file.type.includes('gif')
   );
-
-  const allFilesAreImages = imageFiles.length === files.length;
 
   const onDelete = (file: FileWithPath) => {
     const index = files.findIndex((f) => f.name === file.name);
@@ -365,13 +361,6 @@ export function SubmissionUploader() {
             </ScrollArea>
           ) : null}
         </Flex>
-        {!!files.length && allFilesAreImages && (
-          <Checkbox
-            checked={createManySubmissions}
-            label={<Trans>Create new submission for each file</Trans>}
-            onChange={(e) => setCreateManySubmissions(e.target.checked)}
-          />
-        )}
         <UploadButton files={files} onComplete={() => setFiles([])} />
       </Stack>
       {cropFile ? <EditImageModal file={cropFile} onClose={onEdit} /> : null}

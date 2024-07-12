@@ -1,5 +1,3 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Grid } from '@mantine/core';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionViewCard } from './submission-view-card/submission-view-card';
@@ -10,7 +8,6 @@ type SubmissionViewCardGridProps = {
   selectedSubmissions: SubmissionDto[];
 };
 
-// TODO - Figure out a better drag and drop solution. This one is buggy.
 export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   const { submissions, onSelect, selectedSubmissions } = props;
   const orderedSubmissions = submissions.sort((a, b) => a.order - b.order);
@@ -18,7 +15,7 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
     <Grid>
       {orderedSubmissions.map((submission) => (
         <Grid.Col
-          span={submissions.length > 1 ? 12 : 12}
+          span={submissions.length > 1 ? 6 : 12}
           key={`card-${submission.id}`}
         >
           <SubmissionViewCard

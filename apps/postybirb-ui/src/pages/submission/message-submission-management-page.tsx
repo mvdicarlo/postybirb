@@ -1,19 +1,12 @@
-import {
-  EuiButtonIcon,
-  EuiFieldText,
-  EuiFormLabel,
-  EuiPageHeader,
-  EuiProgress,
-  EuiSpacer,
-} from '@elastic/eui';
-import { Trans, msg } from '@lingui/macro';
+import { msg, Trans } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import { ActionIcon, Loader, Space, Stack, TextInput } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { useMemo, useState } from 'react';
+import { IconMessage, IconPlus, IconTemplate } from '@tabler/icons-react';
+import { useState } from 'react';
 import submissionsApi from '../../api/submission.api';
-import { MessageIcon } from '../../components/shared/icons/Icons';
-import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
-import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
+import { PageHeader } from '../../components/page-header/page-header';
+import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
@@ -34,87 +27,77 @@ function CreateMessageSubmissionForm(): JSX.Element {
   const { _ } = useLingui();
 
   return (
-    <div>
-      <EuiFieldText
-        id="message-input"
-        fullWidth
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        aria-label={_(msg`Message submission name input`)}
-        prepend={
-          <EuiFormLabel htmlFor="message-input">
-            <Trans>Name</Trans>
-          </EuiFormLabel>
+    <TextInput
+      w="100%"
+      size="md"
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      error={value.length && !isValidName(value)}
+      label={<Trans>Create Message Submission</Trans>}
+      placeholder={_(msg`Enter a name for the new message submission`)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && isValidName(value)) {
+          createNewMessageSubmission(value).then(() => setValue(''));
         }
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && isValidName(value)) {
-            createNewMessageSubmission(value);
+      }}
+      rightSection={
+        <ActionIcon
+          disabled={!isValidName(value)}
+          onClick={() =>
+            createNewMessageSubmission(value).then(() => setValue(''))
           }
-        }}
-        append={
-          <EuiButtonIcon
-            iconType="plus"
-            aria-label={_(msg`Create message submission button`)}
-            disabled={!isValidName(value)}
-            onClick={() => createNewMessageSubmission(value)}
-          />
-        }
-      />
-    </div>
+        >
+          <IconPlus />
+        </ActionIcon>
+      }
+    />
   );
 }
 
+const TYPE = SubmissionType.MESSAGE;
+
 export default function MessageSubmissionManagementPage() {
   const { state, isLoading } = useStore(SubmissionStore);
-  const [tab, setTab] = useState<'submissions' | 'templates'>('submissions');
-
-  const messageSubmissions = state.filter(
-    (submission) => submission.type === SubmissionType.MESSAGE
+  const [activeTab, setActiveTab] = useState<string>('submissions');
+  const fileSubmissions = state.filter(
+    (submission) => submission.type === TYPE
   );
 
-  const display = useMemo(
-    () =>
-      tab === 'submissions' ? (
-        <>
-          <CreateMessageSubmissionForm />
-          <EuiSpacer />
-          {isLoading ? (
-            <EuiProgress size="xs" />
-          ) : (
-            <SubmissionTable submissions={messageSubmissions} />
-          )}
-        </>
-      ) : (
-        <SubmissionTemplateManagementView type={SubmissionType.MESSAGE} />
-      ),
-    [isLoading, messageSubmissions, tab]
-  );
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  let display = null;
+  if (activeTab === 'submissions') {
+    display = <SubmissionView submissions={fileSubmissions} type={TYPE} />;
+  } else if (activeTab === 'templates') {
+    display = null;
+  }
 
   return (
     <>
-      <EuiPageHeader
-        bottomBorder
-        iconType={MessageIcon.Header}
-        pageTitle={<Trans>Message Submissions</Trans>}
+      <PageHeader
+        icon={<IconMessage />}
+        title={<Trans>Message Submissions</Trans>}
         tabs={[
           {
             label: <Trans>Submissions</Trans>,
-            isSelected: tab === 'submissions',
-            onClick: () => {
-              setTab('submissions');
-            },
+            key: 'submissions',
+            icon: <IconMessage />,
           },
           {
             label: <Trans>Templates</Trans>,
-            isSelected: tab === 'templates',
-            onClick: () => {
-              setTab('templates');
-            },
+            key: 'templates',
+            icon: <IconTemplate />,
           },
         ]}
+        onTabChange={setActiveTab}
       />
-      <EuiSpacer />
-      {display}
+      <Space h="md" />
+      <Stack>
+        <CreateMessageSubmissionForm />
+        {display}
+      </Stack>
     </>
   );
 }

@@ -18,7 +18,7 @@ class SubmissionsApi extends BaseApi<
   }
 
   createMessageSubmission(name: string) {
-    this.client.post('', {
+    return this.client.post('', {
       name,
       type: SubmissionType.MESSAGE,
     });

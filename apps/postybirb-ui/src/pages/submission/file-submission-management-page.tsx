@@ -9,11 +9,13 @@ import { SubmissionView } from '../../components/submissions/submission-view/sub
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
+const TYPE = SubmissionType.FILE;
+
 export function FileSubmissionManagementPage() {
   const { state, isLoading } = useStore(SubmissionStore);
   const [activeTab, setActiveTab] = useState<string>('submissions');
   const fileSubmissions = state.filter(
-    (submission) => submission.type === SubmissionType.FILE
+    (submission) => submission.type === TYPE
   );
 
   if (isLoading) {
@@ -22,12 +24,7 @@ export function FileSubmissionManagementPage() {
 
   let display = null;
   if (activeTab === 'submissions') {
-    display = (
-      <SubmissionView
-        submissions={fileSubmissions}
-        type={SubmissionType.FILE}
-      />
-    );
+    display = <SubmissionView submissions={fileSubmissions} type={TYPE} />;
   } else if (activeTab === 'templates') {
     display = null;
   } else if (activeTab === 'file-watcher') {
