@@ -16,6 +16,7 @@ import {
   HomePath,
   MessageSubmissionPath,
 } from '../../pages/route-paths';
+import { SubmissionTemplateStore } from '../../stores/submission-template.store';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 import { defaultTargetProvider } from '../../transports/http-client';
@@ -23,22 +24,26 @@ import { defaultTargetProvider } from '../../transports/http-client';
 export function PostybirbSpotlight() {
   const { _ } = useLingui();
   const { state: submissions } = useStore(SubmissionStore);
+  const { state: templates } = useStore(SubmissionTemplateStore);
 
   const navigateTo = useNavigate();
   const navigationTargets: SpotlightActionData[] = [
     {
+      group: _(msg`Navigation`),
       id: 'home',
       label: _(msg`Home`),
       leftSection: <IconHome />,
       onClick: () => navigateTo(HomePath),
     },
     {
+      group: _(msg`Navigation`),
       id: 'file-submissions',
       label: _(msg`Post a file`),
       leftSection: <IconFile />,
       onClick: () => navigateTo(FileSubmissionPath),
     },
     {
+      group: _(msg`Navigation`),
       id: 'message-submissions',
       label: _(msg`Post a message`),
       leftSection: <IconMessage />,
@@ -74,9 +79,22 @@ export function PostybirbSpotlight() {
     return sub;
   });
 
+  const templateOptions: SpotlightActionData[] = templates.map((t) => {
+    const sub: SpotlightActionData = {
+      group: _(msg`Submission templates`),
+      id: t.id,
+      label: t.getTemplateName(),
+      leftSection:
+        t.type === SubmissionType.FILE ? <IconFile /> : <IconMessage />,
+      onClick: () => navigateTo(`${EditSubmissionPath}/${t.id}`),
+    };
+
+    return sub;
+  });
+
   return (
     <Spotlight
-      actions={[...navigationTargets, ...submissionOptions]}
+      actions={[...navigationTargets, ...submissionOptions, ...templateOptions]}
       nothingFound={<Trans>No results</Trans>}
       highlightQuery
       searchProps={{

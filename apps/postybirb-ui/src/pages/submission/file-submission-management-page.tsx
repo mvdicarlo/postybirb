@@ -4,6 +4,7 @@ import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';
 import { PageHeader } from '../../components/page-header/page-header';
+import { SubmissionTemplateView } from '../../components/submission-templates/submission-template-view/submission-template-view';
 import { SubmissionUploader } from '../../components/submissions/submission-uploader/submission-uploader';
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
@@ -24,9 +25,14 @@ export function FileSubmissionManagementPage() {
 
   let display = null;
   if (activeTab === 'submissions') {
-    display = <SubmissionView submissions={fileSubmissions} type={TYPE} />;
+    display = (
+      <>
+        <SubmissionUploader key="submission-uploader" />
+        <SubmissionView submissions={fileSubmissions} type={TYPE} />
+      </>
+    );
   } else if (activeTab === 'templates') {
-    display = null;
+    display = <SubmissionTemplateView type={TYPE} />;
   } else if (activeTab === 'file-watcher') {
     display = null;
   }
@@ -56,10 +62,7 @@ export function FileSubmissionManagementPage() {
         onTabChange={setActiveTab}
       />
       <Space h="md" />
-      <Stack>
-        <SubmissionUploader key="submission-uploader" />
-        {display}
-      </Stack>
+      <Stack>{display}</Stack>
     </>
   );
 }

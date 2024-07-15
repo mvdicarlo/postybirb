@@ -6,6 +6,7 @@ import { IconMessage, IconPlus, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';
 import submissionsApi from '../../api/submission.api';
 import { PageHeader } from '../../components/page-header/page-header';
+import { SubmissionTemplateView } from '../../components/submission-templates/submission-template-view/submission-template-view';
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
@@ -69,9 +70,14 @@ export default function MessageSubmissionManagementPage() {
 
   let display = null;
   if (activeTab === 'submissions') {
-    display = <SubmissionView submissions={fileSubmissions} type={TYPE} />;
+    display = (
+      <>
+        <CreateMessageSubmissionForm />
+        <SubmissionView submissions={fileSubmissions} type={TYPE} />
+      </>
+    );
   } else if (activeTab === 'templates') {
-    display = null;
+    display = <SubmissionTemplateView type={TYPE} />;
   }
 
   return (
@@ -94,10 +100,7 @@ export default function MessageSubmissionManagementPage() {
         onTabChange={setActiveTab}
       />
       <Space h="md" />
-      <Stack>
-        <CreateMessageSubmissionForm />
-        {display}
-      </Stack>
+      <Stack>{display}</Stack>
     </>
   );
 }
