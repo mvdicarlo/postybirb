@@ -13,6 +13,7 @@ import {
   Popover,
   Text,
 } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { SubmissionType } from '@postybirb/types';
 import {
   IconSearch,
@@ -22,8 +23,11 @@ import {
   IconTemplate,
   IconTrash,
 } from '@tabler/icons-react';
+import { useState } from 'react';
 import submissionApi from '../../../api/submission.api';
+import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import TemplatePickerModal from '../../submission-templates/template-picker-modal/template-picker-modal';
 
 type SubmissionViewActionsProps = {
   submissions: SubmissionDto[];
@@ -44,6 +48,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
     setNameFilter,
   } = props;
   const { _ } = useLingui();
+  const [templatePickerVisible, setTemplatePickerVisible] = useState(false);
 
   const submissionSelectionAction = (
     <ActionIcon
@@ -79,7 +84,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
         >
           <ActionIcon
             style={{ verticalAlign: 'middle' }}
-            variant="transparent"
+            variant="subtle"
             c="red"
             disabled={selectedSubmissions.length === 0}
           >
@@ -111,19 +116,56 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
   );
 
   const applyTemplateAction = (
-    <Popover withArrow>
-      <Popover.Target>
-        <Button
-          variant="transparent"
-          c="var(--mantine-color-text)"
-          disabled={selectedSubmissions.length === 0}
-          leftSection={<IconTemplate />}
-        >
-          <Trans>Apply Template</Trans>
-        </Button>
-      </Popover.Target>
-      <Popover.Dropdown>TODO</Popover.Dropdown>
-    </Popover>
+    <>
+      <Button
+        variant="transparent"
+        c="var(--mantine-color-text)"
+        disabled={selectedSubmissions.length === 0}
+        leftSection={<IconTemplate />}
+        onClick={() => setTemplatePickerVisible(true)}
+      >
+        <Trans>Apply Template</Trans>
+      </Button>
+      {templatePickerVisible ? (
+        <TemplatePickerModal
+          type={type}
+          submissionId={
+            selectedSubmissions.length === 1
+              ? selectedSubmissions[0].id
+              : undefined
+          }
+          onClose={() => setTemplatePickerVisible(false)}
+          onApply={(options) => {
+            setTemplatePickerVisible(false);
+            selectedSubmissions.forEach((submission) => {
+              Promise.all(
+                options.map((option) =>
+                  websiteOptionsApi.create({
+                    submission: submission.id,
+                    account: option.account,
+                    data: option.data,
+                  })
+                )
+              )
+                .then(() => {
+                  notifications.show({
+                    color: 'green',
+                    title: submission.getDefaultOptions().data.title,
+                    message: <Trans>Template applied</Trans>,
+                  });
+                })
+                .catch((err) => {
+                  notifications.show({
+                    color: 'red',
+                    title: submission.getDefaultOptions().data.title,
+                    message: err.message,
+                  });
+                });
+            });
+          }}
+        />
+      ) : null}
+    </>
   );
 
   return (

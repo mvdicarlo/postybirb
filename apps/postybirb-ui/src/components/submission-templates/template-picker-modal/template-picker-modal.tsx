@@ -1,25 +1,18 @@
-import {
-  EuiButton,
-  EuiButtonEmpty,
-  EuiCheckbox,
-  EuiCheckboxGroup,
-  EuiComboBox,
-  EuiComboBoxOptionOption,
-  EuiForm,
-  EuiFormRow,
-  EuiModal,
-  EuiModalBody,
-  EuiModalFooter,
-  EuiModalHeader,
-  EuiModalHeaderTitle,
-  EuiSpacer,
-} from '@elastic/eui';
-import {
-  EuiCheckboxGroupIdToSelectedMap,
-  EuiCheckboxGroupOption,
-} from '@elastic/eui/src/components/form/checkbox/checkbox_group';
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
+import {
+  Button,
+  Checkbox,
+  ComboboxItem,
+  ComboboxItemGroup,
+  Fieldset,
+  Group,
+  Modal,
+  MultiSelect,
+  ScrollArea,
+  Stack,
+  Title,
+} from '@mantine/core';
 import {
   AccountId,
   IAccountDto,
@@ -42,8 +35,6 @@ type TemplatePickerModalProps = {
   onClose: () => void;
   onApply: (options: WebsiteOptionsDto[]) => void;
 };
-
-const formId = 'template-picker-form';
 
 type SubmissionOptionPair = {
   option: WebsiteOptionsDto;
@@ -93,10 +84,9 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   const { submissionId, type, onApply, onClose } = props;
   const { state: templateState } = useStore(SubmissionTemplateStore);
   const { state: submissionsState } = useStore(SubmissionStore);
+  const { _ } = useLingui();
   const { accounts } = useWebsites();
-  const [selected, setSelected] = useState<
-    EuiComboBoxOptionOption<SubmissionDto>[]
-  >([]);
+  const [selected, setSelected] = useState<string[]>([]);
   const [selectedWebsiteOptions, setSelectedWebsiteOptions] =
     useState<Record<AccountId, WebsiteOptionsDto | null>>();
   const [overrideDescription, setOverrideDescription] = useState(true);
@@ -105,55 +95,43 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   const templates = templateState.filter((s) => s.type === type);
   const submissions = submissionsState.filter((s) => s.id !== submissionId);
 
-  const templateOptions: EuiComboBoxOptionOption<SubmissionDto>[] =
-    templates.map((template) => ({
-      label: template.getTemplateName(),
-      key: template.id,
-      value: template,
-    }));
+  const templateOptions: ComboboxItem[] = templates.map((template) => ({
+    label: template.getTemplateName(),
+    value: template.id,
+  }));
 
-  const { _ } = useLingui();
-  const submissionOptions: EuiComboBoxOptionOption<SubmissionDto>[] =
-    submissions.map((submission) => ({
-      label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
-      key: submission.id,
-      value: submission,
-    }));
+  const submissionOptions: ComboboxItem[] = submissions.map((submission) => ({
+    label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
+    value: submission.id,
+  }));
 
-  const options: EuiComboBoxOptionOption<SubmissionDto>[] = [
+  const options: ComboboxItemGroup[] = [
     {
-      isGroupLabelOption: true,
-      label: _(msg`Templates`),
-      options: templateOptions,
+      group: _(msg`Templates`),
+      items: templateOptions,
     },
     {
-      isGroupLabelOption: true,
-      label: _(msg`Submissions`),
-      options: submissionOptions,
+      group: _(msg`Submissions`),
+      items: submissionOptions,
     },
   ];
 
-  const selectedTemplates: EuiComboBoxOptionOption<SubmissionDto>[] =
-    selected.map((s) => ({
-      label: s.label,
-      key: s.key,
-      value: s.value,
-      prepend: <span>{s.value?.getTemplateName()} -</span>,
-    }));
-
-  const selectedGroups = groupWebsiteOptions(
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    selectedTemplates.map((s) => s.value!),
-    accounts,
-    _
+  const selectedTemplates: SubmissionDto[] = selected.map(
+    (s) =>
+      [...templates, ...submissions].find((t) => t.id === s) as SubmissionDto
   );
+
+  const selectedGroups = groupWebsiteOptions(selectedTemplates, accounts, _);
 
   const groupedFormRows = selectedWebsiteOptions
     ? Object.values(selectedGroups).map((group) => {
         // Uses group.account.id for null type to keep id uniqueness for radio values
         const nullId = group.account.id;
-        const idMap: EuiCheckboxGroupIdToSelectedMap = {};
-        const checkboxOptions: EuiCheckboxGroupOption[] = [
+        const checkboxOptions: {
+          label: string | JSX.Element;
+          id: string;
+          option?: WebsiteOptionsDto;
+        }[] = [
           {
             label: <Trans context="Template picker checkbox">None</Trans>,
             id: nullId,
@@ -161,45 +139,47 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
         ];
 
         const currentSelection = selectedWebsiteOptions[group.account.id];
-        idMap[currentSelection?.id ?? nullId] = true;
         group.submissions.forEach(({ submission, option }) => {
           checkboxOptions.push({
             id: option.id,
             label: submission.getDefaultOptions().data.title ?? _(msg`Unknown`),
+            option,
           });
         });
 
         return (
-          <EuiFormRow
-            label={
+          <Fieldset
+            legend={
               group.account.id === NULL_ACCOUNT_ID
                 ? _(msg`Default`)
                 : `${group.account.websiteInfo.websiteDisplayName} - ${group.account.name}`
             }
           >
-            <EuiCheckboxGroup
-              compressed
-              idToSelectedMap={idMap}
-              options={checkboxOptions}
-              onChange={(id) => {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                const opt = group.submissions.find(
-                  ({ option }) => option.id === id
-                );
-                setSelectedWebsiteOptions({
-                  ...selectedWebsiteOptions,
-                  [group.account.id]: opt ? opt.option : null,
-                });
-              }}
-            />
-          </EuiFormRow>
+            <Checkbox.Group value={[currentSelection?.id ?? nullId]}>
+              {checkboxOptions.map((o) => (
+                <Checkbox
+                  mt="4"
+                  key={o.id}
+                  value={o.id}
+                  label={o.label}
+                  onChange={() => {
+                    const { option } = o;
+                    setSelectedWebsiteOptions({
+                      ...selectedWebsiteOptions,
+                      [group.account.id]: option || null,
+                    });
+                  }}
+                />
+              ))}
+            </Checkbox.Group>
+          </Fieldset>
         );
       })
     : null;
 
   const overrideOptions = groupedFormRows ? (
     <>
-      <EuiCheckbox
+      <Checkbox
         checked={overrideTitle}
         label={<Trans context="import.override-title">Replace title</Trans>}
         id="import-template-override-title"
@@ -207,7 +187,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           setOverrideTitle(!overrideTitle);
         }}
       />
-      <EuiCheckbox
+      <Checkbox
         checked={overrideDescription}
         label={
           <Trans context="import.override-description">
@@ -223,85 +203,83 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
   ) : null;
 
   return (
-    <EuiModal onClose={onClose}>
-      <EuiModalHeader>
-        <EuiModalHeaderTitle>
+    <Modal
+      opened
+      onClose={onClose}
+      title={
+        <Title order={4}>
           <Trans context="template.picker-modal-header">Choose Templates</Trans>
-        </EuiModalHeaderTitle>
-      </EuiModalHeader>
-      <EuiModalBody>
-        <EuiForm
-          id={formId}
-          component="form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (selectedWebsiteOptions) {
-              onApply(
-                (
-                  Object.values(selectedWebsiteOptions).filter(
-                    (o) => o !== null
-                  ) as WebsiteOptionsDto[]
-                ).map((o: WebsiteOptionsDto) => {
-                  const option = { ...o };
-                  // Remove fields based on override options
-                  // Or remove if the fields are just empty
-                  if (
-                    !overrideDescription ||
-                    option.data.description?.description.trim()
-                  ) {
-                    delete option.data.description;
-                  }
-                  if (!overrideTitle || !option.data.title?.trim()) {
-                    delete option.data.title;
-                  }
-                  return option;
-                })
-              );
+        </Title>
+      }
+    >
+      <Stack gap="xs">
+        <MultiSelect
+          clearable
+          required
+          label={<Trans>Templates</Trans>}
+          data={options}
+          onChange={(newOpts) => {
+            setSelected(newOpts);
+            // On first option pick
+            if (!selectedWebsiteOptions && newOpts.length) {
+              const sub: Record<AccountId, WebsiteOptionsDto> = {};
+              const template = [...templates, ...submissions].find(
+                (t) => t.id === newOpts[0]
+              )!;
+              template.options.forEach((o) => {
+                sub[o.account] = o;
+              });
+              setSelectedWebsiteOptions(sub);
+            }
+
+            // Reset
+            if (!newOpts.length) {
+              setSelectedWebsiteOptions(undefined);
             }
           }}
-        >
-          <EuiComboBox
-            fullWidth
-            isClearable
-            options={options}
-            selectedOptions={selectedTemplates}
-            onChange={(newOpts) => {
-              setSelected(newOpts);
-
-              // On first option pick
-              if (!selectedWebsiteOptions && newOpts.length) {
-                const sub: Record<AccountId, WebsiteOptionsDto> = {};
-                newOpts[0].value?.options.forEach((o) => {
-                  sub[o.account] = o;
-                });
-                setSelectedWebsiteOptions(sub);
-              }
-
-              // Reset
-              if (!newOpts.length) {
-                setSelectedWebsiteOptions(undefined);
+        />
+        <ScrollArea h={400} style={{ overflowY: 'auto' }}>
+          <Stack gap="xs">
+            {overrideOptions}
+            {groupedFormRows}
+          </Stack>
+        </ScrollArea>
+        <Group justify="end">
+          <Button variant="subtle" color="red" onClick={onClose}>
+            <Trans>Cancel</Trans>
+          </Button>
+          <Button
+            disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
+            onClick={() => {
+              if (selectedWebsiteOptions) {
+                onApply(
+                  (
+                    Object.values(selectedWebsiteOptions).filter(
+                      (o) => o !== null
+                    ) as WebsiteOptionsDto[]
+                  ).map((o: WebsiteOptionsDto) => {
+                    const option = { ...o };
+                    // Remove fields based on override options
+                    // Or remove if the fields are just empty
+                    if (
+                      !overrideDescription ||
+                      option.data.description?.description
+                    ) {
+                      delete option.data.description;
+                    }
+                    if (!overrideTitle || !option.data.title?.trim()) {
+                      delete option.data.title;
+                    }
+                    return option;
+                  })
+                );
               }
             }}
-          />
-          <EuiSpacer size="s" />
-          {overrideOptions}
-          <EuiSpacer size="s" />
-          {groupedFormRows}
-        </EuiForm>
-      </EuiModalBody>
-      <EuiModalFooter>
-        <EuiButtonEmpty onClick={onClose}>
-          <Trans>Cancel</Trans>
-        </EuiButtonEmpty>
-        <EuiButton
-          type="submit"
-          form={formId}
-          fill
-          disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
-        >
-          <Trans>Apply</Trans>
-        </EuiButton>
-      </EuiModalFooter>
-    </EuiModal>
+          >
+            <Trans>Apply</Trans>
+          </Button>
+        </Group>
+      </Stack>
+    </Modal>
   );
 }
