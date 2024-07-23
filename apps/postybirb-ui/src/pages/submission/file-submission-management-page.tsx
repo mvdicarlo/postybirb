@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { Loader, Space, Stack } from '@mantine/core';
+import { Flex, Loader, Space, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconFile, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -62,7 +62,9 @@ export function FileSubmissionManagementPage() {
         onTabChange={setActiveTab}
       />
       <Space h="md" />
-      <Stack>{display}</Stack>
+      <Flex justify="center">
+        <Stack>{display}</Stack>
+      </Flex>
     </>
   );
 }

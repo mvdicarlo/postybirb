@@ -174,7 +174,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
           }}
         >
           {radios.map((radio) => (
-            <Radio key={radio.id} value={radio.id} label={radio.label} />
+            <Radio mb="4" key={radio.id} value={radio.id} label={radio.label} />
           ))}
         </Radio.Group>
         <div className="ml-3 flex-1">{datePicker}</div>

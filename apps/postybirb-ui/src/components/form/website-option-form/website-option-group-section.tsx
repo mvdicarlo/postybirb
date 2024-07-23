@@ -25,13 +25,14 @@ type WebsiteOptionGroupSectionProps = {
   options: WebsiteOptionsDto[];
   submission: SubmissionDto;
   account: IAccountDto;
+  top?: number;
   onRemoveAccount?: (account: IAccountDto) => void;
 };
 
 export function WebsiteOptionGroupSection(
   props: WebsiteOptionGroupSectionProps
 ) {
-  const { options, submission, account, onRemoveAccount } = props;
+  const { top, options, submission, account, onRemoveAccount } = props;
   const [userSpecifiedModalVisible, setUserSpecifiedModalVisible] = useState<
     Record<EntityId, boolean>
   >({});
@@ -62,7 +63,7 @@ export function WebsiteOptionGroupSection(
 
   return (
     <Box>
-      <Paper pos="sticky" top={0} style={{ zIndex: 99 }}>
+      <Paper pos="sticky" top={top ?? 0} style={{ zIndex: 99 }}>
         <Title p="4" order={4}>
           {accountName}
         </Title>
@@ -84,7 +85,7 @@ export function WebsiteOptionGroupSection(
                   order={5}
                   c={account.state.isLoggedIn ? 'green' : 'red'}
                   pos="sticky"
-                  top={0}
+                  top={top ?? 0}
                   style={{ zIndex: 99 }}
                 >
                   <Group>

@@ -1,6 +1,13 @@
 import { msg, Trans } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { ActionIcon, Loader, Space, Stack, TextInput } from '@mantine/core';
+import {
+  ActionIcon,
+  Flex,
+  Loader,
+  Space,
+  Stack,
+  TextInput,
+} from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { IconMessage, IconPlus, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -100,7 +107,9 @@ export default function MessageSubmissionManagementPage() {
         onTabChange={setActiveTab}
       />
       <Space h="md" />
-      <Stack>{display}</Stack>
+      <Flex justify="center">
+        <Stack>{display}</Stack>
+      </Flex>
     </>
   );
 }

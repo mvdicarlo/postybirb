@@ -6,12 +6,12 @@ import AppThemeProvider from './app/app-theme-provider';
 import HomePage from './pages/home/home-page';
 import NotFound from './pages/not-found/not-found';
 import { SubmissionsPath } from './pages/route-paths';
-import EditSubmissionPage from './pages/submission/edit-submission-page';
 import { FileSubmissionManagementPage } from './pages/submission/file-submission-management-page';
 import MessageSubmissionManagementPage from './pages/submission/message-submission-management-page';
 import SubmissionOutletPage from './pages/submission/submission-outlet-page';
 
 import './icons/icons';
+import { EditSubmissionPage2 } from './pages/submission/edit-submission-page2';
 import './styles.css';
 
 function Root() {
@@ -47,7 +47,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'edit/:id',
-            element: <EditSubmissionPage />,
+            element: <EditSubmissionPage2 />,
           },
         ],
       },

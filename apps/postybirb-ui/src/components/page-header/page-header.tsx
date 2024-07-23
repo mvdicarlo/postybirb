@@ -1,11 +1,11 @@
 import {
-    Anchor,
-    Box,
-    Breadcrumbs,
-    Group,
-    Space,
-    Tabs,
-    Title,
+  Anchor,
+  Box,
+  Breadcrumbs,
+  Group,
+  Space,
+  Tabs,
+  Title,
 } from '@mantine/core';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router';
@@ -13,7 +13,7 @@ import './page-header.css';
 
 type PageHeaderProps = {
   icon: JSX.Element;
-  title: JSX.Element;
+  title: JSX.Element | string;
   tabs?: {
     label: JSX.Element;
     key: string;
@@ -21,7 +21,7 @@ type PageHeaderProps = {
   }[];
   onTabChange?: (tab: string) => void;
   breadcrumbs?: {
-    text: JSX.Element;
+    text: JSX.Element | string;
     target: string;
   }[];
 };
@@ -47,10 +47,14 @@ export function PageHeader(props: PageHeaderProps) {
       <Space h="xs" />
       {breadcrumbs && (
         <Breadcrumbs>
-          {breadcrumbs.map((bc) => (
+          {breadcrumbs.map((bc, index) => (
             <Anchor
+              c={index === breadcrumbs.length - 1 ? undefined : 'blue'}
               key={bc.target}
-              onClick={(e) => onBreadcrumbClick(e, bc.target)}
+              onClick={(e) => {
+                if (index === breadcrumbs.length - 1) return;
+                onBreadcrumbClick(e, bc.target);
+              }}
             >
               {bc.text}
             </Anchor>
