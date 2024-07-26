@@ -100,7 +100,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
   // ! TODO - Fix all internal anchor/links to use the old way of opening a window as the current form is busted
   return (
     <Card shadow="xs" withBorder={isSelected}>
-      <Card.Section ta="center" pt="4" bg="rgba(0,0,0,0.1)">
+      <Card.Section ta="center"bg="rgba(0,0,0,0.1)">
         <Flex>
           <ActionIcon
             flex="6"

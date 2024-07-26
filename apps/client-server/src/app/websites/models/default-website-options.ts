@@ -58,6 +58,14 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
   })
   tags: TagValue;
 
+  @TextField({
+    label: 'Content Warning / Spoilers',
+    defaultValue: '',
+    col: 1,
+    row: 2,
+  })
+  contentWarning: string;
+
   @DescriptionField({
     label: 'Description',
     defaultValue: DefaultWebsiteOptionsObject.description,

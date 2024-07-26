@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { Box, Space } from '@mantine/core';
+import { Box, Loader, Space } from '@mantine/core';
 import { ISubmissionDto, SubmissionType } from '@postybirb/types';
 import { IconFile, IconMessage } from '@tabler/icons-react';
 import { useMemo } from 'react';
@@ -14,8 +14,10 @@ import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 
 export function EditSubmissionPage2() {
   const { id } = useParams();
-  const { state: submissions } = useStore(SubmissionStore);
-  const { state: templates } = useStore(SubmissionTemplateStore);
+  const { state: submissions, isLoading } = useStore(SubmissionStore);
+  const { state: templates, isLoading: isLoadingTemplates } = useStore(
+    SubmissionTemplateStore
+  );
 
   const data = [...submissions, ...templates].find((s) => s.id === id);
   const submission = useMemo(
@@ -26,6 +28,10 @@ export function EditSubmissionPage2() {
   const defaultOption = submission.getDefaultOptions();
   const { type } = submission;
   const isFile = type === SubmissionType.FILE;
+
+  if (isLoading || isLoadingTemplates) {
+    return <Loader />;
+  }
 
   return (
     <>

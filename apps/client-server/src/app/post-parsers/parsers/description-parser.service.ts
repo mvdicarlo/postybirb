@@ -57,6 +57,7 @@ export class DescriptionParserService {
       ? websiteOptions.data.description.description
       : defaultOptions.data.description.description;
 
+    // TODO - verify tag insertions
     const insertionOptions: InsertionOptions = {
       insertTitle: websiteOptions.data.description.insertTitle
         ? title

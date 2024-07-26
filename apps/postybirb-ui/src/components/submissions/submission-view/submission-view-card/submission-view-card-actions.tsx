@@ -31,9 +31,12 @@ export function SubmissionViewCardActions(
     (v) => v.errors && v.errors.length > 0
   );
   const hasOptions = submission.options.filter((o) => !o.isDefault).length > 0;
+  const canSetForPosting =
+    hasOptions && !hasValidationIssues && !submission.isQueued();
   return (
-    <Group gap="xs">
+    <Group gap="0">
       <Button
+        radius="0"
         size="xs"
         variant="subtle"
         c="pink"
@@ -59,6 +62,7 @@ export function SubmissionViewCardActions(
         <Trans>Duplicate</Trans>
       </Button>
       <Button
+        radius="0"
         size="xs"
         variant="subtle"
         leftSection={<IconEdit />}
@@ -71,6 +75,7 @@ export function SubmissionViewCardActions(
       {submission.schedule.scheduleType !== ScheduleType.NONE ? (
         submission.isScheduled ? (
           <Button
+            radius="0"
             disabled={!submission.isQueued()}
             size="xs"
             variant="subtle"
@@ -90,12 +95,13 @@ export function SubmissionViewCardActions(
           </Button>
         ) : (
           <Button
+            radius="0"
             disabled={
               !hasOptions || hasValidationIssues || submission.isQueued()
             }
             size="xs"
             variant="subtle"
-            c={hasOptions ? 'teal' : 'grey'}
+            c={canSetForPosting ? 'teal' : 'grey'}
             leftSection={<IconCalendar />}
             onClick={() => {
               submissionApi
@@ -127,10 +133,11 @@ export function SubmissionViewCardActions(
       ) : null}
       {!submission.isQueued() ? (
         <Button
+          radius="0"
           disabled={!hasOptions || hasValidationIssues || submission.isQueued()}
           size="xs"
           variant="subtle"
-          c={hasValidationIssues ? 'red' : hasOptions ? 'teal' : 'grey'}
+          c={canSetForPosting ? 'teal' : 'grey'}
           leftSection={<IconSend />}
           onClick={() => {
             postApi
@@ -154,6 +161,7 @@ export function SubmissionViewCardActions(
         </Button>
       ) : (
         <Button
+          radius="0"
           disabled={!submission.isQueued()}
           size="xs"
           variant="subtle"
