@@ -2,7 +2,7 @@ import { msg, Trans } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
   ActionIcon,
-  Flex,
+  Box,
   Loader,
   Space,
   Stack,
@@ -107,9 +107,9 @@ export default function MessageSubmissionManagementPage() {
         onTabChange={setActiveTab}
       />
       <Space h="md" />
-      <Flex justify="center">
+      <Box mx="5%">
         <Stack>{display}</Stack>
-      </Flex>
+      </Box>
     </>
   );
 }

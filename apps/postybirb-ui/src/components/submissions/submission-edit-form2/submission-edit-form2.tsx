@@ -1,27 +1,27 @@
 import { Trans } from '@lingui/macro';
 import {
-    Box,
-    Flex,
-    Group,
-    Input,
-    Loader,
-    Paper,
-    Stack,
-    Tree,
-    TreeNodeData,
-    useTree,
+  Box,
+  Flex,
+  Group,
+  Input,
+  Loader,
+  Paper,
+  Stack,
+  Tree,
+  TreeNodeData,
+  useTree,
 } from '@mantine/core';
 import {
-    AccountId,
-    IAccountDto,
-    ISubmissionScheduleInfo,
-    IWebsiteFormFields,
-    NullAccount,
-    WebsiteOptionsDto,
+  AccountId,
+  IAccountDto,
+  ISubmissionScheduleInfo,
+  IWebsiteFormFields,
+  NullAccount,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconChevronDown } from '@tabler/icons-react';
 import { debounce } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import submissionApi from '../../../api/submission.api';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -36,55 +36,65 @@ type SubmissionEditForm2Props = {
 };
 
 // TODO - image form
-// TODO - buttons and template imports
 export function SubmissionEditForm2(props: SubmissionEditForm2Props) {
   const { submission } = props;
   const { state: accounts, isLoading } = useStore(AccountStore);
 
   const defaultOption = submission.getDefaultOptions();
   const isTemplate = submission.isTemplate();
-  const top = 71;
+  const top = 109;
 
-  const optionsGroupedByWebsiteId = Object.entries(
-    submission.options
-      .filter((o) => !o.isDefault)
-      .reduce((acc, option) => {
-        const account = accounts.find((a) => a.id === option.account)!;
-        const websiteId = account.website;
-        if (!acc[websiteId]) {
-          acc[websiteId] = {
-            account,
-            options: [],
-          };
-        }
-        acc[websiteId].options.push(option);
-        return acc;
-      }, {} as Record<AccountId, { account: IAccountDto; options: WebsiteOptionsDto[] }>)
-  ).sort((a, b) => {
-    const aAccount = a[1].account;
-    const bAccount = b[1].account;
-    return (
-      aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
-    ).localeCompare(bAccount.websiteInfo.websiteDisplayName ?? bAccount.name);
-  });
+  const optionsGroupedByWebsiteId = useMemo(
+    () =>
+      Object.entries(
+        submission.options
+          .filter((o) => !o.isDefault)
+          .reduce((acc, option) => {
+            const account = accounts.find((a) => a.id === option.account)!;
+            const websiteId = account.website;
+            if (!acc[websiteId]) {
+              acc[websiteId] = {
+                account,
+                options: [],
+              };
+            }
+            acc[websiteId].options.push(option);
+            return acc;
+          }, {} as Record<AccountId, { account: IAccountDto; options: WebsiteOptionsDto[] }>)
+      ).sort((a, b) => {
+        const aAccount = a[1].account;
+        const bAccount = b[1].account;
+        return (
+          aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
+        ).localeCompare(
+          bAccount.websiteInfo.websiteDisplayName ?? bAccount.name
+        );
+      }),
+    [submission.options, accounts]
+  );
 
-  const navTree: TreeNodeData[] = [
-    {
-      value: defaultOption.id,
-      label: <Trans>Default</Trans>,
-    },
-    ...optionsGroupedByWebsiteId.map(([, group]) => {
-      const { account } = group;
-      return {
-        value: account.id,
-        label: account.websiteInfo.websiteDisplayName ?? <Trans>Unknown</Trans>,
-        children: group.options.map((o) => ({
-          label: account.name,
-          value: o.id,
-        })),
-      };
-    }),
-  ];
+  const navTree: TreeNodeData[] = useMemo(
+    () => [
+      {
+        value: defaultOption.id,
+        label: <Trans>Default</Trans>,
+      },
+      ...optionsGroupedByWebsiteId.map(([, group]) => {
+        const { account } = group;
+        return {
+          value: account.id,
+          label: account.websiteInfo.websiteDisplayName ?? (
+            <Trans>Unknown</Trans>
+          ),
+          children: group.options.map((o) => ({
+            label: account.name,
+            value: o.id,
+          })),
+        };
+      }),
+    ],
+    [defaultOption.id, optionsGroupedByWebsiteId]
+  );
 
   const tree = useTree({
     initialExpandedState: navTree.reduce(

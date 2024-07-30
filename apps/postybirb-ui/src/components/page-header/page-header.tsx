@@ -7,7 +7,7 @@ import {
   Tabs,
   Title,
 } from '@mantine/core';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import './page-header.css';
 
@@ -24,10 +24,11 @@ type PageHeaderProps = {
     text: JSX.Element | string;
     target: string;
   }[];
+  actions?: JSX.Element[];
 };
 
 export function PageHeader(props: PageHeaderProps) {
-  const { icon, title, tabs, breadcrumbs, onTabChange } = props;
+  const { actions, icon, title, tabs, breadcrumbs, onTabChange } = props;
   const navigateTo = useNavigate();
   const onBreadcrumbClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, target: string) => {
@@ -38,14 +39,22 @@ export function PageHeader(props: PageHeaderProps) {
     [navigateTo]
   );
 
-  return (
-    <Box className="postybirb__page-header">
-      <Group>
-        {icon}
-        <Title order={1}>{title}</Title>
-      </Group>
-      <Space h="xs" />
-      {breadcrumbs && (
+  const titleField = useMemo(
+    () => (
+      <>
+        <Group>
+          {icon}
+          <Title order={1}>{title}</Title>
+        </Group>
+        <Space h="xs" />
+      </>
+    ),
+    [icon, title]
+  );
+
+  const breadcrumb = useMemo(
+    () =>
+      breadcrumbs && (
         <Breadcrumbs>
           {breadcrumbs.map((bc, index) => (
             <Anchor
@@ -60,8 +69,19 @@ export function PageHeader(props: PageHeaderProps) {
             </Anchor>
           ))}
         </Breadcrumbs>
-      )}
-      {tabs && tabs.length && (
+      ),
+    [breadcrumbs, onBreadcrumbClick]
+  );
+
+  const actionField = useMemo(
+    () => actions && <Group my="4">{actions}</Group>,
+    [actions]
+  );
+
+  const tabsField = useMemo(
+    () =>
+      tabs &&
+      tabs.length && (
         <Tabs
           defaultValue={tabs[0].key}
           className="postybirb__page-header__tabs"
@@ -78,7 +98,16 @@ export function PageHeader(props: PageHeaderProps) {
             ))}
           </Tabs.List>
         </Tabs>
-      )}
+      ),
+    [tabs, onTabChange]
+  );
+
+  return (
+    <Box className="postybirb__page-header">
+      {titleField}
+      {breadcrumb}
+      {actionField}
+      {tabsField}
       <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
     </Box>
   );
