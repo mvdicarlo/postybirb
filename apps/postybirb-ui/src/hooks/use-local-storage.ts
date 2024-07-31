@@ -4,11 +4,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 type StateListener<T = any> = (value: T) => void;
 const listeners = new Map<string, Set<StateListener>>();
 
-function getLocalStorage<T>(key: string, initialValue: T): T {
+function getLocalStorage<T>(
+  key: string,
+  initialValue: T,
+  deserialize?: (value: string) => T
+): T {
   const item = localStorage.getItem(key);
   if (item) {
     try {
-      return JSON.parse(item);
+      return deserialize ? deserialize(item) : JSON.parse(item);
     } catch {
       return initialValue;
     }
@@ -23,9 +27,12 @@ function setLocalStorage<T>(key: string, value: T) {
 
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
+  deserialize?: (value: string) => T
 ): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(getLocalStorage(key, initialValue));
+  const [value, setValue] = useState<T>(
+    getLocalStorage(key, initialValue, deserialize)
+  );
 
   const callbackRef = useRef<StateListener<T>>();
   const updateState = useCallback<StateListener<T>>(

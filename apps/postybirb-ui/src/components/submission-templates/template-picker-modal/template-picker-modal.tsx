@@ -245,7 +245,11 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           </Stack>
         </ScrollArea>
         <Group justify="end">
-          <Button variant="subtle" color="red" onClick={onClose}>
+          <Button
+            variant="subtle"
+            c="var(--mantine-color-text)"
+            onClick={onClose}
+          >
             <Trans>Cancel</Trans>
           </Button>
           <Button

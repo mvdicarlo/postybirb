@@ -31,7 +31,7 @@ type SubmissionSchedulerProps = {
   onChange: (change: ISubmissionScheduleInfo) => void;
 };
 
-const key = 'last-used-schedule';
+export const ScheduleGlobalKey = 'last-used-schedule';
 
 export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
   const { schedule, onChange } = props;
@@ -43,8 +43,12 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
     useState<ISubmissionScheduleInfo>(schedule);
   // For recall of recently set submissions
   const [lastUsedSchedule, setLastUsedSchedule] = useLocalStorage<
-    string | undefined
-  >(key);
+    Date | undefined
+  >(ScheduleGlobalKey, new Date(), {
+    raw: false,
+    deserializer: (value) => new Date(value),
+    serializer: (value) => value?.toISOString() ?? new Date().toISOString(),
+  });
   const onUpdate = useCallback(
     (newSchedule: ISubmissionScheduleInfo) => {
       setInternalSchedule(newSchedule);
@@ -112,7 +116,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
             onChange={(newDate) => {
               const dateStr = newDate?.toISOString();
               onUpdate({ ...schedule, scheduledFor: dateStr });
-              setLastUsedSchedule(dateStr);
+              setLastUsedSchedule(newDate ?? new Date());
               setLastKnownSetDate(dateStr);
             }}
           />
@@ -142,7 +146,7 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
                   const lastUsedDate = new Date(lastUsedSchedule).getTime();
                   const now = Date.now();
                   if (now < lastUsedDate) {
-                    date = lastUsedSchedule;
+                    date = lastUsedSchedule.toISOString();
                   }
                 }
                 onUpdate({

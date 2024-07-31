@@ -16,6 +16,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { SubmissionType } from '@postybirb/types';
 import {
+  IconCalendar,
   IconSearch,
   IconSquare,
   IconSquareFilled,
@@ -28,6 +29,7 @@ import submissionApi from '../../../api/submission.api';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import TemplatePickerModal from '../../submission-templates/template-picker-modal/template-picker-modal';
+import { SubmissionViewMultiSchedulerModal } from './submission-view-card/submission-view-multi-scheduler-modal';
 
 type SubmissionViewActionsProps = {
   submissions: SubmissionDto[];
@@ -49,6 +51,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
   } = props;
   const { _ } = useLingui();
   const [templatePickerVisible, setTemplatePickerVisible] = useState(false);
+  const [multiScheduleVisible, setMultiScheduleVisible] = useState(false);
 
   const submissionSelectionAction = (
     <ActionIcon
@@ -168,14 +171,39 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
     </>
   );
 
+  const scheduleMany = (
+    <>
+      <Button
+        variant="transparent"
+        c="var(--mantine-color-text)"
+        disabled={selectedSubmissions.length === 0}
+        leftSection={<IconCalendar />}
+        onClick={() => setMultiScheduleVisible(true)}
+      >
+        <Trans>Schedule Many</Trans>
+      </Button>
+      {multiScheduleVisible ? (
+        <SubmissionViewMultiSchedulerModal
+          submissions={selectedSubmissions}
+          onClose={() => setMultiScheduleVisible(false)}
+          onApply={(s) => {
+            setMultiScheduleVisible(false);
+            // TODO: Implement onApply
+          }}
+        />
+      ) : null}
+    </>
+  );
+
   return (
     <Box>
       <Paper shadow="xs" p="xs">
         <Flex align="center">
-          <Group pr="sm">
+          <Group pr="sm" gap="xs">
             {submissionSelectionAction}
             {deleteSubmissionAction}
             {applyTemplateAction}
+            {scheduleMany}
           </Group>
           <Input
             flex="6"
