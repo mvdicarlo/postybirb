@@ -7,5 +7,6 @@ import { TagConvertersService } from './tag-converters.service';
   imports: [DatabaseModule],
   controllers: [TagConvertersController],
   providers: [TagConvertersService],
+  exports: [TagConvertersService],
 })
 export class TagConvertersModule {}

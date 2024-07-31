@@ -1,6 +1,7 @@
 import { CustomLoginType, UserLoginType } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
+import { injectWebsiteDecoratorProps } from './website-decorator-props';
 
 /**
  * Identifies the website as having a user login flow.
@@ -9,30 +10,28 @@ import { UnknownWebsite } from '../website';
  */
 export function UserLoginFlow(url: string) {
   return function website(constructor: Class<UnknownWebsite>) {
-    const loginType: UserLoginType = {
+    const loginFlow: UserLoginType = {
       type: 'user',
       url,
     };
 
-    // eslint-disable-next-line no-param-reassign
-    constructor.prototype.loginType = loginType;
+    injectWebsiteDecoratorProps(constructor, { loginFlow });
   };
 }
 
 /**
- * Idenfifies the website as  having a custom login flow.
+ * Identifies the website as having a custom login flow.
  * Meaning that they will login through a custom provided form / component.
  * Defaults the name of the class if no name is provided.
- * @param {string} [loginComponentName]
+ * @param {string} loginComponentName
  */
 export function CustomLoginFlow(loginComponentName?: string) {
   return function website(constructor: Class<UnknownWebsite>) {
-    const loginType: CustomLoginType = {
+    const loginFlow: CustomLoginType = {
       type: 'custom',
       loginComponentName: loginComponentName ?? constructor.name,
     };
 
-    // eslint-disable-next-line no-param-reassign
-    constructor.prototype.loginType = loginType;
+    injectWebsiteDecoratorProps(constructor, { loginFlow });
   };
 }

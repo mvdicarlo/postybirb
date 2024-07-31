@@ -138,7 +138,7 @@ msgstr "Cerrar"
 msgid "Composers"
 msgstr "Compositores"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/form-row.tsx:26
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/components/submission-form-generator/form-row.tsx:39
 msgid "Copy"
 msgstr "Copiar"
 

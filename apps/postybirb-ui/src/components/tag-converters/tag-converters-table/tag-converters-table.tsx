@@ -170,12 +170,12 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
               <EuiFormRow label={website.displayName}>
                 <EuiFieldText
                   compressed
-                  value={tagConverter.convertTo[website.id] ?? ''}
+                  value={tagConverter.convertTo[website.metadata.name] ?? ''}
                   onChange={(event) => {
                     // eslint-disable-next-line no-param-reassign
                     tagConverter.convertTo = {
                       ...tagConverter.convertTo,
-                      [website.id]: event.target.value,
+                      [website.metadata.name]: event.target.value,
                     };
                     updateView();
                   }}
@@ -183,7 +183,7 @@ export default function TagConvertersTable(props: TagConvertersTableProps) {
                     // eslint-disable-next-line no-param-reassign
                     tagConverter.convertTo = {
                       ...tagConverter.convertTo,
-                      [website.id]: event.target.value.trim(),
+                      [website.metadata.name]: event.target.value.trim(),
                     };
                     updateView();
                   }}

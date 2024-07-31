@@ -1,21 +1,9 @@
-export interface IWebsiteMetadata {
-  /**
-   * Internal name of the website to be used.
-   * You will set this once and never change it once released.
-   */
-  name: string;
-
-  /**
-   * Display name of the website to be shown.
-   * If not provided, will default to capitalized name property.
-   */
-  displayName?: string;
-
+export type WebsiteFileOptions = {
   /**
    * A list of accepted Mime types.
    * Only needed when using File posting websites.
    */
-  acceptedMimeTypes?: string[];
+  acceptedMimeTypes: string[];
 
   /**
    * The acceptable file size limits in Megabytes.
@@ -35,21 +23,11 @@ export interface IWebsiteMetadata {
    * Websites that support external sources will be posted last unless
    * otherwise overridden.
    */
-  acceptsExternalSources?: boolean;
+  acceptsExternalSourceUrls?: boolean;
 
   /**
    * The batch size of files to send to the website.
    * Defaults to 1.
    */
   fileBatchSize?: number;
-
-  /**
-   * Whether or not the website supports tags.
-   */
-  supportsTags?: boolean;
-
-  /**
-   * How often in milliseconds login should be re-checked.
-   */
-  refreshInterval?: number;
-}
+};

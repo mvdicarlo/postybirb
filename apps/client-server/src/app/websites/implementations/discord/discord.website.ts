@@ -8,12 +8,12 @@ import {
   PostResponse,
   ValidationResult,
 } from '@postybirb/types';
-import { DiscordMetadata } from '@postybirb/website-metadata';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -23,16 +23,22 @@ import { DiscordAccountData } from './models/discord-account-data';
 import { DiscordFileSubmission } from './models/discord-file-submission';
 import { DiscordMessageSubmission } from './models/discord-message-submission';
 
-@WebsiteMetadata(DiscordMetadata)
+@WebsiteMetadata({
+  name: 'discord',
+  displayName: 'Discord',
+})
 @CustomLoginFlow()
+@SupportsFiles({
+  acceptedMimeTypes: [],
+  acceptedFileSizes: {},
+  fileBatchSize: 10,
+})
 export default class Discord
   extends Website<DiscordAccountData>
   implements
     FileWebsite<DiscordFileSubmission>,
     MessageWebsite<DiscordMessageSubmission>
 {
-  supportsAdditionalFiles = true;
-
   FileModel: Class<DiscordFileSubmission> = DiscordFileSubmission;
 
   MessageModel: Class<DiscordMessageSubmission> = DiscordMessageSubmission;

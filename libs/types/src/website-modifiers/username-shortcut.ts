@@ -1,4 +1,3 @@
-// Not technically a Dto, but I don't have a better location for this at the moment.
 export type UsernameShortcut = {
   /**
    * Id used by users when referencing a username shortcut.

@@ -9,6 +9,7 @@ import {
   FileSubmission,
   FileType,
   ISubmissionFile,
+  IWebsiteFormFields,
   IWebsitePostRecord,
   MessageSubmission,
   ModifiedFileDimension,
@@ -29,6 +30,7 @@ import {
   WebsitePostRecord,
 } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { IsTestEnvironment } from '../utils/test.util';
 import { FileWebsite } from '../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -37,7 +39,6 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
 import { ImageResizeProps } from './models/image-resize-props';
 import { PostingFile } from './models/posting-file';
-import { PostParserService } from './parsers/post-parser.service';
 import { PostFileResizerService } from './post-file-resizer.service';
 import { PostService } from './post.service';
 
@@ -68,7 +69,7 @@ export class PostManagerService {
     private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
-    private readonly postParserService: PostParserService
+    private readonly postParserService: PostParsersService
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -184,11 +185,11 @@ export class PostManagerService {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
         throw new Error(
-          `Website '${instance.metadata.displayName}' does not support ${submission.type}`
+          `Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
         );
       }
       // TODO - Still need to actually implement data prep
-      const data = this.preparePostData(
+      const data = await this.preparePostData(
         submission,
         instance,
         submission.options.find(
@@ -206,7 +207,8 @@ export class PostManagerService {
         exception: error,
         additionalInfo: null,
         message: `An unexpected error occurred while posting to ${
-          instance.metadata.displayName || instance.metadata.name
+          instance.decoratedProps.metadata.displayName ||
+          instance.decoratedProps.metadata.name
         }`,
       });
     }
@@ -216,7 +218,7 @@ export class PostManagerService {
     submission: Submission,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
-    data: PostData<Submission, never>
+    data: PostData<Submission, IWebsiteFormFields>
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
@@ -238,7 +240,7 @@ export class PostManagerService {
         break;
       default:
         throw new Error(
-          `Unknown Submission Type: Website '${instance.metadata.displayName}' does not support ${submission.type}`
+          `Unknown Submission Type: Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
         );
     }
   }
@@ -332,7 +334,10 @@ export class PostManagerService {
     data: PostData<FileSubmission, never>
   ): Promise<void> {
     // Order files based on submission order
-    const fileBatchSize = Math.max(instance.metadata.fileBatchSize ?? 1, 1);
+    const fileBatchSize = Math.max(
+      instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
+      1
+    );
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
@@ -492,7 +497,7 @@ export class PostManagerService {
     const standardWebsites = []; // Post first
     const externalSourceWebsites = []; // Post last
     websitePairs.forEach((w) => {
-      if (w.instance.metadata.acceptsExternalSources) {
+      if (w.instance.decoratedProps.fileOptions?.acceptsExternalSourceUrls) {
         externalSourceWebsites.push(w);
       } else {
         standardWebsites.push(w);
@@ -576,8 +581,8 @@ export class PostManagerService {
   private preparePostData(
     submission: Submission,
     instance: Website<unknown>,
-    websiteOptions: WebsiteOptions<never>
-  ): PostData<Submission, never> {
+    websiteOptions: WebsiteOptions
+  ): Promise<PostData<Submission, IWebsiteFormFields>> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }
 
@@ -589,7 +594,7 @@ export class PostManagerService {
    */
   private async validatePostData(
     type: SubmissionType,
-    data: PostData<Submission, never>,
+    data: PostData<Submission, IWebsiteFormFields>,
     instance: Website<unknown>
   ) {
     let result: ValidationResult;
