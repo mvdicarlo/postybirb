@@ -1,16 +1,17 @@
 import { Trans } from '@lingui/macro';
 import {
-    Box,
-    Button,
-    Group,
-    Modal,
-    NumberInput,
-    Stack,
-    Title,
+  Button,
+  Group,
+  Modal,
+  NumberInput,
+  Paper,
+  Stack,
+  Title,
 } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
+import Sortable from 'sortablejs';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { ScheduleGlobalKey } from '../../submission-scheduler/submission-scheduler';
 
@@ -59,12 +60,36 @@ export function SubmissionViewMultiSchedulerModal(
     deserializer: (value) => new Date(value),
     serializer: (value) => value?.toISOString() ?? new Date().toISOString(),
   });
+  const stackRef = useRef<HTMLDivElement>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     lastUsedSchedule ? new Date(lastUsedSchedule) : new Date()
   );
   const [days, setDays] = useState(1);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
+
+  useEffect(() => {
+    // TODO - may need to be a sub-component for better performance
+    const el = document.getElementById('multi-schedule-stack');
+    if (!el) {
+      // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+      console.warn('Could not find multi-schedule-stack element');
+      return () => {};
+    }
+    const sortable = new Sortable(el, {
+      draggable: '.sortable-option',
+      animation: 150,
+      direction: 'vertical',
+    });
+    return () => {
+      try {
+        sortable.destroy();
+      } catch (e) {
+        // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+        console.error('Failed to destroy sortable', e);
+      }
+    };
+  }, [stackRef]);
 
   return (
     <Modal
@@ -114,16 +139,16 @@ export function SubmissionViewMultiSchedulerModal(
           onChange={(value) => setMinutes(Number(value) || 0)}
         />
 
-        <Stack>
+        <Stack id="multi-schedule-stack" ref={stackRef}>
           {submissions.map((submission, index) => (
-            <Box key={submission.id}>
+            <Paper key={submission.id} className="sortable-option">
               {submission.getDefaultOptions().data.title} @{' '}
               {getNextDate(selectedDate ?? new Date(), index, {
                 days,
                 hours,
                 minutes,
               }).toLocaleString()}
-            </Box>
+            </Paper>
           ))}
         </Stack>
 

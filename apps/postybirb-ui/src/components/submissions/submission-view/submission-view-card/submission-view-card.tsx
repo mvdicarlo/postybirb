@@ -19,7 +19,11 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { IconSquare, IconSquareFilled } from '@tabler/icons-react';
+import {
+  IconArrowsMove,
+  IconSquare,
+  IconSquareFilled,
+} from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
@@ -100,8 +104,9 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
   // ! TODO - Fix all internal anchor/links to use the old way of opening a window as the current form is busted
   return (
     <Card shadow="xs" withBorder={isSelected}>
-      <Card.Section ta="center"bg="rgba(0,0,0,0.1)">
+      <Card.Section ta="center" bg="rgba(0,0,0,0.1)">
         <Flex>
+          <IconArrowsMove className="sort-handle" style={{ cursor: 'move' }} />
           <ActionIcon
             flex="6"
             c="var(--mantine-color-text)"
