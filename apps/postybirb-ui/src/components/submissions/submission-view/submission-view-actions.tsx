@@ -14,7 +14,7 @@ import {
   Text,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { SubmissionType } from '@postybirb/types';
+import { ScheduleType, SubmissionType } from '@postybirb/types';
 import {
   IconCalendar,
   IconSearch,
@@ -40,6 +40,7 @@ type SubmissionViewActionsProps = {
   setNameFilter(filter: string): void;
 };
 
+// TODO - Schedule Selected / Post Selected (with Popover confirms) buttons
 export function SubmissionViewActions(props: SubmissionViewActionsProps) {
   const {
     submissions,
@@ -186,9 +187,24 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
         <SubmissionViewMultiSchedulerModal
           submissions={selectedSubmissions}
           onClose={() => setMultiScheduleVisible(false)}
-          onApply={(s) => {
+          onApply={(s, isScheduled) => {
             setMultiScheduleVisible(false);
-            // TODO: Implement onApply
+            s.forEach(({ submission, date }) => {
+              submissionApi
+                .update(submission.id, {
+                  scheduleType: ScheduleType.SINGLE,
+                  scheduledFor: date.toISOString(),
+                  metadata: submission.metadata,
+                  isScheduled: submission.isScheduled || isScheduled,
+                })
+                .catch((err) => {
+                  notifications.show({
+                    color: 'red',
+                    title: submission.getDefaultOptions().data.title,
+                    message: err.message,
+                  });
+                });
+            });
           }}
         />
       ) : null}

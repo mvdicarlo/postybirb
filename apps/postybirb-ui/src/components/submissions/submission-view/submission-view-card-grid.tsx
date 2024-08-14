@@ -18,6 +18,10 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   );
 
   useEffect(() => {
+    setOrderedSubmissions(submissions.sort((a, b) => a.order - b.order));
+  }, [submissions]);
+
+  useEffect(() => {
     const el = document.getElementsByClassName(
       'mantine-Grid-inner'
     )[0] as HTMLElement;
@@ -30,7 +34,6 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
       draggable: '.submission-grid-col',
       handle: '.sort-handle',
       disabled: orderedSubmissions.length === 0,
-      animation: 150,
       onEnd: (event) => {
         const newOrderedSubmissions = [...orderedSubmissions];
         const [movedSubmission] = newOrderedSubmissions.splice(

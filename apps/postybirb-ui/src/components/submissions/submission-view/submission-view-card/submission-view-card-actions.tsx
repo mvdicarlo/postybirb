@@ -76,7 +76,6 @@ export function SubmissionViewCardActions(
         submission.isScheduled ? (
           <Button
             radius="0"
-            disabled={!submission.isQueued()}
             size="xs"
             variant="subtle"
             c="red"

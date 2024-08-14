@@ -6,7 +6,7 @@ import { IconLink } from '@tabler/icons-react';
 import { Cron } from 'croner';
 import cronstrue from 'cronstrue';
 import moment from 'moment';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 
 const DEFAULT_CRON = '0 0 * * FRI';
@@ -56,6 +56,10 @@ export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
     },
     [onChange, setInternalSchedule]
   );
+
+  useEffect(() => {
+    setInternalSchedule(schedule);
+  }, [schedule]);
 
   const datePicker = useMemo(() => {
     switch (internalSchedule.scheduleType) {
