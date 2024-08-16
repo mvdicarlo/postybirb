@@ -2,8 +2,8 @@ import { Box, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
 import { useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
-import { SubmissionViewActions } from './submission-view-actions';
 import { SubmissionViewCardGrid } from './submission-view-card-grid';
+import { SubmissionViewActions } from './submission-view-card/submission-view-actions/submission-view-actions';
 
 type SubmissionViewProps = {
   submissions: SubmissionDto[];
