@@ -21,7 +21,7 @@ type SubmissionViewActionsProps = {
   setNameFilter(filter: string): void;
 };
 
-// TODO - Schedule Selected
+// TODO - Schedule Selected action button
 export function SubmissionViewActions(props: SubmissionViewActionsProps) {
   const {
     submissions,

@@ -37,9 +37,11 @@ import {
 import Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
 import { useEffect, useState } from 'react';
+import fileSubmissionApi from '../../../api/file-submission.api';
 import submissionApi from '../../../api/submission.api';
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
 
-const TEXT_MIME_TYPES = [
+export const TEXT_MIME_TYPES = [
   'text/plain',
   'text/html',
   'text/css',
@@ -121,7 +123,7 @@ function Preview({
   );
 }
 
-const VIDEO_MIME_TYPES = ['video/mp4', 'video/x-m4v', 'video/*'];
+export const VIDEO_MIME_TYPES = ['video/mp4', 'video/x-m4v', 'video/*'];
 
 function EditImageModal({
   file,
@@ -195,11 +197,19 @@ function EditImageModal({
 async function uploadFiles({
   files,
   onComplete,
+  appendToSubmission,
 }: {
   files: File[];
   onComplete: () => void;
-}) {
+} & SubmissionUploaderProps) {
   const snapshot = [...files];
+  if (appendToSubmission && appendToSubmission.type === SubmissionType.FILE) {
+    await fileSubmissionApi.appendFiles(
+      appendToSubmission.id,
+      'file',
+      snapshot
+    );
+  }
   await submissionApi.createFileSubmission(SubmissionType.FILE, snapshot);
   onComplete();
 }
@@ -207,10 +217,11 @@ async function uploadFiles({
 function UploadButton({
   files,
   onComplete,
+  appendToSubmission,
 }: {
   files: FileWithPath[];
   onComplete: () => void;
-}) {
+} & SubmissionUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
 
   return (
@@ -224,6 +235,7 @@ function UploadButton({
             setIsUploading(false);
             onComplete();
           },
+          appendToSubmission,
         }).finally(() => {
           setIsUploading(false);
         });
@@ -237,7 +249,12 @@ function UploadButton({
   );
 }
 
-export function SubmissionUploader() {
+type SubmissionUploaderProps = {
+  appendToSubmission?: SubmissionDto;
+};
+
+export function SubmissionUploader(props: SubmissionUploaderProps) {
+  const { appendToSubmission } = props;
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [cropFile, setCropFile] = useState<FileWithPath | null>(null);
 
@@ -288,7 +305,7 @@ export function SubmissionUploader() {
             <Group
               justify="center"
               gap="xl"
-              mih={220}
+              mih={200}
               style={{ pointerEvents: 'none' }}
             >
               <Dropzone.Accept>
@@ -361,7 +378,11 @@ export function SubmissionUploader() {
             </ScrollArea>
           ) : null}
         </Flex>
-        <UploadButton files={files} onComplete={() => setFiles([])} />
+        <UploadButton
+          appendToSubmission={appendToSubmission}
+          files={files}
+          onComplete={() => setFiles([])}
+        />
       </Stack>
       {cropFile ? <EditImageModal file={cropFile} onClose={onEdit} /> : null}
     </>

@@ -15,12 +15,12 @@ import {
   EuiSpacer,
   EuiTitle,
 } from '@elastic/eui';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
 import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
 import { useMemo, useState } from 'react';
-import { Trans, msg } from '@lingui/macro';
 import { useNavigate, useParams } from 'react-router';
 import ReactRouterPrompt from 'react-router-prompt';
-import { useLingui } from '@lingui/react';
 import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
 import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
 import SubmissionProvider, {
@@ -250,7 +250,7 @@ function EditSubmissionPageInternal() {
   );
 }
 
-export default function EditSubmissionPage() {
+export function EditSubmissionPage() {
   const { id } = useParams();
 
   if (!id) {

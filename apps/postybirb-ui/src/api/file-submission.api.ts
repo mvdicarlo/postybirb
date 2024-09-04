@@ -9,7 +9,7 @@ class FileSubmissionsApi {
   appendFiles(id: SubmissionId, target: Target, files: Blob[]) {
     const fd = new FormData();
     files.forEach((file) => fd.append('files', file));
-    this.client.post<ISubmissionDto>(`add/${target}/${id}`, fd);
+    return this.client.post<ISubmissionDto>(`add/${target}/${id}`, fd);
   }
 
   replaceFile(id: SubmissionId, fileId: EntityId, target: Target, file: Blob) {

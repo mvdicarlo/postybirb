@@ -17,6 +17,7 @@ import {
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
   NullAccount,
+  SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconChevronDown } from '@tabler/icons-react';
@@ -30,6 +31,7 @@ import { useStore } from '../../../stores/use-store';
 import { WebsiteOptionGroupSection } from '../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../form/website-select/website-select';
 import SubmissionScheduler from '../submission-scheduler/submission-scheduler';
+import { SubmissionEditFormFileManager } from './submission-edit-form-file-manager';
 
 type SubmissionEditForm2Props = {
   submission: SubmissionDto;
@@ -139,6 +141,9 @@ export function SubmissionEditForm2(props: SubmissionEditForm2Props) {
   return (
     <Flex>
       <Stack gap="xs" flex="11">
+        {!isTemplate && submission.type === SubmissionType.FILE ? (
+          <SubmissionEditFormFileManager submission={submission} />
+        ) : null}
         {!isTemplate ? (
           <Input.Wrapper label={<Trans>Schedule</Trans>}>
             <SubmissionScheduler
