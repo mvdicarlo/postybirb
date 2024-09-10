@@ -13,6 +13,7 @@ import {
 } from '@mantine/core';
 import {
   AccountId,
+  FileSubmissionMetadata,
   IAccountDto,
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
@@ -31,7 +32,7 @@ import { useStore } from '../../../stores/use-store';
 import { WebsiteOptionGroupSection } from '../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../form/website-select/website-select';
 import SubmissionScheduler from '../submission-scheduler/submission-scheduler';
-import { SubmissionEditFormFileManager } from './submission-edit-form-file-manager';
+import { SubmissionFileManager } from './submission-file-manager/submission-file-manager';
 
 type SubmissionEditForm2Props = {
   submission: SubmissionDto;
@@ -142,7 +143,9 @@ export function SubmissionEditForm2(props: SubmissionEditForm2Props) {
     <Flex>
       <Stack gap="xs" flex="11">
         {!isTemplate && submission.type === SubmissionType.FILE ? (
-          <SubmissionEditFormFileManager submission={submission} />
+          <SubmissionFileManager
+            submission={submission as SubmissionDto<FileSubmissionMetadata>}
+          />
         ) : null}
         {!isTemplate ? (
           <Input.Wrapper label={<Trans>Schedule</Trans>}>
