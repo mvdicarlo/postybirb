@@ -97,6 +97,8 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
             file={file}
             draggable={orderedFiles.length > 1}
             metadata={submission.metadata}
+            submissionId={submission.id}
+            totalFiles={orderedFiles.length}
           />
         ))}
       </Stack>

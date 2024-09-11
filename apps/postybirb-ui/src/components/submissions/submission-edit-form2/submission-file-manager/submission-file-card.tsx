@@ -1,20 +1,31 @@
 import { Trans } from '@lingui/macro';
 import {
-    ActionIcon,
-    Box,
-    FileButton,
-    Group,
-    Image,
-    Paper,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Button,
+  FileButton,
+  Flex,
+  Group,
+  Image,
+  Paper,
+  Popover,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import {
-    FileSubmissionMetadata,
-    FileType,
-    ISubmissionFileDto,
+  FileSubmissionMetadata,
+  FileType,
+  ISubmissionFileDto,
+  SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { IconCrop, IconFileText, IconFileUpload } from '@tabler/icons-react';
+import {
+  IconCrop,
+  IconFileText,
+  IconFileUpload,
+  IconTrash,
+} from '@tabler/icons-react';
+import fileSubmissionApi from '../../../../api/file-submission.api';
 import { defaultTargetProvider } from '../../../../transports/http-client';
 import { SubmissionFileMetadataManager } from './submission-file-metadata-manager';
 
@@ -68,23 +79,27 @@ export function SubmissionFileCard({
   file,
   draggable,
   metadata,
+  totalFiles,
+  submissionId,
 }: {
+  submissionId: SubmissionId;
   file: ISubmissionFileDto;
   draggable: boolean;
   metadata: FileSubmissionMetadata;
+  totalFiles: number;
 }) {
   const fileType = getFileType(file.fileName);
   return (
     <Paper
       key={file.id}
-      p="md"
+      p="sm"
       style={{
         borderRadius: 4,
         cursor: draggable ? 'grab' : undefined,
       }}
       className={DRAGGABLE_SUBMISSION_FILE_CLASS_NAME}
     >
-      <Group align="normal" key="card-file-previewer">
+      <Flex gap="xl" key="card-file-previewer">
         <Group gap="sm" key="file-previews">
           <Box ta="center" key="primary">
             <strong>
@@ -141,10 +156,46 @@ export function SubmissionFileCard({
             </Group>
           </Box>
         </Group>
-        <Box>
+        <Box flex={10}>
           <SubmissionFileMetadataManager file={file} metadata={metadata} />
         </Box>
-      </Group>
+        <Box flex={0}>
+          <Popover withArrow>
+            <Popover.Target>
+              <ActionIcon
+                disabled={totalFiles === 1}
+                variant="subtle"
+                style={{ verticalAlign: 'center' }}
+                h="100%"
+                c="red"
+              >
+                <IconTrash />
+              </ActionIcon>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Text c="orange" size="lg">
+                <Trans>
+                  Are you sure you want to delete this? This action cannot be
+                  undone.
+                </Trans>
+              </Text>
+              <Box ta="center" mt="sm">
+                <Button
+                  disabled={totalFiles === 1}
+                  variant="light"
+                  color="red"
+                  leftSection={<IconTrash />}
+                  onClick={() => {
+                    fileSubmissionApi.removeFile(submissionId, file.id, 'file');
+                  }}
+                >
+                  <Trans>Delete</Trans>
+                </Button>
+              </Box>
+            </Popover.Dropdown>
+          </Popover>
+        </Box>
+      </Flex>
     </Paper>
   );
 }
