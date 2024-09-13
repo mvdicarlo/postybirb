@@ -7,7 +7,6 @@ import {
   Flex,
   Group,
   Image,
-  Modal,
   Paper,
   ScrollArea,
   Stack,
@@ -34,12 +33,11 @@ import {
   IconVideo,
   IconX,
 } from '@tabler/icons-react';
-import Cropper from 'cropperjs';
-import 'cropperjs/dist/cropper.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import fileSubmissionApi from '../../../api/file-submission.api';
 import submissionApi from '../../../api/submission.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { EditImageModal } from './edit-image-modal';
 
 export const TEXT_MIME_TYPES = [
   'text/plain',
@@ -124,75 +122,6 @@ function Preview({
 }
 
 export const VIDEO_MIME_TYPES = ['video/mp4', 'video/x-m4v', 'video/*'];
-
-function EditImageModal({
-  file,
-  onClose,
-}: {
-  file: FileWithPath;
-  onClose: (edit?: FileWithPath, blob?: Blob | null) => void;
-}) {
-  const [cropper, setCropper] = useState<Cropper | null>(null);
-  const [, setImageData] = useState<Cropper.ImageData | null>(null);
-  const [hasCrop, setHasCrop] = useState(false);
-
-  const setup = () => {
-    const img = document.getElementById('crop-img') as HTMLImageElement;
-    if (img && !cropper) {
-      const c = new Cropper(img, {
-        autoCropArea: 1,
-        ready() {
-          setImageData(c.getImageData());
-        },
-        crop() {
-          if (hasCrop) return;
-          setHasCrop(true);
-        },
-      });
-      setCropper(c);
-    }
-  };
-
-  useEffect(
-    () => () => {
-      if (cropper) {
-        cropper.destroy();
-        setCropper(null);
-      }
-    },
-    [cropper]
-  );
-
-  return (
-    <Modal key="cropper-modal" fullScreen opened onClose={onClose}>
-      <Modal.Body p={6}>
-        <img
-          id="crop-img"
-          key={file.name}
-          src={URL.createObjectURL(file)}
-          style={{ height: 'calc(100vh - 175px)', width: '100%' }}
-          onLoad={() => {
-            URL.revokeObjectURL(file.name);
-            setup();
-          }}
-          alt={file.name}
-        />
-        <Box ta="center" mt="xs">
-          <Button
-            w="50%"
-            onClick={() =>
-              cropper
-                ?.getCroppedCanvas()
-                .toBlob((blob) => onClose(file, blob), file.type, 1)
-            }
-          >
-            <Trans>Crop</Trans>
-          </Button>
-        </Box>
-      </Modal.Body>
-    </Modal>
-  );
-}
 
 async function uploadFiles({
   files,

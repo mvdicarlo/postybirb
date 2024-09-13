@@ -10,10 +10,10 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
 import { useState } from 'react';
-import submissionApi from '../../../../api/submission.api';
-import { BasicWebsiteSelect } from '../../../form/website-select/basic-website-select';
+import submissionApi from '../../../../../api/submission.api';
+import { BasicWebsiteSelect } from '../../../../form/website-select/basic-website-select';
 
-type SubmissionFileMetadataManagerProps = {
+type FileMetadataManagerProps = {
   file: ISubmissionFileDto;
   metadata: FileSubmissionMetadata;
 };
@@ -99,7 +99,7 @@ function FileDimensions(props: FileDetailProps) {
       <Grid.Col span={6}>
         <NumberInput
           label={<Trans>Height</Trans>}
-          value={height}
+          defaultValue={height}
           max={file.height}
           min={1}
           size="xs"
@@ -120,7 +120,7 @@ function FileDimensions(props: FileDetailProps) {
       <Grid.Col span={6}>
         <NumberInput
           label={<Trans>Width</Trans>}
-          value={width}
+          defaultValue={width}
           max={file.width}
           min={1}
           size="xs"
@@ -161,7 +161,7 @@ function FileMetadata(props: FileDetailProps) {
       <Grid.Col span={6}>
         <TextInput
           label={<Trans>Alt Text</Trans>}
-          value={metadata.altText}
+          defaultValue={metadata.altText}
           size="xs"
           onBlur={(event) => {
             metadata.altText = event.target.value.trim();
@@ -172,7 +172,7 @@ function FileMetadata(props: FileDetailProps) {
       <Grid.Col span={6}>
         <TextInput
           label={<Trans>Spoiler Text</Trans>}
-          value={metadata.spoilerText}
+          defaultValue={metadata.spoilerText}
           size="xs"
           onBlur={(event) => {
             metadata.spoilerText = event.target.value.trim();
@@ -184,9 +184,7 @@ function FileMetadata(props: FileDetailProps) {
   );
 }
 
-export function SubmissionFileMetadataManager(
-  props: SubmissionFileMetadataManagerProps
-) {
+export function FileMetadataManager(props: FileMetadataManagerProps) {
   const { file, metadata } = props;
   const fileType = getFileType(file.fileName);
   const meta = metadata.fileMetadata[file.id];

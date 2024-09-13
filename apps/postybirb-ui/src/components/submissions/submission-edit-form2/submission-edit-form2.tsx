@@ -38,7 +38,6 @@ type SubmissionEditForm2Props = {
   submission: SubmissionDto;
 };
 
-// TODO - image form
 export function SubmissionEditForm2(props: SubmissionEditForm2Props) {
   const { submission } = props;
   const { state: accounts, isLoading } = useStore(AccountStore);

@@ -8,7 +8,7 @@ import { SubmissionUploader } from '../../submission-uploader/submission-uploade
 import {
   DRAGGABLE_SUBMISSION_FILE_CLASS_NAME,
   SubmissionFileCard,
-} from './submission-file-card';
+} from './submission-file-card/submission-file-card';
 
 type SubmissionEditFormFileManagerProps = {
   submission: SubmissionDto<FileSubmissionMetadata>;
@@ -93,7 +93,7 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
       <Stack id="submission-file-view" ref={ref}>
         {orderedFiles.map((file) => (
           <SubmissionFileCard
-            key={file.id}
+            key={`${file.id}:${file.hash}`}
             file={file}
             draggable={orderedFiles.length > 1}
             metadata={submission.metadata}
