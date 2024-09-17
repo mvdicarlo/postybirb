@@ -16,9 +16,11 @@ import { useState } from 'react';
 import fileSubmissionApi, {
     FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
-import { useUpdateView } from '../../../../../hooks/use-update-view';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
-import { EditImageModal } from '../../../submission-uploader/edit-image-modal';
+import {
+    EditImageFromSource,
+    EditImageModal,
+} from '../../../submission-uploader/edit-image-modal';
 
 function CardImageProvider(file: ISubmissionFileDto) {
   const { fileName, id, hash } = file;
@@ -78,35 +80,43 @@ function replaceFile(
   return fileSubmissionApi.replaceFile(submissionId, file.id, target, blob);
 }
 
-// TODO - Figure out thumbnail re-cropping
-// TODO - Figure out re-rendering after file replacement
 export function FileCardFileActions(props: FileCardFileActionsProps) {
   const { submissionId, file } = props;
   const fileType = getFileType(file.fileName);
   const [thumbnailBlob, setThumbnailBlob] = useState<FileWithPath | null>(null);
   const [primaryBlob, setPrimaryBlob] = useState<FileWithPath | null>(null);
-  const reRender = useUpdateView();
-
-  console.log(file.hash)
+  const [cropFromPrimary, setCropFromPrimary] = useState(false);
 
   const onEditOrReplace = (
     target: FileUpdateTarget,
     blob: Blob,
-    croppedFile?: FileWithPath
+    croppedFile?: Pick<FileWithPath, 'type' | 'name'>
   ) => {
     let newFileBlob: Blob = blob;
     if (croppedFile && blob) {
       newFileBlob = new File([blob], croppedFile.name, {
         type: croppedFile.type,
       });
-      replaceFile(submissionId, newFileBlob, file, target).finally(() =>
-        reRender()
-      );
+      replaceFile(submissionId, newFileBlob, file, target);
     }
   };
 
   return (
     <>
+      {cropFromPrimary ? (
+        <EditImageFromSource
+          file={file}
+          onClose={(_, blob) => {
+            setCropFromPrimary(false);
+            if (blob) {
+              onEditOrReplace('thumbnail', blob, {
+                name: file.fileName,
+                type: file.mimeType,
+              });
+            }
+          }}
+        />
+      ) : null}
       {thumbnailBlob ? (
         <EditImageModal
           file={thumbnailBlob}
@@ -201,7 +211,12 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
               <Tooltip
                 label={<Trans>Crop new thumbnail from original file</Trans>}
               >
-                <ActionIcon variant="subtle">
+                <ActionIcon
+                  variant="subtle"
+                  onClick={() => {
+                    setCropFromPrimary(true);
+                  }}
+                >
                   <IconCrop />
                 </ActionIcon>
               </Tooltip>

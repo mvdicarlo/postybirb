@@ -35,6 +35,9 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [orderedFiles, setOrderedFiles] = useState(orderFiles(submission));
   useEffect(() => {
+    setOrderedFiles(orderFiles(submission));
+  }, [submission]);
+  useEffect(() => {
     const el = ref.current;
     // No sort for only 1 file
     if (orderedFiles.length <= 1) {

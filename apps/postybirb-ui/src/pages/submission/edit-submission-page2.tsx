@@ -233,9 +233,9 @@ export function EditSubmissionPage2() {
           { text: defaultOption.data.title ?? submission.id, target: '#' },
         ]}
         actions={[
-          <ScheduleAction submission={submission} />,
-          <PostAction submission={submission} />,
-          <ApplyTemplateAction submission={submission} />,
+          <ScheduleAction submission={submission} key="schedule-action" />,
+          <PostAction submission={submission} key="post-action" />,
+          <ApplyTemplateAction submission={submission} key="template-action" />,
         ]}
       />
       <Space h="md" />

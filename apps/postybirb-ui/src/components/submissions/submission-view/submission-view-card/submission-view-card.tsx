@@ -103,7 +103,11 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
 
   // ! TODO - Fix all internal anchor/links to use the old way of opening a window as the current form is busted
   return (
-    <Card shadow="xs" withBorder={isSelected}>
+    <Card
+      shadow="xs"
+      withBorder={isSelected}
+      style={{ contentVisibility: 'auto' }}
+    >
       <Card.Section ta="center" bg="rgba(0,0,0,0.1)">
         <Flex>
           <IconArrowsMove className="sort-handle" style={{ cursor: 'move' }} />

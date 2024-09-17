@@ -26,8 +26,12 @@ import { cloneDeep } from 'lodash';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import {
+  AltFile,
   PostRecord,
+  PrimaryFile,
   Submission,
+  SubmissionFile,
+  ThumbnailFile,
   WebsiteOptions,
 } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
@@ -63,6 +67,17 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     // Listen to changes to PostRecord as it is a child of Submission
     repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
     repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
+      this.emit()
+    );
+    // This might be dangerous depending on the creation order of the services
+    repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
+      this.emit()
+    );
+    repository.addUpdateListener(dbSubscriber, [PrimaryFile], () =>
+      this.emit()
+    );
+    repository.addUpdateListener(dbSubscriber, [AltFile], () => this.emit());
+    repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
       this.emit()
     );
   }
