@@ -1,26 +1,22 @@
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Card,
-    Input,
-    Popover,
-    Table,
-    Text,
-    Title,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Input,
+  Popover,
+  Table,
+  Text,
+  Title,
+  Tooltip,
 } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
-import {
-    IconEdit,
-    IconLogin2,
-    IconRestore,
-    IconTrash,
-} from '@tabler/icons-react';
+import { IconEdit, IconLogin2, IconRestore } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../../api/account.api';
+import { DeleteActionPopover2 } from '../../../../components/shared/delete-action-popover/delete-action-popover';
 
 type OnLoginProps = (
   login: { account: IAccountDto; website: IWebsiteInfoDto } | null
@@ -40,37 +36,13 @@ function AccountRecordAction(props: AccountRecordProps) {
   const { account, website, onLogin } = props;
   return (
     <>
-      <Popover position="bottom" withArrow>
-        <Popover.Target>
-          <Tooltip label={<Trans>Delete</Trans>}>
-            <ActionIcon flex="1" variant="subtle" c="red">
-              <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-        </Popover.Target>
-        <Popover.Dropdown>
-          <Text c="orange" size="lg">
-            <Trans>
-              Are you sure you want to delete this? This action cannot be
-              undone.
-            </Trans>
-          </Text>
-          <Box ta="center" mt="sm">
-            <Button
-              variant="light"
-              color="red"
-              leftSection={<IconTrash />}
-              onClick={() => {
-                accountApi.remove([account.id]).finally(() => {
-                  onLogin(null);
-                });
-              }}
-            >
-              <Trans>Delete</Trans>
-            </Button>
-          </Box>
-        </Popover.Dropdown>
-      </Popover>
+      <DeleteActionPopover2
+        onDelete={() => {
+          accountApi.remove([account.id]).finally(() => {
+            onLogin(null);
+          });
+        }}
+      />
       <Popover position="bottom" withArrow>
         <Popover.Target>
           <Tooltip label={<Trans>Reset</Trans>}>

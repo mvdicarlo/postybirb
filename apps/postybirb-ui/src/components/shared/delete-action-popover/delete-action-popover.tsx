@@ -1,6 +1,8 @@
 import { EuiButton, EuiPopover, EuiPopoverFooter, EuiText } from '@elastic/eui';
-import { KeyboardEvent, PropsWithChildren, useCallback, useState } from 'react';
 import { Trans } from '@lingui/macro';
+import { ActionIcon, Box, Button, Popover, Text, Tooltip } from '@mantine/core';
+import { IconTrash } from '@tabler/icons-react';
+import { KeyboardEvent, PropsWithChildren, useCallback, useState } from 'react';
 import { useToast } from '../../../app/app-toast-provider';
 import { HttpResponse } from '../../../transports/http-client';
 
@@ -86,5 +88,46 @@ export default function DeleteActionPopover(
         </EuiButton>
       </EuiPopoverFooter>
     </EuiPopover>
+  );
+}
+
+type DeleteActionPopoverProps2 = {
+  additionalContent?: JSX.Element;
+  disabled?: boolean;
+  onDelete: () => void;
+};
+
+export function DeleteActionPopover2(props: DeleteActionPopoverProps2) {
+  const { additionalContent, disabled, onDelete } = props;
+  return (
+    <Popover withArrow>
+      <Popover.Target>
+        <Tooltip label={<Trans>Delete</Trans>}>
+          <ActionIcon variant="transparent" c="red" disabled={disabled}>
+            <IconTrash />
+          </ActionIcon>
+        </Tooltip>
+      </Popover.Target>
+      <Popover.Dropdown>
+        <Text c="orange" size="lg">
+          <Trans>
+            Are you sure you want to delete this? This action cannot be undone.
+          </Trans>
+        </Text>
+        {additionalContent}
+        <Box ta="center" mt="sm">
+          <Button
+            disabled={disabled}
+            autoFocus
+            variant="light"
+            color="red"
+            leftSection={<IconTrash />}
+            onClick={onDelete}
+          >
+            <Trans>Delete</Trans>
+          </Button>
+        </Box>
+      </Popover.Dropdown>
+    </Popover>
   );
 }

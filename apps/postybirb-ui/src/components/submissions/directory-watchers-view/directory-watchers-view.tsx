@@ -1,25 +1,27 @@
-import {
-  EuiButtonIcon,
-  EuiComboBox,
-  EuiFlexGroup,
-  EuiFlexItem,
-  EuiFormRow,
-  EuiHorizontalRule,
-} from '@elastic/eui';
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { Box, Button, Card, Input, Loader, Stack, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Group,
+  Input,
+  Loader,
+  Select,
+  Stack,
+  Text,
+} from '@mantine/core';
 import {
   DirectoryWatcherDto,
   DirectoryWatcherImportAction,
   SubmissionType,
 } from '@postybirb/types';
-import { IconFolder, IconPlus } from '@tabler/icons-react';
+import { IconDeviceFloppy, IconFolder, IconPlus } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
-import DeleteActionPopover from '../../shared/delete-action-popover/delete-action-popover';
-import { SaveIcon } from '../../shared/icons/Icons';
+import { DeleteActionPopover2 } from '../../shared/delete-action-popover/delete-action-popover';
 import TemplatePicker from '../../submission-templates/template-picker/template-picker';
 
 type DirectoryWatcherCardProps = {
@@ -65,6 +67,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           leftSection={<IconFolder />}
           disabled={!window?.electron?.pickDirectory}
           value={state.path ?? _(msg`Select folder`)}
+          readOnly
           onClick={() => {
             if (window?.electron?.pickDirectory) {
               window.electron.pickDirectory().then((folder) => {
@@ -76,83 +79,58 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
           }}
         />
       </Input.Wrapper>
-      <EuiFormRow label={<Trans>Action</Trans>}>
-        <EuiComboBox
-          compressed
-          singleSelection={{ asPlainText: true }}
-          isClearable={false}
-          aria-label={_(msg`Folder watcher type`)}
-          options={options}
-          selectedOptions={[
-            options.find((o) => o.value === state.importAction)!,
-          ]}
-          renderOption={(option) => {
-            switch (option.value) {
-              case DirectoryWatcherImportAction.NEW_SUBMISSION:
-                return <Trans>Create new submission</Trans>;
-              default:
-                return option.label;
-            }
-          }}
-          onChange={(change) => {
+      <Select
+        label={<Trans>Action</Trans>}
+        data={options}
+        value={state.importAction}
+        onChange={(actionValue) => {
+          setState({
+            ...state,
+            importAction:
+              (actionValue as DirectoryWatcherImportAction) ??
+              DirectoryWatcherImportAction.NEW_SUBMISSION,
+          });
+        }}
+      />
+
+      {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
+        <TemplatePicker
+          label={<Trans>Template</Trans>}
+          type={SubmissionType.FILE}
+          selected={state.template}
+          onChange={(template) => {
             setState({
               ...state,
-              importAction: change[0].value as DirectoryWatcherImportAction,
+              template: template?.id,
             });
           }}
         />
-      </EuiFormRow>
-
-      {state.importAction === DirectoryWatcherImportAction.NEW_SUBMISSION ? (
-        <EuiFormRow label={<Trans>Template</Trans>}>
-          <TemplatePicker
-            type={SubmissionType.FILE}
-            selected={state.template}
-            onChange={(template) => {
-              setState({
-                ...state,
-                template: template?.id,
-              });
-            }}
-          />
-        </EuiFormRow>
       ) : null}
-      <EuiHorizontalRule margin="m" />
-      <EuiFlexGroup alignItems="center" justifyContent="center">
-        <EuiFlexItem grow={false}>
-          <DeleteActionPopover
-            onDelete={() =>
-              directoryWatchersApi.remove([directoryWatcher.id]).finally(() => {
-                refetch();
+      <Group align="center" justify="center">
+        <DeleteActionPopover2
+          onDelete={() => {
+            directoryWatchersApi.remove([directoryWatcher.id]).finally(() => {
+              refetch();
+            });
+          }}
+        />
+        <ActionIcon
+          variant="transparent"
+          disabled={!hasChanged(directoryWatcher, state)}
+          aria-label={_(msg`Save folder upload changes`)}
+          onClick={() => {
+            directoryWatchersApi
+              .update(directoryWatcher.id, {
+                ...state,
               })
-            }
-          >
-            <EuiButtonIcon
-              iconType="trash"
-              color="danger"
-              aria-label={_(msg`Delete folder watcher`)}
-            />
-          </DeleteActionPopover>
-        </EuiFlexItem>
-        <EuiFlexItem grow={false}>
-          <EuiButtonIcon
-            disabled={!hasChanged(directoryWatcher, state)}
-            iconType={SaveIcon}
-            color="primary"
-            aria-label={_(msg`Save folder upload changes`)}
-            isDisabled={!state.path}
-            onClick={() => {
-              directoryWatchersApi
-                .update(directoryWatcher.id, {
-                  ...state,
-                })
-                .finally(() => {
-                  refetch();
-                });
-            }}
-          />
-        </EuiFlexItem>
-      </EuiFlexGroup>
+              .finally(() => {
+                refetch();
+              });
+          }}
+        >
+          <IconDeviceFloppy />
+        </ActionIcon>
+      </Group>
     </Card>
   );
 }

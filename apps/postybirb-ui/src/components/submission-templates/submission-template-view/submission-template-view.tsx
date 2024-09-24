@@ -1,22 +1,19 @@
 import { msg, Trans } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Card,
-    Grid,
-    Group,
-    Loader,
-    Popover,
-    Space,
-    Text,
-    TextInput,
-    Tooltip,
+  ActionIcon,
+  Box,
+  Button,
+  Card,
+  Grid,
+  Group,
+  Loader,
+  Space,
+  TextInput,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { SubmissionType } from '@postybirb/types';
-import { IconEdit, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconEdit, IconPlus } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import submissionsApi from '../../../api/submission.api';
@@ -24,6 +21,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../pages/route-paths';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { useStore } from '../../../stores/use-store';
+import { DeleteActionPopover2 } from '../../shared/delete-action-popover/delete-action-popover';
 
 type SubmissionViewProps = {
   type: SubmissionType;
@@ -123,36 +121,12 @@ function SubmissionTemplateViewCard({ template }: { template: SubmissionDto }) {
         />
       </Card.Section>
       <Card.Section>
-        <Group>
-          <Popover position="bottom" withArrow>
-            <Popover.Target>
-              <Tooltip label={<Trans>Delete</Trans>}>
-                <ActionIcon flex="1" variant="subtle" c="red">
-                  <IconTrash />
-                </ActionIcon>
-              </Tooltip>
-            </Popover.Target>
-            <Popover.Dropdown>
-              <Text c="orange" size="lg">
-                <Trans>
-                  Are you sure you want to delete this? This action cannot be
-                  undone.
-                </Trans>
-              </Text>
-              <Box ta="center" mt="sm">
-                <Button
-                  variant="light"
-                  color="red"
-                  leftSection={<IconTrash />}
-                  onClick={() => {
-                    submissionsApi.remove([template.id]);
-                  }}
-                >
-                  <Trans>Delete</Trans>
-                </Button>
-              </Box>
-            </Popover.Dropdown>
-          </Popover>
+        <Group align="center" justify="center">
+          <DeleteActionPopover2
+            onDelete={() => {
+              submissionsApi.remove([template.id]);
+            }}
+          />
           <Button
             c="blue"
             leftSection={<IconEdit />}
