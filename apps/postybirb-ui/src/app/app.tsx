@@ -1,4 +1,3 @@
-import { EuiProvider } from '@elastic/eui';
 import { MantineProvider, createTheme } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
@@ -6,11 +5,8 @@ import '@mantine/dropzone/styles.css';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import '@mantine/spotlight/styles.css';
-import { useContext } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { AppI18nProvider } from './app-i18n-provider';
-import { AppThemeContext } from './app-theme-provider';
-import { AppToastProvider } from './app-toast-provider';
 import './app.css';
 import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
 
@@ -27,21 +23,16 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
-  const [theme] = useContext(AppThemeContext);
   return (
     <div className="postybirb">
-      <EuiProvider colorMode={theme}>
-        <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
-          <AppI18nProvider>
-            <Notifications />
-            <QueryClientProvider client={queryClient}>
-              <AppToastProvider>
-                <PostyBirbLayout />
-              </AppToastProvider>
-            </QueryClientProvider>
-          </AppI18nProvider>
-        </MantineProvider>
-      </EuiProvider>
+      <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
+        <AppI18nProvider>
+          <Notifications />
+          <QueryClientProvider client={queryClient}>
+            <PostyBirbLayout />
+          </QueryClientProvider>
+        </AppI18nProvider>
+      </MantineProvider>
     </div>
   );
 }

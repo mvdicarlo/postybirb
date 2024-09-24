@@ -21,7 +21,7 @@ import { IconDeviceFloppy, IconFolder, IconPlus } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import directoryWatchersApi from '../../../api/directory-watchers.api';
-import { DeleteActionPopover2 } from '../../shared/delete-action-popover/delete-action-popover';
+import { DeleteActionPopover } from '../../shared/delete-action-popover/delete-action-popover';
 import TemplatePicker from '../../submission-templates/template-picker/template-picker';
 
 type DirectoryWatcherCardProps = {
@@ -107,7 +107,7 @@ function DirectoryWatcherCard(props: DirectoryWatcherCardProps) {
         />
       ) : null}
       <Group align="center" justify="center">
-        <DeleteActionPopover2
+        <DeleteActionPopover
           onDelete={() => {
             directoryWatchersApi.remove([directoryWatcher.id]).finally(() => {
               refetch();

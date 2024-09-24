@@ -1,26 +1,17 @@
-import { EuiErrorBoundary } from '@elastic/eui';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import App from './app/app';
-import AppThemeProvider from './app/app-theme-provider';
-import './icons/icons';
 import HomePage from './pages/home/home-page';
 import NotFound from './pages/not-found/not-found';
 import { SubmissionsPath } from './pages/route-paths';
-import { EditSubmissionPage2 } from './pages/submission/edit-submission-page2';
+import { EditSubmissionPage } from './pages/submission/edit-submission-page';
 import { FileSubmissionManagementPage } from './pages/submission/file-submission-management-page';
 import MessageSubmissionManagementPage from './pages/submission/message-submission-management-page';
 import SubmissionOutletPage from './pages/submission/submission-outlet-page';
 import './styles.css';
 
 function Root() {
-  return (
-    <EuiErrorBoundary>
-      <AppThemeProvider>
-        <App />
-      </AppThemeProvider>
-    </EuiErrorBoundary>
-  );
+  return <App />;
 }
 
 const router = createBrowserRouter([
@@ -46,7 +37,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'edit/:id',
-            element: <EditSubmissionPage2 />,
+            element: <EditSubmissionPage />,
           },
         ],
       },

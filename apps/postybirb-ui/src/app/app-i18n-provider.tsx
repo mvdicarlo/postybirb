@@ -1,16 +1,14 @@
-import { EuiFlexGroup, EuiLoadingSpinner } from '@elastic/eui';
+/* eslint-disable lingui/no-unlocalized-strings */
 import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
+import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
-import { Locale as UppyLocale } from '@uppy/core';
 import { useCallback, useEffect, useState } from 'react';
 import { use18n } from '../hooks/use-i18n';
 import { uppyLocales } from './languages';
 
 declare module '@lingui/core' {
-  interface I18n {
-    uppy: UppyLocale;
-  }
+  interface I18n {}
 }
 
 type AppI18nProviderProps = {
@@ -76,17 +74,11 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
   }
 
   return (
-    <EuiFlexGroup justifyContent="center" style={{ alignContent: 'center' }}>
-      <EuiFlexGroup justifyContent="center" alignItems="center">
-        <EuiLoadingSpinner size="xl" />
-        {
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-        }
-        Loading translations...
-      </EuiFlexGroup>
+    <Group justify="center" align="center">
+      <Loader />
+      <div>Loading translations...</div>
       {tooLongLoading &&
-        // eslint-disable-next-line lingui/no-unlocalized-strings
         'Loading takes too much time, please check the console for the errors.'}
-    </EuiFlexGroup>
+    </Group>
   );
 }

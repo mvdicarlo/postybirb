@@ -16,7 +16,7 @@ import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { IconEdit, IconLogin2, IconRestore } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../../../api/account.api';
-import { DeleteActionPopover2 } from '../../../../components/shared/delete-action-popover/delete-action-popover';
+import { DeleteActionPopover } from '../../../../components/shared/delete-action-popover/delete-action-popover';
 
 type OnLoginProps = (
   login: { account: IAccountDto; website: IWebsiteInfoDto } | null
@@ -36,7 +36,7 @@ function AccountRecordAction(props: AccountRecordProps) {
   const { account, website, onLogin } = props;
   return (
     <>
-      <DeleteActionPopover2
+      <DeleteActionPopover
         onDelete={() => {
           accountApi.remove([account.id]).finally(() => {
             onLogin(null);

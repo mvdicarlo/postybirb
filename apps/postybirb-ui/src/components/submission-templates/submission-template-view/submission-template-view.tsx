@@ -21,7 +21,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../pages/route-paths';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { useStore } from '../../../stores/use-store';
-import { DeleteActionPopover2 } from '../../shared/delete-action-popover/delete-action-popover';
+import { DeleteActionPopover } from '../../shared/delete-action-popover/delete-action-popover';
 
 type SubmissionViewProps = {
   type: SubmissionType;
@@ -122,7 +122,7 @@ function SubmissionTemplateViewCard({ template }: { template: SubmissionDto }) {
       </Card.Section>
       <Card.Section>
         <Group align="center" justify="center">
-          <DeleteActionPopover2
+          <DeleteActionPopover
             onDelete={() => {
               submissionsApi.remove([template.id]);
             }}

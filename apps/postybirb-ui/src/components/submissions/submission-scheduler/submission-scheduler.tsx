@@ -33,7 +33,7 @@ type SubmissionSchedulerProps = {
 
 export const ScheduleGlobalKey = 'last-used-schedule';
 
-export default function SubmissionScheduler(props: SubmissionSchedulerProps) {
+export function SubmissionScheduler(props: SubmissionSchedulerProps) {
   const { schedule, onChange } = props;
   // For recall of recently set time within this specific component
   const [lastKnownSetDate, setLastKnownSetDate] = useState(

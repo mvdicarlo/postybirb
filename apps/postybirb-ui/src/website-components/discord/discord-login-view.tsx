@@ -1,14 +1,8 @@
-import {
-  EuiButton,
-  EuiFieldText,
-  EuiForm,
-  EuiFormRow,
-  EuiLink,
-} from '@elastic/eui';
 import { Trans } from '@lingui/macro';
+import { Box, Button, NavLink, TextInput } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
-import { useToast } from '../../app/app-toast-provider';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
 
@@ -40,14 +34,12 @@ export default function DiscordLoginView(
   const { data, id } = account;
   const [webhook, setWebhook] = useState<string>(data?.webhook ?? '');
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
-  const { addToast } = useToast();
 
   const isWebhookValid = isStringValid(webhook);
 
   return (
-    <EuiForm
+    <form
       id={formId}
-      component="form"
       onSubmit={(event) => {
         event.preventDefault();
         setSubmitting(true);
@@ -59,22 +51,21 @@ export default function DiscordLoginView(
             },
           })
           .then(() => {
-            addToast({
-              id,
+            notifications.show({
+              title: 'Account data updated.',
+              message: 'Account data updated.',
               color: 'success',
-              text: <Trans>Account data updated.</Trans>,
             });
           })
           .catch(({ error }: { error: HttpErrorResponse }) => {
-            addToast({
-              id,
-              text: <span>{error.message}</span>,
+            notifications.show({
               title: (
                 <span>
                   {error.statusCode} {error.error}
                 </span>
               ),
-              color: 'danger',
+              message: error.message,
+              color: 'red',
             });
           })
           .finally(() => {
@@ -82,42 +73,37 @@ export default function DiscordLoginView(
           });
       }}
     >
-      <EuiFormRow
+      <TextInput
         // eslint-disable-next-line lingui/no-unlocalized-strings
         label="Webhook"
-        helpText={
-          <EuiLink
-            href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks"
-            external
-          >
+        name="webhook"
+        required
+        minLength={1}
+        value={webhook}
+        error={
+          isWebhookValid === false ? <Trans>Webhook is required</Trans> : null
+        }
+        description={
+          <NavLink href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">
             <Trans context="discord.webhook-help">
               How to create a webhook
             </Trans>
-          </EuiLink>
+          </NavLink>
         }
-      >
-        <EuiFieldText
-          name="webhook"
-          required
-          value={webhook}
-          minLength={1}
-          isInvalid={!isWebhookValid}
-          onChange={(event) => {
-            setWebhook(event.target.value);
-          }}
-        />
-      </EuiFormRow>
-      <EuiFormRow>
-        <EuiButton
-          fill
+        onChange={(event) => {
+          setWebhook(event.currentTarget.value);
+        }}
+      />
+      <Box>
+        <Button
           type="submit"
           form={formId}
-          isLoading={isSubmitting}
+          loading={isSubmitting}
           disabled={!isWebhookValid}
         >
           <Trans>Save</Trans>
-        </EuiButton>
-      </EuiFormRow>
-    </EuiForm>
+        </Button>
+      </Box>
+    </form>
   );
 }
