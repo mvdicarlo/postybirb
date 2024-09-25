@@ -4,9 +4,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   DefaultDescriptionValue,
+  IWebsiteFormFields,
   NULL_ACCOUNT_ID,
   ScheduleType,
+  SubmissionRating,
   SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -136,11 +139,13 @@ describe('SubmissionService', () => {
       type: record.type,
       isScheduled: false,
       schedule: {
+        cron: undefined,
         scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
       },
       metadata: {},
       files: [],
+      order: 1,
       posts: [],
       options: [
         {
@@ -162,6 +167,18 @@ describe('SubmissionService', () => {
         },
       ],
     });
+  });
+
+  it('should delete entity', async () => {
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+
+    const records = await service.findAll();
+    expect(records).toHaveLength(1);
+    expect(records[0].type).toEqual(createDto.type);
+
+    await service.remove(record.id);
+    expect(await service.findAll()).toHaveLength(0);
   });
 
   it('should throw exception on message submission with provided file', async () => {
@@ -194,6 +211,7 @@ describe('SubmissionService', () => {
       type: record.type,
       isScheduled: false,
       schedule: {
+        cron: undefined,
         scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
       },
@@ -234,6 +252,7 @@ describe('SubmissionService', () => {
         },
       ],
       posts: [],
+      order: 1,
       options: [
         {
           id: defaultOptions.id,
@@ -329,9 +348,10 @@ describe('SubmissionService', () => {
       {
         ...record.options[0],
         data: {
+          rating: SubmissionRating.GENERAL,
           title: 'Updated',
         },
-      },
+      } as unknown as WebsiteOptionsDto<IWebsiteFormFields>,
     ];
 
     const updatedRecord = await service.update(record.id, updateDto);

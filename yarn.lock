@@ -3943,39 +3943,39 @@
   resolved "https://registry.yarnpkg.com/@microsoft/applicationinsights-web-snippet/-/applicationinsights-web-snippet-1.0.1.tgz#6bb788b2902e48bf5d460c38c6bb7fedd686ddd7"
   integrity sha512-2IHAOaLauc8qaAitvWS+U931T+ze+7MNWrDHY47IENP5y2UA0vqJDu67kWZDdpCN1fFC77sfgfB+HV7SrKshnQ==
 
-"@mikro-orm/core@5.8.6":
-  version "5.8.6"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-5.8.6.tgz#cd0df966591a9890ee8521cd9110e40f7c3facc1"
-  integrity sha512-AgjJoIIO8yOMuak6/jNkmGQmKfP4AO57DGVFO6SGtYlo/hEi5iZ7nfKMHLlxiH/bw9wsXY2/mQmixwNdWfrtfA==
+"@mikro-orm/core@^5.9":
+  version "5.9.8"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-5.9.8.tgz#0b9732525f04df11fbe6dffc864e28f2ef6cefcc"
+  integrity sha512-bfTYInwc+EtPgLOxa5iBG5vKT1qq5swDcsc2F7Iu6sesBLKNputURA7qPmY6TCWQtSL/hvB3QjsCzY48LllD+w==
   dependencies:
     acorn-loose "8.3.0"
     acorn-walk "8.2.0"
     dotenv "16.3.1"
     fs-extra "11.1.1"
     globby "11.1.0"
-    mikro-orm "5.8.6"
+    mikro-orm "5.9.8"
     reflect-metadata "0.1.13"
 
-"@mikro-orm/knex@5.8.6":
-  version "5.8.6"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/knex/-/knex-5.8.6.tgz#ee470a230e976a50c0ea2436aec3bcc1900a9be1"
-  integrity sha512-UAamqxQ2kLLUkzyvhEVKsGWnU+2i9uA50jkjrdo9A2K40rbC/4uctqsnpgwsjcxEIRzSCeXaB9K9ijEq6lkNhg==
+"@mikro-orm/knex@5.9.8":
+  version "5.9.8"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/knex/-/knex-5.9.8.tgz#9e60a8e423d7b19a056ef2f2d13f8cfc72541aff"
+  integrity sha512-Kitz11QY7Id37huNUfsxSkgnET8X/fuL861yUK9rJ8xrRiEakdm1r/lM1pLYcB/oikAphYLTgW+M/t3LoJb8aw==
   dependencies:
     fs-extra "11.1.1"
     knex "2.5.1"
     sqlstring "2.3.3"
 
-"@mikro-orm/nestjs@^5.2.2":
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/nestjs/-/nestjs-5.2.2.tgz#29311eb64b93269800ff70c75ca0b84c90fab097"
-  integrity sha512-NwPTmpmwf4/aX7FjKk/CTncYS7Mbr4fMvSOfbo9rOElySjpniTnk2cCGABgj2kaX9NSFHzWCUy5tAMIkoedd4A==
+"@mikro-orm/nestjs@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/nestjs/-/nestjs-6.0.2.tgz#0c8d57db1b958b1d7f06a501653a30d88467d72b"
+  integrity sha512-3bUBnJ0HwwIjsNPb0n7dfTWayqA5iSLHv/zM9juyBADSpJB2oBAd96QlUqDvNi/RckSg0m+ifLVT0Uw8e0+POg==
 
-"@mikro-orm/sqlite@5.8.6":
-  version "5.8.6"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/sqlite/-/sqlite-5.8.6.tgz#c7200ab9c70c2600bfa4dafb8a937b78a1d44e0b"
-  integrity sha512-Ocksm/KCj8A8sc2Qnkud9MV/d+PinL6r0HaGPW39SKmuQjer79h0J35D5t6HcHDsk9Oe4NxTAjIARuESgK1+aA==
+"@mikro-orm/sqlite@^5.9":
+  version "5.9.8"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/sqlite/-/sqlite-5.9.8.tgz#094cf66edc99016ed3d4a5b43e784fc764d294ff"
+  integrity sha512-k7C9PPv8AnKf/YW8wCIPm7awyyn268jX+MwOAdfTvR6zSAlnbOn9o+JcO1dsGRN3NgY9mmuaw6Aw8WYDdXi0tA==
   dependencies:
-    "@mikro-orm/knex" "5.8.6"
+    "@mikro-orm/knex" "5.9.8"
     fs-extra "11.1.1"
     sqlite3 "5.1.6"
     sqlstring-sqlite "0.1.1"
@@ -14058,10 +14058,10 @@ microseconds@0.2.0:
   resolved "https://registry.npmjs.org/microseconds/-/microseconds-0.2.0.tgz"
   integrity sha512-n7DHHMjR1avBbSpsTBj6fmMGh2AGrifVV4e+WYc3Q9lO+xnSZ3NyhcBND3vzzatt05LFhoKFRxrIyklmLlUtyA==
 
-mikro-orm@5.8.6:
-  version "5.8.6"
-  resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-5.8.6.tgz#0154f6134d13e88726262dd5edd47e12a5771c43"
-  integrity sha512-nPblmYANSTJludfTxz1CklR9xrbVsQP/WygzSm3lp+2q4rsjFfHXtvhOMBTaDrHczUeI4BIeSszYQYUhcgZVkA==
+mikro-orm@5.9.8:
+  version "5.9.8"
+  resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-5.9.8.tgz#8fe379bdb7e14cfdc5eb320f3dfa366d40791e35"
+  integrity sha512-iBku1gU9xkA2FCw2wy0K4x3EQzsRE52dYGkGUVQEthRmc/vIMBwXyiTAj+oARzXrkWqslFtlZA/2upeqZhMQlw==
 
 mime-db@1.51.0, "mime-db@>= 1.43.0 < 2", mime-db@^1.28.0:
   version "1.51.0"
