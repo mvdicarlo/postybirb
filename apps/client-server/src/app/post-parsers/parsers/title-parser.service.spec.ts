@@ -37,7 +37,7 @@ describe('TitleParserService', () => {
   });
 
   it('should parse title', async () => {
-    const submission = new Submission();
+    const submission = new Submission({});
     const defaultOptions: IWebsiteOptions = {
       data: {
         title: 'default',
@@ -68,7 +68,7 @@ describe('TitleParserService', () => {
   });
 
   it('should parse title with no website options', async () => {
-    const submission = new Submission();
+    const submission = new Submission({});
     const instance = new WebsiteInstanceMock();
     const defaultOptions: IWebsiteOptions = {
       data: {
@@ -98,7 +98,7 @@ describe('TitleParserService', () => {
   });
 
   it('should parse title and use default form if website form is not available', async () => {
-    const submission = new Submission();
+    const submission = new Submission({});
     const instance = new WebsiteInstanceMock();
     const defaultOptions: IWebsiteOptions = {
       data: {

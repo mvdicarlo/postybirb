@@ -72,223 +72,223 @@ describe('FormGeneratorService', () => {
 
     const messageForm = await service.getDefaultForm(SubmissionType.MESSAGE);
     expect(messageForm).toEqual({
-      description: [
-        {
-          col: 1,
-          defaultValue: {
-            description: [],
-            overrideDefault: false,
+      contentWarning: {
+        col: 1,
+        defaultValue: '',
+        formField: 'input',
+        label: 'Content Warning / Spoilers',
+        row: 2,
+        type: 'text',
+      },
+      description: {
+        col: 1,
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
+        formField: 'description',
+        i18nLabel: 'form.descriptions',
+        label: 'Description',
+        row: 3,
+        type: 'description',
+      },
+      rating: {
+        col: 0,
+        defaultValue: SubmissionRating.ADULT,
+        formField: 'rating',
+        label: 'Rating',
+        layout: 'vertical',
+        options: [
+          {
+            label: 'General',
+            value: 'GENERAL',
           },
-          formField: 'description',
-          i18nLabel: 'form.descriptions',
-          label: 'Description',
-          row: 3,
-          type: 'description',
-        },
-      ],
-      rating: [
-        {
-          col: 0,
-          defaultValue: SubmissionRating.ADULT,
-          formField: 'rating',
-          label: 'Rating',
-          layout: 'vertical',
-          options: [
-            {
-              label: 'General',
-              value: 'GENERAL',
-            },
-            {
-              label: 'Mature',
-              value: 'MATURE',
-            },
-            {
-              label: 'Adult',
-              value: 'ADULT',
-            },
-            {
-              label: 'Extreme',
-              value: 'EXTREME',
-            },
-          ],
-          required: true,
-          row: 0,
-          type: 'rating',
-        },
-      ],
-      tags: [
-        {
-          col: 1,
-          defaultValue: {
-            overrideDefault: false,
-            tags: [],
+          {
+            label: 'Mature',
+            value: 'MATURE',
           },
-          formField: 'tag',
-          i18nLabel: 'form.tags',
-          label: 'Tags',
-          row: 2,
-          type: 'tag',
+          {
+            label: 'Adult',
+            value: 'ADULT',
+          },
+          {
+            label: 'Extreme',
+            value: 'EXTREME',
+          },
+        ],
+        required: true,
+        row: 0,
+        type: 'rating',
+      },
+      tags: {
+        col: 1,
+        defaultValue: {
+          overrideDefault: false,
+          tags: [],
         },
-      ],
-      title: [
-        {
-          col: 1,
-          defaultValue: '',
-          formField: 'input',
-          label: 'Title',
-          required: true,
-          row: 0,
-          type: 'text',
-        },
-      ],
+        formField: 'tag',
+        i18nLabel: 'form.tags',
+        label: 'Tags',
+        row: 1,
+        type: 'tag',
+      },
+      title: {
+        col: 1,
+        defaultValue: '',
+        formField: 'input',
+        label: 'Title',
+        required: true,
+        row: 0,
+        type: 'text',
+      },
     });
   });
 
   it('should return standard form', async () => {
     const messageForm = await service.getDefaultForm(SubmissionType.MESSAGE);
     expect(messageForm).toEqual({
-      description: [
-        {
-          col: 1,
-          defaultValue: {
-            description: [],
-            overrideDefault: false,
+      contentWarning: {
+        col: 1,
+        defaultValue: '',
+        formField: 'input',
+        label: 'Content Warning / Spoilers',
+        row: 2,
+        type: 'text',
+      },
+      description: {
+        col: 1,
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
+        formField: 'description',
+        i18nLabel: 'form.descriptions',
+        label: 'Description',
+        row: 3,
+        type: 'description',
+      },
+      rating: {
+        col: 0,
+        defaultValue: 'GENERAL',
+        formField: 'rating',
+        label: 'Rating',
+        layout: 'vertical',
+        options: [
+          {
+            label: 'General',
+            value: 'GENERAL',
           },
-          formField: 'description',
-          i18nLabel: 'form.descriptions',
-          label: 'Description',
-          row: 3,
-          type: 'description',
-        },
-      ],
-      rating: [
-        {
-          col: 0,
-          defaultValue: 'GENERAL',
-          formField: 'rating',
-          label: 'Rating',
-          layout: 'vertical',
-          options: [
-            {
-              label: 'General',
-              value: 'GENERAL',
-            },
-            {
-              label: 'Mature',
-              value: 'MATURE',
-            },
-            {
-              label: 'Adult',
-              value: 'ADULT',
-            },
-            {
-              label: 'Extreme',
-              value: 'EXTREME',
-            },
-          ],
-          required: true,
-          row: 0,
-          type: 'rating',
-        },
-      ],
-      tags: [
-        {
-          col: 1,
-          defaultValue: {
-            overrideDefault: false,
-            tags: [],
+          {
+            label: 'Mature',
+            value: 'MATURE',
           },
-          formField: 'tag',
-          i18nLabel: 'form.tags',
-          label: 'Tags',
-          row: 2,
-          type: 'tag',
+          {
+            label: 'Adult',
+            value: 'ADULT',
+          },
+          {
+            label: 'Extreme',
+            value: 'EXTREME',
+          },
+        ],
+        required: true,
+        row: 0,
+        type: 'rating',
+      },
+      tags: {
+        col: 1,
+        defaultValue: {
+          overrideDefault: false,
+          tags: [],
         },
-      ],
-      title: [
-        {
-          col: 1,
-          defaultValue: '',
-          formField: 'input',
-          label: 'Title',
-          required: true,
-          row: 0,
-          type: 'text',
-        },
-      ],
+        formField: 'tag',
+        i18nLabel: 'form.tags',
+        label: 'Tags',
+        row: 1,
+        type: 'tag',
+      },
+      title: {
+        col: 1,
+        defaultValue: '',
+        formField: 'input',
+        label: 'Title',
+        required: true,
+        row: 0,
+        type: 'text',
+      },
     });
 
     const fileForm = await service.getDefaultForm(SubmissionType.FILE);
     expect(fileForm).toEqual({
-      description: [
-        {
-          col: 1,
-          defaultValue: {
-            description: [],
-            overrideDefault: false,
+      contentWarning: {
+        col: 1,
+        defaultValue: '',
+        formField: 'input',
+        label: 'Content Warning / Spoilers',
+        row: 2,
+        type: 'text',
+      },
+      description: {
+        col: 1,
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
+        formField: 'description',
+        i18nLabel: 'form.descriptions',
+        label: 'Description',
+        row: 3,
+        type: 'description',
+      },
+      rating: {
+        col: 0,
+        defaultValue: 'GENERAL',
+        formField: 'rating',
+        label: 'Rating',
+        layout: 'vertical',
+        options: [
+          {
+            label: 'General',
+            value: 'GENERAL',
           },
-          formField: 'description',
-          i18nLabel: 'form.descriptions',
-          label: 'Description',
-          row: 3,
-          type: 'description',
-        },
-      ],
-      rating: [
-        {
-          col: 0,
-          defaultValue: 'GENERAL',
-          formField: 'rating',
-          label: 'Rating',
-          layout: 'vertical',
-          options: [
-            {
-              label: 'General',
-              value: 'GENERAL',
-            },
-            {
-              label: 'Mature',
-              value: 'MATURE',
-            },
-            {
-              label: 'Adult',
-              value: 'ADULT',
-            },
-            {
-              label: 'Extreme',
-              value: 'EXTREME',
-            },
-          ],
-          required: true,
-          row: 0,
-          type: 'rating',
-        },
-      ],
-      tags: [
-        {
-          col: 1,
-          defaultValue: {
-            overrideDefault: false,
-            tags: [],
+          {
+            label: 'Mature',
+            value: 'MATURE',
           },
-          formField: 'tag',
-          i18nLabel: 'form.tags',
-          label: 'Tags',
-          row: 2,
-          type: 'tag',
+          {
+            label: 'Adult',
+            value: 'ADULT',
+          },
+          {
+            label: 'Extreme',
+            value: 'EXTREME',
+          },
+        ],
+        required: true,
+        row: 0,
+        type: 'rating',
+      },
+      tags: {
+        col: 1,
+        defaultValue: {
+          overrideDefault: false,
+          tags: [],
         },
-      ],
-      title: [
-        {
-          col: 1,
-          defaultValue: '',
-          formField: 'input',
-          label: 'Title',
-          required: true,
-          row: 0,
-          type: 'text',
-        },
-      ],
+        formField: 'tag',
+        i18nLabel: 'form.tags',
+        label: 'Tags',
+        row: 1,
+        type: 'tag',
+      },
+      title: {
+        col: 1,
+        defaultValue: '',
+        formField: 'input',
+        label: 'Title',
+        required: true,
+        row: 0,
+        type: 'text',
+      },
     });
   });
 });

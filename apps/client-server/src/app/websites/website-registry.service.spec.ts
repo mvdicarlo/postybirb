@@ -42,9 +42,7 @@ describe('WebsiteRegistryService', () => {
   });
 
   it('should successfully create website instance', async () => {
-    const account = new Account();
-
-    Object.assign(account, {
+    const account = new Account({
       name: 'test',
       id: 'test',
       website: TestWebsite.prototype.decoratedProps.metadata.name,
@@ -57,9 +55,7 @@ describe('WebsiteRegistryService', () => {
   });
 
   it('should successfully remove website instance', async () => {
-    const account = new Account();
-
-    Object.assign(account, {
+    const account = new Account({
       name: 'test',
       id: 'test',
       website: TestWebsite.prototype.decoratedProps.metadata.name,

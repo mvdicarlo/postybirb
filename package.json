@@ -208,8 +208,5 @@
     "vite": "~4.3.9",
     "vitest": "~0.32.0",
     "webpack": "^5.89.0"
-  },
-  "resolutions": {
-    "@elastic/eui/**/typescript": "5.1.6"
   }
 }

@@ -34,7 +34,7 @@ import { useStore } from '../../../../stores/use-store';
 import { defaultTargetProvider } from '../../../../transports/http-client';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../../form/website-select/website-select';
-import SubmissionScheduler from '../../submission-scheduler/submission-scheduler';
+import { SubmissionScheduler } from '../../submission-scheduler/submission-scheduler';
 import { SubmissionViewCardActions } from './submission-view-card-actions';
 
 type SubmissionViewCardProps = {

@@ -73,7 +73,7 @@ export class Account extends PostyBirbEntity implements IAccount {
     supports: [],
   };
 
-  constructor(account: IAccount) {
+  constructor(account: Partial<IAccount> & Pick<IAccount, 'name' | 'website'>) {
     super();
     this.name = account.name;
     this.website = account.website;

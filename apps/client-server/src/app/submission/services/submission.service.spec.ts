@@ -17,6 +17,7 @@ import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
+import { FormGeneratorModule } from '../../form-generator/form-generator.module';
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
@@ -30,7 +31,6 @@ import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionService } from './submission.service';
 
-// TODO fix whatever is going on here
 describe('SubmissionService', () => {
   let testFile: Buffer | null = null;
   let service: SubmissionService;
@@ -45,38 +45,43 @@ describe('SubmissionService', () => {
   });
 
   beforeEach(async () => {
-    module = await Test.createTestingModule({
-      imports: [
-        DatabaseModule,
-        AccountModule,
-        WebsitesModule,
-        UserSpecifiedWebsiteOptionsModule,
-        PostParsersModule,
-      ],
-      providers: [
-        SubmissionService,
-        CreateFileService,
-        UpdateFileService,
-        FileService,
-        FileSubmissionService,
-        MessageSubmissionService,
-        AccountService,
-        WebsiteRegistryService,
-        UserSpecifiedWebsiteOptionsService,
-        WebsiteOptionsService,
-        WebsiteImplProvider,
-      ],
-    }).compile();
-
-    service = module.get<SubmissionService>(SubmissionService);
-    orm = module.get(MikroORM);
     try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
+      module = await Test.createTestingModule({
+        imports: [
+          DatabaseModule,
+          AccountModule,
+          WebsitesModule,
+          UserSpecifiedWebsiteOptionsModule,
+          PostParsersModule,
+          FormGeneratorModule,
+        ],
+        providers: [
+          SubmissionService,
+          CreateFileService,
+          UpdateFileService,
+          FileService,
+          FileSubmissionService,
+          MessageSubmissionService,
+          AccountService,
+          WebsiteRegistryService,
+          UserSpecifiedWebsiteOptionsService,
+          WebsiteOptionsService,
+          WebsiteImplProvider,
+        ],
+      }).compile();
+
+      service = module.get<SubmissionService>(SubmissionService);
+      orm = module.get(MikroORM);
+      try {
+        await orm.getSchemaGenerator().refreshDatabase();
+      } catch {
+        // none
+      }
+      const accountService = module.get<AccountService>(AccountService);
+      await accountService.onModuleInit();
+    } catch (e) {
+      console.error(e);
     }
-    const accountService = module.get<AccountService>(AccountService);
-    await accountService.onModuleInit();
   });
 
   afterAll(async () => {
