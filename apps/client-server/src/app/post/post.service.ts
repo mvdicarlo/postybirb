@@ -1,7 +1,11 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { SubmissionId } from '@postybirb/types';
+import {
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionId,
+} from '@postybirb/types';
 import { Cron as CronGenerator } from 'croner';
 import { uniq } from 'lodash';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -92,12 +96,13 @@ export class PostService extends PostyBirbService<PostRecord> {
     for (const id of unqueued) {
       const submission = await this.submissionRepository.findOne(id);
       if (await this.verifyCanQueue(submission)) {
-        const entity = this.repository.create({
-          parent: this.submissionRepository.getReference(id),
-          children: [], // Populate later when posting.
+        const postRecord = new PostRecord({
+          parent: submission,
+          resumeMode: PostRecordResumeMode.CONTINUE,
+          state: PostRecordState.PENDING,
         });
-        await this.repository.persistAndFlush(entity);
-        created.push(entity.id);
+        await this.repository.persistAndFlush(postRecord);
+        created.push(postRecord.id);
       }
     }
 

@@ -57,9 +57,14 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
   @Property({ type: 'string', nullable: false })
   resumeMode: PostRecordResumeMode = PostRecordResumeMode.CONTINUE;
 
-  constructor(postRecord: IPostRecord) {
+  constructor(
+    postRecord: Pick<
+      IPostRecord,
+      'parent' | 'completedAt' | 'state' | 'resumeMode'
+    >
+  ) {
     super();
-    this.parent = postRecord.parent as Submission;
+    this.parent = postRecord.parent as unknown as Submission;
     this.completedAt = postRecord.completedAt;
     this.state = postRecord.state;
     this.resumeMode = postRecord.resumeMode;
