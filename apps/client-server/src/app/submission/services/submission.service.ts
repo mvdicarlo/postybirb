@@ -23,6 +23,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { cloneDeep } from 'lodash';
+import * as path from 'path';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import {
@@ -145,7 +146,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     if (createSubmissionDto.name) {
       name = createSubmissionDto.name;
     } else if (file) {
-      name = file.filename;
+      name = path.parse(file.filename).name;
     }
 
     submission.options.add(

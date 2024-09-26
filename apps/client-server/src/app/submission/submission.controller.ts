@@ -17,6 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { IEntityDto, SubmissionId, SubmissionType } from '@postybirb/types';
+import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
@@ -54,20 +55,16 @@ export class SubmissionController extends PostyBirbController<Submission> {
     const mapper = (res) => res.toJSON();
     if ((files || []).length) {
       const results = [];
-      let index = 0;
       // TODO - need to reconsider how to queue submission creation up.
       // There appears to be an issue where if trying to create many submissions in parallel
       // the database will attempt to create them all at once and fail on a race condition.
       // not sure if this is a database issue or a typeorm issue.
       // eslint-disable-next-line no-restricted-syntax
       for (const file of files) {
-        index += 1;
         const createFileSubmission = new CreateSubmissionDto();
         Object.assign(createFileSubmission, createSubmissionDto);
         if (!createSubmissionDto.name) {
-          createFileSubmission.name = file.originalname;
-        } else {
-          createFileSubmission.name = `${createSubmissionDto.name} - ${index}`;
+          createFileSubmission.name = parse(file.originalname).name;
         }
 
         createFileSubmission.type = SubmissionType.FILE;

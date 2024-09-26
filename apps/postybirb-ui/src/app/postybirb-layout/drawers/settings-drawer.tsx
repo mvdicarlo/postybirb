@@ -7,6 +7,7 @@ import {
   NumberInput,
   Space,
   Stack,
+  Text,
   Title,
 } from '@mantine/core';
 import { IconFolder, IconRouter } from '@tabler/icons-react';
@@ -150,9 +151,9 @@ export function SettingsDrawer() {
       opened={visible}
       onClose={() => toggle()}
       title={
-        <Title order={5}>
+        <Text fw="bold" size="1.2rem">
           <Trans>Settings</Trans>
-        </Title>
+        </Text>
       }
     >
       <Stack gap="xl">

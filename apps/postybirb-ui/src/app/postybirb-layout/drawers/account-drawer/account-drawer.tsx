@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { Drawer, Loader, Space, Stack, Title } from '@mantine/core';
+import { Drawer, Loader, Space, Stack, Text } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { useState } from 'react';
 import { useWebsites } from '../../../../hooks/account/use-websites';
@@ -46,9 +46,9 @@ export function AccountDrawer() {
           toggle();
         }}
         title={
-          <Title order={5}>
+          <Text fw="bold" size="1.2rem">
             <Trans>Accounts</Trans>
-          </Title>
+          </Text>
         }
       >
         <WebsiteVisibilityPicker />

@@ -108,7 +108,9 @@ export function PageHeader(props: PageHeaderProps) {
       {breadcrumb}
       {actionField}
       {tabsField}
-      <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
+      {tabsField ? null : (
+        <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
+      )}
     </Box>
   );
 }

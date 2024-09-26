@@ -17,7 +17,6 @@ import { WebsiteOptionsService } from '../website-options/website-options.servic
 import { QueuePostRecordRequestDto } from './dtos/queue-post-record.dto';
 import { PostManagerService } from './post-manager.service';
 
-// TODO - Ensure accurate use of the FileMetadata dimensions (which only inserts to the 'default')
 /**
  * Handles enqueue and dequeue of post records.
  * @class PostService

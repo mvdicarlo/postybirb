@@ -5,7 +5,6 @@ import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
 import { useCallback, useEffect, useState } from 'react';
 import { use18n } from '../hooks/use-i18n';
-import { uppyLocales } from './languages';
 
 declare module '@lingui/core' {
   interface I18n {}
@@ -30,21 +29,6 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
       // eslint-disable-next-line no-param-reassign
       lang = lang ?? 'en';
       const { messages } = await import(`../lang/${lang}.po`);
-
-      const uppyLocale = uppyLocales[lang];
-      try {
-        i18n.uppy = (
-          await import(`../../public/uppy-i18n/${uppyLocale}.js`)
-        ).default;
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(
-          // eslint-disable-next-line lingui/no-unlocalized-strings
-          `Failed to load uppy locale for ${lang}, mapped: ${uppyLocale}, error:`,
-          error
-        );
-      }
-
       i18n.loadAndActivate({ locale: lang, messages });
       if (!loaded) setLoaded(true);
     },

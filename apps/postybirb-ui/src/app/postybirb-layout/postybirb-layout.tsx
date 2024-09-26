@@ -34,7 +34,7 @@ import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
 import { LanguagePicker } from './language-picker';
 import classes from './postybirb-layout.module.css';
-import { PostybirbSpotlight } from './postybirb-spotlight';
+import { PostybirbSpotlight } from './postybirb-spotlight/postybirb-spotlight';
 import { PostyBirbUpdateButton } from './postybirb-update-button';
 import { SideNavLink, SideNavLinkProps } from './side-nav-link';
 import { ThemePicker } from './theme-picker';

@@ -30,7 +30,6 @@ export class UpdateFileService {
 
   /**
    * Creates file entity and stores it.
-   * @todo extra data (image resize per website)
    * @todo figure out what to do about non-image
    *
    * @param {MulterFileInfo} file

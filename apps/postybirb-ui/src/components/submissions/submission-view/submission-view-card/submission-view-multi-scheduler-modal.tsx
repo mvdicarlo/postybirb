@@ -17,6 +17,7 @@ import { useLocalStorage } from 'react-use';
 import Sortable from 'sortablejs';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { ScheduleGlobalKey } from '../../submission-scheduler/submission-scheduler';
+import './submission-view-multi-scheduler-modal.css';
 
 type SubmissionViewActionsProps = {
   onClose: () => void;
@@ -206,8 +207,8 @@ export function SubmissionViewMultiSchedulerModal(
         }
       }}
     >
-      <Stack gap="xs">
-        <Box>
+      <Box className="multi-scheduler-grid-container">
+        <Box className="main-content">
           <DateTimePicker
             required
             clearable
@@ -255,7 +256,7 @@ export function SubmissionViewMultiSchedulerModal(
           />
         </Box>
 
-        <Group justify="end">
+        <Group justify="end" className="footer">
           <Checkbox
             checked={onlySetScheduledDate}
             onChange={(event) => {
@@ -274,7 +275,7 @@ export function SubmissionViewMultiSchedulerModal(
             <Trans>Apply</Trans>
           </Button>
         </Group>
-      </Stack>
+      </Box>
     </Modal>
   );
 }

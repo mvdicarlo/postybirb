@@ -110,7 +110,10 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     >
       <Card.Section ta="center" bg="rgba(0,0,0,0.1)">
         <Flex>
-          <IconArrowsMove className="sort-handle" style={{ cursor: 'move' }} />
+          <IconArrowsMove
+            className="sort-handle"
+            style={{ cursor: 'move', margin: 'auto', marginLeft: 4 }}
+          />
           <ActionIcon
             flex="6"
             c="var(--mantine-color-text)"

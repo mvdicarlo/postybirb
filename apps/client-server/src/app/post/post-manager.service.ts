@@ -211,7 +211,6 @@ export class PostManagerService {
           `Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
         );
       }
-      // TODO - Still need to actually implement data prep
       const data = await this.preparePostData(
         submission,
         instance,
@@ -404,6 +403,7 @@ export class PostManagerService {
 
               // User defined dimensions
               const userDefinedDimensions =
+                // NOTE: Currently the only place dimensions are set are in 'default'.
                 // eslint-disable-next-line @typescript-eslint/dot-notation
                 fileMetadata?.dimensions['default'] ??
                 fileMetadata?.dimensions[instance.accountId];
@@ -426,6 +426,8 @@ export class PostManagerService {
                 }
               }
             }
+
+            // TODO - Website defined dimensions (i.e. HF)
 
             return this.resizerService.resize({
               file: f,

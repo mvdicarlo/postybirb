@@ -7,8 +7,8 @@ import {
   Group,
   Loader,
   Stack,
-  TextInput,
-  Title,
+  Text,
+  TextInput
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
@@ -219,9 +219,9 @@ export function TagConverterDrawer() {
       opened={visible}
       onClose={() => toggle()}
       title={
-        <Title order={5}>
+        <Text fw="bold" size="1.2rem">
           <Trans>Tag Converters</Trans>
-        </Title>
+        </Text>
       }
     >
       <Stack gap="xl">

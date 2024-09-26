@@ -1,15 +1,15 @@
 import { Trans } from '@lingui/macro';
 import {
-    Box,
-    Button,
-    Drawer,
-    Fieldset,
-    Group,
-    Loader,
-    Stack,
-    TagsInput,
-    TextInput,
-    Title,
+  Box,
+  Button,
+  Drawer,
+  Fieldset,
+  Group,
+  Loader,
+  Stack,
+  TagsInput,
+  Text,
+  TextInput,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ICreateTagGroupDto, TagGroupDto } from '@postybirb/types';
@@ -199,9 +199,9 @@ export function TagGroupDrawer() {
       opened={visible}
       onClose={() => toggle()}
       title={
-        <Title order={5}>
+        <Text fw="bold" size="1.2rem">
           <Trans>Tag Groups</Trans>
-        </Title>
+        </Text>
       }
     >
       <Stack gap="xl">

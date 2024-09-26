@@ -234,7 +234,6 @@ export class WebsiteRegistryService {
 
   /**
    * Runs an authorization step for a website.
-   * @todo better type overlap
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
   public performOAuthStep(

@@ -15,11 +15,12 @@ import {
   FileSubmissionPath,
   HomePath,
   MessageSubmissionPath,
-} from '../../pages/route-paths';
-import { SubmissionTemplateStore } from '../../stores/submission-template.store';
-import { SubmissionStore } from '../../stores/submission.store';
-import { useStore } from '../../stores/use-store';
-import { defaultTargetProvider } from '../../transports/http-client';
+} from '../../../pages/route-paths';
+import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
+import { SubmissionStore } from '../../../stores/submission.store';
+import { useStore } from '../../../stores/use-store';
+import { defaultTargetProvider } from '../../../transports/http-client';
+import './postybirb-spotlight.css';
 
 export function PostybirbSpotlight() {
   const { _ } = useLingui();

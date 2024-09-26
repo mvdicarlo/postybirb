@@ -38,7 +38,6 @@
     "help": "nx help",
     "postinstall": "run-p --continue-on-error postinstall:*",
     "postinstall:deps": "exitzero electron-builder install-app-deps",
-    "postinstall:copy-themes": "shx cp node_modules/@elastic/eui/dist/*.min.css apps/postybirb-ui/public",
     "postinstall:patch-package": "patch-package",
     "postinstall:i18n": "lingui extract --clean",
     "setup": "run-s setup:husky",
