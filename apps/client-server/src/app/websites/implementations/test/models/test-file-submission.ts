@@ -25,12 +25,12 @@ export class TestFileSubmission implements IWebsiteFormFields {
   @TextField({ label: 'Title', defaultValue: '' })
   title?: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue })
+  @TagField({ label: 'Tags', defaultValue: DefaultTagValue(), maxTags: 10 })
   tags: TagValue;
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: DefaultDescriptionValue,
+    defaultValue: DefaultDescriptionValue(),
   })
   description: DescriptionValue;
 

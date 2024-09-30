@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/macro';
 import {
   IAccountDto,
   ISubmissionDto,
@@ -14,7 +15,6 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Trans } from '@lingui/macro';
 import { useQuery } from 'react-query';
 import submissionApi from '../../api/submission.api';
 import websiteOptionsApi from '../../api/website-options.api';

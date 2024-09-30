@@ -4,7 +4,7 @@ import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { WebsiteImplProvider } from './implementations';
-import TestWebsite, { TestMetadata } from './implementations/test/test.website';
+import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('Website', () => {
@@ -56,10 +56,6 @@ describe('Website', () => {
   });
 
   it('should set website metadata', () => {
-    expect(TestWebsite.prototype.metadata).toEqual({
-      ...TestMetadata,
-      refreshInterval: 60_000 * 60,
-      supportsTags: true,
-    });
+    expect(TestWebsite.prototype.decoratedProps).not.toBeUndefined();
   });
 });

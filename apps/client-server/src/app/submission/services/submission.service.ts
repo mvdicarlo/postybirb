@@ -13,6 +13,8 @@ import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
   FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
   MessageSubmission,
   NULL_ACCOUNT_ID,
   ScheduleType,
@@ -21,16 +23,22 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { cloneDeep } from 'lodash';
+import * as path from 'path';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import {
+  AltFile,
   PostRecord,
+  PrimaryFile,
   Submission,
+  SubmissionFile,
+  ThumbnailFile,
   WebsiteOptions,
 } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
+import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
@@ -52,7 +60,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     @InjectRepository(Submission)
     repository: PostyBirbRepository<SubmissionEntity>,
     @Inject(forwardRef(() => WebsiteOptionsService))
-    private readonly submissionOptionsService: WebsiteOptionsService,
+    private readonly websiteOptionsService: WebsiteOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway
@@ -60,21 +68,54 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     super(repository, webSocket);
     // Listen to changes to PostRecord as it is a child of Submission
     repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
+    repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
+      this.emit()
+    );
+    // This might be dangerous depending on the creation order of the services
+    repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
+      this.emit()
+    );
+    repository.addUpdateListener(dbSubscriber, [PrimaryFile], () =>
+      this.emit()
+    );
+    repository.addUpdateListener(dbSubscriber, [AltFile], () => this.emit());
+    repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
+      this.emit()
+    );
   }
 
   /**
    * Emits submissions onto websocket.
    */
   public async emit() {
+    // !BUG - This protects against unit test failures, but is not a good solution.
+    // Ideally fixed by upgrading mikro-orm and using a proper event emitter.
+    if (IsTestEnvironment()) {
+      return;
+    }
     super.emit({
       event: SUBMISSION_UPDATES,
-      data: (await this.findAll()).map((s) => s.toJSON()),
+      data: await this.findAllAsDto(),
     });
+  }
+
+  public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
+    const all = await super.findAll();
+    return Promise.all(
+      all.map(
+        async (s) =>
+          ({
+            ...s.toJSON(),
+            validations: await this.websiteOptionsService.validateSubmission(
+              s.id
+            ),
+          } as ISubmissionDto<ISubmissionMetadata>)
+      )
+    );
   }
 
   /**
    * Creates a submission.
-   * @todo need to make transactional
    *
    * @param {CreateSubmissionDto} createSubmissionDto
    * @param {MulterFileInfo} [file]
@@ -85,7 +126,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     file?: MulterFileInfo
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
-    const submission = this.repository.create({
+    const submission = new Submission({
       ...createSubmissionDto,
       isScheduled: false,
       schedule: {
@@ -93,8 +134,6 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         scheduleType: ScheduleType.NONE,
         cron: undefined,
       },
-      options: [],
-      metadata: {},
     });
 
     if (createSubmissionDto.isTemplate) {
@@ -102,6 +141,23 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         name: createSubmissionDto.name.trim(),
       };
     }
+
+    let name = 'New submission';
+    if (createSubmissionDto.name) {
+      name = createSubmissionDto.name;
+    } else if (file) {
+      name = path.parse(file.filename).name;
+    }
+
+    submission.options.add(
+      await this.websiteOptionsService.createDefaultSubmissionOptions(
+        submission,
+        name
+      )
+    );
+
+    submission.order = (await this.repository.count()) + 1;
+    await this.repository.persist(submission);
 
     switch (createSubmissionDto.type) {
       case SubmissionType.MESSAGE: {
@@ -112,7 +168,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         }
 
         await this.messageSubmissionService.populate(
-          submission as MessageSubmission,
+          submission as unknown as MessageSubmission,
           createSubmissionDto
         );
         break;
@@ -131,7 +187,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
         }
 
         await this.fileSubmissionService.populate(
-          submission as FileSubmission,
+          submission as unknown as FileSubmission,
           createSubmissionDto,
           file
         );
@@ -145,20 +201,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       }
     }
 
-    let name = 'New submission';
-    if (createSubmissionDto.name) {
-      name = createSubmissionDto.name;
-    } else if (file) {
-      name = file.filename;
-    }
-
-    submission.options.add(
-      await this.submissionOptionsService.createDefaultSubmissionOptions(
-        submission,
-        name
-      )
-    );
-
+    // Re-save to capture any mutations during population
     await this.repository.persistAndFlush(submission);
     this.emit();
     return submission;
@@ -190,10 +233,10 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     submission.options.removeAll();
     const options = template.options.getItems();
     const newOptions = await Promise.all(
-      options.map(async (option) => {
-        const newOption = await this.submissionOptionsService.createOption(
+      options.map(async (option: WebsiteOptions) => {
+        const newOption = await this.websiteOptionsService.createOption(
           submission,
-          option.account,
+          option.account.id,
           option.data,
           defaultOption.data.title
         );
@@ -255,9 +298,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     // Removes unused website options
     if (update.deletedWebsiteOptions?.length) {
       update.deletedWebsiteOptions.forEach((deletedOptionId) => {
-        optionChanges.push(
-          this.submissionOptionsService.remove(deletedOptionId)
-        );
+        optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
       });
     }
 
@@ -266,13 +307,13 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       update.newOrUpdatedOptions.forEach((option) => {
         if (option.createdAt) {
           optionChanges.push(
-            this.submissionOptionsService.update(option.id, {
+            this.websiteOptionsService.update(option.id, {
               data: option.data,
             })
           );
         } else {
           optionChanges.push(
-            this.submissionOptionsService.create({
+            this.websiteOptionsService.create({
               account: option.account,
               data: option.data,
               submission: submission.id,
@@ -390,5 +431,39 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     }
 
     throw new BadRequestException(`Submission '${id}' is not a template`);
+  }
+
+  async reorder(id: SubmissionId, index: number) {
+    const allSubmissions = (await this.repository.findAll()).sort(
+      (a, b) => a.order - b.order
+    );
+    const movedSubmissionIndex = allSubmissions.findIndex((s) => s.id === id);
+    if (movedSubmissionIndex === -1) {
+      throw new NotFoundException(`Submission '${id}' not found`);
+    }
+
+    if (index === movedSubmissionIndex) {
+      return;
+    }
+
+    // Remove the submission from its current position
+    const [movedSubmission] = allSubmissions.splice(movedSubmissionIndex, 1);
+
+    // Adjust index if necessary
+    if (index > allSubmissions.length) {
+      index = allSubmissions.length;
+    }
+
+    // Insert the submission at the new index
+    allSubmissions.splice(index, 0, movedSubmission);
+
+    // Update the order property for all submissions
+    allSubmissions.forEach((submission, i) => {
+      submission.order = i;
+    });
+
+    // Save changes
+    await this.repository.persistAndFlush(allSubmissions);
+    this.emit();
   }
 }

@@ -18,19 +18,17 @@ export function assignMetadata<T extends PrimitiveRecord>(
     Reflect.getMetadata(METADATA_KEY, proto) || {};
 
   if (!fields[propertyKey]) {
-    fields[propertyKey] = [];
-  }
-
-  if (options.column === undefined) {
-    options.column = 0;
+    fields[propertyKey] = options;
   }
 
   if (options.row === undefined) {
-    options.row = 1000;
+    options.row = Number.MAX_SAFE_INTEGER;
   }
 
-  if (!fields[propertyKey].some((f) => f.type === fieldKey)) {
-    fields[propertyKey].push(options);
-    Reflect.defineMetadata(METADATA_KEY, fields, proto);
+  if (options.col === undefined) {
+    options.col = 0;
   }
+
+  fields[propertyKey] = options;
+  Reflect.defineMetadata(METADATA_KEY, fields, proto);
 }

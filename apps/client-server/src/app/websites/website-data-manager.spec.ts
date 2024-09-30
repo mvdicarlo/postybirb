@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DynamicObject, NullAccount } from '@postybirb/types';
+import { NullAccount } from '@postybirb/types';
 import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
@@ -10,7 +10,7 @@ import WebsiteDataManager from './website-data-manager';
 describe('WebsiteDataManager', () => {
   let module: TestingModule;
   let orm: MikroORM;
-  let repository: PostyBirbRepository<WebsiteData<DynamicObject>>;
+  let repository: PostyBirbRepository<WebsiteData>;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -18,13 +18,10 @@ describe('WebsiteDataManager', () => {
       providers: [WebsiteImplProvider],
     }).compile();
 
-    repository =
-      module.get<PostyBirbRepository<WebsiteData<DynamicObject>>>(
-        PostyBirbRepository
-      );
     orm = module.get(MikroORM);
     try {
       await orm.getSchemaGenerator().refreshDatabase();
+      repository = orm.em.getRepository(WebsiteData);
     } catch {
       // none
     }

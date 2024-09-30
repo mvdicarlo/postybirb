@@ -9,7 +9,6 @@ export * from './post/post-response.type';
 export * from './post/website-post-record.interface';
 export * from './settings/settings-options.interface';
 export * from './settings/settings.interface';
-export * from './submission/default-description-value';
 export * from './submission/default-submission-file-props';
 export * from './submission/description-value.type';
 export * from './submission/file-submission/file-metadata-fields.type';
@@ -43,3 +42,4 @@ export * from './website/website-data.interface';
 export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
+

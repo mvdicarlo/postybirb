@@ -91,6 +91,9 @@ export class FileSubmissionService
     const createdFile = await this.fileService.create(file, submission);
     submission.files.add(createdFile);
     submission.metadata.order.push(createdFile.id);
+    this.logger
+      .withMetadata(submission)
+      .info(`Created file ${createdFile.id} = ${submission.id}`);
 
     const fileModifications: FileMetadataFields = {
       altText: '',

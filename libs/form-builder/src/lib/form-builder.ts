@@ -12,14 +12,10 @@ export function formBuilder<T extends PrimitiveRecord>(
   );
 
   Object.values(metadata).forEach((value) => {
-    value
-      .filter((v) => Boolean(v.defaultFrom))
-      .forEach((v) => {
-        if (v.defaultFrom) {
-          // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-          v.defaultValue = data[v.defaultFrom] as any;
-        }
-      });
+    if (value.defaultFrom) {
+      // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+      value.defaultValue = data[value.defaultFrom] as any;
+    }
   });
 
   return metadata;
@@ -27,3 +23,4 @@ export function formBuilder<T extends PrimitiveRecord>(
 
 export * from './decorators';
 export * from './types';
+

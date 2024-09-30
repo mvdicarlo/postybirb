@@ -6,5 +6,6 @@ export class SettingsConstants {
   static readonly DEFAULT_SETTINGS: ISettingsOptions = {
     hiddenWebsites: [],
     language: 'en',
+    allowAd: true,
   };
 }

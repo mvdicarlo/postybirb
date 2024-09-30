@@ -2,16 +2,6 @@ body {
   overflow: hidden;
 }
 
-.euiPage {
-  width: 100vw;
-  height: 100vh;
-}
-
-.euiOverlayMask {
-  z-index: 1100 !important; /* On top of file status */
-  inset-block-start: 0 !important;
-}
-
 .postybirb__page-body {
   height: 100%;
   overflow: auto;
@@ -19,13 +9,6 @@ body {
 
 .postybirb__page-body > div > div {
   padding-top: 0 !important;
-}
-
-.postybirb__page-body .euiPageHeader {
-  position: sticky;
-  z-index: 100;
-  top: 0;
-  padding-top: 24px;
 }
 
 .postybirb__page-section > div {

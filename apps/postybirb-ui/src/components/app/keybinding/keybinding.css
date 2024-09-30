@@ -14,8 +14,3 @@
 .keybinding span {
   margin: 0 4px;
 }
-
-.euiTitle .keybinding {
-  vertical-align: middle;
-  font-size: 10px !important;
-}

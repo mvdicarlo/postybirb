@@ -1,3 +1,5 @@
+import { Block } from '@blocknote/core';
+
 /**
  * An object representing a description value.
  * @typedef {Object} DescriptionValue
@@ -12,8 +14,32 @@ export type DescriptionValue = {
   overrideDefault: boolean;
 
   /**
-   * The description value.
-   * @type {string}
+   * Indicates whether the tags should be inserted at the end of the description.
+   * @type {boolean}
    */
-  description: string;
+  insertTags?: boolean;
+
+  /**
+   * Indicates whether the title should be inserted at the beginning of the description.
+   * @type {boolean}
+   */
+  insertTitle?: boolean;
+
+  /**
+   * The description value.
+   * @type {Description}
+   */
+  description: Description;
 };
+
+export type Description = Block[];
+
+export const DefaultDescription = (): Description => [];
+
+/** Default tag value @type {DescriptionValue} */
+export const DefaultDescriptionValue = (): DescriptionValue => ({
+  overrideDefault: false,
+  description: DefaultDescription(),
+  insertTags: undefined,
+  insertTitle: undefined,
+});

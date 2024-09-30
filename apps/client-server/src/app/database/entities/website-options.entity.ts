@@ -49,6 +49,13 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
     return this?.account?.id === NULL_ACCOUNT_ID;
   }
 
+  constructor(websiteOptions: Partial<IWebsiteOptions<T>>) {
+    super();
+    this.submission = websiteOptions.submission as Submission;
+    this.data = websiteOptions.data;
+    this.account = websiteOptions.account as Account;
+  }
+
   toJSON(): WebsiteOptionsDto<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serialize(this as any, {

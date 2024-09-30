@@ -1,0 +1,14 @@
+.postybirb__sidenav.collapsed {
+  /* width: 51.5px; */
+}
+
+.postybirb__sidenav.collapsed a {
+  text-align: center;
+}
+
+.postybirb__layout {
+  position: relative;
+  max-height: 100vh;
+  min-height: 100vh;
+  overflow-y: auto;
+}

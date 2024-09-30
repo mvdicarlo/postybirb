@@ -1,7 +1,11 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Inject, Injectable, Optional, forwardRef } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { SubmissionId } from '@postybirb/types';
+import {
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionId,
+} from '@postybirb/types';
 import { Cron as CronGenerator } from 'croner';
 import { uniq } from 'lodash';
 import { PostyBirbService } from '../common/service/postybirb-service';
@@ -70,6 +74,9 @@ export class PostService extends PostyBirbService<PostRecord> {
    * @return {*}  {Promise<string[]>}
    */
   async enqueue(request: QueuePostRecordRequestDto): Promise<string[]> {
+    if (request.ids.length === 0) {
+      return [];
+    }
     this.logger.debug(`Enqueueing ${request.ids} post records.`);
     const existing = await this.repository.find({
       parent: { $in: request.ids },
@@ -88,12 +95,13 @@ export class PostService extends PostyBirbService<PostRecord> {
     for (const id of unqueued) {
       const submission = await this.submissionRepository.findOne(id);
       if (await this.verifyCanQueue(submission)) {
-        const entity = this.repository.create({
-          parent: this.submissionRepository.getReference(id),
-          children: [], // Populate later when posting.
+        const postRecord = new PostRecord({
+          parent: submission,
+          resumeMode: PostRecordResumeMode.CONTINUE,
+          state: PostRecordState.PENDING,
         });
-        await this.repository.persistAndFlush(entity);
-        created.push(entity.id);
+        await this.repository.persistAndFlush(postRecord);
+        created.push(postRecord.id);
       }
     }
 
@@ -116,13 +124,17 @@ export class PostService extends PostyBirbService<PostRecord> {
       parent: { $in: request.ids },
     });
 
+    // TODO - reconsider what happens to a cancelled post since it seems to have strange behavior.
+    // Is it best to not remove it if it is already in a post state and just mark it as cancelled?
+
     // Only remove those that are not marked as done as to protect the archived posts.
     const incomplete = existing.filter(
-      (e: PostRecord) => e.completedAt !== undefined
+      (e: PostRecord) => e.completedAt === undefined
     );
 
-    request.ids.forEach(this.postManagerService.cancelIfRunning);
-    await this.repository.removeAndFlush(incomplete);
+    request.ids.forEach((id) => this.postManagerService.cancelIfRunning(id));
+    await Promise.all(incomplete.map((i) => this.remove(i.id)));
+    await this.repository.flush();
   }
 
   /**
