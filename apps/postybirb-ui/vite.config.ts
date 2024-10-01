@@ -15,11 +15,7 @@ export default defineConfig({
     outDir: '../../dist/apps/postybirb-ui',
     reportCompressedSize: true,
     commonjsOptions: { transformMixedEsModules: true },
-    dynamicImportVarsOptions: {
-      // Related to @elastic/eui/icons's dynamic import
-      // https://github.com/elastic/eui/issues/5463#issuecomment-1107665339
-      exclude: [],
-    },
+
     // Because we are loading files from file:// protocol
     // in production we dont really need to care about this
     chunkSizeWarningLimit: 10000,
