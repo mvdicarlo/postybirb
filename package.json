@@ -38,7 +38,6 @@
     "help": "nx help",
     "postinstall": "run-p --continue-on-error postinstall:*",
     "postinstall:deps": "exitzero electron-builder install-app-deps",
-    "postinstall:patch-package": "patch-package",
     "postinstall:i18n": "lingui extract --clean",
     "setup": "run-s setup:husky",
     "setup:husky": "husky install"
@@ -177,7 +176,6 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "9.0.0",
-    "eslint-define-config": "^2.1.0",
     "eslint-plugin-cypress": "2.13.4",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-jest": "^27.2.1",
