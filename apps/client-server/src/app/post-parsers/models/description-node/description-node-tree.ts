@@ -4,9 +4,9 @@ import TurndownService from 'turndown';
 import { DescriptionBlockNode } from './block-description-node';
 import { DescriptionNode } from './description-node.base';
 import {
-    BlockTypes,
-    IDescriptionBlockNode,
-    ShortcutEnabledFields,
+  BlockTypes,
+  IDescriptionBlockNode,
+  ShortcutEnabledFields,
 } from './description-node.types';
 
 export type InsertionOptions = {

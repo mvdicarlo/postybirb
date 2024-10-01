@@ -8,7 +8,7 @@ import {
   Loader,
   Stack,
   Text,
-  TextInput
+  TextInput,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {

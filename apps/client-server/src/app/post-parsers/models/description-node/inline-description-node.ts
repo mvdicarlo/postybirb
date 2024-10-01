@@ -1,8 +1,8 @@
 import { UsernameShortcut } from '@postybirb/types';
 import { DescriptionNode } from './description-node.base';
 import {
-    IDescriptionInlineNode,
-    IDescriptionTextNode,
+  IDescriptionInlineNode,
+  IDescriptionTextNode,
 } from './description-node.types';
 import { DescriptionTextNode } from './text-description-node';
 

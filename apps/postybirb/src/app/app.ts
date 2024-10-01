@@ -15,7 +15,7 @@ import {
   app,
   globalShortcut,
   nativeImage,
-  screen
+  screen,
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';

@@ -4,7 +4,7 @@ import {
   IAccount,
   ILoginState,
   LoginState,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';

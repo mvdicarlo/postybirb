@@ -31,4 +31,3 @@ if (!(portNumber >= 1024 && portNumber <= 65535)) {
 }
 
 export { config as PostyBirbEnvConfig };
-
