@@ -1,9 +1,10 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
-import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { lingui } from '@lingui/vite-plugin';
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import react from '@vitejs/plugin-react-swc';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
+  root: __dirname,
   cacheDir: '../../node_modules/.vite/postybirb-ui',
   server: {
     port: 4200,
@@ -11,6 +12,9 @@ export default defineConfig({
   },
 
   build: {
+    outDir: '../../dist/apps/postybirb-ui',
+    reportCompressedSize: true,
+    commonjsOptions: { transformMixedEsModules: true },
     dynamicImportVarsOptions: {
       // Related to @elastic/eui/icons's dynamic import
       // https://github.com/elastic/eui/issues/5463#issuecomment-1107665339
@@ -29,6 +33,12 @@ export default defineConfig({
   },
 
   plugins: [
+    // replaceFiles([
+    //   {
+    //     replace: 'apps/postybirb-ui/src/environments/environment.ts',
+    //     with: 'apps/postybirb-ui/src/environments/environment.prod.ts',
+    //   },
+    // ]),
     react({
       plugins: [['@lingui/swc-plugin', {}]],
     }),

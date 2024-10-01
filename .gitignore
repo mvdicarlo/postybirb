@@ -44,3 +44,4 @@ Thumbs.db
 eui_theme_light.min.css
 eui_theme_dark.min.css
 apps/postybirb-ui/public/uppy-i18n/*.js
+.nx/cache

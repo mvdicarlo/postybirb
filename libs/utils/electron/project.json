@@ -5,18 +5,14 @@
   "projectType": "library",
   "targets": {
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": ["libs/utils/electron/**/*.ts"]
-      },
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/utils/electron"],
       "options": {
-        "jestConfig": "libs/utils/electron/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "libs/utils/electron/jest.config.ts"
       }
     }
   },

@@ -1,0 +1,887 @@
+[NX Daemon Server] - 2024-10-01T01:01:03.669Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:01:03.672Z - [WATCHER]: Subscribed to changes within: D:\Projects\postybirb\v4\postybirb (native)
+[NX Daemon Server] - 2024-10-01T01:01:03.679Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:01:03.681Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:01:03.681Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:01:03.683Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:01:03.882Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:01:03.883Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:01:03.883Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:01:03.892Z - Time taken for 'loadNxPlugins' 196.43429999999998ms
+[NX Daemon Server] - 2024-10-01T01:01:04.276Z - Time taken for 'build-project-configs' 374.75930000000005ms
+[NX Daemon Server] - 2024-10-01T01:01:04.689Z - [SYNC]: collect registered sync generators
+[NX Daemon Server] - 2024-10-01T01:01:04.690Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:01:04.691Z - Time taken for 'total for creating and serializing project graph' 1007.0713ms
+[NX Daemon Server] - 2024-10-01T01:01:04.692Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:01:04.692Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 1007. Response time: 2.
+[NX Daemon Server] - 2024-10-01T01:01:04.737Z - [REQUEST]: Responding to the client. handleHashTasks
+[NX Daemon Server] - 2024-10-01T01:01:04.738Z - Done responding to the client handleHashTasks
+[NX Daemon Server] - 2024-10-01T01:01:04.738Z - Handled HASH_TASKS. Handling time: 20. Response time: 1.
+[NX Daemon Server] - 2024-10-01T01:01:05.836Z - [REQUEST]: Responding to the client. recordOutputsHash
+[NX Daemon Server] - 2024-10-01T01:01:05.836Z - Done responding to the client recordOutputsHash
+[NX Daemon Server] - 2024-10-01T01:01:05.836Z - Handled RECORD_OUTPUTS_HASH. Handling time: 1. Response time: 0.
+[NX Daemon Server] - 2024-10-01T01:01:19.870Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:02:49.037Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:04:58.562Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:04:58.564Z - [WATCHER]: Stopping the watcher for D:\Projects\postybirb\v4\postybirb (sources)
+[NX Daemon Server] - 2024-10-01T01:04:58.564Z - [WATCHER]: Stopping the watcher for D:\Projects\postybirb\v4\postybirb (outputs)
+[NX Daemon Server] - 2024-10-01T01:04:58.565Z - Server stopped because: "NX_VERSION_CHANGED"
+
+ >  NX   ENOENT: no such file or directory, open 'd:\Projects\postybirb\v4\postybirb\.nx\cache\d\server-process.json'
+
+[NX Daemon Server] - 2024-10-01T01:05:11.125Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:05:11.131Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:05:11.132Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:05:11.134Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:05:11.134Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:05:11.136Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:05:11.955Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:05:11.955Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:05:11.955Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:05:12.011Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:05:12.013Z - Time taken for 'total for creating and serializing project graph' 874.8466000000001ms
+[NX Daemon Server] - 2024-10-01T01:05:12.014Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:05:12.016Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:05:12.016Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:05:12.016Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 875. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:05:12.017Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:05:12.018Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:05:16.339Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:05:16.343Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:05:16.347Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:05:16.348Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:05:16.349Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:05:16.351Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:05:16.465Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:05:16.465Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:05:16.465Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:05:16.521Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:05:16.523Z - Time taken for 'total for creating and serializing project graph' 170.23530000000002ms
+[NX Daemon Server] - 2024-10-01T01:05:16.525Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:05:16.525Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:05:16.526Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:05:16.526Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 170. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:05:16.527Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:05:16.528Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:05:25.856Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:05:25.861Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:05:25.862Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:05:25.863Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:05:25.863Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:05:25.866Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:05:25.983Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:05:25.983Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:05:25.983Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:05:26.045Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:05:26.046Z - Time taken for 'total for creating and serializing project graph' 178.9382ms
+[NX Daemon Server] - 2024-10-01T01:05:26.049Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:05:26.050Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:05:26.050Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:05:26.050Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 180. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:05:26.051Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:05:26.052Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:06:27.024Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:06:27.032Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:06:27.037Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:06:27.038Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:06:27.039Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:06:27.041Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:06:33.168Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:06:33.168Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:06:33.168Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:06:33.587Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:06:33.589Z - Time taken for 'total for creating and serializing project graph' 6546.7571ms
+[NX Daemon Server] - 2024-10-01T01:06:33.593Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:06:33.594Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:06:33.596Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:06:33.596Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 6547. Response time: 9.
+[NX Daemon Server] - 2024-10-01T01:06:33.598Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:06:33.599Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:06:34.948Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:06:34.954Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:06:34.955Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:06:34.956Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:06:34.957Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:06:34.958Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:06:35.065Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:06:35.066Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:06:35.066Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:06:35.119Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:06:35.122Z - Time taken for 'total for creating and serializing project graph' 160.9316ms
+[NX Daemon Server] - 2024-10-01T01:06:35.124Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:06:35.125Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:06:35.125Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:06:35.125Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 161. Response time: 6.
+[NX Daemon Server] - 2024-10-01T01:06:35.126Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:06:35.127Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:06:48.714Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:06:48.720Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:06:48.730Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:06:48.732Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:06:48.732Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:06:48.733Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:06:48.818Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:06:48.818Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:06:48.818Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:06:48.885Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:06:48.887Z - Time taken for 'total for creating and serializing project graph' 152.2915ms
+[NX Daemon Server] - 2024-10-01T01:06:48.887Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:06:48.888Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 152. Response time: 3.
+[NX Daemon Server] - 2024-10-01T01:06:48.895Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:06:48.896Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:17.994Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:17.998Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:18.003Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:18.005Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:18.005Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:18.007Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:18.584Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:18.584Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:18.584Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:18.643Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:18.645Z - Time taken for 'total for creating and serializing project graph' 635.7876ms
+[NX Daemon Server] - 2024-10-01T01:07:18.647Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:18.648Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:18.648Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:18.648Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 636. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:18.649Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:18.650Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:22.972Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:22.978Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:22.983Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:22.984Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:22.985Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:22.986Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:23.104Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:23.104Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:23.104Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:23.163Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:23.165Z - Time taken for 'total for creating and serializing project graph' 176.68750000000003ms
+[NX Daemon Server] - 2024-10-01T01:07:23.165Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:23.167Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:23.167Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:23.167Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 177. Response time: 4.
+[NX Daemon Server] - 2024-10-01T01:07:23.169Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:23.170Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:32.473Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:32.477Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:32.479Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:32.479Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:32.480Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:32.482Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:32.580Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:32.580Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:32.580Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:32.636Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:32.638Z - Time taken for 'total for creating and serializing project graph' 154.0604ms
+[NX Daemon Server] - 2024-10-01T01:07:32.642Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:32.642Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:32.642Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:32.643Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 154. Response time: 7.
+[NX Daemon Server] - 2024-10-01T01:07:32.644Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:32.645Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:34.613Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:34.618Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:34.622Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:34.624Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:34.624Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:34.626Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:34.758Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:34.758Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:34.758Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:35.276Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:35.278Z - Time taken for 'total for creating and serializing project graph' 650.0289ms
+[NX Daemon Server] - 2024-10-01T01:07:35.280Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:35.281Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:35.281Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:35.281Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 650. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:35.283Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:35.284Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:36.609Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:36.612Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:36.615Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:36.617Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:36.617Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:36.619Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:36.705Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:36.705Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:36.705Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:36.761Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:36.763Z - Time taken for 'total for creating and serializing project graph' 141.74580000000003ms
+[NX Daemon Server] - 2024-10-01T01:07:36.765Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:36.765Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:36.765Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:36.765Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 142. Response time: 4.
+[NX Daemon Server] - 2024-10-01T01:07:36.767Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:36.768Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:40.937Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:40.942Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:40.943Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:07:40.944Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:40.944Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:40.948Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:41.060Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:41.061Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:41.061Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:41.251Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:41.253Z - Time taken for 'total for creating and serializing project graph' 303.0711ms
+[NX Daemon Server] - 2024-10-01T01:07:41.255Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:41.256Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:41.256Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:41.256Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 303. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:41.257Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:41.315Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:41.315Z - [REQUEST]: .nx/workspace-data/d/daemon.log
+[NX Daemon Server] - 2024-10-01T01:07:41.315Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:41.352Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:41.353Z - Time taken for 'total for creating and serializing project graph' 94.28929999999997ms
+[NX Daemon Server] - 2024-10-01T01:07:41.357Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:41.357Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 95. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:41.358Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:41.359Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:43.324Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:43.328Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:43.334Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:43.336Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:43.336Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:43.338Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:43.439Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:43.439Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:43.439Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:43.632Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:43.634Z - Time taken for 'total for creating and serializing project graph' 293.37080000000003ms
+[NX Daemon Server] - 2024-10-01T01:07:43.641Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:43.642Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:43.642Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:43.642Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 294. Response time: 10.
+[NX Daemon Server] - 2024-10-01T01:07:43.643Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:43.644Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:44.993Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:44.996Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:45.002Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:45.004Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:45.005Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:45.007Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:45.142Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:45.142Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:45.142Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:45.339Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:45.342Z - Time taken for 'total for creating and serializing project graph' 332.27590000000004ms
+[NX Daemon Server] - 2024-10-01T01:07:45.344Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:45.345Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:45.345Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:45.345Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 332. Response time: 6.
+[NX Daemon Server] - 2024-10-01T01:07:45.346Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:45.347Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:45.841Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:45.846Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:45.851Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:45.853Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:45.853Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:45.855Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:45.972Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:45.972Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:45.972Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:46.024Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:46.026Z - Time taken for 'total for creating and serializing project graph' 169.24569999999997ms
+[NX Daemon Server] - 2024-10-01T01:07:46.027Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:46.027Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 169. Response time: 3.
+[NX Daemon Server] - 2024-10-01T01:07:46.031Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:46.032Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:49.653Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:49.659Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:49.667Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:49.668Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:49.668Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:49.669Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:49.824Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:49.825Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:49.825Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:49.885Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:49.887Z - Time taken for 'total for creating and serializing project graph' 216.07270000000003ms
+[NX Daemon Server] - 2024-10-01T01:07:49.889Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:49.890Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:49.890Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:49.890Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 216. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:49.892Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:49.892Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:50.682Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:50.688Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:50.689Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:07:50.690Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:50.690Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:50.693Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:50.807Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:50.807Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:50.807Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:50.869Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:50.871Z - Time taken for 'total for creating and serializing project graph' 176.06820000000002ms
+[NX Daemon Server] - 2024-10-01T01:07:50.873Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:50.874Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:50.874Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:50.874Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 176. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:50.877Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:50.878Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:52.188Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:52.193Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:52.200Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:52.202Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:52.202Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:52.203Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:52.288Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:52.288Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:52.288Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:52.342Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:52.344Z - Time taken for 'total for creating and serializing project graph' 138.98899999999998ms
+[NX Daemon Server] - 2024-10-01T01:07:52.346Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:52.347Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:52.347Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:52.347Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 139. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:52.348Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:52.349Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:55.329Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:55.333Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:55.338Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:55.339Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:55.339Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:55.341Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:55.457Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:55.457Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:55.457Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:55.513Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:55.515Z - Time taken for 'total for creating and serializing project graph' 172.42520000000002ms
+[NX Daemon Server] - 2024-10-01T01:07:55.517Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:55.517Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:55.518Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:55.518Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 172. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:55.519Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:55.520Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:07:56.646Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:07:56.650Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:07:56.652Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:56.653Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:07:56.653Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:07:56.655Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:07:56.756Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:07:56.757Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:56.757Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:07:56.812Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:07:56.814Z - Time taken for 'total for creating and serializing project graph' 156.97840000000002ms
+[NX Daemon Server] - 2024-10-01T01:07:56.817Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:07:56.817Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:07:56.817Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:07:56.817Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 157. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:07:56.821Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:07:56.822Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:04.823Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:04.830Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:04.831Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:04.832Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:04.832Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:04.834Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:04.975Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:04.975Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:04.975Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:05.031Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:05.033Z - Time taken for 'total for creating and serializing project graph' 197.08ms
+[NX Daemon Server] - 2024-10-01T01:08:05.036Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:05.036Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:05.036Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:05.036Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 197. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:05.039Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:05.040Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:06.389Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:06.394Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:06.402Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:06.403Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:08:06.403Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:06.404Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:06.521Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:06.521Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:06.521Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:06.579Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:06.581Z - Time taken for 'total for creating and serializing project graph' 174.7849ms
+[NX Daemon Server] - 2024-10-01T01:08:06.583Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:06.584Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:06.584Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:06.584Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 175. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:06.586Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:06.587Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:09.508Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:09.513Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:09.514Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:09.515Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:09.515Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:09.517Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:09.631Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:09.631Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:09.631Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:09.687Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:09.688Z - Time taken for 'total for creating and serializing project graph' 169.3252ms
+[NX Daemon Server] - 2024-10-01T01:08:09.689Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:09.689Z - Established a connection. Number of open connections: 3
+[NX Daemon Server] - 2024-10-01T01:08:09.691Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:09.692Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:09.692Z - Closed a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:09.692Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:09.692Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 170. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:09.693Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:09.754Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:09.754Z - [REQUEST]: .nx/workspace-data/d/daemon.log
+[NX Daemon Server] - 2024-10-01T01:08:09.754Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:09.793Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:09.795Z - Time taken for 'total for creating and serializing project graph' 100.08720000000005ms
+[NX Daemon Server] - 2024-10-01T01:08:09.796Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:09.797Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:09.797Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 100. Response time: 4.
+[NX Daemon Server] - 2024-10-01T01:08:09.797Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:10.901Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:10.907Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:10.908Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:10.909Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:10.909Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:10.911Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:11.004Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:11.004Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:11.004Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:11.057Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:11.059Z - Time taken for 'total for creating and serializing project graph' 145.95990000000003ms
+[NX Daemon Server] - 2024-10-01T01:08:11.061Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:11.061Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:11.062Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:11.062Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 146. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:11.063Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:11.064Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:20.284Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:20.291Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:20.297Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:20.298Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:08:20.299Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:20.300Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:20.400Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:20.400Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:20.400Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:20.459Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:20.462Z - Time taken for 'total for creating and serializing project graph' 159.00950000000003ms
+[NX Daemon Server] - 2024-10-01T01:08:20.462Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:20.464Z - [WATCHER]: 0 file(s) created or restored, 2 file(s) modified, 0 file(s) deleted
+[NX Daemon Server] - 2024-10-01T01:08:20.465Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:20.465Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 159. Response time: 6.
+[NX Daemon Server] - 2024-10-01T01:08:20.467Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:20.468Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:24.833Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:24.839Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:24.842Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:24.843Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:08:24.843Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:24.845Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:24.947Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:24.947Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:24.947Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:25.012Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:25.014Z - Time taken for 'total for creating and serializing project graph' 166.5117ms
+[NX Daemon Server] - 2024-10-01T01:08:25.016Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:25.016Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:25.017Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:25.017Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 167. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:25.019Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:25.020Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:47.754Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:47.759Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:47.761Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:47.763Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:08:47.763Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:47.765Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:48.093Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:48.094Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:48.094Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:48.149Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:48.151Z - Time taken for 'total for creating and serializing project graph' 384.04830000000004ms
+[NX Daemon Server] - 2024-10-01T01:08:48.153Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:48.153Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:48.153Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:48.154Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 384. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:48.156Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:48.157Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:08:52.459Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:08:52.465Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:08:52.471Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:52.473Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:08:52.473Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:08:52.475Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:52.618Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:52.618Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:52.618Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:52.676Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:52.678Z - Time taken for 'total for creating and serializing project graph' 200.9429ms
+[NX Daemon Server] - 2024-10-01T01:08:52.681Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:08:52.681Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:52.682Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:52.682Z - Established a connection. Number of open connections: 3
+[NX Daemon Server] - 2024-10-01T01:08:52.682Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:52.682Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 201. Response time: 6.
+[NX Daemon Server] - 2024-10-01T01:08:52.682Z - Closed a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:08:52.683Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:08:52.744Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:08:52.744Z - [REQUEST]: .nx/workspace-data/d/daemon.log
+[NX Daemon Server] - 2024-10-01T01:08:52.744Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:08:52.789Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:08:52.790Z - Time taken for 'total for creating and serializing project graph' 106.01479999999998ms
+[NX Daemon Server] - 2024-10-01T01:08:52.791Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:08:52.793Z - [WATCHER]: 0 file(s) created or restored, 3 file(s) modified, 0 file(s) deleted
+[NX Daemon Server] - 2024-10-01T01:08:52.793Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:08:52.794Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:08:52.794Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 106. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:08:52.794Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:15:40.176Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:15:40.181Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:15:40.182Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:15:40.184Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:15:40.184Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:15:40.186Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:15:40.807Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:15:40.807Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:15:40.807Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:15:40.865Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:15:40.867Z - Time taken for 'total for creating and serializing project graph' 678.434ms
+[NX Daemon Server] - 2024-10-01T01:15:40.869Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:15:40.869Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:15:40.869Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:15:40.869Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 679. Response time: 4.
+[NX Daemon Server] - 2024-10-01T01:15:40.871Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:15:40.873Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:15:45.179Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:15:45.187Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:15:45.188Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:15:45.189Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:15:45.189Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:15:45.191Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:15:45.318Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:15:45.318Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:15:45.318Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:15:45.376Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:15:45.378Z - Time taken for 'total for creating and serializing project graph' 184.71720000000002ms
+[NX Daemon Server] - 2024-10-01T01:15:45.379Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:15:45.381Z - [WATCHER]: .nx/workspace-data/d/daemon.log was modified
+[NX Daemon Server] - 2024-10-01T01:15:45.381Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:15:45.381Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 185. Response time: 5.
+[NX Daemon Server] - 2024-10-01T01:15:45.382Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:15:45.383Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:28:07.821Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:28:07.832Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:28:07.833Z - Established a connection. Number of open connections: 2
+[NX Daemon Server] - 2024-10-01T01:28:07.834Z - Closed a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:28:07.835Z - [WATCHER]: Subscribed to changes within: d:\Projects\postybirb\v4\postybirb
+[NX Daemon Server] - 2024-10-01T01:28:07.838Z - [REQUEST]: Client Request for Project Graph Received
+[NX Daemon Server] - 2024-10-01T01:28:09.007Z - [REQUEST]: Updated file-hasher based on watched changes, recomputing project graph...
+[NX Daemon Server] - 2024-10-01T01:28:09.007Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:28:09.007Z - [REQUEST]: 
+[NX Daemon Server] - 2024-10-01T01:28:09.714Z - [REQUEST]: Responding to the client. project-graph
+[NX Daemon Server] - 2024-10-01T01:28:09.716Z - Time taken for 'total for creating and serializing project graph' 1876.0867ms
+[NX Daemon Server] - 2024-10-01T01:28:09.719Z - [WATCHER]: 0 file(s) created or restored, 2 file(s) modified, 0 file(s) deleted
+[NX Daemon Server] - 2024-10-01T01:28:09.720Z - [WATCHER]: Processing file changes in outputs
+[NX Daemon Server] - 2024-10-01T01:28:09.720Z - Done responding to the client project-graph
+[NX Daemon Server] - 2024-10-01T01:28:09.720Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 1877. Response time: 6.
+[NX Daemon Server] - 2024-10-01T01:28:09.721Z - [REQUEST]: Responding to the client with an error. Invalid payload from the client Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+Error: Unsupported payload sent to daemon server: {"type":"GET_CONTEXT_FILE_DATA"}
+    at handleMessage (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:106:104)
+    at d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\daemon\server\server.js:45:15
+    at Socket.<anonymous> (d:\Projects\postybirb\v4\postybirb\node_modules\nx\src\utils\consume-messages-from-socket.js:13:17)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+[NX Daemon Server] - 2024-10-01T01:28:09.723Z - Done responding to the client null
+[NX Daemon Server] - 2024-10-01T01:28:50.682Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:28:50.684Z - [WATCHER]: Subscribed to changes within: D:\Projects\postybirb\v4\postybirb (native)
+[NX Daemon Server] - 2024-10-01T01:28:50.692Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:28:50.693Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:28:50.693Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:28:50.695Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX Daemon Server] - 2024-10-01T01:28:50.695Z - Done responding to the client Shutdown initiated
+[NX Daemon Server] - 2024-10-01T01:28:50.695Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 0.
+[NX Daemon Server] - 2024-10-01T01:28:50.707Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:28:50.707Z - [WATCHER]: Stopping the watcher for D:\Projects\postybirb\v4\postybirb (sources)
+[NX Daemon Server] - 2024-10-01T01:28:50.707Z - [WATCHER]: Stopping the watcher for D:\Projects\postybirb\v4\postybirb (outputs)
+[NX Daemon Server] - 2024-10-01T01:34:24.949Z - Started listening on: \\.\pipe\nx\C:\Users\micha\AppData\Local\Temp\a1b18fbc6f17ed90392a\d.sock
+[NX Daemon Server] - 2024-10-01T01:34:24.953Z - [WATCHER]: Subscribed to changes within: D:\Projects\postybirb\v4\postybirb (native)
+[NX Daemon Server] - 2024-10-01T01:34:24.961Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:34:24.963Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:34:24.963Z - Established a connection. Number of open connections: 1
+[NX Daemon Server] - 2024-10-01T01:34:24.964Z - [REQUEST]: Responding to the client. Shutdown initiated
+[NX Daemon Server] - 2024-10-01T01:34:24.965Z - Done responding to the client Shutdown initiated
+[NX Daemon Server] - 2024-10-01T01:34:24.965Z - Handled FORCE_SHUTDOWN. Handling time: 0. Response time: 1.
+[NX Daemon Server] - 2024-10-01T01:34:24.965Z - Closed a connection. Number of open connections: 0
+[NX Daemon Server] - 2024-10-01T01:34:24.965Z - [WATCHER]: Stopping the watcher for D:\Projects\postybirb\v4\postybirb (sources)
+[NX Daemon Server] - 2024-10-01T01:34:24.965Z - [WATCHER]: Stopping the watcher for D:\Projects\postybirb\v4\postybirb (outputs)
