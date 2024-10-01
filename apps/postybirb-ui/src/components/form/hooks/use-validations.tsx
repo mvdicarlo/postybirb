@@ -14,10 +14,10 @@ export function useValidations(props: FormFieldProps): UseValidationResult {
     const validations = validation.find((v) => v.id === option.id);
     const warnings: ValidationMessage[] = (
       validations?.result.warnings || []
-    ).filter((warning) => warning.field === propKey);
+    ).filter((warning: ValidationMessage) => warning.field === propKey);
     const errors: ValidationMessage[] = (
       validations?.result.errors || []
-    ).filter((error) => error.field === propKey);
+    ).filter((error: ValidationMessage) => error.field === propKey);
 
     return {
       warnings,

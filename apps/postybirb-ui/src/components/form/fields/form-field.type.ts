@@ -1,8 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UseFormReturnType } from '@mantine/form';
 import { FieldAggregateType } from '@postybirb/form-builder';
-import { IWebsiteFormFields, WebsiteOptionsDto } from '@postybirb/types';
-import { SubmissionValidationResult } from '../../submissions/submission-edit-form/submission-form-props';
+import {
+  IWebsiteFormFields,
+  ValidationResult,
+  WebsiteOptionsDto,
+} from '@postybirb/types';
+
+export type SubmissionValidationResult = {
+  id: string;
+  result: ValidationResult;
+};
 
 export type FormFieldProps<T = FieldAggregateType<never>> = {
   defaultOption: WebsiteOptionsDto<IWebsiteFormFields>;

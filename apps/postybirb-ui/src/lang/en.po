@@ -30,7 +30,7 @@ msgstr ""
 msgid "Add folder watcher"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:30
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:31
 msgid "Allow PostyBirb to insert an Ad into the description"
 msgstr ""
 
@@ -38,16 +38,16 @@ msgstr ""
 msgid "Alt Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:102
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
 msgid "App Folder"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:80
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:81
 msgid "App Server Port"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:283
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:274
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
 msgid "Apply"
 msgstr ""
 
@@ -72,7 +72,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:253
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:271
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:272
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
 msgstr ""
@@ -136,11 +136,11 @@ msgstr ""
 msgid "Crop new thumbnail from original file"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:214
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:215
 msgid "Date"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:225
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:226
 msgid "Days"
 msgstr ""
 
@@ -174,7 +174,7 @@ msgstr ""
 msgid "Description is greater than {maxLength} characters long"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:24
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:25
 msgid "Description Settings"
 msgstr ""
 
@@ -186,7 +186,7 @@ msgstr ""
 msgid "Drag images here or click to select files"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:104
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:105
 msgid "Drag or use arrow keys to change order."
 msgstr ""
 
@@ -242,7 +242,7 @@ msgstr ""
 msgid "Failed to update"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:62
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
 msgstr ""
 
@@ -278,7 +278,7 @@ msgid "Height"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:64
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:34
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:35
 #: apps/postybirb-ui/src/pages/home/home-page.tsx:9
 msgid "Home"
 msgstr ""
@@ -287,7 +287,7 @@ msgstr ""
 msgid "Home Page"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:233
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:234
 msgid "Hours"
 msgstr ""
 
@@ -325,7 +325,7 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:63
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:64
 msgid "Message submissions"
 msgstr ""
 
@@ -334,7 +334,7 @@ msgstr ""
 msgid "Message Submissions"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:241
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:242
 msgid "Minutes"
 msgstr ""
 
@@ -344,9 +344,9 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:32
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:39
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:46
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:33
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:40
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:47
 msgid "Navigation"
 msgstr ""
 
@@ -358,7 +358,7 @@ msgstr ""
 msgid "No login component found."
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:98
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:99
 msgid "No results"
 msgstr ""
 
@@ -382,11 +382,11 @@ msgctxt "internalSchedule.single"
 msgid "Once"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:264
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:265
 msgid "Only set scheduled date"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:71
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:72
 msgid "Open PostyBirb on computer startup"
 msgstr ""
 
@@ -399,11 +399,11 @@ msgstr ""
 msgid "Post"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:41
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:42
 msgid "Post a file"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:48
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:49
 msgid "Post a message"
 msgstr ""
 
@@ -470,12 +470,12 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:141
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:144
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
 msgid "Schedule"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:200
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:201
 msgctxt "schedule.modal-header"
 msgid "Schedule"
 msgstr ""
@@ -497,7 +497,7 @@ msgstr ""
 msgid "Send Messages"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:154
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
 msgid "Settings"
 msgstr ""
@@ -515,7 +515,7 @@ msgstr ""
 msgid "Spoiler Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:65
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:66
 msgid "Startup Settings"
 msgstr ""
 
@@ -528,17 +528,12 @@ msgstr ""
 msgid "Submission queued"
 msgstr ""
 
-#: apps/postybirb-ui/src/hooks/submission/use-submission.tsx:162
-msgctxt "submission.save.success"
-msgid "Submission saved"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:117
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:79
 msgid "Submission scheduled"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:84
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:85
 msgid "Submission templates"
 msgstr ""
 
@@ -605,7 +600,7 @@ msgstr ""
 msgid "Templates"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:104
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:105
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
 msgstr ""
 
@@ -636,7 +631,7 @@ msgstr ""
 msgid "Unknown"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight.tsx:65
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:66
 msgid "Unknown submission"
 msgstr ""
 
