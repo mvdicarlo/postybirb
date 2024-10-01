@@ -1,15 +1,14 @@
 import {
   ISubmission,
-  IWebsiteFormFields,
   ISubmissionScheduleInfo,
+  IWebsiteFormFields,
 } from '../../models';
 import { WebsiteOptionsDto } from '../website-options/website-options.dto';
 
-export type IUpdateSubmissionDto = Pick<
-  ISubmission,
-  'isScheduled' | 'metadata'
+export type IUpdateSubmissionDto = Partial<
+  Pick<ISubmission, 'isScheduled' | 'metadata'>
 > &
-  ISubmissionScheduleInfo & {
+  Partial<ISubmissionScheduleInfo> & {
     deletedWebsiteOptions?: string[];
     newOrUpdatedOptions?: WebsiteOptionsDto<IWebsiteFormFields>[];
   };

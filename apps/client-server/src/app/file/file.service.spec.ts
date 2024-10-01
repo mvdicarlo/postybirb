@@ -6,10 +6,17 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
+import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
+import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
+import { TitleParserService } from '../post-parsers/parsers/title-parser.service';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
@@ -76,6 +83,13 @@ describe('FileService', () => {
         WebsiteRegistryService,
         WebsiteOptionsService,
         WebsiteImplProvider,
+        PostParsersService,
+        TagParserService,
+        DescriptionParserService,
+        TitleParserService,
+        TagConvertersService,
+        SettingsService,
+        FormGeneratorService,
       ],
     }).compile();
 
@@ -107,11 +121,11 @@ describe('FileService', () => {
     expect(file.size).toBe(fileInfo.size);
     expect(file.hasThumbnail).toBe(true);
     expect(file.props.hasCustomThumbnail).toBe(false);
-    expect(file.height).toBe(100);
-    expect(file.width).toBe(100);
+    expect(file.height).toBe(202);
+    expect(file.width).toBe(138);
     expect(file.file.size).toBe(fileInfo.size);
-    expect(file.file.height).toBe(100);
-    expect(file.file.width).toBe(100);
+    expect(file.file.height).toBe(202);
+    expect(file.file.width).toBe(138);
     expect(file.file.parent.id).toEqual(file.id);
     expect(file.file.mimeType).toEqual(fileInfo.mimetype);
     expect(file.file.buffer).toEqual(testFile);
@@ -143,11 +157,11 @@ describe('FileService', () => {
     expect(updatedFile.size).toBe(updateFileInfo.size);
     expect(updatedFile.hasThumbnail).toBe(true);
     expect(updatedFile.props.hasCustomThumbnail).toBe(false);
-    expect(updatedFile.height).toBe(100);
-    expect(updatedFile.width).toBe(100);
+    expect(updatedFile.height).toBe(202);
+    expect(updatedFile.width).toBe(138);
     expect(updatedFile.file.size).toBe(updateFileInfo.size);
-    expect(updatedFile.file.height).toBe(100);
-    expect(updatedFile.file.width).toBe(100);
+    expect(updatedFile.file.height).toBe(202);
+    expect(updatedFile.file.width).toBe(138);
     expect(updatedFile.file.parent.id).toEqual(file.id);
     expect(updatedFile.file.mimeType).not.toEqual(updateFileInfo.mimetype);
     expect(updatedFile.file.buffer).toEqual(testFile);

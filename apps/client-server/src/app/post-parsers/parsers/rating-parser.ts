@@ -1,15 +1,18 @@
-import { SubmissionRating } from '@postybirb/types';
-import { WebsiteOptions } from '../../database/entities';
+import { IWebsiteOptions, SubmissionRating } from '@postybirb/types';
 
 export class RatingParser {
   public parse(
-    defaultOptions: WebsiteOptions,
-    websiteOptions: WebsiteOptions
+    defaultOptions: IWebsiteOptions,
+    websiteOptions: IWebsiteOptions
   ): SubmissionRating {
-    return (
-      websiteOptions.data.rating ??
-      defaultOptions.data.rating ??
-      SubmissionRating.GENERAL
-    );
+    if (websiteOptions.data.rating) {
+      return websiteOptions.data.rating;
+    }
+
+    if (defaultOptions.data.rating) {
+      return defaultOptions.data.rating;
+    }
+
+    throw new Error('No rating found');
   }
 }

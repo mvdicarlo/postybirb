@@ -1,4 +1,5 @@
 import {
+  DescriptionType,
   FileSubmission,
   ILoginState,
   ISubmissionFile,
@@ -13,6 +14,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsDescription } from '../../decorators/supports-description.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -33,6 +35,7 @@ import { DiscordMessageSubmission } from './models/discord-message-submission';
   acceptedFileSizes: {},
   fileBatchSize: 10,
 })
+@SupportsDescription(DescriptionType.MARKDOWN)
 export default class Discord
   extends Website<DiscordAccountData>
   implements
@@ -99,15 +102,16 @@ export default class Discord
       warnings: [],
     };
 
-    if (postData.options.description.description.trim().length > 2_000) {
-      result.warnings.push({
-        id: 'validation.description.max-length',
-        field: 'description',
-        values: {
-          maxLength: 2_000,
-        },
-      });
-    }
+    // TODO - update validation
+    // if (postData.options.description.description.trim().length > 2_000) {
+    //   result.warnings.push({
+    //     id: 'validation.description.max-length',
+    //     field: 'description',
+    //     values: {
+    //       maxLength: 2_000,
+    //     },
+    //   });
+    // }
 
     return result;
   }

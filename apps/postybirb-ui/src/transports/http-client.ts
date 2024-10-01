@@ -82,7 +82,10 @@ export class HttpClient {
     );
 
     let headers: Record<string, string> = {
-      'Content-Type': 'application/json',
+      'Content-Type':
+        bodyOrSearchParams instanceof FormData
+          ? 'multipart/form-data'
+          : 'application/json',
     };
 
     if (bodyOrSearchParams instanceof FormData || !shouldUseBody) {

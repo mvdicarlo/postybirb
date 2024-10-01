@@ -15,8 +15,7 @@ import {
   app,
   globalShortcut,
   nativeImage,
-  screen,
-  shell,
+  screen
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';
@@ -68,11 +67,11 @@ export default class PostyBirb {
     }
   ) {
     const { url, preventDefault } = details;
-    if (url !== PostyBirb.mainWindow.webContents.getURL()) {
-      // this is a normal external redirect, open it in a new browser window
-      preventDefault(); // !BUG - causes a crash in current electron version
-      shell.openExternal(url);
-    }
+    // if (url !== PostyBirb.mainWindow.webContents.getURL()) {
+    //   // this is a normal external redirect, open it in a new browser window
+    //   preventDefault(); // !BUG - causes a crash in current electron version
+    //   shell.openExternal(url);
+    // }
   }
 
   private static onReady() {

@@ -19,6 +19,7 @@ import {
 
 export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
+  @IsOptional()
   @IsBoolean()
   isScheduled: boolean;
 
@@ -29,6 +30,7 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   scheduledFor: string | null | undefined;
 
   @ApiProperty({ enum: ScheduleType })
+  @IsOptional()
   @IsEnum(ScheduleType)
   scheduleType: ScheduleType;
 

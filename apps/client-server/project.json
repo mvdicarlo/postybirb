@@ -38,18 +38,14 @@
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": ["apps/client-server/**/*.ts"]
-      },
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/apps/client-server"],
       "options": {
-        "jestConfig": "apps/client-server/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "apps/client-server/jest.config.ts"
       }
     }
   },

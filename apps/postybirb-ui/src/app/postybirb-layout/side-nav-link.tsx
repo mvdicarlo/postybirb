@@ -1,0 +1,161 @@
+import { Kbd, NavLink, Tooltip } from '@mantine/core';
+import { useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router';
+import tinykeys from 'tinykeys';
+import { DrawerGlobalState } from './drawers/drawer-global-state';
+import { useDrawerToggle } from './drawers/use-drawer-toggle';
+
+interface SideNavLinkType {
+  icon: JSX.Element;
+  label: JSX.Element;
+  kbd?: string;
+}
+
+interface SideNavLinkHrefProps extends SideNavLinkType {
+  type: 'link';
+  location: string;
+}
+
+interface SideNavLinkDrawerProps extends SideNavLinkType {
+  // eslint-disable-next-line react/no-unused-prop-types
+  type: 'drawer';
+  globalStateKey: keyof DrawerGlobalState;
+}
+
+interface SideNavLinkCustomProps extends SideNavLinkType {
+  type: 'custom';
+  onClick: () => void;
+}
+
+export type SideNavLinkProps =
+  | SideNavLinkDrawerProps
+  | SideNavLinkHrefProps
+  | SideNavLinkCustomProps;
+
+type ExtendedSideNavLinkProps = SideNavLinkProps & {
+  collapsed: boolean;
+};
+
+function BaseNavLink(
+  props: SideNavLinkProps &
+    ExtendedSideNavLinkProps & {
+      onClick: () => void;
+      active: boolean;
+    }
+) {
+  const { kbd, active, icon, label, collapsed, onClick } = props;
+
+  useEffect(() => {
+    const unsubscribe = !kbd
+      ? () => {}
+      : tinykeys(window, {
+          [kbd]: onClick,
+        });
+
+    return () => unsubscribe();
+  }, [kbd, onClick]);
+
+  const onClickCapture = useCallback(
+    (
+      e?: React.BaseSyntheticEvent<
+        MouseEvent,
+        EventTarget & HTMLAnchorElement,
+        EventTarget
+      >
+    ) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      onClick();
+    },
+    [onClick]
+  );
+
+  const kbdEl = kbd ? (
+    <Kbd style={{ verticalAlign: 'middle' }} ml="sm" size="xs">
+      {kbd}
+    </Kbd>
+  ) : null;
+
+  return (
+    <Tooltip
+      withArrow
+      position="right"
+      disabled={!collapsed}
+      label={
+        <span>
+          {label}
+          {kbdEl}
+        </span>
+      }
+    >
+      <NavLink
+        active={active}
+        href="#"
+        leftSection={collapsed ? null : icon}
+        label={
+          collapsed ? (
+            icon
+          ) : (
+            <span>
+              {label}
+              {kbdEl}
+            </span>
+          )
+        }
+        onClick={onClickCapture}
+      />
+    </Tooltip>
+  );
+}
+
+function DrawerNavLink(
+  props: SideNavLinkDrawerProps & ExtendedSideNavLinkProps
+) {
+  const { globalStateKey } = props;
+  const [state, toggleFlyout] = useDrawerToggle(globalStateKey);
+  const onClick = useCallback(() => {
+    toggleFlyout();
+  }, [toggleFlyout]);
+  return <BaseNavLink {...props} active={state} onClick={onClick} />;
+}
+
+export function LocationNavLink(
+  props: SideNavLinkHrefProps & ExtendedSideNavLinkProps
+) {
+  const { location } = props;
+  const activePage = useLocation();
+  const navigateTo = useNavigate();
+  const onClick = useCallback(() => {
+    navigateTo(location);
+  }, [location, navigateTo]);
+  return (
+    <BaseNavLink
+      active={
+        location === '/'
+          ? activePage.pathname === location
+          : activePage.pathname.startsWith(location)
+      }
+      {...props}
+      onClick={onClick}
+    />
+  );
+}
+
+export function SideNavLink(
+  props: SideNavLinkProps &
+    ExtendedSideNavLinkProps & {
+      onClick?: () => void;
+    }
+) {
+  const { type } = props;
+  if (type === 'link') {
+    return <LocationNavLink {...props} />;
+  }
+  if (type === 'custom') {
+    const { onClick } = props;
+    return <BaseNavLink {...props} active={false} onClick={onClick} />;
+  }
+  return <DrawerNavLink {...props} />;
+}

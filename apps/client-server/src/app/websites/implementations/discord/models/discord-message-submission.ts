@@ -4,8 +4,9 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  IWebsiteFormFields,
+  DefaultDescriptionValue,
   DescriptionValue,
+  IWebsiteFormFields,
   SubmissionRating,
 } from '@postybirb/types';
 import { DefaultRatingOptions } from '../../../models/default-website-options';
@@ -15,18 +16,15 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
     label: 'Title',
     defaultValue: '',
     row: 0,
-    column: 1,
+    col: 1,
   })
   title: string;
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: {
-      overrideDefault: false,
-      description: '',
-    },
+    defaultValue: DefaultDescriptionValue(),
     row: 3,
-    column: 1,
+    col: 1,
   })
   description: DescriptionValue;
 
@@ -36,7 +34,7 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
     options: DefaultRatingOptions,
     required: true,
     row: 0,
-    column: 0,
+    col: 0,
     layout: 'vertical',
   })
   rating: SubmissionRating;

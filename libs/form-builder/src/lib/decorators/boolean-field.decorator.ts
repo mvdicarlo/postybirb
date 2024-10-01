@@ -4,7 +4,7 @@ import { FieldType } from '../types/field';
 import { PrimitiveRecord } from '../types/primitive-record';
 import { assignMetadata } from '../utils/assign-metadata';
 
-type BooleanFormField = 'switch' | 'checkbox';
+type BooleanFormField = 'checkbox';
 const TYPE_KEY = 'boolean';
 
 export type BooleanFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
@@ -15,7 +15,7 @@ export function BooleanField<T extends PrimitiveRecord>(
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   if (!options.formField) {
-    options.formField = 'switch';
+    options.formField = 'checkbox';
   }
   return (target, propertyKey) => {
     assignMetadata(target, propertyKey, TYPE_KEY, options);

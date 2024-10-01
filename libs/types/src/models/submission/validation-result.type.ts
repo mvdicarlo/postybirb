@@ -14,12 +14,12 @@ export type ValidationResult<T extends IWebsiteFormFields = never> = {
 
 export type ValidationMessage<
   T extends object = never,
-  ID extends keyof ValidationMessages = keyof ValidationMessages
+  Id extends keyof ValidationMessages = keyof ValidationMessages
 > = {
   /**
    * Localization message id.
    */
-  id: ID;
+  id: Id;
 
   /**
    * Associates the message to a input field.
@@ -29,7 +29,7 @@ export type ValidationMessage<
   /**
    * Values to fill in the message.
    */
-  values: ValidationMessages[ID];
+  values: ValidationMessages[Id];
 };
 
 /**
@@ -42,4 +42,4 @@ export interface ValidationMessages {
      */
     maxLength: number;
   };
-};
+}

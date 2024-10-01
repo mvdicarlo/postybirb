@@ -5,18 +5,14 @@
   "projectType": "library",
   "targets": {
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "options": {
-        "lintFilePatterns": ["libs/http/**/*.ts"]
-      },
+      "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/libs/http"],
       "options": {
-        "jestConfig": "libs/http/jest.config.ts",
-        "passWithNoTests": true
+        "jestConfig": "libs/http/jest.config.ts"
       }
     }
   },

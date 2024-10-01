@@ -1,8 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
-import { SettingsService } from './settings.service';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
+import { SettingsService } from './settings.service';
 
 describe('SettingsService', () => {
   let service: SettingsService;
@@ -41,7 +41,11 @@ describe('SettingsService', () => {
     const record = groups[0];
 
     const updateDto = new UpdateSettingsDto();
-    updateDto.settings = { hiddenWebsites: ['test'] };
+    updateDto.settings = {
+      hiddenWebsites: ['test'],
+      language: 'en',
+      allowAd: true,
+    };
     await service.update(record.id, updateDto);
     const updatedRec = await service.findById(record.id);
     expect(updatedRec.settings).toEqual(updateDto.settings);

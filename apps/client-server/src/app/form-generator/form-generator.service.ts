@@ -94,11 +94,10 @@ export class FormGeneratorService {
 
     if (userSpecifiedDefaults) {
       Object.entries(userSpecifiedDefaults.options).forEach(([key, value]) => {
-        if (form[key]) {
-          form[key].forEach((field) => {
-            // eslint-disable-next-line no-param-reassign
-            field.defaultValue = value ?? field.defaultValue;
-          });
+        const field = form[key];
+        if (field) {
+          // eslint-disable-next-line no-param-reassign
+          field.defaultValue = value ?? field.defaultValue;
         }
       });
     }

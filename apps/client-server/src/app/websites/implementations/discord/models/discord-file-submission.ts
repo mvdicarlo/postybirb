@@ -1,8 +1,8 @@
 import {
   BooleanField,
+  DescriptionField,
   RatingField,
   TextField,
-  DescriptionField,
 } from '@postybirb/form-builder';
 import {
   DefaultDescriptionValue,
@@ -24,7 +24,7 @@ export class DiscordFileSubmission implements IWebsiteFormFields {
 
   @DescriptionField({
     label: 'Description',
-    defaultValue: DefaultDescriptionValue,
+    defaultValue: DefaultDescriptionValue(),
   })
   description: DescriptionValue;
 

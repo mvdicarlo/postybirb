@@ -16,14 +16,9 @@ import {
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
-import { IsTestEnvironment } from '../../utils/test.util';
 
 /**
  * A Service that defines operations for creating a SubmissionFile.
- * TODO check unit tests now that update has happened
- * !Sharp hangs when run in test environment. Not sure why, but for now, returning
- * !dummy data is enough for testing.
- * TODO figure out why multi-submission sometimes breaks entity population
  * @class CreateFileService
  */
 @Injectable()
@@ -122,14 +117,10 @@ export class CreateFileService {
     const sharpInstance = ImageUtil.load(buf);
     let height = 0;
     let width = 0;
-    if (IsTestEnvironment()) {
-      height = 100;
-      width = 100;
-    } else {
-      const meta = await sharpInstance.metadata();
-      height = meta.height;
-      width = meta.width;
-    }
+
+    const meta = await sharpInstance.metadata();
+    height = meta.height;
+    width = meta.width;
 
     entity.width = width;
     entity.height = height;
@@ -204,10 +195,6 @@ export class CreateFileService {
 
     if (fileWidth) {
       width = Math.min(fileWidth, width);
-    }
-
-    if (IsTestEnvironment()) {
-      return { buffer: Buffer.from([]), height, width };
     }
 
     const buffer = await sharpInstance

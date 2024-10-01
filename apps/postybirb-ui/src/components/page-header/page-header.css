@@ -1,0 +1,10 @@
+.postybirb__page-header__tabs {
+  margin-bottom: -2px;
+}
+
+.postybirb__page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--mantine-color-body);
+}

@@ -43,7 +43,7 @@ export class SettingsService
         profile: SettingsConstants.DEFAULT_PROFILE_NAME,
       }))
     ) {
-      this.createDefaultAccount();
+      this.createDefaultSettings();
     }
   }
 
@@ -56,7 +56,7 @@ export class SettingsService
   /**
    * Creates the default settings record.
    */
-  private createDefaultAccount() {
+  private createDefaultSettings() {
     const entity = this.repository.create({
       profile: SettingsConstants.DEFAULT_PROFILE_NAME,
       settings: SettingsConstants.DEFAULT_SETTINGS,
@@ -84,6 +84,12 @@ export class SettingsService
 
   public getStartupSettings() {
     return getStartupOptions();
+  }
+
+  public getDefaultSettings() {
+    return this.repository.findOne({
+      profile: SettingsConstants.DEFAULT_PROFILE_NAME,
+    });
   }
 
   /**

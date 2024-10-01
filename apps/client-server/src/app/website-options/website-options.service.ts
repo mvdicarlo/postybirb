@@ -4,14 +4,12 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  InternalServerErrorException,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import {
   AccountId,
   DynamicObject,
   FileSubmission,
-  ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
   MessageSubmission,
@@ -25,6 +23,8 @@ import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { DefaultWebsiteOptionsObject } from '../websites/models/default-website-options';
@@ -48,7 +48,9 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     private readonly submissionService: SubmissionService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService,
-    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService
+    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
+    private readonly postParserService: PostParsersService,
+    private readonly formGeneratorService: FormGeneratorService
   ) {
     super(repository);
   }
@@ -120,9 +122,29 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       return this.update(exists.id, { data: createDto.data });
     }
 
-    const submissionOptions = this.repository.create({
+    const formFields =
+      account.id === NULL_ACCOUNT_ID
+        ? await this.formGeneratorService.getDefaultForm(submission.type)
+        : await this.formGeneratorService.generateForm({
+            accountId: account.id,
+            type: submission.type,
+          });
+    // Populate with the form fields to get the default values
+    const websiteData: IWebsiteFormFields = {
+      ...Object.entries(formFields).reduce(
+        (acc, [key, field]) => ({
+          ...acc,
+          [key]:
+            createDto.data?.[key as keyof IWebsiteFormFields] === undefined
+              ? field.defaultValue
+              : createDto.data?.[key as keyof IWebsiteFormFields],
+        }),
+        {} as IWebsiteFormFields
+      ),
+    };
+    const submissionOptions = new WebsiteOptions({
       submission,
-      data: createDto.data,
+      data: websiteData,
       account,
     });
 
@@ -151,14 +173,11 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     this.logger
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
-    const options = this.repository.create(
-      {
-        isDefault: true,
-        submission,
-        account: await this.accountService.findById(NULL_ACCOUNT_ID),
-      },
-      { persist: false }
-    );
+    const options = new WebsiteOptions({
+      isDefault: true,
+      submission,
+      account: await this.accountService.findById(NULL_ACCOUNT_ID),
+    });
 
     await this.populateDefaultWebsiteOptions(submission.type, options, title);
     return options;
@@ -193,12 +212,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto
   ): Promise<ValidationResult> {
-    const {
-      defaultOptions,
-      options,
-      account: accountId,
-      submission: submissionId,
-    } = validate;
+    const { options, account: accountId, submission: submissionId } = validate;
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });
@@ -207,10 +221,19 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     });
     const websiteInstance = this.websiteRegistry.findInstance(account);
 
-    const postData = await this.getPostData(
+    const postData = await this.postParserService.parse(
       submission,
-      defaultOptions,
-      options
+      websiteInstance,
+      {
+        // Wrap the options in a WebsiteOptions object
+        account,
+        submission,
+        data: options,
+        isDefault: false,
+        id: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
     );
     if (
       submission.type === SubmissionType.FILE &&
@@ -266,61 +289,15 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         return result.value;
       }
 
-      if (result.status === 'rejected') {
-        return result.reason;
-      }
-
-      throw new InternalServerErrorException(
-        `Unknown promise result: ${result}`
-      );
+      this.logger.error('Failed to validate website option', result.reason);
+      return {
+        errors: [
+          {
+            id: 'validation.error.unknown',
+            values: {},
+          },
+        ],
+      };
     });
-  }
-
-  /**
-   * Creates the simple post data required to post and validate a submission.
-   * TODO: this will probably be split out later as real posting is considered.
-   *
-   * @private
-   * @param {ISubmission} submission
-   * @param {IWebsiteFormFields} defaultOptions
-   * @param {IWebsiteFormFields} options
-   * @return {*}  {Promise<PostData<ISubmission<ISubmissionMetadata>, IWebsiteFormFields>>}
-   */
-  private async getPostData(
-    submission: ISubmission,
-    defaultOptions: IWebsiteFormFields,
-    options: IWebsiteFormFields
-  ): Promise<PostData<ISubmission<ISubmissionMetadata>, IWebsiteFormFields>> {
-    const data: PostData<ISubmission, IWebsiteFormFields> = {
-      submission,
-      options,
-    };
-
-    if (defaultOptions) {
-      if (!data.options.description) {
-        data.options.description = defaultOptions.description;
-      }
-
-      // Override description
-      // TODO put description through parser once that is figured out
-      if (data.options.description.overrideDefault === false) {
-        data.options.description = defaultOptions.description;
-      }
-
-      if (!data.options.tags) {
-        data.options.tags = defaultOptions.tags;
-      }
-
-      // Merge tags
-      if (data.options.tags.overrideDefault === false) {
-        data.options.tags.tags.push(...defaultOptions.tags.tags);
-      }
-    } else {
-      throw new InternalServerErrorException(
-        `Default options not found for submission ${submission.id}`
-      );
-    }
-
-    return data;
   }
 }

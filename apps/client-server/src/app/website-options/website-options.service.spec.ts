@@ -7,19 +7,24 @@ import {
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
+import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { DatabaseModule } from '../database/database.module';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
+import { FormGeneratorModule } from '../form-generator/form-generator.module';
+import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { WebsitesModule } from '../websites/websites.module';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { WebsiteOptionsService } from './website-options.service';
 
@@ -50,34 +55,46 @@ describe('WebsiteOptionsService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule({
-      imports: [DatabaseModule],
-      providers: [
-        SubmissionService,
-        CreateFileService,
-        UpdateFileService,
-        FileService,
-        SubmissionService,
-        FileSubmissionService,
-        MessageSubmissionService,
-        AccountService,
-        WebsiteRegistryService,
-        WebsiteOptionsService,
-        WebsiteImplProvider,
-        UserSpecifiedWebsiteOptionsService,
-      ],
-    }).compile();
-
-    service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
-    submissionService = module.get<SubmissionService>(SubmissionService);
-    accountService = module.get<AccountService>(AccountService);
-    orm = module.get(MikroORM);
     try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
+      module = await Test.createTestingModule({
+        imports: [
+          DatabaseModule,
+          WebsitesModule,
+          AccountModule,
+          DatabaseModule,
+          UserSpecifiedWebsiteOptionsModule,
+          PostParsersModule,
+          FormGeneratorModule,
+        ],
+        providers: [
+          SubmissionService,
+          CreateFileService,
+          UpdateFileService,
+          FileService,
+          SubmissionService,
+          FileSubmissionService,
+          MessageSubmissionService,
+          AccountService,
+          WebsiteRegistryService,
+          WebsiteOptionsService,
+          WebsiteImplProvider,
+          UserSpecifiedWebsiteOptionsService,
+        ],
+      }).compile();
+
+      service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
+      submissionService = module.get<SubmissionService>(SubmissionService);
+      accountService = module.get<AccountService>(AccountService);
+      orm = module.get(MikroORM);
+      try {
+        await orm.getSchemaGenerator().refreshDatabase();
+      } catch {
+        // none
+      }
+      await accountService.onModuleInit();
+    } catch (e) {
+      console.error(e);
     }
-    await accountService.onModuleInit();
   });
 
   afterAll(async () => {
@@ -96,8 +113,8 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
-      description: DefaultDescriptionValue,
+      tags: DefaultTagValue(),
+      description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
     dto.account = account.id;
@@ -129,8 +146,8 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
-      description: DefaultDescriptionValue,
+      tags: DefaultTagValue(),
+      description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
     dto.account = account.id;
@@ -150,8 +167,8 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
-      description: DefaultDescriptionValue,
+      tags: DefaultTagValue(),
+      description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
     dto.account = account.id;
@@ -171,8 +188,8 @@ describe('WebsiteOptionsService', () => {
     const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
     dto.data = {
       title: 'title',
-      tags: DefaultTagValue,
-      description: DefaultDescriptionValue,
+      tags: DefaultTagValue(),
+      description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
     dto.account = account.id;
@@ -187,8 +204,8 @@ describe('WebsiteOptionsService', () => {
     const update = await service.update(record.id, {
       data: {
         title: 'title updated',
-        tags: DefaultTagValue,
-        description: DefaultDescriptionValue,
+        tags: DefaultTagValue(),
+        description: DefaultDescriptionValue(),
         rating: SubmissionRating.GENERAL,
       },
     });

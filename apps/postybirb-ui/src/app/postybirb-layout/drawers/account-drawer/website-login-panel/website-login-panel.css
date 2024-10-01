@@ -1,0 +1,16 @@
+.postybirb__website-login-panel {
+  position: absolute;
+  top: 0;
+  height: calc(100vh);
+  overflow-y: auto;
+  z-index: 1000;
+  background-color: var(--mantine-color-body);
+  border-left: 1px solid var(--mantine-color-gray-filled);
+  margin-top: 0px;
+}
+
+.postybirb__website-login-panel__header {
+  position: sticky;
+  top: 0;
+  background-color: var(--mantine-color-body);
+}

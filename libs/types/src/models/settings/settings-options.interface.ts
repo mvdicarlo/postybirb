@@ -15,4 +15,10 @@ export interface ISettingsOptions {
    * @type {string}
    */
   language: string;
+
+  /**
+   * Whether to allow ad for postybirb to be added to the description.
+   * @type {boolean}
+   */
+  allowAd: boolean;
 }

@@ -7,13 +7,31 @@ import {
   IWebsiteFormFields,
   PostRecordDto,
   SubmissionType,
+  ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { IsArray, IsBoolean, IsObject, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNumber,
+  IsObject,
+  IsString,
+} from 'class-validator';
 
 export class SubmissionDto<T extends ISubmissionMetadata = ISubmissionMetadata>
   implements ISubmissionDto<T>
 {
+  @IsNumber()
+  order: number;
+
+  @IsArray()
+  validations: ValidationResult[];
+
+  /**
+   * The post records associated with the submission.
+   * @type {PostRecordDto[]}
+   */
+  @IsArray()
   posts: PostRecordDto[];
 
   /**

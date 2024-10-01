@@ -1,44 +1,30 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   IWebsiteFormFields,
+  IWebsiteOptions,
   PostData,
-  UsernameShortcut,
 } from '@postybirb/types';
-import { Class } from 'type-fest';
-import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { UnknownWebsite } from '../websites/website';
+import { DescriptionParserService } from './parsers/description-parser.service';
 import { RatingParser } from './parsers/rating-parser';
 import { TagParserService } from './parsers/tag-parser.service';
 import { TitleParserService } from './parsers/title-parser.service';
 
-// TODO - write tests for this
 @Injectable()
 export class PostParsersService {
-  private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
-
   private readonly ratingParser: RatingParser = new RatingParser();
 
   constructor(
-    @Inject(WEBSITE_IMPLEMENTATIONS)
-    private readonly websiteImplementations: Class<UnknownWebsite>[],
     private readonly tagParser: TagParserService,
-    private readonly titleParser: TitleParserService
-  ) {
-    this.websiteImplementations.forEach((website) => {
-      const shortcut: UsernameShortcut | undefined =
-        website.prototype.decoratedProps.usernameShortcut;
-      if (shortcut) {
-        this.websiteShortcuts[shortcut.id] = shortcut;
-      }
-    });
-  }
+    private readonly titleParser: TitleParserService,
+    private readonly descriptionParser: DescriptionParserService
+  ) {}
 
-  // TODO - fix submission save form not seeing a rating field change as an update
   public async parse(
     submission: Submission,
     instance: UnknownWebsite,
-    websiteOptions: WebsiteOptions
+    websiteOptions: IWebsiteOptions
   ): Promise<PostData<Submission, IWebsiteFormFields>> {
     const defaultOptions: WebsiteOptions = submission.options.find(
       (o) => o.isDefault
@@ -48,18 +34,28 @@ export class PostParsersService {
       defaultOptions,
       websiteOptions
     );
+
+    const title = await this.titleParser.parse(
+      submission,
+      instance,
+      defaultOptions,
+      websiteOptions
+    );
+
     return {
       submission,
       options: {
         ...defaultOptions.data,
         ...websiteOptions.data,
         tags,
-        title: await this.titleParser.parse(
-          submission,
+        description: await this.descriptionParser.parse(
           instance,
           defaultOptions,
-          websiteOptions
+          websiteOptions,
+          tags,
+          title
         ),
+        title,
         rating: this.ratingParser.parse(defaultOptions, websiteOptions),
       },
     };

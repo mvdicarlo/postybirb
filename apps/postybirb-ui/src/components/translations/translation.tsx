@@ -6,7 +6,6 @@ type TranslationsMap = {
     props: Omit<ValidationMessage<object, K>, 'field' | 'id'>
   ) => JSX.Element;
 };
-
 export const TranslationMessages: Partial<TranslationsMap> = {
   'validation.description.max-length': (props) => {
     const maxLength = props.values?.maxLength ?? 0;
@@ -16,7 +15,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   },
 };
 
-export default function Translation(
+export function ValidationTranslation(
   props: Omit<ValidationMessage, 'field'>
 ): JSX.Element {
   const { id } = props;

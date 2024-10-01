@@ -3,9 +3,13 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionType,
+  DefaultDescriptionValue,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionRating,
+  SubmissionType,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -16,10 +20,14 @@ import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
+import { FormGeneratorModule } from '../../form-generator/form-generator.module';
+import { PostParsersModule } from '../../post-parsers/post-parsers.module';
+import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
+import { WebsitesModule } from '../../websites/websites.module';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
 import { FileSubmissionService } from './file-submission.service';
@@ -34,36 +42,49 @@ describe('SubmissionService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../../test-files/small_image.jpg'));
+    testFile = readFileSync(
+      join(__dirname, '../../test-files/small_image.jpg')
+    );
   });
 
   beforeEach(async () => {
-    module = await Test.createTestingModule({
-      imports: [DatabaseModule, AccountModule],
-      providers: [
-        SubmissionService,
-        CreateFileService,
-        UpdateFileService,
-        FileService,
-        FileSubmissionService,
-        MessageSubmissionService,
-        AccountService,
-        WebsiteRegistryService,
-        UserSpecifiedWebsiteOptionsService,
-        WebsiteOptionsService,
-        WebsiteImplProvider,
-      ],
-    }).compile();
-
-    service = module.get<SubmissionService>(SubmissionService);
-    orm = module.get(MikroORM);
     try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
+      module = await Test.createTestingModule({
+        imports: [
+          DatabaseModule,
+          AccountModule,
+          WebsitesModule,
+          UserSpecifiedWebsiteOptionsModule,
+          PostParsersModule,
+          FormGeneratorModule,
+        ],
+        providers: [
+          SubmissionService,
+          CreateFileService,
+          UpdateFileService,
+          FileService,
+          FileSubmissionService,
+          MessageSubmissionService,
+          AccountService,
+          WebsiteRegistryService,
+          UserSpecifiedWebsiteOptionsService,
+          WebsiteOptionsService,
+          WebsiteImplProvider,
+        ],
+      }).compile();
+
+      service = module.get<SubmissionService>(SubmissionService);
+      orm = module.get(MikroORM);
+      try {
+        await orm.getSchemaGenerator().refreshDatabase();
+      } catch {
+        // none
+      }
+      const accountService = module.get<AccountService>(AccountService);
+      await accountService.onModuleInit();
+    } catch (e) {
+      console.error(e);
     }
-    const accountService = module.get<AccountService>(AccountService);
-    await accountService.onModuleInit();
   });
 
   afterAll(async () => {
@@ -118,11 +139,13 @@ describe('SubmissionService', () => {
       type: record.type,
       isScheduled: false,
       schedule: {
+        cron: undefined,
         scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
       },
       metadata: {},
       files: [],
+      order: 1,
       posts: [],
       options: [
         {
@@ -138,15 +161,24 @@ describe('SubmissionService', () => {
               overrideDefault: false,
               tags: [],
             },
-            description: {
-              overrideDefault: false,
-              description: '',
-            },
+            description: DefaultDescriptionValue(),
             title: 'Test',
           },
         },
       ],
     });
+  });
+
+  it('should delete entity', async () => {
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+
+    const records = await service.findAll();
+    expect(records).toHaveLength(1);
+    expect(records[0].type).toEqual(createDto.type);
+
+    await service.remove(record.id);
+    expect(await service.findAll()).toHaveLength(0);
   });
 
   it('should throw exception on message submission with provided file', async () => {
@@ -179,6 +211,7 @@ describe('SubmissionService', () => {
       type: record.type,
       isScheduled: false,
       schedule: {
+        cron: undefined,
         scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
       },
@@ -189,8 +222,8 @@ describe('SubmissionService', () => {
             dimensions: {
               default: {
                 fileId: file.id,
-                height: 100,
-                width: 100,
+                height: 202,
+                width: 138,
               },
             },
             ignoredWebsites: [],
@@ -205,8 +238,8 @@ describe('SubmissionService', () => {
           fileName: fileInfo.originalname,
           hasThumbnail: true,
           hash: file.hash,
-          height: 100,
-          width: 100,
+          height: 202,
+          width: 138,
           id: file.id,
           mimeType: fileInfo.mimetype,
           props: {
@@ -219,6 +252,7 @@ describe('SubmissionService', () => {
         },
       ],
       posts: [],
+      order: 1,
       options: [
         {
           id: defaultOptions.id,
@@ -233,10 +267,7 @@ describe('SubmissionService', () => {
               overrideDefault: false,
               tags: [],
             },
-            description: {
-              overrideDefault: false,
-              description: '',
-            },
+            description: DefaultDescriptionValue(),
             title: 'Test',
           },
         },
@@ -317,9 +348,10 @@ describe('SubmissionService', () => {
       {
         ...record.options[0],
         data: {
+          rating: SubmissionRating.GENERAL,
           title: 'Updated',
         },
-      },
+      } as unknown as WebsiteOptionsDto<IWebsiteFormFields>,
     ];
 
     const updatedRecord = await service.update(record.id, updateDto);

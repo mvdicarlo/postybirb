@@ -1,3 +1,4 @@
+export * from './description-types.enum';
 export * from './directory-watcher-import-action.enum';
 export * from './file-type.enum';
 export * from './post-record-resume-mode.enum';

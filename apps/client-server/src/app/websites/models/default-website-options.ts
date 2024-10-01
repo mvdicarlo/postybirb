@@ -6,12 +6,12 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  IWebsiteFormFields,
+  DefaultDescriptionValue,
+  DefaultTagValue,
   DescriptionValue,
+  IWebsiteFormFields,
   SubmissionRating,
   TagValue,
-  DefaultTagValue,
-  DefaultDescriptionValue,
 } from '@postybirb/types';
 
 export const DefaultRatingOptions: RatingOption[] = [
@@ -35,8 +35,8 @@ export const DefaultRatingOptions: RatingOption[] = [
 
 export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
   title: '',
-  tags: DefaultTagValue,
-  description: DefaultDescriptionValue,
+  tags: DefaultTagValue(),
+  description: DefaultDescriptionValue(),
   rating: SubmissionRating.GENERAL,
 };
 
@@ -45,24 +45,32 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
     label: 'Title',
     defaultValue: DefaultWebsiteOptionsObject.title,
     required: true,
+    col: 1,
     row: 0,
-    column: 1,
   })
   title: string;
 
   @TagField({
     label: 'Tags',
     defaultValue: DefaultWebsiteOptionsObject.tags,
-    row: 2,
-    column: 1,
+    col: 1,
+    row: 1,
   })
   tags: TagValue;
+
+  @TextField({
+    label: 'Content Warning / Spoilers',
+    defaultValue: '',
+    col: 1,
+    row: 2,
+  })
+  contentWarning: string;
 
   @DescriptionField({
     label: 'Description',
     defaultValue: DefaultWebsiteOptionsObject.description,
+    col: 1,
     row: 3,
-    column: 1,
   })
   description: DescriptionValue;
 
@@ -71,8 +79,8 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
     defaultValue: DefaultWebsiteOptionsObject.rating,
     options: DefaultRatingOptions,
     required: true,
+    col: 0,
     row: 0,
-    column: 0,
     layout: 'vertical',
   })
   rating: SubmissionRating;

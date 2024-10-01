@@ -1,5 +1,6 @@
-import { IWebsiteInfoDto } from '@postybirb/types';
-import { useMemo } from 'react';
+import { IWebsiteInfoDto, WebsiteId } from '@postybirb/types';
+import { useCallback, useMemo } from 'react';
+import settingsApi from '../../api/settings.api';
 import { AccountFilterState } from '../../models/app-states/account-filter-state';
 import { DisplayableWebsiteLoginInfo } from '../../models/displayable-website-login-info';
 import { useSettings } from '../../stores/use-settings';
@@ -32,7 +33,7 @@ export function filterWebsites(
 export function useWebsites() {
   const { filterState, setFilterState } = useAccountFilters();
   const { state: websites, isLoading } = useStore(WebsiteStore);
-  const { settings } = useSettings();
+  const { settingsId, settings } = useSettings();
   const currentSettings = settings;
   const filteredAccounts = useMemo(
     () => filterWebsites(websites, currentSettings.hiddenWebsites, filterState),
@@ -44,12 +45,29 @@ export function useWebsites() {
     [websites]
   );
 
+  const filteredWebsites = websites.filter(
+    (website) => !settings.hiddenWebsites.includes(website.id)
+  );
+
+  const setHiddenWebsites = useCallback(
+    (hiddenWebsites: WebsiteId[]) => {
+      const updatedSettings = {
+        ...settings,
+        hiddenWebsites,
+      };
+      settingsApi.update(settingsId, { settings: updatedSettings });
+    },
+    [settings, settingsId]
+  );
+
   return {
     accounts,
-    filteredAccounts,
     filterState,
-    setFilterState,
-    websites,
+    filteredAccounts,
+    filteredWebsites,
     isLoading,
+    setFilterState,
+    setHiddenWebsites,
+    websites,
   };
 }

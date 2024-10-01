@@ -1,5 +1,7 @@
-import { EuiLoadingSpinner } from '@elastic/eui';
-import { useEffect, useRef, useState } from 'react';
+import { Box, Loader } from '@mantine/core';
+import { debounce } from 'lodash';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import accountApi from '../../../api/account.api';
 import { WebviewTag } from './webview-tag';
 
 type AccountLoginWebviewProps = {
@@ -7,14 +9,23 @@ type AccountLoginWebviewProps = {
   id: string; // Account Id
 };
 
-export default function AccountLoginWebview(props: AccountLoginWebviewProps) {
+export function AccountLoginWebview(props: AccountLoginWebviewProps) {
   const { src, id } = props;
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const webviewRef = useRef<WebviewTag>();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedStopLoading = useCallback(
+    debounce(() => {
+      accountApi.refreshLogin(id);
+    }, 2000),
+    [id]
+  );
+
   useEffect(() => {
     if (webviewRef.current) {
       webviewRef.current.addEventListener('did-stop-loading', () => {
+        debouncedStopLoading();
         if (isLoading) {
           setIsLoading(false);
         }
@@ -24,11 +35,11 @@ export default function AccountLoginWebview(props: AccountLoginWebviewProps) {
   }, []);
 
   return (
-    <div className="h-full w-full">
+    <Box w="100%" h="100%">
       {isLoading ? (
-        <div className="w-full text-center">
-          <EuiLoadingSpinner size="xxl" />
-        </div>
+        <Box ta="center">
+          <Loader size="xl" />
+        </Box>
       ) : null}
       <webview
         src={src}
@@ -43,6 +54,6 @@ export default function AccountLoginWebview(props: AccountLoginWebviewProps) {
         // eslint-disable-next-line react/no-unknown-property
         allowpopups
       />
-    </div>
+    </Box>
   );
 }

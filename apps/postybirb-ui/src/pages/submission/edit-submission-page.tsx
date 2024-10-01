@@ -1,265 +1,247 @@
+import { Trans } from '@lingui/macro';
+import { Box, Button, Loader, Space } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { ISubmissionDto, ScheduleType, SubmissionType } from '@postybirb/types';
 import {
-  EuiBreadcrumb,
-  EuiButton,
-  EuiButtonIcon,
-  EuiHeader,
-  EuiHeaderLogo,
-  EuiHeaderSection,
-  EuiHeaderSectionItem,
-  EuiLoadingSpinner,
-  EuiModal,
-  EuiModalBody,
-  EuiModalFooter,
-  EuiModalHeader,
-  EuiModalHeaderTitle,
-  EuiSpacer,
-  EuiTitle,
-} from '@elastic/eui';
-import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
+  IconCalendar,
+  IconCalendarCancel,
+  IconCancel,
+  IconFile,
+  IconMessage,
+  IconSend,
+  IconTemplate,
+} from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
-import { Trans, msg } from '@lingui/macro';
-import { useNavigate, useParams } from 'react-router';
-import ReactRouterPrompt from 'react-router-prompt';
-import { useLingui } from '@lingui/react';
+import { useParams } from 'react-router';
+import postApi from '../../api/post.api';
+import submissionApi from '../../api/submission.api';
+import websiteOptionsApi from '../../api/website-options.api';
+import { PageHeader } from '../../components/page-header/page-header';
 import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
-import SubmissionEditForm from '../../components/submissions/submission-edit-form/submission-edit-form';
-import SubmissionProvider, {
-  useSubmission,
-} from '../../hooks/submission/use-submission';
-import NotFound from '../not-found/not-found';
+import { SubmissionEditForm } from '../../components/submissions/submission-edit-form/submission-edit-form';
+import { SubmissionDto } from '../../models/dtos/submission.dto';
+import { SubmissionTemplateStore } from '../../stores/submission-template.store';
+import { SubmissionStore } from '../../stores/submission.store';
+import { useStore } from '../../stores/use-store';
 import { FileSubmissionPath, MessageSubmissionPath } from '../route-paths';
 
-function BlockModal({
-  onCancel,
-  onConfirm,
-  onSave,
-}: {
-  onCancel(): void;
-  onConfirm(): void;
-  onSave(): void;
-}) {
+function ScheduleAction({ submission }: { submission: SubmissionDto }) {
+  if (submission.schedule.scheduleType === ScheduleType.NONE) {
+    return null;
+  }
+
+  if (submission.isScheduled) {
+    return (
+      <Button
+        disabled={!submission.isQueued()}
+        variant="subtle"
+        c="red"
+        leftSection={<IconCalendarCancel />}
+        onClick={() => {
+          submissionApi.update(submission.id, {
+            metadata: submission.metadata,
+            ...submission.schedule,
+            isScheduled: false,
+            newOrUpdatedOptions: [],
+            deletedWebsiteOptions: [],
+          });
+        }}
+      >
+        <Trans>Unschedule</Trans>
+      </Button>
+    );
+  }
+
+  const hasValidationIssues = submission.validations.some(
+    (v) => v.errors && v.errors.length > 0
+  );
+  const hasOptions = submission.options.filter((o) => !o.isDefault).length > 0;
+  const canSetForPosting =
+    hasOptions && !hasValidationIssues && !submission.isQueued();
   return (
-    <EuiModal onClose={onCancel}>
-      <EuiModalHeader>
-        <EuiModalHeaderTitle>
-          <Trans context="unsaved changes modal">
-            You have unsaved changes
-          </Trans>
-        </EuiModalHeaderTitle>
-      </EuiModalHeader>
-      <EuiModalBody>
-        <Trans context="unsaved changes modal">
-          Are you sure you want to leave this page?
-        </Trans>
-      </EuiModalBody>
-      <EuiModalFooter>
-        <EuiButton color="danger" onClick={onCancel}>
-          <Trans context="unsaved changes modal">No</Trans>
-        </EuiButton>
-        <EuiButton onClick={onConfirm}>
-          <Trans context="unsaved changes modal">Yes</Trans>
-        </EuiButton>
-        <EuiButton onClick={onSave}>
-          <Trans context="unsaved changes modal">Save and Close</Trans>
-        </EuiButton>
-      </EuiModalFooter>
-    </EuiModal>
+    <Button
+      disabled={!hasOptions || hasValidationIssues || submission.isQueued()}
+      variant="subtle"
+      c={canSetForPosting ? 'teal' : 'grey'}
+      leftSection={<IconCalendar />}
+      onClick={() => {
+        submissionApi
+          .update(submission.id, {
+            metadata: submission.metadata,
+            ...submission.schedule,
+            isScheduled: true,
+            newOrUpdatedOptions: [],
+            deletedWebsiteOptions: [],
+          })
+          .then(() => {
+            notifications.show({
+              color: 'green',
+              message: <Trans>Submission scheduled</Trans>,
+            });
+          })
+          .catch((err) => {
+            notifications.show({
+              title: <Trans>Failed to schedule submission</Trans>,
+              message: err.message,
+              color: 'red',
+            });
+          });
+      }}
+    >
+      <Trans>Schedule</Trans>
+    </Button>
   );
 }
 
-function EditSubmissionPageNavHeader() {
-  const history = useNavigate();
-  const [importTemplateVisible, setImportTemplateVisible] = useState(false);
-  const { isLoading, isSaving, isChanged, submission, save, updateView } =
-    useSubmission();
-  const defaultOption = submission.getDefaultOptions();
-
-  const navBack = () => {
-    history(
-      submission.type === SubmissionType.FILE
-        ? FileSubmissionPath
-        : MessageSubmissionPath
-    );
-  };
-
-  const breadcrumbs: EuiBreadcrumb[] = useMemo(
-    () => [
-      {
-        text:
-          submission.type === SubmissionType.FILE ? (
-            <Trans>File Submissions</Trans>
-          ) : (
-            <Trans>Message Submissions</Trans>
-          ),
-        href: '#',
-        onClick: (e) => {
-          e.preventDefault();
-          navBack();
-        },
-      },
-      {
-        text: (
-          <div>
-            <span>{defaultOption.data.title}</span>
-          </div>
-        ),
-      },
-    ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [defaultOption.data.title]
-  );
-
-  const { _ } = useLingui();
-
+function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
+  const [templatePickerVisible, setTemplatePickerVisible] = useState(false);
+  const picker = templatePickerVisible ? (
+    <TemplatePickerModal
+      type={submission.type}
+      submissionId={submission.id}
+      onClose={() => setTemplatePickerVisible(false)}
+      onApply={(options) => {
+        setTemplatePickerVisible(false);
+        Promise.all(
+          options.map((option) =>
+            websiteOptionsApi.create({
+              submission: submission.id,
+              account: option.account,
+              data: option.data,
+            })
+          )
+        )
+          .then(() => {
+            notifications.show({
+              color: 'green',
+              title: submission.getDefaultOptions().data.title,
+              message: <Trans>Template applied</Trans>,
+            });
+          })
+          .catch((err) => {
+            notifications.show({
+              color: 'red',
+              title: submission.getDefaultOptions().data.title,
+              message: err.message,
+            });
+          });
+      }}
+    />
+  ) : null;
   return (
     <>
-      <ReactRouterPrompt when={isChanged}>
-        {({ isActive, onConfirm, onCancel }) => {
-          if (isActive) {
-            return (
-              <BlockModal
-                onCancel={onCancel}
-                onConfirm={onConfirm}
-                onSave={() => {
-                  save();
-                  onConfirm();
-                }}
-              />
-            );
-          }
-          return null;
-        }}
-      </ReactRouterPrompt>
-      {importTemplateVisible ? (
-        <TemplatePickerModal
-          submissionId={submission.id}
-          type={submission.type}
-          onApply={(options) => {
-            options.forEach((option) => {
-              const existingOption = submission.options.find(
-                (o) => o.account === option.account
-              );
-              if (existingOption) {
-                existingOption.data = {
-                  ...existingOption.data,
-                  ...option.data,
-                };
-              } else {
-                submission.addOption({
-                  id: Date.now().toString(),
-                  account: option.account,
-                  data: option.data,
-                } as WebsiteOptionsDto);
-              }
-            });
-            setImportTemplateVisible(false);
-            updateView();
-          }}
-          onClose={() => {
-            setImportTemplateVisible(false);
-          }}
-        />
-      ) : null}
-      <EuiHeader
-        style={{ position: 'sticky', top: 0 }}
-        sections={[
-          {
-            items: [
-              <EuiHeaderLogo iconType="documentEdit" />,
-              <EuiHeaderSection>
-                <EuiTitle size="xs">
-                  <h4>
-                    {submission.isTemplate() ? (
-                      <Trans>Edit Template</Trans>
-                    ) : (
-                      <Trans>Edit Submission</Trans>
-                    )}
-                  </h4>
-                </EuiTitle>
-              </EuiHeaderSection>,
-            ],
-            breadcrumbs,
-            breadcrumbProps: {
-              lastBreadcrumbIsCurrentPage: true,
-            },
-          },
-          {
-            items: [
-              <EuiHeaderSection>
-                <EuiHeaderSectionItem>
-                  <EuiButton
-                    size="s"
-                    color="text"
-                    onClick={() => {
-                      setImportTemplateVisible(true);
-                    }}
-                  >
-                    <Trans>Import Template</Trans>
-                  </EuiButton>
-                </EuiHeaderSectionItem>
-                <EuiHeaderSectionItem>
-                  <EuiButton
-                    className="ml-2"
-                    size="s"
-                    disabled={!isChanged || isSaving}
-                    isLoading={isSaving || isLoading}
-                    onClick={() => {
-                      save();
-                    }}
-                  >
-                    <Trans>Save</Trans>
-                  </EuiButton>
-                </EuiHeaderSectionItem>
-                <EuiHeaderSectionItem>
-                  <EuiButtonIcon
-                    aria-label={_(msg`Close`)}
-                    color="danger"
-                    iconType="cross"
-                    className="ml-2"
-                    size="s"
-                    isLoading={isSaving || isLoading}
-                    onClick={() => {
-                      navBack();
-                    }}
-                  />
-                </EuiHeaderSectionItem>
-              </EuiHeaderSection>,
-            ],
-          },
-        ]}
-      />
+      <Button
+        variant="subtle"
+        leftSection={<IconTemplate />}
+        onClick={() => setTemplatePickerVisible(true)}
+      >
+        <Trans>Apply Template</Trans>
+      </Button>
+      {picker}
     </>
   );
 }
 
-function EditSubmissionPageInternal() {
-  const { isLoading } = useSubmission();
+function PostAction({ submission }: { submission: SubmissionDto }) {
+  if (submission.isQueued()) {
+    return (
+      <Button
+        disabled={!submission.isQueued()}
+        variant="subtle"
+        c="red"
+        leftSection={<IconCancel />}
+        onClick={() => {
+          postApi.dequeue([submission.id]);
+        }}
+      >
+        <Trans>Cancel</Trans>
+      </Button>
+    );
+  }
+
+  const hasValidationIssues = submission.validations.some(
+    (v) => v.errors && v.errors.length > 0
+  );
+  const hasOptions = submission.options.filter((o) => !o.isDefault).length > 0;
+  const canSetForPosting =
+    hasOptions && !hasValidationIssues && !submission.isQueued();
 
   return (
-    <div className="postybirb__submission-edit-page">
-      <EditSubmissionPageNavHeader />
-      <EuiSpacer size="m" />
-      {isLoading ? (
-        <div className="w-full text-center">
-          <EuiLoadingSpinner size="xxl" />
-        </div>
-      ) : (
-        <SubmissionEditForm />
-      )}
-    </div>
+    <Button
+      disabled={!hasOptions || hasValidationIssues || submission.isQueued()}
+      variant="subtle"
+      c={canSetForPosting ? 'teal' : 'grey'}
+      leftSection={<IconSend />}
+      onClick={() => {
+        postApi
+          .enqueue([submission.id])
+          .then(() => {
+            notifications.show({
+              message: <Trans>Submission queued</Trans>,
+              color: 'green',
+            });
+          })
+          .catch((err) => {
+            notifications.show({
+              title: <Trans>Failed to queue submission</Trans>,
+              message: err.message,
+              color: 'red',
+            });
+          });
+      }}
+    >
+      <Trans>Post</Trans>
+    </Button>
   );
 }
 
-export default function EditSubmissionPage() {
+export function EditSubmissionPage() {
   const { id } = useParams();
+  const { state: submissions, isLoading } = useStore(SubmissionStore);
+  const { state: templates, isLoading: isLoadingTemplates } = useStore(
+    SubmissionTemplateStore
+  );
 
-  if (!id) {
-    return <NotFound />;
+  const data = [...submissions, ...templates].find((s) => s.id === id);
+  const submission = useMemo(
+    () => data ?? new SubmissionDto({} as ISubmissionDto),
+    [data]
+  );
+
+  const defaultOption = submission.getDefaultOptions();
+  const { type } = submission;
+  const isFile = type === SubmissionType.FILE;
+
+  if (isLoading || isLoadingTemplates) {
+    return <Loader />;
   }
 
   return (
-    <SubmissionProvider id={id}>
-      <EditSubmissionPageInternal />
-    </SubmissionProvider>
+    <>
+      <PageHeader
+        icon={isFile ? <IconFile /> : <IconMessage />}
+        title={defaultOption.data.title ?? submission.id}
+        breadcrumbs={[
+          {
+            text: isFile ? (
+              <Trans>File Submissions</Trans>
+            ) : (
+              <Trans>Message Submissions</Trans>
+            ),
+            target: isFile ? FileSubmissionPath : MessageSubmissionPath,
+          },
+          { text: defaultOption.data.title ?? submission.id, target: '#' },
+        ]}
+        actions={[
+          <ScheduleAction submission={submission} key="schedule-action" />,
+          <PostAction submission={submission} key="post-action" />,
+          <ApplyTemplateAction submission={submission} key="template-action" />,
+        ]}
+      />
+      <Space h="md" />
+      <Box className="postybirb__submission-edit-page" mx="5%">
+        <SubmissionEditForm submission={submission} />
+      </Box>
+    </>
   );
 }

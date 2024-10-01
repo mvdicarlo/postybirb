@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -15,14 +16,15 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { SubmissionId, SubmissionType } from '@postybirb/types';
+import { IEntityDto, SubmissionId, SubmissionType } from '@postybirb/types';
+import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
+import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
 import { SubmissionService } from './services/submission.service';
-import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 
 /**
  * CRUD operations on Submission data.
@@ -36,6 +38,11 @@ export class SubmissionController extends PostyBirbController<Submission> {
     super(service);
   }
 
+  @Get()
+  async findAll(): Promise<IEntityDto[]> {
+    return this.service.findAllAsDto();
+  }
+
   @Post()
   @ApiConsumes('multipart/form-data')
   @ApiOkResponse({ description: 'Submission created.' })
@@ -47,20 +54,22 @@ export class SubmissionController extends PostyBirbController<Submission> {
   ) {
     const mapper = (res) => res.toJSON();
     if ((files || []).length) {
-      const results = await Promise.all(
-        files.map((file, index) => {
-          const createFileSubmission = new CreateSubmissionDto();
-          Object.assign(createFileSubmission, createSubmissionDto);
-          if (!createSubmissionDto.name) {
-            createFileSubmission.name = file.originalname;
-          } else {
-            createFileSubmission.name = `${createSubmissionDto.name} - ${index}`;
-          }
+      const results = [];
+      // TODO - need to reconsider how to queue submission creation up.
+      // There appears to be an issue where if trying to create many submissions in parallel
+      // the database will attempt to create them all at once and fail on a race condition.
+      // not sure if this is a database issue or a typeorm issue.
+      // eslint-disable-next-line no-restricted-syntax
+      for (const file of files) {
+        const createFileSubmission = new CreateSubmissionDto();
+        Object.assign(createFileSubmission, createSubmissionDto);
+        if (!createSubmissionDto.name) {
+          createFileSubmission.name = parse(file.originalname).name;
+        }
 
-          createFileSubmission.type = SubmissionType.FILE;
-          return this.service.create(createFileSubmission, file);
-        })
-      );
+        createFileSubmission.type = SubmissionType.FILE;
+        results.push(await this.service.create(createFileSubmission, file));
+      }
 
       return results.map(mapper);
     }
@@ -86,6 +95,13 @@ export class SubmissionController extends PostyBirbController<Submission> {
     return this.service
       .update(id, updateSubmissionDto)
       .then((entity) => entity.toJSON());
+  }
+
+  @Patch('reorder/:id/:index')
+  @ApiOkResponse({ description: 'Submission reordered.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async reorder(@Param('id') id: SubmissionId, @Param('index') index: number) {
+    return this.service.reorder(id, index);
   }
 
   @Patch('template/:id')

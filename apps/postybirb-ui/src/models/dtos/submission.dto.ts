@@ -1,3 +1,5 @@
+import { i18n } from '@lingui/core';
+import { msg } from '@lingui/macro';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
@@ -11,11 +13,10 @@ import {
   ScheduleType,
   SubmissionRating,
   SubmissionType,
+  ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { Moment } from 'moment';
-import { i18n } from '@lingui/core';
-import { msg } from '@lingui/macro';
 import submissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
@@ -43,6 +44,10 @@ export class SubmissionDto<
 
   posts!: PostRecordDto[];
 
+  order!: number;
+
+  validations!: ValidationResult[];
+
   private defaultOption?: WebsiteOptionsDto;
 
   constructor(entity: ISubmissionDto) {
@@ -50,6 +55,8 @@ export class SubmissionDto<
     this.files = this.files ?? [];
     this.posts = this.posts ?? [];
     this.metadata = this.metadata ?? ({} as T);
+    this.order = this.order ?? 0;
+    this.validations = this.validations ?? [];
     if (!this.options) {
       this.options = [
         {
@@ -61,8 +68,8 @@ export class SubmissionDto<
           isDefault: true,
           data: {
             title: '',
-            tags: DefaultTagValue,
-            description: DefaultDescriptionValue,
+            tags: DefaultTagValue(),
+            description: DefaultDescriptionValue(),
             rating: SubmissionRating.GENERAL,
           },
         },

@@ -9,7 +9,10 @@ type TagFormField = 'tag';
 const TYPE_KEY = 'tag';
 
 export type TagFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
-  FieldType<T, TagValue, TagFormField>;
+  FieldType<T, TagValue, TagFormField> & {
+    minTags?: number;
+    maxTags?: number;
+  };
 
 export function TagField<T extends PrimitiveRecord>(
   options: TagFieldType<T>

@@ -1,71 +1,71 @@
-import {
-  EuiPageHeader,
-  EuiProgress,
-  EuiSpacer,
-  useEuiTheme,
-} from '@elastic/eui';
 import { Trans } from '@lingui/macro';
+import { Box, Loader, Space, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
+import { IconFile, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';
-import { FileIcon } from '../../components/shared/icons/Icons';
-import Uploader from '../../components/shared/uploader/uploader';
-import SubmissionTemplateManagementView from '../../components/submission-templates/submission-template-management-view/submission-template-management-view';
-import DirectoryWatchersTable from '../../components/submissions/directory-watchers-table/directory-watchers-table';
-import { SubmissionTable } from '../../components/submissions/submission-table/submission-table';
+import { PageHeader } from '../../components/page-header/page-header';
+import { SubmissionTemplateView } from '../../components/submission-templates/submission-template-view/submission-template-view';
+import DirectoryWatchersView from '../../components/submissions/directory-watchers-view/directory-watchers-view';
+import { SubmissionUploader } from '../../components/submissions/submission-uploader/submission-uploader';
+import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
 
-export default function FileSubmissionManagementPage() {
-  const { euiTheme } = useEuiTheme();
+const TYPE = SubmissionType.FILE;
+
+export function FileSubmissionManagementPage() {
   const { state, isLoading } = useStore(SubmissionStore);
-  const [tab, setTab] = useState<'submissions' | 'templates'>('submissions');
+  const [activeTab, setActiveTab] = useState<string>('submissions');
   const fileSubmissions = state.filter(
-    (submission) => submission.type === SubmissionType.FILE
+    (submission) => submission.type === TYPE
   );
 
-  const display =
-    tab === 'submissions' ? (
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  let display = null;
+  if (activeTab === 'submissions') {
+    display = (
       <>
-        <Uploader endpointPath="api/submission" />
-        <EuiSpacer />
-        <DirectoryWatchersTable />
-        <EuiSpacer />
-        {isLoading ? (
-          <EuiProgress size="xs" />
-        ) : (
-          <SubmissionTable submissions={fileSubmissions} />
-        )}
+        <SubmissionUploader key="submission-uploader" />
+        <SubmissionView submissions={fileSubmissions} type={TYPE} />
       </>
-    ) : (
-      <SubmissionTemplateManagementView type={SubmissionType.FILE} />
     );
+  } else if (activeTab === 'templates') {
+    display = <SubmissionTemplateView type={TYPE} />;
+  } else if (activeTab === 'file-watcher') {
+    display = <DirectoryWatchersView />;
+  }
 
   return (
     <>
-      <EuiPageHeader
-        css={{ background: euiTheme.colors.body }}
-        bottomBorder
-        iconType={FileIcon.Header}
-        pageTitle={<Trans>File Submissions</Trans>}
+      <PageHeader
+        icon={<IconFile />}
+        title={<Trans>File Submissions</Trans>}
         tabs={[
           {
             label: <Trans>Submissions</Trans>,
-            isSelected: tab === 'submissions',
-            onClick: () => {
-              setTab('submissions');
-            },
+            key: 'submissions',
+            icon: <IconFile />,
           },
           {
             label: <Trans>Templates</Trans>,
-            isSelected: tab === 'templates',
-            onClick: () => {
-              setTab('templates');
-            },
+            key: 'templates',
+            icon: <IconTemplate />,
+          },
+          {
+            label: <Trans>Auto Importers (File Watcher)</Trans>,
+            key: 'file-watcher',
+            icon: <IconTemplate />,
           },
         ]}
+        onTabChange={setActiveTab}
       />
-      <EuiSpacer />
-      {display}
+      <Space h="md" />
+      <Box mx="5%">
+        <Stack>{display}</Stack>
+      </Box>
     </>
   );
 }
