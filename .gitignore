@@ -41,4 +41,6 @@ testem.log
 Thumbs.db
 
 # Public UI dependencies
+apps/postybirb-ui/public/uppy-i18n/*.js
 .nx/cache
+.nx/workspace-data
