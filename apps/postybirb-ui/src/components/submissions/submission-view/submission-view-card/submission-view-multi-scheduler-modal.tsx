@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Trans } from '@lingui/macro';
 import {
   Box,
@@ -159,7 +160,11 @@ export function SubmissionViewMultiSchedulerModal(
     Date | undefined
   >(ScheduleGlobalKey, new Date(), {
     raw: false,
-    deserializer: (value) => new Date(value),
+    deserializer: (value) => {
+      const date = value ? new Date(value) : new Date();
+      if (date.toString() === 'Invalid Date') return new Date();
+      return date;
+    },
     serializer: (value) => value?.toISOString() ?? new Date().toISOString(),
   });
   const [sortedSubmissions, setSortedSubmissions] = useState(submissions);
