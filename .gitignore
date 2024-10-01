@@ -42,3 +42,4 @@ Thumbs.db
 
 # Public UI dependencies
 .nx/cache
+.nx/workspace-data
