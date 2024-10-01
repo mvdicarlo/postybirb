@@ -15,6 +15,7 @@ import { DateTimePicker } from '@mantine/dates';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import Sortable from 'sortablejs';
+import { draggableIndexesAreDefined } from '../../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { ScheduleGlobalKey } from '../../submission-scheduler/submission-scheduler';
 import './submission-view-multi-scheduler-modal.css';
@@ -76,17 +77,19 @@ function ScheduleDisplay(
       draggable: '.sortable-option',
       direction: 'vertical',
       onEnd: (event) => {
-        const newOrderedSubmissions = [...submissions];
-        const [movedSubmission] = newOrderedSubmissions.splice(
-          event.oldDraggableIndex!,
-          1
-        );
-        newOrderedSubmissions.splice(
-          event.newDraggableIndex!,
-          0,
-          movedSubmission
-        );
-        onSort(newOrderedSubmissions);
+        if (draggableIndexesAreDefined(event)) {
+          const newOrderedSubmissions = [...submissions];
+          const [movedSubmission] = newOrderedSubmissions.splice(
+            event.oldDraggableIndex,
+            1
+          );
+          newOrderedSubmissions.splice(
+            event.newDraggableIndex,
+            0,
+            movedSubmission
+          );
+          onSort(newOrderedSubmissions);
+        }
       },
     });
     return () => {

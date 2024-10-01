@@ -55,7 +55,7 @@ function updateFileDimensions(
   width: number
 ) {
   // eslint-disable-next-line no-param-reassign
-  metadata.dimensions!.default = {
+  metadata.dimensions.default = {
     fileId: file.id,
     height,
     width,

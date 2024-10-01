@@ -225,7 +225,13 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
               const sub: Record<AccountId, WebsiteOptionsDto> = {};
               const template = [...templates, ...submissions].find(
                 (t) => t.id === newOpts[0]
-              )!;
+              );
+              if (!template) {
+                // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+                console.error('Cannot find template', template);
+                return;
+              }
+
               template.options.forEach((o) => {
                 sub[o.account] = o;
               });

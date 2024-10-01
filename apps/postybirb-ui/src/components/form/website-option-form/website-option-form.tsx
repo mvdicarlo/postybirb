@@ -210,7 +210,12 @@ function InnerForm({
               }}
             >
               {fields
-                .sort((a, b) => a.field.row! - b.field.row!)
+                .sort((a, b) =>
+                  typeof a.field.row === 'number' &&
+                  typeof b.field.row === 'number'
+                    ? a.field.row - b.field.row
+                    : 0
+                )
                 .map((entry) => (
                   <Field
                     propKey={entry.key}

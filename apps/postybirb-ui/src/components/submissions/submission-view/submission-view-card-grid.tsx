@@ -2,6 +2,7 @@ import { Grid } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../api/submission.api';
+import { draggableIndexesAreDefined } from '../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionViewCard } from './submission-view-card/submission-view-card';
 
@@ -35,18 +36,20 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
       handle: '.sort-handle',
       disabled: orderedSubmissions.length === 0,
       onEnd: (event) => {
-        const newOrderedSubmissions = [...orderedSubmissions];
-        const [movedSubmission] = newOrderedSubmissions.splice(
-          event.oldDraggableIndex!,
-          1
-        );
-        newOrderedSubmissions.splice(
-          event.newDraggableIndex!,
-          0,
-          movedSubmission
-        );
-        setOrderedSubmissions(newOrderedSubmissions);
-        submissionApi.reorder(movedSubmission.id, event.newDraggableIndex!);
+        if (draggableIndexesAreDefined(event)) {
+          const newOrderedSubmissions = [...orderedSubmissions];
+          const [movedSubmission] = newOrderedSubmissions.splice(
+            event.oldDraggableIndex,
+            1
+          );
+          newOrderedSubmissions.splice(
+            event.newDraggableIndex,
+            0,
+            movedSubmission
+          );
+          setOrderedSubmissions(newOrderedSubmissions);
+          submissionApi.reorder(movedSubmission.id, event.newDraggableIndex);
+        }
       },
     });
     return () => {
