@@ -1,6 +1,6 @@
 # Add files here to ignore them from prettier formatting
 
-/dist
-/coverage
-apps/postybirb-ui/src/icons/icons.ts
-/.nx/cache
+/dist/**
+/coverage/**
+/.nx/cache/**
+/.nx/workspace-data/**
