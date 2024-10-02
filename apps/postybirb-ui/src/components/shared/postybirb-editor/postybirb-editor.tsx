@@ -1,13 +1,13 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
+import { BlockNoteView } from '@blocknote/mantine';
+import "@blocknote/mantine/style.css";
 import {
-  BlockNoteView,
   SuggestionMenuController,
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
-import '@blocknote/react/style.css';
 import { useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { useStore } from '../../../stores/use-store';
@@ -37,11 +37,11 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
   // Renders the editor instance using a React component.
+  // TODO - remove media menu
   return (
     <BlockNoteView
       theme={theme.colorScheme === 'light' ? 'light' : 'dark'}
       editor={editor}
-      imageToolbar={false}
       tableHandles={false}
       slashMenu={false}
       onChange={() => {
