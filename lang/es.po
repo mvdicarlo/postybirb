@@ -45,7 +45,7 @@ msgid "App Server Port"
 msgstr "Puerto del Servidor de la Aplicación"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:289
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:278
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:283
 msgid "Apply"
 msgstr "Aplicar"
 
@@ -70,7 +70,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:259
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:280
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
 msgstr "Cancelar"
@@ -134,11 +134,11 @@ msgstr ""
 msgid "Crop new thumbnail from original file"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:218
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:223
 msgid "Date"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:229
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:234
 msgid "Days"
 msgstr ""
 
@@ -184,7 +184,7 @@ msgstr "No publicar en"
 msgid "Drag images here or click to select files"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:108
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:109
 msgid "Drag or use arrow keys to change order."
 msgstr ""
 
@@ -285,7 +285,7 @@ msgstr "Página Principal"
 msgid "Home Page"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:237
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:242
 msgid "Hours"
 msgstr ""
 
@@ -332,7 +332,7 @@ msgstr ""
 msgid "Message Submissions"
 msgstr "Publicaciones de Mensajes"
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:245
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:250
 msgid "Minutes"
 msgstr ""
 
@@ -380,7 +380,7 @@ msgctxt "internalSchedule.single"
 msgid "Once"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:268
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:273
 msgid "Only set scheduled date"
 msgstr ""
 
@@ -473,7 +473,7 @@ msgstr "Guardar cambios de carpeta de publicación"
 msgid "Schedule"
 msgstr "Programar"
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:204
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:209
 msgctxt "schedule.modal-header"
 msgid "Schedule"
 msgstr ""
