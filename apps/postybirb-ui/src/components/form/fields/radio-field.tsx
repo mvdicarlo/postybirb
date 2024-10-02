@@ -55,9 +55,8 @@ function InnerRadioField(
   return (
     <Radio.Group {...form.getInputProps(propKey)}>
       {field.options.map((o) => (
-        <Radio key={o.toString()} value={o.value as string | number}>
-          {o.label}
-        </Radio>
+        <Radio key={o.toString()} value={o.value as string | number} label={o.label}/>
+          
       ))}
     </Radio.Group>
   );
