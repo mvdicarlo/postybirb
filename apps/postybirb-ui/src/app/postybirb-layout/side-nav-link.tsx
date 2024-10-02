@@ -1,7 +1,7 @@
 import { Kbd, NavLink, Tooltip } from '@mantine/core';
 import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
-import tinykeys from 'tinykeys';
+import { tinykeys } from 'tinykeys';
 import { DrawerGlobalState } from './drawers/drawer-global-state';
 import { useDrawerToggle } from './drawers/use-drawer-toggle';
 

@@ -1,5 +1,5 @@
 import { PropsWithChildren, useEffect } from 'react';
-import tinykeys from 'tinykeys';
+import { tinykeys } from 'tinykeys';
 import './keybinding.css';
 
 export type KeybindingProps = {
