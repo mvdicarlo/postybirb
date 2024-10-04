@@ -3,6 +3,7 @@ import { Box, Button, Stack, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
+import { ExternalLink } from '../../components/external-link/external-link';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
 
@@ -85,11 +86,11 @@ export default function DiscordLoginView(
             isWebhookValid === false ? <Trans>Webhook is required</Trans> : null
           }
           description={
-            <a href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">
+            <ExternalLink href="https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks">
               <Trans context="discord.webhook-help">
                 How to create a webhook
               </Trans>
-            </a>
+            </ExternalLink>
           }
           onChange={(event) => {
             setWebhook(event.currentTarget.value);

@@ -3,7 +3,7 @@
  * between the frontend to the electron backend.
  */
 
-import { app, ipcMain, dialog } from 'electron';
+import { app, dialog, ipcMain, shell } from 'electron';
 import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
@@ -29,6 +29,10 @@ ipcMain.handle('pick-directory', async (): Promise<string | undefined> => {
   }
 
   return undefined;
+});
+
+ipcMain.on('open-external-link', (event, url) => {
+  shell.openExternal(url);
 });
 
 // Handle App termination

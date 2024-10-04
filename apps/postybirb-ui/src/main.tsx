@@ -59,6 +59,7 @@ declare global {
     electron: {
       getAppVersion(): Promise<string>;
       pickDirectory?(): Promise<string | undefined>;
+      openExternalLink(url: string): void;
       platform: string;
       app_port: string;
       app_version: string;
