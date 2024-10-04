@@ -291,7 +291,7 @@ msgstr ""
 msgid "Hours"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:89
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:90
 msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr ""
@@ -450,7 +450,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:190
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:171
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:96
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:105
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:106
 msgid "Save"
 msgstr ""
 
@@ -665,7 +665,7 @@ msgstr ""
 msgid "Use custom description"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:85
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
 msgid "Webhook is required"
 msgstr ""
 

@@ -35,8 +35,7 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
   }
 
   return (
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    <Box h="calc(100% - 34px)" p="sm">
+    <Box h="calc(100% - 50px)" p="sm">
       {loginMethod}
     </Box>
   );
