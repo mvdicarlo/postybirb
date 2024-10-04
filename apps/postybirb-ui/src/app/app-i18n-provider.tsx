@@ -28,7 +28,7 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
       // because browser's import call does it automatically
       // eslint-disable-next-line no-param-reassign
       lang = lang ?? 'en';
-      const { messages } = await import(`../lang/${lang}.po`);
+      const { messages } = await import(`../../../../lang/${lang}.po`);
       i18n.loadAndActivate({ locale: lang, messages });
       if (!loaded) setLoaded(true);
     },
