@@ -20,6 +20,7 @@ import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-opti
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
 import { WebsitesModule } from './websites/websites.module';
+import { ValidationModule } from './validation/validation.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { WebsitesModule } from './websites/websites.module';
     UpdateModule,
     PostModule,
     PostParsersModule,
+    ValidationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

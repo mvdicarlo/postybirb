@@ -8,8 +8,11 @@ import {
   FileMetadataFields,
   FileSubmission,
   FileType,
+  IPostRecord,
+  ISubmission,
   ISubmissionFile,
   IWebsiteFormFields,
+  IWebsiteOptions,
   IWebsitePostRecord,
   MessageSubmission,
   ModifiedFileDimension,
@@ -212,11 +215,11 @@ export class PostManagerService {
         );
       }
       const data = await this.preparePostData(
-        submission,
+        submission as unknown as ISubmission,
         instance,
         submission.options.find(
           (o) => o.account.id === websitePostRecord.account.id
-        )
+        ) as unknown as IWebsiteOptions
       );
       // TODO - Are there any other 'generic' validations that can be done here?
       await this.validatePostData(submission.type, data, instance);
@@ -240,7 +243,7 @@ export class PostManagerService {
     submission: Submission,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
-    data: PostData<Submission, IWebsiteFormFields>
+    data: PostData<ISubmission, IWebsiteFormFields>
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
@@ -545,9 +548,8 @@ export class PostManagerService {
     }
 
     const submission = entity.parent;
-    const options: WebsiteOptions<never>[] = submission.options.filter(
-      (o) => !o.isDefault
-    );
+    const options: WebsiteOptions<IWebsiteFormFields>[] =
+      submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
       (o) =>
@@ -556,7 +558,7 @@ export class PostManagerService {
     uncreatedOptions.forEach((w) =>
       entity.children.add(
         this.websitePostRecordRepository.create({
-          parent: entity,
+          parent: entity as unknown as IPostRecord,
           account: w.account,
         })
       )
@@ -604,22 +606,23 @@ export class PostManagerService {
    * @return {*}  {PostData<Submission, never>}
    */
   private preparePostData(
-    submission: Submission,
+    submission: ISubmission,
     instance: Website<unknown>,
-    websiteOptions: WebsiteOptions
-  ): Promise<PostData<Submission, IWebsiteFormFields>> {
+    websiteOptions: IWebsiteOptions
+  ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }
 
   /**
    * Validates the post data for the given submission type.
+   * TODO move this out of the post manager
    * @param {SubmissionType} type
    * @param {PostData<Submission, never>} data
    * @param {Website<unknown>} instance
    */
   private async validatePostData(
     type: SubmissionType,
-    data: PostData<Submission, IWebsiteFormFields>,
+    data: PostData<ISubmission, IWebsiteFormFields>,
     instance: Website<unknown>
   ) {
     let result: ValidationResult;

@@ -42,4 +42,17 @@ export interface ValidationMessages {
      */
     maxLength: number;
   };
+
+  'validation.file.invalid-mime-type': {
+    mimeType: string;
+    acceptedMimeTypes: string[];
+  };
+
+  // An error message for when the validation fails
+  'validation.failed': {
+    /**
+     * The error message
+     */
+    message: string;
+  };
 }
