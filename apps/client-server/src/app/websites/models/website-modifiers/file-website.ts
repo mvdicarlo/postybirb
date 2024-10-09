@@ -1,5 +1,6 @@
 import {
   FileSubmission,
+  ImageResizeProps,
   ISubmissionFile,
   IWebsiteFormFields,
   PostData,
@@ -8,7 +9,6 @@ import {
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
-import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UnknownWebsite } from '../../website';
 

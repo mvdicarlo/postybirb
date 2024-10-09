@@ -1,3 +1,4 @@
+import { ImageResizeProps } from '../website/image-resize-props';
 import { IWebsiteFormFields } from './website-form-fields.interface';
 
 export type ValidationResult<T extends IWebsiteFormFields = never> = {
@@ -36,13 +37,6 @@ export type ValidationMessage<
  * Map containing validation id as key and values as value
  */
 export interface ValidationMessages {
-  'validation.description.max-length': {
-    /**
-     * Max allowed description length
-     */
-    maxLength: number;
-  };
-
   'validation.file.invalid-mime-type': {
     mimeType: string;
     acceptedMimeTypes: string[];
@@ -54,5 +48,31 @@ export interface ValidationMessages {
      * The error message
      */
     message: string;
+  };
+
+  'validation.file.file-batch-size': {
+    maxBatchSize: number;
+    expectedBatchesToCreate: number;
+  };
+
+  'validation.file.file-size': {
+    maxFileSize: number;
+    fileSize: number;
+    fileName: string;
+  };
+
+  'validation.file.image-resize': {
+    fileName: string;
+    resizeProps: ImageResizeProps;
+  };
+
+  'validation.description.max-length': {
+    currentLength: number;
+    maxLength: number;
+  };
+
+  'validation.description.min-length': {
+    currentLength: number;
+    minLength: number;
   };
 }

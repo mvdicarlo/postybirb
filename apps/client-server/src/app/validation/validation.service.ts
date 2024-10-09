@@ -2,29 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   ISubmission,
-  IWebsiteFormFields,
   IWebsiteOptions,
-  PostData,
-  SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
-import { parse } from 'path';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
-import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-
-type SubValidation = (
-  result: ValidationResult,
-  websiteInstance: UnknownWebsite,
-  data: PostData<ISubmission, IWebsiteFormFields>,
-  submission: ISubmission
-) => Promise<void>;
+import { validators } from './validators';
+import { Validator, ValidatorParams } from './validators/validator.type';
 
 @Injectable()
 export class ValidationService {
   private readonly logger = Logger();
 
-  private readonly validations: SubValidation[] = [this.validateAcceptedFiles];
+  private readonly validations: Validator[] = validators;
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
@@ -82,9 +72,15 @@ export class ValidationService {
         websiteOption
       );
 
+      const params: ValidatorParams = {
+        result,
+        websiteInstance: website,
+        data,
+        submission,
+      };
       // eslint-disable-next-line no-restricted-syntax
       for (const validation of this.validations) {
-        await validation(result, website, data, submission);
+        await validation(params);
       }
 
       return result;
@@ -104,35 +100,5 @@ export class ValidationService {
         ],
       };
     }
-  }
-
-  private async validateAcceptedFiles(
-    result: ValidationResult,
-    websiteInstance: UnknownWebsite,
-    data: PostData<ISubmission, IWebsiteFormFields>,
-    submission: ISubmission
-  ) {
-    if (submission.type !== SubmissionType.FILE) {
-      return;
-    }
-
-    const acceptedMimeTypes =
-      websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
-
-    submission.files.getItems().forEach((file) => {
-      if (
-        !acceptedMimeTypes.includes(file.mimeType) ||
-        acceptedMimeTypes.includes(parse(file.fileName).ext)
-      ) {
-        result.errors.push({
-          id: 'validation.file.invalid-mime-type',
-          field: 'files',
-          values: {
-            mimeType: file.mimeType,
-            acceptedMimeTypes,
-          },
-        });
-      }
-    });
   }
 }
