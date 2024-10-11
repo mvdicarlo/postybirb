@@ -4,6 +4,7 @@ type SupportsTags = {
   supportsTags: true;
   maxTags?: number;
   minTags?: number;
+  maxTagLength?: number;
 };
 
 type NoTagSupport = {
@@ -14,4 +15,5 @@ export const UnlimitedTags = () => ({
   supportsTags: true,
   maxTags: Infinity,
   minTags: 0,
+  maxTagLength: Infinity,
 });

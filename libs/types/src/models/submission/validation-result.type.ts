@@ -37,17 +37,17 @@ export type ValidationMessage<
  * Map containing validation id as key and values as value
  */
 export interface ValidationMessages {
-  'validation.file.invalid-mime-type': {
-    mimeType: string;
-    acceptedMimeTypes: string[];
-  };
-
   // An error message for when the validation fails
   'validation.failed': {
     /**
      * The error message
      */
     message: string;
+  };
+
+  'validation.file.invalid-mime-type': {
+    mimeType: string;
+    acceptedMimeTypes: string[];
   };
 
   'validation.file.file-batch-size': {
@@ -72,6 +72,32 @@ export interface ValidationMessages {
   };
 
   'validation.description.min-length': {
+    currentLength: number;
+    minLength: number;
+  };
+
+  'validation.tags.max-tags': {
+    currentLength: number;
+    maxLength: number;
+  };
+
+  'validation.tags.min-tags': {
+    currentLength: number;
+    minLength: number;
+  };
+
+  'validation.tags.max-tag-length': {
+    tags: string[];
+    maxLength: number;
+  };
+
+  'validation.title.max-length': {
+    currentLength: number;
+    maxLength: number;
+    willTruncate: boolean;
+  };
+
+  'validation.title.min-length': {
     currentLength: number;
     minLength: number;
   };
