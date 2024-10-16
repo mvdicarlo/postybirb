@@ -13,6 +13,7 @@ import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
   FileSubmissionMetadata,
+  ISubmission,
   ISubmissionDto,
   ISubmissionMetadata,
   MessageSubmission,
@@ -22,7 +23,7 @@ import {
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, debounce } from 'lodash';
 import * as path from 'path';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
@@ -66,6 +67,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     @Optional() webSocket: WSGateway
   ) {
     super(repository, webSocket);
+
     // Listen to changes to PostRecord as it is a child of Submission
     repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
     repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
@@ -84,10 +86,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     );
   }
 
-  /**
-   * Emits submissions onto websocket.
-   */
-  public async emit() {
+  private async emitChanges() {
     // !BUG - This protects against unit test failures, but is not a good solution.
     // Ideally fixed by upgrading mikro-orm and using a proper event emitter.
     if (IsTestEnvironment()) {
@@ -98,6 +97,11 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       data: await this.findAllAsDto(),
     });
   }
+
+  /**
+   * Emits submissions onto websocket.
+   */
+  public emit = debounce(this.emitChanges, 1000);
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
     const all = await super.findAll();
@@ -151,7 +155,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
     submission.options.add(
       await this.websiteOptionsService.createDefaultSubmissionOptions(
-        submission,
+        submission as ISubmission,
         name
       )
     );

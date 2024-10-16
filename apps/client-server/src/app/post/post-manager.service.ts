@@ -1,13 +1,14 @@
 /* eslint-disable no-param-reassign */
 import { EntityDTO, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
   FileMetadataFields,
   FileSubmission,
   FileType,
+  ImageResizeProps,
   IPostRecord,
   ISubmission,
   ISubmissionFile,
@@ -20,9 +21,9 @@ import {
   PostRecordResumeMode,
   PostRecordState,
   PostResponse,
+  SimpleValidationResult,
   SubmissionId,
   SubmissionType,
-  ValidationResult,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -40,7 +41,6 @@ import { MessageWebsite } from '../websites/models/website-modifiers/message-web
 import { Website } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
-import { ImageResizeProps } from './models/image-resize-props';
 import { PostingFile } from './models/posting-file';
 import { PostFileResizerService } from './post-file-resizer.service';
 import { PostService } from './post.service';
@@ -625,7 +625,7 @@ export class PostManagerService {
     data: PostData<ISubmission, IWebsiteFormFields>,
     instance: Website<unknown>
   ) {
-    let result: ValidationResult;
+    let result: SimpleValidationResult;
     if (type === SubmissionType.FILE) {
       result = await (
         instance as unknown as FileWebsite<never>

@@ -3,6 +3,7 @@ import {
   DescriptionType,
   FileSubmission,
   ILoginState,
+  ImageResizeProps,
   ISubmissionFile,
   MessageSubmission,
   PostData,
@@ -12,7 +13,6 @@ import {
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
-import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsDescription } from '../../decorators/supports-description.decorator';
@@ -82,7 +82,7 @@ export default class FurAffinity
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    throw new Error('Method not implemented.');
+    return undefined;
   }
 
   onPostFileSubmission(

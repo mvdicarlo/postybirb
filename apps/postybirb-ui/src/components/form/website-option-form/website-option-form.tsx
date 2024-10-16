@@ -14,7 +14,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
@@ -79,6 +79,7 @@ function ValidationMessages(props: {
         .filter((m) => m.field === undefined)
         .map((m) => (
           <Alert
+            key={m.id}
             c={type === 'errors' ? 'red' : 'orange'}
             title={<ValidationTranslation id={m.id} values={m.values} />}
           />
@@ -96,35 +97,36 @@ function InnerForm({
   userSpecifiedModalVisible,
   userSpecifiedModalClosed,
 }: InnerFormProps) {
-  const [validations, setValidations] = useState<ValidationResult>({
+  const validations = submission.validations.find(
+    (v) => v.id === option.id
+  ) ?? {
+    id: option.id,
     errors: [],
     warnings: [],
-  });
+  };
   const fetchValidation = useRef<((value: IWebsiteFormFields) => void) | null>(
     null
   );
 
   useEffect(() => {
-    const fetchData = async (value: IWebsiteFormFields) => {
-      if (option.isDefault) {
-        setValidations({
-          errors: [],
-          warnings: [],
-        });
-      } else {
-        const res = await websiteOptionsApi.validate({
-          defaultOptions: defaultOption.data,
-          account,
-          submission: submission.id,
-          options: value ?? option.data,
-        });
-
-        setValidations(res.body);
-      }
+    const validateOption = async () => {
+      // if (option.isDefault) {
+      //   setValidations({
+      //     id: option.id,
+      //     errors: [],
+      //     warnings: [],
+      //   });
+      // } else {
+      //   const res = await websiteOptionsApi.validate({
+      //     websiteOptionId: option.id,
+      //     submission: submission.id,
+      //   });
+      //   setValidations(res.body);
+      // }
     };
 
-    fetchData(option.data);
-    fetchValidation.current = debounce(fetchData, 1_200);
+    validateOption();
+    fetchValidation.current = debounce(validateOption, 1_200);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -132,9 +134,15 @@ function InnerForm({
   const save = useCallback(
     debounce(
       (values) =>
-        websiteOptionsApi.update(option.id, {
-          data: values as IWebsiteFormFields,
-        }),
+        websiteOptionsApi
+          .update(option.id, {
+            data: values as IWebsiteFormFields,
+          })
+          .then(() => {
+            if (fetchValidation.current) {
+              fetchValidation.current(values as IWebsiteFormFields);
+            }
+          }),
       1_200
     ),
     []
@@ -155,26 +163,22 @@ function InnerForm({
       ),
     },
     onValuesChange(values) {
-      if (fetchValidation.current) {
-        fetchValidation.current(values as IWebsiteFormFields);
-      }
       save(values);
     },
   });
 
-  const optionValidations = validations || {
-    errors: [],
-    warnings: [],
-  };
-  const validationAlerts = Object.entries(optionValidations).map(
-    ([key, value]) => (
-      <ValidationMessages
-        key={key}
-        messages={value}
-        type={key as keyof ValidationResult}
-      />
-    )
-  );
+  const validationAlerts = [
+    <ValidationMessages
+      key="errors"
+      messages={validations.errors ?? []}
+      type="errors"
+    />,
+    <ValidationMessages
+      key="warnings"
+      messages={validations.warnings ?? []}
+      type="warnings"
+    />,
+  ];
 
   // split form into cols
   const cols: Record<string, FieldEntry[]> = {};
@@ -187,7 +191,7 @@ function InnerForm({
   });
 
   return (
-    <Box>
+    <Box className="postybirb__website-option-form">
       <UserSpecifiedWebsiteOptionsSaveModal
         opened={userSpecifiedModalVisible}
         onClose={userSpecifiedModalClosed}

@@ -5,7 +5,7 @@ import {
   IWebsiteFormFields,
   PostData,
   PostResponse,
-  ValidationResult,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -34,7 +34,7 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
 
   onValidateFileSubmission(
     postData: PostData<FileSubmission, T>
-  ): Promise<ValidationResult>;
+  ): Promise<SimpleValidationResult>;
 }
 
 export function isFileWebsite(

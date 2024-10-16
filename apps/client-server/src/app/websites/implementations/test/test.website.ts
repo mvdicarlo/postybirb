@@ -2,17 +2,17 @@ import {
   DescriptionType,
   FileSubmission,
   ILoginState,
+  ImageResizeProps,
   ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteMetadata,
   MessageSubmission,
   PostData,
   PostResponse,
-  ValidationResult,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
-import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsDescription } from '../../decorators/supports-description.decorator';
@@ -71,7 +71,7 @@ export default class TestWebsite
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    throw new Error('Method not implemented.');
+    return undefined;
   }
 
   onPostFileSubmission(
@@ -84,7 +84,7 @@ export default class TestWebsite
 
   async onValidateFileSubmission(
     postData: PostData<FileSubmission, TestFileSubmission>
-  ): Promise<ValidationResult> {
+  ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
       errors: [],
@@ -95,13 +95,13 @@ export default class TestWebsite
     postData: PostData<MessageSubmission, TestMessageSubmission>,
     cancellationToken: CancellableToken
   ): Promise<PostResponse> {
-    throw new Error('Method not implemented.');
+    return undefined;
   }
 
   async onValidateMessageSubmission(
     postData: PostData<MessageSubmission, TestMessageSubmission>
-  ): Promise<ValidationResult> {
-    const results: ValidationResult = {
+  ): Promise<SimpleValidationResult> {
+    const results: SimpleValidationResult = {
       warnings: [],
       errors: [],
     };

@@ -1,7 +1,17 @@
 import { ImageResizeProps } from '../website/image-resize-props';
 import { IWebsiteFormFields } from './website-form-fields.interface';
 
+export type SimpleValidationResult<T extends IWebsiteFormFields = never> = Omit<
+  ValidationResult<T>,
+  'id'
+>;
+
 export type ValidationResult<T extends IWebsiteFormFields = never> = {
+  /**
+   * Id that associates with the website options the validation was performed on.
+   */
+  id: string;
+
   /**
    * Non-blocking issues with the validated submission.
    */
