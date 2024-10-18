@@ -1,3 +1,4 @@
+import { Collection } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   forwardRef,
@@ -21,13 +22,13 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
-import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptionsObject } from '../websites/models/default-website-options';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
@@ -45,7 +46,6 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService,
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
-    private readonly postParserService: PostParsersService,
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService
   ) {
@@ -77,17 +77,36 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         submission.type
       );
 
+    const formFields = isDefault
+      ? await this.formGeneratorService.getDefaultForm(submission.type)
+      : await this.formGeneratorService.generateForm({
+          accountId: account.id,
+          type: submission.type,
+        });
+
+    // Populate with the form fields to get the default values
+    const websiteData: IWebsiteFormFields = {
+      ...Object.entries(formFields).reduce(
+        (acc, [key, field]) => ({
+          ...acc,
+          [key]: field.defaultValue,
+        }),
+        {} as IWebsiteFormFields
+      ),
+    };
+
     const mergedData = {
       ...(isDefault ? DefaultWebsiteOptionsObject : {}), // Only merge default options if this is the default option
+      ...websiteData, // Merge default form fields
       ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
       ...data, // Merge user defined data
       title, // Override title (optional)
     };
 
-    const option = this.repository.create({
+    const option = new WebsiteOptions({
       submission,
       account,
-      data: mergedData,
+      data: mergedData as IWebsiteFormFields,
     });
 
     return option;
@@ -225,9 +244,46 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
    * @return {*}  {Promise<ValidationResult[]>}
    */
   async validateSubmission(submissionId: string) {
+    const submission = await this.submissionService.findPopulatedById(
+      submissionId
+    );
+    return this.validationService.validateSubmission(submission);
+  }
+
+  async updateSubmissionOptions(
+    submissionId: string,
+    updateDto: UpdateSubmissionWebsiteOptionsDto
+  ) {
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });
-    return this.validationService.validateSubmission(submission);
+
+    const { remove, add } = updateDto;
+    if (remove?.length) {
+      const items = (
+        submission.options as Collection<WebsiteOptions>
+      ).getItems();
+      // eslint-disable-next-line no-restricted-syntax
+      for (const id of remove) {
+        const option = items.find((opt) => opt.id === id);
+        if (option) {
+          this.logger.debug(
+            `Removing option ${id} from submission ${submissionId}`
+          );
+          submission.options.remove(option);
+        }
+      }
+    }
+
+    if (add?.length) {
+      const options = await Promise.all(
+        add.map((dto) => this.createOption(submission, dto.account, dto.data))
+      );
+      submission.options.add(...options);
+    }
+
+    await this.submissionRepository.persistAndFlush(submission);
+    this.submissionService.emit();
+    return submission;
   }
 }

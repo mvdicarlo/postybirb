@@ -9,6 +9,7 @@ import { IWebsiteFormFields } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { WebsiteOptions } from '../database/entities';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 import { WebsiteOptionsService } from './website-options.service';
@@ -49,6 +50,19 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
     @Param('id') id: string
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toJSON());
+  }
+
+  @Patch('submission/:id')
+  @ApiOkResponse({ description: 'Submission updated.', type: Boolean })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  updateSubmission(
+    @Body()
+    updateDto: UpdateSubmissionWebsiteOptionsDto,
+    @Param('id') submissionId: string
+  ) {
+    return this.service
+      .updateSubmissionOptions(submissionId, updateDto)
+      .then((entity) => entity.toJSON());
   }
 
   @Post('validate')

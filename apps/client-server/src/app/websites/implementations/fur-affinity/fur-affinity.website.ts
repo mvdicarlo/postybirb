@@ -8,7 +8,7 @@ import {
   MessageSubmission,
   PostData,
   PostResponse,
-  ValidationResult,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
@@ -93,10 +93,13 @@ export default class FurAffinity
     throw new Error('Method not implemented.');
   }
 
-  onValidateFileSubmission(
+  async onValidateFileSubmission(
     postData: PostData<FileSubmission, FurAffinityFileSubmission>
-  ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    };
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
@@ -110,14 +113,17 @@ export default class FurAffinity
     throw new Error('Method not implemented.');
   }
 
-  onValidateMessageSubmission(
+  async onValidateMessageSubmission(
     postData: PostData<MessageSubmission, FurAffinityMessageSubmission>
-  ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    };
   }
 
   onDescriptionParse(): string {
-    throw new Error('Method not implemented.');
+    return 'test'; // TODO
   }
 
   onAfterDescriptionParse(description: string): string {

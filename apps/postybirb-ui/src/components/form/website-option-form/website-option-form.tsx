@@ -14,7 +14,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
@@ -104,46 +104,15 @@ function InnerForm({
     errors: [],
     warnings: [],
   };
-  const fetchValidation = useRef<((value: IWebsiteFormFields) => void) | null>(
-    null
-  );
-
-  useEffect(() => {
-    const validateOption = async () => {
-      // if (option.isDefault) {
-      //   setValidations({
-      //     id: option.id,
-      //     errors: [],
-      //     warnings: [],
-      //   });
-      // } else {
-      //   const res = await websiteOptionsApi.validate({
-      //     websiteOptionId: option.id,
-      //     submission: submission.id,
-      //   });
-      //   setValidations(res.body);
-      // }
-    };
-
-    validateOption();
-    fetchValidation.current = debounce(validateOption, 1_200);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const save = useCallback(
     debounce(
       (values) =>
-        websiteOptionsApi
-          .update(option.id, {
-            data: values as IWebsiteFormFields,
-          })
-          .then(() => {
-            if (fetchValidation.current) {
-              fetchValidation.current(values as IWebsiteFormFields);
-            }
-          }),
-      1_200
+        websiteOptionsApi.update(option.id, {
+          data: values as IWebsiteFormFields,
+        }),
+      800
     ),
     []
   );

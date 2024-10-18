@@ -82,10 +82,13 @@ export default class Discord
     throw new Error('Method not implemented.');
   }
 
-  onValidateFileSubmission(
+  async onValidateFileSubmission(
     postData: PostData<FileSubmission, DiscordFileSubmission>
   ): Promise<SimpleValidationResult> {
-    throw new Error('Method not implemented.');
+    return {
+      warnings: [],
+      errors: [],
+    }
   }
 
   onPostMessageSubmission(

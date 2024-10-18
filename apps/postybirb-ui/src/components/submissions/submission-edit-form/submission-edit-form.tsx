@@ -176,15 +176,13 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
                 removedOptions.push(option);
               }
             });
-            removedOptions.forEach((option) => {
-              websiteOptionsApi.remove([option.id]);
-            });
-            newAccounts.forEach((account) => {
-              websiteOptionsApi.create({
+            websiteOptionsApi.modifySubmission(submission.id, {
+              remove: removedOptions.map((o) => o.id),
+              add: newAccounts.map((account) => ({
                 account,
                 submission: submission.id,
                 data: {} as IWebsiteFormFields,
-              });
+              })),
             });
           }}
         />

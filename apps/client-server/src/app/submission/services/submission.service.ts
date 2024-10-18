@@ -23,7 +23,7 @@ import {
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
-import { cloneDeep, debounce } from 'lodash';
+import { cloneDeep } from 'lodash';
 import * as path from 'path';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
@@ -70,9 +70,9 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
     // Listen to changes to PostRecord as it is a child of Submission
     repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
-    repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
-      this.emit()
-    );
+    // repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
+    //   this.emit()
+    // );
     // This might be dangerous depending on the creation order of the services
     repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
       this.emit()
@@ -86,7 +86,10 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     );
   }
 
-  private async emitChanges() {
+  /**
+   * Emits submissions onto websocket.
+   */
+  public async emit() {
     // !BUG - This protects against unit test failures, but is not a good solution.
     // Ideally fixed by upgrading mikro-orm and using a proper event emitter.
     if (IsTestEnvironment()) {
@@ -97,11 +100,6 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       data: await this.findAllAsDto(),
     });
   }
-
-  /**
-   * Emits submissions onto websocket.
-   */
-  public emit = debounce(this.emitChanges, 1000);
 
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
     const all = await super.findAll();
@@ -469,5 +467,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     // Save changes
     await this.repository.persistAndFlush(allSubmissions);
     this.emit();
+  }
+
+  public findPopulatedById(id: string) {
+    return this.repository.findOneOrFail(
+      { id },
+      { populate: ['options', 'options.account'] }
+    );
   }
 }
