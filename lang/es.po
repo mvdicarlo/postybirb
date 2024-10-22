@@ -155,7 +155,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:61
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:63
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:154
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:82
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:83
 msgid "Default"
 msgstr "Por Defecto"
 
@@ -486,7 +486,7 @@ msgstr ""
 msgid "Save folder upload changes"
 msgstr "Guardar cambios de carpeta de publicación"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:146
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:144
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
@@ -662,14 +662,14 @@ msgstr ""
 msgid "Translation {id} not found"
 msgstr "Traducción {id} no encontrada"
 
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:257
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:230
 msgid "Unable to display form"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:145
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:89
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:90
 msgid "Unknown"
 msgstr "Desconocido"
 
