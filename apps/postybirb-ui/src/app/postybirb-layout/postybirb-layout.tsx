@@ -168,7 +168,7 @@ export function PostyBirbLayout() {
           <SettingsDrawer />
           <TagGroupDrawer />
           <TagConverterDrawer />
-          <Box className="postybirb__content" p="md">
+          <Box className="postybirb__content" px="md" pb="sm">
             <Outlet />
           </Box>
         </Box>

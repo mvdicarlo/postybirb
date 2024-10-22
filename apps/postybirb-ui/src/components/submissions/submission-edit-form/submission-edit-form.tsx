@@ -52,6 +52,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
         submission.options
           .filter((o) => !o.isDefault)
           .reduce((acc, option) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const account = accounts.find((a) => a.id === option.account)!;
             const websiteId = account.website;
             if (!acc[websiteId]) {
@@ -106,17 +107,12 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   });
 
   const removeAccount = (account: IAccountDto) => {
-    const options = submission.options
-      .filter((o) => o.account !== account.id)
-      .filter((o) => !o.isDefault);
-    websiteOptionsApi.remove(submission.options.map((o) => o.id));
-    options.forEach((o) => {
-      websiteOptionsApi.create({
-        account: o.account,
-        submission: submission.id,
-        data: o.data,
-      });
-    });
+    const optionToDelete = submission.options
+      .filter((o) => !o.isDefault)
+      .find((o) => o.account === account.id);
+    if (optionToDelete) {
+      websiteOptionsApi.remove([optionToDelete.id]);
+    }
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,15 +176,13 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
                 removedOptions.push(option);
               }
             });
-            removedOptions.forEach((option) => {
-              websiteOptionsApi.remove([option.id]);
-            });
-            newAccounts.forEach((account) => {
-              websiteOptionsApi.create({
+            websiteOptionsApi.modifySubmission(submission.id, {
+              remove: removedOptions.map((o) => o.id),
+              add: newAccounts.map((account) => ({
                 account,
                 submission: submission.id,
                 data: {} as IWebsiteFormFields,
-              });
+              })),
             });
           }}
         />

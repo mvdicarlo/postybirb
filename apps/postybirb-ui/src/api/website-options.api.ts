@@ -1,5 +1,6 @@
 import {
   ICreateWebsiteOptionsDto,
+  IUpdateSubmissionWebsiteOptionsDto,
   IUpdateWebsiteOptionsDto,
   IValidateWebsiteOptionsDto,
   IWebsiteFormFields,
@@ -23,6 +24,16 @@ class WebsiteOptionsApi extends BaseApi<
 
   validateSubmission(submissionId: string) {
     return this.client.get<ValidationResult[]>(`validate/${submissionId}`);
+  }
+
+  modifySubmission(
+    submissionId: string,
+    dto: IUpdateSubmissionWebsiteOptionsDto
+  ) {
+    return this.client.patch<WebsiteOptionsDto>(
+      `submission/${submissionId}`,
+      dto
+    );
   }
 }
 

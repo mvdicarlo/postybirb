@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TextFieldType } from '@postybirb/form-builder';
-import { IWebsiteOptions } from '@postybirb/types';
-import { Submission } from '../../database/entities';
+import { ISubmission, IWebsiteOptions } from '@postybirb/types';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
 import { UnknownWebsite } from '../../websites/website';
 
@@ -12,7 +11,7 @@ export class TitleParserService {
   constructor(private readonly formGeneratorService: FormGeneratorService) {}
 
   public async parse(
-    submission: Submission,
+    submission: ISubmission,
     instance: UnknownWebsite,
     defaultOptions: IWebsiteOptions,
     websiteOptions: IWebsiteOptions
@@ -22,10 +21,12 @@ export class TitleParserService {
         submission.type
       )) as unknown as TitleType;
     const websiteForm: TitleType =
-      (await this.formGeneratorService.generateForm({
-        type: submission.type,
-        accountId: instance.accountId,
-      })) as unknown as TitleType;
+      defaultOptions.id === websiteOptions.id
+        ? defaultForm
+        : ((await this.formGeneratorService.generateForm({
+            type: submission.type,
+            accountId: instance.accountId,
+          })) as unknown as TitleType);
 
     const title = websiteOptions.data.title ?? defaultOptions.data.title ?? '';
     const field: TextFieldType =

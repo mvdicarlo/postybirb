@@ -1,10 +1,6 @@
-import { AccountId, IWebsiteFormFields, SubmissionId } from '../../models';
+import { EntityId, SubmissionId } from '../../models';
 
-export interface IValidateWebsiteOptionsDto<
-  T extends IWebsiteFormFields = IWebsiteFormFields
-> {
+export interface IValidateWebsiteOptionsDto {
   submission: SubmissionId;
-  account: AccountId;
-  options: T;
-  defaultOptions: IWebsiteFormFields;
+  websiteOptionId: EntityId;
 }

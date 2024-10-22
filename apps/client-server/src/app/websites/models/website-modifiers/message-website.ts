@@ -3,7 +3,7 @@ import {
   MessageSubmission,
   PostData,
   PostResponse,
-  ValidationResult,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 
@@ -28,7 +28,7 @@ export interface MessageWebsite<T extends IWebsiteFormFields> {
 
   onValidateMessageSubmission(
     postData: PostData<MessageSubmission, T>
-  ): Promise<ValidationResult>;
+  ): Promise<SimpleValidationResult>;
 }
 
 export function isMessageWebsite(

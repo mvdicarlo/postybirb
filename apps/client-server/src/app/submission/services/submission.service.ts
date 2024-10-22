@@ -13,6 +13,7 @@ import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
   FileSubmissionMetadata,
+  ISubmission,
   ISubmissionDto,
   ISubmissionMetadata,
   MessageSubmission,
@@ -66,11 +67,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     @Optional() webSocket: WSGateway
   ) {
     super(repository, webSocket);
+
     // Listen to changes to PostRecord as it is a child of Submission
     repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
-    repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
-      this.emit()
-    );
+    // repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
+    //   this.emit()
+    // );
     // This might be dangerous depending on the creation order of the services
     repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
       this.emit()
@@ -151,7 +153,7 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
     submission.options.add(
       await this.websiteOptionsService.createDefaultSubmissionOptions(
-        submission,
+        submission as ISubmission,
         name
       )
     );
@@ -465,5 +467,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     // Save changes
     await this.repository.persistAndFlush(allSubmissions);
     this.emit();
+  }
+
+  public findPopulatedById(id: string) {
+    return this.repository.findOneOrFail(
+      { id },
+      { populate: ['options', 'options.account'] }
+    );
   }
 }

@@ -170,7 +170,16 @@ export class PostService extends PostyBirbService<PostRecord> {
       {
         completedAt: null,
       },
-      { orderBy: { createdAt: 'ASC' } }
+      {
+        orderBy: { createdAt: 'ASC' },
+        populate: [
+          'parent',
+          'parent.options',
+          'parent.options.account',
+          'children',
+          'children.account',
+        ],
+      }
     );
     return entity;
   }

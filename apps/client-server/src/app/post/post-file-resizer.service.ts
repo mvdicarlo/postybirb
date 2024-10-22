@@ -1,7 +1,12 @@
 import { wrap } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { FileType, IFileBuffer, ISubmissionFile } from '@postybirb/types';
+import {
+  FileType,
+  IFileBuffer,
+  ImageResizeProps,
+  ISubmissionFile,
+} from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
@@ -9,7 +14,6 @@ import { cpus } from 'os';
 import { parse } from 'path';
 import { Sharp } from 'sharp';
 import { ImageUtil } from '../file/utils/image.util';
-import { ImageResizeProps } from './models/image-resize-props';
 import { PostingFile, ThumbnailOptions } from './models/posting-file';
 
 type ResizeRequest = {

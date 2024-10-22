@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ISubmission,
   IWebsiteFormFields,
   IWebsiteOptions,
   PostData,
 } from '@postybirb/types';
-import { Submission, WebsiteOptions } from '../database/entities';
 import { UnknownWebsite } from '../websites/website';
 import { DescriptionParserService } from './parsers/description-parser.service';
 import { RatingParser } from './parsers/rating-parser';
@@ -22,11 +22,11 @@ export class PostParsersService {
   ) {}
 
   public async parse(
-    submission: Submission,
+    submission: ISubmission,
     instance: UnknownWebsite,
     websiteOptions: IWebsiteOptions
-  ): Promise<PostData<Submission, IWebsiteFormFields>> {
-    const defaultOptions: WebsiteOptions = submission.options.find(
+  ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
+    const defaultOptions: IWebsiteOptions = submission.options.find(
       (o) => o.isDefault
     );
     const tags = await this.tagParser.parse(

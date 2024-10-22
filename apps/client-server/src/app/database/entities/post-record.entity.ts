@@ -10,6 +10,7 @@ import {
 } from '@mikro-orm/core';
 import {
   IPostRecord,
+  ISubmission,
   IWebsitePostRecord,
   PostRecordDto,
   PostRecordResumeMode,
@@ -33,7 +34,7 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
     inversedBy: 'posts',
     serializer: (s) => s.id,
   })
-  parent: Rel<Submission>;
+  parent: Rel<ISubmission>;
 
   @Property({
     type: 'date',
@@ -64,7 +65,7 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
     >
   ) {
     super();
-    this.parent = postRecord.parent as unknown as Submission;
+    this.parent = postRecord.parent;
     this.completedAt = postRecord.completedAt;
     this.state = postRecord.state;
     this.resumeMode = postRecord.resumeMode;

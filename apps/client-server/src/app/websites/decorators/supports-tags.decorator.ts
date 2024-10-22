@@ -38,6 +38,10 @@ export function SupportsTags(
     if (tagSupport.maxTags === undefined) {
       tagSupport.maxTags = Infinity;
     }
+
+    if (tagSupport.maxTagLength === undefined) {
+      tagSupport.maxTagLength = Infinity;
+    }
   }
 
   return function website(constructor: Class<UnknownWebsite>) {

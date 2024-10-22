@@ -7,6 +7,7 @@ import {
   serialize,
 } from '@mikro-orm/core';
 import {
+  ISubmission,
   IWebsiteFormFields,
   IWebsiteOptions,
   NULL_ACCOUNT_ID,
@@ -32,7 +33,7 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
     nullable: true,
     lazy: false,
   })
-  submission: Rel<Submission>;
+  submission: Rel<ISubmission>;
 
   @Property({ type: 'json', nullable: false })
   data: T;
@@ -51,7 +52,7 @@ export class WebsiteOptions<T extends IWebsiteFormFields = IWebsiteFormFields>
 
   constructor(websiteOptions: Partial<IWebsiteOptions<T>>) {
     super();
-    this.submission = websiteOptions.submission as Submission;
+    this.submission = websiteOptions.submission;
     this.data = websiteOptions.data;
     this.account = websiteOptions.account as Account;
   }

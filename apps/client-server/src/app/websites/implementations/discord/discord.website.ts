@@ -2,16 +2,16 @@ import {
   DescriptionType,
   FileSubmission,
   ILoginState,
+  ImageResizeProps,
   ISubmissionFile,
   IWebsiteFormFields,
   MessageSubmission,
   PostData,
   PostResponse,
-  ValidationResult,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
-import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsDescription } from '../../decorators/supports-description.decorator';
@@ -71,7 +71,7 @@ export default class Discord
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    throw new Error('Method not implemented.');
+    return undefined;
   }
 
   onPostFileSubmission(
@@ -82,10 +82,13 @@ export default class Discord
     throw new Error('Method not implemented.');
   }
 
-  onValidateFileSubmission(
+  async onValidateFileSubmission(
     postData: PostData<FileSubmission, DiscordFileSubmission>
-  ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    }
   }
 
   onPostMessageSubmission(
@@ -97,8 +100,8 @@ export default class Discord
 
   async onValidateMessageSubmission(
     postData: PostData<MessageSubmission, DiscordMessageSubmission>
-  ): Promise<ValidationResult<DiscordMessageSubmission>> {
-    const result: ValidationResult<DiscordMessageSubmission> = {
+  ): Promise<SimpleValidationResult<DiscordMessageSubmission>> {
+    const result: SimpleValidationResult<DiscordMessageSubmission> = {
       warnings: [],
     };
 

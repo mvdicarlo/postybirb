@@ -13,6 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: apps/postybirb-ui/src/components/translations/translation.tsx:53
+msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:63
+msgid "{fileName} will be modified to support website requirements"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
 msgid "Accounts"
@@ -149,7 +157,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:61
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:63
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:154
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:82
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:83
 msgid "Default"
 msgstr ""
 
@@ -170,8 +178,12 @@ msgstr ""
 msgid "Description"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:13
+#: apps/postybirb-ui/src/components/translations/translation.tsx:19
 msgid "Description is greater than {maxLength} characters long"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:25
+msgid "Description is less than {minLength} characters long"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:25
@@ -240,6 +252,10 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:85
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:92
 msgid "Failed to update"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:13
+msgid "Failed to validate submission: {message}"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
@@ -439,6 +455,10 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/translations/translation.tsx:80
+msgid "Requires at least {minLength} tags"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48
 msgid "Reset"
 msgstr ""
@@ -468,7 +488,7 @@ msgstr ""
 msgid "Save folder upload changes"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:150
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:146
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:144
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
@@ -537,6 +557,10 @@ msgstr ""
 msgid "Submission templates"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/translations/translation.tsx:31
+msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} files each."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:114
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:48
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:97
@@ -565,10 +589,18 @@ msgstr ""
 msgid "Tag Groups"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/translations/translation.tsx:70
+msgid "Tag limit reached ({currentLength} / {maxLength})"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
 #: apps/postybirb-ui/src/external-translations.ts:6
 msgid "Tags"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:92
+msgid "Tags longer than {maxLength} characters will be skipped"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:98
@@ -616,18 +648,30 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:30
+#: apps/postybirb-ui/src/components/translations/translation.tsx:104
+msgid "Title is too long"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:102
+msgid "Title is too long and will be truncated"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:118
+msgid "Title is too short"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:136
 msgid "Translation {id} not found"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:257
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:230
 msgid "Unable to display form"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:145
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:89
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:90
 msgid "Unknown"
 msgstr ""
 
@@ -638,6 +682,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:93
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:50
 msgid "Unschedule"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/translation.tsx:42
+msgid "Unsupported file type {mimeType}"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:91
