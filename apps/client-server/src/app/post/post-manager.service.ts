@@ -21,7 +21,6 @@ import {
   PostRecordResumeMode,
   PostRecordState,
   PostResponse,
-  SimpleValidationResult,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
@@ -36,6 +35,7 @@ import {
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { IsTestEnvironment } from '../utils/test.util';
+import { ValidationService } from '../validation/validation.service';
 import { FileWebsite } from '../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { Website } from '../websites/website';
@@ -72,7 +72,8 @@ export class PostManagerService {
     private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
-    private readonly postParserService: PostParsersService
+    private readonly postParserService: PostParsersService,
+    private readonly validationService: ValidationService
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -221,8 +222,12 @@ export class PostManagerService {
           (o) => o.account.id === websitePostRecord.account.id
         ) as unknown as IWebsiteOptions
       );
-      // TODO - Are there any other 'generic' validations that can be done here?
-      await this.validatePostData(submission.type, data, instance);
+      const validationResult = await this.validationService.validateSubmission(
+        submission
+      );
+      if (validationResult.some((v) => v.errors.length > 0)) {
+        throw new Error('Submission contains validation errors');
+      }
       await this.attemptToPost(submission, websitePostRecord, instance, data);
     } catch (error) {
       this.logger
@@ -240,7 +245,7 @@ export class PostManagerService {
   }
 
   private async attemptToPost(
-    submission: Submission,
+    submission: ISubmission,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
     data: PostData<ISubmission, IWebsiteFormFields>
@@ -548,7 +553,7 @@ export class PostManagerService {
     }
 
     const submission = entity.parent;
-    const options: WebsiteOptions<IWebsiteFormFields>[] =
+    const options: IWebsiteOptions<IWebsiteFormFields>[] =
       submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
@@ -611,37 +616,5 @@ export class PostManagerService {
     websiteOptions: IWebsiteOptions
   ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
     return this.postParserService.parse(submission, instance, websiteOptions);
-  }
-
-  /**
-   * Validates the post data for the given submission type.
-   * TODO move this out of the post manager
-   * @param {SubmissionType} type
-   * @param {PostData<Submission, never>} data
-   * @param {Website<unknown>} instance
-   */
-  private async validatePostData(
-    type: SubmissionType,
-    data: PostData<ISubmission, IWebsiteFormFields>,
-    instance: Website<unknown>
-  ) {
-    let result: SimpleValidationResult;
-    if (type === SubmissionType.FILE) {
-      result = await (
-        instance as unknown as FileWebsite<never>
-      ).onValidateFileSubmission(
-        data as unknown as PostData<FileSubmission, never>
-      );
-    } else if (type === SubmissionType.MESSAGE) {
-      result = await (
-        instance as unknown as MessageWebsite<never>
-      ).onValidateMessageSubmission(
-        data as unknown as PostData<MessageSubmission, never>
-      );
-    }
-
-    if (result?.errors?.length) {
-      throw new Error('Submission contains validation errors');
-    }
   }
 }

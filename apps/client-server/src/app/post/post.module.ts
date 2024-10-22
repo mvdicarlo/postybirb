@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../database/database.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsitesModule } from '../websites/websites.module';
@@ -15,6 +16,7 @@ import { PostService } from './post.service';
     WebsiteOptionsModule,
     WebsitesModule,
     PostParsersModule,
+    ValidationModule,
   ],
   controllers: [PostController],
   providers: [
