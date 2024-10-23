@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
   Optional,
   forwardRef,
 } from '@nestjs/common';
@@ -55,7 +56,10 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  * @class SubmissionService
  */
 @Injectable()
-export class SubmissionService extends PostyBirbService<SubmissionEntity> {
+export class SubmissionService
+  extends PostyBirbService<SubmissionEntity>
+  implements OnModuleInit
+{
   constructor(
     dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Submission)
@@ -84,6 +88,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
       this.emit()
     );
+  }
+
+  onModuleInit() {
+    Object.values(SubmissionType).forEach((type) => {
+      this.populateMultiSubmission(type);
+    });
   }
 
   /**
@@ -116,6 +126,18 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     );
   }
 
+  private async populateMultiSubmission(type: SubmissionType) {
+    const existing = await this.repository.findOne({
+      type,
+      metadata: { isMultiSubmission: true },
+    });
+    if (existing) {
+      return;
+    }
+
+    await this.create({ name: type, type, isMultiSubmission: true });
+  }
+
   /**
    * Creates a submission.
    *
@@ -142,6 +164,11 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       submission.metadata.template = {
         name: createSubmissionDto.name.trim(),
       };
+    }
+
+    if (createSubmissionDto.isMultiSubmission) {
+      submission.metadata.isMultiSubmission = true;
+      submission.id = `MULTI-${submission.type}`;
     }
 
     let name = 'New submission';
@@ -177,7 +204,10 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       }
 
       case SubmissionType.FILE: {
-        if (createSubmissionDto.isTemplate) {
+        if (
+          createSubmissionDto.isTemplate ||
+          createSubmissionDto.isMultiSubmission
+        ) {
           // Don't need to populate on a template
           break;
         }
