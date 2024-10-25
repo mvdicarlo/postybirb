@@ -21,6 +21,7 @@ import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
+import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
@@ -114,5 +115,12 @@ export class SubmissionController extends PostyBirbController<Submission> {
     return this.service
       .updateTemplateName(id, updateSubmissionDto)
       .then((entity) => entity.toJSON());
+  }
+
+  @Patch('apply/multi')
+  @ApiOkResponse({ description: 'Submission applied to multiple submissions.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async applyMulti(@Body() applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
+    return this.service.applyMultiSubmission(applyMultiSubmissionDto);
   }
 }

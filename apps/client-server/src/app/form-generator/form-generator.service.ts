@@ -66,19 +66,33 @@ export class FormGeneratorService {
     }
 
     const form = formBuilder(formModel, data);
-    return this.populateUserDefaults(form, request.accountId, request.type);
+    const formWithPopulatedDefaults = await this.populateUserDefaults(
+      form,
+      request.accountId,
+      request.type
+    );
+
+    if (request.isMultiSubmission) {
+      delete formWithPopulatedDefaults.title; // Having title here just causes confusion for multi this flow
+    }
+
+    return formWithPopulatedDefaults;
   }
 
   /**
    * Returns the default fields form.
    * @param {SubmissionType} type
    */
-  getDefaultForm(type: SubmissionType) {
-    return this.populateUserDefaults(
+  async getDefaultForm(type: SubmissionType, isMultiSubmission = false) {
+    const form = await this.populateUserDefaults(
       formBuilder(new DefaultWebsiteOptions(), {}),
       new NullAccount().id,
       type
     );
+    if (isMultiSubmission) {
+      delete form.title; // Having title here just causes confusion for multi this flow
+    }
+    return form;
   }
 
   private async populateUserDefaults(

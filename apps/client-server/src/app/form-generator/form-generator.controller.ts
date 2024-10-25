@@ -21,7 +21,7 @@ export class FormGeneratorController {
   })
   getFormForWebsite(@Body() request: FormGenerationRequestDto) {
     return request.accountId === NULL_ACCOUNT_ID
-      ? this.service.getDefaultForm(request.type)
+      ? this.service.getDefaultForm(request.type, request.isMultiSubmission)
       : this.service.generateForm(request);
   }
 }

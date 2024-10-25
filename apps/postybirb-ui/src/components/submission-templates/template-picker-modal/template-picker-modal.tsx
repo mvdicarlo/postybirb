@@ -223,6 +223,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
             // On first option pick
             if (!selectedWebsiteOptions && newOpts.length) {
               const sub: Record<AccountId, WebsiteOptionsDto> = {};
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const template = [...templates, ...submissions].find(
                 (t) => t.id === newOpts[0]
               )!;

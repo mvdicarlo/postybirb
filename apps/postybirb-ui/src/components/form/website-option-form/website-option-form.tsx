@@ -215,7 +215,11 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     `website-option-${option.id}`,
     () =>
       formGeneratorApi
-        .getForm({ accountId: account, type: submission.type })
+        .getForm({
+          accountId: account,
+          type: submission.type,
+          isMultiSubmission: submission.isMultiSubmission(),
+        })
         .then((res) => res.body)
   );
   const defaultOption = submission.getDefaultOptions();

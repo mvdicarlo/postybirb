@@ -43,6 +43,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
+import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
@@ -369,6 +370,56 @@ export class SubmissionService
   public async remove(id: string) {
     await super.remove(id);
     this.emit();
+  }
+
+  async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
+    const { originId, submissionIds, merge } = applyMultiSubmissionDto;
+    const origin = await this.repository.findOneOrFail({ id: originId });
+    const submissions = await this.repository.find({
+      id: { $in: submissionIds },
+    });
+    if (merge) {
+      // Keeps unique options, overwrites overlapping options\
+      // eslint-disable-next-line no-restricted-syntax
+      for (const submission of submissions) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const option of origin.options.getItems()) {
+          const existingOption = submission.options
+            .getItems()
+            .find((o) => o.account.id === option.account.id);
+          if (existingOption) {
+            existingOption.data = option.data;
+          } else {
+            submission.options.add(
+              this.websiteOptionsService.createOption(
+                submission,
+                option.account.id,
+                option.data,
+                option.data.title
+              )
+            );
+          }
+        }
+      }
+    } else {
+      // Removes all options not included in the origin submission
+      // eslint-disable-next-line no-restricted-syntax
+      for (const submission of submissions) {
+        submission.options.removeAll();
+        origin.options.getItems().forEach((option) => {
+          submission.options.add(
+            this.websiteOptionsService.createOption(
+              submission,
+              option.account.id,
+              option.data,
+              option.data.title
+            )
+          );
+        });
+      }
+    }
+
+    await this.repository.persistAndFlush(submissions);
   }
 
   /**

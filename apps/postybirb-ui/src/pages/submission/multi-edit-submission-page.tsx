@@ -2,7 +2,12 @@ import { Trans } from '@lingui/macro';
 import { Box, Button, Loader, Space } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ISubmissionDto, SubmissionType } from '@postybirb/types';
-import { IconFile, IconMessage, IconTemplate } from '@tabler/icons-react';
+import {
+  IconDeviceFloppy,
+  IconFile,
+  IconMessage,
+  IconTemplate,
+} from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import websiteOptionsApi from '../../api/website-options.api';
@@ -63,6 +68,27 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
   );
 }
 
+function ApplyMultiSubmissionAction({
+  submission,
+}: {
+  submission: SubmissionDto;
+}) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const picker = modalVisible ? <div>tbd</div> : null;
+  return (
+    <>
+      <Button
+        variant="subtle"
+        leftSection={<IconDeviceFloppy />}
+        onClick={() => setModalVisible(true)}
+      >
+        <Trans>Apply to Submissions</Trans>
+      </Button>
+      {picker}
+    </>
+  );
+}
+
 export function MultiEditSubmissionPage() {
   const { type } = useParams<{ type: string }>();
   const { state: submissions, isLoading } = useStore(MultiSubmissionStore);
@@ -98,6 +124,10 @@ export function MultiEditSubmissionPage() {
         ]}
         actions={[
           <ApplyTemplateAction submission={submission} key="template-action" />,
+          <ApplyMultiSubmissionAction
+            submission={submission}
+            key="multi-submission-action"
+          />,
         ]}
       />
       <Space h="md" />
