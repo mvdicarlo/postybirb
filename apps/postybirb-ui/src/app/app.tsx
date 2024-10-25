@@ -1,4 +1,5 @@
-import { MantineProvider, createTheme } from '@mantine/core';
+/* eslint-disable lingui/no-unlocalized-strings */
+import { MantineProvider, createTheme, rem } from '@mantine/core';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
@@ -12,6 +13,27 @@ import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
 
 const mantineTheme = createTheme({
   /** Put your mantine theme override here */
+  colors: {
+    dark: [
+      '#C9C9C9',
+      '#b8b8b8',
+      '#828282',
+      '#696969',
+      '#424242',
+      '#3b3b3b',
+      '#292929',
+      '#1A1A1A',
+      '#131313',
+      '#000000',
+    ],
+  },
+  primaryShade: 9,
+  shadows: {
+    xs: `0 0 ${rem(3)} ${rem(4)}  rgba(0, 0, 0, 0.2), 0 0 ${rem(4)} ${rem(
+      10
+    )} rgba(0, 0, 0, 0.1)`,
+  },
+  primaryColor: 'green',
 });
 
 const queryClient = new QueryClient({
