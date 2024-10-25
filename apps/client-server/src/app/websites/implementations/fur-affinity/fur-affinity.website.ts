@@ -3,16 +3,16 @@ import {
   DescriptionType,
   FileSubmission,
   ILoginState,
+  ImageResizeProps,
   ISubmissionFile,
   MessageSubmission,
   PostData,
   PostResponse,
-  ValidationResult,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
-import { ImageResizeProps } from '../../../post/models/image-resize-props';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsDescription } from '../../decorators/supports-description.decorator';
@@ -82,7 +82,7 @@ export default class FurAffinity
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    throw new Error('Method not implemented.');
+    return undefined;
   }
 
   onPostFileSubmission(
@@ -93,10 +93,13 @@ export default class FurAffinity
     throw new Error('Method not implemented.');
   }
 
-  onValidateFileSubmission(
+  async onValidateFileSubmission(
     postData: PostData<FileSubmission, FurAffinityFileSubmission>
-  ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    };
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
@@ -110,14 +113,17 @@ export default class FurAffinity
     throw new Error('Method not implemented.');
   }
 
-  onValidateMessageSubmission(
+  async onValidateMessageSubmission(
     postData: PostData<MessageSubmission, FurAffinityMessageSubmission>
-  ): Promise<ValidationResult> {
-    throw new Error('Method not implemented.');
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    };
   }
 
   onDescriptionParse(): string {
-    throw new Error('Method not implemented.');
+    return 'test'; // TODO
   }
 
   onAfterDescriptionParse(description: string): string {

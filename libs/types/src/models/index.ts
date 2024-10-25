@@ -33,6 +33,7 @@ export * from './tag/tag.type';
 export * from './website-options/user-specified-website-options.interface';
 export * from './website-options/website-options.interface';
 export * from './website/file-website-form-fields.interface';
+export * from './website/image-resize-props';
 export * from './website/login-request-data.type';
 export * from './website/login-response.interface';
 export * from './website/login-state.class';

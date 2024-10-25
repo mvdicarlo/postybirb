@@ -89,7 +89,7 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
   return (
     <ScrollArea
       flex="7"
-      h={submission.files.length * 150}
+      h={submission.files.length === 1 ? undefined : 300}
       bg="var(--mantine-color-dark-filled)"
       p="md"
       style={{ borderRadius: 'var(--mantine-radius-md)' }}

@@ -1,15 +1,19 @@
 /* eslint-disable no-param-reassign */
 import { EntityDTO, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
   FileMetadataFields,
   FileSubmission,
   FileType,
+  ImageResizeProps,
+  IPostRecord,
+  ISubmission,
   ISubmissionFile,
   IWebsiteFormFields,
+  IWebsiteOptions,
   IWebsitePostRecord,
   MessageSubmission,
   ModifiedFileDimension,
@@ -19,7 +23,6 @@ import {
   PostResponse,
   SubmissionId,
   SubmissionType,
-  ValidationResult,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -32,12 +35,12 @@ import {
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { IsTestEnvironment } from '../utils/test.util';
+import { ValidationService } from '../validation/validation.service';
 import { FileWebsite } from '../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { Website } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CancellableToken } from './models/cancellable-token';
-import { ImageResizeProps } from './models/image-resize-props';
 import { PostingFile } from './models/posting-file';
 import { PostFileResizerService } from './post-file-resizer.service';
 import { PostService } from './post.service';
@@ -69,7 +72,8 @@ export class PostManagerService {
     private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
-    private readonly postParserService: PostParsersService
+    private readonly postParserService: PostParsersService,
+    private readonly validationService: ValidationService
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -212,14 +216,18 @@ export class PostManagerService {
         );
       }
       const data = await this.preparePostData(
-        submission,
+        submission as unknown as ISubmission,
         instance,
         submission.options.find(
           (o) => o.account.id === websitePostRecord.account.id
-        )
+        ) as unknown as IWebsiteOptions
       );
-      // TODO - Are there any other 'generic' validations that can be done here?
-      await this.validatePostData(submission.type, data, instance);
+      const validationResult = await this.validationService.validateSubmission(
+        submission
+      );
+      if (validationResult.some((v) => v.errors.length > 0)) {
+        throw new Error('Submission contains validation errors');
+      }
       await this.attemptToPost(submission, websitePostRecord, instance, data);
     } catch (error) {
       this.logger
@@ -237,10 +245,10 @@ export class PostManagerService {
   }
 
   private async attemptToPost(
-    submission: Submission,
+    submission: ISubmission,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
-    data: PostData<Submission, IWebsiteFormFields>
+    data: PostData<ISubmission, IWebsiteFormFields>
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
@@ -545,9 +553,8 @@ export class PostManagerService {
     }
 
     const submission = entity.parent;
-    const options: WebsiteOptions<never>[] = submission.options.filter(
-      (o) => !o.isDefault
-    );
+    const options: IWebsiteOptions<IWebsiteFormFields>[] =
+      submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
       (o) =>
@@ -556,7 +563,7 @@ export class PostManagerService {
     uncreatedOptions.forEach((w) =>
       entity.children.add(
         this.websitePostRecordRepository.create({
-          parent: entity,
+          parent: entity as unknown as IPostRecord,
           account: w.account,
         })
       )
@@ -604,41 +611,10 @@ export class PostManagerService {
    * @return {*}  {PostData<Submission, never>}
    */
   private preparePostData(
-    submission: Submission,
+    submission: ISubmission,
     instance: Website<unknown>,
-    websiteOptions: WebsiteOptions
-  ): Promise<PostData<Submission, IWebsiteFormFields>> {
+    websiteOptions: IWebsiteOptions
+  ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
     return this.postParserService.parse(submission, instance, websiteOptions);
-  }
-
-  /**
-   * Validates the post data for the given submission type.
-   * @param {SubmissionType} type
-   * @param {PostData<Submission, never>} data
-   * @param {Website<unknown>} instance
-   */
-  private async validatePostData(
-    type: SubmissionType,
-    data: PostData<Submission, IWebsiteFormFields>,
-    instance: Website<unknown>
-  ) {
-    let result: ValidationResult;
-    if (type === SubmissionType.FILE) {
-      result = await (
-        instance as unknown as FileWebsite<never>
-      ).onValidateFileSubmission(
-        data as unknown as PostData<FileSubmission, never>
-      );
-    } else if (type === SubmissionType.MESSAGE) {
-      result = await (
-        instance as unknown as MessageWebsite<never>
-      ).onValidateMessageSubmission(
-        data as unknown as PostData<MessageSubmission, never>
-      );
-    }
-
-    if (result?.errors?.length) {
-      throw new Error('Submission contains validation errors');
-    }
   }
 }

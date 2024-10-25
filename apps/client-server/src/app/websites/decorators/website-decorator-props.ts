@@ -4,6 +4,7 @@ import {
   DescriptionType,
   IWebsiteMetadata,
   TagSupport,
+  TitleSupport,
   UserLoginType,
   UsernameShortcut,
   WebsiteFileOptions,
@@ -38,6 +39,14 @@ export type WebsiteDecoratorProps = {
    * @type {TagParserFunction}
    */
   tagParser?: TagParserFunction;
+
+  /**
+   * Set by {@link SupportsTitle}
+   *
+   * Defines the title support for a website.
+   * @type {TitleSupport}
+   */
+  titleSupport: TitleSupport;
 
   /**
    * Set by {@link SupportsFiles}
@@ -93,6 +102,12 @@ export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
     },
     tagSupport: { supportsTags: false },
     tagParser: (tag) => tag,
+    titleSupport: {
+      supportsTitle: true,
+      truncateTitle: false,
+      maxTitleLength: Infinity,
+      minTitleLength: -1,
+    },
     fileOptions: undefined,
     loginFlow: undefined,
     metadata: undefined,

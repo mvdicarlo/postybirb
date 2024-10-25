@@ -11,7 +11,6 @@ import {
   BrowserWindow,
   Menu,
   Tray,
-  WebContentsWillNavigateEventParams,
   app,
   globalShortcut,
   nativeImage,
@@ -59,19 +58,6 @@ export default class PostyBirb {
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     PostyBirb.mainWindow = null;
-  }
-
-  private static onRedirect(
-    details: WebContentsWillNavigateEventParams & {
-      preventDefault: () => void;
-    }
-  ) {
-    const { url, preventDefault } = details;
-    // if (url !== PostyBirb.mainWindow.webContents.getURL()) {
-    //   // this is a normal external redirect, open it in a new browser window
-    //   preventDefault(); // !BUG - causes a crash in current electron version
-    //   shell.openExternal(url);
-    // }
   }
 
   private static onReady() {
@@ -134,10 +120,6 @@ export default class PostyBirb {
     // Emitted when the window is closed.
     PostyBirb.mainWindow.on('closed', () => {
       PostyBirb.onClose();
-    });
-
-    PostyBirb.mainWindow.webContents.on('will-navigate', (details) => {
-      PostyBirb.onRedirect(details);
     });
   }
 

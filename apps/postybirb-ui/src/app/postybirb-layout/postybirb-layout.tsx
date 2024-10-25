@@ -117,7 +117,7 @@ export function PostyBirbLayout() {
         breakpoint: 'sm',
       }}
     >
-      <AppShell.Navbar id="postybirb__navbar">
+      <AppShell.Navbar id="postybirb__navbar" zIndex={1000}>
         <AppShell.Section>
           <Box ta="center" p="5">
             <AppImage />
@@ -168,7 +168,7 @@ export function PostyBirbLayout() {
           <SettingsDrawer />
           <TagGroupDrawer />
           <TagConverterDrawer />
-          <Box className="postybirb__content" p="md">
+          <Box className="postybirb__content" px="md" pb="sm">
             <Outlet />
           </Box>
         </Box>

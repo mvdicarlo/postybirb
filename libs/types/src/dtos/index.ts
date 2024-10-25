@@ -23,6 +23,7 @@ export * from './tag/update-tag-converter.dto';
 export * from './tag/update-tag-group.dto';
 export * from './website-options/create-user-specified-website-options.dto';
 export * from './website-options/create-website-options.dto';
+export * from './website-options/update-submission-website-options.dto';
 export * from './website-options/update-user-specified-website-options.dto';
 export * from './website-options/update-website-options.dto';
 export * from './website-options/user-specified-website-options.dto';

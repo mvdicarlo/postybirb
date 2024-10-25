@@ -1,6 +1,17 @@
+import { ImageResizeProps } from '../website/image-resize-props';
 import { IWebsiteFormFields } from './website-form-fields.interface';
 
+export type SimpleValidationResult<T extends IWebsiteFormFields = never> = Omit<
+  ValidationResult<T>,
+  'id'
+>;
+
 export type ValidationResult<T extends IWebsiteFormFields = never> = {
+  /**
+   * Id that associates with the website options the validation was performed on.
+   */
+  id: string;
+
   /**
    * Non-blocking issues with the validated submission.
    */
@@ -36,10 +47,68 @@ export type ValidationMessage<
  * Map containing validation id as key and values as value
  */
 export interface ValidationMessages {
-  'validation.description.max-length': {
+  // An error message for when the validation fails
+  'validation.failed': {
     /**
-     * Max allowed description length
+     * The error message
      */
+    message: string;
+  };
+
+  'validation.file.invalid-mime-type': {
+    mimeType: string;
+    acceptedMimeTypes: string[];
+  };
+
+  'validation.file.file-batch-size': {
+    maxBatchSize: number;
+    expectedBatchesToCreate: number;
+  };
+
+  'validation.file.file-size': {
+    maxFileSize: number;
+    fileSize: number;
+    fileName: string;
+  };
+
+  'validation.file.image-resize': {
+    fileName: string;
+    resizeProps: ImageResizeProps;
+  };
+
+  'validation.description.max-length': {
+    currentLength: number;
     maxLength: number;
+  };
+
+  'validation.description.min-length': {
+    currentLength: number;
+    minLength: number;
+  };
+
+  'validation.tags.max-tags': {
+    currentLength: number;
+    maxLength: number;
+  };
+
+  'validation.tags.min-tags': {
+    currentLength: number;
+    minLength: number;
+  };
+
+  'validation.tags.max-tag-length': {
+    tags: string[];
+    maxLength: number;
+  };
+
+  'validation.title.max-length': {
+    currentLength: number;
+    maxLength: number;
+    willTruncate: boolean;
+  };
+
+  'validation.title.min-length': {
+    currentLength: number;
+    minLength: number;
   };
 }

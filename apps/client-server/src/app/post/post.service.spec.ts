@@ -10,6 +10,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
+import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { PostFileResizerService } from './post-file-resizer.service';
@@ -35,6 +36,7 @@ describe('PostService', () => {
           UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           PostModule,
+          ValidationModule,
         ],
         providers: [PostService, PostManagerService, PostFileResizerService],
       }).compile();
