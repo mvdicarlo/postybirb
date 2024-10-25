@@ -317,11 +317,11 @@ msgstr "Игнорировать теги по умолчанию"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:42
 msgid "Insert tags at end"
-msgstr "Вставить теги в конце"
+msgstr "Добавить теги в конце"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:36
 msgid "Insert title at start"
-msgstr "Вставить заголовок в начале"
+msgstr "Добавить название в начало описания"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:70
 msgid "Invalid CRON string"
@@ -436,12 +436,12 @@ msgstr "Основные значения"
 
 #: apps/postybirb-ui/src/external-translations.ts:8
 msgid "Rating"
-msgstr ""
+msgstr "Рейтинг"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:25
 msgctxt "internalSchedule.recurring"
 msgid "Recurring"
-msgstr ""
+msgstr "Повторять"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:193
 msgctxt "import.override-description"
@@ -480,7 +480,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:56
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:124
 msgid "Save defaults"
-msgstr ""
+msgstr "Сохранить по умолчанию"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:120
 msgid "Save folder upload changes"
@@ -505,7 +505,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:148
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx:56
 msgid "Search"
-msgstr ""
+msgstr "Поиск"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:69
 msgid "Select folder"
@@ -513,7 +513,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:80
 msgid "Send Messages"
-msgstr ""
+msgstr "Опубликовать сообщения"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
@@ -644,19 +644,19 @@ msgstr "Набросок (Маленькая картинка)"
 
 #: apps/postybirb-ui/src/external-translations.ts:7
 msgid "Title"
-msgstr ""
+msgstr "Название"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:104
 msgid "Title is too long"
-msgstr ""
+msgstr "Название слишком длинное"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:102
 msgid "Title is too long and will be truncated"
-msgstr ""
+msgstr "Название слишком длинное и будет обрезано"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:118
 msgid "Title is too short"
-msgstr ""
+msgstr "Название слишком короткое"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:136
 msgid "Translation {id} not found"
@@ -664,7 +664,7 @@ msgstr "Перевод {id} не найден"
 
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:230
 msgid "Unable to display form"
-msgstr ""
+msgstr "Не удалось показать форму"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
