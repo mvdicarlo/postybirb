@@ -29,7 +29,7 @@ const mantineTheme = createTheme({
   },
   primaryShade: 9,
   shadows: {
-    xs: `0 0 ${rem(3)} ${rem(4)}  rgba(0, 0, 0, 0.2), 0 0 ${rem(4)} ${rem(
+    xs: `0 ${rem(3)} ${rem(4)}  rgba(0, 0, 0, 0.2), 0 ${rem(6)} ${rem(
       10
     )} rgba(0, 0, 0, 0.1)`,
   },
