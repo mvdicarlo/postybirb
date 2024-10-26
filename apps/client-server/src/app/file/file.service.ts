@@ -33,7 +33,7 @@ export class FileService {
     private readonly createFileService: CreateFileService,
     private readonly updateFileService: UpdateFileService,
     @InjectRepository(SubmissionFile)
-    private readonly fileRepository: PostyBirbRepository<SubmissionFile>
+    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
   ) {}
 
   /**
@@ -45,7 +45,7 @@ export class FileService {
   public async remove(id: string) {
     this.logger.info(id, `Removing entity '${id}'`);
     return this.fileRepository.removeAndFlush(
-      await this.fileRepository.findById(id)
+      await this.fileRepository.findById(id),
     );
   }
 
@@ -58,7 +58,7 @@ export class FileService {
    */
   public async create(
     file: MulterFileInfo,
-    submission: FileSubmission
+    submission: FileSubmission,
   ): Promise<SubmissionFile> {
     return this.queue.push({ type: TaskType.CREATE, file, submission });
   }
@@ -73,7 +73,7 @@ export class FileService {
   public async update(
     file: MulterFileInfo,
     submissionFileId: string,
-    forThumbnail: boolean
+    forThumbnail: boolean,
   ): Promise<SubmissionFile> {
     return this.queue.push({
       type: TaskType.UPDATE,
@@ -99,7 +99,7 @@ export class FileService {
           ut.file,
           ut.submissionFileId,
           buf,
-          ut.target
+          ut.target,
         );
       default:
         throw new BadRequestException(`Unknown TaskType '${task.type}'`);

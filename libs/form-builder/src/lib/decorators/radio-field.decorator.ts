@@ -20,7 +20,7 @@ export type RadioFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   };
 
 export function RadioField<T extends PrimitiveRecord>(
-  options: RadioFieldType<T>
+  options: RadioFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   options.formField = 'radio';

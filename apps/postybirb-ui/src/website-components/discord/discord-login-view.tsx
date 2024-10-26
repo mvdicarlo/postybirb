@@ -29,7 +29,7 @@ const isStringValid = (str: string): boolean | undefined => {
 };
 
 export default function DiscordLoginView(
-  props: LoginComponentProps<DiscordAccountData>
+  props: LoginComponentProps<DiscordAccountData>,
 ): JSX.Element {
   const { account } = props;
   const { data, id } = account;

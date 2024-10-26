@@ -14,11 +14,11 @@ export class TitleParserService {
     submission: ISubmission,
     instance: UnknownWebsite,
     defaultOptions: IWebsiteOptions,
-    websiteOptions: IWebsiteOptions
+    websiteOptions: IWebsiteOptions,
   ): Promise<string> {
     const defaultForm: TitleType =
       (await this.formGeneratorService.getDefaultForm(
-        submission.type
+        submission.type,
       )) as unknown as TitleType;
     const websiteForm: TitleType =
       defaultOptions.id === websiteOptions.id

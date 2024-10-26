@@ -5,5 +5,5 @@ import StoreManager from './store-manager';
 
 export const TagConverterStore: StoreManager<TagConverterDto> =
   new StoreManager<TagConverterDto>(TAG_CONVERTER_UPDATES, () =>
-    tagConvertersApi.getAll().then(({ body }) => body)
+    tagConvertersApi.getAll().then(({ body }) => body),
   );

@@ -63,14 +63,14 @@ export default class FurAffinity
   public async onLogin(): Promise<ILoginState> {
     const res = await Http.get<string>(
       `${this.BASE_URL}/controls/submissions`,
-      { partition: this.accountId }
+      { partition: this.accountId },
     );
 
     if (res.body.includes('logout-link')) {
       const $ = load(res.body);
       return this.loginState.setLogin(
         true,
-        $('.loggedin_user_avatar').attr('alt')
+        $('.loggedin_user_avatar').attr('alt'),
       );
     }
 
@@ -88,13 +88,13 @@ export default class FurAffinity
   onPostFileSubmission(
     postData: PostData<FileSubmission, FurAffinityFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, FurAffinityFileSubmission>
+    postData: PostData<FileSubmission, FurAffinityFileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -108,13 +108,13 @@ export default class FurAffinity
 
   onPostMessageSubmission(
     postData: PostData<FileSubmission, FurAffinityMessageSubmission>,
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, FurAffinityMessageSubmission>
+    postData: PostData<MessageSubmission, FurAffinityMessageSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],

@@ -23,19 +23,19 @@ export interface MessageWebsite<T extends IWebsiteFormFields> {
 
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, T>,
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse>;
 
   onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, T>
+    postData: PostData<MessageSubmission, T>,
   ): Promise<SimpleValidationResult>;
 }
 
 export function isMessageWebsite(
-  websiteInstance: UnknownWebsite
+  websiteInstance: UnknownWebsite,
 ): websiteInstance is MessageWebsite<IWebsiteFormFields> & UnknownWebsite {
   return Boolean(
     (websiteInstance as MessageWebsite<IWebsiteFormFields> & UnknownWebsite)
-      .supportsMessage
+      .supportsMessage,
   );
 }

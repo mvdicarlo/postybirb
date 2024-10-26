@@ -8,7 +8,7 @@ import {
   Loader,
   Stack,
   Text,
-  TextInput
+  TextInput,
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
@@ -175,7 +175,7 @@ function TagConverters() {
               !isValid(newConverterFields) ||
               tagConverters.some(
                 (tagConverter) =>
-                  tagConverter.tag === newConverterFields.tag.trim()
+                  tagConverter.tag === newConverterFields.tag.trim(),
               )
             }
             onClick={() => {

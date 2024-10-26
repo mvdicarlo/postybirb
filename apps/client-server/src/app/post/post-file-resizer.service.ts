@@ -34,7 +34,7 @@ export class PostFileResizerService {
     fastq.promise<this, ResizeRequest>(
       this,
       this.process,
-      Math.min(cpus().length, 4)
+      Math.min(cpus().length, 4),
     );
 
   public async resize(request: ResizeRequest): Promise<PostingFile> {
@@ -51,13 +51,13 @@ export class PostFileResizerService {
     return new PostingFile(
       file.id,
       await this.processPrimaryFile(file, resize),
-      await this.processThumbnailFile(file)
+      await this.processThumbnailFile(file),
     );
   }
 
   private async processPrimaryFile(
     file: ISubmissionFile,
-    resize?: ImageResizeProps
+    resize?: ImageResizeProps,
   ): Promise<IFileBuffer> {
     if (!resize) {
       return file.file;
@@ -72,7 +72,7 @@ export class PostFileResizerService {
         sharpInstance = await this.resizeImage(
           sharpInstance,
           resize.width,
-          resize.height
+          resize.height,
         );
       }
     }
@@ -84,7 +84,7 @@ export class PostFileResizerService {
           sharpInstance,
           resize.maxBytes,
           resize.allowQualityLoss,
-          file.mimeType
+          file.mimeType,
         );
       }
     }
@@ -103,7 +103,7 @@ export class PostFileResizerService {
   }
 
   private async processThumbnailFile(
-    file: ISubmissionFile
+    file: ISubmissionFile,
   ): Promise<ThumbnailOptions | undefined> {
     let thumb = file.thumbnail;
     const shouldProcessThumbnail =
@@ -144,7 +144,7 @@ export class PostFileResizerService {
     const metadata = await instance.metadata();
     if (metadata.width > width || metadata.height > height) {
       return ImageUtil.load(
-        await instance.resize({ width, height, fit: 'inside' }).toBuffer()
+        await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
       );
     }
     return instance;
@@ -154,7 +154,7 @@ export class PostFileResizerService {
     instance: Sharp,
     maxBytes: number,
     allowQualityLoss: boolean,
-    mimeType: string
+    mimeType: string,
   ) {
     let s = instance;
     const metadata = await instance.metadata();
@@ -184,7 +184,7 @@ export class PostFileResizerService {
       s = await this.resizeImage(
         instance, // scale against original only
         metadata.width * resizePercent,
-        metadata.height * resizePercent
+        metadata.height * resizePercent,
       );
 
       if (!(await this.isFileTooLarge(s, maxBytes))) {
@@ -194,7 +194,7 @@ export class PostFileResizerService {
 
     if (await this.isFileTooLarge(s, maxBytes)) {
       throw new Error(
-        'Image is still too large after scaling down. Try scaling down the image manually.'
+        'Image is still too large after scaling down. Try scaling down the image manually.',
       );
     }
 

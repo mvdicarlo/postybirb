@@ -59,10 +59,13 @@ export function AccountDrawer() {
               key={website.id}
               website={website}
               accounts={accounts.filter(
-                (account) => account.website === website.id
+                (account) => account.website === website.id,
               )}
               onLogin={(
-                login: { account: IAccountDto; website: IWebsiteInfoDto } | null
+                login: {
+                  account: IAccountDto;
+                  website: IWebsiteInfoDto;
+                } | null,
               ) => setLoginAccount(login)}
             />
           ))}

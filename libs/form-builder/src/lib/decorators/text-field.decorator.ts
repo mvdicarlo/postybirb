@@ -13,7 +13,7 @@ export type TextFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   };
 
 export function TextField<T extends PrimitiveRecord>(
-  options: TextFieldType<T>
+  options: TextFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   options.maxLength = options.maxLength ?? undefined;

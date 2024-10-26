@@ -31,7 +31,7 @@ type DirectoryWatcherCardProps = {
 
 function hasChanged(
   original: DirectoryWatcherDto,
-  updated: DirectoryWatcherDto
+  updated: DirectoryWatcherDto,
 ): boolean {
   if (
     original.path !== updated.path ||
@@ -142,7 +142,7 @@ export default function DirectoryWatchersView() {
     {
       refetchOnWindowFocus: false,
       cacheTime: 0,
-    }
+    },
   );
 
   const watcherCards = useMemo(
@@ -154,7 +154,7 @@ export default function DirectoryWatchersView() {
           refetch={refetch}
         />
       )),
-    [data, refetch]
+    [data, refetch],
   );
 
   return (

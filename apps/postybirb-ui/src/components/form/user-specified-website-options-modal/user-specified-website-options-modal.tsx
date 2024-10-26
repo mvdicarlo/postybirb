@@ -18,13 +18,13 @@ type UserSpecifiedWebsiteOptionsSaveModalProps = {
 };
 
 export function UserSpecifiedWebsiteOptionsSaveModal(
-  props: UserSpecifiedWebsiteOptionsSaveModalProps
+  props: UserSpecifiedWebsiteOptionsSaveModalProps,
 ) {
   const { _ } = useLingui();
   const [isSaving, setIsSaving] = useState(false);
   const { opened, type, account, values, form, onClose } = props;
   const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
 
   return (

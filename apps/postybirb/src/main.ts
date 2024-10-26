@@ -37,7 +37,7 @@ app.on(
     url: string,
     error: string,
     certificate: Electron.Certificate,
-    callback: (allow: boolean) => void
+    callback: (allow: boolean) => void,
   ) => {
     if (
       certificate.issuerName === 'postybirb.com' &&
@@ -48,7 +48,7 @@ app.on(
     } else {
       callback(false);
     }
-  }
+  },
 );
 
 contextMenu();

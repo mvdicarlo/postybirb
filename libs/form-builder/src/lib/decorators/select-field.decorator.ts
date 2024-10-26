@@ -22,7 +22,7 @@ export type SelectFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   };
 
 export function SelectField<T extends PrimitiveRecord>(
-  options: SelectFieldType<T>
+  options: SelectFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   options.formField = 'select';

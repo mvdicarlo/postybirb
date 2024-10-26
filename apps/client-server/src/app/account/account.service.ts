@@ -49,7 +49,7 @@ export class AccountService
     @InjectRepository(Account)
     repository: PostyBirbRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,
-    @Optional() webSocket?: WSGateway
+    @Optional() webSocket?: WSGateway,
   ) {
     super(repository, webSocket);
     repository.addUpdateListener(dbSubscriber, [Account], () => this.emit());
@@ -66,7 +66,7 @@ export class AccountService
     this.emit();
 
     Object.keys(this.loginRefreshTimers).forEach((interval) =>
-      this.executeOnLoginForInterval(interval)
+      this.executeOnLoginForInterval(interval),
     );
   }
 
@@ -76,7 +76,7 @@ export class AccountService
   private async populateNullAccount(): Promise<void> {
     if (!(await this.repository.findById(NULL_ACCOUNT_ID))) {
       await this.repository.persistAndFlush(
-        this.repository.create(new NullAccount())
+        this.repository.create(new NullAccount()),
       );
     }
   }
@@ -89,7 +89,7 @@ export class AccountService
       id: { $ne: NULL_ACCOUNT_ID },
     });
     await Promise.all(
-      accounts.map((account) => this.websiteRegistry.create(account))
+      accounts.map((account) => this.websiteRegistry.create(account)),
     ).catch((err) => {
       this.logger.error(err, 'onModuleInit');
     });
@@ -119,7 +119,7 @@ export class AccountService
 
   protected async emit() {
     const dtos = await this.findAll().then((results) =>
-      results.map((account) => account.toJSON())
+      results.map((account) => account.toJSON()),
     );
     super.emit({
       event: ACCOUNT_UPDATES,
@@ -212,7 +212,7 @@ export class AccountService
       .info(`Creating Account '${createDto.name}:${createDto.website}`);
     if (!this.websiteRegistry.canCreate(createDto.website)) {
       throw new BadRequestException(
-        `Website ${createDto.website} is not supported.`
+        `Website ${createDto.website} is not supported.`,
       );
     }
     const account = this.repository.create(createDto);
@@ -298,7 +298,7 @@ export class AccountService
   async setAccountData(setWebsiteDataRequestDto: SetWebsiteDataRequestDto) {
     const account = await this.repository.findById(
       setWebsiteDataRequestDto.id,
-      { failOnMissing: true }
+      { failOnMissing: true },
     );
     const instance = this.websiteRegistry.findInstance(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);

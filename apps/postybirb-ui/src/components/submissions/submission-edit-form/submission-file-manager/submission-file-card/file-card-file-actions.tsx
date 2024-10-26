@@ -1,11 +1,11 @@
 import { Trans } from '@lingui/macro';
 import {
-    ActionIcon,
-    Box,
-    FileButton,
-    Group,
-    Image,
-    Tooltip,
+  ActionIcon,
+  Box,
+  FileButton,
+  Group,
+  Image,
+  Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
@@ -14,12 +14,12 @@ import { getFileType } from '@postybirb/utils/file-type';
 import { IconCrop, IconFileText, IconFileUpload } from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
-    FileUpdateTarget,
+  FileUpdateTarget,
 } from '../../../../../api/file-submission.api';
 import { defaultTargetProvider } from '../../../../../transports/http-client';
 import {
-    EditImageFromSource,
-    EditImageModal,
+  EditImageFromSource,
+  EditImageModal,
 } from '../../../submission-uploader/edit-image-modal';
 
 function CardImageProvider(file: ISubmissionFileDto) {
@@ -75,7 +75,7 @@ function replaceFile(
   submissionId: SubmissionId,
   blob: Blob,
   file: ISubmissionFileDto,
-  target: FileUpdateTarget
+  target: FileUpdateTarget,
 ) {
   return fileSubmissionApi.replaceFile(submissionId, file.id, target, blob);
 }
@@ -90,7 +90,7 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
   const onEditOrReplace = (
     target: FileUpdateTarget,
     blob: Blob,
-    croppedFile?: Pick<FileWithPath, 'type' | 'name'>
+    croppedFile?: Pick<FileWithPath, 'type' | 'name'>,
   ) => {
     let newFileBlob: Blob = blob;
     if (croppedFile && blob) {

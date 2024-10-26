@@ -43,7 +43,7 @@ describe('SubmissionService', () => {
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
     testFile = readFileSync(
-      join(__dirname, '../../test-files/small_image.jpg')
+      join(__dirname, '../../test-files/small_image.jpg'),
     );
   });
 
@@ -185,7 +185,7 @@ describe('SubmissionService', () => {
     const createDto = createSubmissionDto();
     createDto.type = SubmissionType.MESSAGE;
     await expect(
-      service.create(createDto, {} as MulterFileInfo)
+      service.create(createDto, {} as MulterFileInfo),
     ).rejects.toThrow(BadRequestException);
   });
 
@@ -279,14 +279,14 @@ describe('SubmissionService', () => {
     const createDto = createSubmissionDto();
     createDto.type = SubmissionType.FILE;
     await expect(service.create(createDto)).rejects.toThrow(
-      BadRequestException
+      BadRequestException,
     );
   });
 
   it('should remove entities', async () => {
     const fileService = module.get<FileService>(FileService);
     const optionsService = module.get<WebsiteOptionsService>(
-      WebsiteOptionsService
+      WebsiteOptionsService,
     );
 
     const createDto = createSubmissionDto();
@@ -305,7 +305,7 @@ describe('SubmissionService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(await optionsService.findAll()).toHaveLength(0);
     await expect(fileService.findFile(fileId)).rejects.toThrow(
-      NotFoundException
+      NotFoundException,
     );
   });
 

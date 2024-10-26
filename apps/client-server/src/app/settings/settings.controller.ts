@@ -22,7 +22,7 @@ export class SettingsController extends PostyBirbController<Settings> {
   @ApiNotFoundResponse({ description: 'Settings profile not found.' })
   update(
     @Body() updateSettingsDto: UpdateSettingsDto,
-    @Param('id') id: string
+    @Param('id') id: string,
   ) {
     return this.service
       .update(id, updateSettingsDto)

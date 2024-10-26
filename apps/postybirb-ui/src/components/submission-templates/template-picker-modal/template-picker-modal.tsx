@@ -49,7 +49,7 @@ type AccountGroup = {
 function groupWebsiteOptions(
   submissions: SubmissionDto[],
   accounts: IAccountDto[],
-  _: TransHook
+  _: TransHook,
 ): Record<string, AccountGroup> {
   const groups: Record<string, AccountGroup> = {};
   submissions.forEach((submission) => {
@@ -118,7 +118,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
 
   const selectedTemplates: SubmissionDto[] = selected.map(
     (s) =>
-      [...templates, ...submissions].find((t) => t.id === s) as SubmissionDto
+      [...templates, ...submissions].find((t) => t.id === s) as SubmissionDto,
   );
 
   const selectedGroups = groupWebsiteOptions(selectedTemplates, accounts, _);
@@ -224,7 +224,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
             if (!selectedWebsiteOptions && newOpts.length) {
               const sub: Record<AccountId, WebsiteOptionsDto> = {};
               const template = [...templates, ...submissions].find(
-                (t) => t.id === newOpts[0]
+                (t) => t.id === newOpts[0],
               )!;
               template.options.forEach((o) => {
                 sub[o.account] = o;
@@ -259,7 +259,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
                 onApply(
                   (
                     Object.values(selectedWebsiteOptions).filter(
-                      (o) => o !== null
+                      (o) => o !== null,
                     ) as WebsiteOptionsDto[]
                   ).map((o: WebsiteOptionsDto) => {
                     const option = { ...o };
@@ -275,7 +275,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
                       delete option.data.title;
                     }
                     return option;
-                  })
+                  }),
                 );
               }
             }}

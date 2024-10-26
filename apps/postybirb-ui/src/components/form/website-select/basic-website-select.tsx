@@ -25,12 +25,12 @@ export function BasicWebsiteSelect(props: WebsiteSelectProps) {
           value: account.id,
         })),
       })),
-    [filteredAccounts]
+    [filteredAccounts],
   );
 
   const onCommitChanges = (
     newSelectedAccounts: IAccountDto[],
-    force?: boolean
+    force?: boolean,
   ) => {
     setSelectedAccounts(newSelectedAccounts);
     if (force) {

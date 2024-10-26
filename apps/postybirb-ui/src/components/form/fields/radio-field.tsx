@@ -17,7 +17,7 @@ type CommonFieldProps = {
 };
 
 function RatingFieldControl(
-  props: FormFieldProps<RatingFieldType> & CommonFieldProps
+  props: FormFieldProps<RatingFieldType> & CommonFieldProps,
 ) {
   const { propKey, field, defaultValue, option, form } = props;
   const { _ } = useLingui();
@@ -26,7 +26,7 @@ function RatingFieldControl(
       field.formField === 'rating' && !option.isDefault
         ? [{ label: _(msg`Default`), value: undefined }, ...field.options]
         : field.options,
-    [_, field.formField, field.options, option.isDefault]
+    [_, field.formField, field.options, option.isDefault],
   );
 
   return (
@@ -49,14 +49,17 @@ function RatingFieldControl(
 }
 
 function InnerRadioField(
-  props: FormFieldProps<RadioFieldType> & CommonFieldProps
+  props: FormFieldProps<RadioFieldType> & CommonFieldProps,
 ) {
   const { propKey, field, form } = props;
   return (
     <Radio.Group {...form.getInputProps(propKey)}>
       {field.options.map((o) => (
-        <Radio key={o.toString()} value={o.value as string | number} label={o.label}/>
-          
+        <Radio
+          key={o.toString()}
+          value={o.value as string | number}
+          label={o.label}
+        />
       ))}
     </Radio.Group>
   );

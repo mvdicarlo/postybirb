@@ -30,7 +30,7 @@ export class PostingFile {
   public constructor(
     id: SubmissionFileId,
     file: IFileBuffer,
-    thumbnail?: ThumbnailOptions
+    thumbnail?: ThumbnailOptions,
   ) {
     this.id = id;
     this.buffer = file.buffer;

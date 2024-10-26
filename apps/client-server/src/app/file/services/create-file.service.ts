@@ -33,7 +33,7 @@ export class CreateFileService {
     @InjectRepository(AltFile)
     private readonly altFileRepository: PostyBirbRepository<AltFile>,
     @InjectRepository(ThumbnailFile)
-    private readonly thumbnailRepository: PostyBirbRepository<ThumbnailFile>
+    private readonly thumbnailRepository: PostyBirbRepository<ThumbnailFile>,
   ) {}
 
   /**
@@ -48,7 +48,7 @@ export class CreateFileService {
   public async create(
     file: MulterFileInfo,
     submission: FileSubmission,
-    buf: Buffer
+    buf: Buffer,
   ): Promise<SubmissionFile> {
     try {
       this.logger.withMetadata(file).info(`Creating SubmissionFile entity`);
@@ -85,7 +85,7 @@ export class CreateFileService {
   private async createSubmissionFile(
     file: MulterFileInfo,
     submission: FileSubmission,
-    buf: Buffer
+    buf: Buffer,
   ): Promise<SubmissionFile> {
     const { mimetype: mimeType, originalname, size } = file;
     const entity = this.fileRepository.create({
@@ -112,7 +112,7 @@ export class CreateFileService {
   private async populateAsImageFile(
     entity: SubmissionFile,
     file: MulterFileInfo,
-    buf: Buffer
+    buf: Buffer,
   ): Promise<void> {
     const sharpInstance = ImageUtil.load(buf);
     let height = 0;
@@ -128,7 +128,7 @@ export class CreateFileService {
     entity.thumbnail = await this.createFileThumbnail(
       entity,
       file,
-      sharpInstance
+      sharpInstance,
     );
   }
 
@@ -142,7 +142,7 @@ export class CreateFileService {
   public async createFileThumbnail(
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
-    sharpInstance: Sharp
+    sharpInstance: Sharp,
   ): Promise<IFileBuffer> {
     const {
       buffer: thumbnailBuf,
@@ -151,12 +151,12 @@ export class CreateFileService {
     } = await this.generateThumbnail(
       sharpInstance,
       fileEntity.height,
-      fileEntity.width
+      fileEntity.width,
     );
     const thumbnailEntity = this.createFileBufferEntity(
       fileEntity,
       thumbnailBuf,
-      'thumbnail'
+      'thumbnail',
     );
 
     thumbnailEntity.height = height;
@@ -178,7 +178,7 @@ export class CreateFileService {
   public async generateThumbnail(
     sharpInstance: Sharp,
     fileHeight: number,
-    fileWidth: number
+    fileWidth: number,
   ): Promise<{ width: number; height: number; buffer: Buffer }> {
     const preferredDimension = 300;
 
@@ -186,7 +186,7 @@ export class CreateFileService {
     let height = Math.floor(
       fileHeight
         ? (fileHeight / fileWidth) * preferredDimension
-        : preferredDimension
+        : preferredDimension,
     );
 
     if (fileHeight) {
@@ -216,7 +216,7 @@ export class CreateFileService {
   public createFileBufferEntity(
     fileEntity: SubmissionFile,
     buf: Buffer,
-    type: 'thumbnail' | 'alt' | 'primary'
+    type: 'thumbnail' | 'alt' | 'primary',
   ): IFileBuffer {
     const { mimeType, height, width, fileName } = fileEntity;
     const data: Partial<IFileBuffer> = {

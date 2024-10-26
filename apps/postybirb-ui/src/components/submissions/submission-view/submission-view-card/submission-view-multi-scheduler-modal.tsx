@@ -23,7 +23,7 @@ type SubmissionViewActionsProps = {
   onClose: () => void;
   onApply: (
     schedules: { submission: SubmissionDto; date: Date }[],
-    isScheduled: boolean
+    isScheduled: boolean,
   ) => void;
   submissions: SubmissionDto[];
 };
@@ -39,17 +39,17 @@ function getNextDate(
     days: number;
     hours: number;
     minutes: number;
-  }
+  },
 ): Date {
   const { days, hours, minutes } = increments;
   const nextDate = new Date(date);
   nextDate.setDate(nextDate.getDate() + getIncrement(index, days, days > 0));
   nextDate.setHours(
-    nextDate.getHours() + getIncrement(index, hours, days === 0 && hours > 0)
+    nextDate.getHours() + getIncrement(index, hours, days === 0 && hours > 0),
   );
   nextDate.setMinutes(
     nextDate.getMinutes() +
-      getIncrement(index, minutes, days === 0 && hours === 0 && minutes > 0)
+      getIncrement(index, minutes, days === 0 && hours === 0 && minutes > 0),
   );
   return nextDate;
 }
@@ -61,7 +61,7 @@ function ScheduleDisplay(
     hours: number;
     minutes: number;
     onSort(submissions: SubmissionDto[]): void;
-  }
+  },
 ) {
   const ref = useRef<HTMLDivElement>(null);
   const { submissions, selectedDate, days, minutes, hours, onSort } = props;
@@ -79,12 +79,12 @@ function ScheduleDisplay(
         const newOrderedSubmissions = [...submissions];
         const [movedSubmission] = newOrderedSubmissions.splice(
           event.oldDraggableIndex!,
-          1
+          1,
         );
         newOrderedSubmissions.splice(
           event.newDraggableIndex!,
           0,
-          movedSubmission
+          movedSubmission,
         );
         onSort(newOrderedSubmissions);
       },
@@ -148,7 +148,7 @@ function ScheduleDisplay(
 
 // TODO - Use grid styling to allow scrollable center area and have buttons at the bottom be fixed
 export function SubmissionViewMultiSchedulerModal(
-  props: SubmissionViewActionsProps
+  props: SubmissionViewActionsProps,
 ) {
   const { onClose, onApply, submissions } = props;
   const [onlySetScheduledDate, setOnlySetScheduledDate] = useState(false);
@@ -161,7 +161,7 @@ export function SubmissionViewMultiSchedulerModal(
   });
   const [sortedSubmissions, setSortedSubmissions] = useState(submissions);
   const [selectedDate, setSelectedDate] = useState<Date | null>(
-    lastUsedSchedule ? new Date(lastUsedSchedule) : new Date()
+    lastUsedSchedule ? new Date(lastUsedSchedule) : new Date(),
   );
   const [days, setDays] = useState(1);
   const [hours, setHours] = useState(0);
@@ -179,7 +179,7 @@ export function SubmissionViewMultiSchedulerModal(
           minutes,
         }),
       })),
-      !onlySetScheduledDate
+      !onlySetScheduledDate,
     );
   }, [
     days,

@@ -9,7 +9,7 @@ export function assignMetadata<T extends PrimitiveRecord>(
   target: object,
   propertyKey: string | symbol,
   fieldKey: string,
-  options: FieldAggregateType<T>
+  options: FieldAggregateType<T>,
 ): void {
   if (typeof propertyKey === 'symbol') return;
 

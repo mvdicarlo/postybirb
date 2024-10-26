@@ -77,13 +77,13 @@ export default class TestWebsite
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
     files: PostingFile[],
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, TestFileSubmission>
+    postData: PostData<FileSubmission, TestFileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -93,13 +93,13 @@ export default class TestWebsite
 
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, TestMessageSubmission>,
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     return undefined;
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, TestMessageSubmission>
+    postData: PostData<MessageSubmission, TestMessageSubmission>,
   ): Promise<SimpleValidationResult> {
     const results: SimpleValidationResult = {
       warnings: [],
@@ -110,7 +110,7 @@ export default class TestWebsite
 
   async onAuthorize(
     data: Record<string, unknown>,
-    state: string
+    state: string,
   ): Promise<Record<string, boolean>> {
     if (state === 'authorize') {
       return { result: true };

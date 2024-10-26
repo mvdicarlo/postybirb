@@ -32,7 +32,7 @@ function TextField(props: FormFieldProps<TextFieldType> & CommonFieldProps) {
 }
 
 function TextAreaField(
-  props: FormFieldProps<TextFieldType> & CommonFieldProps
+  props: FormFieldProps<TextFieldType> & CommonFieldProps,
 ) {
   const { propKey, form, field, defaultValue } = props;
   const inputProps = form.getInputProps(propKey);

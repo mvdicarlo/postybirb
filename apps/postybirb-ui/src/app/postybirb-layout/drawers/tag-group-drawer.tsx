@@ -27,7 +27,7 @@ function isValidTagGroup(tagGroup: ICreateTagGroupDto) {
 
 function areEqual(
   old: Pick<ICreateTagGroupDto, 'name' | 'tags'>,
-  current: Pick<ICreateTagGroupDto, 'name' | 'tags'>
+  current: Pick<ICreateTagGroupDto, 'name' | 'tags'>,
 ) {
   return JSON.stringify(old) === JSON.stringify(current);
 }

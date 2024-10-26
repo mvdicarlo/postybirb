@@ -16,7 +16,7 @@ export class DescriptionTextNode
 
   constructor(
     node: IDescriptionTextNode,
-    shortcuts: Record<string, UsernameShortcut>
+    shortcuts: Record<string, UsernameShortcut>,
   ) {
     super(node, shortcuts);
     this.text = node.text ?? '';

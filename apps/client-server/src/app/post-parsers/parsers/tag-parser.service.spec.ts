@@ -61,7 +61,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);
@@ -96,7 +96,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);
@@ -126,7 +126,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);
@@ -152,7 +152,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);
@@ -186,7 +186,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);
@@ -224,7 +224,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);
@@ -258,7 +258,7 @@ describe('TagParserService', () => {
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(result).toEqual(tags);

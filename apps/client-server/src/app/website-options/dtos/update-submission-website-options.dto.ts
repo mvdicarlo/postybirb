@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    ICreateWebsiteOptionsDto,
-    IUpdateSubmissionWebsiteOptionsDto,
+  ICreateWebsiteOptionsDto,
+  IUpdateSubmissionWebsiteOptionsDto,
 } from '@postybirb/types';
 import { IsArray, IsOptional } from 'class-validator';
 
