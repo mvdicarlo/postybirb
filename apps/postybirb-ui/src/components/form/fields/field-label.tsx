@@ -1,11 +1,12 @@
 import { MessageDescriptor } from '@lingui/core';
 import { useLingui } from '@lingui/react';
 import { Input } from '@mantine/core';
-import { FieldAggregateType } from '@postybirb/form-builder';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import type { FieldAggregateType } from '@postybirb/form-builder';
 import { PropsWithChildren } from 'react';
-import { externalTranslations } from '../../../external-translations';
-import { ValidationTranslation } from '../../translations/translation';
+import { ValidationTranslation } from '../../translations/validation-translation';
 import { UseValidationResult } from '../hooks/use-validations';
+import { fieldLabelTranslations } from './field-translations';
 import { FormFieldProps } from './form-field.type';
 
 type FieldLabelProps = FormFieldProps & {
@@ -13,20 +14,18 @@ type FieldLabelProps = FormFieldProps & {
 };
 
 export function getTranslatedLabel(
-  field: FieldAggregateType<never>,
+  field: FieldAggregateType,
   converter: (msg: MessageDescriptor) => string
 ): string {
-  // eslint-disable-next-line prefer-const
-  let { label, i18nLabel } = field;
-  const i18n = i18nLabel || label;
-  const translationLabel = externalTranslations[i18n];
+  const translationLabel = fieldLabelTranslations[field.label];
+
   if (!translationLabel) {
     // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
     console.warn('Missing translation for field', field);
-  } else {
-    label = converter(translationLabel);
+    return field.label;
   }
-  return label;
+
+  return converter(translationLabel);
 }
 
 export function FieldLabel(

@@ -94,7 +94,7 @@ describe('TitleParserService', () => {
       websiteOptions
     );
 
-    expect(title).toBe('defau');
+    expect(title).toBe('default');
   });
 
   it('should parse title and use default form if website form is not available', async () => {

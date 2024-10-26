@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { UseFormReturnType } from '@mantine/form';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { FieldAggregateType } from '@postybirb/form-builder';
 import {
   IWebsiteFormFields,
@@ -12,7 +13,7 @@ export type SubmissionValidationResult = {
   result: ValidationResult;
 };
 
-export type FormFieldProps<T = FieldAggregateType<never>> = {
+export type FormFieldProps<T = FieldAggregateType> = {
   defaultOption: WebsiteOptionsDto<IWebsiteFormFields>;
   field: T;
   form: UseFormReturnType<

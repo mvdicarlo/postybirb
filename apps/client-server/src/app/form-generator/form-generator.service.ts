@@ -34,7 +34,7 @@ export class FormGeneratorService {
    */
   async generateForm(
     request: FormGenerationRequestDto
-  ): Promise<FormBuilderMetadata<never>> {
+  ): Promise<FormBuilderMetadata> {
     const account = await this.accountService.findById(request.accountId, {
       failOnMissing: true,
     });
@@ -82,10 +82,10 @@ export class FormGeneratorService {
   }
 
   private async populateUserDefaults(
-    form: FormBuilderMetadata<never>,
+    form: FormBuilderMetadata,
     accountId: AccountId,
     type: SubmissionType
-  ): Promise<FormBuilderMetadata<never>> {
+  ): Promise<FormBuilderMetadata> {
     const userSpecifiedDefaults =
       await this.userSpecifiedWebsiteOptionsService.findByAccountAndSubmissionType(
         accountId,
@@ -96,7 +96,6 @@ export class FormGeneratorService {
       Object.entries(userSpecifiedDefaults.options).forEach(([key, value]) => {
         const field = form[key];
         if (field) {
-          // eslint-disable-next-line no-param-reassign
           field.defaultValue = value ?? field.defaultValue;
         }
       });

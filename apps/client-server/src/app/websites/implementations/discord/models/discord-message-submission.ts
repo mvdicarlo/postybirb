@@ -9,7 +9,6 @@ import {
   IWebsiteFormFields,
   SubmissionRating,
 } from '@postybirb/types';
-import { DefaultRatingOptions } from '../../../models/default-website-options';
 
 export class DiscordMessageSubmission implements IWebsiteFormFields {
   @TextField({
@@ -29,9 +28,6 @@ export class DiscordMessageSubmission implements IWebsiteFormFields {
   description: DescriptionValue;
 
   @RatingField({
-    label: 'Rating',
-    defaultValue: undefined,
-    options: DefaultRatingOptions,
     required: true,
     row: 0,
     col: 0,

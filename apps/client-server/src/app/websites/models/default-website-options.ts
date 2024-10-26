@@ -1,7 +1,6 @@
 import {
   DescriptionField,
   RatingField,
-  RatingOption,
   TagField,
   TextField,
 } from '@postybirb/form-builder';
@@ -14,25 +13,6 @@ import {
   TagValue,
 } from '@postybirb/types';
 
-export const DefaultRatingOptions: RatingOption[] = [
-  {
-    label: 'General',
-    value: SubmissionRating.GENERAL,
-  },
-  {
-    label: 'Mature',
-    value: SubmissionRating.MATURE,
-  },
-  {
-    label: 'Adult',
-    value: SubmissionRating.ADULT,
-  },
-  {
-    label: 'Extreme',
-    value: SubmissionRating.EXTREME,
-  },
-];
-
 export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
   title: '',
   tags: DefaultTagValue(),
@@ -42,8 +22,7 @@ export const DefaultWebsiteOptionsObject: IWebsiteFormFields = {
 
 export class DefaultWebsiteOptions implements IWebsiteFormFields {
   @TextField({
-    label: 'Title',
-    defaultValue: DefaultWebsiteOptionsObject.title,
+    label: 'title',
     required: true,
     col: 1,
     row: 0,
@@ -51,15 +30,13 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
   title: string;
 
   @TagField({
-    label: 'Tags',
-    defaultValue: DefaultWebsiteOptionsObject.tags,
     col: 1,
     row: 1,
   })
   tags: TagValue;
 
   @TextField({
-    label: 'Content Warning / Spoilers',
+    label: 'contentWarning',
     defaultValue: '',
     col: 1,
     row: 2,
@@ -67,21 +44,15 @@ export class DefaultWebsiteOptions implements IWebsiteFormFields {
   contentWarning: string;
 
   @DescriptionField({
-    label: 'Description',
-    defaultValue: DefaultWebsiteOptionsObject.description,
     col: 1,
     row: 3,
   })
   description: DescriptionValue;
 
   @RatingField({
-    label: 'Rating',
-    defaultValue: DefaultWebsiteOptionsObject.rating,
-    options: DefaultRatingOptions,
     required: true,
     col: 0,
     row: 0,
-    layout: 'vertical',
   })
   rating: SubmissionRating;
 }

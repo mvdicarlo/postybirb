@@ -3,20 +3,17 @@ import { METADATA_KEY } from '../constants';
 import { FormBuilderMetadata } from './types/form-builder-metadata';
 import { PrimitiveRecord } from './types/primitive-record';
 
-export function formBuilder<T extends PrimitiveRecord>(
+export function formBuilder(
   target: object,
-  data: T
-): FormBuilderMetadata<T> {
-  const metadata: FormBuilderMetadata<T> = JSON.parse(
+  data: PrimitiveRecord
+): FormBuilderMetadata {
+  const metadata = JSON.parse(
     JSON.stringify(Reflect.getMetadata(METADATA_KEY, target.constructor))
-  );
+  ) as FormBuilderMetadata;
 
-  Object.values(metadata).forEach((value) => {
-    if (value.defaultFrom) {
-      // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-      value.defaultValue = data[value.defaultFrom] as any;
-    }
-  });
+  for (const value of Object.values(metadata)) {
+    if (value.defaultFrom) value.defaultValue = data[value.defaultFrom];
+  }
 
   return metadata;
 }

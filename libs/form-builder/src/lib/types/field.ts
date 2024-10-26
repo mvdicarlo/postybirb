@@ -1,6 +1,14 @@
+import { FieldTranslationId } from '@postybirb/types';
 import { PrimitiveRecord } from './primitive-record';
 
-export type FieldType<T extends PrimitiveRecord, V, F extends string> = {
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries, @typescript-eslint/no-unused-vars, import/order
+import { type fieldLabelTranslations } from 'apps/postybirb-ui/src/components/form/fields/field-translations';
+
+export type FieldType<
+  V,
+  F extends string,
+  T extends PrimitiveRecord | unknown = unknown
+> = {
   /**
    * Pulls a default value from a key property
    */
@@ -27,14 +35,9 @@ export type FieldType<T extends PrimitiveRecord, V, F extends string> = {
   formField?: F;
 
   /**
-   * The label to display for the field.
+   * The translation id of the label to display. All possible values can be found here: {@link fieldLabelTranslations}.
    */
-  label: string;
-
-  /**
-   * Translation label (wip)
-   */
-  i18nLabel?: string;
+  label: FieldTranslationId;
 
   /**
    * Whether the field is considered required.

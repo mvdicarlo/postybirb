@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
-import { BooleanField, TextField } from './decorators';
+import { BooleanField, TagField, TextField } from './decorators';
 import { formBuilder } from './form-builder';
 
 describe('formBuilder', () => {
   it('should build boolean types', () => {
     class BooleanType {
-      @BooleanField<any>({ label: 'boolean field', defaultValue: false })
+      @BooleanField({ label: 'description', defaultValue: false })
       public field: boolean;
     }
 
@@ -24,7 +24,7 @@ describe('formBuilder', () => {
 
   it('should build text types', () => {
     class TextType {
-      @TextField<any>({ label: 'text field', defaultValue: 'Hello' })
+      @TextField({ label: 'description', defaultValue: 'Hello' })
       public field: string;
     }
 
@@ -40,12 +40,21 @@ describe('formBuilder', () => {
     });
   });
 
+  it('should build tag fields', () => {
+    class TestType {
+      @TagField({})
+      field: string[];
+    }
+
+    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot();
+  });
+
   it('should support defaultFrom', () => {
     type TestType = { testBoolean: true };
     const test: TestType = { testBoolean: true };
     class BooleanType {
       @BooleanField<TestType>({
-        label: 'boolean field',
+        label: 'description',
         defaultValue: false,
         defaultFrom: 'testBoolean',
       })

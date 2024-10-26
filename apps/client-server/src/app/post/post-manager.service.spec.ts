@@ -15,6 +15,7 @@ import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
+import { ValidationService } from '../validation/validation.service';
 import { CreateWebsiteOptionsDto } from '../website-options/dtos/create-website-options.dto';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
@@ -47,7 +48,12 @@ describe('PostManagerService', () => {
         PostParsersModule,
         PostModule,
       ],
-      providers: [PostManagerService, PostService, PostFileResizerService],
+      providers: [
+        PostManagerService,
+        PostService,
+        PostFileResizerService,
+        ValidationService,
+      ],
     }).compile();
 
     service = module.get<PostManagerService>(PostManagerService);
@@ -107,7 +113,7 @@ describe('PostManagerService', () => {
     return dto;
   }
 
-  afterAll(async () => {
+  afterEach(async () => {
     await orm.close(true);
     await module.close();
   });

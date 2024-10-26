@@ -29,10 +29,7 @@ export class TitleParserService {
           })) as unknown as TitleType);
 
     const title = websiteOptions.data.title ?? defaultOptions.data.title ?? '';
-    const field: TextFieldType =
-      websiteForm?.title[0] ??
-      defaultForm?.title[0] ??
-      ({ maxLength: Infinity } as TextFieldType);
+    const field = websiteForm?.title[0] ?? defaultForm?.title[0];
     const maxLength = field?.maxLength ?? Infinity;
 
     return title.trim().slice(0, maxLength);
