@@ -68,7 +68,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     const { maxLength, currentLength } = props.values;
     return (
       <Trans>
-        Tag limit reached ({currentLength} / {maxLength})
+        Tag limit reached ({currentLength}/{maxLength})
       </Trans>
     );
   },
@@ -76,12 +76,12 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   'validation.tags.min-tags': (props) => {
     const { minLength, currentLength } = props.values;
     return (
-      <>
-        <Trans>Requires at least {minLength} tags</Trans>{' '}
+      <Trans>
+        Requires at least {minLength} tags{' '}
         <span>
-          ({currentLength} / {minLength})
+          ({currentLength}/{minLength})
         </span>
-      </>
+      </Trans>
     );
   },
 
@@ -89,7 +89,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     const { tags, maxLength } = props.values;
     return (
       <>
-        <Trans>Tags longer than {maxLength} characters will be skipped</Trans> :{' '}
+        <Trans>Tags longer than {maxLength} characters will be skipped</Trans>:{' '}
         <span>{tags.join(', ')}</span>
       </>
     );

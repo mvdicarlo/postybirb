@@ -42,7 +42,7 @@ msgstr "Вставлять рекламу PostyBirb в описания пост
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:15
 msgid "Allow resizing image"
-msgstr ""
+msgstr "Масштабировать изображения"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:163
 msgid "Alt Text"
@@ -106,7 +106,7 @@ msgstr "Очистить"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:13
 msgid "Content warning"
-msgstr ""
+msgstr "Предупреждение (CW)"
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copied"
@@ -435,7 +435,7 @@ msgstr "Опубликовать текст"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:72
 msgid "Post Files"
-msgstr "Опубликовать файлы"
+msgstr "Файлы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx:46
 msgid "Post Selected"
@@ -448,12 +448,12 @@ msgstr "Основные значения"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:11
 msgid "Rating"
-msgstr ""
+msgstr "Рейтинг"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:25
 msgctxt "internalSchedule.recurring"
 msgid "Recurring"
-msgstr ""
+msgstr "Повторяющееся"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:193
 msgctxt "import.override-description"
@@ -467,7 +467,7 @@ msgstr "Заменить заголовок"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:80
 msgid "Requires at least {minLength} tags"
-msgstr ""
+msgstr "Нужно минимум {minLength} тегов"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48
 msgid "Reset"
@@ -487,12 +487,12 @@ msgstr "Сохранить"
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:49
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:109
 msgid "Save current form values as the default values for future submissions"
-msgstr ""
+msgstr "Сохранить значения формы по умолчанию для использования в будущих постах"
 
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:56
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:124
 msgid "Save defaults"
-msgstr ""
+msgstr "Сохранить по умолчанию"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:120
 msgid "Save folder upload changes"
@@ -508,24 +508,24 @@ msgstr "Отложить"
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:201
 msgctxt "schedule.modal-header"
 msgid "Schedule"
-msgstr ""
+msgstr "Отложить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx:24
 msgid "Schedule Many"
-msgstr ""
+msgstr "Отложить несколько"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:148
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx:56
 msgid "Search"
-msgstr ""
+msgstr "Поиск"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:69
 msgid "Select folder"
-msgstr ""
+msgstr "Выбрать папку"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:80
 msgid "Send Messages"
-msgstr ""
+msgstr "Сообщения"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
@@ -543,24 +543,24 @@ msgstr "Испанский"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:12
 msgid "Species"
-msgstr ""
+msgstr "Виды"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:174
 msgid "Spoiler Text"
-msgstr ""
+msgstr "Спойлер"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:66
 msgid "Startup Settings"
-msgstr ""
+msgstr "Настройки запуска"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:49
 msgid "Submission duplicated"
-msgstr ""
+msgstr "Пост дублирован"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:146
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:180
 msgid "Submission queued"
-msgstr ""
+msgstr "Пост в очереди"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:117
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:79
@@ -569,7 +569,7 @@ msgstr "Пост отложен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:85
 msgid "Submission templates"
-msgstr ""
+msgstr "Шаблоны постов"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:31
 msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} files each."
@@ -587,7 +587,7 @@ msgstr "Тег"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:78
 msgid "Tag converter updated"
-msgstr ""
+msgstr "Конвертер тегов обновлен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:223
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:96
@@ -596,12 +596,12 @@ msgstr "Конвертер тегов"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:85
 msgid "Tag group updated"
-msgstr ""
+msgstr "Группа тегов обновлена"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:203
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:88
 msgid "Tag Groups"
-msgstr "Группа тегов"
+msgstr "Группы тегов"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:70
 msgid "Tag limit reached ({currentLength} / {maxLength})"
@@ -660,19 +660,19 @@ msgstr "Набросок (Маленькая картинка)"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:10
 msgid "Title"
-msgstr ""
+msgstr "Название"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:104
 msgid "Title is too long"
-msgstr ""
+msgstr "Название слишком длинное"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:102
 msgid "Title is too long and will be truncated"
-msgstr ""
+msgstr "Название слишком длинное и будет сокращено"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
 msgid "Title is too short"
-msgstr ""
+msgstr "Название слишком короткое"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:136
 msgid "Translation {id} not found"
@@ -680,7 +680,7 @@ msgstr "Перевод {id} не найден"
 
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:231
 msgid "Unable to display form"
-msgstr ""
+msgstr "Не удалось показать форму"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
@@ -700,7 +700,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:42
 msgid "Unsupported file type {mimeType}"
-msgstr ""
+msgstr "Неподдерживаемый тип файла {mimeType}"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:91
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:98
@@ -709,7 +709,7 @@ msgstr "Обновить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:184
 msgid "Update file"
-msgstr ""
+msgstr "Загрузить файл"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-update-button.tsx:42
 msgid "Update PostyBirb"
@@ -717,19 +717,19 @@ msgstr "Обновить PostyBirb"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:176
 msgid "Upload"
-msgstr ""
+msgstr "Загрузить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:233
 msgid "Upload new thumbnail"
-msgstr ""
+msgstr "Загрузить новую миниатюру"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
-msgstr ""
+msgstr "Кастомное описание"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:14
 msgid "Use thumbnail"
-msgstr ""
+msgstr "Использовать миниатюру"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
 msgid "Webhook is required"
