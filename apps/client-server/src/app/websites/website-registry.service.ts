@@ -45,7 +45,7 @@ export class WebsiteRegistryService {
     private readonly accountRepository: PostyBirbRepository<Account>,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
-    @Optional() private readonly webSocket?: WSGateway
+    @Optional() private readonly webSocket?: WSGateway,
   ) {
     this.logger.debug('Registering websites');
     Object.values({ ...this.websiteImplementations }).forEach(
@@ -54,7 +54,7 @@ export class WebsiteRegistryService {
           !validateWebsiteDecoratorProps(
             this.logger,
             website.name,
-            website.prototype.decoratedProps
+            website.prototype.decoratedProps,
           )
         ) {
           this.logger.error(`Failed to register website: ${website.name}`);
@@ -62,16 +62,16 @@ export class WebsiteRegistryService {
         }
 
         this.logger.debug(
-          `Registered website: ${website.prototype.decoratedProps.metadata.name}`
+          `Registered website: ${website.prototype.decoratedProps.metadata.name}`,
         );
         this.availableWebsites[website.prototype.decoratedProps.metadata.name] =
           website;
-      }
+      },
     );
     accountRepository.addUpdateListener(
       dbSubscriber,
       [Account, WebsiteData],
-      () => this.emit()
+      () => this.emit(),
     );
   }
 
@@ -121,11 +121,11 @@ export class WebsiteRegistryService {
         this.logger.info(`Creating instance of '${website}' with id '${id}'`);
         this.websiteInstances[website][id] = new WebsiteCtor(account);
         await this.websiteInstances[website][id].onInitialize(
-          this.websiteDataRepository
+          this.websiteDataRepository,
         );
       } else {
         this.logger.warn(
-          `An instance of "${website}" with id '${id}' already exists`
+          `An instance of "${website}" with id '${id}' already exists`,
         );
       }
 
@@ -156,7 +156,7 @@ export class WebsiteRegistryService {
   public getInstancesOf(website: Class<UnknownWebsite>): UnknownWebsite[] {
     if (this.websiteInstances[website.prototype.decoratedProps.metadata.name]) {
       return Object.values(
-        this.websiteInstances[website.prototype.decoratedProps.metadata.name]
+        this.websiteInstances[website.prototype.decoratedProps.metadata.name],
       );
     }
 
@@ -237,13 +237,13 @@ export class WebsiteRegistryService {
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
   public performOAuthStep(
-    oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>
+    oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>,
   ) {
     const instance = this.findInstance(oauthRequestDto as unknown as IAccount);
     if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
       return (instance as unknown as OAuthWebsite).onAuthorize(
         oauthRequestDto.data,
-        oauthRequestDto.state
+        oauthRequestDto.state,
       );
     }
 

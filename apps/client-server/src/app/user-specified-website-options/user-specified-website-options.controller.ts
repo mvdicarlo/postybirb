@@ -40,7 +40,7 @@ export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<U
   @ApiNotFoundResponse()
   update(
     @Param('id') id: string,
-    @Body() updateDto: UpdateUserSpecifiedWebsiteOptionsDto
+    @Body() updateDto: UpdateUserSpecifiedWebsiteOptionsDto,
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }

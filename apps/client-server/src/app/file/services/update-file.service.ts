@@ -25,7 +25,7 @@ export class UpdateFileService {
   constructor(
     private readonly createFileService: CreateFileService,
     @InjectRepository(SubmissionFile)
-    private readonly fileRepository: PostyBirbRepository<SubmissionFile>
+    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
   ) {}
 
   /**
@@ -40,7 +40,7 @@ export class UpdateFileService {
     file: MulterFileInfo,
     submissionFileId: string,
     buf: Buffer,
-    target?: 'thumbnail'
+    target?: 'thumbnail',
   ): Promise<SubmissionFile> {
     const submissionFile = await this.findFile(submissionFileId);
     if (target === 'thumbnail') {
@@ -55,14 +55,14 @@ export class UpdateFileService {
   private async replaceFileThumbnail(
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
-    buf: Buffer
+    buf: Buffer,
   ) {
     const thumbnailDetails = await this.getImageDetails(file, buf);
     if (!submissionFile.thumbnail) {
       submissionFile.thumbnail = this.createFileService.createFileBufferEntity(
         submissionFile,
         thumbnailDetails.buffer,
-        'thumbnail'
+        'thumbnail',
       );
     }
 
@@ -79,7 +79,7 @@ export class UpdateFileService {
   async replacePrimaryFile(
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
-    buf: Buffer
+    buf: Buffer,
   ) {
     await this.updateFileEntity(submissionFile, file, buf);
     await this.fileRepository.persistAndFlush(submissionFile);
@@ -88,7 +88,7 @@ export class UpdateFileService {
   private async updateFileEntity(
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
-    buf: Buffer
+    buf: Buffer,
   ): Promise<void> {
     const fileHash = await hash(buf, { algorithm: 'sha256' });
 
@@ -117,11 +117,11 @@ export class UpdateFileService {
   private async updateImageFileProps(
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
-    buf: Buffer
+    buf: Buffer,
   ) {
     const { width, height, sharpInstance } = await this.getImageDetails(
       file,
-      buf
+      buf,
     );
     submissionFile.width = width;
     submissionFile.height = height;
@@ -138,7 +138,7 @@ export class UpdateFileService {
       } = await this.createFileService.generateThumbnail(
         sharpInstance,
         height,
-        width
+        width,
       );
       submissionFile.thumbnail.buffer = thumbnailBuf;
       submissionFile.thumbnail.width = thumbnailWidth;
@@ -171,7 +171,7 @@ export class UpdateFileService {
     try {
       const entity = await this.fileRepository.findOneOrFail(
         { id },
-        { populate: true }
+        { populate: true },
       );
 
       return entity;

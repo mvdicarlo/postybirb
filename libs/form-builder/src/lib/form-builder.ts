@@ -5,10 +5,10 @@ import { PrimitiveRecord } from './types/primitive-record';
 
 export function formBuilder<T extends PrimitiveRecord>(
   target: object,
-  data: T
+  data: T,
 ): FormBuilderMetadata<T> {
   const metadata: FormBuilderMetadata<T> = JSON.parse(
-    JSON.stringify(Reflect.getMetadata(METADATA_KEY, target.constructor))
+    JSON.stringify(Reflect.getMetadata(METADATA_KEY, target.constructor)),
   );
 
   Object.values(metadata).forEach((value) => {

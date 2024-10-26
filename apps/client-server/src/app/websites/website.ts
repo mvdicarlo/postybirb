@@ -170,7 +170,7 @@ export abstract class Website<D extends DynamicObject> {
    * Method that runs once on initialization of the Website class.
    */
   public async onInitialize(
-    websiteDataRepository: PostyBirbRepository<WebsiteData<D>>
+    websiteDataRepository: PostyBirbRepository<WebsiteData<D>>,
   ): Promise<void> {
     this.logger.trace('onInitialize');
 

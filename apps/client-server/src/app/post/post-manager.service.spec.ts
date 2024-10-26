@@ -55,11 +55,11 @@ describe('PostManagerService', () => {
     accountService = module.get<AccountService>(AccountService);
     const settingsService = module.get<SettingsService>(SettingsService);
     websiteOptionsService = module.get<WebsiteOptionsService>(
-      WebsiteOptionsService
+      WebsiteOptionsService,
     );
     postService = module.get<PostService>(PostService);
     registryService = module.get<WebsiteRegistryService>(
-      WebsiteRegistryService
+      WebsiteRegistryService,
     );
     orm = module.get(MikroORM);
     try {
@@ -87,7 +87,7 @@ describe('PostManagerService', () => {
 
   function createWebsiteOptionsDto(
     submissionId: string,
-    accountId: string
+    accountId: string,
   ): CreateWebsiteOptionsDto {
     const dto = new CreateWebsiteOptionsDto();
     dto.submission = submissionId;
@@ -122,7 +122,7 @@ describe('PostManagerService', () => {
     expect(registryService.findInstance(account)).toBeDefined();
 
     await websiteOptionsService.create(
-      createWebsiteOptionsDto(submission.id, account.id)
+      createWebsiteOptionsDto(submission.id, account.id),
     );
 
     await postService.enqueue({ ids: [submission.id] });

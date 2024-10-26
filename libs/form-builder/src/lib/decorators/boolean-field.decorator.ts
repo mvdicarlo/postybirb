@@ -11,7 +11,7 @@ export type BooleanFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   FieldType<T, boolean, BooleanFormField>;
 
 export function BooleanField<T extends PrimitiveRecord>(
-  options: BooleanFieldType<T>
+  options: BooleanFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   if (!options.formField) {

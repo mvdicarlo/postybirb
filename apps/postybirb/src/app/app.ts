@@ -129,7 +129,7 @@ export default class PostyBirb {
       PostyBirb.mainWindow.loadURL(`http://localhost:${rendererAppPort}`);
     } else {
       PostyBirb.mainWindow.loadURL(
-        `https://localhost:${PostyBirbEnvConfig.port}`
+        `https://localhost:${PostyBirbEnvConfig.port}`,
       );
     }
   }

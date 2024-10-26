@@ -33,7 +33,7 @@ export class FileSubmissionService
   constructor(
     @InjectRepository(Submission)
     repository: PostyBirbRepository<SubmissionEntity>,
-    private readonly fileService: FileService
+    private readonly fileService: FileService,
   ) {
     super(repository);
   }
@@ -41,7 +41,7 @@ export class FileSubmissionService
   async populate(
     submission: FileSubmission,
     createSubmissionDto: CreateSubmissionDto,
-    file: MulterFileInfo
+    file: MulterFileInfo,
   ): Promise<void> {
     // eslint-disable-next-line no-param-reassign
     submission.metadata = {
@@ -56,13 +56,13 @@ export class FileSubmissionService
   private guardIsFileSubmission(submission: ISubmission) {
     if (!isFileSubmission(submission)) {
       throw new BadRequestException(
-        `Submission '${submission.id}' is not a ${SubmissionType.FILE} submission.`
+        `Submission '${submission.id}' is not a ${SubmissionType.FILE} submission.`,
       );
     }
 
     if (submission.metadata.template) {
       throw new BadRequestException(
-        `Submission '${submission.id}' is a template and cannot have files.`
+        `Submission '${submission.id}' is a template and cannot have files.`,
       );
     }
   }
@@ -76,7 +76,7 @@ export class FileSubmissionService
   async appendFile(
     id: string | FileSubmission,
     file: MulterFileInfo,
-    persist = true
+    persist = true,
   ) {
     const submission = (
       typeof id === 'string'
@@ -121,7 +121,7 @@ export class FileSubmissionService
 
     if (
       !submission.metadata.order.some(
-        (metaFileOrderId) => metaFileOrderId === fileId
+        (metaFileOrderId) => metaFileOrderId === fileId,
       )
     ) {
       throw new BadRequestException('File not found on submission');
@@ -159,7 +159,7 @@ export class FileSubmissionService
     await this.fileService.remove(fileId);
     // eslint-disable-next-line no-param-reassign
     submission.metadata.order = submission.metadata.order.filter(
-      (metaFileOrderId) => metaFileOrderId !== fileId
+      (metaFileOrderId) => metaFileOrderId !== fileId,
     );
     await this.repository.persistAndFlush(submission);
   }

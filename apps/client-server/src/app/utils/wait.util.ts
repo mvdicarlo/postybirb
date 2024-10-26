@@ -2,7 +2,7 @@ import { setInterval } from 'timers/promises';
 
 export async function waitUntil(
   fn: () => boolean,
-  milliseconds: number
+  milliseconds: number,
 ): Promise<void> {
   if (fn()) {
     return;

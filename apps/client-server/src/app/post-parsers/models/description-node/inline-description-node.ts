@@ -16,7 +16,7 @@ export class DescriptionInlineNode
 
   constructor(
     node: IDescriptionInlineNode,
-    shortcuts: Record<string, UsernameShortcut>
+    shortcuts: Record<string, UsernameShortcut>,
   ) {
     super(node, shortcuts);
     this.href = node.href;
@@ -25,7 +25,7 @@ export class DescriptionInlineNode
         if (child.type === 'text') {
           return new DescriptionTextNode(
             child as IDescriptionTextNode,
-            shortcuts
+            shortcuts,
           );
         }
         throw new Error('Inline nodes can only contain text nodes');

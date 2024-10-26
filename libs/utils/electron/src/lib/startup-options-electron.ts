@@ -47,7 +47,7 @@ export function setStartupOptions(opts: Partial<StartupOptions>): void {
   listeners.forEach((listener) => listener(startupOptions));
 }
 export function onStartupOptionsUpdate(
-  listener: (opts: StartupOptions) => void
+  listener: (opts: StartupOptions) => void,
 ): void {
   if (!listeners.includes(listener)) {
     listeners.push(listener);

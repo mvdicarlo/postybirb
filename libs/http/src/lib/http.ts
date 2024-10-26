@@ -68,7 +68,7 @@ export class Http {
 
   private static createClientRequest(
     options: HttpOptions,
-    crOptions: ClientRequestConstructorOptions
+    crOptions: ClientRequestConstructorOptions,
   ): ClientRequest {
     const clientRequestOptions: ClientRequestConstructorOptions = {
       ...crOptions,
@@ -85,7 +85,7 @@ export class Http {
     if (options.queryParameters) {
       const url = new URL(clientRequestOptions.url);
       url.search = new URLSearchParams(
-        encodeQueryString(options.queryParameters)
+        encodeQueryString(options.queryParameters),
       ).toString();
       clientRequestOptions.url = url.toString();
     }
@@ -107,7 +107,7 @@ export class Http {
         Object.entries(([headerKey, headerValue]) => {
           if (RESTRICTED_HEADERS.includes(headerKey)) {
             Http.logger.error(
-              `Not allowed to set header: ${headerKey} [https://www.electronjs.org/docs/api/client-request#instance-methods]`
+              `Not allowed to set header: ${headerKey} [https://www.electronjs.org/docs/api/client-request#instance-methods]`,
             );
             throw new Error(`Not allowed to set header: ${headerKey}`);
           }
@@ -164,7 +164,7 @@ export class Http {
 
   private static handleError(
     req: ClientRequest,
-    reject: (reason?: Error) => void
+    reject: (reason?: Error) => void,
   ): void {
     req.on('error', (err: Error) => {
       Http.logger.error(err);
@@ -176,7 +176,7 @@ export class Http {
     url: string,
     req: ClientRequest,
     resolve: (value: HttpResponse<T> | PromiseLike<HttpResponse<T>>) => void,
-    reject: (reason?: Error) => void
+    reject: (reason?: Error) => void,
   ): void {
     let responseUrl: undefined | string;
 
@@ -213,7 +213,7 @@ export class Http {
             body = JSON.parse(body) as T;
           } catch {
             Http.logger.warn(
-              `Unable to parse application/json to object.\nUrl:${url}\nBody: ${body}`
+              `Unable to parse application/json to object.\nUrl:${url}\nBody: ${body}`,
             );
           }
         }
@@ -245,7 +245,7 @@ export class Http {
   static get<T>(
     url: string,
     options: HttpOptions,
-    crOptions?: ClientRequestConstructorOptions
+    crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
     if (!net.isOnline()) {
       return Promise.reject(new Error('No internet connection.'));
@@ -275,7 +275,7 @@ export class Http {
   static async post<T>(
     url: string,
     options: PostOptions,
-    crOptions: ClientRequestConstructorOptions
+    crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
     return Http.postLike('post', url, options, crOptions);
   }
@@ -293,7 +293,7 @@ export class Http {
   static patch<T>(
     url: string,
     options: PostOptions,
-    crOptions: ClientRequestConstructorOptions
+    crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
     return Http.postLike('patch', url, options, crOptions);
   }
@@ -302,7 +302,7 @@ export class Http {
     method: 'post' | 'patch',
     url: string,
     options: PostOptions,
-    crOptions: ClientRequestConstructorOptions
+    crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
     if (!net.isOnline()) {
       return Promise.reject(new Error('No internet connection.'));

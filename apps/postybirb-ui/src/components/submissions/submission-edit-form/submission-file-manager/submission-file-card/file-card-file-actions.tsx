@@ -75,7 +75,7 @@ function replaceFile(
   submissionId: SubmissionId,
   blob: Blob,
   file: ISubmissionFileDto,
-  target: FileUpdateTarget
+  target: FileUpdateTarget,
 ) {
   return fileSubmissionApi.replaceFile(submissionId, file.id, target, blob);
 }
@@ -90,7 +90,7 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
   const onEditOrReplace = (
     target: FileUpdateTarget,
     blob: Blob,
-    croppedFile?: Pick<FileWithPath, 'type' | 'name'>
+    croppedFile?: Pick<FileWithPath, 'type' | 'name'>,
   ) => {
     let newFileBlob: Blob = blob;
     if (croppedFile && blob) {

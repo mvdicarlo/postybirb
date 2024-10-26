@@ -175,7 +175,7 @@ function TagConverters() {
               !isValid(newConverterFields) ||
               tagConverters.some(
                 (tagConverter) =>
-                  tagConverter.tag === newConverterFields.tag.trim()
+                  tagConverter.tag === newConverterFields.tag.trim(),
               )
             }
             onClick={() => {

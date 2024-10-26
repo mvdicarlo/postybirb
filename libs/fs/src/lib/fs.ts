@@ -65,7 +65,7 @@ export function readJson<T extends Record<string, unknown>>(path: string) {
 }
 
 export function readJsonSync<T extends Record<string, unknown>>(
-  path: string
+  path: string,
 ): T {
   return JSON.parse(readSync(path).toString());
 }

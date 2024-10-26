@@ -10,7 +10,7 @@ import { WebsiteOptionsDto } from '../website-options/website-options.dto';
 import { ISubmissionFileDto } from './submission-file.dto';
 
 export type ISubmissionDto<
-  T extends ISubmissionMetadata = ISubmissionMetadata
+  T extends ISubmissionMetadata = ISubmissionMetadata,
 > = IEntityDto<Omit<ISubmission<T>, 'files' | 'options' | 'posts'>> & {
   files: ISubmissionFileDto[];
   options: WebsiteOptionsDto<IWebsiteFormFields>[];

@@ -25,7 +25,7 @@ export type ValidationResult<T extends IWebsiteFormFields = never> = {
 
 export type ValidationMessage<
   T extends object = never,
-  Id extends keyof ValidationMessages = keyof ValidationMessages
+  Id extends keyof ValidationMessages = keyof ValidationMessages,
 > = {
   /**
    * Localization message id.

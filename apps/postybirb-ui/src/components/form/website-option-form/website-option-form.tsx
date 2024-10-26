@@ -98,7 +98,7 @@ function InnerForm({
   userSpecifiedModalClosed,
 }: InnerFormProps) {
   const validations = submission.validations.find(
-    (v) => v.id === option.id
+    (v) => v.id === option.id,
   ) ?? {
     id: option.id,
     errors: [],
@@ -112,9 +112,9 @@ function InnerForm({
         websiteOptionsApi.update(option.id, {
           data: values as IWebsiteFormFields,
         }),
-      800
+      800,
     ),
-    []
+    [],
   );
 
   const form = useForm({
@@ -128,7 +128,7 @@ function InnerForm({
               ? field.defaultValue
               : option.data[key as keyof IWebsiteFormFields],
         }),
-        {}
+        {},
       ),
     },
     onValuesChange(values) {
@@ -221,7 +221,7 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     () =>
       formGeneratorApi
         .getForm({ accountId: account, type: submission.type })
-        .then((res) => res.body)
+        .then((res) => res.body),
   );
   const defaultOption = submission.getDefaultOptions();
 

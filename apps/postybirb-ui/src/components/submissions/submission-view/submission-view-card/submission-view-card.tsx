@@ -55,18 +55,24 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
 
   const optionsGroupedByWebsiteId = submission.options
     .filter((o) => !o.isDefault)
-    .reduce((acc, option) => {
-      const account = accounts.find((a) => a.id === option.account)!;
-      const websiteId = account.website;
-      if (!acc[websiteId]) {
-        acc[websiteId] = {
-          account,
-          options: [],
-        };
-      }
-      acc[websiteId].options.push(option);
-      return acc;
-    }, {} as Record<AccountId, { account: IAccountDto; options: WebsiteOptionsDto[] }>);
+    .reduce(
+      (acc, option) => {
+        const account = accounts.find((a) => a.id === option.account)!;
+        const websiteId = account.website;
+        if (!acc[websiteId]) {
+          acc[websiteId] = {
+            account,
+            options: [],
+          };
+        }
+        acc[websiteId].options.push(option);
+        return acc;
+      },
+      {} as Record<
+        AccountId,
+        { account: IAccountDto; options: WebsiteOptionsDto[] }
+      >,
+    );
 
   const removeAccount = (account: IAccountDto) => {
     const options = submission.options
@@ -94,7 +100,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
         metadata: submission.metadata,
       });
     }, 1_000),
-    [submission]
+    [submission],
   );
 
   if (isLoading) {
@@ -153,13 +159,13 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                   submission={submission}
                   onSelect={(selectedAccounts) => {
                     const existingOptions = submission.options.filter(
-                      (o) => !o.isDefault
+                      (o) => !o.isDefault,
                     );
                     const removedOptions: WebsiteOptionsDto[] = [];
                     const newAccounts: AccountId[] = [];
                     selectedAccounts.forEach((account) => {
                       const exists = existingOptions.find(
-                        (o) => o.account === account.id
+                        (o) => o.account === account.id,
                       );
                       if (!exists) {
                         newAccounts.push(account.id);
@@ -167,7 +173,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     });
                     existingOptions.forEach((option) => {
                       const exists = selectedAccounts.find(
-                        (a) => a.id === option.account
+                        (a) => a.id === option.account,
                       );
                       if (!exists) {
                         removedOptions.push(option);
@@ -197,7 +203,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     return (
                       aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
                     ).localeCompare(
-                      bAccount.websiteInfo.websiteDisplayName ?? bAccount.name
+                      bAccount.websiteInfo.websiteDisplayName ?? bAccount.name,
                     );
                   })
                   .map(([accountId, group]) => (

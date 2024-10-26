@@ -21,13 +21,13 @@ export default class StoreManager<T> {
     websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>,
     private readonly ModelConstructor?: Constructor<T>,
-    private readonly filterFn?: (data: T) => boolean
+    private readonly filterFn?: (data: T) => boolean,
   ) {
     this.data = [];
     this.subject = new Subject<T[]>();
     this.updates = this.subject.asObservable();
     AppSocket.on(websocketDomain, (messages: T[]) =>
-      this.handleMessages(messages)
+      this.handleMessages(messages),
     );
     refreshDataFn()
       .then((messages: T[]) => this.handleMessages(messages))
@@ -47,7 +47,7 @@ export default class StoreManager<T> {
 
   public refresh() {
     return this.refreshDataFn().then((messages: T[]) =>
-      this.handleMessages(messages)
+      this.handleMessages(messages),
     );
   }
 

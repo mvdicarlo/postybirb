@@ -5,5 +5,5 @@ import StoreManager from './store-manager';
 
 export const WebsiteStore: StoreManager<IWebsiteInfoDto> =
   new StoreManager<IWebsiteInfoDto>(WEBSITE_UPDATES, () =>
-    websiteApi.getWebsiteInfo().then(({ body }) => body)
+    websiteApi.getWebsiteInfo().then(({ body }) => body),
   );
