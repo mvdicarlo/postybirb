@@ -5,28 +5,28 @@ import { FieldAggregateType, FieldType } from '../types';
 import { FormBuilderMetadata } from '../types/form-builder-metadata';
 import { PrimitiveRecord } from '../types/primitive-record';
 
+/**
+ * Make keys V in type T partial
+ */
 export type PartialOnly<T, V extends string | number | symbol> = Omit<T, V> &
   Partial<{
     [P in V]: V extends keyof T ? T[V] : never;
   }>;
 
 /**
- * Describes types that can be narrowed
+ * Field decorator creator superfunction
+ * 
+ * @param type - Type of the decorator to create. Will be set to the {@link FieldType.type} field.
+ * @returns Creator function
  */
-export type Narrowable = string | number | bigint | boolean;
-export type NarrowRaw<A> =
-  | (A extends [] ? [] : never)
-  | (A extends Narrowable ? A : never)
-  | {
-      // eslint-disable-next-line @typescript-eslint/ban-types
-      [K in keyof A]: A[K] extends Function ? A[K] : NarrowRaw<A[K]>;
-    };
-
 export function createFieldDecorator<
   FieldValue,
   ExtraFields extends object = object,
   TypeKey extends string = string
 >(type: TypeKey) {
+  // Note that we cant just create one function that returns a decorator
+  // because if you specify generics by hand, e.g. createFieldDecorator<SomeType>('type', {})
+  // it will stop narrowing all other generic types such as Defaults
   /**
    * Function used to finalize field decorator options
    */
@@ -35,9 +35,40 @@ export function createFieldDecorator<
       | Partial<FieldType<FieldValue, TypeKey> & ExtraFields>
       | unknown
   >(field: {
+    /**
+     * Default values of the field. If label or defaultValue are provided, they will be not required when using a decorator
+     *
+     * Example:
+     * ```ts
+     * const WithDefaults = createFieldDecorator('with')({
+     *   defaults: {
+     *     label: 'title',
+     *     defaultValue: ''
+     *   }
+     * })
+     * const WithoutDefaults = createFieldDecorator('without')({})
+     *
+     * class TestType {
+     *   WithDefaults({})
+     *   field1: string
+     *
+     *   WithoutDefaults({}) // Error! Missing properties label and defaultValue
+     *   field2: string
+     * }
+     *
+     * ```
+     */
     defaults?: Defaults;
-    onCreate?: (options: FieldType<FieldValue, TypeKey>) => void;
-    onDecorate?: PropertyDecorator;
+    /**
+     * Function that being called on decorator applying. Can be used to change options or to change applied value
+     *
+     * @param options - Options to be changed
+     */
+    onCreate?: (
+      options: FieldType<FieldValue, TypeKey>,
+      target: object,
+      propertyKey: string | symbol
+    ) => void;
   }) {
     function decorator<Data extends unknown | PrimitiveRecord = unknown>(
       options: PartialOnly<
@@ -57,10 +88,6 @@ export function createFieldDecorator<
       fieldOptions.row ??= Number.MAX_SAFE_INTEGER;
       fieldOptions.col ??= 0;
 
-      field.onCreate?.(
-        fieldOptions as unknown as FieldType<FieldValue, TypeKey>
-      );
-
       return (target, propertyKey) => {
         if (typeof propertyKey === 'symbol') return;
 
@@ -68,10 +95,15 @@ export function createFieldDecorator<
         const fields: FormBuilderMetadata =
           Reflect.getMetadata(METADATA_KEY, proto) || {};
 
+        field.onCreate?.(
+          fieldOptions as unknown as FieldType<FieldValue, TypeKey>,
+          target,
+          propertyKey
+        );
+
         fields[propertyKey] = fieldOptions as unknown as FieldAggregateType;
 
         Reflect.defineMetadata(METADATA_KEY, fields, proto);
-        field.onDecorate?.(target, propertyKey);
       };
     }
 
