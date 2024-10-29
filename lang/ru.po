@@ -42,7 +42,7 @@ msgstr "Вставлять рекламу PostyBirb в описания пост
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:163
 msgid "Alt Text"
-msgstr ""
+msgstr "Alt текст"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
 msgid "App Folder"
@@ -85,7 +85,7 @@ msgstr "Отмена"
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:36
 msgid "Choose Fields"
-msgstr ""
+msgstr "Выберите поля"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:211
 msgctxt "template.picker-modal-header"
@@ -337,7 +337,7 @@ msgstr "Выполнен вход как"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:77
 msgid "Login"
-msgstr ""
+msgstr "Войти"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:64
 msgid "Message submissions"
@@ -384,7 +384,7 @@ msgstr "Никакой"
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:17
 msgctxt "internalSchedule.none"
 msgid "None"
-msgstr ""
+msgstr "Никакой"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:118
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:95
