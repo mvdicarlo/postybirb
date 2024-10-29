@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro';
-import { ComboboxItemGroup, MultiSelect } from '@mantine/core';
+import { ComboboxItemGroup, Group, MultiSelect } from '@mantine/core';
 import { IAccountDto, NULL_ACCOUNT_ID } from '@postybirb/types';
+import { IconCheck } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -21,7 +22,7 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
       filteredAccounts.map((website) => ({
         group: website.displayName,
         items: website.accounts.map((account) => ({
-          label: account.name,
+          label: `[${website.displayName}] ${account.name}`,
           value: account.id,
         })),
       })),
@@ -56,6 +57,15 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
       onDropdownClose={() => {
         onCommitChanges(selectedAccounts, true);
         setIsOpen(false);
+      }}
+      renderOption={(item) => {
+        const label = item.option.label.split('] ')[1];
+        return (
+          <Group>
+            {item.checked ? <IconCheck /> : null}
+            {label}
+          </Group>
+        );
       }}
     />
   );

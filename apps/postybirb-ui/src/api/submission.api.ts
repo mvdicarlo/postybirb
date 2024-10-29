@@ -46,7 +46,7 @@ class SubmissionsApi extends BaseApi<
     return this.client.patch(`reorder/${id}/${index}`);
   }
 
-  applyMulti(dto: IApplyMultiSubmissionDto) {
+  applyToMultipleSubmissions(dto: IApplyMultiSubmissionDto) {
     return this.client.patch('apply/multi', dto);
   }
 }

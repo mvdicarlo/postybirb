@@ -388,14 +388,16 @@ export class SubmissionService
             .getItems()
             .find((o) => o.account.id === option.account.id);
           if (existingOption) {
-            existingOption.data = option.data;
+            // Don't overwrite set title
+            const opts = { ...option.data, title: existingOption.data.title };
+            existingOption.data = opts;
           } else {
             submission.options.add(
-              this.websiteOptionsService.createOption(
+              await this.websiteOptionsService.createOption(
                 submission,
                 option.account.id,
                 option.data,
-                option.data.title
+                option.isDefault ? undefined : option.data.title
               )
             );
           }
@@ -405,21 +407,30 @@ export class SubmissionService
       // Removes all options not included in the origin submission
       // eslint-disable-next-line no-restricted-syntax
       for (const submission of submissions) {
+        const items = submission.options.getItems();
+        const defaultOptions = items.find((option) => option.isDefault);
+        const defaultTitle = defaultOptions?.data.title;
         submission.options.removeAll();
-        origin.options.getItems().forEach((option) => {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const option of origin.options.getItems()) {
+          const opts = { ...option.data };
+          if (option.isDefault) {
+            opts.title = defaultTitle;
+          }
           submission.options.add(
-            this.websiteOptionsService.createOption(
+            await this.websiteOptionsService.createOption(
               submission,
               option.account.id,
-              option.data,
-              option.data.title
+              opts,
+              option.isDefault ? defaultTitle : option.data.title
             )
           );
-        });
+        }
       }
     }
 
     await this.repository.persistAndFlush(submissions);
+    this.emit();
   }
 
   /**

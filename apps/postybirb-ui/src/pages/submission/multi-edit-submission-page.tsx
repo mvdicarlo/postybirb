@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { Box, Button, Loader, Space } from '@mantine/core';
+import { Box, Button, Loader, Radio, Space } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ISubmissionDto, SubmissionType } from '@postybirb/types';
 import {
@@ -10,10 +10,12 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router';
+import submissionApi from '../../api/submission.api';
 import websiteOptionsApi from '../../api/website-options.api';
 import { PageHeader } from '../../components/page-header/page-header';
 import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
 import { SubmissionEditForm } from '../../components/submissions/submission-edit-form/submission-edit-form';
+import { SubmissionPickerModal } from '../../components/submissions/submission-picker/submission-picker-modal';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { MultiSubmissionStore } from '../../stores/multi-submission.store';
 import { useStore } from '../../stores/use-store';
@@ -74,7 +76,62 @@ function ApplyMultiSubmissionAction({
   submission: SubmissionDto;
 }) {
   const [modalVisible, setModalVisible] = useState(false);
-  const picker = modalVisible ? <div>tbd</div> : null;
+  const [mergeMode, setMergeMode] = useState('1');
+  const picker = modalVisible ? (
+    <SubmissionPickerModal
+      type={submission.type}
+      onClose={() => setModalVisible(false)}
+      onApply={(submissions) => {
+        submissionApi
+          .applyToMultipleSubmissions({
+            originId: submission.id,
+            submissionIds: submissions,
+            merge: mergeMode === '1',
+          })
+          .then(() => {
+            notifications.show({
+              color: 'green',
+              message: <Trans>Updates applied</Trans>,
+            });
+          })
+          .catch((err) => {
+            notifications.show({
+              color: 'red',
+              message: err.message,
+            });
+          });
+        setModalVisible(false);
+      }}
+    >
+      <Radio.Group
+        name="multiSubmissionMergeMode"
+        label={<Trans>Merge</Trans>}
+        withAsterisk
+        value={mergeMode}
+        onChange={(value) => setMergeMode(value)}
+      >
+        <Radio
+          value="1"
+          label={
+            <Trans>
+              Overwrite overlapping website options only. This will keep any
+              website options that already exist and only overwrite ones
+              specified in the multi-update form.
+            </Trans>
+          }
+        />
+        <Radio
+          value="0"
+          label={
+            <Trans>
+              Only use website options specified and delete website options
+              missing from multi-update form.
+            </Trans>
+          }
+        />
+      </Radio.Group>
+    </SubmissionPickerModal>
+  ) : null;
   return (
     <>
       <Button
