@@ -6,7 +6,7 @@ import { injectWebsiteDecoratorProps } from './website-decorator-props';
 export function SupportsDescription(
   supportsDescriptionType: DescriptionType,
   maxDescriptionLength?: number,
-  minDescriptionLength?: number
+  minDescriptionLength?: number,
 ) {
   return function website(constructor: Class<UnknownWebsite>) {
     injectWebsiteDecoratorProps(constructor, {

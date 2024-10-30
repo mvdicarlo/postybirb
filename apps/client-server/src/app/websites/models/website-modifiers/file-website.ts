@@ -29,19 +29,19 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
   onPostFileSubmission(
     postData: PostData<FileSubmission, T>,
     files: PostingFile[],
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse>;
 
   onValidateFileSubmission(
-    postData: PostData<FileSubmission, T>
+    postData: PostData<FileSubmission, T>,
   ): Promise<SimpleValidationResult>;
 }
 
 export function isFileWebsite(
-  websiteInstance: UnknownWebsite
+  websiteInstance: UnknownWebsite,
 ): websiteInstance is FileWebsite<IWebsiteFormFields> & UnknownWebsite {
   return Boolean(
     (websiteInstance as FileWebsite<IWebsiteFormFields> & UnknownWebsite)
-      .supportsFile
+      .supportsFile,
   );
 }

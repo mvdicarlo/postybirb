@@ -13,7 +13,7 @@ describe('TagConvertersService', () => {
 
   function createTagConverterDto(
     tag: string,
-    convertTo: Record<string, string>
+    convertTo: Record<string, string>,
   ) {
     const dto = new CreateTagConverterDto();
     dto.tag = tag;

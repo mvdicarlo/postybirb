@@ -46,7 +46,7 @@ export class Account extends PostyBirbEntity implements IAccount {
     hidden: true,
   })
   userSpecifiedWebsiteOptions = new Collection<UserSpecifiedWebsiteOptions>(
-    this
+    this,
   );
 
   @OneToMany(() => WebsitePostRecord, (wpr) => wpr.account, {

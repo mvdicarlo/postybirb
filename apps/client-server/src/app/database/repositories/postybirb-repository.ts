@@ -28,14 +28,14 @@ export type FindOptions = {
 };
 
 export class PostyBirbRepository<
-  T extends IEntity
+  T extends IEntity,
 > extends EntityRepository<T> {
   private emitter = new EventEmitter();
 
   public addUpdateListener(
     subscriber: DatabaseUpdateSubscriber,
     types: Constructor<PostyBirbEntity>[],
-    fn: (change: EntityUpdateRecord<SubscribableEntities>[]) => void
+    fn: (change: EntityUpdateRecord<SubscribableEntities>[]) => void,
   ) {
     subscriber.subscribe(types, (updates) => {
       this.emitter.emit('change', updates);
@@ -46,7 +46,7 @@ export class PostyBirbRepository<
 
   on<K extends EventKey<EventMap>>(
     eventName: K,
-    fn: EventReceiver<EventMap[K]>
+    fn: EventReceiver<EventMap[K]>,
   ) {
     this.emitter.on(eventName, fn);
     return this;

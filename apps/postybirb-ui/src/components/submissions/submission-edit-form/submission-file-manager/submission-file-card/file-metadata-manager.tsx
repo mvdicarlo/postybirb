@@ -52,10 +52,10 @@ function updateFileDimensions(
   metadata: FileMetadataFields,
   file: ISubmissionFileDto,
   height: number,
-  width: number
+  width: number,
 ) {
   // eslint-disable-next-line no-param-reassign
-  metadata.dimensions!.default = {
+  metadata.dimensions.default = {
     fileId: file.id,
     height,
     width,
@@ -66,7 +66,7 @@ function calculateAspectRatio(
   height: number,
   width: number,
   aspect: number,
-  order: 'h' | 'w'
+  order: 'h' | 'w',
 ) {
   if (order === 'h') {
     const aspectRatio = aspect; // width / height
@@ -108,7 +108,7 @@ function FileDimensions(props: FileDetailProps) {
               Math.min(Number(event.target.value), file.height),
               width,
               file.width / file.height,
-              'h'
+              'h',
             );
             setHeight(aspectH);
             setWidth(aspectW);
@@ -129,7 +129,7 @@ function FileDimensions(props: FileDetailProps) {
               height,
               Math.min(Number(event.target.value), file.width),
               file.height / file.width,
-              'w'
+              'w',
             );
             setHeight(aspectH);
             setWidth(aspectW);

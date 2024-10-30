@@ -1,11 +1,11 @@
 import { Trans } from '@lingui/macro';
 import {
-    ActionIcon,
-    Box,
-    Button,
-    Indicator,
-    Popover,
-    Text,
+  ActionIcon,
+  Box,
+  Button,
+  Indicator,
+  Popover,
+  Text,
 } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import submissionApi from '../../../../../api/submission.api';

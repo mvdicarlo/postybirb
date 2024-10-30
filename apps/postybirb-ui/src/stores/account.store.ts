@@ -5,5 +5,5 @@ import StoreManager from './store-manager';
 
 export const AccountStore: StoreManager<IAccountDto> =
   new StoreManager<IAccountDto>(ACCOUNT_UPDATES, () =>
-    accountApi.getAll().then(({ body }) => body)
+    accountApi.getAll().then(({ body }) => body),
   );

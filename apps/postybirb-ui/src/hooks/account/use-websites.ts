@@ -11,12 +11,12 @@ import { useAccountFilters } from './use-accounts-filters';
 export function filterWebsites(
   availableWebsites: IWebsiteInfoDto[],
   hiddenWebsites: string[],
-  filters: AccountFilterState
+  filters: AccountFilterState,
 ): DisplayableWebsiteLoginInfo[] {
   let filteredWebsites = availableWebsites;
   if (!filters.showHiddenWebsites) {
     filteredWebsites = filteredWebsites.filter(
-      (w) => !hiddenWebsites.includes(w.id)
+      (w) => !hiddenWebsites.includes(w.id),
     );
   }
 
@@ -37,16 +37,16 @@ export function useWebsites() {
   const currentSettings = settings;
   const filteredAccounts = useMemo(
     () => filterWebsites(websites, currentSettings.hiddenWebsites, filterState),
-    [currentSettings.hiddenWebsites, filterState, websites]
+    [currentSettings.hiddenWebsites, filterState, websites],
   );
 
   const accounts = useMemo(
     () => websites.flatMap((website) => website.accounts),
-    [websites]
+    [websites],
   );
 
   const filteredWebsites = websites.filter(
-    (website) => !settings.hiddenWebsites.includes(website.id)
+    (website) => !settings.hiddenWebsites.includes(website.id),
   );
 
   const setHiddenWebsites = useCallback(
@@ -57,7 +57,7 @@ export function useWebsites() {
       };
       settingsApi.update(settingsId, { settings: updatedSettings });
     },
-    [settings, settingsId]
+    [settings, settingsId],
   );
 
   return {

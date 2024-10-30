@@ -39,11 +39,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'load-commit',
     listener: (event: LoadCommitEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'load-commit',
-    listener: (event: LoadCommitEvent) => void
+    listener: (event: LoadCommitEvent) => void,
   ): this;
   /**
    * Fired when the navigation is done, i.e. the spinner of the tab will stop
@@ -52,11 +52,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-finish-load',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-finish-load',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * This event is like `did-finish-load`, but fired when the load failed or was
@@ -65,11 +65,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-fail-load',
     listener: (event: DidFailLoadEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-fail-load',
-    listener: (event: DidFailLoadEvent) => void
+    listener: (event: DidFailLoadEvent) => void,
   ): this;
   /**
    * Fired when a frame has done navigation.
@@ -77,11 +77,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-frame-finish-load',
     listener: (event: DidFrameFinishLoadEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-frame-finish-load',
-    listener: (event: DidFrameFinishLoadEvent) => void
+    listener: (event: DidFrameFinishLoadEvent) => void,
   ): this;
   /**
    * Corresponds to the points in time when the spinner of the tab starts spinning.
@@ -89,11 +89,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-start-loading',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-start-loading',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Corresponds to the points in time when the spinner of the tab stops spinning.
@@ -101,11 +101,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-stop-loading',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-stop-loading',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Fired when attached to the embedder web contents.
@@ -113,11 +113,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-attach',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-attach',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Fired when document in the given frame is loaded.
@@ -125,11 +125,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'dom-ready',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'dom-ready',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Fired when page title is set during navigation. `explicitSet` is false when
@@ -138,11 +138,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'page-title-updated',
     listener: (event: PageTitleUpdatedEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'page-title-updated',
-    listener: (event: PageTitleUpdatedEvent) => void
+    listener: (event: PageTitleUpdatedEvent) => void,
   ): this;
   /**
    * Fired when page receives favicon urls.
@@ -150,11 +150,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'page-favicon-updated',
     listener: (event: PageFaviconUpdatedEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'page-favicon-updated',
-    listener: (event: PageFaviconUpdatedEvent) => void
+    listener: (event: PageFaviconUpdatedEvent) => void,
   ): this;
   /**
    * Fired when page enters fullscreen triggered by HTML API.
@@ -162,11 +162,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'enter-html-full-screen',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'enter-html-full-screen',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Fired when page leaves fullscreen triggered by HTML API.
@@ -174,11 +174,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'leave-html-full-screen',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'leave-html-full-screen',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Fired when the guest window logs a console message.
@@ -189,11 +189,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'console-message',
     listener: (event: ConsoleMessageEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'console-message',
-    listener: (event: ConsoleMessageEvent) => void
+    listener: (event: ConsoleMessageEvent) => void,
   ): this;
   /**
    * Fired when a result is available for `webview.findInPage` request.
@@ -201,11 +201,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'found-in-page',
     listener: (event: FoundInPageEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'found-in-page',
-    listener: (event: FoundInPageEvent) => void
+    listener: (event: FoundInPageEvent) => void,
   ): this;
   /**
    * Emitted when a user or the page wants to start navigation. It can happen when
@@ -223,11 +223,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'will-navigate',
     listener: (event: WillNavigateEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'will-navigate',
-    listener: (event: WillNavigateEvent) => void
+    listener: (event: WillNavigateEvent) => void,
   ): this;
   /**
    * Emitted when any frame (including main) starts navigating. `isInPlace` will be
@@ -236,11 +236,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-start-navigation',
     listener: (event: DidStartNavigationEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-start-navigation',
-    listener: (event: DidStartNavigationEvent) => void
+    listener: (event: DidStartNavigationEvent) => void,
   ): this;
   /**
    * Emitted after a server side redirect occurs during navigation. For example a 302
@@ -249,11 +249,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-redirect-navigation',
     listener: (event: DidRedirectNavigationEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-redirect-navigation',
-    listener: (event: DidRedirectNavigationEvent) => void
+    listener: (event: DidRedirectNavigationEvent) => void,
   ): this;
   /**
    * Emitted when a navigation is done.
@@ -265,11 +265,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-navigate',
     listener: (event: DidNavigateEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-navigate',
-    listener: (event: DidNavigateEvent) => void
+    listener: (event: DidNavigateEvent) => void,
   ): this;
   /**
    * Emitted when any frame navigation is done.
@@ -281,11 +281,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-frame-navigate',
     listener: (event: DidFrameNavigateEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-frame-navigate',
-    listener: (event: DidFrameNavigateEvent) => void
+    listener: (event: DidFrameNavigateEvent) => void,
   ): this;
   /**
    * Emitted when an in-page navigation happened.
@@ -297,11 +297,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-navigate-in-page',
     listener: (event: DidNavigateInPageEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-navigate-in-page',
-    listener: (event: DidNavigateInPageEvent) => void
+    listener: (event: DidNavigateInPageEvent) => void,
   ): this;
   /**
    * Fired when the guest page attempts to close itself.
@@ -312,7 +312,7 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'close',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(event: 'close', listener: (event: Event) => void): this;
   /**
@@ -324,11 +324,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'ipc-message',
     listener: (event: IpcMessageEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'ipc-message',
-    listener: (event: IpcMessageEvent) => void
+    listener: (event: IpcMessageEvent) => void,
   ): this;
   /**
    * Fired when the renderer process is crashed.
@@ -336,7 +336,7 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'crashed',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(event: 'crashed', listener: (event: Event) => void): this;
   /**
@@ -345,11 +345,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'plugin-crashed',
     listener: (event: PluginCrashedEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'plugin-crashed',
-    listener: (event: PluginCrashedEvent) => void
+    listener: (event: PluginCrashedEvent) => void,
   ): this;
   /**
    * Fired when the WebContents is destroyed.
@@ -357,11 +357,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'destroyed',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'destroyed',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Emitted when media starts playing.
@@ -369,11 +369,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'media-started-playing',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'media-started-playing',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Emitted when media is paused or done playing.
@@ -381,11 +381,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'media-paused',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'media-paused',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Emitted when a page's theme color changes. This is usually due to encountering a
@@ -394,11 +394,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'did-change-theme-color',
     listener: (event: DidChangeThemeColorEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'did-change-theme-color',
-    listener: (event: DidChangeThemeColorEvent) => void
+    listener: (event: DidChangeThemeColorEvent) => void,
   ): this;
   /**
    * Emitted when mouse moves over a link or the keyboard moves the focus to a link.
@@ -406,11 +406,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'update-target-url',
     listener: (event: UpdateTargetUrlEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'update-target-url',
-    listener: (event: UpdateTargetUrlEvent) => void
+    listener: (event: UpdateTargetUrlEvent) => void,
   ): this;
   /**
    * Emitted when DevTools is opened.
@@ -418,11 +418,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'devtools-opened',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'devtools-opened',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Emitted when DevTools is closed.
@@ -430,11 +430,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'devtools-closed',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'devtools-closed',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Emitted when DevTools is focused / opened.
@@ -442,11 +442,11 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'devtools-focused',
     listener: (event: Event) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'devtools-focused',
-    listener: (event: Event) => void
+    listener: (event: Event) => void,
   ): this;
   /**
    * Emitted when there is a new context menu that needs to be handled.
@@ -454,31 +454,31 @@ export interface WebviewTag extends HTMLElement {
   addEventListener(
     event: 'context-menu',
     listener: (event: ContextMenuEvent) => void,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): this;
   removeEventListener(
     event: 'context-menu',
-    listener: (event: ContextMenuEvent) => void
+    listener: (event: ContextMenuEvent) => void,
   ): this;
   addEventListener<K extends keyof HTMLElementEventMap>(
     type: K,
     listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): void;
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): void;
   removeEventListener<K extends keyof HTMLElementEventMap>(
     type: K,
     listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): void;
   removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
-    useCapture?: boolean
+    useCapture?: boolean,
   ): void;
   /**
    * Whether the guest page can go back.
@@ -712,7 +712,7 @@ export interface WebviewTag extends HTMLElement {
    * See webContents.sendInputEvent for detailed description of `event` object.
    */
   sendInputEvent(
-    event: MouseInputEvent | MouseWheelInputEvent | KeyboardInputEvent
+    event: MouseInputEvent | MouseWheelInputEvent | KeyboardInputEvent,
   ): Promise<void>;
   /**
    * Send an asynchronous message to renderer process via `channel`, you can also
@@ -739,7 +739,7 @@ export interface WebviewTag extends HTMLElement {
    */
   setVisualZoomLevelLimits(
     minimumLevel: number,
-    maximumLevel: number
+    maximumLevel: number,
   ): Promise<void>;
   /**
    * Changes the zoom factor to the specified factor. Zoom factor is zoom percent
@@ -772,7 +772,7 @@ export interface WebviewTag extends HTMLElement {
    * Stops any `findInPage` request for the `webview` with the provided `action`.
    */
   stopFindInPage(
-    action: 'clearSelection' | 'keepSelection' | 'activateSelection'
+    action: 'clearSelection' | 'keepSelection' | 'activateSelection',
   ): void;
   /**
    * Executes editing command `undo` in page.

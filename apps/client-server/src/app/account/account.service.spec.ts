@@ -20,7 +20,7 @@ describe('AccountsService', () => {
 
     service = module.get<AccountService>(AccountService);
     registryService = module.get<WebsiteRegistryService>(
-      WebsiteRegistryService
+      WebsiteRegistryService,
     );
     orm = module.get(MikroORM);
     try {

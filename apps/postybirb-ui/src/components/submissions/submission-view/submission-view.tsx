@@ -12,7 +12,7 @@ type SubmissionViewProps = {
 
 function filterSubmissions(
   submissions: SubmissionDto[],
-  filter: string
+  filter: string,
 ): SubmissionDto[] {
   const filterValue = filter.toLowerCase().trim();
   return submissions.filter((submission) => {

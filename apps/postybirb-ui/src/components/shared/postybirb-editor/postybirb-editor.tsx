@@ -2,7 +2,7 @@
 import { BlockNoteEditor, filterSuggestionItems } from '@blocknote/core';
 import '@blocknote/core/fonts/inter.css';
 import { BlockNoteView } from '@blocknote/mantine';
-import "@blocknote/mantine/style.css";
+import '@blocknote/mantine/style.css';
 import {
   SuggestionMenuController,
   getDefaultReactSlashMenuItems,
@@ -54,7 +54,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           // Gets all default slash menu items and `insertAlert` item.
           filterSuggestionItems(
             [...getDefaultReactSlashMenuItems(editor), insertHr(editor)],
-            query
+            query,
           )
         }
       />
@@ -66,9 +66,9 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           filterSuggestionItems(
             getUsernameShortcutsMenuItems(
               editor as unknown as typeof schema.BlockNoteEditor,
-              shortcuts
+              shortcuts,
             ),
-            query
+            query,
           )
         }
       />

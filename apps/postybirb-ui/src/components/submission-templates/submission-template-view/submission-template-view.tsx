@@ -148,7 +148,7 @@ export function SubmissionTemplateView(props: SubmissionViewProps) {
   const { state, isLoading } = useStore(SubmissionTemplateStore);
   const templates = useMemo(
     () => state.filter((t) => t.type === type),
-    [state, type]
+    [state, type],
   );
 
   if (isLoading) {

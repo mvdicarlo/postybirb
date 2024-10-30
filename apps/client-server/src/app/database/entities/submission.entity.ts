@@ -42,7 +42,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     eager: true,
   })
   options = new Collection<WebsiteOptions<IWebsiteFormFields>, ISubmission<T>>(
-    this
+    this,
   );
 
   @OneToMany(() => SubmissionFile, (sf) => sf.submission, {

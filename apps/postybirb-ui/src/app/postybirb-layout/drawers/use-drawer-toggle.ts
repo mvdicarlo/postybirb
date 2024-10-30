@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { DrawerGlobalState, useDrawerGlobalState } from './drawer-global-state';
 
 export function useDrawerToggle(
-  field: keyof DrawerGlobalState
+  field: keyof DrawerGlobalState,
 ): [boolean, (value?: boolean) => void] {
   const [globalState, setGlobalState] = useDrawerGlobalState();
 
@@ -25,7 +25,7 @@ export function useDrawerToggle(
       }
       setGlobalState(newState);
     },
-    [field, globalState, setGlobalState]
+    [field, globalState, setGlobalState],
   );
 
   return [globalState[field], toggle];

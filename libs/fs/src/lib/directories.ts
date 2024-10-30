@@ -17,7 +17,8 @@ const STARTUP_OPTIONS = getStartupOptions();
  */
 const POSTYBIRB_DIRECTORY = IsTestEnvironment()
   ? join('./', 'test')
-  : STARTUP_OPTIONS.appDataPath ?? join(app.getPath('documents'), 'PostyBirb');
+  : (STARTUP_OPTIONS.appDataPath ??
+    join(app.getPath('documents'), 'PostyBirb'));
 
 /** Directory that stores PostyBirb data. */
 const DATA_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'data');

@@ -17,7 +17,7 @@ export function FileSubmissionManagementPage() {
   const { state, isLoading } = useStore(SubmissionStore);
   const [activeTab, setActiveTab] = useState<string>('submissions');
   const fileSubmissions = state.filter(
-    (submission) => submission.type === TYPE
+    (submission) => submission.type === TYPE,
   );
 
   if (isLoading) {

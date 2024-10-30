@@ -18,28 +18,28 @@ export class PostParsersService {
   constructor(
     private readonly tagParser: TagParserService,
     private readonly titleParser: TitleParserService,
-    private readonly descriptionParser: DescriptionParserService
+    private readonly descriptionParser: DescriptionParserService,
   ) {}
 
   public async parse(
     submission: ISubmission,
     instance: UnknownWebsite,
-    websiteOptions: IWebsiteOptions
+    websiteOptions: IWebsiteOptions,
   ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
     const defaultOptions: IWebsiteOptions = submission.options.find(
-      (o) => o.isDefault
+      (o) => o.isDefault,
     );
     const tags = await this.tagParser.parse(
       instance,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     const title = await this.titleParser.parse(
       submission,
       instance,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     return {
@@ -53,7 +53,7 @@ export class PostParsersService {
           defaultOptions,
           websiteOptions,
           tags,
-          title
+          title,
         ),
         title,
         rating: this.ratingParser.parse(defaultOptions, websiteOptions),

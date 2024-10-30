@@ -38,8 +38,8 @@ export function ApplySubmissionTemplateAction({
                     submission: submission.id,
                     account: option.account,
                     data: option.data,
-                  })
-                )
+                  }),
+                ),
               )
                 .then(() => {
                   notifications.show({

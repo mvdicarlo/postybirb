@@ -11,7 +11,7 @@ import { IWebsiteFormFields } from '../submission/website-form-fields.interface'
  * @extends {IEntity}
  */
 export interface IWebsiteOptions<
-  T extends IWebsiteFormFields = IWebsiteFormFields
+  T extends IWebsiteFormFields = IWebsiteFormFields,
 > extends IEntity {
   /**
    * The submission associated with the options.

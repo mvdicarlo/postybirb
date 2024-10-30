@@ -14,7 +14,7 @@ export type SubscribableEntities = PostyBirbEntity;
 
 export type EntityUpdateRecord<T = SubscribableEntities> = [ChangeSetType, T];
 export type OnDatabaseUpdateCallback<T = SubscribableEntities> = (
-  updates: EntityUpdateRecord<T>[]
+  updates: EntityUpdateRecord<T>[],
 ) => void;
 
 const registeredListeners: Map<
@@ -38,7 +38,7 @@ export class DatabaseUpdateSubscriber
 
   async afterFlush(event: FlushEventArgs): Promise<void> {
     this.publish(
-      event.uow.getChangeSets() as unknown as ChangeSet<SubscribableEntities>[]
+      event.uow.getChangeSets() as unknown as ChangeSet<SubscribableEntities>[],
     );
   }
 
@@ -50,7 +50,7 @@ export class DatabaseUpdateSubscriber
    */
   public subscribe(
     entities: Constructor<SubscribableEntities>[],
-    func: OnDatabaseUpdateCallback
+    func: OnDatabaseUpdateCallback,
   ): void {
     entities.forEach((entity) => {
       if (!registeredListeners.has(entity)) {
@@ -85,11 +85,11 @@ export class DatabaseUpdateSubscriber
 
           if (
             !seen.includes(
-              `${proto.constructor}:${change.type}:${change.entity.id}`
+              `${proto.constructor}:${change.type}:${change.entity.id}`,
             )
           )
             seen.push(
-              `${proto.constructor}:${change.type}:${change.entity.id}`
+              `${proto.constructor}:${change.type}:${change.entity.id}`,
             );
           callbacks.set(cb, [
             ...callbacks.get(cb),

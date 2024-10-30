@@ -11,7 +11,7 @@ export class TagParserService {
   public async parse(
     instance: Website<unknown>,
     defaultOptions: IWebsiteOptions,
-    websiteOptions: IWebsiteOptions
+    websiteOptions: IWebsiteOptions,
   ): Promise<string[]> {
     if (!instance.decoratedProps.tagSupport.supportsTags) {
       return [...DefaultTagValue().tags];
@@ -24,7 +24,7 @@ export class TagParserService {
       instance,
       websiteTags.overrideDefault
         ? websiteTags.tags
-        : [...defaultTags.tags, ...websiteTags.tags]
+        : [...defaultTags.tags, ...websiteTags.tags],
     );
 
     tags = tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
@@ -35,7 +35,7 @@ export class TagParserService {
 
     return uniq(tags).slice(
       0,
-      instance.decoratedProps.tagSupport.maxTags ?? Infinity
+      instance.decoratedProps.tagSupport.maxTags ?? Infinity,
     );
   }
 }

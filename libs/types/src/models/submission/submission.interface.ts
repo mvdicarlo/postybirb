@@ -17,7 +17,7 @@ export type SubmissionId = EntityId;
  * @extends {IEntity}
  */
 export interface ISubmission<
-  T extends ISubmissionMetadata = ISubmissionMetadata
+  T extends ISubmissionMetadata = ISubmissionMetadata,
 > extends IEntity {
   /**
    * The type of the submission.
