@@ -397,8 +397,8 @@ export class SubmissionService
                 submission,
                 option.account.id,
                 option.data,
-                option.isDefault ? undefined : option.data.title
-              )
+                option.isDefault ? undefined : option.data.title,
+              ),
             );
           }
         }
@@ -422,8 +422,8 @@ export class SubmissionService
               submission,
               option.account.id,
               opts,
-              option.isDefault ? defaultTitle : option.data.title
-            )
+              option.isDefault ? defaultTitle : option.data.title,
+            ),
           );
         }
       }

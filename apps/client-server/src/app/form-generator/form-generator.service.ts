@@ -69,7 +69,7 @@ export class FormGeneratorService {
     const formWithPopulatedDefaults = await this.populateUserDefaults(
       form,
       request.accountId,
-      request.type
+      request.type,
     );
 
     if (request.isMultiSubmission) {

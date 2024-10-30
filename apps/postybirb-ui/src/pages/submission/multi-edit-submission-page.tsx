@@ -36,8 +36,8 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
               submission: submission.id,
               account: option.account,
               data: option.data,
-            })
-          )
+            }),
+          ),
         )
           .then(() => {
             notifications.show({
@@ -154,7 +154,7 @@ export function MultiEditSubmissionPage() {
   const data = submissions.find((s) => s.type === type);
   const submission = useMemo(
     () => data ?? new SubmissionDto({} as ISubmissionDto),
-    [data]
+    [data],
   );
 
   const isFile = type === SubmissionType.FILE;

@@ -19,7 +19,7 @@
     "make": "electron-builder -w",
     "test": "nx test",
     "test:client-server": "nx test client-server && rimraf test",
-    "lint": "nx run-many -t lint --parallel",
+    "lint": "nx run-many -t lint --parallel --fix",
     "e2e": "nx e2e",
     "affected:apps": "nx affected:apps",
     "affected:libs": "nx affected:libs",

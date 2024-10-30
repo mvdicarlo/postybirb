@@ -23,7 +23,7 @@ type SubmissionPickerProps = {
 
 function getSubmissionLabel(
   submission: SubmissionDto,
-  label: string
+  label: string,
 ): JSX.Element {
   if (submission.type === SubmissionType.MESSAGE) {
     return <Box>{label}</Box>;

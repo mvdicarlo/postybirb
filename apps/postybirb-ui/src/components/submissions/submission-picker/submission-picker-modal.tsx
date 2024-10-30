@@ -11,7 +11,7 @@ type SubmissionPickerModalProps = {
 };
 
 export function SubmissionPickerModal(
-  props: PropsWithChildren<SubmissionPickerModalProps>
+  props: PropsWithChildren<SubmissionPickerModalProps>,
 ) {
   const { children, type, onClose, onApply } = props;
   const [selectedSubmissions, setSelectedSubmissions] = useState<
