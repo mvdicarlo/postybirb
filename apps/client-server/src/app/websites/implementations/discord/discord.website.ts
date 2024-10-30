@@ -77,29 +77,29 @@ export default class Discord
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
     files: PostingFile[],
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, DiscordFileSubmission>
+    postData: PostData<FileSubmission, DiscordFileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
       errors: [],
-    }
+    };
   }
 
   onPostMessageSubmission(
     postData: PostData<MessageSubmission, DiscordMessageSubmission>,
-    cancellationToken: CancellableToken
+    cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, DiscordMessageSubmission>
+    postData: PostData<MessageSubmission, DiscordMessageSubmission>,
   ): Promise<SimpleValidationResult<DiscordMessageSubmission>> {
     const result: SimpleValidationResult<DiscordMessageSubmission> = {
       warnings: [],

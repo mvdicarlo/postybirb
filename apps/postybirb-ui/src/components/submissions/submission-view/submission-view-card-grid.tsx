@@ -14,7 +14,7 @@ type SubmissionViewCardGridProps = {
 export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   const { submissions, onSelect, selectedSubmissions } = props;
   const [orderedSubmissions, setOrderedSubmissions] = useState(
-    submissions.sort((a, b) => a.order - b.order)
+    submissions.sort((a, b) => a.order - b.order),
   );
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
 
   useEffect(() => {
     const el = document.getElementsByClassName(
-      'mantine-Grid-inner'
+      'mantine-Grid-inner',
     )[0] as HTMLElement;
     if (!el) {
       // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
@@ -38,12 +38,12 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
         const newOrderedSubmissions = [...orderedSubmissions];
         const [movedSubmission] = newOrderedSubmissions.splice(
           event.oldDraggableIndex!,
-          1
+          1,
         );
         newOrderedSubmissions.splice(
           event.newDraggableIndex!,
           0,
-          movedSubmission
+          movedSubmission,
         );
         setOrderedSubmissions(newOrderedSubmissions);
         submissionApi.reorder(movedSubmission.id, event.newDraggableIndex!);

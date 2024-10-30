@@ -9,7 +9,7 @@ export class MessageSubmissionService
 {
   async populate(
     submission: MessageSubmission,
-    createSubmissionDto: CreateSubmissionDto
+    createSubmissionDto: CreateSubmissionDto,
   ): Promise<void> {
     // Do nothing for now
   }

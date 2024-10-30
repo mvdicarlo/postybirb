@@ -2,15 +2,15 @@ import { FileType, ISubmission, SubmissionType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 import {
-    FileWebsite,
-    isFileWebsite,
+  FileWebsite,
+  isFileWebsite,
 } from '../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../websites/website';
 import { ValidatorParams } from './validator.type';
 
 function canProcessFiles(
   submission: ISubmission,
-  websiteInstance: UnknownWebsite
+  websiteInstance: UnknownWebsite,
 ) {
   return (
     isFileWebsite(websiteInstance) && submission.type === SubmissionType.FILE

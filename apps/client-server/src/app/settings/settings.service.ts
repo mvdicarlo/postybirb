@@ -28,7 +28,7 @@ export class SettingsService
     dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Settings)
     repository: PostyBirbRepository<Settings>,
-    @Optional() webSocket: WSGateway
+    @Optional() webSocket: WSGateway,
   ) {
     super(repository, webSocket);
     repository.addUpdateListener(dbSubscriber, [Settings], () => this.emit());

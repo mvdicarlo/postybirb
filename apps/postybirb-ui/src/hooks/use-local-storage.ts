@@ -7,7 +7,7 @@ const listeners = new Map<string, Set<StateListener>>();
 function getLocalStorage<T>(
   key: string,
   initialValue: T,
-  deserialize?: (value: string) => T
+  deserialize?: (value: string) => T,
 ): T {
   const item = localStorage.getItem(key);
   if (item) {
@@ -28,10 +28,10 @@ function setLocalStorage<T>(key: string, value: T) {
 export function useLocalStorage<T>(
   key: string,
   initialValue: T,
-  deserialize?: (value: string) => T
+  deserialize?: (value: string) => T,
 ): [T, (value: T) => void] {
   const [value, setValue] = useState<T>(
-    getLocalStorage(key, initialValue, deserialize)
+    getLocalStorage(key, initialValue, deserialize),
   );
 
   const callbackRef = useRef<StateListener<T>>();
@@ -40,7 +40,7 @@ export function useLocalStorage<T>(
       if (v === value) return;
       setValue(v);
     },
-    [value]
+    [value],
   );
   callbackRef.current = updateState;
 
@@ -51,7 +51,7 @@ export function useLocalStorage<T>(
         listener(v);
       });
     },
-    [key]
+    [key],
   );
 
   useEffect(() => {

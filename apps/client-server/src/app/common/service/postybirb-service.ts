@@ -16,13 +16,13 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  */
 @Injectable()
 export abstract class PostyBirbService<
-  T extends PostyBirbEntity = PostyBirbEntity
+  T extends PostyBirbEntity = PostyBirbEntity,
 > {
   protected readonly logger = Logger();
 
   constructor(
     protected readonly repository: PostyBirbRepository<T>,
-    private readonly webSocket?: WSGateway
+    private readonly webSocket?: WSGateway,
   ) {}
 
   /**
@@ -47,7 +47,7 @@ export abstract class PostyBirbService<
     const exists = await this.repository.findOne(where);
     if (exists) {
       const err = new BadRequestException(
-        `An entity with query '${JSON.stringify(where)}' already exists`
+        `An entity with query '${JSON.stringify(where)}' already exists`,
       );
       this.logger.withError(err).error();
       throw err;

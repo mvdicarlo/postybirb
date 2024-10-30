@@ -3,11 +3,11 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 
 export interface ISubmissionService<
-  T extends ISubmission<SubmissionMetadataType>
+  T extends ISubmission<SubmissionMetadataType>,
 > {
   populate(
     submission: T,
     createSubmissionDto: CreateSubmissionDto,
-    file?: MulterFileInfo
+    file?: MulterFileInfo,
   ): Promise<void>;
 }

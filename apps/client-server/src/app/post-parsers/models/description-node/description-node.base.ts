@@ -12,7 +12,7 @@ export abstract class DescriptionNode<Type = string>
 
   constructor(
     node: IDescriptionNode<Type>,
-    shortcuts: Record<string, UsernameShortcut>
+    shortcuts: Record<string, UsernameShortcut>,
   ) {
     this.type = node.type;
     this.props = node.props ?? {};

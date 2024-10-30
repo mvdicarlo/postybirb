@@ -20,7 +20,7 @@ describe('RatingParser', () => {
       },
     } as IWebsiteOptions;
     expect(parser.parse(defaultOptions, options)).toEqual(
-      SubmissionRating.ADULT
+      SubmissionRating.ADULT,
     );
   });
 
@@ -34,7 +34,7 @@ describe('RatingParser', () => {
       },
     } as IWebsiteOptions;
     expect(parser.parse(defaultOptions, options)).toEqual(
-      SubmissionRating.GENERAL
+      SubmissionRating.GENERAL,
     );
   });
 

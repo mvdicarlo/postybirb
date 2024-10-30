@@ -7,7 +7,7 @@ import {
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class CreateWebsiteOptionsDto<
-  T extends IWebsiteFormFields = IWebsiteFormFields
+  T extends IWebsiteFormFields = IWebsiteFormFields,
 > implements ICreateWebsiteOptionsDto
 {
   @ApiProperty()

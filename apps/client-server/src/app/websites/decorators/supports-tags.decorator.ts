@@ -10,21 +10,21 @@ const DefaultTagParser: TagParserFunction = (tag) => tag;
 export function SupportsTags(tagSupport?: TagSupport);
 export function SupportsTags(
   tagSupport: TagSupport,
-  tagParser: TagParserFunction
+  tagParser: TagParserFunction,
 );
 export function SupportsTags(
   tagSupport?: TagSupport,
-  tagParser?: TagParserFunction
+  tagParser?: TagParserFunction,
 );
 export function SupportsTags(tagParser?: TagParserFunction);
 export function SupportsTags(
   tagSupportOrFunction?: TagSupport | TagParserFunction,
-  tagParser?: TagParserFunction
+  tagParser?: TagParserFunction,
 ) {
   const tagSupport: TagSupport =
     typeof tagSupportOrFunction === 'function'
       ? UnlimitedTags()
-      : tagSupportOrFunction ?? UnlimitedTags();
+      : (tagSupportOrFunction ?? UnlimitedTags());
 
   const tagParserFunction: TagParserFunction =
     typeof tagSupportOrFunction === 'function'

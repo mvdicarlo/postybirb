@@ -136,7 +136,7 @@ async function uploadFiles({
     await fileSubmissionApi.appendFiles(
       appendToSubmission.id,
       'file',
-      snapshot
+      snapshot,
     );
   }
   await submissionApi.createFileSubmission(SubmissionType.FILE, snapshot);
@@ -188,7 +188,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
   const [cropFile, setCropFile] = useState<FileWithPath | null>(null);
 
   const imageFiles = files.filter(
-    (file) => file.type.startsWith('image/') && !file.type.includes('gif')
+    (file) => file.type.startsWith('image/') && !file.type.includes('gif'),
   );
 
   const onDelete = (file: FileWithPath) => {

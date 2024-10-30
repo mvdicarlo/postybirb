@@ -26,13 +26,13 @@ type HttpOptions = {
 export class HttpClient {
   constructor(
     private readonly basePath: string,
-    private readonly targetProvider: () => string = defaultTargetProvider
+    private readonly targetProvider: () => string = defaultTargetProvider,
   ) {}
 
   public get<T = any>(
     path = '',
     searchParams: SearchBody = undefined,
-    options: HttpOptions = {}
+    options: HttpOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('GET', path, searchParams, options ?? {});
   }
@@ -40,7 +40,7 @@ export class HttpClient {
   public post<T = any>(
     path = '',
     body: RequestBody = undefined,
-    options: HttpOptions = {}
+    options: HttpOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('POST', path, body, options ?? {});
   }
@@ -48,7 +48,7 @@ export class HttpClient {
   public put<T = any>(
     path = '',
     searchParams: SearchBody = undefined,
-    options: HttpOptions = {}
+    options: HttpOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('PUT', path, searchParams, options ?? {});
   }
@@ -56,7 +56,7 @@ export class HttpClient {
   public patch<T = any>(
     path = '',
     body: RequestBody = undefined,
-    options: HttpOptions = {}
+    options: HttpOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('PATCH', path, body, options ?? {});
   }
@@ -64,7 +64,7 @@ export class HttpClient {
   public delete<T = any>(
     path = '',
     searchParams: SearchBody = undefined,
-    options: HttpOptions = {}
+    options: HttpOptions = {},
   ): Promise<HttpResponse<T>> {
     return this.performRequest<T>('DELETE', path, searchParams, options ?? {});
   }
@@ -73,12 +73,12 @@ export class HttpClient {
     method: FetchMethod,
     path: string,
     bodyOrSearchParams: RequestBody | SearchBody,
-    options: HttpOptions
+    options: HttpOptions,
   ): Promise<HttpResponse<T>> {
     const shouldUseBody = this.supportsBody(method);
     const url = this.createPath(
       path,
-      shouldUseBody ? undefined : (bodyOrSearchParams as SearchBody)
+      shouldUseBody ? undefined : (bodyOrSearchParams as SearchBody),
     );
 
     let headers: Record<string, string> = {
@@ -130,7 +130,7 @@ export class HttpClient {
           value.forEach((v) => {
             url.searchParams.append(
               key,
-              typeof v === 'string' ? v : JSON.stringify(v)
+              typeof v === 'string' ? v : JSON.stringify(v),
             );
           });
         } else if (typeof value === 'object') {

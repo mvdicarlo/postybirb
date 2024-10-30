@@ -15,7 +15,7 @@ export type FileSubmission = ISubmission<FileSubmissionMetadata>;
  * @returns {boolean} - True if the submission is a file submission, false otherwise.
  */
 export function isFileSubmission(
-  submission: ISubmission<ISubmissionMetadata>
+  submission: ISubmission<ISubmissionMetadata>,
 ): submission is FileSubmission {
   return submission && submission.type === SubmissionType.FILE;
 }

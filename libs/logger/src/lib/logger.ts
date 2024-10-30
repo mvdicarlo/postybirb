@@ -10,7 +10,7 @@ let log: PostyBirbLogger;
 
 export function initializeLogger(
   instance: WinstonLogger,
-  errorSerialize = true
+  errorSerialize = true,
 ): void {
   if (log) return;
 

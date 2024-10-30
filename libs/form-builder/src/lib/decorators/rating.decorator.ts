@@ -20,7 +20,7 @@ export type RatingFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   };
 
 export function RatingField<T extends PrimitiveRecord>(
-  options: RatingFieldType<T>
+  options: RatingFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   options.formField = TYPE_KEY;

@@ -12,7 +12,7 @@ export type DescriptionFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   FieldType<T, DescriptionValue, DescriptionFormField>;
 
 export function DescriptionField<T extends PrimitiveRecord>(
-  options: DescriptionFieldType<T>
+  options: DescriptionFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   if (!options.formField) {

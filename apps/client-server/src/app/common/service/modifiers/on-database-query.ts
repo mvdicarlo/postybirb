@@ -8,7 +8,7 @@ export interface OnDatabaseQuery<T extends PostyBirbEntity> {
 
 export function isOnDatabaseQuery(
   // eslint-disable-next-line @typescript-eslint/ban-types
-  thisService: Object
+  thisService: Object,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): thisService is OnDatabaseQuery<any> {
   return 'getDefaultQueryOptions' in thisService;

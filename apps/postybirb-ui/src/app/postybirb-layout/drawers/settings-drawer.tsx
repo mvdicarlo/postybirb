@@ -55,7 +55,7 @@ function AppSettings() {
     () => settingsApi.getStartupOptions().then((res) => res.body),
     {
       cacheTime: 0,
-    }
+    },
   );
 
   if (isLoading) return null;

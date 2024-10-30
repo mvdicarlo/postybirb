@@ -16,11 +16,11 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
     dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(TagConverter)
     repository: PostyBirbRepository<TagConverter>,
-    @Optional() webSocket?: WSGateway
+    @Optional() webSocket?: WSGateway,
   ) {
     super(repository, webSocket);
     repository.addUpdateListener(dbSubscriber, [TagConverter], () =>
-      this.emit()
+      this.emit(),
     );
   }
 

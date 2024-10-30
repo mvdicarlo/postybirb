@@ -32,7 +32,7 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
       i18n.loadAndActivate({ locale: lang, messages });
       if (!loaded) setLoaded(true);
     },
-    [loaded]
+    [loaded],
   );
 
   useEffect(() => {

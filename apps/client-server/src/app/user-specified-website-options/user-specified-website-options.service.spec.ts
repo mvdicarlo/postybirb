@@ -21,7 +21,7 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
     }).compile();
 
     service = module.get<UserSpecifiedWebsiteOptionsService>(
-      UserSpecifiedWebsiteOptionsService
+      UserSpecifiedWebsiteOptionsService,
     );
     orm = module.get(MikroORM);
     try {

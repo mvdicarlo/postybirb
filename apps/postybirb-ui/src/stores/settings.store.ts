@@ -5,5 +5,5 @@ import StoreManager from './store-manager';
 
 export const SettingsStore: StoreManager<SettingsDto> =
   new StoreManager<SettingsDto>(SETTINGS_UPDATES, () =>
-    settingsApi.getAll().then(({ body }) => body)
+    settingsApi.getAll().then(({ body }) => body),
   );

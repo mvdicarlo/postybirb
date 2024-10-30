@@ -10,7 +10,7 @@ export const HR = createReactBlockSpec(
   },
   {
     render: () => <hr />,
-  }
+  },
 );
 
 export const insertHr = (editor: BlockNoteEditor) => ({
