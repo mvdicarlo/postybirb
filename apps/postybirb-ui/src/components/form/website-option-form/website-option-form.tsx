@@ -187,7 +187,7 @@ function InnerForm({
                   typeof a.field.row === 'number' &&
                   typeof b.field.row === 'number'
                     ? a.field.row - b.field.row
-                    : 0
+                    : 0,
                 )
                 .map((entry) => (
                   <Field
@@ -220,7 +220,11 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     `website-option-${option.id}`,
     () =>
       formGeneratorApi
-        .getForm({ accountId: account, type: submission.type })
+        .getForm({
+          accountId: account,
+          type: submission.type,
+          isMultiSubmission: submission.isMultiSubmission(),
+        })
         .then((res) => res.body),
   );
   const defaultOption = submission.getDefaultOptions();

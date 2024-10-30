@@ -43,7 +43,8 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const { state: accounts, isLoading } = useStore(AccountStore);
 
   const defaultOption = submission.getDefaultOptions();
-  const isTemplate = submission.isTemplate();
+  const isSpecialSubmissionType =
+    submission.isMultiSubmission() || submission.isTemplate();
   const top = 109;
 
   const optionsGroupedByWebsiteId = useMemo(
@@ -125,7 +126,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const debouncedUpdate = useCallback(
     debounce((schedule: ISubmissionScheduleInfo) => {
       submissionApi.update(submission.id, {
-        isScheduled: isTemplate ? false : submission.isScheduled,
+        isScheduled: isSpecialSubmissionType ? false : submission.isScheduled,
         scheduledFor: schedule.scheduledFor,
         scheduleType: schedule.scheduleType,
         deletedWebsiteOptions: [],
@@ -143,12 +144,12 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   return (
     <Flex>
       <Stack gap="xs" flex="11">
-        {!isTemplate && submission.type === SubmissionType.FILE ? (
+        {!isSpecialSubmissionType && submission.type === SubmissionType.FILE ? (
           <SubmissionFileManager
             submission={submission as SubmissionDto<FileSubmissionMetadata>}
           />
         ) : null}
-        {!isTemplate ? (
+        {!isSpecialSubmissionType ? (
           <Input.Wrapper label={<Trans>Schedule</Trans>}>
             <SubmissionScheduler
               schedule={submission.schedule}

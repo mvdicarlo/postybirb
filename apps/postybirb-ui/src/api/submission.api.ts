@@ -1,4 +1,5 @@
 import {
+  IApplyMultiSubmissionDto,
   ICreateSubmissionDto,
   ISubmissionDto,
   IUpdateSubmissionDto,
@@ -43,6 +44,10 @@ class SubmissionsApi extends BaseApi<
 
   reorder(id: SubmissionId, index: number) {
     return this.client.patch(`reorder/${id}/${index}`);
+  }
+
+  applyToMultipleSubmissions(dto: IApplyMultiSubmissionDto) {
+    return this.client.patch('apply/multi', dto);
   }
 }
 

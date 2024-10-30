@@ -1,7 +1,7 @@
 import type Sortable from 'sortablejs';
 
 export function draggableIndexesAreDefined(
-  event: Sortable.SortableEvent
+  event: Sortable.SortableEvent,
 ): event is {
   /**
    * Old index within parent, only counting draggable elements

@@ -14,6 +14,10 @@ function filterSubmissions(
   submissions: SubmissionDto[],
   filter: string,
 ): SubmissionDto[] {
+  if (!filter) {
+    return submissions;
+  }
+
   const filterValue = filter.toLowerCase().trim();
   return submissions.filter((submission) => {
     const defaultOption = submission.getDefaultOptions();
