@@ -1,11 +1,11 @@
 import { UsernameShortcut } from '@postybirb/types';
 import { DescriptionNode } from './description-node.base';
 import {
-    BlockTypes,
-    IDescriptionBlockNode,
-    IDescriptionInlineNode,
-    IDescriptionTextNode,
-    InlineTypes,
+  BlockTypes,
+  IDescriptionBlockNode,
+  IDescriptionInlineNode,
+  IDescriptionTextNode,
+  InlineTypes,
 } from './description-node.types';
 import { DescriptionInlineNode } from './inline-description-node';
 import { DescriptionTextNode } from './text-description-node';
@@ -20,7 +20,7 @@ export class DescriptionBlockNode
 
   constructor(
     node: IDescriptionBlockNode,
-    shortcuts: Record<string, UsernameShortcut>
+    shortcuts: Record<string, UsernameShortcut>,
   ) {
     super(node, shortcuts);
     this.id = node.id;
@@ -31,12 +31,12 @@ export class DescriptionBlockNode
         } else if (child.type === 'text') {
           return new DescriptionTextNode(
             child as IDescriptionTextNode,
-            shortcuts
+            shortcuts,
           );
         } else if (InlineTypes.includes(child.type)) {
           return new DescriptionInlineNode(
             child as IDescriptionInlineNode,
-            shortcuts
+            shortcuts,
           );
         }
         throw new Error(`Unknown node type: ${child.type}`);

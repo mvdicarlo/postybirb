@@ -62,7 +62,7 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
     postRecord: Pick<
       IPostRecord,
       'parent' | 'completedAt' | 'state' | 'resumeMode'
-    >
+    >,
   ) {
     super();
     this.parent = postRecord.parent;

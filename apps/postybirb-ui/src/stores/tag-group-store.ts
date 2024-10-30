@@ -5,5 +5,5 @@ import StoreManager from './store-manager';
 
 export const TagGroupStore: StoreManager<TagGroupDto> =
   new StoreManager<TagGroupDto>(TAG_GROUP_UPDATES, () =>
-    tagGroupsApi.getAll().then(({ body }) => body)
+    tagGroupsApi.getAll().then(({ body }) => body),
   );

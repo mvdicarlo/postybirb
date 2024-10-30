@@ -3,7 +3,7 @@ import { IUpdateWebsiteOptionsDto, IWebsiteFormFields } from '@postybirb/types';
 import { IsObject } from 'class-validator';
 
 export class UpdateWebsiteOptionsDto<
-  T extends IWebsiteFormFields = IWebsiteFormFields
+  T extends IWebsiteFormFields = IWebsiteFormFields,
 > implements IUpdateWebsiteOptionsDto<T>
 {
   @ApiProperty({ type: Object })

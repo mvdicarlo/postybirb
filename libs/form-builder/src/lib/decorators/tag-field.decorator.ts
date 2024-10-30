@@ -15,7 +15,7 @@ export type TagFieldType<T extends PrimitiveRecord = PrimitiveRecord> =
   };
 
 export function TagField<T extends PrimitiveRecord>(
-  options: TagFieldType<T>
+  options: TagFieldType<T>,
 ): PropertyDecorator {
   options.type = TYPE_KEY;
   if (!options.formField) {

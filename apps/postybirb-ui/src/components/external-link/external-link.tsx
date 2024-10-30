@@ -4,7 +4,7 @@ import { AnchorHTMLAttributes, PropsWithChildren } from 'react';
 export function ExternalLink(
   props: PropsWithChildren<
     Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'target' | 'onClick'>
-  >
+  >,
 ) {
   return (
     <Anchor
@@ -15,7 +15,7 @@ export function ExternalLink(
         if (window.electron?.openExternalLink) {
           event.preventDefault();
           window.electron.openExternalLink(
-            (event.target as HTMLAnchorElement).href
+            (event.target as HTMLAnchorElement).href,
           );
         }
       }}

@@ -15,8 +15,8 @@ export const SubmissionStore: StoreManager<SubmissionDto> =
       submissionsApi
         .getAll()
         .then(({ body }) =>
-          body.filter(filter).map((d) => new SubmissionDto(d))
+          body.filter(filter).map((d) => new SubmissionDto(d)),
         ),
     SubmissionDto,
-    filter
+    filter,
   );

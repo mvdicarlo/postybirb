@@ -21,7 +21,7 @@ function loadFromLocalStorage(): AccountFilterState {
 }
 
 const useGlobalAccountFilterState = createGlobalState<AccountFilterState>(
-  loadFromLocalStorage()
+  loadFromLocalStorage(),
 );
 
 export function useAccountFilters() {

@@ -6,11 +6,11 @@ import { injectWebsiteDecoratorProps } from './website-decorator-props';
 export function SupportsFiles(websiteFileOptions: WebsiteFileOptions);
 export function SupportsFiles(acceptedMimeTypes: string[]);
 export function SupportsFiles(
-  websiteFileOptionsOrMimeTypes: WebsiteFileOptions | string[]
+  websiteFileOptionsOrMimeTypes: WebsiteFileOptions | string[],
 ) {
   return function website(constructor: Class<UnknownWebsite>) {
     let websiteFileOptions: WebsiteFileOptions = Array.isArray(
-      websiteFileOptionsOrMimeTypes
+      websiteFileOptionsOrMimeTypes,
     )
       ? { acceptedMimeTypes: websiteFileOptionsOrMimeTypes }
       : websiteFileOptionsOrMimeTypes;

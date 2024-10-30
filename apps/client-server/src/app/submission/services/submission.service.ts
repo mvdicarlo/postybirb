@@ -69,7 +69,7 @@ export class SubmissionService
     private readonly websiteOptionsService: WebsiteOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
-    @Optional() webSocket: WSGateway
+    @Optional() webSocket: WSGateway,
   ) {
     super(repository, webSocket);
 
@@ -80,14 +80,14 @@ export class SubmissionService
     // );
     // This might be dangerous depending on the creation order of the services
     repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
-      this.emit()
+      this.emit(),
     );
     repository.addUpdateListener(dbSubscriber, [PrimaryFile], () =>
-      this.emit()
+      this.emit(),
     );
     repository.addUpdateListener(dbSubscriber, [AltFile], () => this.emit());
     repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
-      this.emit()
+      this.emit(),
     );
   }
 
@@ -120,10 +120,10 @@ export class SubmissionService
           ({
             ...s.toJSON(),
             validations: await this.websiteOptionsService.validateSubmission(
-              s.id
+              s.id,
             ),
-          } as ISubmissionDto<ISubmissionMetadata>)
-      )
+          }) as ISubmissionDto<ISubmissionMetadata>,
+      ),
     );
   }
 
@@ -148,7 +148,7 @@ export class SubmissionService
    */
   async create(
     createSubmissionDto: CreateSubmissionDto,
-    file?: MulterFileInfo
+    file?: MulterFileInfo,
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
     const submission = new Submission({
@@ -182,8 +182,8 @@ export class SubmissionService
     submission.options.add(
       await this.websiteOptionsService.createDefaultSubmissionOptions(
         submission as ISubmission,
-        name
-      )
+        name,
+      ),
     );
 
     submission.order = (await this.repository.count()) + 1;
@@ -193,13 +193,13 @@ export class SubmissionService
       case SubmissionType.MESSAGE: {
         if (file) {
           throw new BadRequestException(
-            'A file was provided for SubmissionType Message.'
+            'A file was provided for SubmissionType Message.',
           );
         }
 
         await this.messageSubmissionService.populate(
           submission as unknown as MessageSubmission,
-          createSubmissionDto
+          createSubmissionDto,
         );
         break;
       }
@@ -215,21 +215,21 @@ export class SubmissionService
 
         if (!file) {
           throw new BadRequestException(
-            'No file provided for SubmissionType FILE.'
+            'No file provided for SubmissionType FILE.',
           );
         }
 
         await this.fileSubmissionService.populate(
           submission as unknown as FileSubmission,
           createSubmissionDto,
-          file
+          file,
         );
         break;
       }
 
       default: {
         throw new BadRequestException(
-          `Unknown SubmissionType: ${createSubmissionDto.type}.`
+          `Unknown SubmissionType: ${createSubmissionDto.type}.`,
         );
       }
     }
@@ -271,10 +271,10 @@ export class SubmissionService
           submission,
           option.account.id,
           option.data,
-          defaultOption.data.title
+          defaultOption.data.title,
         );
         return newOption;
-      })
+      }),
     );
 
     submission.options.add(newOptions);
@@ -317,7 +317,7 @@ export class SubmissionService
       submission.schedule.scheduledFor
     ) {
       submission.schedule.scheduledFor = new Date(
-        submission.schedule.scheduledFor
+        submission.schedule.scheduledFor,
       ).toISOString();
     }
 
@@ -342,7 +342,7 @@ export class SubmissionService
           optionChanges.push(
             this.websiteOptionsService.update(option.id, {
               data: option.data,
-            })
+            }),
           );
         } else {
           optionChanges.push(
@@ -350,7 +350,7 @@ export class SubmissionService
               account: option.account,
               data: option.data,
               submission: submission.id,
-            })
+            }),
           );
         }
       });
@@ -442,7 +442,7 @@ export class SubmissionService
     this.logger.info(`Duplicating Submission '${id}'`);
     const entityToDuplicate = await this.repository.findOne(
       { id },
-      { populate: true }
+      { populate: true },
     );
 
     if (!entityToDuplicate) {
@@ -453,7 +453,7 @@ export class SubmissionService
       serialize(entityToDuplicate, {
         populate: true,
         ignoreSerializers: true,
-      })
+      }),
     );
     copy.id = v4();
     copy.options.forEach((option: WebsiteOptions) => {
@@ -464,7 +464,7 @@ export class SubmissionService
       delete option.submission;
     });
     const metadata = JSON.parse(
-      JSON.stringify(copy.metadata)
+      JSON.stringify(copy.metadata),
     ) as FileSubmissionMetadata;
     copy.metadata = metadata;
     copy.files.forEach((fileEntity) => {
@@ -472,7 +472,7 @@ export class SubmissionService
       const oldId = fileEntity.id;
       // Fix metadata
       const index = metadata.order.findIndex(
-        (fileId) => fileId === fileEntity.id
+        (fileId) => fileId === fileEntity.id,
       );
       fileEntity.id = v4();
       if (index > -1) {
@@ -507,14 +507,14 @@ export class SubmissionService
 
   async updateTemplateName(
     id: string,
-    updateSubmissionDto: UpdateSubmissionTemplateNameDto
+    updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     const entity = await this.findById(id, { failOnMissing: true });
 
     const name = updateSubmissionDto.name.trim();
     if (!updateSubmissionDto.name) {
       throw new BadRequestException(
-        'Template name cannot be empty or whitespace'
+        'Template name cannot be empty or whitespace',
       );
     }
 
@@ -529,7 +529,7 @@ export class SubmissionService
 
   async reorder(id: SubmissionId, index: number) {
     const allSubmissions = (await this.repository.findAll()).sort(
-      (a, b) => a.order - b.order
+      (a, b) => a.order - b.order,
     );
     const movedSubmissionIndex = allSubmissions.findIndex((s) => s.id === id);
     if (movedSubmissionIndex === -1) {
@@ -564,7 +564,7 @@ export class SubmissionService
   public findPopulatedById(id: string) {
     return this.repository.findOneOrFail(
       { id },
-      { populate: ['options', 'options.account'] }
+      { populate: ['options', 'options.account'] },
     );
   }
 }

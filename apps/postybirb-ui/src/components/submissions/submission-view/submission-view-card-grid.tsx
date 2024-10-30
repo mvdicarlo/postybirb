@@ -2,6 +2,7 @@ import { Grid } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../api/submission.api';
+import { draggableIndexesAreDefined } from '../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionViewCard } from './submission-view-card/submission-view-card';
 
@@ -14,7 +15,7 @@ type SubmissionViewCardGridProps = {
 export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   const { submissions, onSelect, selectedSubmissions } = props;
   const [orderedSubmissions, setOrderedSubmissions] = useState(
-    submissions.sort((a, b) => a.order - b.order)
+    submissions.sort((a, b) => a.order - b.order),
   );
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
 
   useEffect(() => {
     const el = document.getElementsByClassName(
-      'mantine-Grid-inner'
+      'mantine-Grid-inner',
     )[0] as HTMLElement;
     if (!el) {
       // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
@@ -35,18 +36,20 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
       handle: '.sort-handle',
       disabled: orderedSubmissions.length === 0,
       onEnd: (event) => {
-        const newOrderedSubmissions = [...orderedSubmissions];
-        const [movedSubmission] = newOrderedSubmissions.splice(
-          event.oldDraggableIndex!,
-          1
-        );
-        newOrderedSubmissions.splice(
-          event.newDraggableIndex!,
-          0,
-          movedSubmission
-        );
-        setOrderedSubmissions(newOrderedSubmissions);
-        submissionApi.reorder(movedSubmission.id, event.newDraggableIndex!);
+        if (draggableIndexesAreDefined(event)) {
+          const newOrderedSubmissions = [...orderedSubmissions];
+          const [movedSubmission] = newOrderedSubmissions.splice(
+            event.oldDraggableIndex,
+            1,
+          );
+          newOrderedSubmissions.splice(
+            event.newDraggableIndex,
+            0,
+            movedSubmission,
+          );
+          setOrderedSubmissions(newOrderedSubmissions);
+          submissionApi.reorder(movedSubmission.id, event.newDraggableIndex);
+        }
       },
     });
     return () => {

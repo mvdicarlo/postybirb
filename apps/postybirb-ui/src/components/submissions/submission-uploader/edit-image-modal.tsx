@@ -42,7 +42,7 @@ export function EditImageFromSource({
         setCropper(null);
       }
     },
-    [cropper]
+    [cropper],
   );
 
   return (
@@ -112,7 +112,7 @@ export function EditImageModal({
         setCropper(null);
       }
     },
-    [cropper]
+    [cropper],
   );
 
   return (

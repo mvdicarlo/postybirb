@@ -36,7 +36,7 @@ export function PageHeader(props: PageHeaderProps) {
       e.stopPropagation();
       navigateTo(target);
     },
-    [navigateTo]
+    [navigateTo],
   );
 
   const titleField = useMemo(
@@ -49,7 +49,7 @@ export function PageHeader(props: PageHeaderProps) {
         <Space h="xs" />
       </>
     ),
-    [icon, title]
+    [icon, title],
   );
 
   const breadcrumb = useMemo(
@@ -70,12 +70,12 @@ export function PageHeader(props: PageHeaderProps) {
           ))}
         </Breadcrumbs>
       ),
-    [breadcrumbs, onBreadcrumbClick]
+    [breadcrumbs, onBreadcrumbClick],
   );
 
   const actionField = useMemo(
     () => actions && <Group my="4">{actions}</Group>,
-    [actions]
+    [actions],
   );
 
   const tabsField = useMemo(
@@ -99,7 +99,7 @@ export function PageHeader(props: PageHeaderProps) {
           </Tabs.List>
         </Tabs>
       ),
-    [tabs, onTabChange]
+    [tabs, onTabChange],
   );
 
   return (

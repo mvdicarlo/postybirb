@@ -5,7 +5,7 @@ import { HttpClient } from '../transports/http-client';
 export class BaseApi<
   GetType,
   CreateType extends Object,
-  UpdateType extends Object
+  UpdateType extends Object,
 > {
   protected readonly client: HttpClient;
 

@@ -14,7 +14,7 @@ type FieldLabelProps = FormFieldProps & {
 
 export function getTranslatedLabel(
   field: FieldAggregateType<never>,
-  converter: (msg: MessageDescriptor) => string
+  converter: (msg: MessageDescriptor) => string,
 ): string {
   // eslint-disable-next-line prefer-const
   let { label, i18nLabel } = field;
@@ -30,7 +30,7 @@ export function getTranslatedLabel(
 }
 
 export function FieldLabel(
-  props: PropsWithChildren<FieldLabelProps>
+  props: PropsWithChildren<FieldLabelProps>,
 ): JSX.Element {
   const { field, children, propKey, validationState } = props;
   const { errors, warnings } = validationState;

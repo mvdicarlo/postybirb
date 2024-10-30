@@ -23,7 +23,7 @@ export class FormGeneratorService {
   constructor(
     private readonly websiteRegistryService: WebsiteRegistryService,
     private readonly userSpecifiedWebsiteOptionsService: UserSpecifiedWebsiteOptionsService,
-    private readonly accountService: AccountService
+    private readonly accountService: AccountService,
   ) {}
 
   /**
@@ -33,7 +33,7 @@ export class FormGeneratorService {
    * @param {FormGenerationRequestDto} request
    */
   async generateForm(
-    request: FormGenerationRequestDto
+    request: FormGenerationRequestDto,
   ): Promise<FormBuilderMetadata<never>> {
     const account = await this.accountService.findById(request.accountId, {
       failOnMissing: true,
@@ -61,7 +61,7 @@ export class FormGeneratorService {
 
     if (!formModel) {
       throw new BadRequestException(
-        `Website instance does not support ${request.type}`
+        `Website instance does not support ${request.type}`,
       );
     }
 
@@ -87,7 +87,7 @@ export class FormGeneratorService {
     const form = await this.populateUserDefaults(
       formBuilder(new DefaultWebsiteOptions(), {}),
       new NullAccount().id,
-      type
+      type,
     );
     if (isMultiSubmission) {
       delete form.title; // Having title here just causes confusion for multi this flow
@@ -98,12 +98,12 @@ export class FormGeneratorService {
   private async populateUserDefaults(
     form: FormBuilderMetadata<never>,
     accountId: AccountId,
-    type: SubmissionType
+    type: SubmissionType,
   ): Promise<FormBuilderMetadata<never>> {
     const userSpecifiedDefaults =
       await this.userSpecifiedWebsiteOptionsService.findByAccountAndSubmissionType(
         accountId,
-        type
+        type,
       );
 
     if (userSpecifiedDefaults) {

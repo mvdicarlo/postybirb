@@ -28,11 +28,11 @@ class WebsiteOptionsApi extends BaseApi<
 
   modifySubmission(
     submissionId: string,
-    dto: IUpdateSubmissionWebsiteOptionsDto
+    dto: IUpdateSubmissionWebsiteOptionsDto,
   ) {
     return this.client.patch<WebsiteOptionsDto>(
       `submission/${submissionId}`,
-      dto
+      dto,
     );
   }
 }

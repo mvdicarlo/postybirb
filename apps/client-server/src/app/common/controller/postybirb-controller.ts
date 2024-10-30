@@ -33,7 +33,7 @@ export abstract class PostyBirbController<T extends PostyBirbEntity> {
   })
   async remove(@Query('ids') ids: string | string[]) {
     return Promise.all(
-      (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id))
+      (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id)),
     ).then(() => ({
       success: true,
     }));

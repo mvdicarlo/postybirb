@@ -4,7 +4,7 @@ import { filesize } from 'filesize';
 
 type TranslationsMap = {
   [K in keyof ValidationMessages]: (
-    props: Omit<ValidationMessage<object, K>, 'field' | 'id'>
+    props: Omit<ValidationMessage<object, K>, 'field' | 'id'>,
   ) => JSX.Element;
 };
 export const TranslationMessages: Partial<TranslationsMap> = {
@@ -122,14 +122,14 @@ export const TranslationMessages: Partial<TranslationsMap> = {
 };
 
 export function ValidationTranslation(
-  props: Omit<ValidationMessage, 'field'>
+  props: Omit<ValidationMessage, 'field'>,
 ): JSX.Element {
   const { id } = props;
   const translation = TranslationMessages[id];
   if (translation) {
     return translation(
       // @ts-expect-error Typescript does not know union type
-      props
+      props,
     );
   }
 

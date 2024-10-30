@@ -31,7 +31,7 @@ export class PostService extends PostyBirbService<PostRecord> {
     @InjectRepository(Submission)
     private readonly submissionRepository: PostyBirbRepository<Submission>,
     private readonly submissionOptionsService: WebsiteOptionsService,
-    @Optional() webSocket?: WSGateway
+    @Optional() webSocket?: WSGateway,
   ) {
     super(repository, webSocket);
   }
@@ -51,7 +51,7 @@ export class PostService extends PostyBirbService<PostRecord> {
         .sort(
           (a, b) =>
             new Date(a.schedule.scheduledFor).getTime() -
-            new Date(b.schedule.scheduledFor).getTime()
+            new Date(b.schedule.scheduledFor).getTime(),
         ); // Sort by oldest first.
       this.enqueue({ ids: sorted.map((s) => s.id) });
 
@@ -86,8 +86,8 @@ export class PostService extends PostyBirbService<PostRecord> {
     // It may be better to move completed to a separate table to avoid this check.
     const unqueued = uniq(
       request.ids.filter(
-        (id) => !existing.some((e) => e.parent.id === id && !e.completedAt)
-      )
+        (id) => !existing.some((e) => e.parent.id === id && !e.completedAt),
+      ),
     );
 
     const created: SubmissionId[] = [];
@@ -129,7 +129,7 @@ export class PostService extends PostyBirbService<PostRecord> {
 
     // Only remove those that are not marked as done as to protect the archived posts.
     const incomplete = existing.filter(
-      (e: PostRecord) => e.completedAt === undefined
+      (e: PostRecord) => e.completedAt === undefined,
     );
 
     request.ids.forEach((id) => this.postManagerService.cancelIfRunning(id));
@@ -152,7 +152,7 @@ export class PostService extends PostyBirbService<PostRecord> {
     }
 
     const validations = await this.submissionOptionsService.validateSubmission(
-      submission.id
+      submission.id,
     );
     if (validations.some((v) => v.errors.length > 0)) {
       return false;
@@ -179,7 +179,7 @@ export class PostService extends PostyBirbService<PostRecord> {
           'children',
           'children.account',
         ],
-      }
+      },
     );
     return entity;
   }

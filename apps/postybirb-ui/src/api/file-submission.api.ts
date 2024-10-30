@@ -16,7 +16,7 @@ class FileSubmissionsApi {
     id: SubmissionId,
     fileId: EntityId,
     target: FileUpdateTarget,
-    file: Blob
+    file: Blob,
   ) {
     const fd = new FormData();
     fd.append('file', file);
@@ -25,7 +25,7 @@ class FileSubmissionsApi {
 
   removeFile(id: SubmissionId, fileId: EntityId, target: FileUpdateTarget) {
     return this.client.delete<ISubmissionDto>(
-      `remove/${target}/${id}/${fileId}`
+      `remove/${target}/${id}/${fileId}`,
     );
   }
 }
@@ -35,7 +35,7 @@ export default new FileSubmissionsApi();
 export function getRemoveFileUrl(
   id: SubmissionId,
   fileId: EntityId,
-  target: FileUpdateTarget
+  target: FileUpdateTarget,
 ): string {
   return `api/file-submission/remove/${target}/${id}/${fileId}`;
 }
@@ -43,14 +43,14 @@ export function getRemoveFileUrl(
 export function getReplaceFileUrl(
   id: SubmissionId,
   fileId: EntityId,
-  target: FileUpdateTarget
+  target: FileUpdateTarget,
 ): string {
   return `api/file-submission/replace/${target}/${id}/${fileId}`;
 }
 
 export function getAppendFileUrl(
   id: SubmissionId,
-  target: FileUpdateTarget
+  target: FileUpdateTarget,
 ): string {
   return `api/file-submission/add/${target}/${id}`;
 }

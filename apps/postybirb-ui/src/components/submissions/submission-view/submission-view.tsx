@@ -12,7 +12,7 @@ type SubmissionViewProps = {
 
 function filterSubmissions(
   submissions: SubmissionDto[],
-  filter: string
+  filter: string,
 ): SubmissionDto[] {
   if (!filter) {
     return submissions;

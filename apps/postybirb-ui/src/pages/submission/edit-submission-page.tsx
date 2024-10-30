@@ -53,7 +53,7 @@ function ScheduleAction({ submission }: { submission: SubmissionDto }) {
   }
 
   const hasValidationIssues = submission.validations.some(
-    (v) => v.errors && v.errors.length > 0
+    (v) => v.errors && v.errors.length > 0,
   );
   const hasOptions = submission.options.filter((o) => !o.isDefault).length > 0;
   const canSetForPosting =
@@ -108,8 +108,8 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
               submission: submission.id,
               account: option.account,
               data: option.data,
-            })
-          )
+            }),
+          ),
         )
           .then(() => {
             notifications.show({
@@ -160,7 +160,7 @@ function PostAction({ submission }: { submission: SubmissionDto }) {
   }
 
   const hasValidationIssues = submission.validations.some(
-    (v) => v.errors && v.errors.length > 0
+    (v) => v.errors && v.errors.length > 0,
   );
   const hasOptions = submission.options.filter((o) => !o.isDefault).length > 0;
   const canSetForPosting =
@@ -199,13 +199,13 @@ export function EditSubmissionPage() {
   const { id } = useParams();
   const { state: submissions, isLoading } = useStore(SubmissionStore);
   const { state: templates, isLoading: isLoadingTemplates } = useStore(
-    SubmissionTemplateStore
+    SubmissionTemplateStore,
   );
 
   const data = [...submissions, ...templates].find((s) => s.id === id);
   const submission = useMemo(
     () => data ?? new SubmissionDto({} as ISubmissionDto),
-    [data]
+    [data],
   );
 
   const defaultOption = submission.getDefaultOptions();

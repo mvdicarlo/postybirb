@@ -73,7 +73,7 @@ export class PostManagerService {
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
     private readonly postParserService: PostParsersService,
-    private readonly validationService: ValidationService
+    private readonly validationService: ValidationService,
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -93,7 +93,7 @@ export class PostManagerService {
 
   private async protectedUpdate(
     entity: LoadedPostRecord,
-    data: Partial<EntityDTO<Loaded<LoadedPostRecord, never>>>
+    data: Partial<EntityDTO<Loaded<LoadedPostRecord, never>>>,
   ) {
     const exists = await this.postRepository.findOne(entity.id);
     if (!exists) {
@@ -152,7 +152,7 @@ export class PostManagerService {
       for (const websites of postOrderGroups) {
         this.cancelToken.throwIfCancelled();
         await Promise.allSettled(
-          websites.map((w) => this.post(entity, w.record, w.instance))
+          websites.map((w) => this.post(entity, w.record, w.instance)),
         );
       }
       await this.finishPost(entity);
@@ -176,13 +176,13 @@ export class PostManagerService {
     const entityInDb = await this.postRepository.findOne(entity.id);
     if (!entityInDb && !allCompleted) {
       this.logger.error(
-        `Entity ${entity.id} not found in database. It may have been deleted while posting.`
+        `Entity ${entity.id} not found in database. It may have been deleted while posting.`,
       );
       return;
     }
     if (!entityInDb) {
       this.logger.warn(
-        `Entity ${entity.id} not found in database. It may have been deleted while posting. Updating anyways due to all websites being completed.`
+        `Entity ${entity.id} not found in database. It may have been deleted while posting. Updating anyways due to all websites being completed.`,
       );
     }
     await this.protectedUpdate(entity, {
@@ -200,7 +200,7 @@ export class PostManagerService {
   private async post(
     entity: LoadedPostRecord,
     websitePostRecord: IWebsitePostRecord,
-    instance: Website<unknown>
+    instance: Website<unknown>,
   ) {
     // TODO - Need to consider cancellation scenarios - i.e. if the submission is deleted, or an update occurs
     if (!instance.getLoginState().isLoggedIn) {
@@ -212,19 +212,18 @@ export class PostManagerService {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
         throw new Error(
-          `Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
+          `Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`,
         );
       }
       const data = await this.preparePostData(
         submission as unknown as ISubmission,
         instance,
         submission.options.find(
-          (o) => o.account.id === websitePostRecord.account.id
-        ) as unknown as IWebsiteOptions
+          (o) => o.account.id === websitePostRecord.account.id,
+        ) as unknown as IWebsiteOptions,
       );
-      const validationResult = await this.validationService.validateSubmission(
-        submission
-      );
+      const validationResult =
+        await this.validationService.validateSubmission(submission);
       if (validationResult.some((v) => v.errors.length > 0)) {
         throw new Error('Submission contains validation errors');
       }
@@ -248,7 +247,7 @@ export class PostManagerService {
     submission: ISubmission,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
-    data: PostData<ISubmission, IWebsiteFormFields>
+    data: PostData<ISubmission, IWebsiteFormFields>,
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
@@ -257,7 +256,7 @@ export class PostManagerService {
           websitePostRecord,
           submission as unknown as FileSubmission,
           instance,
-          data as unknown as PostData<FileSubmission, never>
+          data as unknown as PostData<FileSubmission, never>,
         );
         break;
       case SubmissionType.MESSAGE:
@@ -265,12 +264,12 @@ export class PostManagerService {
           websitePostRecord,
           submission as unknown as MessageSubmission,
           instance,
-          data as unknown as PostData<MessageSubmission, never>
+          data as unknown as PostData<MessageSubmission, never>,
         );
         break;
       default:
         throw new Error(
-          `Unknown Submission Type: Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`
+          `Unknown Submission Type: Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`,
         );
     }
   }
@@ -285,7 +284,7 @@ export class PostManagerService {
   private async handleSuccessResult(
     websitePostRecord: IWebsitePostRecord,
     res: PostResponse,
-    fileIds?: EntityId[]
+    fileIds?: EntityId[],
   ): Promise<void> {
     if (fileIds?.length) {
       fileIds.forEach((id) => {
@@ -309,7 +308,7 @@ export class PostManagerService {
   private async handleFailureResult(
     websitePostRecord: IWebsitePostRecord,
     res: PostResponse,
-    fileIds?: EntityId[]
+    fileIds?: EntityId[],
   ): Promise<void> {
     if (res.exception) {
       websitePostRecord.errors = websitePostRecord.errors ?? [];
@@ -337,7 +336,7 @@ export class PostManagerService {
     websitePostRecord: IWebsitePostRecord,
     submission: MessageSubmission,
     instance: Website<unknown>,
-    data: PostData<MessageSubmission, never>
+    data: PostData<MessageSubmission, never>,
   ): Promise<void> {
     this.logger.info(`Posting message to ${instance.id}`);
     const result = await (
@@ -361,12 +360,12 @@ export class PostManagerService {
     websitePostRecord: IWebsitePostRecord,
     submission: FileSubmission,
     instance: Website<unknown>,
-    data: PostData<FileSubmission, never>
+    data: PostData<FileSubmission, never>,
   ): Promise<void> {
     // Order files based on submission order
     const fileBatchSize = Math.max(
       instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
-      1
+      1,
     );
     const orderedFiles: Loaded<ISubmissionFile[]> = [];
     const metadata = submission.metadata.fileMetadata;
@@ -374,12 +373,12 @@ export class PostManagerService {
       .getItems()
       .filter(
         // Filter out files that have been marked by the user as ignored for this website.
-        (f) => !metadata[f.id]?.ignoredWebsites?.includes(instance.accountId)
+        (f) => !metadata[f.id]?.ignoredWebsites?.includes(instance.accountId),
       )
       .filter(
         // Only post files that haven't been posted
         // Ensures CONTINUED posts don't post files that have already been posted.
-        (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1
+        (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1,
       );
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
@@ -406,7 +405,7 @@ export class PostManagerService {
               resizeParams = this.getResizeParameters(
                 submission,
                 filePostableInstance,
-                f
+                f,
               );
 
               // User defined dimensions
@@ -441,15 +440,15 @@ export class PostManagerService {
               file: f,
               resize: resizeParams,
             });
-          })
+          }),
         )
       ).map((f) =>
         f.withMetadata(
           metadata[f.id] ?? {
             ignoredWebsites: [],
             dimensions: null,
-          }
-        )
+          },
+        ),
       );
 
       // Post
@@ -473,7 +472,7 @@ export class PostManagerService {
   private async markFilesAsPosted(
     websitePostRecord: IWebsitePostRecord,
     submission: FileSubmission,
-    files: ISubmissionFile[]
+    files: ISubmissionFile[],
   ) {
     const fileIds = files.map((f) => f.id);
     websitePostRecord.metadata.nextBatchNumber += 1;
@@ -484,7 +483,7 @@ export class PostManagerService {
   private getResizeParameters(
     submission: FileSubmission,
     instance: FileWebsite<never>,
-    file: ISubmissionFile
+    file: ISubmissionFile,
   ) {
     const params = instance.calculateImageResize(file);
 
@@ -495,14 +494,14 @@ export class PostManagerService {
         params.width = Math.min(
           file.width,
           fileParams.width,
-          params.width ?? Infinity
+          params.width ?? Infinity,
         );
       }
       if (fileParams.height) {
         params.height = Math.min(
           file.height,
           fileParams.height,
-          params.height ?? Infinity
+          params.height ?? Infinity,
         );
       }
     }
@@ -517,7 +516,7 @@ export class PostManagerService {
    * @return {*}  {Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]>}
    */
   private getPostOrder(
-    entity: LoadedPostRecord
+    entity: LoadedPostRecord,
   ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
     const websitePairs = entity.children
       .toArray()
@@ -558,15 +557,15 @@ export class PostManagerService {
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
       (o) =>
-        !entity.children.toArray().some((c) => c.account.id === o.account.id)
+        !entity.children.toArray().some((c) => c.account.id === o.account.id),
     );
     uncreatedOptions.forEach((w) =>
       entity.children.add(
         this.websitePostRecordRepository.create({
           parent: entity as unknown as IPostRecord,
           account: w.account,
-        })
-      )
+        }),
+      ),
     );
     await this.postRepository.persistAndFlush(entity);
   }
@@ -577,7 +576,7 @@ export class PostManagerService {
    * @return {*}
    */
   private async updateExistingWebsitePostRecords(
-    entity: LoadedPostRecord
+    entity: LoadedPostRecord,
   ): Promise<void> {
     switch (entity.resumeMode) {
       case PostRecordResumeMode.RESTART:
@@ -593,7 +592,7 @@ export class PostManagerService {
               // Easiest way to reset the record is to remove it and re-add it
               entity.children.remove(c as unknown as IWebsitePostRecord);
               return this.postRepository.persistAndFlush(entity);
-            })
+            }),
         );
         break;
       case PostRecordResumeMode.CONTINUE:
@@ -613,7 +612,7 @@ export class PostManagerService {
   private preparePostData(
     submission: ISubmission,
     instance: Website<unknown>,
-    websiteOptions: IWebsiteOptions
+    websiteOptions: IWebsiteOptions,
   ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }

@@ -9,7 +9,7 @@ export interface OnDatabaseUpdate {
 
 export function isOnDatabaseUpdate(
   // eslint-disable-next-line @typescript-eslint/ban-types
-  thisService: Object
+  thisService: Object,
 ): thisService is OnDatabaseUpdate {
   return 'getRegisteredEntities' in thisService;
 }

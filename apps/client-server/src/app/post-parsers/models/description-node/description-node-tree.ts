@@ -4,9 +4,9 @@ import TurndownService from 'turndown';
 import { DescriptionBlockNode } from './block-description-node';
 import { DescriptionNode } from './description-node.base';
 import {
-    BlockTypes,
-    IDescriptionBlockNode,
-    ShortcutEnabledFields,
+  BlockTypes,
+  IDescriptionBlockNode,
+  ShortcutEnabledFields,
 } from './description-node.types';
 
 export type InsertionOptions = {
@@ -59,7 +59,7 @@ export class DescriptionNodeTree {
     nodes: Array<IDescriptionBlockNode>,
     insertionOptions: InsertionOptions,
     shortcuts: Record<string, UsernameShortcut>,
-    fieldShortcuts: ShortcutEnabledFields
+    fieldShortcuts: ShortcutEnabledFields,
   ) {
     this.insertionOptions = insertionOptions;
     this.nodes =
@@ -135,8 +135,8 @@ export class DescriptionNodeTree {
               },
             ],
           },
-          {}
-        )
+          {},
+        ),
       );
     }
 
@@ -156,8 +156,8 @@ export class DescriptionNodeTree {
               },
             ],
           },
-          {}
-        )
+          {},
+        ),
       );
     }
 
@@ -167,9 +167,9 @@ export class DescriptionNodeTree {
           (node) =>
             new DescriptionBlockNode(
               node as unknown as IDescriptionBlockNode,
-              {}
-            )
-        )
+              {},
+            ),
+        ),
       );
     }
     return nodes;

@@ -37,7 +37,7 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
   const { schedule, onChange } = props;
   // For recall of recently set time within this specific component
   const [lastKnownSetDate, setLastKnownSetDate] = useState(
-    schedule.scheduledFor
+    schedule.scheduledFor,
   );
   const [internalSchedule, setInternalSchedule] =
     useState<ISubmissionScheduleInfo>(schedule);
@@ -54,7 +54,7 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
       setInternalSchedule(newSchedule);
       onChange(newSchedule);
     },
-    [onChange, setInternalSchedule]
+    [onChange, setInternalSchedule],
   );
 
   useEffect(() => {

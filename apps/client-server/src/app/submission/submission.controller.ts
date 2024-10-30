@@ -51,7 +51,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
   async create(
     @Body() createSubmissionDto: CreateSubmissionDto,
-    @UploadedFiles() files: MulterFileInfo[]
+    @UploadedFiles() files: MulterFileInfo[],
   ) {
     const mapper = (res) => res.toJSON();
     if ((files || []).length) {
@@ -91,7 +91,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async update(
     @Param('id') id: SubmissionId,
-    @Body() updateSubmissionDto: UpdateSubmissionDto
+    @Body() updateSubmissionDto: UpdateSubmissionDto,
   ) {
     return this.service
       .update(id, updateSubmissionDto)
@@ -110,7 +110,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async updateTemplateName(
     @Param('id') id: SubmissionId,
-    @Body() updateSubmissionDto: UpdateSubmissionTemplateNameDto
+    @Body() updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     return this.service
       .updateTemplateName(id, updateSubmissionDto)

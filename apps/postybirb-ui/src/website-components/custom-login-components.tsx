@@ -10,7 +10,7 @@ const CustomLoginComponents: Record<
 });
 
 export function getCustomLoginComponent(
-  loginComponentName: string
+  loginComponentName: string,
 ): CustomLoginComponentProvider<unknown> | undefined {
   return CustomLoginComponents[loginComponentName];
 }

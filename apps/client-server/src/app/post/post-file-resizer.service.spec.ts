@@ -34,7 +34,7 @@ describe('PostFileResizerService', () => {
     mimeType: string,
     height: number,
     width: number,
-    buf: Buffer
+    buf: Buffer,
   ): ISubmissionFile {
     return {
       id: 'test',
@@ -118,13 +118,13 @@ describe('PostFileResizerService', () => {
       service.resize({
         file,
         resize: { maxBytes: -1 },
-      })
+      }),
     ).rejects.toThrow();
   });
 
   it('should convert png thumbnail without alpha to jpeg', async () => {
     const noAlphaFile = readFileSync(
-      join(__dirname, '../test-files/png_no_alpha.png')
+      join(__dirname, '../test-files/png_no_alpha.png'),
     );
     const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
     const resized = await service.resize({
@@ -140,7 +140,7 @@ describe('PostFileResizerService', () => {
 
   it('should not convert png thumbnail with alpha to jpeg', async () => {
     const noAlphaFile = readFileSync(
-      join(__dirname, '../test-files/png_with_alpha.png')
+      join(__dirname, '../test-files/png_with_alpha.png'),
     );
     const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
     const resized = await service.resize({

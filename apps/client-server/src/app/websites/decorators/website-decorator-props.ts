@@ -123,7 +123,7 @@ export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
  */
 export function injectWebsiteDecoratorProps(
   constructor: Class<UnknownWebsite>,
-  props: Partial<WebsiteDecoratorProps>
+  props: Partial<WebsiteDecoratorProps>,
 ): void {
   if (!constructor.prototype.decoratedProps) {
     Object.assign(constructor.prototype, {
@@ -142,13 +142,13 @@ export function injectWebsiteDecoratorProps(
 export function validateWebsiteDecoratorProps(
   logger: LogLayer,
   websiteName: string,
-  props: WebsiteDecoratorProps
+  props: WebsiteDecoratorProps,
 ): boolean {
   if (!props.loginFlow) {
     logger
       .withContext({ websiteName })
       .error(
-        'Website is missing login flow. Please set a login flow using UserLoginFlow or CustomLoginFlow decorators.'
+        'Website is missing login flow. Please set a login flow using UserLoginFlow or CustomLoginFlow decorators.',
       );
     return false;
   }
@@ -157,7 +157,7 @@ export function validateWebsiteDecoratorProps(
     logger
       .withContext({ websiteName })
       .error(
-        'Website is missing metadata. Please set metadata using WebsiteMetadata decorator.'
+        'Website is missing metadata. Please set metadata using WebsiteMetadata decorator.',
       );
     return false;
   }

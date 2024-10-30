@@ -3,7 +3,7 @@ import { IWebsiteOptions, SubmissionRating } from '@postybirb/types';
 export class RatingParser {
   public parse(
     defaultOptions: IWebsiteOptions,
-    websiteOptions: IWebsiteOptions
+    websiteOptions: IWebsiteOptions,
   ): SubmissionRating {
     if (websiteOptions.data.rating) {
       return websiteOptions.data.rating;

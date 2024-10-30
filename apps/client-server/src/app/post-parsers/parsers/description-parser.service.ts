@@ -21,7 +21,7 @@ export class DescriptionParserService {
   constructor(
     private readonly settingsService: SettingsService,
     @Inject(WEBSITE_IMPLEMENTATIONS)
-    private readonly websiteImplementations: Class<UnknownWebsite>[]
+    private readonly websiteImplementations: Class<UnknownWebsite>[],
   ) {
     this.websiteImplementations.forEach((website) => {
       const shortcut: UsernameShortcut | undefined =
@@ -37,7 +37,7 @@ export class DescriptionParserService {
     defaultOptions: IWebsiteOptions,
     websiteOptions: IWebsiteOptions,
     tags: string[],
-    title: string
+    title: string,
   ): Promise<string> {
     const { descriptionSupport } = instance.decoratedProps;
     const { supportsDescriptionType } = descriptionSupport;
@@ -73,7 +73,7 @@ export class DescriptionParserService {
       {
         title,
         tags,
-      }
+      },
     );
 
     switch (supportsDescriptionType) {
@@ -86,12 +86,12 @@ export class DescriptionParserService {
       case DescriptionType.CUSTOM:
         if (isWithCustomDescriptionParser(instance)) {
           const initialDescription = tree.parseCustom(
-            instance.onDescriptionParse
+            instance.onDescriptionParse,
           );
           return instance.onAfterDescriptionParse(initialDescription);
         }
         throw new Error(
-          `Website does not implement custom description parser: ${instance.constructor.name}`
+          `Website does not implement custom description parser: ${instance.constructor.name}`,
         );
       default:
         throw new Error(`Unsupported description type: ${descriptionSupport}`);

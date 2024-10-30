@@ -26,7 +26,7 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
           value: account.id,
         })),
       })),
-    [filteredAccounts]
+    [filteredAccounts],
   );
 
   const onCommitChanges = (selected: IAccountDto[], force?: boolean) => {

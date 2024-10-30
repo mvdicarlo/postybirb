@@ -19,7 +19,7 @@ export function AccountLoginWebview(props: AccountLoginWebviewProps) {
     debounce(() => {
       accountApi.refreshLogin(id);
     }, 2000),
-    [id]
+    [id],
   );
 
   useEffect(() => {

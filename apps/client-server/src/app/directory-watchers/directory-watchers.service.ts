@@ -34,7 +34,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
     @InjectRepository(DirectoryWatcher)
     repository: PostyBirbRepository<DirectoryWatcher>,
     private readonly submissionService: SubmissionService,
-    @Optional() webSocket?: WSGateway
+    @Optional() webSocket?: WSGateway,
   ) {
     super(repository, webSocket);
   }
@@ -76,7 +76,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
           this.logger
             .withError(err)
             .error(`Failed to update metadata for '${metaFileName}'`);
-        }
+        },
       );
     } catch (e) {
       this.logger.error(e, `Failed to read directory ${watcher.path}`);
@@ -90,11 +90,11 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
    * @returns {Promise<WatcherMetadata>}
    */
   private async getMetadata(
-    watcher: DirectoryWatcher
+    watcher: DirectoryWatcher,
   ): Promise<WatcherMetadata> {
     try {
       const metadata = JSON.parse(
-        (await readFile(join(watcher.path, 'pb-meta.json'))).toString()
+        (await readFile(join(watcher.path, 'pb-meta.json'))).toString(),
       ) as WatcherMetadata;
       if (!metadata.read) {
         metadata.read = []; // protect user modification
@@ -134,13 +134,13 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
               name: fileName,
               type: SubmissionType.FILE,
             },
-            multerInfo
+            multerInfo,
           );
           submissionId = submission.id;
           if (watcher.template) {
             await this.submissionService.applyOverridingTemplate(
               submission.id,
-              watcher.template?.id
+              watcher.template?.id,
             );
           }
           break;
@@ -159,7 +159,7 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
   }
 
   async create(
-    createDto: CreateDirectoryWatcherDto
+    createDto: CreateDirectoryWatcherDto,
   ): Promise<DirectoryWatcher> {
     const entity = this.repository.create(createDto);
     await this.repository.persistAndFlush(entity);
