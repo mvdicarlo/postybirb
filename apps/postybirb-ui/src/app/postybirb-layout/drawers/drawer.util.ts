@@ -1,7 +1,7 @@
 export const marginOffset = 0;
 
 export function getPortalTarget() {
-  return document.getElementById('postybirb__main')!;
+  return document.getElementById('postybirb__main') as HTMLElement;
 }
 
 export function getOverlayOffset() {

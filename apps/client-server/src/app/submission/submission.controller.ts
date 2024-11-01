@@ -21,6 +21,7 @@ import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
+import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from './dtos/update-submission.dto';
@@ -50,7 +51,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   @UseInterceptors(FilesInterceptor('files', undefined, { preservePath: true }))
   async create(
     @Body() createSubmissionDto: CreateSubmissionDto,
-    @UploadedFiles() files: MulterFileInfo[]
+    @UploadedFiles() files: MulterFileInfo[],
   ) {
     const mapper = (res) => res.toJSON();
     if ((files || []).length) {
@@ -90,7 +91,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async update(
     @Param('id') id: SubmissionId,
-    @Body() updateSubmissionDto: UpdateSubmissionDto
+    @Body() updateSubmissionDto: UpdateSubmissionDto,
   ) {
     return this.service
       .update(id, updateSubmissionDto)
@@ -109,10 +110,17 @@ export class SubmissionController extends PostyBirbController<Submission> {
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })
   async updateTemplateName(
     @Param('id') id: SubmissionId,
-    @Body() updateSubmissionDto: UpdateSubmissionTemplateNameDto
+    @Body() updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     return this.service
       .updateTemplateName(id, updateSubmissionDto)
       .then((entity) => entity.toJSON());
+  }
+
+  @Patch('apply/multi')
+  @ApiOkResponse({ description: 'Submission applied to multiple submissions.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async applyMulti(@Body() applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
+    return this.service.applyMultiSubmission(applyMultiSubmissionDto);
   }
 }

@@ -41,7 +41,7 @@ function BaseNavLink(
     ExtendedSideNavLinkProps & {
       onClick: () => void;
       active: boolean;
-    }
+    },
 ) {
   const { kbd, active, icon, label, collapsed, onClick } = props;
 
@@ -61,7 +61,7 @@ function BaseNavLink(
         MouseEvent,
         EventTarget & HTMLAnchorElement,
         EventTarget
-      >
+      >,
     ) => {
       if (e) {
         e.preventDefault();
@@ -69,7 +69,7 @@ function BaseNavLink(
       }
       onClick();
     },
-    [onClick]
+    [onClick],
   );
 
   const kbdEl = kbd ? (
@@ -111,7 +111,7 @@ function BaseNavLink(
 }
 
 function DrawerNavLink(
-  props: SideNavLinkDrawerProps & ExtendedSideNavLinkProps
+  props: SideNavLinkDrawerProps & ExtendedSideNavLinkProps,
 ) {
   const { globalStateKey } = props;
   const [state, toggleFlyout] = useDrawerToggle(globalStateKey);
@@ -122,7 +122,7 @@ function DrawerNavLink(
 }
 
 export function LocationNavLink(
-  props: SideNavLinkHrefProps & ExtendedSideNavLinkProps
+  props: SideNavLinkHrefProps & ExtendedSideNavLinkProps,
 ) {
   const { location } = props;
   const activePage = useLocation();
@@ -147,7 +147,7 @@ export function SideNavLink(
   props: SideNavLinkProps &
     ExtendedSideNavLinkProps & {
       onClick?: () => void;
-    }
+    },
 ) {
   const { type } = props;
   if (type === 'link') {

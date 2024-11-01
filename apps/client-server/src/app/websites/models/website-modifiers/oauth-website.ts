@@ -6,6 +6,6 @@
 export interface OAuthWebsite {
   onAuthorize(
     data: Record<string, unknown>,
-    state: string
+    state: string,
   ): Promise<Record<string, unknown>>;
 }

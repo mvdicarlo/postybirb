@@ -53,11 +53,11 @@ function Shortcut(props: {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
           const ceNode: HTMLSpanElement | undefined = Array.from(
-            mutation.removedNodes
+            mutation.removedNodes,
           ).find(
             (node) =>
               node.nodeName === 'SPAN' &&
-              (node as HTMLSpanElement).classList.contains('ce')
+              (node as HTMLSpanElement).classList.contains('ce'),
           ) as HTMLSpanElement;
           if (ceNode) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,7 +75,7 @@ function Shortcut(props: {
         }
       });
 
-      const current = ref.current!;
+      const current = ref.current as HTMLSpanElement;
       const ceEl: HTMLSpanElement | null = current.querySelector('.ce');
       if (ceEl && ceEl.innerText.trim() !== current.innerText.trim()) {
         const textNode = findTextNode(current);
@@ -130,13 +130,13 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       const editor = useBlockNoteEditor();
       const { state: websites } = useStore(WebsiteStore);
       const website = websites.find(
-        (w) => w.usernameShortcut?.id === props.inlineContent.props.shortcut
+        (w) => w.usernameShortcut?.id === props.inlineContent.props.shortcut,
       )?.displayName;
 
       const onStale = useCallback(() => {
         const { inline, block } = getMyInlineNode(
           editor,
-          props.inlineContent.props.id
+          props.inlineContent.props.id,
         );
         if (inline) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -161,12 +161,12 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
         </span>
       );
     },
-  }
+  },
 );
 
 export const getUsernameShortcutsMenuItems = (
   editor: typeof schema.BlockNoteEditor,
-  shortcuts: UsernameShortcut[]
+  shortcuts: UsernameShortcut[],
 ): DefaultReactSuggestionItem[] =>
   shortcuts.map((sc) => ({
     title: sc.id,

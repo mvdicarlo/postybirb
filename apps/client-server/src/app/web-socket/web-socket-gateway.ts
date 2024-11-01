@@ -13,7 +13,7 @@ export class WSGateway implements OnGatewayInit {
 
   afterInit(server: Server) {
     server.use(
-      (socket, next) => next()
+      (socket, next) => next(),
       // if (socket.handshake.headers.authorization === global.AUTH_ID) {
       //   return next();
       // }

@@ -51,17 +51,17 @@ describe('TitleParserService', () => {
     const defaultForm = { title: [{ maxLength: Infinity }] };
     const websiteForm = { title: [{ maxLength: Infinity }] };
     (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
-      defaultForm
+      defaultForm,
     );
     (formGeneratorService.generateForm as jest.Mock).mockResolvedValue(
-      websiteForm
+      websiteForm,
     );
 
     const title = await service.parse(
       submission,
       new WebsiteInstanceMock(),
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(title).toBe('website');
@@ -81,17 +81,17 @@ describe('TitleParserService', () => {
     const defaultForm = { title: [{ maxLength: 10 }] };
     const websiteForm = { title: [{ maxLength: 5 }] };
     (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
-      defaultForm
+      defaultForm,
     );
     (formGeneratorService.generateForm as jest.Mock).mockResolvedValue(
-      websiteForm
+      websiteForm,
     );
 
     const title = await service.parse(
       submission,
       instance,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(title).toBe('default');
@@ -112,7 +112,7 @@ describe('TitleParserService', () => {
     } as IWebsiteOptions;
     const defaultForm = { title: [{ maxLength: 10 }] };
     (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
-      defaultForm
+      defaultForm,
     );
     (formGeneratorService.generateForm as jest.Mock).mockResolvedValue(null);
 
@@ -120,7 +120,7 @@ describe('TitleParserService', () => {
       submission,
       instance,
       defaultOptions,
-      websiteOptions
+      websiteOptions,
     );
 
     expect(title).toBe('website');

@@ -25,10 +25,9 @@ const portNumber = parseInt(config.port, 10);
 if (!(portNumber >= 1024 && portNumber <= 65535)) {
   // eslint-disable-next-line no-console
   console.error(
-    'Invalid port number. Please provide a port number between 1024 and 65535.'
+    'Invalid port number. Please provide a port number between 1024 and 65535.',
   );
   app.quit();
 }
 
 export { config as PostyBirbEnvConfig };
-

@@ -11,7 +11,7 @@ export function PostyBirbUpdateButton() {
     () => updateApi.checkForUpdates().then((res) => res.body),
     {
       refetchInterval: 60_000 * 30,
-    }
+    },
   );
 
   if (!update || !update.updateAvailable) {

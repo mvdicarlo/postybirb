@@ -3,6 +3,7 @@ import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../../api/submission.api';
+import { draggableIndexesAreDefined } from '../../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { SubmissionUploader } from '../../submission-uploader/submission-uploader';
 import {
@@ -15,7 +16,7 @@ type SubmissionEditFormFileManagerProps = {
 };
 
 function orderFiles(
-  submission: SubmissionDto<FileSubmissionMetadata>
+  submission: SubmissionDto<FileSubmissionMetadata>,
 ): ISubmissionFileDto[] {
   const { metadata, files } = submission;
   const { order } = metadata;
@@ -57,13 +58,13 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
         if (
           event.oldIndex !== undefined &&
           event.newIndex !== undefined &&
-          event.newDraggableIndex !== undefined &&
+          draggableIndexesAreDefined(event) &&
           event.oldIndex !== event.newIndex
         ) {
           const newOrderedFiles = [...orderedFiles];
           const [movedFile] = newOrderedFiles.splice(
-            event.oldDraggableIndex!,
-            1
+            event.oldDraggableIndex,
+            1,
           );
           newOrderedFiles.splice(event.newDraggableIndex, 0, movedFile);
           // eslint-disable-next-line no-param-reassign
@@ -110,7 +111,7 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
 }
 
 export function SubmissionFileManager(
-  props: SubmissionEditFormFileManagerProps
+  props: SubmissionEditFormFileManagerProps,
 ) {
   const { submission } = props;
   return (

@@ -85,7 +85,7 @@ describe('DescriptionParserService', () => {
   });
 
   function createWebsiteOptions(
-    description: Description | undefined
+    description: Description | undefined,
   ): IWebsiteOptions {
     return {
       data: {
@@ -116,7 +116,7 @@ describe('DescriptionParserService', () => {
       defaultOptions,
       websiteOptions,
       [],
-      ''
+      '',
     );
     expect(description).toEqual('Hello, World!\r\nPosted using PostyBirb');
   });
@@ -137,10 +137,10 @@ describe('DescriptionParserService', () => {
       defaultOptions,
       websiteOptions,
       [],
-      ''
+      '',
     );
     expect(description).toEqual(
-      '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>'
+      '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>',
     );
   });
 
@@ -160,10 +160,10 @@ describe('DescriptionParserService', () => {
       defaultOptions,
       websiteOptions,
       [],
-      ''
+      '',
     );
     expect(description).toEqual(
-      '**Hello,** World!\n\n[Posted using PostyBirb](https://postybirb.com)'
+      '**Hello,** World!\n\n[Posted using PostyBirb](https://postybirb.com)',
     );
   });
 
@@ -183,7 +183,7 @@ describe('DescriptionParserService', () => {
       defaultOptions,
       websiteOptions,
       [],
-      ''
+      '',
     );
     expect(description).toEqual(undefined);
   });

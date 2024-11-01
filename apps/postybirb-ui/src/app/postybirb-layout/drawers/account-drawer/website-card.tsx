@@ -19,7 +19,7 @@ import accountApi from '../../../../api/account.api';
 import { DeleteActionPopover } from '../../../../components/shared/delete-action-popover/delete-action-popover';
 
 type OnLoginProps = (
-  login: { account: IAccountDto; website: IWebsiteInfoDto } | null
+  login: { account: IAccountDto; website: IWebsiteInfoDto } | null,
 ) => void;
 
 type WebsiteCardProps = {
@@ -113,7 +113,7 @@ function AccountRecord(props: AccountRecordProps) {
       <Table.Td>
         <Text c={account.state.isLoggedIn ? 'green' : 'red'}>
           {account.state.isLoggedIn ? (
-            account.state.username ?? <Trans>Unknown</Trans>
+            (account.state.username ?? <Trans>Unknown</Trans>)
           ) : (
             <Trans>Not logged in</Trans>
           )}

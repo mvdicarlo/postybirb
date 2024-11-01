@@ -12,7 +12,7 @@ import { WebsiteRegistryService } from './website-registry.service';
 @Controller('websites')
 export class WebsitesController {
   constructor(
-    private readonly websiteRegistryService: WebsiteRegistryService
+    private readonly websiteRegistryService: WebsiteRegistryService,
   ) {}
 
   @Post('oauth')
@@ -23,7 +23,7 @@ export class WebsitesController {
     description: 'An error occurred while performing authorization operation.',
   })
   performOAuthStep(
-    @Body() oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>
+    @Body() oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>,
   ) {
     return this.websiteRegistryService.performOAuthStep(oauthRequestDto);
   }

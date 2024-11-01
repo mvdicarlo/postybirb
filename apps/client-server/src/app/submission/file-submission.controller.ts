@@ -32,7 +32,7 @@ type Target = 'file' | 'thumbnail';
 export class FileSubmissionController {
   constructor(
     private service: FileSubmissionService,
-    private submissionService: SubmissionService
+    private submissionService: SubmissionService,
   ) {}
 
   private findOne(id: SubmissionId) {
@@ -49,12 +49,12 @@ export class FileSubmissionController {
   async appendFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
-    @UploadedFiles() files: MulterFileInfo[]
+    @UploadedFiles() files: MulterFileInfo[],
   ) {
     switch (target) {
       case 'file':
         await Promise.all(
-          files.map((file) => this.service.appendFile(id, file))
+          files.map((file) => this.service.appendFile(id, file)),
         );
         break;
       case 'thumbnail':
@@ -74,7 +74,7 @@ export class FileSubmissionController {
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
     @Param('fileId') fileId: string,
-    @UploadedFile() file: MulterFileInfo
+    @UploadedFile() file: MulterFileInfo,
   ) {
     switch (target) {
       case 'file':
@@ -96,7 +96,7 @@ export class FileSubmissionController {
   async removeFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
-    @Param('fileId') fileId: string
+    @Param('fileId') fileId: string,
   ) {
     switch (target) {
       case 'file':

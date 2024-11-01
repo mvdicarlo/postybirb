@@ -22,12 +22,12 @@ import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 class CustomClassSerializer extends ClassSerializerInterceptor {
   serialize(
     response: PlainLiteralObject | PlainLiteralObject[],
-    options: ClassTransformOptions
+    options: ClassTransformOptions,
   ): PlainLiteralObject | PlainLiteralObject[] {
     // Attempts to deal with recursive objects
     return super.serialize(
       response instanceof PostyBirbEntity ? response.toJSON() : response,
-      options
+      options,
     );
   }
 }
@@ -58,7 +58,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: true,
-    })
+    }),
   );
   app.use(compression());
 
@@ -95,4 +95,3 @@ async function bootstrap() {
 }
 
 export { bootstrap as bootstrapClientServer };
-

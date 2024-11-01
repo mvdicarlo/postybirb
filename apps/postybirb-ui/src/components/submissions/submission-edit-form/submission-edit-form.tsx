@@ -43,7 +43,8 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const { state: accounts, isLoading } = useStore(AccountStore);
 
   const defaultOption = submission.getDefaultOptions();
-  const isTemplate = submission.isTemplate();
+  const isSpecialSubmissionType =
+    submission.isMultiSubmission() || submission.isTemplate();
   const top = 109;
 
   const optionsGroupedByWebsiteId = useMemo(
@@ -51,29 +52,35 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
       Object.entries(
         submission.options
           .filter((o) => !o.isDefault)
-          .reduce((acc, option) => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const account = accounts.find((a) => a.id === option.account)!;
-            const websiteId = account.website;
-            if (!acc[websiteId]) {
-              acc[websiteId] = {
-                account,
-                options: [],
-              };
-            }
-            acc[websiteId].options.push(option);
-            return acc;
-          }, {} as Record<AccountId, { account: IAccountDto; options: WebsiteOptionsDto[] }>)
+          .reduce(
+            (acc, option) => {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              const account = accounts.find((a) => a.id === option.account)!;
+              const websiteId = account.website;
+              if (!acc[websiteId]) {
+                acc[websiteId] = {
+                  account,
+                  options: [],
+                };
+              }
+              acc[websiteId].options.push(option);
+              return acc;
+            },
+            {} as Record<
+              AccountId,
+              { account: IAccountDto; options: WebsiteOptionsDto[] }
+            >,
+          ),
       ).sort((a, b) => {
         const aAccount = a[1].account;
         const bAccount = b[1].account;
         return (
           aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
         ).localeCompare(
-          bAccount.websiteInfo.websiteDisplayName ?? bAccount.name
+          bAccount.websiteInfo.websiteDisplayName ?? bAccount.name,
         );
       }),
-    [submission.options, accounts]
+    [submission.options, accounts],
   );
 
   const navTree: TreeNodeData[] = useMemo(
@@ -96,13 +103,13 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
         };
       }),
     ],
-    [defaultOption.id, optionsGroupedByWebsiteId]
+    [defaultOption.id, optionsGroupedByWebsiteId],
   );
 
   const tree = useTree({
     initialExpandedState: navTree.reduce(
       (acc, node) => ({ ...acc, [node.value]: true }),
-      {}
+      {},
     ),
   });
 
@@ -119,7 +126,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const debouncedUpdate = useCallback(
     debounce((schedule: ISubmissionScheduleInfo) => {
       submissionApi.update(submission.id, {
-        isScheduled: isTemplate ? false : submission.isScheduled,
+        isScheduled: isSpecialSubmissionType ? false : submission.isScheduled,
         scheduledFor: schedule.scheduledFor,
         scheduleType: schedule.scheduleType,
         deletedWebsiteOptions: [],
@@ -127,7 +134,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
         metadata: submission.metadata,
       });
     }, 1_000),
-    [submission]
+    [submission],
   );
 
   if (isLoading) {
@@ -137,12 +144,12 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   return (
     <Flex>
       <Stack gap="xs" flex="11">
-        {!isTemplate && submission.type === SubmissionType.FILE ? (
+        {!isSpecialSubmissionType && submission.type === SubmissionType.FILE ? (
           <SubmissionFileManager
             submission={submission as SubmissionDto<FileSubmissionMetadata>}
           />
         ) : null}
-        {!isTemplate ? (
+        {!isSpecialSubmissionType ? (
           <Input.Wrapper label={<Trans>Schedule</Trans>}>
             <SubmissionScheduler
               schedule={submission.schedule}
@@ -156,13 +163,13 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           submission={submission}
           onSelect={(selectedAccounts) => {
             const existingOptions = submission.options.filter(
-              (o) => !o.isDefault
+              (o) => !o.isDefault,
             );
             const removedOptions: WebsiteOptionsDto[] = [];
             const newAccounts: AccountId[] = [];
             selectedAccounts.forEach((account) => {
               const exists = existingOptions.find(
-                (o) => o.account === account.id
+                (o) => o.account === account.id,
               );
               if (!exists) {
                 newAccounts.push(account.id);
@@ -170,7 +177,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             });
             existingOptions.forEach((option) => {
               const exists = selectedAccounts.find(
-                (a) => a.id === option.account
+                (a) => a.id === option.account,
               );
               if (!exists) {
                 removedOptions.push(option);

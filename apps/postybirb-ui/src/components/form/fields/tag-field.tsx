@@ -39,7 +39,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
 
       form.setFieldValue(
         `${propKey}.tags`,
-        uniq(tags.filter((tag) => !defaultTags.includes(tag)))
+        uniq(tags.filter((tag) => !defaultTags.includes(tag))),
       );
     } else {
       form.setFieldValue(`${propKey}.tags`, uniq(tags));
@@ -64,6 +64,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           />
         )}
         <TagsInput
+          inputWrapperOrder={['label', 'input', 'description', 'error']}
           clearable
           required={field.required}
           value={tagValue}
@@ -78,13 +79,13 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
               tags.map((tag) => {
                 if (tag.startsWith(TAG_GROUP_LABEL)) {
                   const group: TagGroupDto = JSON.parse(
-                    tag.slice(TAG_GROUP_LABEL.length)
+                    tag.slice(TAG_GROUP_LABEL.length),
                   );
                   return group.tags;
                 }
 
                 return tag;
-              })
+              }),
             );
             updateTags([...newTags]);
           }}
@@ -92,7 +93,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
             const { value } = tagOption.option;
             if (value.startsWith(TAG_GROUP_LABEL)) {
               const group: TagGroupDto = JSON.parse(
-                value.slice(TAG_GROUP_LABEL.length)
+                value.slice(TAG_GROUP_LABEL.length),
               );
               return (
                 <Box>

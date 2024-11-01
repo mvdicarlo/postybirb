@@ -12,8 +12,12 @@ type SubmissionViewProps = {
 
 function filterSubmissions(
   submissions: SubmissionDto[],
-  filter: string
+  filter: string,
 ): SubmissionDto[] {
+  if (!filter) {
+    return submissions;
+  }
+
   const filterValue = filter.toLowerCase().trim();
   return submissions.filter((submission) => {
     const defaultOption = submission.getDefaultOptions();

@@ -21,7 +21,7 @@ import submissionsApi from '../../api/submission.api';
 
 export class SubmissionDto<
   T extends ISubmissionMetadata = ISubmissionMetadata,
-  O extends IWebsiteFormFields = IWebsiteFormFields
+  O extends IWebsiteFormFields = IWebsiteFormFields,
 > implements ISubmissionDto<T>
 {
   createdAt!: string;
@@ -86,7 +86,7 @@ export class SubmissionDto<
   public getDefaultOptions(): WebsiteOptionsDto<O> {
     if (!this.defaultOption) {
       this.defaultOption = this.options.find(
-        (o) => o.isDefault
+        (o) => o.isDefault,
       ) as WebsiteOptionsDto<O>;
     }
     return this.defaultOption as WebsiteOptionsDto<O>;
@@ -120,6 +120,10 @@ export class SubmissionDto<
 
   public isTemplate(): boolean {
     return Boolean(this.metadata.template);
+  }
+
+  public isMultiSubmission(): boolean {
+    return Boolean(this.metadata.isMultiSubmission);
   }
 
   public getTemplateName() {

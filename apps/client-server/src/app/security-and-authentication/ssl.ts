@@ -46,7 +46,7 @@ export class SSL {
     cert.validity.notBefore = new Date();
     cert.validity.notAfter = new Date();
     cert.validity.notAfter.setFullYear(
-      cert.validity.notBefore.getFullYear() + 99
+      cert.validity.notBefore.getFullYear() + 99,
     );
 
     const attrs = [

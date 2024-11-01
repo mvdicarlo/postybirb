@@ -1,11 +1,10 @@
 // @ts-check
-const { defineConfig } = require('eslint-define-config');
 
 // Disable this annoying red lines under unformatted code
 // if there is prettier extensions installed
 let prettierExtension = process.env.VSCODE_CWD;
 
-module.exports = defineConfig({
+module.exports = {
   root: true,
   ignorePatterns: ['**/*'],
   extends: [
@@ -104,4 +103,4 @@ module.exports = defineConfig({
       },
     ],
   },
-});
+};

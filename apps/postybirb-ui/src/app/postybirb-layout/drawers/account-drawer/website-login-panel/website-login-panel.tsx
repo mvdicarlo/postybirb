@@ -24,7 +24,7 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
     );
   } else if (website.loginType.type === 'custom') {
     const CustomLoginComponent = getCustomLoginComponent(
-      website.loginType.loginComponentName
+      website.loginType.loginComponentName,
     );
 
     if (CustomLoginComponent !== undefined) {
@@ -35,6 +35,7 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
   }
 
   return (
+    // eslint-disable-next-line lingui/no-unlocalized-strings
     <Box h="calc(100% - 50px)" p="sm">
       {loginMethod}
     </Box>

@@ -5,7 +5,8 @@ import { SubmissionDto } from '../models/dtos/submission.dto';
 import StoreManager from './store-manager';
 
 const filter = (submission: SubmissionDto | ISubmissionDto) =>
-  submission.metadata.template === undefined;
+  submission.metadata.template === undefined &&
+  Boolean(submission.metadata.isMultiSubmission) === false;
 
 export const SubmissionStore: StoreManager<SubmissionDto> =
   new StoreManager<SubmissionDto>(
@@ -14,8 +15,8 @@ export const SubmissionStore: StoreManager<SubmissionDto> =
       submissionsApi
         .getAll()
         .then(({ body }) =>
-          body.filter(filter).map((d) => new SubmissionDto(d))
+          body.filter(filter).map((d) => new SubmissionDto(d)),
         ),
     SubmissionDto,
-    filter
+    filter,
   );

@@ -22,13 +22,13 @@ type SubmissionViewCardActionsProps = {
 };
 
 export function SubmissionViewCardActions(
-  props: SubmissionViewCardActionsProps
+  props: SubmissionViewCardActionsProps,
 ) {
   const { submission } = props;
   const navigateTo = useNavigate();
 
   const hasValidationIssues = submission.validations.some(
-    (v) => v.errors && v.errors.length > 0
+    (v) => v.errors && v.errors.length > 0,
   );
   const hasOptions = submission.options.filter((o) => !o.isDefault).length > 0;
   const canSetForPosting =

@@ -34,7 +34,7 @@ export class DirectoryWatchersController extends PostyBirbController<DirectoryWa
   @ApiNotFoundResponse({ description: 'Entity not found.' })
   update(
     @Body() updateDto: UpdateDirectoryWatcherDto,
-    @Param('id') id: string
+    @Param('id') id: string,
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toJSON());
   }

@@ -6,10 +6,6 @@ import { DatesProvider } from '@mantine/dates';
 import { useCallback, useEffect, useState } from 'react';
 import { use18n } from '../hooks/use-i18n';
 
-declare module '@lingui/core' {
-  interface I18n {}
-}
-
 type AppI18nProviderProps = {
   children: React.ReactNode;
 };
@@ -32,7 +28,7 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
       i18n.loadAndActivate({ locale: lang, messages });
       if (!loaded) setLoaded(true);
     },
-    [loaded]
+    [loaded],
   );
 
   useEffect(() => {

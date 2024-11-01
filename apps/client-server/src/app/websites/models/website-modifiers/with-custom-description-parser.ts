@@ -13,7 +13,7 @@ export interface WithCustomDescriptionParser {
 }
 
 export function isWithCustomDescriptionParser(
-  website: unknown
+  website: unknown,
 ): website is WithCustomDescriptionParser {
   return (
     typeof website === 'object' &&

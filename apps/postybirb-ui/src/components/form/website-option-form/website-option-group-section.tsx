@@ -30,7 +30,7 @@ type WebsiteOptionGroupSectionProps = {
 };
 
 export function WebsiteOptionGroupSection(
-  props: WebsiteOptionGroupSectionProps
+  props: WebsiteOptionGroupSectionProps,
 ) {
   const { top, options, submission, account, onRemoveAccount } = props;
   const [userSpecifiedModalVisible, setUserSpecifiedModalVisible] = useState<

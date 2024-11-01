@@ -15,7 +15,7 @@ export class TagGroupsService extends PostyBirbService<TagGroup> {
     dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(TagGroup)
     repository: PostyBirbRepository<TagGroup>,
-    @Optional() webSocket?: WSGateway
+    @Optional() webSocket?: WSGateway,
   ) {
     super(repository, webSocket);
     repository.addUpdateListener(dbSubscriber, [TagGroup], () => this.emit());

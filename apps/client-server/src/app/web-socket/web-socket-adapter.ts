@@ -7,7 +7,7 @@ export class WebSocketAdapter extends IoAdapter {
     options?: ServerOptions & {
       namespace?: string;
       server?: unknown;
-    }
+    },
   ) {
     const server = super.createIOServer(port, { ...options, cors: true });
     return server;

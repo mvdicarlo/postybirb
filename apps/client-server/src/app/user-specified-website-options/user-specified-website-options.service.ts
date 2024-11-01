@@ -11,13 +11,13 @@ import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specifi
 export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpecifiedWebsiteOptions> {
   constructor(
     @InjectRepository(UserSpecifiedWebsiteOptions)
-    repository: PostyBirbRepository<UserSpecifiedWebsiteOptions>
+    repository: PostyBirbRepository<UserSpecifiedWebsiteOptions>,
   ) {
     super(repository);
   }
 
   async create(
-    createDto: CreateUserSpecifiedWebsiteOptionsDto
+    createDto: CreateUserSpecifiedWebsiteOptionsDto,
   ): Promise<UserSpecifiedWebsiteOptions> {
     this.logger
       .withMetadata(createDto)
@@ -43,7 +43,7 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
 
   public findByAccountAndSubmissionType(
     accountId: AccountId,
-    type: SubmissionType
+    type: SubmissionType,
   ) {
     return this.repository.findOne({ account: accountId, type });
   }
