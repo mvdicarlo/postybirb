@@ -15,5 +15,3 @@ TranslationMessages['discord.webhook.name'] = (props) => {
   const { name } = props.values;
   return <Trans>Webhook name {name} is invalid</Trans>;
 };
-
-

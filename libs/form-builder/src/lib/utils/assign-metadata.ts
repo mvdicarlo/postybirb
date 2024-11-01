@@ -15,14 +15,14 @@ export type PartialOnly<T, V extends string | number | symbol> = Omit<T, V> &
 
 /**
  * Field decorator creator superfunction
- * 
+ *
  * @param type - Type of the decorator to create. Will be set to the {@link FieldType.type} field.
  * @returns Creator function
  */
 export function createFieldDecorator<
   FieldValue,
   ExtraFields extends object = object,
-  TypeKey extends string = string
+  TypeKey extends string = string,
 >(type: TypeKey) {
   // Note that we cant just create one function that returns a decorator
   // because if you specify generics by hand, e.g. createFieldDecorator<SomeType>('type', {})
@@ -33,7 +33,7 @@ export function createFieldDecorator<
   return function create<
     Defaults extends
       | Partial<FieldType<FieldValue, TypeKey> & ExtraFields>
-      | unknown
+      | unknown,
   >(field: {
     /**
      * Default values of the field. If label or defaultValue are provided, they will be not required when using a decorator
@@ -67,14 +67,14 @@ export function createFieldDecorator<
     onCreate?: (
       options: FieldType<FieldValue, TypeKey>,
       target: object,
-      propertyKey: string | symbol
+      propertyKey: string | symbol,
     ) => void;
   }) {
     function decorator<Data extends unknown | PrimitiveRecord = unknown>(
       options: PartialOnly<
         FieldType<FieldValue, TypeKey, Data> & ExtraFields,
         keyof Defaults
-      >
+      >,
     ): PropertyDecorator {
       if (field.defaults)
         for (const [key, value] of Object.entries(field.defaults)) {
@@ -98,7 +98,7 @@ export function createFieldDecorator<
         field.onCreate?.(
           fieldOptions as unknown as FieldType<FieldValue, TypeKey>,
           target,
-          propertyKey
+          propertyKey,
         );
 
         fields[propertyKey] = fieldOptions as unknown as FieldAggregateType;

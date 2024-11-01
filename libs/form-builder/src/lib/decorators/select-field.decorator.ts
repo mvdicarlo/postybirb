@@ -13,9 +13,8 @@ type ExtraOptions = {
   allowMultiple: boolean;
 };
 
-
 export const SelectField = createFieldDecorator<unknown, ExtraOptions>(
-  'select'
+  'select',
 )({
   defaults: {
     formField: 'select',

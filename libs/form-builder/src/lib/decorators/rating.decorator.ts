@@ -14,7 +14,7 @@ type ExtraOptions = {
 };
 
 export const RatingField = createFieldDecorator<SubmissionRating, ExtraOptions>(
-  'rating'
+  'rating',
 )({
   defaults: {
     label: 'rating',

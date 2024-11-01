@@ -4,7 +4,7 @@ import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';
 
 export const DescriptionField = createFieldDecorator<DescriptionValue>(
-  'description'
+  'description',
 )({
   defaults: {
     label: 'description',

@@ -7,7 +7,7 @@ import { type fieldLabelTranslations } from 'apps/postybirb-ui/src/components/fo
 export type FieldType<
   V,
   F extends string,
-  T extends PrimitiveRecord | unknown = unknown
+  T extends PrimitiveRecord | unknown = unknown,
 > = {
   /**
    * Pulls a default value from a key property
