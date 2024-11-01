@@ -5,10 +5,9 @@ import { SubmissionDto } from '../models/dtos/submission.dto';
 import StoreManager from './store-manager';
 
 const filter = (submission: SubmissionDto | ISubmissionDto) =>
-  submission.metadata.template === undefined &&
-  Boolean(submission.metadata.isMultiSubmission) === false;
+  Boolean(submission.metadata.isMultiSubmission);
 
-export const SubmissionStore: StoreManager<SubmissionDto> =
+export const MultiSubmissionStore: StoreManager<SubmissionDto> =
   new StoreManager<SubmissionDto>(
     SUBMISSION_UPDATES,
     () =>

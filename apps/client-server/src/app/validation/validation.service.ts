@@ -40,7 +40,6 @@ export class ValidationService {
   public async validateSubmission(
     submission: ISubmission,
   ): Promise<ValidationResult[]> {
-    this.logger.debug(`Validating submission ${submission.id}`);
     return Promise.all(
       submission.options.map((website) => this.validate(submission, website)),
     );
@@ -58,12 +57,6 @@ export class ValidationService {
     websiteOption: IWebsiteOptions,
   ): Promise<ValidationResult> {
     try {
-      this.logger.debug(
-        `Validating submission ${submission.id} with website ${websiteOption.account.id} (${websiteOption.id})`,
-      );
-      // TODO figure out why the instances cannot be found
-      // TODO consider removing the debounce you added to the submission service since the behavior is scuffed visually on the ui
-      // this will mean fixing the underlying issue of insertion time
       const website = websiteOption.isDefault
         ? new DefaultWebsite(websiteOption.account)
         : this.websiteRegistry.findInstance(websiteOption.account);

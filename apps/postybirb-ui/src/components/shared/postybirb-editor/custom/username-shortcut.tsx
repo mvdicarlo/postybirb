@@ -75,7 +75,7 @@ function Shortcut(props: {
         }
       });
 
-      const current = ref.current!;
+      const current = ref.current as HTMLSpanElement;
       const ceEl: HTMLSpanElement | null = current.querySelector('.ce');
       if (ceEl && ceEl.innerText.trim() !== current.innerText.trim()) {
         const textNode = findTextNode(current);

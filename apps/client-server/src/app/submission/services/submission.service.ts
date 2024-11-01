@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
   Optional,
   forwardRef,
 } from '@nestjs/common';
@@ -42,6 +43,7 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
+import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
@@ -55,7 +57,10 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  * @class SubmissionService
  */
 @Injectable()
-export class SubmissionService extends PostyBirbService<SubmissionEntity> {
+export class SubmissionService
+  extends PostyBirbService<SubmissionEntity>
+  implements OnModuleInit
+{
   constructor(
     dbSubscriber: DatabaseUpdateSubscriber,
     @InjectRepository(Submission)
@@ -84,6 +89,12 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
       this.emit(),
     );
+  }
+
+  onModuleInit() {
+    Object.values(SubmissionType).forEach((type) => {
+      this.populateMultiSubmission(type);
+    });
   }
 
   /**
@@ -116,6 +127,18 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
     );
   }
 
+  private async populateMultiSubmission(type: SubmissionType) {
+    const existing = await this.repository.findOne({
+      type,
+      metadata: { isMultiSubmission: true },
+    });
+    if (existing) {
+      return;
+    }
+
+    await this.create({ name: type, type, isMultiSubmission: true });
+  }
+
   /**
    * Creates a submission.
    *
@@ -142,6 +165,11 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       submission.metadata.template = {
         name: createSubmissionDto.name.trim(),
       };
+    }
+
+    if (createSubmissionDto.isMultiSubmission) {
+      submission.metadata.isMultiSubmission = true;
+      submission.id = `MULTI-${submission.type}`;
     }
 
     let name = 'New submission';
@@ -177,7 +205,10 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
       }
 
       case SubmissionType.FILE: {
-        if (createSubmissionDto.isTemplate) {
+        if (
+          createSubmissionDto.isTemplate ||
+          createSubmissionDto.isMultiSubmission
+        ) {
           // Don't need to populate on a template
           break;
         }
@@ -338,6 +369,67 @@ export class SubmissionService extends PostyBirbService<SubmissionEntity> {
 
   public async remove(id: string) {
     await super.remove(id);
+    this.emit();
+  }
+
+  async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
+    const { originId, submissionIds, merge } = applyMultiSubmissionDto;
+    const origin = await this.repository.findOneOrFail({ id: originId });
+    const submissions = await this.repository.find({
+      id: { $in: submissionIds },
+    });
+    if (merge) {
+      // Keeps unique options, overwrites overlapping options\
+      // eslint-disable-next-line no-restricted-syntax
+      for (const submission of submissions) {
+        // eslint-disable-next-line no-restricted-syntax
+        for (const option of origin.options.getItems()) {
+          const existingOption = submission.options
+            .getItems()
+            .find((o) => o.account.id === option.account.id);
+          if (existingOption) {
+            // Don't overwrite set title
+            const opts = { ...option.data, title: existingOption.data.title };
+            existingOption.data = opts;
+          } else {
+            submission.options.add(
+              await this.websiteOptionsService.createOption(
+                submission,
+                option.account.id,
+                option.data,
+                option.isDefault ? undefined : option.data.title,
+              ),
+            );
+          }
+        }
+      }
+    } else {
+      // Removes all options not included in the origin submission
+      // eslint-disable-next-line no-restricted-syntax
+      for (const submission of submissions) {
+        const items = submission.options.getItems();
+        const defaultOptions = items.find((option) => option.isDefault);
+        const defaultTitle = defaultOptions?.data.title;
+        submission.options.removeAll();
+        // eslint-disable-next-line no-restricted-syntax
+        for (const option of origin.options.getItems()) {
+          const opts = { ...option.data };
+          if (option.isDefault) {
+            opts.title = defaultTitle;
+          }
+          submission.options.add(
+            await this.websiteOptionsService.createOption(
+              submission,
+              option.account.id,
+              opts,
+              option.isDefault ? defaultTitle : option.data.title,
+            ),
+          );
+        }
+      }
+    }
+
+    await this.repository.persistAndFlush(submissions);
     this.emit();
   }
 

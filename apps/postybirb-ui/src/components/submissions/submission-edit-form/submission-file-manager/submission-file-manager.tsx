@@ -3,6 +3,7 @@ import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
 import { useEffect, useRef, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../../api/submission.api';
+import { draggableIndexesAreDefined } from '../../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { SubmissionUploader } from '../../submission-uploader/submission-uploader';
 import {
@@ -57,12 +58,12 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
         if (
           event.oldIndex !== undefined &&
           event.newIndex !== undefined &&
-          event.newDraggableIndex !== undefined &&
+          draggableIndexesAreDefined(event) &&
           event.oldIndex !== event.newIndex
         ) {
           const newOrderedFiles = [...orderedFiles];
           const [movedFile] = newOrderedFiles.splice(
-            event.oldDraggableIndex!,
+            event.oldDraggableIndex,
             1,
           );
           newOrderedFiles.splice(event.newDraggableIndex, 0, movedFile);

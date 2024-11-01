@@ -11,21 +11,45 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2017", "dom"],
+    "lib": [
+      "es2017",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@postybirb/form-builder": ["libs/form-builder/src/index.ts"],
-      "@postybirb/fs": ["libs/fs/src/index.ts"],
-      "@postybirb/http": ["libs/http/src/index.ts"],
-      "@postybirb/logger": ["libs/logger/src/index.ts"],
-      "@postybirb/socket-events": ["libs/socket-events/src/index.ts"],
-      "@postybirb/translations": ["libs/translations/src/index.ts"],
-      "@postybirb/types": ["libs/types/src/index.ts"],
-      "@postybirb/utils/electron": ["libs/utils/electron/src/index.ts"],
-      "@postybirb/utils/file-type": ["libs/utils/file-type/src/index.ts"]
+      "@postybirb/form-builder": [
+        "libs/form-builder/src/index.ts"
+      ],
+      "@postybirb/fs": [
+        "libs/fs/src/index.ts"
+      ],
+      "@postybirb/http": [
+        "libs/http/src/index.ts"
+      ],
+      "@postybirb/logger": [
+        "libs/logger/src/index.ts"
+      ],
+      "@postybirb/socket-events": [
+        "libs/socket-events/src/index.ts"
+      ],
+      "@postybirb/translations": [
+        "libs/translations/src/index.ts"
+      ],
+      "@postybirb/types": [
+        "libs/types/src/index.ts"
+      ],
+      "@postybirb/utils/electron": [
+        "libs/utils/electron/src/index.ts"
+      ],
+      "@postybirb/utils/file-type": [
+        "libs/utils/file-type/src/index.ts"
+      ]
     }
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

@@ -4,4 +4,5 @@ import { AccountId } from '../../models';
 export interface IFormGenerationRequestDto {
   accountId: AccountId;
   type: SubmissionType;
+  isMultiSubmission?: boolean;
 }
