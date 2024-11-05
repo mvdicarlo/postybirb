@@ -1,11 +1,16 @@
 /* eslint-disable no-param-reassign */
+import * as rtf from '@iarna/rtf-to-html';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
-import { FileSubmission, IFileBuffer } from '@postybirb/types';
+import { FileSubmission, FileType, IFileBuffer } from '@postybirb/types';
+import { getFileType } from '@postybirb/utils/file-type';
 import { async as hash } from 'hasha';
+import { html as htmlBeautify } from 'js-beautify';
+import * as mammoth from 'mammoth';
 import { Sharp } from 'sharp';
+import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 import {
   AltFile,
@@ -58,6 +63,10 @@ export class CreateFileService {
         await this.populateAsImageFile(entity, file, buf);
       }
 
+      if (getFileType(file.originalname) === FileType.TEXT) {
+        await this.createSubmissionTextAltFile(entity, file, buf);
+      }
+
       entity.file = this.createFileBufferEntity(entity, buf, 'primary');
       submission.files.add(entity);
       this.logger
@@ -71,6 +80,57 @@ export class CreateFileService {
       if (!file.origin) {
         removeFile(file.path);
       }
+    }
+  }
+
+  /**
+   * Populates an alt file containing text data extracted from a file.
+   * Currently supports docx, rtf, and plaintext.
+   *
+   * @param {SubmissionFile} entity
+   * @param {MulterFileInfo} file
+   * @param {Buffer} buf
+   */
+  async createSubmissionTextAltFile(
+    entity: SubmissionFile,
+    file: MulterFileInfo,
+    buf: Buffer,
+  ) {
+    let altText: string;
+    if (
+      file.mimetype ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.originalname.endsWith('.docx')
+    ) {
+      this.logger.info('[Mutation] Creating Alt File for Text Document: DOCX');
+      altText = (await mammoth.convertToHtml({ buffer: buf })).value;
+    }
+
+    if (
+      file.mimetype === 'application/rtf' ||
+      file.originalname.endsWith('.rtf')
+    ) {
+      this.logger.info('[Mutation] Creating Alt File for Text Document: RTF');
+      const promisifiedRtf = promisify(rtf.fromString);
+      altText = await promisifiedRtf(buf.toString());
+    }
+
+    if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {
+      this.logger.info('[Mutation] Creating Alt File for Text Document: TXT');
+      altText = buf.toString();
+    }
+
+    if (altText) {
+      const prettifiedBuf = Buffer.from(
+        htmlBeautify(altText, { wrap_line_length: 100 }),
+      );
+      const altFile = this.createFileBufferEntity(entity, prettifiedBuf, 'alt');
+      altFile.mimeType = 'text/html';
+      altFile.fileName = `${entity.fileName}.html`;
+      entity.altFile = altFile;
+      this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
+    } else {
+      this.logger.info('No Alt File Created');
     }
   }
 

@@ -69,6 +69,7 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
     orphanRemoval: true,
     lazy: false,
     nullable: true,
+    serializer: (s) => s?.id,
   })
   altFile?: Rel<IFileBuffer>;
 
