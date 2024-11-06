@@ -68,7 +68,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     const { maxLength, currentLength } = props.values;
     return (
       <Trans>
-        Tag limit reached ({currentLength}/{maxLength})
+        Tag limit reached ({currentLength} / {maxLength})
       </Trans>
     );
   },
