@@ -5,14 +5,13 @@ export default {
   globals: {},
   testEnvironment: 'node',
   transform: {
-    '^.+\\.[tj]s$': [
+    '^.+\\.[tj]sx?$': [
       'ts-jest',
       {
         tsconfig: '<rootDir>/tsconfig.spec.json',
       },
     ],
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/client-server',
-  runner: '@kayahr/jest-electron-runner/main',
+  moduleFileExtensions: ['ts', 'js', 'tsx', 'jsx'],
+  coverageDirectory: '../../coverage/apps/client-server'
 };
