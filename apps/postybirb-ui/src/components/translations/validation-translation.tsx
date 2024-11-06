@@ -84,7 +84,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
       <Trans>
         Requires at least {minLength} tags{' '}
         <span>
-          ({currentLength}/{minLength})
+          ({currentLength} / {minLength})
         </span>
       </Trans>
     );
