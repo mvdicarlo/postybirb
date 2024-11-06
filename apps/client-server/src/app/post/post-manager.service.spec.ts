@@ -113,7 +113,7 @@ describe('PostManagerService', () => {
     return dto;
   }
 
-  afterEach(async () => {
+  afterAll(async () => {
     await orm.close(true);
     await module.close();
   });
