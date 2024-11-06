@@ -94,7 +94,8 @@ describe('TitleParserService', () => {
       websiteOptions,
     );
 
-    expect(title).toBe('default');
+    // Title should be truncated
+    expect(title).toBe('defau');
   });
 
   it('should parse title and use default form if website form is not available', async () => {
