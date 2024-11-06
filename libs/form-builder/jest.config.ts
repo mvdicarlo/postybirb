@@ -12,6 +12,6 @@ export default {
       },
     ],
   },
-  moduleFileExtensions: ['ts', 'js', 'tsx', 'jsx'],
-  coverageDirectory: '../../coverage/apps/client-server'
+  moduleFileExtensions: ['ts', 'tsx', 'jsx', 'jsx'],
+  coverageDirectory: '../../coverage/libs/form-builder',
 };
