@@ -65,6 +65,11 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   },
 
   'validation.tags.max-tags': (props) => {
+    //
+    // Tag limit reached (7/5)
+    // Tag limit reached (7 / 5)
+    // with space its more readable
+    //
     const { maxLength, currentLength } = props.values;
     return (
       <Trans>
