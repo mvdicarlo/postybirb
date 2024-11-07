@@ -1,12 +1,12 @@
-import { rmdirSync } from 'fs';
+import { rmSync } from 'fs';
 import { join } from 'path';
-import { POSTYBIRB_DIRECTORY, initializeDirectories } from './directories';
+import { initializeDirectories, POSTYBIRB_DIRECTORY } from './directories';
 import {
-  writeSync,
-  readSync,
-  writeJsonSync,
   readJsonSync,
+  readSync,
   removeFileSync,
+  writeJsonSync,
+  writeSync,
 } from './fs';
 
 let filepath: string;
@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
-  rmdirSync(POSTYBIRB_DIRECTORY, { recursive: true });
+  rmSync(POSTYBIRB_DIRECTORY, { recursive: true, force: true });
 });
 
 describe('PostyBirbFS', () => {
