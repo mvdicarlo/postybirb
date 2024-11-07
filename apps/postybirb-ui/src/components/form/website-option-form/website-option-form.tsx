@@ -2,8 +2,7 @@
 import { Trans } from '@lingui/macro';
 import { Alert, Box, Flex, Loader, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import {
+import type {
   FieldAggregateType,
   FormBuilderMetadata,
 } from '@postybirb/form-builder';

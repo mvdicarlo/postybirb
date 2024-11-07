@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UseFormReturnType } from '@mantine/form';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { FieldAggregateType } from '@postybirb/form-builder';
+import type { FieldAggregateType } from '@postybirb/form-builder';
 import {
   IWebsiteFormFields,
   ValidationResult,

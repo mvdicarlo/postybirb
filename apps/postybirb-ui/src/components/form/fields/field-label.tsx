@@ -1,7 +1,6 @@
 import { MessageDescriptor } from '@lingui/core';
 import { useLingui } from '@lingui/react';
 import { Input } from '@mantine/core';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import type { FieldAggregateType } from '@postybirb/form-builder';
 import { PropsWithChildren } from 'react';
 import { ValidationTranslation } from '../../translations/validation-translation';

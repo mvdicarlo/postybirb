@@ -44,7 +44,12 @@ module.exports = {
           'error',
           {
             enforceBuildableLibDependency: true,
-            allow: [],
+
+            // We allow it because we need to use import from
+            // postybirb-ui to make jump-to definition in the
+            // FieldType.label
+            allow: ['@postybirb/form-builder'],
+
             depConstraints: [
               {
                 sourceTag: '*',
