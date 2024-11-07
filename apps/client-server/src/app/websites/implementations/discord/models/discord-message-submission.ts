@@ -12,7 +12,7 @@ import {
 
 export class DiscordMessageSubmission implements IWebsiteFormFields {
   @TextField({
-    label: 'Title',
+    label: 'title',
     defaultValue: '',
     row: 0,
     col: 1,

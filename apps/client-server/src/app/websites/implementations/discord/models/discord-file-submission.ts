@@ -17,7 +17,7 @@ export class DiscordFileSubmission implements IWebsiteFormFields {
   @BooleanField({ label: 'allowResize', defaultValue: true })
   allowResize = true;
 
-  @TextField({ label: 'Title', defaultValue: '' })
+  @TextField({ label: 'title', defaultValue: '' })
   title?: string;
 
   @DescriptionField({})

@@ -23,6 +23,11 @@ import { PostParsersService } from './post-parsers.service';
     WebsiteImplProvider,
     DescriptionParserService,
   ],
-  exports: [PostParsersService],
+  exports: [
+    PostParsersService,
+    TagParserService,
+    TitleParserService,
+    DescriptionParserService,
+  ],
 })
 export class PostParsersModule {}

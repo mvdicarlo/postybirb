@@ -12,12 +12,12 @@ describe('formBuilder', () => {
 
     expect(formBuilder(new BooleanType(), {})).toEqual({
       field: {
-        label: 'boolean field',
+        label: 'description',
         defaultValue: false,
         type: 'boolean',
-        formField: 'switch',
+        formField: 'checkbox',
         row: Number.MAX_SAFE_INTEGER,
-        col: Number.MAX_SAFE_INTEGER,
+        col: 0,
       },
     });
   });
@@ -30,12 +30,12 @@ describe('formBuilder', () => {
 
     expect(formBuilder(new TextType(), {})).toEqual({
       field: {
-        label: 'text field',
+        label: 'description',
         defaultValue: 'Hello',
         type: 'text',
         formField: 'input',
         row: Number.MAX_SAFE_INTEGER,
-        col: Number.MAX_SAFE_INTEGER,
+        col: 0,
       },
     });
   });
@@ -46,7 +46,21 @@ describe('formBuilder', () => {
       field: string[];
     }
 
-    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot();
+    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
+{
+  "field": {
+    "col": 0,
+    "defaultValue": {
+      "overrideDefault": false,
+      "tags": [],
+    },
+    "formField": "tag",
+    "label": "tags",
+    "row": 9007199254740991,
+    "type": "tag",
+  },
+}
+`);
   });
 
   it('should support defaultFrom', () => {
@@ -63,13 +77,13 @@ describe('formBuilder', () => {
 
     expect(formBuilder(new BooleanType(), test)).toEqual({
       field: {
-        label: 'boolean field',
+        label: 'description',
         defaultFrom: 'testBoolean',
         defaultValue: test.testBoolean,
         type: 'boolean',
-        formField: 'switch',
+        formField: 'checkbox',
         row: Number.MAX_SAFE_INTEGER,
-        col: Number.MAX_SAFE_INTEGER,
+        col: 0,
       },
     });
   });

@@ -4,7 +4,7 @@ import { ISubmission, IWebsiteOptions } from '@postybirb/types';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
 import { UnknownWebsite } from '../../websites/website';
 
-type TitleType = { title: TextFieldType[] };
+type TitleType = { title: TextFieldType };
 
 @Injectable()
 export class TitleParserService {
@@ -29,7 +29,7 @@ export class TitleParserService {
           })) as unknown as TitleType);
 
     const title = websiteOptions.data.title ?? defaultOptions.data.title ?? '';
-    const field = websiteForm?.title[0] ?? defaultForm?.title[0];
+    const field = websiteForm?.title ?? defaultForm?.title;
     const maxLength = field?.maxLength ?? Infinity;
 
     return title.trim().slice(0, maxLength);
