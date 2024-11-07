@@ -18,7 +18,7 @@ export const RatingField = createFieldDecorator<SubmissionRating, ExtraOptions>(
 )({
   defaults: {
     label: 'rating',
-    layout: 'horizontal',
+    layout: 'vertical',
     formField: 'rating',
     defaultValue: undefined,
     options: [

@@ -96,7 +96,7 @@ describe('FormGeneratorService', () => {
         defaultValue: 'ADULT',
         formField: 'rating',
         label: 'rating',
-        layout: 'horizontal',
+        layout: 'vertical',
         options: [
           {
             label: 'General',
@@ -168,7 +168,7 @@ describe('FormGeneratorService', () => {
         col: 0,
         formField: 'rating',
         label: 'rating',
-        layout: 'horizontal',
+        layout: 'vertical',
         options: [
           {
             label: 'General',
@@ -238,7 +238,7 @@ describe('FormGeneratorService', () => {
         col: 0,
         formField: 'rating',
         label: 'rating',
-        layout: 'horizontal',
+        layout: 'vertical',
         options: [
           {
             label: 'General',
