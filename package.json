@@ -32,6 +32,7 @@
     "postinstall": "run-p --continue-on-error postinstall:*",
     "postinstall:deps": "exitzero electron-builder install-app-deps",
     "postinstall:i18n": "lingui extract --clean",
+    "postinstall:apply-patches": "patch-package",
     "setup": "run-s setup:husky",
     "setup:husky": "husky install"
   },
