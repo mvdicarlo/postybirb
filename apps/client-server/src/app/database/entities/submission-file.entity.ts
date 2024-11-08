@@ -59,7 +59,7 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
     orphanRemoval: true,
     lazy: false,
     nullable: true,
-    serializer: (s) => s.id,
+    serializer: (s) => s?.id,
   })
   thumbnail: Rel<IFileBuffer>;
 
@@ -71,7 +71,7 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
     nullable: true,
     serializer: (s) => s?.id,
   })
-  altFile?: Rel<IFileBuffer>;
+  altFile: Rel<IFileBuffer>;
 
   @Property({ type: 'integer', nullable: false, default: 0 })
   size: number;
@@ -84,6 +84,9 @@ export class SubmissionFile extends PostyBirbEntity implements ISubmissionFile {
 
   @Property({ type: 'boolean', nullable: false, default: false })
   hasThumbnail: boolean;
+
+  @Property({ type: 'boolean', nullable: false, default: false })
+  hasAltFile: boolean;
 
   @Property({
     type: 'json',

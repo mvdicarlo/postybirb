@@ -65,6 +65,11 @@ export interface ValidationMessages {
     expectedBatchesToCreate: number;
   };
 
+  'validation.file.text-file-no-fallback': {
+    fileName: string;
+    fileExtension: string;
+  };
+
   'validation.file.file-size': {
     maxFileSize: number;
     fileSize: number;

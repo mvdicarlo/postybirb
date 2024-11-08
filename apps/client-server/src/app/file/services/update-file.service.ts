@@ -120,6 +120,7 @@ export class UpdateFileService {
         submissionFile.altFile.buffer =
           (await this.repopulateTextFile(file, buf)) ||
           submissionFile?.altFile.buffer;
+        submissionFile.hasAltFile = !!submissionFile.altFile?.buffer;
       }
     }
   }
@@ -144,7 +145,11 @@ export class UpdateFileService {
     ) {
       this.logger.info('[Mutation] Updating Alt File for Text Document: RTF');
       const promisifiedRtf = promisify(rtf.fromString);
-      altText = await promisifiedRtf(buf.toString());
+      altText = await promisifiedRtf(buf.toString(), {
+        template(_, __, content: string) {
+          return content;
+        },
+      });
     }
 
     if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {

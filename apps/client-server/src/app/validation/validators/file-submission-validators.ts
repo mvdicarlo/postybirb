@@ -1,4 +1,9 @@
-import { FileType, ISubmission, SubmissionType } from '@postybirb/types';
+import {
+  FileType,
+  ISubmission,
+  SubmissionType,
+  ValidationMessage,
+} from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 import {
@@ -94,7 +99,7 @@ export async function validateFileSize({
       acceptedFileSizes['*'];
 
     if (maxFileSize && file.size > maxFileSize * 1024 * 1024) {
-      result.warnings.push({
+      const issue: ValidationMessage = {
         id: 'validation.file.file-size',
         field: 'files',
         values: {
@@ -102,7 +107,12 @@ export async function validateFileSize({
           fileSize: 0,
           fileName: file.fileName,
         },
-      });
+      };
+      if (getFileType(file.fileName) === FileType.IMAGE) {
+        result.warnings.push(issue);
+      } else {
+        result.errors.push(issue);
+      }
     }
   });
 }
@@ -128,6 +138,43 @@ export async function validateImageFileDimensions({
           values: {
             fileName: file.fileName,
             resizeProps,
+          },
+        });
+      }
+    }
+  });
+}
+
+export async function validateTextFileRequiresFallback({
+  result,
+  websiteInstance,
+  submission,
+}: ValidatorParams) {
+  if (!canProcessFiles(submission, websiteInstance)) {
+    return;
+  }
+
+  // TODO - figure out a way to know when this needs to be active. Need a well known list of supported mime types to intersect with well known text types.
+  // TODO - Use this to filter out the invalid mime types validation when this resolves to being allowed.
+  // Idea: Stick the accepted file types in the uploader into the file type lib.
+  submission.files.getItems().forEach((file) => {
+    if (getFileType(file.fileName) === FileType.TEXT) {
+      const supportedMimeTypes =
+        websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
+      const fileExtension = parse(file.fileName).ext;
+      // Fail validation if the file is not supported and no alt file is provided
+      // This checks both the extension and the mime type.
+      if (
+        (!supportedMimeTypes.includes(file.mimeType) ||
+          !supportedMimeTypes.includes(fileExtension)) &&
+        !file.hasAltFile
+      ) {
+        result.errors.push({
+          id: 'validation.file.text-file-no-fallback',
+          field: 'files',
+          values: {
+            fileName: file.fileName,
+            fileExtension,
           },
         });
       }

@@ -35,6 +35,16 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     );
   },
 
+  'validation.file.text-file-no-fallback': (props) => {
+    const { fileName, fileExtension } = props.values;
+    return (
+      <Trans>
+        Unsupported file type {fileExtension} for {fileName}. Please provide
+        fallback text.
+      </Trans>
+    );
+  },
+
   'validation.file.invalid-mime-type': (props) => {
     const { mimeType, acceptedMimeTypes } = props.values;
     return (

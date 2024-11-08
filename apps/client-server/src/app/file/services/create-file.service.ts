@@ -100,7 +100,9 @@ export class CreateFileService {
     if (
       file.mimetype ===
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      file.originalname.endsWith('.docx')
+      file.mimetype === 'application/msword' ||
+      file.originalname.endsWith('.docx') ||
+      file.originalname.endsWith('.doc')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: DOCX');
       altText = (await mammoth.convertToHtml({ buffer: buf })).value;
@@ -112,7 +114,11 @@ export class CreateFileService {
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: RTF');
       const promisifiedRtf = promisify(rtf.fromString);
-      altText = await promisifiedRtf(buf.toString());
+      altText = await promisifiedRtf(buf.toString(), {
+        template(_, __, content: string) {
+          return content;
+        },
+      });
     }
 
     if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {
@@ -128,6 +134,7 @@ export class CreateFileService {
       altFile.mimeType = 'text/html';
       altFile.fileName = `${entity.fileName}.html`;
       entity.altFile = altFile;
+      entity.hasAltFile = true;
       this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
     } else {
       this.logger.info('No Alt File Created');

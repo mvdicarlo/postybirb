@@ -47,6 +47,9 @@ export const TEXT_MIME_TYPES = [
   'application/json',
   'application/xml',
   'text/*',
+  'application/rtf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
 ];
 
 function Preview({
@@ -58,7 +61,6 @@ function Preview({
   onEdit: (file: FileWithPath) => void;
   onDelete: (file: FileWithPath) => void;
 }) {
-  const imageUrl = URL.createObjectURL(file);
   const height = '40px';
   const width = '40px';
 
@@ -73,6 +75,7 @@ function Preview({
   } else if (type === FileType.TEXT) {
     view = <IconTextCaption width={width} height={height} />;
   } else if (type === FileType.IMAGE) {
+    const imageUrl = URL.createObjectURL(file);
     view = (
       <Image
         src={imageUrl}
@@ -103,7 +106,7 @@ function Preview({
           <em>{file.name}</em>
         </Text>
         <Group mx="xl">
-          {type === FileType.IMAGE && (
+          {type === FileType.IMAGE && !file.type.includes('gif') && (
             <Tooltip label={<Trans>Crop</Trans>} position="top" withArrow>
               <ActionIcon variant="subtle" onClick={() => onEdit(file)}>
                 <IconPhotoEdit />
@@ -187,10 +190,6 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [cropFile, setCropFile] = useState<FileWithPath | null>(null);
 
-  const imageFiles = files.filter(
-    (file) => file.type.startsWith('image/') && !file.type.includes('gif'),
-  );
-
   const onDelete = (file: FileWithPath) => {
     const index = files.findIndex((f) => f.name === file.name);
     if (index !== -1) {
@@ -270,7 +269,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
 
               <div>
                 <Text size="xl" inline>
-                  <Trans>Drag images here or click to select files</Trans>
+                  <Trans>Drag files here or click to select files</Trans>
                   <Text
                     size="sm"
                     c="dimmed"
@@ -286,7 +285,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
             </Group>
           </Dropzone>
 
-          {imageFiles.length ? (
+          {files.length ? (
             <ScrollArea
               flex="7"
               h={250}
