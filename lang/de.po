@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: \nLast-Translator: Automatically generated\nLanguage-Team: none\nLanguage: de\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: @lingui/cli\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-12 13:23+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: German <https://hosted.weblate.org/projects/postybirb/postybirb/de/>\nLanguage: de\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.8.2\n"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:53
 msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
