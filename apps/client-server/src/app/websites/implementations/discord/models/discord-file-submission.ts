@@ -5,33 +5,24 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  DefaultDescriptionValue,
   DescriptionValue,
   IWebsiteFormFields,
   SubmissionRating,
 } from '@postybirb/types';
-import { DefaultRatingOptions } from '../../../models/default-website-options';
 
 export class DiscordFileSubmission implements IWebsiteFormFields {
-  @BooleanField({ label: 'Use thumbnail', defaultValue: true })
+  @BooleanField({ label: 'useThumbnail', defaultValue: true })
   useThumbnail = true;
 
-  @BooleanField({ label: 'Allow resizing image', defaultValue: true })
+  @BooleanField({ label: 'allowResize', defaultValue: true })
   allowResize = true;
 
-  @TextField({ label: 'Title', defaultValue: '' })
+  @TextField({ label: 'title', defaultValue: '' })
   title?: string;
 
-  @DescriptionField({
-    label: 'Description',
-    defaultValue: DefaultDescriptionValue(),
-  })
+  @DescriptionField({})
   description: DescriptionValue;
 
-  @RatingField({
-    label: 'Rating',
-    defaultValue: undefined,
-    options: DefaultRatingOptions,
-  })
+  @RatingField({})
   rating: SubmissionRating;
 }

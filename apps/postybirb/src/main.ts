@@ -1,6 +1,6 @@
-/* eslint-disable @nrwl/nx/enforce-module-boundaries */
 import { INestApplication } from '@nestjs/common';
 import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, powerSaveBlocker } from 'electron';
 import contextMenu from 'electron-context-menu';

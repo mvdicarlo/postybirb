@@ -5,32 +5,23 @@ import {
   TextField,
 } from '@postybirb/form-builder';
 import {
-  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionValue,
   IWebsiteFormFields,
   SubmissionRating,
   TagValue,
 } from '@postybirb/types';
-import { DefaultRatingOptions } from '../../../models/default-website-options';
 
 export class TestMessageSubmission implements IWebsiteFormFields {
-  @TextField({ label: 'Title', defaultValue: '' })
+  @TextField({ label: 'title', defaultValue: '' })
   title?: string;
 
-  @TagField({ label: 'Tags', defaultValue: DefaultTagValue() })
+  @TagField({ label: 'tags', defaultValue: DefaultTagValue() })
   tags: TagValue;
 
-  @DescriptionField({
-    label: 'Description',
-    defaultValue: DefaultDescriptionValue(),
-  })
+  @DescriptionField({})
   description: DescriptionValue;
 
-  @RatingField({
-    label: 'Rating',
-    defaultValue: undefined,
-    options: DefaultRatingOptions,
-  })
+  @RatingField({})
   rating: SubmissionRating;
 }

@@ -24,6 +24,7 @@ import { FormGeneratorModule } from '../../form-generator/form-generator.module'
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
+import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
@@ -68,6 +69,7 @@ describe('SubmissionService', () => {
           AccountService,
           WebsiteRegistryService,
           UserSpecifiedWebsiteOptionsService,
+          ValidationService,
           WebsiteOptionsService,
           WebsiteImplProvider,
         ],
