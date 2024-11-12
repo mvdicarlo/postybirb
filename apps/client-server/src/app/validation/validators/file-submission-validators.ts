@@ -1,6 +1,7 @@
 import {
   FileType,
   ISubmission,
+  ISubmissionFile,
   SubmissionType,
   ValidationMessage,
 } from '@postybirb/types';
@@ -26,6 +27,7 @@ export async function validateAcceptedFiles({
   result,
   websiteInstance,
   submission,
+  data,
 }: ValidatorParams) {
   if (!canProcessFiles(submission, websiteInstance)) {
     return;
@@ -35,6 +37,18 @@ export async function validateAcceptedFiles({
     websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
 
   submission.files.getItems().forEach((file) => {
+    if (getFileType(file.fileName) === FileType.TEXT) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      validateTextFileRequiresFallback({
+        result,
+        websiteInstance,
+        submission,
+        file,
+        data,
+      });
+      return;
+    }
+
     if (
       !acceptedMimeTypes.includes(file.mimeType) ||
       acceptedMimeTypes.includes(parse(file.fileName).ext)
@@ -145,18 +159,15 @@ export async function validateImageFileDimensions({
   });
 }
 
-export async function validateTextFileRequiresFallback({
+function validateTextFileRequiresFallback({
   result,
   websiteInstance,
   submission,
-}: ValidatorParams) {
+}: ValidatorParams & { file: ISubmissionFile }) {
   if (!canProcessFiles(submission, websiteInstance)) {
     return;
   }
 
-  // TODO - figure out a way to know when this needs to be active. Need a well known list of supported mime types to intersect with well known text types.
-  // TODO - Use this to filter out the invalid mime types validation when this resolves to being allowed.
-  // Idea: Stick the accepted file types in the uploader into the file type lib.
   submission.files.getItems().forEach((file) => {
     if (getFileType(file.fileName) === FileType.TEXT) {
       const supportedMimeTypes =

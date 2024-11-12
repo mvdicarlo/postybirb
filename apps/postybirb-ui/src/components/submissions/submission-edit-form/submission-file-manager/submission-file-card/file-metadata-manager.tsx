@@ -146,7 +146,7 @@ function FileMetadata(props: FileDetailProps) {
   const { metadata, save } = props;
 
   return (
-    <Grid>
+    <Grid gutter="xs">
       <Grid.Col span={12}>
         <BasicWebsiteSelect
           label={<Trans>Don't post to</Trans>}

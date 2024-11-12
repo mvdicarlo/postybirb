@@ -1,6 +1,7 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  EntityId,
   FileMetadataFields,
   FileSubmission,
   ISubmission,
@@ -162,5 +163,9 @@ export class FileSubmissionService
       (metaFileOrderId) => metaFileOrderId !== fileId,
     );
     await this.repository.persistAndFlush(submission);
+  }
+
+  getAltFileText(id: EntityId) {
+    return this.fileService.getAltText(id);
   }
 }

@@ -1,12 +1,12 @@
-import { ISubmissionFile } from '../../models';
+import { EntityId, ISubmissionFile } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
 
 export type ISubmissionFileDto = Omit<
   IEntityDto<ISubmissionFile>,
   'altFile' | 'thumbnail' | 'file' | 'parent' | 'submission' | 'buffer'
 > & {
-  altFile?: ISubSubmissionFileDto;
-  thumbnail?: ISubSubmissionFileDto;
+  altFile: EntityId;
+  thumbnail: EntityId;
   file: ISubSubmissionFileDto;
 };
 

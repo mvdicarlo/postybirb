@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   UploadedFile,
@@ -15,7 +16,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { SubmissionId } from '@postybirb/types';
+import { EntityId, SubmissionId } from '@postybirb/types';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { FileSubmissionService } from './services/file-submission.service';
 import { SubmissionService } from './services/submission.service';
@@ -108,5 +109,11 @@ export class FileSubmissionController {
     }
 
     return this.findOne(id);
+  }
+
+  @Get('alt/:id')
+  @ApiOkResponse({ description: 'Alt File Text.' })
+  async getAltFileText(@Param('id') id: EntityId) {
+    return this.service.getAltFileText(id);
   }
 }

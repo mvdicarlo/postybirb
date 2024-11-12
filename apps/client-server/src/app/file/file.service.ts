@@ -3,12 +3,12 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
-import { FileSubmission } from '@postybirb/types';
+import { EntityId, FileSubmission } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { SubmissionFile } from '../database/entities';
+import { AltFile, SubmissionFile } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
 import { CreateTask, Task, UpdateTask } from './models/task';
@@ -34,6 +34,8 @@ export class FileService {
     private readonly updateFileService: UpdateFileService,
     @InjectRepository(SubmissionFile)
     private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
+    @InjectRepository(AltFile)
+    private readonly altFileRepository: PostyBirbRepository<AltFile>,
   ) {}
 
   /**
@@ -136,5 +138,18 @@ export class FileService {
    */
   public async findFile(id: string): Promise<SubmissionFile> {
     return this.fileRepository.findById(id, { failOnMissing: true });
+  }
+
+  /**
+   * Gets the raw text of an alt text file.
+   * @param {string} id
+   */
+  async getAltText(id: EntityId): Promise<Buffer> {
+    const altFile = await this.altFileRepository.findOneOrFail({ id });
+    if (altFile.size) {
+      return altFile.buffer;
+    }
+
+    return Buffer.from('');
   }
 }
