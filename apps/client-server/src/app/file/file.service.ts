@@ -10,6 +10,7 @@ import { readFile } from 'fs/promises';
 import { cpus } from 'os';
 import { AltFile, SubmissionFile } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
 import { CreateTask, Task, UpdateTask } from './models/task';
 import { TaskType } from './models/task-type.enum';
@@ -144,12 +145,23 @@ export class FileService {
    * Gets the raw text of an alt text file.
    * @param {string} id
    */
-  async getAltText(id: EntityId): Promise<Buffer> {
+  async getAltText(id: EntityId): Promise<string> {
     const altFile = await this.altFileRepository.findOneOrFail({ id });
     if (altFile.size) {
-      return altFile.buffer;
+      return altFile.buffer.toString();
     }
 
-    return Buffer.from('');
+    return '';
+  }
+
+  /**
+   * Updates the raw text of an alt text file.
+   * @param {string} id
+   * @param {UpdateAltFileDto} update
+   */
+  async updateAltText(id: string, update: UpdateAltFileDto) {
+    const altFile = await this.altFileRepository.findOneOrFail({ id });
+    altFile.buffer = Buffer.from(update.html ?? '');
+    await this.altFileRepository.persistAndFlush(altFile);
   }
 }

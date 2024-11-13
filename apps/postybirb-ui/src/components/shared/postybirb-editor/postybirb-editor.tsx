@@ -36,8 +36,6 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       ?.filter((w) => w.usernameShortcut)
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
-  // Renders the editor instance using a React component.
-  // TODO - remove media menu
   return (
     <BlockNoteView
       theme={theme.colorScheme === 'light' ? 'light' : 'dark'}

@@ -30,7 +30,11 @@ class FileSubmissionsApi {
   }
 
   getAltText(id: EntityId) {
-    return this.client.get<{ type: string; data: number[] }>(`alt/${id}`);
+    return this.client.get<string>(`alt/${id}`);
+  }
+
+  updateAltText(altFileId: EntityId, html: string) {
+    return this.client.patch(`alt/${altFileId}`, { html });
   }
 }
 

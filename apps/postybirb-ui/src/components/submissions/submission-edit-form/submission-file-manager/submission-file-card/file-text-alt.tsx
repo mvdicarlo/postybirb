@@ -13,10 +13,11 @@ import {
   useMantineColorScheme,
 } from '@mantine/core';
 import { ISubmissionFileDto } from '@postybirb/types';
-import { ChangeEvent, useCallback, useEffect } from 'react';
+import { debounce } from 'lodash';
+import { useCallback, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
-import { schema } from '../../../../shared/postybirb-editor/schema';
+import { altFileSchema } from '../../../../shared/postybirb-editor/schema';
 
 type FileTextFileAltProps = {
   file: ISubmissionFileDto;
@@ -28,26 +29,23 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     data: initialHTML,
     isLoading,
     isFetching,
-    refetch,
   } = useQuery([], () =>
-    fileSubmissionApi
-      .getAltText(file.altFile)
-      .then((res) => String.fromCharCode.apply(null, res.body.data)),
+    fileSubmissionApi.getAltText(file.altFile).then((res) => res.body),
   );
   const theme = useMantineColorScheme();
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: undefined,
-    schema,
+    schema: altFileSchema,
   }) as unknown as BlockNoteEditor;
 
-  const htmlInputChanged = useCallback(
-    async (e: ChangeEvent<HTMLTextAreaElement>) => {
-      // Whenever the current HTML content changes, converts it to an array of
-      // Block objects and replaces the editor's content with them.
-      const blocks = await editor.tryParseHTMLToBlocks(e.target.value);
-      editor.replaceBlocks(editor.document, blocks);
-    },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const onChange = useCallback(
+    debounce(async () => {
+      const blocks = editor.document;
+      const html = await editor.blocksToHTMLLossy(blocks);
+      fileSubmissionApi.updateAltText(file.altFile, html);
+    }, 500),
     [editor],
   );
 
@@ -75,9 +73,8 @@ export function FileTextAlt(props: FileTextFileAltProps) {
           editor={editor}
           tableHandles={false}
           slashMenu={false}
-          onChange={() => {
-            // TODO - figure out the onchange event to save the alt text.
-            // onChange(editor.document);
+          onBlur={() => {
+            onChange();
           }}
         >
           <SuggestionMenuController

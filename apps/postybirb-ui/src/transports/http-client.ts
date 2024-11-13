@@ -187,6 +187,6 @@ export class HttpClient {
   }
 
   private async processText<T>(res: Response): Promise<T> {
-    return (await res.body?.getReader().read()) as T;
+    return (await res.text()) as unknown as T;
   }
 }
