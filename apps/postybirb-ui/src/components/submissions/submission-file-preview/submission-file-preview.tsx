@@ -2,9 +2,9 @@ import { Image, Tooltip } from '@mantine/core';
 import { FileType, ISubmissionFileDto } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
-    IconDeviceAudioTape,
-    IconTextCaption,
-    IconVideo,
+  IconDeviceAudioTape,
+  IconTextCaption,
+  IconVideo,
 } from '@tabler/icons-react';
 import { defaultTargetProvider } from '../../../transports/http-client';
 

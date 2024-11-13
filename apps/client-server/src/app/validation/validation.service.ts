@@ -28,7 +28,7 @@ export class ValidationService {
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
-    private readonly postParserService: PostParsersService
+    private readonly postParserService: PostParsersService,
   ) {}
 
   /**
@@ -38,11 +38,11 @@ export class ValidationService {
    * @return {*}  {Promise<ValidationResult[]>}
    */
   public async validateSubmission(
-    submission: ISubmission
+    submission: ISubmission,
   ): Promise<ValidationResult[]> {
     // this.logger.debug(`Validating submission ${submission.id}`);
     return Promise.all(
-      submission.options.map((website) => this.validate(submission, website))
+      submission.options.map((website) => this.validate(submission, website)),
     );
   }
 
@@ -55,7 +55,7 @@ export class ValidationService {
    */
   public async validate(
     submission: ISubmission,
-    websiteOption: IWebsiteOptions
+    websiteOption: IWebsiteOptions,
   ): Promise<ValidationResult> {
     try {
       // this.logger.debug(
@@ -66,10 +66,10 @@ export class ValidationService {
         : this.websiteRegistry.findInstance(websiteOption.account);
       if (!website) {
         this.logger.error(
-          `Failed to find website instance for account ${websiteOption.account.id}`
+          `Failed to find website instance for account ${websiteOption.account.id}`,
         );
         throw new Error(
-          `Failed to find website instance for account ${websiteOption.account.id}`
+          `Failed to find website instance for account ${websiteOption.account.id}`,
         );
       }
       // All sub-validations mutate the result object
@@ -82,7 +82,7 @@ export class ValidationService {
       const data = await this.postParserService.parse(
         submission,
         website,
-        websiteOption
+        websiteOption,
       );
 
       const params: ValidatorParams = {
@@ -100,7 +100,7 @@ export class ValidationService {
         websiteOption.id,
         submission,
         website,
-        data
+        data,
       );
 
       result.warnings.push(...(instanceResult.warnings ?? []));
@@ -110,7 +110,7 @@ export class ValidationService {
     } catch (error) {
       this.logger.warn(
         `Failed to validate website options ${websiteOption.id}`,
-        error
+        error,
       );
       return {
         id: websiteOption.id,
@@ -130,13 +130,13 @@ export class ValidationService {
     websiteId: EntityId,
     submission: ISubmission,
     website: UnknownWebsite,
-    postData: PostData<ISubmission, IWebsiteFormFields>
+    postData: PostData<ISubmission, IWebsiteFormFields>,
   ): Promise<ValidationResult> {
     let result: SimpleValidationResult;
     try {
       if (submission.type === SubmissionType.FILE && isFileWebsite(website)) {
         result = await website.onValidateFileSubmission(
-          postData as unknown as PostData<FileSubmission, IWebsiteFormFields>
+          postData as unknown as PostData<FileSubmission, IWebsiteFormFields>,
         );
       }
 
@@ -155,7 +155,7 @@ export class ValidationService {
     } catch (error) {
       this.logger.warn(
         `Failed to validate website instance for submission ${submission.id}, website ${websiteId}, type ${submission.type}, instance ${website.constructor.name}`,
-        error
+        error,
       );
       return {
         id: websiteId,

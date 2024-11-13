@@ -187,7 +187,7 @@ function InnerForm({
                   typeof a.field.row === 'number' &&
                   typeof b.field.row === 'number'
                     ? a.field.row - b.field.row
-                    : 0
+                    : 0,
                 )
                 .map((entry) => (
                   <Field
