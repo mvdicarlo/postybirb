@@ -7,6 +7,7 @@ import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
+import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
@@ -17,10 +18,10 @@ import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
 import { UpdateModule } from './update/update.module';
 import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
+import { ValidationModule } from './validation/validation.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
 import { WebsitesModule } from './websites/websites.module';
-import { ValidationModule } from './validation/validation.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ValidationModule } from './validation/validation.module';
     PostModule,
     PostParsersModule,
     ValidationModule,
+    FileConverterModule,
   ],
   controllers: [AppController],
   providers: [AppService],
