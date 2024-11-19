@@ -23,11 +23,40 @@ function canProcessFiles(
   );
 }
 
+function validateTextFileRequiresFallback({
+  result,
+  websiteInstance,
+  submission,
+}: ValidatorParams & { file: ISubmissionFile }) {
+  if (!canProcessFiles(submission, websiteInstance)) {
+    return;
+  }
+
+  submission.files.getItems().forEach((file) => {
+    if (getFileType(file.fileName) === FileType.TEXT) {
+      const supportedMimeTypes =
+        websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
+      // Fail validation if the file is not supported and no alt file is provided
+      if (!supportedMimeTypes.includes(file.mimeType) && !file.hasAltFile) {
+        result.errors.push({
+          id: 'validation.file.text-file-no-fallback',
+          field: 'files',
+          values: {
+            fileName: file.fileName,
+            fileExtension: parse(file.fileName).ext,
+          },
+        });
+      }
+    }
+  });
+}
+
 export async function validateAcceptedFiles({
   result,
   websiteInstance,
   submission,
   data,
+  fileConverterService,
 }: ValidatorParams) {
   if (!canProcessFiles(submission, websiteInstance)) {
     return;
@@ -37,30 +66,29 @@ export async function validateAcceptedFiles({
     websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
 
   submission.files.getItems().forEach((file) => {
-    if (getFileType(file.fileName) === FileType.TEXT) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      validateTextFileRequiresFallback({
-        result,
-        websiteInstance,
-        submission,
-        file,
-        data,
-      });
-      return;
-    }
+    if (!acceptedMimeTypes.includes(file.mimeType)) {
+      if (getFileType(file.fileName) === FileType.TEXT) {
+        validateTextFileRequiresFallback({
+          result,
+          websiteInstance,
+          submission,
+          file,
+          data,
+          fileConverterService,
+        });
+        return;
+      }
 
-    if (
-      !acceptedMimeTypes.includes(file.mimeType) ||
-      acceptedMimeTypes.includes(parse(file.fileName).ext)
-    ) {
-      result.errors.push({
-        id: 'validation.file.invalid-mime-type',
-        field: 'files',
-        values: {
-          mimeType: file.mimeType,
-          acceptedMimeTypes,
-        },
-      });
+      if (!fileConverterService.canConvert(file.mimeType, acceptedMimeTypes)) {
+        result.errors.push({
+          id: 'validation.file.invalid-mime-type',
+          field: 'files',
+          values: {
+            mimeType: file.mimeType,
+            acceptedMimeTypes,
+          },
+        });
+      }
     }
   });
 }
@@ -152,40 +180,6 @@ export async function validateImageFileDimensions({
           values: {
             fileName: file.fileName,
             resizeProps,
-          },
-        });
-      }
-    }
-  });
-}
-
-function validateTextFileRequiresFallback({
-  result,
-  websiteInstance,
-  submission,
-}: ValidatorParams & { file: ISubmissionFile }) {
-  if (!canProcessFiles(submission, websiteInstance)) {
-    return;
-  }
-
-  submission.files.getItems().forEach((file) => {
-    if (getFileType(file.fileName) === FileType.TEXT) {
-      const supportedMimeTypes =
-        websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
-      const fileExtension = parse(file.fileName).ext;
-      // Fail validation if the file is not supported and no alt file is provided
-      // This checks both the extension and the mime type.
-      if (
-        (!supportedMimeTypes.includes(file.mimeType) ||
-          !supportedMimeTypes.includes(fileExtension)) &&
-        !file.hasAltFile
-      ) {
-        result.errors.push({
-          id: 'validation.file.text-file-no-fallback',
-          field: 'files',
-          values: {
-            fileName: file.fileName,
-            fileExtension,
           },
         });
       }

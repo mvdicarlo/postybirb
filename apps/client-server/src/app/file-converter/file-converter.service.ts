@@ -21,4 +21,13 @@ export class FileConverterService {
 
     return converter.convert(file, allowableOutputMimeTypes);
   }
+
+  public async canConvert(
+    mimeType: string,
+    allowableOutputMimeTypes: string[],
+  ): Promise<boolean> {
+    return this.converters.some((c) =>
+      c.canConvert({ mimeType } as IFileBuffer, allowableOutputMimeTypes),
+    );
+  }
 }

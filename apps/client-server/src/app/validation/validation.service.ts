@@ -11,6 +11,7 @@ import {
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
@@ -29,6 +30,7 @@ export class ValidationService {
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly postParserService: PostParsersService,
+    private readonly fileConverterService: FileConverterService,
   ) {}
 
   /**
@@ -90,6 +92,7 @@ export class ValidationService {
         websiteInstance: website,
         data,
         submission,
+        fileConverterService: this.fileConverterService,
       };
       // eslint-disable-next-line no-restricted-syntax
       for (const validation of this.validations) {

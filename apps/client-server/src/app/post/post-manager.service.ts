@@ -4,6 +4,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
+  AccountId,
   EntityId,
   FileMetadataFields,
   FileSubmission,
@@ -26,13 +27,9 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
-import {
-  PostRecord,
-  Submission,
-  WebsiteOptions,
-  WebsitePostRecord,
-} from '../database/entities';
+import { PostRecord, WebsitePostRecord } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { IsTestEnvironment } from '../utils/test.util';
 import { ValidationService } from '../validation/validation.service';
@@ -74,6 +71,7 @@ export class PostManagerService {
     private readonly resizerService: PostFileResizerService,
     private readonly postParserService: PostParsersService,
     private readonly validationService: ValidationService,
+    private readonly fileConverterService: FileConverterService,
   ) {
     setTimeout(() => this.check(), 60_000);
   }
@@ -148,7 +146,6 @@ export class PostManagerService {
       const postOrderGroups = this.getPostOrder(entity);
 
       this.logger.info(`Posting to websites`);
-      // eslint-disable-next-line no-restricted-syntax
       for (const websites of postOrderGroups) {
         this.cancelToken.throwIfCancelled();
         await Promise.allSettled(
@@ -367,7 +364,7 @@ export class PostManagerService {
       instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
       1,
     );
-    const orderedFiles: Loaded<ISubmissionFile[]> = [];
+    const orderedFiles: ISubmissionFile[] = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
       .getItems()
@@ -379,68 +376,33 @@ export class PostManagerService {
         // Only post files that haven't been posted
         // Ensures CONTINUED posts don't post files that have already been posted.
         (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1,
-      );
+      )
+      .map((f) => wrap(f).toObject());
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
       if (file) {
-        orderedFiles.push(file);
+        orderedFiles.push(file as unknown as ISubmissionFile);
       }
     });
 
     // Split files into batches based on instance file batch size
     const batches = chunk(orderedFiles, fileBatchSize);
     const filePostableInstance = instance as unknown as FileWebsite<never>;
-    // eslint-disable-next-line no-restricted-syntax
     for (const batch of batches) {
       this.cancelToken.throwIfCancelled();
 
       // Resize files if necessary
       const processedFiles: PostingFile[] = (
         await Promise.all(
-          batch.map((f) => {
-            const fileMetadata: FileMetadataFields = submission.metadata[f.id];
-            let resizeParams: ImageResizeProps | undefined;
-            const fileType = getFileType(f.mimeType);
-            if (fileType === FileType.IMAGE) {
-              resizeParams = this.getResizeParameters(
-                submission,
-                filePostableInstance,
-                f,
-              );
-
-              // User defined dimensions
-              const userDefinedDimensions =
-                // NOTE: Currently the only place dimensions are set are in 'default'.
-                // eslint-disable-next-line @typescript-eslint/dot-notation
-                fileMetadata?.dimensions['default'] ??
-                fileMetadata?.dimensions[instance.accountId];
-              if (userDefinedDimensions) {
-                if (
-                  userDefinedDimensions.width &&
-                  userDefinedDimensions.height
-                ) {
-                  resizeParams = resizeParams ?? {};
-                  if (
-                    userDefinedDimensions.width > resizeParams.width &&
-                    userDefinedDimensions.height > resizeParams.height
-                  ) {
-                    resizeParams = {
-                      ...resizeParams,
-                      width: userDefinedDimensions.width,
-                      height: userDefinedDimensions.height,
-                    };
-                  }
-                }
-              }
-            }
-
-            // TODO - Website defined dimensions (i.e. HF)
-
-            return this.resizerService.resize({
-              file: f,
-              resize: resizeParams,
-            });
-          }),
+          batch.map((f) =>
+            this.resizeOrModifyFile(
+              f,
+              submission,
+              filePostableInstance,
+              instance.accountId,
+              instance.decoratedProps.fileOptions.acceptedMimeTypes ?? [],
+            ),
+          ),
         )
       ).map((f) =>
         f.withMetadata(
@@ -467,6 +429,74 @@ export class PostManagerService {
         await this.markFilesAsPosted(websitePostRecord, submission, batch);
       }
     }
+  }
+
+  private async resizeOrModifyFile(
+    file: ISubmissionFile,
+    submission: FileSubmission,
+    instance: FileWebsite<never>,
+    accountId: AccountId,
+    allowedMimeTypes: string[],
+  ): Promise<PostingFile> {
+    const fileMetadata: FileMetadataFields = submission.metadata[file.id];
+    let resizeParams: ImageResizeProps | undefined;
+    const fileType = getFileType(file.mimeType);
+    if (fileType === FileType.IMAGE) {
+      if (
+        this.fileConverterService.canConvert(file.mimeType, allowedMimeTypes)
+      ) {
+        file.file = await this.fileConverterService.convert(
+          file.file,
+          allowedMimeTypes,
+        );
+      }
+      resizeParams = this.getResizeParameters(submission, instance, file);
+
+      // User defined dimensions
+      const userDefinedDimensions =
+        // NOTE: Currently the only place dimensions are set are in 'default'.
+        // eslint-disable-next-line @typescript-eslint/dot-notation
+        fileMetadata?.dimensions['default'] ??
+        fileMetadata?.dimensions[accountId]; // TODO - actually have this be a thing to use
+      if (userDefinedDimensions) {
+        if (userDefinedDimensions.width && userDefinedDimensions.height) {
+          resizeParams = resizeParams ?? {};
+          if (
+            userDefinedDimensions.width > resizeParams.width &&
+            userDefinedDimensions.height > resizeParams.height
+          ) {
+            resizeParams = {
+              ...resizeParams,
+              width: userDefinedDimensions.width,
+              height: userDefinedDimensions.height,
+            };
+          }
+        }
+      }
+
+      return this.resizerService.resize({
+        file,
+        resize: resizeParams,
+      });
+    }
+
+    if (fileType === FileType.TEXT && file.altFile && file.altFile.size > 0) {
+      // Use alt file if it exists and is a text file
+      // Somewhat of a forced assumption that if an alt file exists, it is to be used.
+      if (
+        this.fileConverterService.canConvert(
+          file.altFile.mimeType,
+          allowedMimeTypes,
+        )
+      ) {
+        file.file = await this.fileConverterService.convert(
+          file.altFile,
+          allowedMimeTypes,
+        );
+      }
+    }
+
+    return new PostingFile(file.id, file.file, file.thumbnail);
   }
 
   private async markFilesAsPosted(
