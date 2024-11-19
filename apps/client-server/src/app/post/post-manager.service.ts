@@ -480,9 +480,12 @@ export class PostManagerService {
       });
     }
 
-    if (fileType === FileType.TEXT && file.altFile && file.altFile.size > 0) {
+    if (
+      fileType === FileType.TEXT &&
+      file.hasAltFile &&
+      !allowedMimeTypes.includes(file.mimeType)
+    ) {
       // Use alt file if it exists and is a text file
-      // Somewhat of a forced assumption that if an alt file exists, it is to be used.
       if (
         this.fileConverterService.canConvert(
           file.altFile.mimeType,
