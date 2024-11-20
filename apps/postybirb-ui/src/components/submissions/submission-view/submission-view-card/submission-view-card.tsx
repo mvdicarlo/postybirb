@@ -127,7 +127,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
         </Flex>
       </Card.Section>
       <Card.Section py="4">
-        <ScrollArea h={400}>
+        <ScrollArea.Autosize mah={400}>
           <Flex>
             {type === SubmissionType.FILE && files.length ? (
               <SubmissionFilePreview file={files[0]} height={75} width={75} />
@@ -206,7 +206,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
               </Stack>
             </Box>
           </Flex>
-        </ScrollArea>
+        </ScrollArea.Autosize>
       </Card.Section>
     </Card>
   );

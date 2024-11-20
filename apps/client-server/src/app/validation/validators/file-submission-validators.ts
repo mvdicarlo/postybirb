@@ -8,7 +8,7 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 import {
-  FileWebsite,
+  ImplementedFileWebsite,
   isFileWebsite,
 } from '../../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../../websites/website';
@@ -17,7 +17,7 @@ import { ValidatorParams } from './validator.type';
 function canProcessFiles(
   submission: ISubmission,
   websiteInstance: UnknownWebsite,
-) {
+): websiteInstance is ImplementedFileWebsite {
   return (
     isFileWebsite(websiteInstance) && submission.type === SubmissionType.FILE
   );
@@ -44,6 +44,7 @@ function validateTextFileRequiresFallback({
           values: {
             fileName: file.fileName,
             fileExtension: parse(file.fileName).ext,
+            fileId: file.id,
           },
         });
       }
@@ -64,10 +65,25 @@ export async function validateAcceptedFiles({
 
   const acceptedMimeTypes =
     websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
+  const supportedFileTypes =
+    websiteInstance.decoratedProps.fileOptions?.supportedFileTypes ?? [];
 
   submission.files.getItems().forEach((file) => {
     if (!acceptedMimeTypes.includes(file.mimeType)) {
-      if (getFileType(file.fileName) === FileType.TEXT) {
+      const fileType = getFileType(file.fileName);
+      if (!supportedFileTypes.includes(fileType)) {
+        result.errors.push({
+          id: 'validation.file.unsupported-file-type',
+          field: 'files',
+          values: {
+            fileName: file.fileName,
+            fileType: getFileType(file.fileName),
+            fileId: file.id,
+          },
+        });
+      }
+
+      if (fileType === FileType.TEXT) {
         validateTextFileRequiresFallback({
           result,
           websiteInstance,
@@ -86,6 +102,7 @@ export async function validateAcceptedFiles({
           values: {
             mimeType: file.mimeType,
             acceptedMimeTypes,
+            fileId: file.id,
           },
         });
       }
@@ -148,6 +165,7 @@ export async function validateFileSize({
           maxFileSize,
           fileSize: 0,
           fileName: file.fileName,
+          fileId: file.id,
         },
       };
       if (getFileType(file.fileName) === FileType.IMAGE) {
@@ -170,9 +188,7 @@ export async function validateImageFileDimensions({
 
   submission.files.getItems().forEach((file) => {
     if (getFileType(file.fileName) === FileType.IMAGE) {
-      const resizeProps = (
-        websiteInstance as unknown as FileWebsite<never>
-      ).calculateImageResize(file);
+      const resizeProps = websiteInstance.calculateImageResize(file);
       if (resizeProps) {
         result.warnings.push({
           id: 'validation.file.image-resize',
@@ -180,6 +196,7 @@ export async function validateImageFileDimensions({
           values: {
             fileName: file.fileName,
             resizeProps,
+            fileId: file.id,
           },
         });
       }

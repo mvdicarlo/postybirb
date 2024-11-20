@@ -1,5 +1,9 @@
 import { Trans } from '@lingui/macro';
-import { ValidationMessage, ValidationMessages } from '@postybirb/types';
+import {
+  FileType,
+  ValidationMessage,
+  ValidationMessages,
+} from '@postybirb/types';
 import { filesize } from 'filesize';
 
 type TranslationsMap = {
@@ -51,6 +55,34 @@ export const TranslationMessages: Partial<TranslationsMap> = {
       <>
         <Trans>Unsupported file type {mimeType}</Trans> (
         {acceptedMimeTypes.join(', ')})
+      </>
+    );
+  },
+
+  'validation.file.unsupported-file-type': (props) => {
+    const { fileName, fileType } = props.values;
+    let fileTypeString;
+    switch (fileType) {
+      case FileType.IMAGE:
+        fileTypeString = <Trans>Image</Trans>;
+        break;
+      case FileType.VIDEO:
+        fileTypeString = <Trans>Video</Trans>;
+        break;
+      case FileType.TEXT:
+        fileTypeString = <Trans>Text</Trans>;
+        break;
+      case FileType.AUDIO:
+        fileTypeString = <Trans>Audio</Trans>;
+        break;
+      default:
+        fileTypeString = <Trans>Unknown</Trans>;
+        break;
+    }
+    return (
+      <>
+        <Trans>Website does not support {fileTypeString}</Trans>
+        <span> ({fileName})</span>
       </>
     );
   },

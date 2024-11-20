@@ -3,29 +3,29 @@ import {
   FileSubmissionMetadata,
   FileType,
   ISubmissionFileDto,
-  SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
+import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { FileCardDeleteAction } from './file-card-delete-action';
 import { FileCardFileActions } from './file-card-file-actions';
 import { FileMetadataManager } from './file-metadata-manager';
 import { FileTextAlt } from './file-text-alt';
+import { FileValidations } from './file-validations';
 
 export const DRAGGABLE_SUBMISSION_FILE_CLASS_NAME = 'sortable-file';
 
 export function SubmissionFileCard({
   file,
   draggable,
-  metadata,
   totalFiles,
-  submissionId,
+  submission,
 }: {
-  submissionId: SubmissionId;
+  submission: SubmissionDto;
   file: ISubmissionFileDto;
   draggable: boolean;
-  metadata: FileSubmissionMetadata;
   totalFiles: number;
 }) {
+  const metadata = submission.metadata as FileSubmissionMetadata;
   return (
     <Paper
       key={file.id}
@@ -37,8 +37,9 @@ export function SubmissionFileCard({
       className={DRAGGABLE_SUBMISSION_FILE_CLASS_NAME}
     >
       <Flex gap="xl" key="card-file-previewer">
-        <FileCardFileActions file={file} submissionId={submissionId} />
+        <FileCardFileActions file={file} submissionId={submission.id} />
         <Box flex={10}>
+          <FileValidations submission={submission} file={file} />
           <FileMetadataManager file={file} metadata={metadata} />
           {getFileType(file.fileName) === FileType.TEXT ? (
             <Box mt="md" style={{ position: 'relative' }}>
@@ -48,7 +49,7 @@ export function SubmissionFileCard({
         </Box>
         <Box flex={0}>
           <FileCardDeleteAction
-            submissionId={submissionId}
+            submissionId={submission.id}
             file={file}
             totalFiles={totalFiles}
           />

@@ -67,7 +67,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
       <Input.Label>
         <Trans>Fallback Text</Trans>
       </Input.Label>
-      <ScrollArea h={200}>
+      <ScrollArea.Autosize mah={200}>
         <BlockNoteView
           theme={theme.colorScheme === 'light' ? 'light' : 'dark'}
           editor={editor}
@@ -88,7 +88,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
             }
           />
         </BlockNoteView>
-      </ScrollArea>
+      </ScrollArea.Autosize>
     </>
   );
 }

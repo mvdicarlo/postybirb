@@ -4,7 +4,6 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  AccountId,
   EntityId,
   FileMetadataFields,
   FileSubmission,
@@ -33,7 +32,10 @@ import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { IsTestEnvironment } from '../utils/test.util';
 import { ValidationService } from '../validation/validation.service';
-import { FileWebsite } from '../websites/models/website-modifiers/file-website';
+import {
+  ImplementedFileWebsite,
+  isFileWebsite
+} from '../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { Website } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -44,6 +46,8 @@ import { PostService } from './post.service';
 
 type LoadedPostRecord = Loaded<PostRecord, never>;
 
+// TODO - HEAVILY TEST THIS WITH UNIT AND MANUAL TESTING, ESPECIALLY FILE SUBMISSIONS
+// SCENARIOS - ALT FILES, RESIZE, CONVERT, CANCELLATION, BATCHING, SRC INSERTION
 @Injectable()
 export class PostManagerService {
   private readonly logger = Logger();
@@ -359,6 +363,11 @@ export class PostManagerService {
     instance: Website<unknown>,
     data: PostData<FileSubmission, never>,
   ): Promise<void> {
+    if (!isFileWebsite(instance)) {
+      throw new Error(
+        `Website '${instance.decoratedProps.metadata.displayName}' does not support file submissions`,
+      );
+    }
     // Order files based on submission order
     const fileBatchSize = Math.max(
       instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
@@ -387,22 +396,13 @@ export class PostManagerService {
 
     // Split files into batches based on instance file batch size
     const batches = chunk(orderedFiles, fileBatchSize);
-    const filePostableInstance = instance as unknown as FileWebsite<never>;
     for (const batch of batches) {
       this.cancelToken.throwIfCancelled();
 
       // Resize files if necessary
       const processedFiles: PostingFile[] = (
         await Promise.all(
-          batch.map((f) =>
-            this.resizeOrModifyFile(
-              f,
-              submission,
-              filePostableInstance,
-              instance.accountId,
-              instance.decoratedProps.fileOptions.acceptedMimeTypes ?? [],
-            ),
-          ),
+          batch.map((f) => this.resizeOrModifyFile(f, submission, instance)),
         )
       ).map((f) =>
         f.withMetadata(
@@ -417,9 +417,11 @@ export class PostManagerService {
       this.cancelToken.throwIfCancelled();
       this.logger.info(`Posting file batch to ${instance.id}`);
       // TODO - Do something with nextBatchNumber
-      const result = await (
-        instance as unknown as FileWebsite<never>
-      ).onPostFileSubmission(data, processedFiles, this.cancelToken);
+      const result = await instance.onPostFileSubmission(
+        data,
+        processedFiles,
+        this.cancelToken,
+      );
 
       const batchIds = batch.map((f) => f.id);
       if (result.exception) {
@@ -434,12 +436,12 @@ export class PostManagerService {
   private async resizeOrModifyFile(
     file: ISubmissionFile,
     submission: FileSubmission,
-    instance: FileWebsite<never>,
-    accountId: AccountId,
-    allowedMimeTypes: string[],
+    instance: ImplementedFileWebsite,
   ): Promise<PostingFile> {
     const fileMetadata: FileMetadataFields = submission.metadata[file.id];
     let resizeParams: ImageResizeProps | undefined;
+    const { fileOptions } = instance.decoratedProps;
+    const allowedMimeTypes = fileOptions.acceptedMimeTypes ?? [];
     const fileType = getFileType(file.mimeType);
     if (fileType === FileType.IMAGE) {
       if (
@@ -457,7 +459,7 @@ export class PostManagerService {
         // NOTE: Currently the only place dimensions are set are in 'default'.
         // eslint-disable-next-line @typescript-eslint/dot-notation
         fileMetadata?.dimensions['default'] ??
-        fileMetadata?.dimensions[accountId]; // TODO - actually have this be a thing to use
+        fileMetadata?.dimensions[instance.accountId]; // TODO - actually have this be a thing to use
       if (userDefinedDimensions) {
         if (userDefinedDimensions.width && userDefinedDimensions.height) {
           resizeParams = resizeParams ?? {};
@@ -515,7 +517,7 @@ export class PostManagerService {
 
   private getResizeParameters(
     submission: FileSubmission,
-    instance: FileWebsite<never>,
+    instance: ImplementedFileWebsite,
     file: ISubmissionFile,
   ) {
     const params = instance.calculateImageResize(file);
