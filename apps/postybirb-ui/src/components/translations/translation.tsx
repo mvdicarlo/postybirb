@@ -40,11 +40,10 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   },
 
   'validation.file.text-file-no-fallback': (props) => {
-    const { fileName, fileExtension } = props.values;
+    const { fileExtension } = props.values;
     return (
       <Trans>
-        Unsupported file type {fileExtension} for {fileName}. Please provide
-        fallback text.
+        Unsupported file type {fileExtension}. Please provide fallback text.
       </Trans>
     );
   },
@@ -60,7 +59,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   },
 
   'validation.file.unsupported-file-type': (props) => {
-    const { fileName, fileType } = props.values;
+    const { fileType } = props.values;
     let fileTypeString;
     switch (fileType) {
       case FileType.IMAGE:
@@ -79,32 +78,24 @@ export const TranslationMessages: Partial<TranslationsMap> = {
         fileTypeString = <Trans>Unknown</Trans>;
         break;
     }
-    return (
-      <>
-        <Trans>Website does not support {fileTypeString}</Trans>
-        <span> ({fileName})</span>
-      </>
-    );
+    return <Trans>Unsupported submission type: {fileTypeString}</Trans>;
   },
 
   'validation.file.file-size': (props) => {
-    const { maxFileSize, fileSize, fileName } = props.values;
+    const { maxFileSize, fileSize } = props.values;
     const fileSizeString = filesize(fileSize);
     const maxFileSizeString = filesize(maxFileSize);
     return (
       <Trans>
-        {fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and
-        an attempt will be made to reduce size when posting
+        ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt
+        will be made to reduce size when posting
       </Trans>
     );
   },
 
-  'validation.file.image-resize': (props) => {
-    const { fileName } = props.values;
-    return (
-      <Trans>{fileName} will be modified to support website requirements</Trans>
-    );
-  },
+  'validation.file.image-resize': () => (
+    <Trans>File be modified to support website requirements</Trans>
+  ),
 
   'validation.tags.max-tags': (props) => {
     const { maxLength, currentLength } = props.values;

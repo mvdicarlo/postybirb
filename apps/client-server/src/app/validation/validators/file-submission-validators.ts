@@ -1,4 +1,5 @@
 import {
+  FileSubmission,
   FileType,
   ISubmission,
   ISubmissionFile,
@@ -14,13 +15,32 @@ import {
 import { UnknownWebsite } from '../../websites/website';
 import { ValidatorParams } from './validator.type';
 
-function canProcessFiles(
-  submission: ISubmission,
+function isFileHandlingWebsite(
   websiteInstance: UnknownWebsite,
 ): websiteInstance is ImplementedFileWebsite {
-  return (
-    isFileWebsite(websiteInstance) && submission.type === SubmissionType.FILE
-  );
+  return isFileWebsite(websiteInstance);
+}
+
+function isFileSubmission(
+  submission: ISubmission,
+): submission is FileSubmission {
+  return submission.type === SubmissionType.FILE;
+}
+
+function isFileFiltered(
+  file: ISubmissionFile,
+  submission: FileSubmission,
+  websiteInstance: UnknownWebsite,
+): boolean {
+  const { metadata } = submission;
+  if (
+    metadata?.fileMetadata[file.id]?.ignoredWebsites.includes(
+      websiteInstance.accountId,
+    )
+  ) {
+    return true;
+  }
+  return false;
 }
 
 function validateTextFileRequiresFallback({
@@ -28,11 +48,17 @@ function validateTextFileRequiresFallback({
   websiteInstance,
   submission,
 }: ValidatorParams & { file: ISubmissionFile }) {
-  if (!canProcessFiles(submission, websiteInstance)) {
+  if (
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission)
+  ) {
     return;
   }
 
   submission.files.getItems().forEach((file) => {
+    if (isFileFiltered(file, submission, websiteInstance)) {
+      return;
+    }
     if (getFileType(file.fileName) === FileType.TEXT) {
       const supportedMimeTypes =
         websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
@@ -59,7 +85,10 @@ export async function validateAcceptedFiles({
   data,
   fileConverterService,
 }: ValidatorParams) {
-  if (!canProcessFiles(submission, websiteInstance)) {
+  if (
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission)
+  ) {
     return;
   }
 
@@ -69,6 +98,9 @@ export async function validateAcceptedFiles({
     websiteInstance.decoratedProps.fileOptions?.supportedFileTypes ?? [];
 
   submission.files.getItems().forEach((file) => {
+    if (isFileFiltered(file, submission, websiteInstance)) {
+      return;
+    }
     if (!acceptedMimeTypes.includes(file.mimeType)) {
       const fileType = getFileType(file.fileName);
       if (!supportedFileTypes.includes(fileType)) {
@@ -115,13 +147,20 @@ export async function validateFileBatchSize({
   websiteInstance,
   submission,
 }: ValidatorParams) {
-  if (!canProcessFiles(submission, websiteInstance)) {
+  if (
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission)
+  ) {
     return;
   }
 
   const maxBatchSize =
     websiteInstance.decoratedProps.fileOptions?.fileBatchSize ?? 0;
-  const numFiles = submission.files.getItems().length;
+  const numFiles = submission.files
+    .getItems()
+    .filter(
+      (file) => !isFileFiltered(file, submission, websiteInstance),
+    ).length;
   if (numFiles > maxBatchSize) {
     const expectedBatchesToCreate = Math.ceil(numFiles / maxBatchSize);
     result.warnings.push({
@@ -141,8 +180,8 @@ export async function validateFileSize({
   submission,
 }: ValidatorParams) {
   if (
-    submission.type !== SubmissionType.FILE ||
-    !isFileWebsite(websiteInstance)
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission)
   ) {
     return;
   }
@@ -151,6 +190,9 @@ export async function validateFileSize({
     websiteInstance.decoratedProps.fileOptions?.acceptedFileSizes ?? {};
 
   submission.files.getItems().forEach((file) => {
+    if (isFileFiltered(file, submission, websiteInstance)) {
+      return;
+    }
     const maxFileSize =
       acceptedFileSizes[file.mimeType] ??
       acceptedFileSizes[parse(file.fileName).ext] ??
@@ -182,11 +224,17 @@ export async function validateImageFileDimensions({
   websiteInstance,
   submission,
 }: ValidatorParams) {
-  if (!canProcessFiles(submission, websiteInstance)) {
+  if (
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission)
+  ) {
     return;
   }
 
   submission.files.getItems().forEach((file) => {
+    if (isFileFiltered(file, submission, websiteInstance)) {
+      return;
+    }
     if (getFileType(file.fileName) === FileType.IMAGE) {
       const resizeProps = websiteInstance.calculateImageResize(file);
       if (resizeProps) {

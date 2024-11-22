@@ -1,11 +1,13 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Trans } from '@lingui/macro';
 import { Grid, Group, NumberInput, TextInput } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import {
   FileMetadataFields,
   FileSubmissionMetadata,
   FileType,
   ISubmissionFileDto,
+  SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { filesize } from 'filesize';
@@ -16,6 +18,7 @@ import { BasicWebsiteSelect } from '../../../../form/website-select/basic-websit
 type FileMetadataManagerProps = {
   file: ISubmissionFileDto;
   metadata: FileSubmissionMetadata;
+  submissionId: SubmissionId;
 };
 
 type FileDetailProps = {
@@ -185,11 +188,17 @@ function FileMetadata(props: FileDetailProps) {
 }
 
 export function FileMetadataManager(props: FileMetadataManagerProps) {
-  const { file, metadata } = props;
+  const { submissionId, file, metadata } = props;
   const fileType = getFileType(file.fileName);
   const meta = metadata.fileMetadata[file.id];
   const save = () => {
-    submissionApi.update(file.id, { metadata });
+    submissionApi.update(submissionId, { metadata }).catch((e) => {
+      notifications.show({
+        title: <Trans>Failed to save file metadata</Trans>,
+        message: e.message,
+        color: 'red',
+      });
+    });
   };
   const detailProps: FileDetailProps = { file, metadata: meta, save };
   return (

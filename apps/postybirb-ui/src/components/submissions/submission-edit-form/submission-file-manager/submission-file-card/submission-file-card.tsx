@@ -40,7 +40,11 @@ export function SubmissionFileCard({
         <FileCardFileActions file={file} submissionId={submission.id} />
         <Box flex={10}>
           <FileValidations submission={submission} file={file} />
-          <FileMetadataManager file={file} metadata={metadata} />
+          <FileMetadataManager
+            submissionId={submission.id}
+            file={file}
+            metadata={metadata}
+          />
           {getFileType(file.fileName) === FileType.TEXT ? (
             <Box mt="md" style={{ position: 'relative' }}>
               <FileTextAlt file={file} />
