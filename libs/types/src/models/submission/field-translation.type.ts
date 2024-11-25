@@ -7,6 +7,7 @@ export interface FieldTranslations {
   useThumbnail: true;
   allowResize: true;
   feature: true;
+  species: true;
 }
 
 export type FieldTranslationId = keyof FieldTranslations;

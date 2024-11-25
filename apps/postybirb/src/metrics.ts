@@ -1,19 +1,5 @@
 import { initializeLogger, SerializeDevLog } from '@postybirb/logger';
-import * as appInsights from 'applicationinsights';
 import { environment } from './environments/environment';
-
-function setDefaultProps() {
-  appInsights.defaultClient.commonProperties = {
-    version: environment.version,
-    environment: environment.production ? 'production' : 'development',
-  };
-}
-
-function setDefaultTags() {
-  appInsights.defaultClient.context.tags[
-    appInsights.defaultClient.context.keys.cloudRole
-  ] = 'postybirb';
-}
 
 function createLogger() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
@@ -34,23 +20,5 @@ function createLogger() {
 }
 
 export function startMetrics() {
-  appInsights
-    .setup(environment.app_insights_instrumentation_key)
-    .setAutoDependencyCorrelation(true)
-    .setAutoCollectRequests(false) // Don't really need http request logging
-    .setAutoCollectPerformance(true, true)
-    .setAutoCollectExceptions(true)
-    .setAutoCollectDependencies(true)
-    .setAutoCollectConsole(true, true)
-    .setUseDiskRetryCaching(true)
-    .setSendLiveMetrics(false)
-    .setDistributedTracingMode(appInsights.DistributedTracingModes.AI)
-    .start();
-
-  setDefaultProps();
-  setDefaultTags();
-
-  // Logger needs to be initialized after app insights
-  // to read from diagnostics channel
   createLogger();
 }

@@ -56,7 +56,7 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
       }
       return (
         converter.convertTo[instance.decoratedProps.metadata.name] ??
-        converter.convertTo.default ??
+        converter.convertTo.default ?? // NOTE: This is not currently used, but it's here for future proofing
         tag
       );
     });
