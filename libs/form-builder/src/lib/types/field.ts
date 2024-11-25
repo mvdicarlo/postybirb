@@ -6,7 +6,7 @@ import { FieldTranslationId, FieldTranslations } from '@postybirb/types';
 import { PrimitiveRecord } from './primitive-record';
 
 type Translations =
-  typeof import('apps/postybirb-ui/src/components/form/fields/field-translations.ts');
+  typeof import('apps/postybirb-ui/src/components/translations/field-translations');
 
 export type FieldType<
   V,

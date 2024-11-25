@@ -2,7 +2,7 @@ import { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/macro';
 import { FieldTranslations } from '@postybirb/types';
 
-export const fieldLabelTranslations: {
+export const FieldLabelTranslations: {
   [K in keyof FieldTranslations]: MessageDescriptor;
 } = {
   description: msg`Description`,
