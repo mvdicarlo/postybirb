@@ -18,6 +18,7 @@ import { MessageSubmissionService } from '../submission/services/message-submiss
 import { SubmissionService } from '../submission/services/submission.service';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -76,6 +77,7 @@ describe('FileService', () => {
         CreateFileService,
         UpdateFileService,
         FileService,
+        ValidationService,
         SubmissionService,
         FileSubmissionService,
         MessageSubmissionService,

@@ -53,7 +53,10 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     .filter((o) => !o.isDefault)
     .reduce(
       (acc, option) => {
-        const account = accounts.find((a) => a.id === option.account)!;
+        const account = accounts.find((a) => a.id === option.account);
+        if (!account) {
+          return acc;
+        }
         const websiteId = account.website;
         if (!acc[websiteId]) {
           acc[websiteId] = {

@@ -2,7 +2,7 @@
 import { Trans } from '@lingui/macro';
 import { Alert, Box, Flex, Loader, Stack } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import {
+import type {
   FieldAggregateType,
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
@@ -19,7 +19,7 @@ import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
-import { ValidationTranslation } from '../../translations/translation';
+import { ValidationTranslation } from '../../translations/validation-translation';
 import { Field } from '../fields/field';
 import { UserSpecifiedWebsiteOptionsSaveModal } from '../user-specified-website-options-modal/user-specified-website-options-modal';
 
@@ -33,7 +33,7 @@ type WebsiteOptionFormProps = {
 type InnerFormProps = {
   account: AccountId;
   submission: SubmissionDto;
-  formFields: FormBuilderMetadata<never>;
+  formFields: FormBuilderMetadata;
   option: WebsiteOptionsDto;
   defaultOption: WebsiteOptionsDto;
   userSpecifiedModalVisible: boolean;
@@ -42,7 +42,7 @@ type InnerFormProps = {
 
 type FieldEntry = {
   key: string;
-  field: FieldAggregateType<never>;
+  field: FieldAggregateType;
 };
 
 function shouldGrow(entries: FieldEntry[]): boolean {
@@ -193,7 +193,7 @@ function InnerForm({
                   <Field
                     propKey={entry.key}
                     defaultOption={defaultOption}
-                    field={entry.field as unknown as FieldAggregateType<never>}
+                    field={entry.field as unknown as FieldAggregateType}
                     form={form}
                     key={entry.key}
                     option={option as unknown as WebsiteOptionsDto<never>}
@@ -220,7 +220,11 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     `website-option-${option.id}`,
     () =>
       formGeneratorApi
-        .getForm({ accountId: account, type: submission.type })
+        .getForm({
+          accountId: account,
+          type: submission.type,
+          isMultiSubmission: submission.isMultiSubmission(),
+        })
         .then((res) => res.body),
   );
   const defaultOption = submission.getDefaultOptions();

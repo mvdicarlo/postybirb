@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { Box, Flex, Group, Input, Paper } from '@mantine/core';
@@ -7,6 +6,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
 import { ApplySubmissionTemplateAction } from './apply-submission-template-action';
 import { DeleteSubmissionsAction } from './delete-submissions-action';
+import { MultiEditSubmissionsAction } from './multi-edit-submissions-action';
 import { PostSelectedSubmissionsActions } from './post-selected-submissions-action';
 import { ScheduleSubmissionsActions } from './schedule-submissions-action';
 import { SelectSubmissionsAction } from './select-submissions-action';
@@ -50,6 +50,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
             <PostSelectedSubmissionsActions {...actionProps} />
             <ApplySubmissionTemplateAction {...actionProps} />
             <ScheduleSubmissionsActions {...actionProps} />
+            <MultiEditSubmissionsAction {...actionProps} />
           </Group>
           <Input
             flex="6"

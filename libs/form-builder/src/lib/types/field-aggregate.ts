@@ -1,19 +1,31 @@
 import {
-  BooleanFieldType,
-  DescriptionFieldType,
-  RadioFieldType,
-  RatingFieldType,
-  TextFieldType,
+  BooleanField,
+  DescriptionField,
+  RadioField,
+  RatingField,
+  SelectField,
+  TagField,
+  TextField,
 } from '../decorators';
-import { SelectFieldType } from '../decorators/select-field.decorator';
-import { TagFieldType } from '../decorators/tag-field.decorator';
-import { PrimitiveRecord } from './primitive-record';
+import { ExtractFieldTypeFromDecorator } from '../utils/assign-metadata';
 
-export type FieldAggregateType<T extends PrimitiveRecord = PrimitiveRecord> =
-  | BooleanFieldType<T>
-  | TextFieldType<T>
-  | RadioFieldType<T>
-  | RatingFieldType<T>
-  | TagFieldType<T>
-  | DescriptionFieldType<T>
-  | SelectFieldType<T>;
+export type RatingFieldType = ExtractFieldTypeFromDecorator<typeof RatingField>;
+export type TagFieldType = ExtractFieldTypeFromDecorator<typeof TagField>;
+export type DescriptionFieldType = ExtractFieldTypeFromDecorator<
+  typeof DescriptionField
+>;
+export type TextFieldType = ExtractFieldTypeFromDecorator<typeof TextField>;
+export type SelectFieldType = ExtractFieldTypeFromDecorator<typeof SelectField>;
+export type BooleanFieldType = ExtractFieldTypeFromDecorator<
+  typeof BooleanField
+>;
+export type RadioFieldType = ExtractFieldTypeFromDecorator<typeof RadioField>;
+
+export type FieldAggregateType =
+  | BooleanFieldType
+  | TextFieldType
+  | RadioFieldType
+  | RatingFieldType
+  | TagFieldType
+  | DescriptionFieldType
+  | SelectFieldType;

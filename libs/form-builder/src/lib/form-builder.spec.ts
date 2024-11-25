@@ -1,43 +1,66 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
-import { BooleanField, TextField } from './decorators';
+import { BooleanField, TagField, TextField } from './decorators';
 import { formBuilder } from './form-builder';
 
 describe('formBuilder', () => {
   it('should build boolean types', () => {
     class BooleanType {
-      @BooleanField<any>({ label: 'boolean field', defaultValue: false })
+      @BooleanField({ label: 'description', defaultValue: false })
       public field: boolean;
     }
 
     expect(formBuilder(new BooleanType(), {})).toEqual({
       field: {
-        label: 'boolean field',
+        label: 'description',
         defaultValue: false,
         type: 'boolean',
-        formField: 'switch',
+        formField: 'checkbox',
         row: Number.MAX_SAFE_INTEGER,
-        col: Number.MAX_SAFE_INTEGER,
+        col: 0,
       },
     });
   });
 
   it('should build text types', () => {
     class TextType {
-      @TextField<any>({ label: 'text field', defaultValue: 'Hello' })
+      @TextField({ label: 'description', defaultValue: 'Hello' })
       public field: string;
     }
 
     expect(formBuilder(new TextType(), {})).toEqual({
       field: {
-        label: 'text field',
+        label: 'description',
         defaultValue: 'Hello',
         type: 'text',
         formField: 'input',
         row: Number.MAX_SAFE_INTEGER,
-        col: Number.MAX_SAFE_INTEGER,
+        col: 0,
       },
     });
+  });
+
+  it('should build tag fields', () => {
+    class TestType {
+      @TagField({})
+      field: string[];
+    }
+
+    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
+{
+  "field": {
+    "col": 0,
+    "defaultValue": {
+      "overrideDefault": false,
+      "tags": [],
+    },
+    "formField": "tag",
+    "label": "tags",
+    "row": 9007199254740991,
+    "type": "tag",
+  },
+}
+`);
   });
 
   it('should support defaultFrom', () => {
@@ -45,7 +68,7 @@ describe('formBuilder', () => {
     const test: TestType = { testBoolean: true };
     class BooleanType {
       @BooleanField<TestType>({
-        label: 'boolean field',
+        label: 'description',
         defaultValue: false,
         defaultFrom: 'testBoolean',
       })
@@ -54,13 +77,13 @@ describe('formBuilder', () => {
 
     expect(formBuilder(new BooleanType(), test)).toEqual({
       field: {
-        label: 'boolean field',
+        label: 'description',
         defaultFrom: 'testBoolean',
         defaultValue: test.testBoolean,
         type: 'boolean',
-        formField: 'switch',
+        formField: 'checkbox',
         row: Number.MAX_SAFE_INTEGER,
-        col: Number.MAX_SAFE_INTEGER,
+        col: 0,
       },
     });
   });

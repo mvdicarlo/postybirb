@@ -22,6 +22,7 @@ import { MessageSubmissionService } from '../submission/services/message-submiss
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
@@ -76,6 +77,7 @@ describe('WebsiteOptionsService', () => {
           MessageSubmissionService,
           AccountService,
           WebsiteRegistryService,
+          ValidationService,
           WebsiteOptionsService,
           WebsiteImplProvider,
           UserSpecifiedWebsiteOptionsService,

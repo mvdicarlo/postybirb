@@ -122,6 +122,10 @@ export class SubmissionDto<
     return Boolean(this.metadata.template);
   }
 
+  public isMultiSubmission(): boolean {
+    return Boolean(this.metadata.isMultiSubmission);
+  }
+
   public getTemplateName() {
     return this.metadata.template?.name ?? i18n.t(msg`Template`);
   }

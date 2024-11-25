@@ -17,4 +17,9 @@ export class CreateSubmissionDto implements ICreateSubmissionDto {
   @IsOptional()
   @IsBoolean()
   isTemplate?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  isMultiSubmission?: boolean;
 }

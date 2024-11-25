@@ -64,6 +64,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           />
         )}
         <TagsInput
+          inputWrapperOrder={['label', 'input', 'description', 'error']}
           clearable
           required={field.required}
           value={tagValue}

@@ -42,7 +42,6 @@ export class ValidationService {
   public async validateSubmission(
     submission: ISubmission,
   ): Promise<ValidationResult[]> {
-    // this.logger.debug(`Validating submission ${submission.id}`);
     return Promise.all(
       submission.options.map((website) => this.validate(submission, website)),
     );
@@ -60,9 +59,6 @@ export class ValidationService {
     websiteOption: IWebsiteOptions,
   ): Promise<ValidationResult> {
     try {
-      // this.logger.debug(
-      //   `Validating submission ${submission.id} with website ${websiteOption.account.id} (${websiteOption.id})`,
-      // );
       const website = websiteOption.isDefault
         ? new DefaultWebsite(websiteOption.account)
         : this.websiteRegistry.findInstance(websiteOption.account);

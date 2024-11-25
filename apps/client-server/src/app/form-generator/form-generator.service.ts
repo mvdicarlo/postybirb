@@ -34,7 +34,7 @@ export class FormGeneratorService {
    */
   async generateForm(
     request: FormGenerationRequestDto,
-  ): Promise<FormBuilderMetadata<never>> {
+  ): Promise<FormBuilderMetadata> {
     const account = await this.accountService.findById(request.accountId, {
       failOnMissing: true,
     });
@@ -66,26 +66,40 @@ export class FormGeneratorService {
     }
 
     const form = formBuilder(formModel, data);
-    return this.populateUserDefaults(form, request.accountId, request.type);
+    const formWithPopulatedDefaults = await this.populateUserDefaults(
+      form,
+      request.accountId,
+      request.type,
+    );
+
+    if (request.isMultiSubmission) {
+      delete formWithPopulatedDefaults.title; // Having title here just causes confusion for multi this flow
+    }
+
+    return formWithPopulatedDefaults;
   }
 
   /**
    * Returns the default fields form.
    * @param {SubmissionType} type
    */
-  getDefaultForm(type: SubmissionType) {
-    return this.populateUserDefaults(
+  async getDefaultForm(type: SubmissionType, isMultiSubmission = false) {
+    const form = await this.populateUserDefaults(
       formBuilder(new DefaultWebsiteOptions(), {}),
       new NullAccount().id,
       type,
     );
+    if (isMultiSubmission) {
+      delete form.title; // Having title here just causes confusion for multi this flow
+    }
+    return form;
   }
 
   private async populateUserDefaults(
-    form: FormBuilderMetadata<never>,
+    form: FormBuilderMetadata,
     accountId: AccountId,
     type: SubmissionType,
-  ): Promise<FormBuilderMetadata<never>> {
+  ): Promise<FormBuilderMetadata> {
     const userSpecifiedDefaults =
       await this.userSpecifiedWebsiteOptionsService.findByAccountAndSubmissionType(
         accountId,
@@ -96,7 +110,6 @@ export class FormGeneratorService {
       Object.entries(userSpecifiedDefaults.options).forEach(([key, value]) => {
         const field = form[key];
         if (field) {
-          // eslint-disable-next-line no-param-reassign
           field.defaultValue = value ?? field.defaultValue;
         }
       });

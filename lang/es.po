@@ -11,11 +11,11 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:53
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:53
 msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:63
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:63
 msgid "{fileName} will be modified to support website requirements"
 msgstr ""
 
@@ -38,6 +38,10 @@ msgstr "Añadir observador de carpeta"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:31
 msgid "Allow PostyBirb to insert an Ad into the description"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:15
+msgid "Allow resizing image"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:163
@@ -98,6 +102,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:72
 msgid "Clear"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:13
+msgid "Content warning"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
@@ -172,15 +180,15 @@ msgstr "Guardados por Defecto"
 msgid "Delete"
 msgstr "Borrar"
 
-#: apps/postybirb-ui/src/external-translations.ts:5
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:8
 msgid "Description"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:19
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:19
 msgid "Description is greater than {maxLength} characters long"
 msgstr "La descripción sobrepasa los {maxLength} caracteres"
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:25
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:25
 msgid "Description is less than {minLength} characters long"
 msgstr ""
 
@@ -252,8 +260,12 @@ msgstr ""
 msgid "Failed to update"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:13
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:13
 msgid "Failed to validate submission: {message}"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
+msgid "Feature"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
@@ -434,7 +446,7 @@ msgstr ""
 msgid "Primary"
 msgstr "Primario"
 
-#: apps/postybirb-ui/src/external-translations.ts:8
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:11
 msgid "Rating"
 msgstr ""
 
@@ -453,7 +465,7 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Reemplazar Título"
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:80
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:80
 msgid "Requires at least {minLength} tags"
 msgstr ""
 
@@ -529,6 +541,10 @@ msgstr "Tamaño"
 msgid "Spanish"
 msgstr "Español"
 
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:12
+msgid "Species"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:174
 msgid "Spoiler Text"
 msgstr ""
@@ -555,7 +571,7 @@ msgstr "Publicación programada"
 msgid "Submission templates"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:31
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:31
 msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} files each."
 msgstr ""
 
@@ -587,17 +603,17 @@ msgstr ""
 msgid "Tag Groups"
 msgstr "Grupos de Etiquetas"
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:70
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:70
 msgid "Tag limit reached ({currentLength} / {maxLength})"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
-#: apps/postybirb-ui/src/external-translations.ts:6
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:9
 msgid "Tags"
 msgstr "Etiquetas"
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:92
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:92
 msgid "Tags longer than {maxLength} characters will be skipped"
 msgstr ""
 
@@ -642,27 +658,27 @@ msgstr ""
 msgid "Thumbnail"
 msgstr "Miniatura"
 
-#: apps/postybirb-ui/src/external-translations.ts:7
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:10
 msgid "Title"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:104
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:104
 msgid "Title is too long"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:102
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:102
 msgid "Title is too long and will be truncated"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:118
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
 msgid "Title is too short"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:136
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:136
 msgid "Translation {id} not found"
 msgstr "Traducción {id} no encontrada"
 
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:230
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:231
 msgid "Unable to display form"
 msgstr ""
 
@@ -682,7 +698,7 @@ msgstr "Publicación desconocida"
 msgid "Unschedule"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/translation.tsx:42
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:42
 msgid "Unsupported file type {mimeType}"
 msgstr ""
 
@@ -709,6 +725,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:14
+msgid "Use thumbnail"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86

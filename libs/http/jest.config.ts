@@ -15,5 +15,4 @@ export default {
   coverageDirectory: '../../coverage/libs/http',
   runner: '@kayahr/jest-electron-runner/main',
   testEnvironment: 'node',
-  verbose: false,
 };

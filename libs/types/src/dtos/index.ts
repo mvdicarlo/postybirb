@@ -10,6 +10,7 @@ export * from './post/queue-post-record-request.dto';
 export * from './post/website-post-record.dto';
 export * from './settings/settings.dto';
 export * from './settings/update-settings.dto';
+export * from './submission/apply-multi-submission.dto';
 export * from './submission/create-submission.dto';
 export * from './submission/submission-file.dto';
 export * from './submission/submission.dto';

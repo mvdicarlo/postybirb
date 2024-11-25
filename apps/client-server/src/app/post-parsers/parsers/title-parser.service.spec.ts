@@ -39,11 +39,13 @@ describe('TitleParserService', () => {
   it('should parse title', async () => {
     const submission = new Submission({});
     const defaultOptions: IWebsiteOptions = {
+      id: 'default',
       data: {
         title: 'default',
       },
     } as IWebsiteOptions;
     const websiteOptions: IWebsiteOptions = {
+      id: 'website',
       data: {
         title: 'website',
       },
@@ -71,15 +73,17 @@ describe('TitleParserService', () => {
     const submission = new Submission({});
     const instance = new WebsiteInstanceMock();
     const defaultOptions: IWebsiteOptions = {
+      id: 'default',
       data: {
         title: 'default',
       },
     } as IWebsiteOptions;
     const websiteOptions: IWebsiteOptions = {
+      id: 'website',
       data: {},
     } as IWebsiteOptions;
-    const defaultForm = { title: [{ maxLength: 10 }] };
-    const websiteForm = { title: [{ maxLength: 5 }] };
+    const defaultForm = { title: { maxLength: 10 } };
+    const websiteForm = { title: { maxLength: 5 } };
     (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
       defaultForm,
     );
@@ -94,6 +98,7 @@ describe('TitleParserService', () => {
       websiteOptions,
     );
 
+    // Title should be truncated
     expect(title).toBe('defau');
   });
 
@@ -101,11 +106,13 @@ describe('TitleParserService', () => {
     const submission = new Submission({});
     const instance = new WebsiteInstanceMock();
     const defaultOptions: IWebsiteOptions = {
+      id: 'default',
       data: {
         title: 'default',
       },
     } as IWebsiteOptions;
     const websiteOptions: IWebsiteOptions = {
+      id: 'website',
       data: {
         title: 'website',
       },
