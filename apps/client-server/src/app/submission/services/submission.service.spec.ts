@@ -16,6 +16,7 @@ import { join } from 'path';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
 import { DatabaseModule } from '../../database/database.module';
+import { FileConverterService } from '../../file-converter/file-converter.service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
@@ -72,6 +73,7 @@ describe('SubmissionService', () => {
           ValidationService,
           WebsiteOptionsService,
           WebsiteImplProvider,
+          FileConverterService,
         ],
       }).compile();
 
@@ -239,6 +241,7 @@ describe('SubmissionService', () => {
           file: file.file.id,
           fileName: fileInfo.originalname,
           hasThumbnail: true,
+          hasAltFile: false,
           hash: file.hash,
           height: 202,
           width: 138,

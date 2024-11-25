@@ -43,6 +43,7 @@ describe('PostFileResizerService', () => {
       mimeType,
       size: testFile.length,
       hasThumbnail: false,
+      hasAltFile: false,
       createdAt: new Date(),
       updatedAt: new Date(),
       submission: {} as ISubmission<never>,

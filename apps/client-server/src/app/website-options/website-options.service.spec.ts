@@ -11,6 +11,7 @@ import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { DatabaseModule } from '../database/database.module';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
@@ -81,6 +82,7 @@ describe('WebsiteOptionsService', () => {
           WebsiteOptionsService,
           WebsiteImplProvider,
           UserSpecifiedWebsiteOptionsService,
+          FileConverterService,
         ],
       }).compile();
 
