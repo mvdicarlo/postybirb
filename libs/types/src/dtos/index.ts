@@ -14,6 +14,7 @@ export * from './submission/apply-multi-submission.dto';
 export * from './submission/create-submission.dto';
 export * from './submission/submission-file.dto';
 export * from './submission/submission.dto';
+export * from './submission/update-alt-file.dto';
 export * from './submission/update-submission-template-name.dto';
 export * from './submission/update-submission.dto';
 export * from './tag/create-tag-converter.dto';

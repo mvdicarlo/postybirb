@@ -4,6 +4,7 @@ import { SubmissionType } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
@@ -38,7 +39,12 @@ describe('PostService', () => {
           PostModule,
           ValidationModule,
         ],
-        providers: [PostService, PostManagerService, PostFileResizerService],
+        providers: [
+          PostService,
+          PostManagerService,
+          PostFileResizerService,
+          FileConverterService,
+        ],
       }).compile();
 
       service = module.get<PostService>(PostService);

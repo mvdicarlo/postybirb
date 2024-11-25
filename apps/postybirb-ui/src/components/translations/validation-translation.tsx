@@ -1,5 +1,9 @@
 import { Trans } from '@lingui/macro';
-import { ValidationMessage, ValidationMessages } from '@postybirb/types';
+import {
+  FileType,
+  ValidationMessage,
+  ValidationMessages,
+} from '@postybirb/types';
 import { filesize } from 'filesize';
 
 type TranslationsMap = {
@@ -35,6 +39,15 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     );
   },
 
+  'validation.file.text-file-no-fallback': (props) => {
+    const { fileExtension } = props.values;
+    return (
+      <Trans>
+        Unsupported file type {fileExtension}. Please provide fallback text.
+      </Trans>
+    );
+  },
+
   'validation.file.invalid-mime-type': (props) => {
     const { mimeType, acceptedMimeTypes } = props.values;
     return (
@@ -45,24 +58,44 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     );
   },
 
+  'validation.file.unsupported-file-type': (props) => {
+    const { fileType } = props.values;
+    let fileTypeString;
+    switch (fileType) {
+      case FileType.IMAGE:
+        fileTypeString = <Trans>Image</Trans>;
+        break;
+      case FileType.VIDEO:
+        fileTypeString = <Trans>Video</Trans>;
+        break;
+      case FileType.TEXT:
+        fileTypeString = <Trans>Text</Trans>;
+        break;
+      case FileType.AUDIO:
+        fileTypeString = <Trans>Audio</Trans>;
+        break;
+      default:
+        fileTypeString = <Trans>Unknown</Trans>;
+        break;
+    }
+    return <Trans>Unsupported submission type: {fileTypeString}</Trans>;
+  },
+
   'validation.file.file-size': (props) => {
-    const { maxFileSize, fileSize, fileName } = props.values;
+    const { maxFileSize, fileSize } = props.values;
     const fileSizeString = filesize(fileSize);
     const maxFileSizeString = filesize(maxFileSize);
     return (
       <Trans>
-        {fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and
-        an attempt will be made to reduce size when posting
+        ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt
+        will be made to reduce size when posting
       </Trans>
     );
   },
 
-  'validation.file.image-resize': (props) => {
-    const { fileName } = props.values;
-    return (
-      <Trans>{fileName} will be modified to support website requirements</Trans>
-    );
-  },
+  'validation.file.image-resize': () => (
+    <Trans>File will be modified to support website requirements</Trans>
+  ),
 
   'validation.tags.max-tags': (props) => {
     //
@@ -81,12 +114,12 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   'validation.tags.min-tags': (props) => {
     const { minLength, currentLength } = props.values;
     return (
-      <Trans>
-        Requires at least {minLength} tags{' '}
+      <>
+        <Trans>Requires at least {minLength} tags</Trans>
         <span>
           ({currentLength} / {minLength})
         </span>
-      </Trans>
+      </>
     );
   },
 

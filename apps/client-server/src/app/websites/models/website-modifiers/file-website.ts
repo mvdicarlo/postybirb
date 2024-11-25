@@ -14,6 +14,9 @@ import { UnknownWebsite } from '../../website';
 
 export const FileWebsiteKey = 'FileModel';
 
+export type ImplementedFileWebsite = FileWebsite<IWebsiteFormFields> &
+  UnknownWebsite;
+
 /**
  * Defines methods for allowing file based posting.
  * Generally this will always be used by each supported website.
@@ -39,9 +42,6 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
 
 export function isFileWebsite(
   websiteInstance: UnknownWebsite,
-): websiteInstance is FileWebsite<IWebsiteFormFields> & UnknownWebsite {
-  return Boolean(
-    (websiteInstance as FileWebsite<IWebsiteFormFields> & UnknownWebsite)
-      .supportsFile,
-  );
+): websiteInstance is ImplementedFileWebsite {
+  return Boolean((websiteInstance as ImplementedFileWebsite).supportsFile);
 }

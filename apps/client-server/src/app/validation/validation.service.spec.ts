@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
 import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { WebsiteImplProvider } from '../websites/implementations';
@@ -20,6 +21,7 @@ describe('ValidationService', () => {
         DatabaseUpdateSubscriber,
         WebsiteRegistryService,
         PostParsersService,
+        FileConverterService,
       ],
     }).compile();
 

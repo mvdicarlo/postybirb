@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
+  Get,
   Param,
+  Patch,
   Post,
   UploadedFile,
   UploadedFiles,
@@ -15,8 +18,9 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { SubmissionId } from '@postybirb/types';
+import { EntityId, SubmissionId } from '@postybirb/types';
 import { MulterFileInfo } from '../file/models/multer-file-info';
+import { UpdateAltFileDto } from './dtos/update-alt-file.dto';
 import { FileSubmissionService } from './services/file-submission.service';
 import { SubmissionService } from './services/submission.service';
 
@@ -108,5 +112,20 @@ export class FileSubmissionController {
     }
 
     return this.findOne(id);
+  }
+
+  @Get('alt/:id')
+  @ApiOkResponse({ description: 'Alt File Text.' })
+  async getAltFileText(@Param('id') id: EntityId) {
+    return this.service.getAltFileText(id);
+  }
+
+  @Patch('alt/:id')
+  @ApiOkResponse({ description: 'Updated Alt File Text.' })
+  async updateAltFileText(
+    @Param('id') id: EntityId,
+    @Body() update: UpdateAltFileDto,
+  ) {
+    return this.service.updateAltFileText(id, update);
   }
 }

@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import * as rtf from '@iarna/rtf-to-html';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
@@ -9,6 +10,9 @@ import { Logger } from '@postybirb/logger';
 import { FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { async as hash } from 'hasha';
+import { html as htmlBeautify } from 'js-beautify';
+import * as mammoth from 'mammoth';
+import { promisify } from 'util';
 import { SubmissionFile } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { MulterFileInfo } from '../models/multer-file-info';
@@ -111,7 +115,51 @@ export class UpdateFileService {
       submissionFile.file.mimeType = submissionFile.mimeType;
       submissionFile.file.width = submissionFile.width;
       submissionFile.file.height = submissionFile.height;
+
+      if (getFileType(file.originalname) === FileType.TEXT) {
+        submissionFile.altFile.buffer =
+          (await this.repopulateTextFile(file, buf)) ||
+          submissionFile?.altFile.buffer;
+        submissionFile.hasAltFile = !!submissionFile.altFile?.buffer;
+      }
     }
+  }
+
+  async repopulateTextFile(
+    file: MulterFileInfo,
+    buf: Buffer,
+  ): Promise<Buffer | null> {
+    let altText: string;
+    if (
+      file.mimetype ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.originalname.endsWith('.docx')
+    ) {
+      this.logger.info('[Mutation] Updating Alt File for Text Document: DOCX');
+      altText = (await mammoth.convertToHtml({ buffer: buf })).value;
+    }
+
+    if (
+      file.mimetype === 'application/rtf' ||
+      file.originalname.endsWith('.rtf')
+    ) {
+      this.logger.info('[Mutation] Updating Alt File for Text Document: RTF');
+      const promisifiedRtf = promisify(rtf.fromString);
+      altText = await promisifiedRtf(buf.toString(), {
+        template(_, __, content: string) {
+          return content;
+        },
+      });
+    }
+
+    if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {
+      this.logger.info('[Mutation] Updating Alt File for Text Document: TXT');
+      altText = buf.toString();
+    }
+
+    return altText
+      ? Buffer.from(htmlBeautify(altText, { wrap_line_length: 100 }))
+      : null;
   }
 
   private async updateImageFileProps(

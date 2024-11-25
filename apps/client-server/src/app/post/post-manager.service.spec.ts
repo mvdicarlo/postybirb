@@ -9,6 +9,8 @@ import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
 import { DatabaseModule } from '../database/database.module';
+import { FileConverterModule } from '../file-converter/file-converter.module';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
@@ -37,44 +39,50 @@ describe('PostManagerService', () => {
   let registryService: WebsiteRegistryService;
 
   beforeEach(async () => {
-    module = await Test.createTestingModule({
-      imports: [
-        DatabaseModule,
-        SubmissionModule,
-        AccountModule,
-        WebsiteOptionsModule,
-        WebsitesModule,
-        UserSpecifiedWebsiteOptionsModule,
-        PostParsersModule,
-        PostModule,
-      ],
-      providers: [
-        PostManagerService,
-        PostService,
-        PostFileResizerService,
-        ValidationService,
-      ],
-    }).compile();
-
-    service = module.get<PostManagerService>(PostManagerService);
-    submissionService = module.get<SubmissionService>(SubmissionService);
-    accountService = module.get<AccountService>(AccountService);
-    const settingsService = module.get<SettingsService>(SettingsService);
-    websiteOptionsService = module.get<WebsiteOptionsService>(
-      WebsiteOptionsService,
-    );
-    postService = module.get<PostService>(PostService);
-    registryService = module.get<WebsiteRegistryService>(
-      WebsiteRegistryService,
-    );
-    orm = module.get(MikroORM);
     try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
+      module = await Test.createTestingModule({
+        imports: [
+          DatabaseModule,
+          SubmissionModule,
+          AccountModule,
+          WebsiteOptionsModule,
+          WebsitesModule,
+          UserSpecifiedWebsiteOptionsModule,
+          PostParsersModule,
+          PostModule,
+          FileConverterModule,
+        ],
+        providers: [
+          PostManagerService,
+          PostService,
+          PostFileResizerService,
+          ValidationService,
+          FileConverterService,
+        ],
+      }).compile();
+
+      service = module.get<PostManagerService>(PostManagerService);
+      submissionService = module.get<SubmissionService>(SubmissionService);
+      accountService = module.get<AccountService>(AccountService);
+      const settingsService = module.get<SettingsService>(SettingsService);
+      websiteOptionsService = module.get<WebsiteOptionsService>(
+        WebsiteOptionsService,
+      );
+      postService = module.get<PostService>(PostService);
+      registryService = module.get<WebsiteRegistryService>(
+        WebsiteRegistryService,
+      );
+      orm = module.get(MikroORM);
+      try {
+        await orm.getSchemaGenerator().refreshDatabase();
+      } catch {
+        // none
+      }
+      await accountService.onModuleInit();
+      await settingsService.onModuleInit();
+    } catch (err) {
+      console.log(err);
     }
-    await accountService.onModuleInit();
-    await settingsService.onModuleInit();
   });
 
   function createSubmissionDto(): CreateSubmissionDto {

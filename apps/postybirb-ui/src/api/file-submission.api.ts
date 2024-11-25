@@ -28,6 +28,14 @@ class FileSubmissionsApi {
       `remove/${target}/${id}/${fileId}`,
     );
   }
+
+  getAltText(id: EntityId) {
+    return this.client.get<string>(`alt/${id}`);
+  }
+
+  updateAltText(altFileId: EntityId, html: string) {
+    return this.client.patch(`alt/${altFileId}`, { html });
+  }
 }
 
 export default new FileSubmissionsApi();

@@ -172,33 +172,21 @@ export abstract class Website<D extends DynamicObject> {
   public async onInitialize(
     websiteDataRepository: PostyBirbRepository<WebsiteData<D>>,
   ): Promise<void> {
-    this.logger.trace('onInitialize');
-
     await this.websiteDataStore.initialize(websiteDataRepository);
-
-    this.logger.trace('Done onInitialize');
   }
 
   /**
    * Method that runs before onLogin to set pending flag.
    */
   public onBeforeLogin() {
-    this.logger.trace('onBeforeLogin');
-
     this.loginState.pending = true;
-
-    this.logger.trace('Done onBeforeLogin');
   }
 
   /**
    * Method that runs after onLogin completes to remove pending flag.
    */
   public onAfterLogin() {
-    this.logger.trace('onAfterLogin');
-
     this.loginState.pending = false;
-
-    this.logger.trace('Done onAfterLogin');
   }
 
   /**

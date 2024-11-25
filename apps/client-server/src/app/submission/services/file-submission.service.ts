@@ -1,6 +1,7 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
+  EntityId,
   FileMetadataFields,
   FileSubmission,
   ISubmission,
@@ -14,6 +15,7 @@ import { PostyBirbRepository } from '../../database/repositories/postybirb-repos
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
+import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
 import { ISubmissionService } from './submission-service.interface';
 
 type SubmissionEntity = Submission<SubmissionMetadataType>;
@@ -162,5 +164,13 @@ export class FileSubmissionService
       (metaFileOrderId) => metaFileOrderId !== fileId,
     );
     await this.repository.persistAndFlush(submission);
+  }
+
+  getAltFileText(id: EntityId) {
+    return this.fileService.getAltText(id);
+  }
+
+  updateAltFileText(id: EntityId, update: UpdateAltFileDto) {
+    return this.fileService.updateAltText(id, update);
   }
 }

@@ -40,7 +40,9 @@ function CardImageProvider(file: ISubmissionFileDto) {
         </audio>
       );
     case FileType.TEXT:
-      return <IconFileText style={{ height: '100px', width: '100px' }} />;
+      return (
+        <IconFileText style={{ display: 'block' }} height={100} width={50} />
+      );
     case FileType.VIDEO:
       return (
         // eslint-disable-next-line jsx-a11y/media-has-caption

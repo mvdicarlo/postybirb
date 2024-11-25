@@ -4,7 +4,6 @@ import {
   Box,
   Card,
   Flex,
-  Image,
   Input,
   Loader,
   ScrollArea,
@@ -31,9 +30,9 @@ import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../stores/account.store';
 import { useStore } from '../../../../stores/use-store';
-import { defaultTargetProvider } from '../../../../transports/http-client';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../../form/website-select/website-select';
+import { SubmissionFilePreview } from '../../submission-file-preview/submission-file-preview';
 import { SubmissionScheduler } from '../../submission-scheduler/submission-scheduler';
 import { SubmissionViewCardActions } from './submission-view-card-actions';
 
@@ -48,9 +47,6 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
   const { submission, onSelect, isSelected } = props;
   const { type } = submission;
   const { files } = submission;
-  const src = files.length
-    ? `${defaultTargetProvider()}/api/file/thumbnail/${files[0].id}`
-    : null;
   const defaultOption = submission.getDefaultOptions();
 
   const optionsGroupedByWebsiteId = submission.options
@@ -110,7 +106,6 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     return <Loader />;
   }
 
-  // ! TODO - Fix all internal anchor/links to use the old way of opening a window as the current form is busted
   return (
     <Card
       shadow="xs"
@@ -135,17 +130,10 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
         </Flex>
       </Card.Section>
       <Card.Section py="4">
-        <ScrollArea h={400}>
+        <ScrollArea.Autosize mah={400}>
           <Flex>
-            {type === SubmissionType.FILE && src ? (
-              <Image
-                loading="lazy"
-                h={75}
-                w={75}
-                fit="fill"
-                src={src}
-                style={{ position: 'sticky', top: 0 }}
-              />
+            {type === SubmissionType.FILE && files.length ? (
+              <SubmissionFilePreview file={files[0]} height={75} width={75} />
             ) : null}
 
             <Box mx="xs" flex="10">
@@ -221,7 +209,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
               </Stack>
             </Box>
           </Flex>
-        </ScrollArea>
+        </ScrollArea.Autosize>
       </Card.Section>
     </Card>
   );

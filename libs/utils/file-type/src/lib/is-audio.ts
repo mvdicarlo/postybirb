@@ -44,3 +44,7 @@ export function isAudio(filenameOrExtension: string): boolean {
   const mimeType = getMimeTypeForFile(filenameOrExtension);
   return SUPPORTED_MIME.includes(mimeType ?? '');
 }
+
+export function supportsAudio(mimeType: string): boolean {
+  return SUPPORTED_MIME.includes(mimeType);
+}

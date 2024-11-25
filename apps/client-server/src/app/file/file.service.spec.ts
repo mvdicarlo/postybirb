@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { DatabaseModule } from '../database/database.module';
+import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
@@ -92,6 +93,7 @@ describe('FileService', () => {
         TagConvertersService,
         SettingsService,
         FormGeneratorService,
+        FileConverterService,
       ],
     }).compile();
 
@@ -116,7 +118,10 @@ describe('FileService', () => {
     const path = setup();
     const submission = await createSubmission();
     const fileInfo = createMulterData(path);
-    const file = await service.create(fileInfo, submission as FileSubmission);
+    const file = await service.create(
+      fileInfo,
+      submission as unknown as FileSubmission,
+    );
     expect(file.file).toBeDefined();
     expect(file.thumbnail).toBeDefined();
     expect(file.fileName).toBe(fileInfo.originalname);
@@ -137,7 +142,10 @@ describe('FileService', () => {
     const path = setup();
     const submission = await createSubmission();
     const fileInfo = createMulterData(path);
-    const file = await service.create(fileInfo, submission as FileSubmission);
+    const file = await service.create(
+      fileInfo,
+      submission as unknown as FileSubmission,
+    );
     expect(file.file).toBeDefined();
 
     const path2 = setup();

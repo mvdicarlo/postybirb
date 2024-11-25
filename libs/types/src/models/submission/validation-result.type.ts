@@ -1,3 +1,4 @@
+import { FileType } from '../../enums';
 import { ImageResizeProps } from '../website/image-resize-props';
 import { IWebsiteFormFields } from './website-form-fields.interface';
 
@@ -58,6 +59,13 @@ export interface ValidationMessages {
   'validation.file.invalid-mime-type': {
     mimeType: string;
     acceptedMimeTypes: string[];
+    fileId: string;
+  };
+
+  'validation.file.unsupported-file-type': {
+    fileName: string;
+    fileType: FileType;
+    fileId: string;
   };
 
   'validation.file.file-batch-size': {
@@ -65,15 +73,23 @@ export interface ValidationMessages {
     expectedBatchesToCreate: number;
   };
 
+  'validation.file.text-file-no-fallback': {
+    fileName: string;
+    fileExtension: string;
+    fileId: string;
+  };
+
   'validation.file.file-size': {
     maxFileSize: number;
     fileSize: number;
     fileName: string;
+    fileId: string;
   };
 
   'validation.file.image-resize': {
     fileName: string;
     resizeProps: ImageResizeProps;
+    fileId: string;
   };
 
   'validation.description.max-length': {

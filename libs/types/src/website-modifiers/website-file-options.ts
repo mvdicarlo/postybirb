@@ -1,3 +1,5 @@
+import { FileType } from '../enums';
+
 export type WebsiteFileOptions = {
   /**
    * A list of accepted Mime types.
@@ -30,4 +32,9 @@ export type WebsiteFileOptions = {
    * Defaults to 1.
    */
   fileBatchSize?: number;
+
+  /**
+   * The supported file types for the website.
+   */
+  supportedFileTypes: FileType[];
 };
