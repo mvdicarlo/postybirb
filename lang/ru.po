@@ -1,15 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language: \n"
-"Language-Team: \n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2024-11-12 13:23+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\nLanguage: ru\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\nX-Generator: Weblate 5.8.2\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:89
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -121,7 +111,7 @@ msgstr "Предупреждение (CW)"
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copied"
-msgstr "Копировать"
+msgstr "Скопированно"
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copy"
@@ -320,7 +310,7 @@ msgstr "Папка"
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:164
 msgctxt "directory-watcher.description"
 msgid "Folder watchers allow you to automatically upload files from a folder to PostyBirb."
-msgstr "Позволяет вам автоматически добавлять файлы из папки в PostyBirb"
+msgstr "Позволяет вам автоматически добавлять файлы из папки в PostyBirb."
 
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:15
 msgid "Go back"
