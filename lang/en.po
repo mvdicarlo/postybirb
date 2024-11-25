@@ -297,10 +297,6 @@ msgstr ""
 msgid "Feature"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
-msgid "File be modified to support website requirements"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
 msgstr ""
@@ -313,6 +309,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:160
 msgid "File types do not match. Please upload a file of the same type."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
+msgid "File will be modified to support website requirements"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
@@ -516,8 +516,8 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:117
-msgid "Requires at least {minLength} tags <0>({currentLength} / {minLength})</0>"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
+msgid "Requires at least {minLength} tags"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48

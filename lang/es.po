@@ -1,13 +1,19 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2024-11-13 14:00+0000\nLast-Translator: gallegonovato <fran-carro@hotmail.es>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.9-dev\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:53
-msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
-msgstr "{fileName} ({fileSizeString}) es demasiado grande (máx. {maxFileSizeString}) y se intentará reducir el tamaño al publicarlo"
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:63
-msgid "{fileName} will be modified to support website requirements"
-msgstr "{fileName} se modificará para cumplir los requisitos de la página web"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:89
+msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
+msgstr "({fileSizeString}) es demasiado grande (máx. {maxFileSizeString}) y se intentará reducir el tamaño al publicarlo"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
@@ -205,15 +211,9 @@ msgstr "Ajustes de la descripción"
 msgid "Don't post to"
 msgstr "No publicar en"
 
-<<<<<<< HEAD
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:272
 msgid "Drag files here or click to select files"
-msgstr ""
-=======
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:273
-msgid "Drag images here or click to select files"
-msgstr "Arrastre las imágenes aquí o haga clic para seleccionar los archivos"
->>>>>>> main
+msgstr "Arrastre los archivos aquí o haga clic para seleccionar los archivos"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:109
 msgid "Drag or use arrow keys to change order."
@@ -295,10 +295,6 @@ msgstr ""
 msgid "Feature"
 msgstr "Característica"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
-msgid "File be modified to support website requirements"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
 msgstr "Envío de archivos"
@@ -312,6 +308,10 @@ msgstr "Cargas de Archivos"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:160
 msgid "File types do not match. Please upload a file of the same type."
 msgstr "Los tipos de archivo no coinciden. Por favor, cargue un archivo del mismo tipo."
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
+msgid "File will be modified to support website requirements"
+msgstr "Se modificará para cumplir los requisitos de la página web"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
 msgid "Folder"
@@ -514,15 +514,9 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Reemplazar Título"
 
-<<<<<<< HEAD
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:117
-msgid "Requires at least {minLength} tags <0>({currentLength} / {minLength})</0>"
-msgstr ""
-=======
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:80
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
 msgid "Requires at least {minLength} tags"
 msgstr "Requiere al menos {minLength} etiquetas"
->>>>>>> main
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48
 msgid "Reset"

@@ -1,5 +1,15 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2024-11-12 13:23+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\nLanguage: ru\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\nX-Generator: Weblate 5.8.2\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:89
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -285,10 +295,6 @@ msgstr ""
 msgid "Feature"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
-msgid "File be modified to support website requirements"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
 msgstr "Посты с файлами"
@@ -302,6 +308,10 @@ msgstr "Посты с файлами"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:160
 msgid "File types do not match. Please upload a file of the same type."
 msgstr "Типы файлов не совпадают. Пожалуйста, загрузите файл того же типа."
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
+msgid "File will be modified to support website requirements"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
 msgid "Folder"
@@ -504,8 +514,8 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Заменить заголовок"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:117
-msgid "Requires at least {minLength} tags <0>({currentLength} / {minLength})</0>"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
+msgid "Requires at least {minLength} tags"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48

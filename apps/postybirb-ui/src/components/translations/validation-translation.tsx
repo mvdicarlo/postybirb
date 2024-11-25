@@ -94,7 +94,7 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   },
 
   'validation.file.image-resize': () => (
-    <Trans>File be modified to support website requirements</Trans>
+    <Trans>File will be modified to support website requirements</Trans>
   ),
 
   'validation.tags.max-tags': (props) => {
@@ -114,12 +114,12 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   'validation.tags.min-tags': (props) => {
     const { minLength, currentLength } = props.values;
     return (
-      <Trans>
-        Requires at least {minLength} tags{' '}
+      <>
+        <Trans>Requires at least {minLength} tags</Trans>
         <span>
           ({currentLength} / {minLength})
         </span>
-      </Trans>
+      </>
     );
   },
 
