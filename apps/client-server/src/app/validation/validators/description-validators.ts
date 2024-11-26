@@ -19,7 +19,7 @@ export async function validateDescriptionMaxLength({
   const maxLength =
     descriptionSupport.maxDescriptionLength ?? Number.MAX_SAFE_INTEGER;
   if (description.length > maxLength) {
-    result.errors.push({
+    result.warnings.push({
       id: 'validation.description.max-length',
       field: 'description',
       values: {

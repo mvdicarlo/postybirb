@@ -39,7 +39,6 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
     return this.repository.update(id, update);
   }
 
-  // TODO - write tests for this
   /**
    * Converts a list of tags using user defined conversion table.
    *

@@ -1,8 +1,19 @@
 import { Trans } from '@lingui/macro';
-import { Box, Checkbox, Pill, TagsInput, Text } from '@mantine/core';
+import {
+  Badge,
+  Box,
+  Checkbox,
+  Group,
+  Pill,
+  TagsInput,
+  Text,
+} from '@mantine/core';
 import { TagFieldType } from '@postybirb/form-builder';
-import { Tag, TagGroupDto, TagValue } from '@postybirb/types';
+import { Tag, TagConverterDto, TagGroupDto, TagValue } from '@postybirb/types';
+import { IconArrowRight } from '@tabler/icons-react';
 import { flatten, uniq } from 'lodash';
+import { useWebsites } from '../../../hooks/account/use-websites';
+import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
 import { useDefaultOption } from '../hooks/use-default-option';
@@ -16,16 +27,45 @@ function containsAllTagsInGroup(tags: Tag[], group: TagGroupDto): boolean {
   return group.tags.every((tag) => tags.includes(tag));
 }
 
-// TODO - figure out some way to support indicating a tag converter is being used
+function getTagConversion(
+  website: string,
+  tagConverters: TagConverterDto[],
+  tag: Tag,
+): Tag {
+  const matchingConverter = tagConverters.find(
+    (converter) => converter.tag === tag,
+  );
+  if (!matchingConverter) {
+    return tag;
+  }
+
+  return (
+    matchingConverter.convertTo[website] ??
+    matchingConverter.convertTo.default ??
+    tag
+  );
+}
+
 export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const { field, form, propKey, option } = props;
   const { state: tagGroups } = useStore(TagGroupStore);
   const defaultOption = useDefaultOption<TagValue>(props);
   const validations = useValidations(props);
-
+  const { state: tagConverters } = useStore(TagConverterStore);
+  const { accounts } = useWebsites();
+  const account = accounts.find((acc) => acc.id === option.account);
   const overrideProps = form.getInputProps(`${propKey}.overrideDefault`);
   const tagsProps = form.getInputProps(`${propKey}.tags`);
   const tagValue = tagsProps.defaultValue as Tag[];
+  const allTags = [...tagValue, ...(defaultOption?.tags || [])];
+  const convertedTags = (
+    account
+      ? allTags.map((tag) => [
+          tag,
+          getTagConversion(account.website, tagConverters, tag),
+        ])
+      : []
+  ).filter(([tag, converted]) => converted !== tag);
 
   const tagGroupsOptions = tagGroups.map((tagGroup) => ({
     label: `${TAG_GROUP_LABEL}${JSON.stringify(tagGroup)}`,
@@ -48,7 +88,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
 
   const totalTags: number = overrideProps.defaultValue
     ? tagValue.length
-    : [...tagValue, ...(defaultOption?.tags || [])].length;
+    : allTags.length;
 
   return (
     <Box>
@@ -62,6 +102,25 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
               <Trans context="override-default">Ignore default tags</Trans>
             }
           />
+        )}
+        {convertedTags.length > 0 && (
+          <Box>
+            <Text display="inline-block" size="sm" c="green">
+              <Trans>Converted:</Trans>
+            </Text>
+            <Group display="inline-block" ml="4">
+              {convertedTags.map(([tag, convertedTag]) => (
+                <Badge size="xs" variant="light">
+                  {tag}{' '}
+                  <IconArrowRight
+                    size="0.75rem"
+                    style={{ verticalAlign: 'middle' }}
+                  />{' '}
+                  {convertedTag}
+                </Badge>
+              ))}
+            </Group>
+          </Box>
         )}
         <TagsInput
           inputWrapperOrder={['label', 'input', 'description', 'error']}

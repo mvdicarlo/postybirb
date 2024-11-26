@@ -25,8 +25,6 @@ type ConversionWeights = {
   [outputMimeType in SupportedOutputMimeTypes]: number;
 };
 
-// TODO - use this within the post service to convert alt files to acceptable format
-// TODO - use overall conversion check within the validator service to see if we can convert the file, this may be useful for the end user
 /**
  * A class that converts text files to other text formats.
  * Largely for use when converting AltFiles (text/html) to other desirable formats.

@@ -35,7 +35,7 @@ import { DiscordMessageSubmission } from './models/discord-message-submission';
   acceptedFileSizes: {},
   fileBatchSize: 10,
 })
-@SupportsDescription(DescriptionType.MARKDOWN)
+@SupportsDescription(DescriptionType.MARKDOWN, 2_000)
 export default class Discord
   extends Website<DiscordAccountData>
   implements
@@ -77,6 +77,7 @@ export default class Discord
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
     files: PostingFile[],
+    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
@@ -104,18 +105,6 @@ export default class Discord
     const result: SimpleValidationResult<DiscordMessageSubmission> = {
       warnings: [],
     };
-
-    // TODO - update validation
-    // if (postData.options.description.description.trim().length > 2_000) {
-    //   result.warnings.push({
-    //     id: 'validation.description.max-length',
-    //     field: 'description',
-    //     values: {
-    //       maxLength: 2_000,
-    //     },
-    //   });
-    // }
-
     return result;
   }
 }
