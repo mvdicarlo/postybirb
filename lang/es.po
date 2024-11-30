@@ -1,0 +1,836 @@
+msgid ""
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2024-11-30 20:05+0000\nLast-Translator: gallegonovato <fran-carro@hotmail.es>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.9-dev\n"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:93
+msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
+msgstr "({fileSizeString}) es demasiado grande (máx. {maxFileSizeString}) y se intentará reducir el tamaño al publicarlo"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
+msgid "Accounts"
+msgstr "Cuentas"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:83
+msgid "Action"
+msgstr "Acción"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:177
+msgid "Actions"
+msgstr "Acciones"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:183
+msgid "Add folder watcher"
+msgstr "Añadir observador de carpeta"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:62
+msgid "All files are marked ignored."
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:31
+msgid "Allow PostyBirb to insert an Ad into the description"
+msgstr "Permitir a PostyBirb insertar un anuncio en la descripción"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:166
+msgid "Alt Text"
+msgstr "Texto alternativo"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
+msgid "App Folder"
+msgstr "Folder de applicación"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:81
+msgid "App Server Port"
+msgstr "Puerto del Servidor de la Aplicación"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:290
+#: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:51
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:285
+msgid "Apply"
+msgstr "Aplicar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/apply-submission-template-action.tsx:25
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:138
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:66
+msgid "Apply Template"
+msgstr "Aplicar plantilla"
+
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:142
+msgid "Apply to Submissions"
+msgstr "Aplicar a las presentaciones"
+
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:24
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx:32
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/delete-submissions-action.tsx:38
+msgid "Are you sure you want to delete this? This action cannot be undone."
+msgstr "¿Estás seguro de que deseas eliminar esto? Esta acción no se puede deshacer."
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx:36
+msgid "Are you sure you want to post all selected submissions?"
+msgstr "¿Está seguro de que desea publicar todos los envíos seleccionados ?"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:79
+msgid "Audio"
+msgstr "Audio"
+
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:58
+msgid "Auto Importers (File Watcher)"
+msgstr "Importadores automáticos (al cambiar de carpeta)"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:260
+#: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:43
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:282
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:36
+msgid "Choose Fields"
+msgstr "Seleccione campos"
+
+#: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:26
+msgid "Choose Submissions"
+msgstr "Elige presentaciones"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:211
+msgctxt "template.picker-modal-header"
+msgid "Choose Templates"
+msgstr "Escoger Plantilla"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx:25
+msgid "Choose websites"
+msgstr "Elegir páginas web"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:72
+msgid "Clear"
+msgstr "Limpiar"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:13
+msgid "Content warning"
+msgstr "Advertencia de contenido"
+
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:109
+msgid "Converted:"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
+msgid "Copied"
+msgstr "Copiado"
+
+#: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
+msgid "Copy"
+msgstr "Copiar"
+
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:44
+msgid "Create Message Submission"
+msgstr "Crear envío de mensaje"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:54
+msgid "Create new submission"
+msgstr "Crear nueva publicación"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:131
+msgid "Create new tag converter"
+msgstr "Crear nuevo conversor de etiquetas"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:131
+msgid "Create new tag group"
+msgstr "Crear un nuevo grupo de etiquetas"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:78
+msgid "Create Submission Template"
+msgstr "Crear plantilla de presentación"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:85
+msgid "CRON Format"
+msgstr "Formato CRON"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx:72
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx:141
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:110
+msgid "Crop"
+msgstr "Recortar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:214
+msgid "Crop new thumbnail from original file"
+msgstr "Recortar nueva miniatura del archivo original"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:223
+msgid "Date"
+msgstr "Fecha"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:234
+msgid "Days"
+msgstr "Días"
+
+#: apps/postybirb-ui/src/components/form/fields/radio-field.tsx:27
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:44
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:61
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:63
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:154
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:90
+msgid "Default"
+msgstr "Por Defecto"
+
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:77
+msgctxt "default-options-saved"
+msgid "Defaults saved"
+msgstr "Guardados por Defecto"
+
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:16
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:38
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx:46
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:116
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/delete-submissions-action.tsx:52
+msgid "Delete"
+msgstr "Borrar"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:8
+msgid "Description"
+msgstr "Descripción"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:23
+msgid "Description is greater than {maxLength} characters long"
+msgstr "La descripción sobrepasa los {maxLength} caracteres"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:29
+msgid "Description is less than {minLength} characters long"
+msgstr "Descripción es menor que {minLength} caracteres de largo"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:25
+msgid "Description Settings"
+msgstr "Ajustes de la descripción"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:155
+msgid "Don't post to"
+msgstr "No publicar en"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:272
+msgid "Drag files here or click to select files"
+msgstr "Arrastre los archivos aquí o haga clic para seleccionar los archivos"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:110
+msgid "Drag or use arrow keys to change order."
+msgstr "Arrastra o utiliza las teclas de flecha para cambiar el orden."
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:62
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:138
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:73
+msgid "Edit"
+msgstr "Editar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/multi-edit-submissions-action.tsx:23
+msgid "Edit Many"
+msgstr "Editar muchos"
+
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:170
+msgid "Edit Multiple"
+msgstr "Edición múltiple"
+
+#: apps/postybirb-ui/src/app/languages.tsx:6
+msgid "English"
+msgstr "Inglés"
+
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:45
+msgid "Enter a name for the new message submission"
+msgstr "Introduzca un nombre para el nuevo mensaje enviado"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:79
+msgid "Enter a name for the template"
+msgstr "Introduce un nombre para la plantilla"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:145
+msgid "Enter name to add new account"
+msgstr "Introduce el nombre para añadir una nueva cuenta"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:63
+msgid "Failed to create template"
+msgstr "No se pudo crear la plantilla"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:55
+msgid "Failed to duplicate"
+msgstr "No se pudo duplicar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:152
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:186
+msgid "Failed to queue submission"
+msgstr "Error al poner en cola el envío"
+
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:86
+msgid "Failed to save defaults"
+msgstr "No se pudieron guardar los valores predeterminados"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:197
+msgid "Failed to save file metadata"
+msgstr "No se pudieron guardar los metadatos del archivo"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:122
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:84
+msgid "Failed to schedule submission"
+msgstr "No se pudo programar el envío"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:85
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:92
+msgid "Failed to update"
+msgstr "Error al actualizar"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:17
+msgid "Failed to validate submission: {message}"
+msgstr "No se pudo validar el envío: {message}"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-text-alt.tsx:68
+msgid "Fallback Text"
+msgstr "Texto alternativo"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:14
+msgid "Feature"
+msgstr "Característica"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
+msgid "File submissions"
+msgstr "Envío de archivos"
+
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:227
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:45
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:174
+msgid "File Submissions"
+msgstr "Cargas de Archivos"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:160
+msgid "File types do not match. Please upload a file of the same type."
+msgstr "Los tipos de archivo no coinciden. Por favor, cargue un archivo del mismo tipo."
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:101
+msgid "File will be modified to support website requirements"
+msgstr "Se modificará para cumplir los requisitos de la página web"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
+msgid "Folder"
+msgstr "Carpeta"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:164
+msgctxt "directory-watcher.description"
+msgid "Folder watchers allow you to automatically upload files from a folder to PostyBirb."
+msgstr "Los observadores de carpetas le permiten cargar automáticamente archivos desde una carpeta a PostyBirb."
+
+#: apps/postybirb-ui/src/pages/not-found/not-found.tsx:15
+msgid "Go back"
+msgstr "Regresar"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:46
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:138
+msgid "Group Name"
+msgstr "Nombre del grupo"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:104
+msgid "Height"
+msgstr "Altura"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:64
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:35
+#: apps/postybirb-ui/src/pages/home/home-page.tsx:9
+msgid "Home"
+msgstr "Página Principal"
+
+#: apps/postybirb-ui/src/pages/home/home-page.tsx:11
+msgid "Home Page"
+msgstr "Página de inicio"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:242
+msgid "Hours"
+msgstr "Horas"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:105
+msgctxt "discord.webhook-help"
+msgid "How to create a webhook"
+msgstr "Cómo crear un webhook"
+
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:102
+msgctxt "override-default"
+msgid "Ignore default tags"
+msgstr "Ignorar etiquetas predeterminadas"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:70
+msgid "Image"
+msgstr "Imagen"
+
+#: apps/postybirb-ui/src/components/form/fields/description-field.tsx:42
+msgid "Insert tags at end"
+msgstr "Insertar etiquetas al final"
+
+#: apps/postybirb-ui/src/components/form/fields/description-field.tsx:36
+msgid "Insert title at start"
+msgstr "Insertar título al inicio"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:70
+msgid "Invalid CRON string"
+msgstr "String CRON inválido"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:158
+msgid "Invalid file type"
+msgstr "Tipo de archivo no válido"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:129
+msgid "Is a forum"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:174
+msgid "Logged In As"
+msgstr "Conectado como"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:77
+msgid "Login"
+msgstr "Conectarse"
+
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:108
+msgid "Merge"
+msgstr "Unir"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:64
+msgid "Message submissions"
+msgstr "Envíos de mensajes"
+
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:229
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:94
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:176
+msgid "Message Submissions"
+msgstr "Publicaciones de Mensajes"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:250
+msgid "Minutes"
+msgstr "Minutos"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:102
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:171
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:39
+msgid "Name"
+msgstr "Usuario"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:33
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:40
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:47
+msgid "Navigation"
+msgstr "Navegar"
+
+#: apps/postybirb-ui/src/components/translations/component-translations.tsx:4
+msgid "No items"
+msgstr "Sin artículos"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-login-panel/website-login-panel.tsx:23
+msgid "No login component found."
+msgstr "No se encontró un componente de inicio de sesión."
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:99
+msgid "No results"
+msgstr "Sin resultados"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:136
+msgctxt "Template picker checkbox"
+msgid "None"
+msgstr "Ninguno"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:17
+msgctxt "internalSchedule.none"
+msgid "None"
+msgstr "Ninguno"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:118
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:95
+msgid "Not logged in"
+msgstr "Sesión no iniciada"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:21
+msgctxt "internalSchedule.single"
+msgid "Once"
+msgstr "Una vez"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
+msgid "Only set scheduled date"
+msgstr "Solo establecer fecha programada"
+
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:126
+msgid "Only use website options specified and delete website options missing from multi-update form."
+msgstr "Utilice únicamente las opciones de sitio web especificadas y elimine las opciones de la página web que faltan en el formulario de actualización múltiple."
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:72
+msgid "Open PostyBirb on computer startup"
+msgstr "Abrir PostyBirb al iniciar el ordenador"
+
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:116
+msgid "Overwrite overlapping website options only. This will keep any website options that already exist and only overwrite ones specified in the multi-update form."
+msgstr "Sobrescribir solo las opciones superpuestas del sitio web. Esto mantendrá todas las opciones de la página web que ya existen y solo sobrescribirá las especificadas en el formulario de actualización múltiple."
+
+#: apps/postybirb-ui/src/pages/not-found/not-found.tsx:10
+msgid "Page not found"
+msgstr "Página no encontrada"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:159
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:193
+msgid "Post"
+msgstr "Publicar"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:42
+msgid "Post a file"
+msgstr "Publicar un archivo"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:49
+msgid "Post a message"
+msgstr "Publicar un mensaje"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:72
+msgid "Post Files"
+msgstr "Publicar archivos"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx:46
+msgid "Post Selected"
+msgstr "Post seleccionado"
+
+#. Main file data
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:147
+msgid "Primary"
+msgstr "Primario"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:11
+msgid "Rating"
+msgstr "Valoración"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:25
+msgctxt "internalSchedule.recurring"
+msgid "Recurring"
+msgstr "Recurrente"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:193
+msgctxt "import.override-description"
+msgid "Replace description"
+msgstr "Reemplazar descripción"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:184
+msgctxt "import.override-title"
+msgid "Replace title"
+msgstr "Reemplazar Título"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:122
+msgid "Requires at least {minLength} tags"
+msgstr "Requiere al menos {minLength} etiquetas"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48
+msgid "Reset"
+msgstr "Restablecer"
+
+#: apps/postybirb-ui/src/app/languages.tsx:7
+msgid "Russian"
+msgstr "Ruso"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:190
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:171
+#: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:96
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:142
+msgid "Save"
+msgstr "Guardar"
+
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:49
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:109
+msgid "Save current form values as the default values for future submissions"
+msgstr "Guardar los valores del formulario actual como valores predeterminados para futuros envíos"
+
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:56
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:124
+msgid "Save defaults"
+msgstr "Guardar valores predeterminados"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:120
+msgid "Save folder upload changes"
+msgstr "Guardar cambios de carpeta de publicación"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:153
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:207
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
+msgid "Schedule"
+msgstr "Programar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:209
+msgctxt "schedule.modal-header"
+msgid "Schedule"
+msgstr "Programar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx:24
+msgid "Schedule Many"
+msgstr "Programar varios"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:148
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx:57
+msgid "Search"
+msgstr "Buscar"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:69
+msgid "Select folder"
+msgstr "Seleccionar carpeta"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:80
+msgid "Send Messages"
+msgstr "Enviar mensajes"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:115
+msgid "Server Level"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:121
+msgid "Server level perks"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
+msgid "Settings"
+msgstr "Ajustes"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:46
+msgctxt "submission.file-size"
+msgid "Size"
+msgstr "Tamaño"
+
+#: apps/postybirb-ui/src/app/languages.tsx:8
+msgid "Spanish"
+msgstr "Español"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:12
+msgid "Species"
+msgstr "Especies"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:15
+msgid "Spoiler"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:177
+msgid "Spoiler Text"
+msgstr "Texto del spoiler"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:66
+msgid "Startup Settings"
+msgstr "Configuración de inicio"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:49
+msgid "Submission duplicated"
+msgstr "Envío duplicado"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:146
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:180
+msgid "Submission queued"
+msgstr "Envío en cola"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:117
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:79
+msgid "Submission scheduled"
+msgstr "Publicación programada"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:85
+msgid "Submission templates"
+msgstr "Plantillas de envío"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:35
+msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} files each."
+msgstr "El envío se dividirá en {expectedBatchesToCreate} envíos diferentes con {maxBatchSize} archivos cada uno."
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:114
+#: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx:67
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:48
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:97
+msgid "Submissions"
+msgstr "Publicaciones"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:138
+msgid "Tag"
+msgstr "Etiqueta"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:78
+msgid "Tag converter updated"
+msgstr "Convertidor de etiquetas actualizado"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:223
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:96
+msgid "Tag Converters"
+msgstr "Convertidores de Etiquetas"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:85
+msgid "Tag group updated"
+msgstr "Grupo de etiquetas actualizado"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:203
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:88
+msgid "Tag Groups"
+msgstr "Grupos de Etiquetas"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:112
+msgid "Tag limit reached ({currentLength} / {maxLength})"
+msgstr "Se alcanzó el límite de etiquetas ({currentLength} / {maxLength})"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:9
+msgid "Tags"
+msgstr "Etiquetas"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:134
+msgid "Tags longer than {maxLength} characters will be skipped"
+msgstr "Se omitirán las etiquetas con más de {maxLength} caracteres"
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:98
+#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:133
+msgid "Template"
+msgstr "Plantilla"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/apply-submission-template-action.tsx:48
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:118
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:46
+msgid "Template applied"
+msgstr "Plantilla aplicada"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:57
+msgid "Template created"
+msgstr "Plantilla creada"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:103
+msgid "Template Name"
+msgstr "Nombre de la plantilla"
+
+#: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:116
+msgid "Template name has been updated"
+msgstr "Se ha actualizado el nombre de la plantilla"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:110
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:219
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:53
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:102
+msgid "Templates"
+msgstr "Plantillas"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:76
+msgid "Text"
+msgstr "Texto"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:105
+msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
+msgstr "Esta es la carpeta donde la aplicación guarda sus datos. Debe de reiniciar la aplicación para que esto tome efecto."
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:56
+msgid "This will clear all data associated with this account. You will need to log in again."
+msgstr "Esto borrará todos los datos asociados a esta cuenta. Deberá iniciar sesión nuevamente."
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:197
+msgid "Thumbnail"
+msgstr "Miniatura"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:10
+msgid "Title"
+msgstr "Título"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:143
+msgid "Title is too long and will be truncated"
+msgstr "El título es demasiado largo y se truncará"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:157
+msgid "Title is too short"
+msgstr "El título es demasiado corto"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:175
+msgid "Translation {id} not found"
+msgstr "Traducción {id} no encontrada"
+
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:242
+msgid "Unable to display form"
+msgstr "No se puede mostrar el formulario"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:145
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:97
+#: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx:55
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:82
+msgid "Unknown"
+msgstr "Desconocido"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:66
+msgid "Unknown submission"
+msgstr "Publicación desconocida"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:93
+#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:50
+msgid "Unschedule"
+msgstr "Sin programar"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:45
+msgid "Unsupported file type {fileExtension}. Please provide fallback text."
+msgstr "Tipo de archivo no compatible {fileExtension}. Proporcione un texto alternativo."
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:55
+msgid "Unsupported file type {mimeType}"
+msgstr "Archivo no compatible {mimeType}"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:85
+msgid "Unsupported submission type: {fileTypeString}"
+msgstr "Tipo de envío no soportado : {fileTypeString}"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:91
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:98
+msgid "Update"
+msgstr "Actualizar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:186
+msgid "Update file"
+msgstr "Actualizar archivo"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-update-button.tsx:42
+msgid "Update PostyBirb"
+msgstr "Actualizar PostyBirb"
+
+#: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:94
+msgid "Updates applied"
+msgstr "Actualizaciones aplicadas"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:179
+msgid "Upload"
+msgstr "Cargar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:235
+msgid "Upload new thumbnail"
+msgstr "Cargar nueva miniatura"
+
+#: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
+msgid "Use custom description"
+msgstr "Utilizar una descripción personalizada"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:16
+msgid "Use title"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:73
+msgid "Video"
+msgstr "Vídeo"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:101
+msgid "Webhook is required"
+msgstr "Se requiere webhook"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-validation.tsx:16
+msgid "Webhook name {name} is invalid"
+msgstr "Nombre {name} del Webhook no es correcto"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx:19
+#: apps/postybirb-ui/src/components/form/website-select/website-select.tsx:52
+msgid "Websites"
+msgstr "Páginas web"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:125
+msgid "Width"
+msgstr "Ancho"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:39
+msgid "Your browser does not support the audio tag."
+msgstr "Su navegador no es compatible con la etiqueta de audio."
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:52
+msgid "Your browser does not support the video tag."
+msgstr "Su navegador no es compatible con la etiqueta de video."
