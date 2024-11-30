@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-20 18:01+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\nX-Generator: Weblate 5.9-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-30 14:49+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\nX-Generator: Weblate 5.9-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:53
 msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -229,51 +229,51 @@ msgstr "Nepavyko sukurti šablono."
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:55
 msgid "Failed to duplicate"
-msgstr ""
+msgstr "Nepavyko dubliuoti."
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:152
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:186
 msgid "Failed to queue submission"
-msgstr ""
+msgstr "Nepavyko įtraukti į eilę pateikimą"
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:86
 msgid "Failed to save defaults"
-msgstr ""
+msgstr "Nepavyko išsaugoti numatytuosius."
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:122
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:84
 msgid "Failed to schedule submission"
-msgstr ""
+msgstr "Nepavyko suplanuoti pateikimo."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:85
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:92
 msgid "Failed to update"
-msgstr ""
+msgstr "Nepavyko atnaujinti."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:13
 msgid "Failed to validate submission: {message}"
-msgstr ""
+msgstr "Nepavyko patvirtinti pateikimo: {message}."
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
 msgid "Feature"
-msgstr ""
+msgstr "Rekomenduoti"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
-msgstr ""
+msgstr "Failų pateikimai"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:227
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:45
 msgid "File Submissions"
-msgstr ""
+msgstr "Failų pateikimai"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:158
 msgid "File types do not match. Please upload a file of the same type."
-msgstr ""
+msgstr "Failų tipai nesutampa. Įkelkite to paties tipo failą."
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
 msgid "Folder"
-msgstr ""
+msgstr "Aplankas"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:164
 msgctxt "directory-watcher.description"
@@ -305,7 +305,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:234
 msgid "Hours"
-msgstr ""
+msgstr "Valandos (-ų)"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:90
 msgctxt "discord.webhook-help"
