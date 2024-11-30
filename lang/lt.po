@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-30 17:21+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\nX-Generator: Weblate 5.9-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-30 20:05+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\nX-Generator: Weblate 5.9-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:53
 msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -438,22 +438,22 @@ msgstr "Pirminis"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:11
 msgid "Rating"
-msgstr ""
+msgstr "Vertinimas"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:25
 msgctxt "internalSchedule.recurring"
 msgid "Recurring"
-msgstr ""
+msgstr "Kartojantis"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:193
 msgctxt "import.override-description"
 msgid "Replace description"
-msgstr ""
+msgstr "Pakeisti aprašymą"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:184
 msgctxt "import.override-title"
 msgid "Replace title"
-msgstr ""
+msgstr "Pakeisti pavadinimą"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:80
 msgid "Requires at least {minLength} tags"
@@ -515,25 +515,25 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:80
 msgid "Send Messages"
-msgstr ""
+msgstr "Siųsti žinutes"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
 msgid "Settings"
-msgstr ""
+msgstr "Nustatymai"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:43
 msgctxt "submission.file-size"
 msgid "Size"
-msgstr ""
+msgstr "Dydis"
 
 #: apps/postybirb-ui/src/app/languages.tsx:8
 msgid "Spanish"
-msgstr ""
+msgstr "ispanų"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:12
 msgid "Species"
-msgstr ""
+msgstr "Rūšys"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:174
 msgid "Spoiler Text"
@@ -569,7 +569,7 @@ msgstr ""
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:48
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:97
 msgid "Submissions"
-msgstr ""
+msgstr "Pateikimai"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:138
 msgid "Tag"
