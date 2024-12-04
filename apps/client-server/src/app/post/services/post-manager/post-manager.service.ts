@@ -26,23 +26,23 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
-import { PostRecord, WebsitePostRecord } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { FileConverterService } from '../file-converter/file-converter.service';
-import { PostParsersService } from '../post-parsers/post-parsers.service';
-import { IsTestEnvironment } from '../utils/test.util';
-import { ValidationService } from '../validation/validation.service';
+import { PostRecord, WebsitePostRecord } from '../../../database/entities';
+import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import { FileConverterService } from '../../../file-converter/file-converter.service';
+import { PostParsersService } from '../../../post-parsers/post-parsers.service';
+import { IsTestEnvironment } from '../../../utils/test.util';
+import { ValidationService } from '../../../validation/validation.service';
 import {
   ImplementedFileWebsite,
   isFileWebsite,
-} from '../websites/models/website-modifiers/file-website';
-import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
-import { Website } from '../websites/website';
-import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { CancellableToken } from './models/cancellable-token';
-import { PostingFile } from './models/posting-file';
-import { PostFileResizerService } from './post-file-resizer.service';
-import { PostService } from './post.service';
+} from '../../../websites/models/website-modifiers/file-website';
+import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
+import { Website } from '../../../websites/website';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
+import { CancellableToken } from '../../models/cancellable-token';
+import { PostingFile } from '../../models/posting-file';
+import { PostService } from '../../post.service';
+import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
 type LoadedPostRecord = Loaded<PostRecord, never>;
 
@@ -122,6 +122,10 @@ export class PostManagerService {
       }
     }
     return false;
+  }
+
+  public isPosting(): boolean {
+    return !!this.currentPost;
   }
 
   /**

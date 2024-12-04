@@ -15,7 +15,7 @@ import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { QueuePostRecordRequestDto } from './dtos/queue-post-record.dto';
-import { PostManagerService } from './post-manager.service';
+import { PostManagerService } from './services/post-manager/post-manager.service';
 
 /**
  * Handles enqueue and dequeue of post records.

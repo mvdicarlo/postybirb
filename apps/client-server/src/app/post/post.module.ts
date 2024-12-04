@@ -6,10 +6,11 @@ import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteImplProvider } from '../websites/implementations';
 import { WebsitesModule } from '../websites/websites.module';
-import { PostFileResizerService } from './post-file-resizer.service';
-import { PostManagerService } from './post-manager.service';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
+import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
+import { PostManagerService } from './services/post-manager/post-manager.service';
+import { PostQueueService } from './services/post-queue/post-queue.service';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PostService } from './post.service';
     PostManagerService,
     PostFileResizerService,
     WebsiteImplProvider,
+    PostQueueService,
   ],
 })
 export class PostModule {}

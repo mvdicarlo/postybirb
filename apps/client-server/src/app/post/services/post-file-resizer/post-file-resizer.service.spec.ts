@@ -3,8 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ISubmission, ISubmissionFile } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { DatabaseModule } from '../database/database.module';
-import { ImageUtil } from '../file/utils/image.util';
+import { DatabaseModule } from '../../../database/database.module';
+import { ImageUtil } from '../../../file/utils/image.util';
 import { PostFileResizerService } from './post-file-resizer.service';
 
 describe('PostFileResizerService', () => {
