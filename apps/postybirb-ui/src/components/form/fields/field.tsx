@@ -52,6 +52,5 @@ export function Field(props: FormFieldProps): JSX.Element | null {
       formField = <div>Unknown field type: {field.formField}</div>;
   }
 
-  // TODO - Happily merge external translation and the shared translations.
   return formField;
 }

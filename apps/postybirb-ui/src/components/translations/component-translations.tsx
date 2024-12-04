@@ -1,5 +1,5 @@
 import { msg } from '@lingui/macro';
 
-export const SharedMessages = {
+export const ComponentTranslations = {
   noItems: msg`No items`,
 };

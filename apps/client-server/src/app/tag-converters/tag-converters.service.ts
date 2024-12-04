@@ -39,7 +39,6 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
     return this.repository.update(id, update);
   }
 
-  // TODO - write tests for this
   /**
    * Converts a list of tags using user defined conversion table.
    *
@@ -56,7 +55,7 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
       }
       return (
         converter.convertTo[instance.decoratedProps.metadata.name] ??
-        converter.convertTo.default ??
+        converter.convertTo.default ?? // NOTE: This is not currently used, but it's here for future proofing
         tag
       );
     });

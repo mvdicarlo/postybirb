@@ -8,6 +8,7 @@ import {
   Modal,
   NumberInput,
   Paper,
+  ScrollArea,
   Stack,
   Text,
   Title,
@@ -150,7 +151,6 @@ function ScheduleDisplay(
   );
 }
 
-// TODO - Use grid styling to allow scrollable center area and have buttons at the bottom be fixed
 export function SubmissionViewMultiSchedulerModal(
   props: SubmissionViewActionsProps,
 ) {
@@ -254,14 +254,16 @@ export function SubmissionViewMultiSchedulerModal(
             onChange={(value) => setMinutes(Number(value) || 0)}
           />
 
-          <ScheduleDisplay
-            submissions={sortedSubmissions}
-            selectedDate={selectedDate}
-            days={days}
-            minutes={minutes}
-            hours={hours}
-            onSort={(s) => setSortedSubmissions(s)}
-          />
+          <ScrollArea.Autosize mah="400px">
+            <ScheduleDisplay
+              submissions={sortedSubmissions}
+              selectedDate={selectedDate}
+              days={days}
+              minutes={minutes}
+              hours={hours}
+              onSort={(s) => setSortedSubmissions(s)}
+            />
+          </ScrollArea.Autosize>
         </Box>
 
         <Group justify="end" className="footer">

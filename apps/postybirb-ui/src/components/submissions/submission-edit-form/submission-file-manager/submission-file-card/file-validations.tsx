@@ -8,7 +8,7 @@ import { IconAlertCircle, IconAlertTriangle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useWebsites } from '../../../../../hooks/account/use-websites';
 import { SubmissionDto } from '../../../../../models/dtos/submission.dto';
-import { ValidationTranslation } from '../../../../translations/translation';
+import { ValidationTranslation } from '../../../../translations/validation-translation';
 
 type FileValidationsProps = {
   submission: SubmissionDto;

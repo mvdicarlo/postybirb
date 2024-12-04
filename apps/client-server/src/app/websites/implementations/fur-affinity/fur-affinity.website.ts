@@ -88,6 +88,7 @@ export default class FurAffinity
   onPostFileSubmission(
     postData: PostData<FileSubmission, FurAffinityFileSubmission>,
     files: PostingFile[],
+    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');

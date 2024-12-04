@@ -34,7 +34,7 @@ import { IsTestEnvironment } from '../utils/test.util';
 import { ValidationService } from '../validation/validation.service';
 import {
   ImplementedFileWebsite,
-  isFileWebsite
+  isFileWebsite,
 } from '../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { Website } from '../websites/website';
@@ -110,16 +110,18 @@ export class PostManagerService {
    * i.e. the submission is deleted.
    * @param {SubmissionId} id
    */
-  public async cancelIfRunning(id: SubmissionId) {
+  public async cancelIfRunning(id: SubmissionId): Promise<boolean> {
     if (this.currentPost) {
       if (!this.currentPost.parent) {
         const loaded = await wrap(this.currentPost).init(true, ['parent']);
         if (loaded.parent.id === id) {
           this.logger.info(`Cancelling current post`);
           this.cancelToken.cancel();
+          return true;
         }
       }
     }
+    return false;
   }
 
   /**
@@ -396,7 +398,9 @@ export class PostManagerService {
 
     // Split files into batches based on instance file batch size
     const batches = chunk(orderedFiles, fileBatchSize);
+    let batchIndex = 0;
     for (const batch of batches) {
+      batchIndex += 1;
       this.cancelToken.throwIfCancelled();
 
       // Resize files if necessary
@@ -416,10 +420,10 @@ export class PostManagerService {
       // Post
       this.cancelToken.throwIfCancelled();
       this.logger.info(`Posting file batch to ${instance.id}`);
-      // TODO - Do something with nextBatchNumber
       const result = await instance.onPostFileSubmission(
         data,
         processedFiles,
+        batchIndex,
         this.cancelToken,
       );
 

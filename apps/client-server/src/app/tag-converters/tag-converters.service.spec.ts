@@ -102,4 +102,15 @@ describe('TagConvertersService', () => {
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
   });
+
+  it('should convert tags', async () => {
+    const dto = createTagConverterDto('test', { default: 'converted' });
+
+    await service.create(dto);
+    const result = await service.convert(
+      { decoratedProps: { metadata: { name: 'default' } } } as any,
+      ['test', 'test2'],
+    );
+    expect(result).toEqual(['converted', 'test2']);
+  });
 });

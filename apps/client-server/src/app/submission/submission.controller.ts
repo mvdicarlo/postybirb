@@ -56,11 +56,11 @@ export class SubmissionController extends PostyBirbController<Submission> {
     const mapper = (res) => res.toJSON();
     if ((files || []).length) {
       const results = [];
-      // TODO - need to reconsider how to queue submission creation up.
+      // !NOTE: Currently this shouldn't be able to happen with the current UI, but may need to be addressed in the future.
+      // Efforts have been made to prevent this from happening, with the removal of using entity.create({}) but it may still be possible.
       // There appears to be an issue where if trying to create many submissions in parallel
       // the database will attempt to create them all at once and fail on a race condition.
       // not sure if this is a database issue or a typeorm issue.
-      // eslint-disable-next-line no-restricted-syntax
       for (const file of files) {
         const createFileSubmission = new CreateSubmissionDto();
         Object.assign(createFileSubmission, createSubmissionDto);

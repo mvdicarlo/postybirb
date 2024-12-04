@@ -29,9 +29,19 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined;
 
+  /**
+   * Handles the submission of a file to the website.
+   *
+   * @param {PostData<FileSubmission, T>} postData
+   * @param {PostingFile[]} files - The files to post
+   * @param {number} batchIndex - The index of the batch (if batching is required)
+   * @param {CancellableToken} cancellationToken
+   * @return {*}  {Promise<PostResponse>}
+   */
   onPostFileSubmission(
     postData: PostData<FileSubmission, T>,
     files: PostingFile[],
+    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse>;
 

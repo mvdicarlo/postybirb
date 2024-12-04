@@ -77,6 +77,7 @@ export default class TestWebsite
   onPostFileSubmission(
     postData: PostData<FileSubmission, IWebsiteFormFields>,
     files: PostingFile[],
+    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
