@@ -1,48 +1,83 @@
-import { EntityRepository } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+    Injectable,
+    InternalServerErrorException,
+    Optional,
+} from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Logger } from '@postybirb/logger';
-import { PostRecordState, SubmissionId } from '@postybirb/types';
+import {
+    PostRecordResumeMode,
+    PostRecordState,
+    SubmissionId,
+} from '@postybirb/types';
 import { Mutex } from 'async-mutex';
-import { PostQueueRecord, PostRecord } from '../../../database/entities';
+import { Cron as CronGenerator } from 'croner';
+import { PostyBirbService } from '../../../common/service/postybirb-service';
+import {
+    PostQueueRecord,
+    PostRecord,
+    Submission,
+} from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import { IsTestEnvironment } from '../../../utils/test.util';
+import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { PostManagerService } from '../post-manager/post-manager.service';
 
-// TODOS:
-// TODO - Remove post-manager's auto-check for the next post
-// TODO - Remove post service's creation and queue handling logic.
-// TODO - Better handling of 'loading' the post record
-// TODO - Add other side of relationships to submission and post record entity objects.
+/**
+ * TODO - Do a once over logic check on this service.
+ * Handles the queue of posts to be posted.
+ * This service is responsible for managing the queue of posts to be posted.
+ * It will create post records and start the post manager when a post is ready to be posted.
+ * @class PostQueueService
+ */
 @Injectable()
-export class PostQueueService {
-  private readonly logger = Logger();
-
-  private readonly mutex = new Mutex();
+export class PostQueueService extends PostyBirbService<PostQueueRecord> {
+  private readonly queueModificationMutex = new Mutex();
 
   private readonly queueMutex = new Mutex();
 
+  private pausedByUser = false;
+
+  private readonly initTime = Date.now();
+
   constructor(
     @InjectRepository(PostQueueRecord)
-    private readonly queueRepository: EntityRepository<PostQueueRecord>,
+    readonly repository: PostyBirbRepository<PostQueueRecord>,
+    @InjectRepository(Submission)
+    private readonly submissionRepository: PostyBirbRepository<Submission>,
     private readonly postManager: PostManagerService,
     private readonly postRecordRepository: PostyBirbRepository<PostRecord>,
-  ) {}
+    @Optional() webSocket?: WSGateway,
+  ) {
+    super(repository, webSocket);
+  }
+
+  public async pause() {
+    this.logger.info('Queue paused');
+    this.pausedByUser = true;
+  }
+
+  public async resume() {
+    this.logger.info('Queue resumed');
+    this.pausedByUser = false;
+  }
+
+  public override remove(id: string) {
+    return this.dequeue([id]);
+  }
 
   public async enqueue(submissionIds: SubmissionId[]) {
-    const release = await this.mutex.acquire();
+    const release = await this.queueModificationMutex.acquire();
     this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
 
     try {
       for (const submissionId of submissionIds) {
-        if (
-          !(await this.queueRepository.findOne({ submission: submissionId }))
-        ) {
-          const record = this.queueRepository.create({
+        if (!(await this.repository.findOne({ submission: submissionId }))) {
+          const record = this.repository.create({
             submission: submissionId,
           });
 
-          await this.queueRepository.persistAndFlush(record);
+          await this.repository.persistAndFlush(record);
         }
       }
     } catch (error) {
@@ -53,24 +88,58 @@ export class PostQueueService {
     }
   }
 
-  private async dequeue(submissionIds: SubmissionId[]) {
-    const release = await this.mutex.acquire();
+  public async dequeue(submissionIds: SubmissionId[]) {
+    const release = await this.queueModificationMutex.acquire();
     this.logger.withMetadata({ submissionIds }).info('Dequeueing posts');
 
     try {
-      const records = await this.queueRepository.find({
+      const records = await this.repository.find({
         submission: { $in: submissionIds },
       });
 
       submissionIds.forEach(this.postManager.cancelIfRunning);
 
-      await this.queueRepository.removeAndFlush(records);
+      await this.repository.removeAndFlush(records);
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to dequeue posts');
       throw new InternalServerErrorException(error.message);
     } finally {
       release();
     }
+  }
+
+  /**
+   * CRON based enqueueing of scheduled submissions.
+   */
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  private async checkForScheduledSubmissions() {
+    if (IsTestEnvironment()) {
+      return;
+    }
+
+    const entities = await this.submissionRepository.find({
+      isScheduled: true,
+    });
+    const now = Date.now();
+    const sorted = entities
+      .filter((e) => new Date(e.schedule.scheduledFor).getTime() <= now) // Only those that are ready to be posted.
+      .sort(
+        (a, b) =>
+          new Date(a.schedule.scheduledFor).getTime() -
+          new Date(b.schedule.scheduledFor).getTime(),
+      ); // Sort by oldest first.
+    this.enqueue(sorted.map((s) => s.id));
+
+    sorted
+      .filter((s) => s.schedule.cron)
+      .forEach((s) => {
+        const next = CronGenerator(s.schedule.cron).nextRun()?.toISOString();
+        if (next) {
+          // eslint-disable-next-line no-param-reassign
+          s.schedule.scheduledFor = next;
+          this.submissionRepository.persistAndFlush(s);
+        }
+      });
   }
 
   /**
@@ -81,6 +150,12 @@ export class PostQueueService {
    */
   @Cron(CronExpression.EVERY_SECOND)
   private async run() {
+    if (!(this.initTime + 60_000 <= Date.now())) {
+      // Only run after 1 minute to allow the application to start up.
+      this.logger.info('Waiting for queue grace period to end');
+      return;
+    }
+
     if (this.queueMutex.isLocked()) {
       return;
     }
@@ -94,16 +169,31 @@ export class PostQueueService {
         return;
       }
 
-      const { record, submission } = top;
+      const isPaused = this.pausedByUser;
+      const { postRecord: record, submission } = top;
       if (!record) {
+        // No record present, create one and start the post manager (if not paused)
         if (this.postManager.isPosting()) {
+          // !NOTE - Not sure this could actually happen, but it's here just in case since it would be bad.
           this.logger.warn(
             'The post manager is already posting, but no record is present in the top of the queue',
           );
           return;
         }
-        this.logger.info('Creating PostRecord and starting PostManager');
-        const postRecord = null as any; // TODO - Create PostRecord
+
+        if (isPaused) {
+          this.logger.info('Queue is paused');
+          return;
+        }
+        const postRecord = new PostRecord({
+          parent: submission,
+          resumeMode: PostRecordResumeMode.CONTINUE,
+          state: PostRecordState.PENDING,
+          postQueueRecord: top,
+        });
+        this.logger
+          .withMetadata({ postRecord })
+          .info('Creating PostRecord and starting PostManager');
         this.postRecordRepository.persistAndFlush(postRecord);
         this.postManager.startPost(postRecord);
       } else if (
@@ -113,14 +203,17 @@ export class PostQueueService {
         // Post is in a terminal state, remove from queue
         await this.dequeue([submission.id]);
       } else if (!this.postManager.isPosting()) {
-        // Post is not in a terminal state, but the post manager is not posting
-        // Start the post manager
+        // Post is not in a terminal state, but the post manager is not posting, so restart it.
+        if (isPaused) {
+          this.logger.info('Queue is paused');
+          return;
+        }
         this.logger
           .withMetadata({ record })
           .info(
             'PostManager is not posting, but record is not in terminal state. Resuming record.',
           );
-        this.postManager.startPost(record as PostRecord);
+        this.postManager.startPost(record as unknown as PostRecord);
       }
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to run queue');
@@ -134,9 +227,19 @@ export class PostQueueService {
    * Based on the enqueuedAt date.
    */
   public async peek() {
-    return this.queueRepository.findOne(
+    return this.repository.findOne(
       {},
-      { orderBy: { enqueuedAt: 'ASC' }, populate: ['record', 'submission'] },
+      {
+        orderBy: { createdAt: 'ASC' },
+        populate: [
+          'postRecord',
+          'postRecord.children',
+          'postRecord.parent',
+          'postRecord.parent.options',
+          'postRecord.parent.options.account',
+          'submission',
+        ],
+      },
     );
   }
 }

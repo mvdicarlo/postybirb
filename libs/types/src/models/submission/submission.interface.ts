@@ -1,6 +1,7 @@
 import { Collection } from '@mikro-orm/core';
 import { SubmissionType } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
+import { IPostQueueRecord } from '../post/post-queue-record.interface';
 import { IPostRecord } from '../post/post-record.interface';
 import { IWebsiteOptions } from '../website-options/website-options.interface';
 import { ISubmissionFile } from './submission-file.interface';
@@ -30,6 +31,12 @@ export interface ISubmission<
    * @type {Collection<IWebsiteOptions<IWebsiteFormFields>>}
    */
   options: Collection<IWebsiteOptions<IWebsiteFormFields>>;
+
+  /**
+   * The post queue record associated with the submission.
+   * @type {IPostQueueRecord}
+   */
+  postQueueRecord?: IPostQueueRecord;
 
   /**
    * Indicates whether the submission is scheduled.

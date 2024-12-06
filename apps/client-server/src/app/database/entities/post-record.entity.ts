@@ -4,11 +4,13 @@ import {
   EntityRepositoryType,
   ManyToOne,
   OneToMany,
+  OneToOne,
   Property,
   Rel,
   serialize,
 } from '@mikro-orm/core';
 import {
+  IPostQueueRecord,
   IPostRecord,
   ISubmission,
   IWebsitePostRecord,
@@ -17,6 +19,7 @@ import {
   PostRecordState,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
+import { PostQueueRecord } from './post-queue-record.entity';
 import { PostyBirbEntity } from './postybirb-entity';
 import { Submission } from './submission.entity';
 import { WebsitePostRecord } from './website-post-record.entity';
@@ -52,6 +55,13 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
   })
   children: Collection<IWebsitePostRecord>;
 
+  @OneToOne(() => PostQueueRecord, (pqr) => pqr.postRecord, {
+    orphanRemoval: true,
+    eager: true,
+    nullable: true,
+  })
+  postQueueRecord?: Rel<IPostQueueRecord>;
+
   @Property({ type: 'string', nullable: false })
   state: PostRecordState = PostRecordState.PENDING;
 
@@ -61,7 +71,7 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
   constructor(
     postRecord: Pick<
       IPostRecord,
-      'parent' | 'completedAt' | 'state' | 'resumeMode'
+      'parent' | 'completedAt' | 'state' | 'resumeMode' | 'postQueueRecord'
     >,
   ) {
     super();
@@ -73,6 +83,8 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
 
   toJSON(): PostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return serialize(this as any, { populate: ['children'] }) as PostRecordDto;
+    return serialize(this as any, {
+      populate: ['children', 'postQueueRecord'],
+    }) as PostRecordDto;
   }
 }

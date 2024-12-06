@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { EntityDTO, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
@@ -30,7 +30,6 @@ import { PostRecord, WebsitePostRecord } from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
-import { IsTestEnvironment } from '../../../utils/test.util';
 import { ValidationService } from '../../../validation/validation.service';
 import {
   ImplementedFileWebsite,
@@ -41,7 +40,6 @@ import { Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
 import { PostingFile } from '../../models/posting-file';
-import { PostService } from '../../post.service';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
 type LoadedPostRecord = Loaded<PostRecord, never>;
@@ -69,29 +67,12 @@ export class PostManagerService {
     private readonly postRepository: PostyBirbRepository<PostRecord>,
     @InjectRepository(WebsitePostRecord)
     private readonly websitePostRecordRepository: PostyBirbRepository<WebsitePostRecord>,
-    @Inject(forwardRef(() => PostService))
-    private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
     private readonly postParserService: PostParsersService,
     private readonly validationService: ValidationService,
     private readonly fileConverterService: FileConverterService,
-  ) {
-    setTimeout(() => this.check(), 60_000);
-  }
-
-  /**
-   * Checks for any posts that need to be posted.
-   */
-  private async check() {
-    if (!IsTestEnvironment()) {
-      const nextToPost = await this.postService.getNext();
-      if (nextToPost && this.currentPost?.id !== nextToPost.id) {
-        this.logger.info(`Found next to post: ${nextToPost.id}`);
-        this.startPost(nextToPost);
-      }
-    }
-  }
+  ) {}
 
   private async protectedUpdate(
     entity: LoadedPostRecord,
@@ -168,8 +149,6 @@ export class PostManagerService {
       this.logger.withError(error).error(`Error posting`);
       await this.finishPost(entity);
       throw error;
-    } finally {
-      this.check();
     }
   }
 

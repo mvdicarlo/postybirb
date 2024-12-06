@@ -1,45 +1,38 @@
-import {
-    Entity,
-    ManyToOne,
-    OneToOne,
-    PrimaryKey,
-    Property,
-    Rel,
-    serialize,
-    Unique,
-} from '@mikro-orm/core';
+import { Entity, OneToOne, Rel, serialize } from '@mikro-orm/core';
 import {
     IPostQueueRecord,
     IPostRecord,
     ISubmission,
-    WebsitePostRecordDto,
+    PostQueueRecordDto,
 } from '@postybirb/types';
 import { PostRecord } from './post-record.entity';
+import { PostyBirbEntity } from './postybirb-entity';
 import { Submission } from './submission.entity';
 
 @Entity()
-export class PostQueueRecord implements IPostQueueRecord {
-  @Unique()
-  @PrimaryKey({ autoincrement: true })
-  id: number;
+export class PostQueueRecord
+  extends PostyBirbEntity
+  implements IPostQueueRecord
+{
+  @OneToOne({
+    entity: () => PostRecord,
+    nullable: true,
+    orphanRemoval: false,
+    inversedBy: 'postQueueRecord',
+    serializer: (pr) => pr.id,
+  })
+  postRecord?: Rel<IPostRecord>;
 
-  @OneToOne({ entity: () => PostRecord, nullable: true, orphanRemoval: false })
-  record?: Rel<IPostRecord>;
-
-  @ManyToOne({
+  @OneToOne({
     entity: () => Submission,
     nullable: false,
     serializer: (s) => s.id,
+    inversedBy: 'postQueueRecord',
+    orphanRemoval: false,
   })
   submission: Rel<ISubmission>;
 
-  @Property({
-    serializer: (value) => value.toISOString(),
-  })
-  enqueuedAt: Date = new Date();
-
-  toJSON(): WebsitePostRecordDto {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return serialize(this as any) as WebsitePostRecordDto;
+  toJSON(): PostQueueRecordDto {
+    return serialize(this) as PostQueueRecordDto;
   }
 }

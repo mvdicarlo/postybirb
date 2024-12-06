@@ -10,6 +10,7 @@ import {
   DirectoryWatcherDto,
   DirectoryWatcherImportAction,
   IDirectoryWatcher,
+  ISubmission,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { PostyBirbEntity } from './postybirb-entity';
@@ -36,13 +37,13 @@ export class DirectoryWatcher
     serializer: (s) => s?.id,
     cascade: [],
   })
-  template?: Rel<Submission>;
+  template?: Rel<ISubmission>;
 
   constructor(directoryWatcher: IDirectoryWatcher) {
     super();
     this.path = directoryWatcher.path;
     this.importAction = directoryWatcher.importAction;
-    this.template = directoryWatcher.template as Submission;
+    this.template = directoryWatcher.template;
   }
 
   toJSON(): DirectoryWatcherDto {

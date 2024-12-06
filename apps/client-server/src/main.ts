@@ -72,6 +72,8 @@ async function bootstrap() {
     .addTag('file')
     .addTag('file-submission')
     .addTag('form-generator')
+    .addTag('post')
+    .addTag('post-queue')
     .addTag('submission')
     .addTag('tag-converters')
     .addTag('tag-groups')
@@ -95,3 +97,4 @@ async function bootstrap() {
 }
 
 export { bootstrap as bootstrapClientServer };
+

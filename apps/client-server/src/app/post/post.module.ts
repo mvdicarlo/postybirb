@@ -10,6 +10,7 @@ import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
 import { PostManagerService } from './services/post-manager/post-manager.service';
+import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
 
 @Module({
@@ -21,7 +22,7 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
     ValidationModule,
     FileConverterModule,
   ],
-  controllers: [PostController],
+  controllers: [PostController, PostQueueController],
   providers: [
     PostService,
     PostManagerService,
