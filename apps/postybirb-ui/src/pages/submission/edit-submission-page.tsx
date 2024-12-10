@@ -13,7 +13,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router';
-import postApi from '../../api/post.api';
+import postQueueApi from '../../api/post-queue.api';
 import submissionApi from '../../api/submission.api';
 import websiteOptionsApi from '../../api/website-options.api';
 import { PageHeader } from '../../components/page-header/page-header';
@@ -151,7 +151,7 @@ function PostAction({ submission }: { submission: SubmissionDto }) {
         c="red"
         leftSection={<IconCancel />}
         onClick={() => {
-          postApi.dequeue([submission.id]);
+          postQueueApi.dequeue([submission.id]);
         }}
       >
         <Trans>Cancel</Trans>
@@ -173,7 +173,7 @@ function PostAction({ submission }: { submission: SubmissionDto }) {
       c={canSetForPosting ? 'teal' : 'grey'}
       leftSection={<IconSend />}
       onClick={() => {
-        postApi
+        postQueueApi
           .enqueue([submission.id])
           .then(() => {
             notifications.show({

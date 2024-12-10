@@ -1,9 +1,9 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  DefaultDescription,
-  SubmissionRating,
-  SubmissionType,
+    DefaultDescription,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
@@ -12,6 +12,7 @@ import { DatabaseModule } from '../../../database/database.module';
 import { FileConverterModule } from '../../../file-converter/file-converter.module';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
+import { SettingsModule } from '../../../settings/settings.module';
 import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../../../submission/services/submission.service';
@@ -26,16 +27,16 @@ import { WebsitesModule } from '../../../websites/websites.module';
 import { PostModule } from '../../post.module';
 import { PostService } from '../../post.service';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
-import { PostManagerService } from './post-manager.service';
+import { PostManagerService } from '../post-manager/post-manager.service';
+import { PostQueueService } from './post-queue.service';
 
-describe('PostManagerService', () => {
-  let service: PostManagerService;
+describe('PostQueueService', () => {
+  let service: PostQueueService;
   let module: TestingModule;
   let orm: MikroORM;
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let websiteOptionsService: WebsiteOptionsService;
-  let postService: PostService;
   let registryService: WebsiteRegistryService;
 
   beforeEach(async () => {
@@ -51,24 +52,26 @@ describe('PostManagerService', () => {
           PostParsersModule,
           PostModule,
           FileConverterModule,
+          SettingsModule,
         ],
         providers: [
+          PostQueueService,
           PostManagerService,
           PostService,
           PostFileResizerService,
           ValidationService,
           FileConverterService,
+          SettingsService,
         ],
       }).compile();
 
-      service = module.get<PostManagerService>(PostManagerService);
+      service = module.get<PostQueueService>(PostQueueService);
       submissionService = module.get<SubmissionService>(SubmissionService);
       accountService = module.get<AccountService>(AccountService);
       const settingsService = module.get<SettingsService>(SettingsService);
       websiteOptionsService = module.get<WebsiteOptionsService>(
         WebsiteOptionsService,
       );
-      postService = module.get<PostService>(PostService);
       registryService = module.get<WebsiteRegistryService>(
         WebsiteRegistryService,
       );
@@ -130,20 +133,31 @@ describe('PostManagerService', () => {
     expect(service).toBeDefined();
   });
 
-  // it('should handle Message submission', async () => {
-  //   const submission = await submissionService.create(createSubmissionDto());
-  //   const account = await accountService.create(createAccountDto());
-  //   expect(registryService.findInstance(account)).toBeDefined();
+  it('should handle pausing and resuming the queue', async () => {
+    await service.pause();
+    expect(await service.isPaused()).toBe(true);
+    await service.resume();
+    expect(await service.isPaused()).toBe(false);
+  });
 
-  //   await websiteOptionsService.create(
-  //     createWebsiteOptionsDto(submission.id, account.id),
-  //   );
+  it('should handle enqueue and dequeue of submissions', async () => {
+    await service.pause(); // Just to test the function
+    const submission = await submissionService.create(createSubmissionDto());
+    const account = await accountService.create(createAccountDto());
+    expect(registryService.findInstance(account)).toBeDefined();
 
-  //   await postService.enqueue({ ids: [submission.id] });
-  //   const postRecord = await postService.getNext();
-  //   expect(postRecord).toBeDefined();
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(submission.id, account.id),
+    );
 
-  //   await service.startPost(postRecord);
-  //   expect(postRecord.children).toBeDefined();
-  // });
+    await service.enqueue([submission.id, submission.id]);
+    expect((await service.findAll()).length).toBe(1);
+    const top = await service.peek();
+    expect(top).toBeDefined();
+    expect(top.submission.id).toBe(submission.id);
+
+    await service.dequeue([submission.id]);
+    expect((await service.findAll()).length).toBe(0);
+    expect(await service.peek()).toBeUndefined();
+  });
 });

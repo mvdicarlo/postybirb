@@ -19,12 +19,12 @@ import {
     Submission,
 } from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import { SettingsService } from '../../../settings/settings.service';
 import { IsTestEnvironment } from '../../../utils/test.util';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { PostManagerService } from '../post-manager/post-manager.service';
 
 /**
- * TODO - Do a once over logic check on this service.
  * Handles the queue of posts to be posted.
  * This service is responsible for managing the queue of posts to be posted.
  * It will create post records and start the post manager when a post is ready to be posted.
@@ -36,8 +36,6 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
 
   private readonly queueMutex = new Mutex();
 
-  private pausedByUser = false;
-
   private readonly initTime = Date.now();
 
   constructor(
@@ -47,19 +45,31 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
     private readonly submissionRepository: PostyBirbRepository<Submission>,
     private readonly postManager: PostManagerService,
     private readonly postRecordRepository: PostyBirbRepository<PostRecord>,
+    private readonly settingsService: SettingsService,
     @Optional() webSocket?: WSGateway,
   ) {
     super(repository, webSocket);
   }
 
+  public async isPaused(): Promise<boolean> {
+    return (await this.settingsService.getDefaultSettings()).settings
+      .queuePaused;
+  }
+
   public async pause() {
     this.logger.info('Queue paused');
-    this.pausedByUser = true;
+    const settings = await this.settingsService.getDefaultSettings();
+    await this.settingsService.update(settings.id, {
+      settings: { ...settings.settings, queuePaused: true },
+    });
   }
 
   public async resume() {
     this.logger.info('Queue resumed');
-    this.pausedByUser = false;
+    const settings = await this.settingsService.getDefaultSettings();
+    await this.settingsService.update(settings.id, {
+      settings: { ...settings.settings, queuePaused: false },
+    });
   }
 
   public override remove(id: string) {
@@ -97,7 +107,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
         submission: { $in: submissionIds },
       });
 
-      submissionIds.forEach(this.postManager.cancelIfRunning);
+      submissionIds.forEach((id) => this.postManager.cancelIfRunning(id));
 
       await this.repository.removeAndFlush(records);
     } catch (error) {
@@ -169,7 +179,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
         return;
       }
 
-      const isPaused = this.pausedByUser;
+      const isPaused = await this.isPaused();
       const { postRecord: record, submission } = top;
       if (!record) {
         // No record present, create one and start the post manager (if not paused)
@@ -224,22 +234,22 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
 
   /**
    * Peeks at the next item in the queue.
-   * Based on the enqueuedAt date.
+   * Based on the createdAt date.
    */
   public async peek() {
-    return this.repository.findOne(
-      {},
-      {
-        orderBy: { createdAt: 'ASC' },
-        populate: [
-          'postRecord',
-          'postRecord.children',
-          'postRecord.parent',
-          'postRecord.parent.options',
-          'postRecord.parent.options.account',
-          'submission',
-        ],
-      },
-    );
+    const all = await this.repository.findAll({
+      limit: 1,
+      orderBy: { createdAt: 'ASC' },
+      populate: [
+        'postRecord',
+        'postRecord.children',
+        'postRecord.parent',
+        'postRecord.parent.options',
+        'postRecord.parent.options.account',
+        'submission',
+      ],
+    });
+
+    return all[0];
   }
 }

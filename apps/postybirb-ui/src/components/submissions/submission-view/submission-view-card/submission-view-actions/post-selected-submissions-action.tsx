@@ -8,7 +8,7 @@ import {
   Text,
 } from '@mantine/core';
 import { IconSend } from '@tabler/icons-react';
-import postApi from '../../../../../api/post.api';
+import postQueueApi from '../../../../../api/post-queue.api';
 import { SubmissionViewActionProps } from './submission-view-actions.props';
 
 export function PostSelectedSubmissionsActions({
@@ -40,7 +40,7 @@ export function PostSelectedSubmissionsActions({
             variant="light"
             leftSection={<IconSend />}
             onClick={() => {
-              postApi.enqueue(selected.map((s) => s.id));
+              postQueueApi.enqueue(selected.map((s) => s.id));
             }}
           >
             <Trans>Post Selected</Trans>
