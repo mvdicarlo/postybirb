@@ -1,9 +1,9 @@
 import { Entity, OneToOne, Rel, serialize } from '@mikro-orm/core';
 import {
-    IPostQueueRecord,
-    IPostRecord,
-    ISubmission,
-    PostQueueRecordDto,
+  IPostQueueRecord,
+  IPostRecord,
+  ISubmission,
+  PostQueueRecordDto,
 } from '@postybirb/types';
 import { PostRecord } from './post-record.entity';
 import { PostyBirbEntity } from './postybirb-entity';
@@ -14,12 +14,12 @@ export class PostQueueRecord
   extends PostyBirbEntity
   implements IPostQueueRecord
 {
-  @OneToOne({
-    entity: () => PostRecord,
+  @OneToOne(() => PostRecord, {
     nullable: true,
     orphanRemoval: false,
-    inversedBy: 'postQueueRecord',
     serializer: (pr) => pr.id,
+    eager: true,
+    inversedBy: 'postQueueRecord',
   })
   postRecord?: Rel<IPostRecord>;
 
@@ -27,8 +27,9 @@ export class PostQueueRecord
     entity: () => Submission,
     nullable: false,
     serializer: (s) => s.id,
-    inversedBy: 'postQueueRecord',
+    mappedBy: 'postQueueRecord',
     orphanRemoval: false,
+    eager: true,
   })
   submission: Rel<ISubmission>;
 

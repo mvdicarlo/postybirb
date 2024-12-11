@@ -46,5 +46,5 @@ export interface IPostRecord extends IEntity {
    * The post queue record associated with the post record.
    * @type {IPostQueueRecord}
    */
-  postQueueRecord?: Rel<IPostQueueRecord>;
+  postQueueRecord?: IPostQueueRecord;
 }

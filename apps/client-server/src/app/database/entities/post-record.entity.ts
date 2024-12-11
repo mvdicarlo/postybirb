@@ -55,10 +55,11 @@ export class PostRecord extends PostyBirbEntity implements IPostRecord {
   })
   children: Collection<IWebsitePostRecord>;
 
-  @OneToOne(() => PostQueueRecord, (pqr) => pqr.postRecord, {
+  @OneToOne(() => PostQueueRecord, {
     orphanRemoval: true,
     eager: true,
     nullable: true,
+    mappedBy: 'postRecord',
   })
   postQueueRecord?: Rel<IPostQueueRecord>;
 

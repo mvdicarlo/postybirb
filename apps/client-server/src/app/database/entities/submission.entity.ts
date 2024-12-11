@@ -5,11 +5,9 @@ import {
   OneToMany,
   OneToOne,
   Property,
-  Rel,
-  serialize,
+  serialize
 } from '@mikro-orm/core';
 import {
-  IPostQueueRecord,
   IPostRecord,
   ISubmission,
   ISubmissionDto,
@@ -17,7 +15,7 @@ import {
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
@@ -77,12 +75,12 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   })
   posts: Collection<IPostRecord>;
 
-  @OneToOne(() => PostQueueRecord, (pqr) => pqr.submission, {
+  @OneToOne(() => PostQueueRecord, {
     orphanRemoval: true,
     eager: true,
     nullable: true,
   })
-  postQueueRecord?: Rel<IPostQueueRecord>;
+  postQueueRecord?: PostQueueRecord;
 
   @Property({ type: 'number', nullable: true })
   order: number;

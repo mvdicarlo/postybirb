@@ -1,22 +1,23 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-    Injectable,
-    InternalServerErrorException,
-    Optional,
+  Injectable,
+  InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-    PostRecordResumeMode,
-    PostRecordState,
-    SubmissionId,
+  IPostRecord,
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionId,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import {
-    PostQueueRecord,
-    PostRecord,
-    Submission,
+  PostQueueRecord,
+  PostRecord,
+  Submission,
 } from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
 import { SettingsService } from '../../../settings/settings.service';
@@ -122,7 +123,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
    * CRON based enqueueing of scheduled submissions.
    */
   @Cron(CronExpression.EVERY_30_SECONDS)
-  private async checkForScheduledSubmissions() {
+  public async checkForScheduledSubmissions() {
     if (IsTestEnvironment()) {
       return;
     }
@@ -138,8 +139,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
           new Date(a.schedule.scheduledFor).getTime() -
           new Date(b.schedule.scheduledFor).getTime(),
       ); // Sort by oldest first.
-    this.enqueue(sorted.map((s) => s.id));
-
+    await this.enqueue(sorted.map((s) => s.id));
     sorted
       .filter((s) => s.schedule.cron)
       .forEach((s) => {
@@ -159,13 +159,27 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
    * Nothing happens if the queue is empty.
    */
   @Cron(CronExpression.EVERY_SECOND)
-  private async run() {
+  public async run() {
     if (!(this.initTime + 60_000 <= Date.now())) {
       // Only run after 1 minute to allow the application to start up.
       this.logger.info('Waiting for queue grace period to end');
       return;
     }
 
+    if (IsTestEnvironment()) {
+      return;
+    }
+
+    await this.execute();
+  }
+
+  /**
+   * Manages the queue by peeking at the top of the queue and deciding what to do based on the
+   * state of the queue.
+   *
+   * Made public for testing purposes.
+   */
+  public async execute() {
     if (this.queueMutex.isLocked()) {
       return;
     }
@@ -201,10 +215,11 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
           state: PostRecordState.PENDING,
           postQueueRecord: top,
         });
+        top.postRecord = postRecord as IPostRecord;
         this.logger
           .withMetadata({ postRecord })
           .info('Creating PostRecord and starting PostManager');
-        this.postRecordRepository.persistAndFlush(postRecord);
+        await this.postRecordRepository.persistAndFlush(postRecord);
         this.postManager.startPost(postRecord);
       } else if (
         record.state === PostRecordState.DONE ||
@@ -236,7 +251,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
    * Peeks at the next item in the queue.
    * Based on the createdAt date.
    */
-  public async peek() {
+  public async peek(): Promise<PostQueueRecord | undefined> {
     const all = await this.repository.findAll({
       limit: 1,
       orderBy: { createdAt: 'ASC' },

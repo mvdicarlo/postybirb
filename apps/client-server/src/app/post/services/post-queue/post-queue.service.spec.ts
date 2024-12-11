@@ -1,9 +1,10 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    DefaultDescription,
-    SubmissionRating,
-    SubmissionType,
+  DefaultDescription,
+  PostRecordState,
+  SubmissionRating,
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
@@ -38,6 +39,8 @@ describe('PostQueueService', () => {
   let accountService: AccountService;
   let websiteOptionsService: WebsiteOptionsService;
   let registryService: WebsiteRegistryService;
+  let postService: PostService;
+  let postManager: PostManagerService;
 
   beforeEach(async () => {
     try {
@@ -75,6 +78,8 @@ describe('PostQueueService', () => {
       registryService = module.get<WebsiteRegistryService>(
         WebsiteRegistryService,
       );
+      postService = module.get<PostService>(PostService);
+      postManager = module.get<PostManagerService>(PostManagerService);
       orm = module.get(MikroORM);
       try {
         await orm.getSchemaGenerator().refreshDatabase();
@@ -159,5 +164,52 @@ describe('PostQueueService', () => {
     await service.dequeue([submission.id]);
     expect((await service.findAll()).length).toBe(0);
     expect(await service.peek()).toBeUndefined();
+  });
+
+  async function waitForPostManager(): Promise<void> {
+    while (postManager.isPosting()) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    }
+  }
+
+  it('should insert posts into the post manager', async () => {
+    const submission = await submissionService.create(createSubmissionDto());
+    const account = await accountService.create(createAccountDto());
+    expect(registryService.findInstance(account)).toBeDefined();
+
+    await websiteOptionsService.create(
+      createWebsiteOptionsDto(submission.id, account.id),
+    );
+
+    await service.enqueue([submission.id]);
+    expect((await service.findAll()).length).toBe(1);
+
+    // We expect the creation of a record and a start of the post manager
+    await service.execute();
+    let postRecord = (await postService.findAll())[0];
+    let queueRecord = await service.peek();
+    expect(postRecord).toBeDefined();
+    expect(postRecord.parent.id).toBe(submission.id);
+    expect(postManager.isPosting()).toBe(true);
+    expect(queueRecord).toBeDefined();
+    expect(queueRecord.postRecord).toBeDefined();
+
+    expect(await postManager.cancelIfRunning(submission.id)).toBeTruthy();
+    await waitForPostManager();
+    expect(postManager.isPosting()).toBe(false);
+
+    queueRecord = await service.peek();
+    expect(queueRecord).toBeDefined();
+    expect(queueRecord.postRecord).toBeDefined();
+
+    // We expect the post to be in a terminal state and cleanup of the record.
+    // The post record should remain after the queue record is deleted.
+    await service.execute();
+    expect((await service.findAll()).length).toBe(0);
+    postRecord = await postService.findById(postRecord.id);
+    expect(postRecord.state).toBe(PostRecordState.FAILED);
+    expect(postRecord.completedAt).toBeDefined();
   });
 });

@@ -92,15 +92,10 @@ export class PostManagerService {
    * @param {SubmissionId} id
    */
   public async cancelIfRunning(id: SubmissionId): Promise<boolean> {
-    if (this.currentPost) {
-      if (!this.currentPost.parent) {
-        const loaded = await wrap(this.currentPost).init(true, ['parent']);
-        if (loaded.parent.id === id) {
-          this.logger.info(`Cancelling current post`);
-          this.cancelToken.cancel();
-          return true;
-        }
-      }
+    if (this.currentPost && this.currentPost.parent?.id === id) {
+      this.logger.info(`Cancelling current post`);
+      this.cancelToken.cancel();
+      return true;
     }
     return false;
   }
@@ -124,11 +119,6 @@ export class PostManagerService {
         state: PostRecordState.RUNNING,
       });
 
-      // Ensure parent (submission) is loaded
-      if (!entity.parent) {
-        entity = await wrap(entity).init(true, ['parent']);
-      }
-
       await this.createWebsitePostRecords(entity);
 
       // Posts order occurs in batched groups
@@ -143,12 +133,11 @@ export class PostManagerService {
           websites.map((w) => this.post(entity, w.record, w.instance)),
         );
       }
-      await this.finishPost(entity);
       this.logger.info(`Finished posting to websites`);
     } catch (error) {
       this.logger.withError(error).error(`Error posting`);
+    } finally {
       await this.finishPost(entity);
-      throw error;
     }
   }
 
