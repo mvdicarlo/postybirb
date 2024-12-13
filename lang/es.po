@@ -1,15 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language: \n"
-"Language-Team: \n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2024-11-30 20:05+0000\nLast-Translator: gallegonovato <fran-carro@hotmail.es>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.9-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:89
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -66,7 +56,7 @@ msgstr "Aplicar plantilla"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:142
 msgid "Apply to Submissions"
-msgstr ""
+msgstr "Aplicar a las presentaciones"
 
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:24
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx:32
@@ -80,7 +70,7 @@ msgstr "¿Está seguro de que desea publicar todos los envíos seleccionados ?"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:75
 msgid "Audio"
-msgstr ""
+msgstr "Audio"
 
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:58
 msgid "Auto Importers (File Watcher)"
@@ -100,7 +90,7 @@ msgstr "Seleccione campos"
 
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:26
 msgid "Choose Submissions"
-msgstr ""
+msgstr "Elige presentaciones"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:211
 msgctxt "template.picker-modal-header"
@@ -230,11 +220,11 @@ msgstr "Editar"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/multi-edit-submissions-action.tsx:23
 msgid "Edit Many"
-msgstr ""
+msgstr "Editar muchos"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:170
 msgid "Edit Multiple"
-msgstr ""
+msgstr "Edición múltiple"
 
 #: apps/postybirb-ui/src/app/languages.tsx:6
 msgid "English"
@@ -271,7 +261,7 @@ msgstr "No se pudieron guardar los valores predeterminados"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:197
 msgid "Failed to save file metadata"
-msgstr ""
+msgstr "No se pudieron guardar los metadatos del archivo"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:122
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:84
@@ -289,7 +279,7 @@ msgstr "No se pudo validar el envío: {message}"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-text-alt.tsx:68
 msgid "Fallback Text"
-msgstr ""
+msgstr "Texto alternativo"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
 msgid "Feature"
@@ -361,7 +351,7 @@ msgstr "Ignorar etiquetas predeterminadas"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:66
 msgid "Image"
-msgstr ""
+msgstr "Imagen"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:42
 msgid "Insert tags at end"
@@ -389,7 +379,7 @@ msgstr "Conectarse"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:108
 msgid "Merge"
-msgstr ""
+msgstr "Unir"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:64
 msgid "Message submissions"
@@ -455,7 +445,7 @@ msgstr "Solo establecer fecha programada"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:126
 msgid "Only use website options specified and delete website options missing from multi-update form."
-msgstr ""
+msgstr "Utilice únicamente las opciones de sitio web especificadas y elimine las opciones de la página web que faltan en el formulario de actualización múltiple."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:72
 msgid "Open PostyBirb on computer startup"
@@ -463,7 +453,7 @@ msgstr "Abrir PostyBirb al iniciar el ordenador"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:116
 msgid "Overwrite overlapping website options only. This will keep any website options that already exist and only overwrite ones specified in the multi-update form."
-msgstr ""
+msgstr "Sobrescribir solo las opciones superpuestas del sitio web. Esto mantendrá todas las opciones de la página web que ya existen y solo sobrescribirá las especificadas en el formulario de actualización múltiple."
 
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:10
 msgid "Page not found"
@@ -699,7 +689,7 @@ msgstr "Plantillas"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:72
 msgid "Text"
-msgstr ""
+msgstr "Texto"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:105
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
@@ -757,7 +747,7 @@ msgstr "Sin programar"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:45
 msgid "Unsupported file type {fileExtension}. Please provide fallback text."
-msgstr ""
+msgstr "Tipo de archivo no compatible {fileExtension}. Proporcione un texto alternativo."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:55
 msgid "Unsupported file type {mimeType}"
@@ -765,7 +755,7 @@ msgstr "Archivo no compatible {mimeType}"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:81
 msgid "Unsupported submission type: {fileTypeString}"
-msgstr ""
+msgstr "Tipo de envío no soportado : {fileTypeString}"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:91
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:98
@@ -782,7 +772,7 @@ msgstr "Actualizar PostyBirb"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:94
 msgid "Updates applied"
-msgstr ""
+msgstr "Actualizaciones aplicadas"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:179
 msgid "Upload"
@@ -802,7 +792,7 @@ msgstr "Usar miniaturas"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:69
 msgid "Video"
-msgstr ""
+msgstr "Vídeo"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
 msgid "Webhook is required"
