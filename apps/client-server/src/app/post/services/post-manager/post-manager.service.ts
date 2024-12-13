@@ -9,7 +9,6 @@ import {
   FileSubmission,
   FileType,
   ImageResizeProps,
-  IPostRecord,
   ISubmission,
   ISubmissionFile,
   IWebsiteFormFields,
@@ -22,7 +21,7 @@ import {
   PostRecordState,
   PostResponse,
   SubmissionId,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -573,7 +572,7 @@ export class PostManagerService {
     uncreatedOptions.forEach((w) =>
       entity.children.add(
         this.websitePostRecordRepository.create({
-          parent: entity as unknown as IPostRecord,
+          parent: entity,
           account: w.account,
         }),
       ),

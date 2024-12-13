@@ -39,7 +39,7 @@ describe('PostManagerServiceMocks', () => {
       persistAndFlush: jest.fn(),
     } as unknown as jest.Mocked<PostyBirbRepository<PostRecord>>;
     websitePostRecordRepositoryMock = {
-      // ...mock implementation...
+      create: jest.fn(),
     } as unknown as jest.Mocked<PostyBirbRepository<WebsitePostRecord>>;
     websiteRegistryMock = {
       // ...mock implementation...
@@ -61,6 +61,18 @@ describe('PostManagerServiceMocks', () => {
     );
   });
 
+  function patchCollection<TCollection extends object>(
+    referenceArray: TCollection[],
+  ): Collection<TCollection> {
+    const refAsCollection =
+      referenceArray as unknown as Collection<TCollection>;
+    refAsCollection.add = (...items: TCollection[]) => {
+      referenceArray.push(...items);
+    };
+    refAsCollection.toArray = () => referenceArray as never;
+    return refAsCollection;
+  }
+
   function createMessageSubmission(): MessageSubmission {
     const submission = {
       id: 'test',
@@ -69,17 +81,11 @@ describe('PostManagerServiceMocks', () => {
       metadata: {},
       type: SubmissionType.MESSAGE,
       files: [] as never,
-      options: [] as never,
+      options: patchCollection<IWebsiteOptions>([]) as never,
       isScheduled: false,
       schedule: {} as never,
       order: 1,
       posts: [] as never,
-    };
-
-    (submission.options as Collection<IWebsiteOptions>).add = (
-      ...options: IWebsiteOptions[]
-    ) => {
-      (submission.options as IWebsiteOptions[]).push(...options);
     };
 
     return submission as MessageSubmission;
@@ -88,19 +94,19 @@ describe('PostManagerServiceMocks', () => {
   function createPostRecord(
     submission: ISubmission,
   ): Loaded<PostRecord, string> {
-    const record = new PostRecord({
+    const postRecord = {
       parent: submission,
       state: PostRecordState.PENDING,
       resumeMode: PostRecordResumeMode.CONTINUE,
-    });
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: 'test-post-record',
+      children: patchCollection<IWebsitePostRecord>([]) as never,
+      toJSON: jest.fn().mockReturnValue({}),
+    };
 
-    record.createdAt = new Date();
-    record.updatedAt = new Date();
-    record.id = 'test-post-record';
-    record.children = new Collection<IWebsitePostRecord>(record);
-    record.toJSON = jest.fn().mockReturnValue({});
-
-    return record as Loaded<PostRecord, string>;
+    postRecord.toJSON = jest.fn().mockReturnValue({});
+    return postRecord as Loaded<PostRecord, string>;
   }
 
   function createAccount(): IAccount {
@@ -156,6 +162,15 @@ describe('PostManagerServiceMocks', () => {
       Object.assign(postRecord, record);
       return record as unknown as Loaded<PostRecord, never>;
     });
+    websitePostRecordRepositoryMock.create.mockImplementation(
+      (record) =>
+        ({
+          ...record,
+          id: new Date().getTime().toString(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }) as WebsitePostRecord,
+    );
 
     await service.startPost(postRecord);
     expect(postRepositoryMock.update).toHaveBeenNthCalledWith(
