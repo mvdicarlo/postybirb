@@ -4,6 +4,7 @@ export * from './database/entity.interface';
 export * from './directory-watcher/directory-watcher.interface';
 export * from './file/file-buffer.interface';
 export * from './file/file-dimensions.interface';
+export * from './post/post-queue-record.interface';
 export * from './post/post-record.interface';
 export * from './post/post-response.type';
 export * from './post/website-post-record.interface';
@@ -44,3 +45,4 @@ export * from './website/website-data.interface';
 export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
+

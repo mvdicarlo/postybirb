@@ -6,15 +6,11 @@ class FormGeneratorApi {
   private readonly client: HttpClient = new HttpClient('form-generator');
 
   getDefaultForm(type: SubmissionType) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.client.get<FormBuilderMetadata<any>>(`default/${type}`);
+    return this.client.get<FormBuilderMetadata>(`default/${type}`);
   }
 
   getForm(dto: IFormGenerationRequestDto) {
-    return this.client.post<
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      FormBuilderMetadata<any>
-    >('', dto);
+    return this.client.post<FormBuilderMetadata>('', dto);
   }
 }
 

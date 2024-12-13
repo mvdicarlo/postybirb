@@ -12,7 +12,7 @@ import {
   IconSend,
 } from '@tabler/icons-react';
 import { useNavigate } from 'react-router';
-import postApi from '../../../../api/post.api';
+import postQueueApi from '../../../../api/post-queue.api';
 import submissionApi from '../../../../api/submission.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { EditSubmissionPath } from '../../../../pages/route-paths';
@@ -139,7 +139,7 @@ export function SubmissionViewCardActions(
           c={canSetForPosting ? 'teal' : 'grey'}
           leftSection={<IconSend />}
           onClick={() => {
-            postApi
+            postQueueApi
               .enqueue([submission.id])
               .then(() => {
                 notifications.show({
@@ -167,7 +167,7 @@ export function SubmissionViewCardActions(
           c="red"
           leftSection={<IconCancel />}
           onClick={() => {
-            postApi.dequeue([submission.id]);
+            postQueueApi.dequeue([submission.id]);
           }}
         >
           <Trans>Cancel</Trans>

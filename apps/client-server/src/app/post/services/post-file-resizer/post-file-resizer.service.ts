@@ -13,8 +13,8 @@ import fastq from 'fastq';
 import { cpus } from 'os';
 import { parse } from 'path';
 import { Sharp } from 'sharp';
-import { ImageUtil } from '../file/utils/image.util';
-import { PostingFile, ThumbnailOptions } from './models/posting-file';
+import { ImageUtil } from '../../../file/utils/image.util';
+import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
 
 type ResizeRequest = {
   file: ISubmissionFile;

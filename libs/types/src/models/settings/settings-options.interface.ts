@@ -21,4 +21,10 @@ export interface ISettingsOptions {
    * @type {boolean}
    */
   allowAd: boolean;
+
+  /**
+   * Whether the queue is paused by the user.
+   * @type {boolean}
+   */
+  queuePaused: boolean;
 }

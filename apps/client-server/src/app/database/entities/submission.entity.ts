@@ -3,8 +3,9 @@ import {
   Entity,
   EntityRepositoryType,
   OneToMany,
+  OneToOne,
   Property,
-  serialize,
+  serialize
 } from '@mikro-orm/core';
 import {
   IPostRecord,
@@ -14,11 +15,12 @@ import {
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
 import { DirectoryWatcher } from './directory-watcher.entity';
+import { PostQueueRecord } from './post-queue-record.entity';
 import { PostRecord } from './post-record.entity';
 import { PostyBirbEntity } from './postybirb-entity';
 import { SubmissionFile } from './submission-file.entity';
@@ -73,6 +75,13 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   })
   posts: Collection<IPostRecord>;
 
+  @OneToOne(() => PostQueueRecord, {
+    orphanRemoval: true,
+    eager: true,
+    nullable: true,
+  })
+  postQueueRecord?: PostQueueRecord;
+
   @Property({ type: 'number', nullable: true })
   order: number;
 
@@ -87,7 +96,13 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   toJSON(): ISubmissionDto<T> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return serialize(this as any, {
-      populate: ['files', 'options', 'options.account', 'posts'],
+      populate: [
+        'files',
+        'options',
+        'options.account',
+        'posts',
+        'postQueueRecord',
+      ],
     }) as ISubmissionDto<T>;
   }
 }

@@ -14,10 +14,10 @@ import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-opt
 import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsitesModule } from '../websites/websites.module';
-import { PostFileResizerService } from './post-file-resizer.service';
-import { PostManagerService } from './post-manager.service';
 import { PostModule } from './post.module';
 import { PostService } from './post.service';
+import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
+import { PostManagerService } from './services/post-manager/post-manager.service';
 
 describe('PostService', () => {
   let service: PostService;

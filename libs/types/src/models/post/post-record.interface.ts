@@ -2,6 +2,7 @@ import { Collection, Rel } from '@mikro-orm/core';
 import { PostRecordResumeMode, PostRecordState } from '../../enums';
 import { IEntity } from '../database/entity.interface';
 import { ISubmission } from '../submission/submission.interface';
+import { IPostQueueRecord } from './post-queue-record.interface';
 import { IWebsitePostRecord } from './website-post-record.interface';
 
 /**
@@ -40,4 +41,10 @@ export interface IPostRecord extends IEntity {
    * @type {IWebsitePostRecord[]}
    */
   children: Collection<IWebsitePostRecord>;
+
+  /**
+   * The post queue record associated with the post record.
+   * @type {IPostQueueRecord}
+   */
+  postQueueRecord?: IPostQueueRecord;
 }

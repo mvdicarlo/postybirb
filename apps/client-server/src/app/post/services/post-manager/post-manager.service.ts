@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { EntityDTO, Loaded, wrap } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
@@ -26,23 +26,21 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
-import { PostRecord, WebsitePostRecord } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { FileConverterService } from '../file-converter/file-converter.service';
-import { PostParsersService } from '../post-parsers/post-parsers.service';
-import { IsTestEnvironment } from '../utils/test.util';
-import { ValidationService } from '../validation/validation.service';
+import { PostRecord, WebsitePostRecord } from '../../../database/entities';
+import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import { FileConverterService } from '../../../file-converter/file-converter.service';
+import { PostParsersService } from '../../../post-parsers/post-parsers.service';
+import { ValidationService } from '../../../validation/validation.service';
 import {
   ImplementedFileWebsite,
   isFileWebsite,
-} from '../websites/models/website-modifiers/file-website';
-import { MessageWebsite } from '../websites/models/website-modifiers/message-website';
-import { Website } from '../websites/website';
-import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { CancellableToken } from './models/cancellable-token';
-import { PostingFile } from './models/posting-file';
-import { PostFileResizerService } from './post-file-resizer.service';
-import { PostService } from './post.service';
+} from '../../../websites/models/website-modifiers/file-website';
+import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
+import { Website } from '../../../websites/website';
+import { WebsiteRegistryService } from '../../../websites/website-registry.service';
+import { CancellableToken } from '../../models/cancellable-token';
+import { PostingFile } from '../../models/posting-file';
+import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
 type LoadedPostRecord = Loaded<PostRecord, never>;
 
@@ -69,29 +67,12 @@ export class PostManagerService {
     private readonly postRepository: PostyBirbRepository<PostRecord>,
     @InjectRepository(WebsitePostRecord)
     private readonly websitePostRecordRepository: PostyBirbRepository<WebsitePostRecord>,
-    @Inject(forwardRef(() => PostService))
-    private readonly postService: PostService,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
     private readonly postParserService: PostParsersService,
     private readonly validationService: ValidationService,
     private readonly fileConverterService: FileConverterService,
-  ) {
-    setTimeout(() => this.check(), 60_000);
-  }
-
-  /**
-   * Checks for any posts that need to be posted.
-   */
-  private async check() {
-    if (!IsTestEnvironment()) {
-      const nextToPost = await this.postService.getNext();
-      if (nextToPost && this.currentPost?.id !== nextToPost.id) {
-        this.logger.info(`Found next to post: ${nextToPost.id}`);
-        this.startPost(nextToPost);
-      }
-    }
-  }
+  ) {}
 
   private async protectedUpdate(
     entity: LoadedPostRecord,
@@ -111,17 +92,16 @@ export class PostManagerService {
    * @param {SubmissionId} id
    */
   public async cancelIfRunning(id: SubmissionId): Promise<boolean> {
-    if (this.currentPost) {
-      if (!this.currentPost.parent) {
-        const loaded = await wrap(this.currentPost).init(true, ['parent']);
-        if (loaded.parent.id === id) {
-          this.logger.info(`Cancelling current post`);
-          this.cancelToken.cancel();
-          return true;
-        }
-      }
+    if (this.currentPost && this.currentPost.parent?.id === id) {
+      this.logger.info(`Cancelling current post`);
+      this.cancelToken.cancel();
+      return true;
     }
     return false;
+  }
+
+  public isPosting(): boolean {
+    return !!this.currentPost;
   }
 
   /**
@@ -139,11 +119,6 @@ export class PostManagerService {
         state: PostRecordState.RUNNING,
       });
 
-      // Ensure parent (submission) is loaded
-      if (!entity.parent) {
-        entity = await wrap(entity).init(true, ['parent']);
-      }
-
       await this.createWebsitePostRecords(entity);
 
       // Posts order occurs in batched groups
@@ -158,14 +133,11 @@ export class PostManagerService {
           websites.map((w) => this.post(entity, w.record, w.instance)),
         );
       }
-      await this.finishPost(entity);
       this.logger.info(`Finished posting to websites`);
     } catch (error) {
       this.logger.withError(error).error(`Error posting`);
-      await this.finishPost(entity);
-      throw error;
     } finally {
-      this.check();
+      await this.finishPost(entity);
     }
   }
 

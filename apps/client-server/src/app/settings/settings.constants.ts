@@ -7,5 +7,6 @@ export class SettingsConstants {
     hiddenWebsites: [],
     language: 'en',
     allowAd: true,
+    queuePaused: false,
   };
 }

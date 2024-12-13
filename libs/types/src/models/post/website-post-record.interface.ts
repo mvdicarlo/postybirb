@@ -63,6 +63,7 @@ export interface IPostRecordMetadata {
   postedFiles: EntityId[];
 
   /**
+   * TODO - Ensure this value is saved to the database as post runs.
    * The next batch number.
    * More of an internal tracker for resuming posts.
    * @type {number}

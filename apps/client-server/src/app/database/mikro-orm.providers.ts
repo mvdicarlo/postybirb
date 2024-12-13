@@ -6,6 +6,7 @@ import {
   Account,
   AltFile,
   DirectoryWatcher,
+  PostQueueRecord,
   PostRecord,
   PrimaryFile,
   Settings,
@@ -36,6 +37,7 @@ const entities = [
   WebsiteData,
   PostRecord,
   WebsitePostRecord,
+  PostQueueRecord,
 ];
 
 const mikroOrmOptions: MikroOrmModuleSyncOptions = {
