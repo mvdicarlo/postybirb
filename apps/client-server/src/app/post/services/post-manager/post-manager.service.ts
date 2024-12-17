@@ -21,7 +21,7 @@ import {
   PostRecordState,
   PostResponse,
   SubmissionId,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -35,7 +35,7 @@ import {
   isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
-import { Website } from '../../../websites/website';
+import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
 import { PostingFile } from '../../models/posting-file';
@@ -176,7 +176,6 @@ export class PostManagerService {
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
   ) {
-    // TODO - Need to consider cancellation scenarios - i.e. if the submission is deleted, or an update occurs
     if (!instance.getLoginState().isLoggedIn) {
       throw new Error('Not logged in');
     }
@@ -190,12 +189,13 @@ export class PostManagerService {
         );
       }
       const data = await this.preparePostData(
-        submission as unknown as ISubmission,
+        submission,
         instance,
         submission.options.find(
           (o) => o.account.id === websitePostRecord.account.id,
-        ) as unknown as IWebsiteOptions,
+        ) as IWebsiteOptions,
       );
+      websitePostRecord.postData = data; // Set for later saving
       const validationResult =
         await this.validationService.validateSubmission(submission);
       if (validationResult.some((v) => v.errors.length > 0)) {
@@ -220,25 +220,25 @@ export class PostManagerService {
   private async attemptToPost(
     submission: ISubmission,
     websitePostRecord: IWebsitePostRecord,
-    instance: Website<unknown>,
-    data: PostData<ISubmission, IWebsiteFormFields>,
+    instance: UnknownWebsite,
+    data: PostData,
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
       case SubmissionType.FILE:
         await this.handleFileSubmission(
           websitePostRecord,
-          submission as unknown as FileSubmission,
+          submission as FileSubmission,
           instance,
-          data as unknown as PostData<FileSubmission, never>,
+          data,
         );
         break;
       case SubmissionType.MESSAGE:
         await this.handleMessageSubmission(
           websitePostRecord,
-          submission as unknown as MessageSubmission,
+          submission as MessageSubmission,
           instance,
-          data as unknown as PostData<MessageSubmission, never>,
+          data,
         );
         break;
       default:
@@ -304,17 +304,17 @@ export class PostManagerService {
    * @param {IWebsitePostRecord} websitePostRecord
    * @param {MessageSubmission} submission
    * @param {Website<unknown>} instance
-   * @param {PostData<MessageSubmission, never>} data
+   * @param {PostData} data
    */
   private async handleMessageSubmission(
     websitePostRecord: IWebsitePostRecord,
     submission: MessageSubmission,
-    instance: Website<unknown>,
-    data: PostData<MessageSubmission, never>,
+    instance: UnknownWebsite,
+    data: PostData,
   ): Promise<void> {
     this.logger.info(`Posting message to ${instance.id}`);
     const result = await (
-      instance as unknown as MessageWebsite<never>
+      instance as unknown as MessageWebsite
     ).onPostMessageSubmission(data, this.cancelToken);
     if (result.exception) {
       await this.handleFailureResult(websitePostRecord, result);
@@ -328,13 +328,13 @@ export class PostManagerService {
    * @param {IWebsitePostRecord} websitePostRecord
    * @param {FileSubmission} submission
    * @param {Website<unknown>} instance
-   * @param {PostData<FileSubmission, never>} data
+   * @param {PostData} data
    */
   private async handleFileSubmission(
     websitePostRecord: IWebsitePostRecord,
     submission: FileSubmission,
-    instance: Website<unknown>,
-    data: PostData<FileSubmission, never>,
+    instance: UnknownWebsite,
+    data: PostData,
   ): Promise<void> {
     if (!isFileWebsite(instance)) {
       throw new Error(
@@ -530,7 +530,7 @@ export class PostManagerService {
   ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
     const websitePairs = entity.children
       .toArray()
-      .filter((c) => !!c.completedAt) // Only post to those that haven't been completed
+      .filter((c) => !c.completedAt) // Only post to those that haven't been completed
       .map((c) => ({
         record: c,
         instance: this.websiteRegistry.findInstance(c.account),
@@ -617,13 +617,13 @@ export class PostManagerService {
    * @param {Submission} submission
    * @param {Website<unknown>} instance
    * @param {WebsiteOptions<never>} websiteOptions
-   * @return {*}  {PostData<Submission, never>}
+   * @return {*}  {PostData}
    */
   private preparePostData(
     submission: ISubmission,
     instance: Website<unknown>,
     websiteOptions: IWebsiteOptions,
-  ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
+  ): Promise<PostData> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }
 }

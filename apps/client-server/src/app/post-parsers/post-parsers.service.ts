@@ -25,7 +25,7 @@ export class PostParsersService {
     submission: ISubmission,
     instance: UnknownWebsite,
     websiteOptions: IWebsiteOptions,
-  ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
+  ): Promise<PostData<IWebsiteFormFields>> {
     const defaultOptions: IWebsiteOptions = submission.options.find(
       (o) => o.isDefault,
     );

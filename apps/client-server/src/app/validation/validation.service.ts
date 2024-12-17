@@ -2,14 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
-  FileSubmission,
   ISubmission,
-  IWebsiteFormFields,
   IWebsiteOptions,
   PostData,
   SimpleValidationResult,
   SubmissionType,
-  ValidationResult,
+  ValidationResult
 } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -129,14 +127,12 @@ export class ValidationService {
     websiteId: EntityId,
     submission: ISubmission,
     website: UnknownWebsite,
-    postData: PostData<ISubmission, IWebsiteFormFields>,
+    postData: PostData,
   ): Promise<ValidationResult> {
     let result: SimpleValidationResult;
     try {
       if (submission.type === SubmissionType.FILE && isFileWebsite(website)) {
-        result = await website.onValidateFileSubmission(
-          postData as unknown as PostData<FileSubmission, IWebsiteFormFields>,
-        );
+        result = await website.onValidateFileSubmission(postData);
       }
 
       if (

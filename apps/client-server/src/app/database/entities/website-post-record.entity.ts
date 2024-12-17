@@ -11,6 +11,7 @@ import {
   IPostRecordMetadata,
   IWebsiteError,
   IWebsitePostRecord,
+  PostData,
   WebsitePostRecordDto,
 } from '@postybirb/types';
 import { PostyBirbRepository } from '../repositories/postybirb-repository';
@@ -54,6 +55,9 @@ export class WebsitePostRecord
 
   @Property({ type: 'json', nullable: true })
   errors?: IWebsiteError[];
+
+  @Property({ type: 'json', nullable: true })
+  postData?: PostData;
 
   toJSON(): WebsitePostRecordDto {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
