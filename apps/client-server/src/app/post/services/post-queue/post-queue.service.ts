@@ -262,6 +262,10 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
         'postRecord.parent.options',
         'postRecord.parent.options.account',
         'submission',
+        'submission.files',
+        'submission.files.file',
+        'submission.files.altFile',
+        'submission.files.thumbnail',
       ],
     });
 

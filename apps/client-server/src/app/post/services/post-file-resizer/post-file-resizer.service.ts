@@ -96,6 +96,8 @@ export class PostFileResizerService {
         fileName: `${file.id}.${m.format}`,
         buffer: await sharpInstance.toBuffer(),
         mimeType: `image/${m.format}`,
+        height: m.height,
+        width: m.width,
       };
     }
 
@@ -137,6 +139,8 @@ export class PostFileResizerService {
     return {
       buffer: await instance.toBuffer(),
       fileName: `${name}${extension}`,
+      width: metadata.width,
+      height: metadata.height,
     };
   }
 

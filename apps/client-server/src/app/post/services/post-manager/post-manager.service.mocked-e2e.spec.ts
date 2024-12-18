@@ -3,6 +3,7 @@ import {
   FileSubmission,
   FileType,
   IAccount,
+  IFileBuffer,
   ILoginState,
   ISubmission,
   ISubmissionFile,
@@ -17,6 +18,8 @@ import {
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { PostRecord, WebsitePostRecord } from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
@@ -28,6 +31,7 @@ import { FileWebsite } from '../../../websites/models/website-modifiers/file-web
 import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
+import { CancellableToken } from '../../models/cancellable-token';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 import { PostManagerService } from './post-manager.service';
 
@@ -38,10 +42,10 @@ describe('PostManagerServiceMocks', () => {
     PostyBirbRepository<WebsitePostRecord>
   >;
   let websiteRegistryMock: jest.Mocked<WebsiteRegistryService>;
-  let resizerServiceMock: jest.Mocked<PostFileResizerService>;
+  let resizerService: PostFileResizerService;
   let postParserServiceMock: jest.Mocked<PostParsersService>;
   let validationServiceMock: jest.Mocked<ValidationService>;
-  let fileConverterServiceMock: jest.Mocked<FileConverterService>;
+  let fileConverterService: FileConverterService;
 
   beforeEach(async () => {
     postRepositoryMock = {
@@ -61,7 +65,7 @@ describe('PostManagerServiceMocks', () => {
       update: jest.fn(),
       persistAndFlush: jest.fn(),
     } as unknown as jest.Mocked<WebsiteRegistryService>;
-    resizerServiceMock = {} as unknown as jest.Mocked<PostFileResizerService>;
+    resizerService = new PostFileResizerService();
     postParserServiceMock = {
       parse: jest.fn(),
       findOne: jest.fn(),
@@ -71,17 +75,16 @@ describe('PostManagerServiceMocks', () => {
     validationServiceMock = {
       validateSubmission: jest.fn(),
     } as unknown as jest.Mocked<ValidationService>;
-    fileConverterServiceMock =
-      {} as unknown as jest.Mocked<FileConverterService>;
+    fileConverterService = new FileConverterService();
 
     service = new PostManagerService(
       postRepositoryMock,
       websitePostRecordRepositoryMock,
       websiteRegistryMock,
-      resizerServiceMock,
+      resizerService,
       postParserServiceMock,
       validationServiceMock,
-      fileConverterServiceMock,
+      fileConverterService,
     );
   });
 
@@ -117,7 +120,7 @@ describe('PostManagerServiceMocks', () => {
   }
 
   function createFileSubmission(): FileSubmission {
-    const submission = {
+    const submission: FileSubmission = {
       id: 'test',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -126,13 +129,61 @@ describe('PostManagerServiceMocks', () => {
         fileMetadata: {},
       },
       type: SubmissionType.FILE,
-      files: patchCollection<ISubmissionFile>([]) as never,
+      files: patchCollection<ISubmissionFile>([]),
       options: patchCollection<IWebsiteOptions>([]) as never,
       isScheduled: false,
       schedule: {} as never,
       order: 1,
       posts: [] as never,
     };
+
+    // 600 x 600 image (png)
+    const testFile = readFileSync(
+      join(__dirname, '../../../test-files/png_no_alpha.png'),
+    );
+    const file: ISubmissionFile = {
+      submission,
+      id: 'test-file',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      fileName: 'test.png',
+      hash: 'fake-hash',
+      mimeType: 'image/png',
+      size: testFile.length,
+      width: 600,
+      height: 600,
+      hasAltFile: false,
+      hasThumbnail: false,
+      file: {} as IFileBuffer,
+      props: {
+        hasCustomThumbnail: false,
+        width: 600,
+        height: 600,
+      },
+    };
+
+    file.file = {
+      parent: file,
+      id: 'test-file-buffer',
+      fileName: 'test.png',
+      mimeType: 'image/png',
+      buffer: testFile,
+      size: testFile.length,
+      width: 600,
+      height: 600,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    submission.metadata.order.push(file.id);
+    submission.metadata.fileMetadata[file.id] = {
+      altText: 'Test Alt Text',
+      spoilerText: 'Test Spoiler Text',
+      ignoredWebsites: [],
+      dimensions: {},
+    };
+
+    submission.files.add(file);
 
     return submission as FileSubmission;
   }
@@ -205,7 +256,7 @@ describe('PostManagerServiceMocks', () => {
       decoratedProps: {
         ...defaultWebsiteDecoratorProps(),
         fileOptions: {
-          acceptedMimeTypes: ['image/jpeg'],
+          acceptedMimeTypes: ['image/jpeg', 'image/png'],
           fileBatchSize: 1,
           supportedFileTypes: [FileType.IMAGE],
         },
@@ -238,7 +289,7 @@ describe('PostManagerServiceMocks', () => {
         }) as WebsitePostRecord,
     );
     websiteRegistryMock.findInstance.mockReturnValue(websiteInstance);
-    postParserServiceMock.parse.mockResolvedValue({
+    const postData: PostData = {
       submission,
       options: {
         title: 'Test Title',
@@ -246,12 +297,19 @@ describe('PostManagerServiceMocks', () => {
         rating: SubmissionRating.GENERAL,
         tags: ['test'],
       },
-    } as PostData);
+    };
+    postParserServiceMock.parse.mockResolvedValue(postData);
     validationServiceMock.validateSubmission.mockResolvedValue(
       Promise.resolve([]),
     );
 
-    return { postRecord, submission, websiteOptions, websiteInstance };
+    return {
+      postRecord,
+      submission,
+      websiteOptions,
+      websiteInstance,
+      postData,
+    };
   }
 
   function mockMessageSubmissionPost() {
@@ -315,7 +373,9 @@ describe('PostManagerServiceMocks', () => {
 
   it('should post a file submission successfully', async () => {
     // This more or less tests the happy path
-    const { postRecord, websiteInstance } = mockFileSubmissionPost();
+    // No resize is considered here
+    const { postRecord, websiteInstance, postData, submission } =
+      mockFileSubmissionPost();
 
     const response: PostResponse = {
       exception: undefined,
@@ -323,7 +383,64 @@ describe('PostManagerServiceMocks', () => {
     };
     (websiteInstance as unknown as FileWebsite).onPostFileSubmission = jest
       .fn()
-      .mockResolvedValue(Promise.resolve(response));
+      .mockResolvedValue(response);
+    (websiteInstance as unknown as FileWebsite).calculateImageResize = jest
+      .fn()
+      .mockReturnValue(undefined);
+
+    await service.startPost(postRecord);
+    expect(postRepositoryMock.update).toHaveBeenNthCalledWith(
+      1,
+      postRecord.id,
+      {
+        state: PostRecordState.RUNNING,
+      },
+    );
+    expect(
+      (websiteInstance as unknown as FileWebsite).onPostFileSubmission,
+    ).toHaveBeenCalledWith(
+      postData,
+      expect.any(Array),
+      1,
+      expect.any(CancellableToken),
+    );
+    expect(postRecord.state).toBe(PostRecordState.DONE);
+    expect(postRecord.completedAt).toBeDefined();
+    expect(postRecord.children.toArray()).toHaveLength(1);
+    expect(postRecord.children.toArray()[0].completedAt).toBeDefined();
+    expect(postRecord.children.toArray()[0].errors).toBeUndefined();
+    expect(
+      postRecord.children.toArray()[0].metadata.sourceMap[
+        submission.files[0].id
+      ],
+    ).toEqual(response.sourceUrl);
+  });
+
+  it('should post a file submission with resize', async () => {
+    const { postRecord, websiteInstance, postData, submission } =
+      mockFileSubmissionPost();
+
+    const response: PostResponse = {
+      exception: undefined,
+      sourceUrl: 'https://test.postybirb.com',
+    };
+    (websiteInstance as unknown as FileWebsite).onPostFileSubmission = async (
+      d,
+      files,
+      i,
+      c,
+    ) => {
+      if (files[0].height === 300 && files[0].width === 300) {
+        return response;
+      }
+      throw new Error('Invalid file dimensions');
+    };
+    (websiteInstance as unknown as FileWebsite).calculateImageResize = jest
+      .fn()
+      .mockReturnValue({
+        width: 300,
+        height: 300,
+      });
 
     await service.startPost(postRecord);
     expect(postRepositoryMock.update).toHaveBeenNthCalledWith(
@@ -334,13 +451,6 @@ describe('PostManagerServiceMocks', () => {
       },
     );
     expect(postRecord.state).toBe(PostRecordState.DONE);
-    expect(postRecord.completedAt).toBeDefined();
-    expect(postRecord.children.toArray()).toHaveLength(1);
-    expect(postRecord.children.toArray()[0].completedAt).toBeDefined();
-    expect(postRecord.children.toArray()[0].errors).toBeUndefined();
-    expect(postRecord.children.toArray()[0].metadata.source).toEqual(
-      response.sourceUrl,
-    );
   });
 
   it('should post a message submission successfully', async () => {
