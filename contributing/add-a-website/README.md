@@ -7,34 +7,24 @@ For the purposes of examples, website `Foo` will be used.
 It is not likely to be an exhaustive reference and should be seen as a living document that I will
 do my best to keep updated as things change.
 
-## Warning
-
-> Websites that support, promote, and enable illicit or illegal behavior/content will be rejected.
+> [!WARNING]
+> Websites that support, promote, or enable illicit or illegal behavior/content will be rejected.
 
 ## Starting Out
 
-To start out you should locate the website directory located [here](../apps/client-server/src/app/websites/implementations/).
+To start out you should locate the website directory located [here](../apps/client-server/src/app/websites/implementations/)
+for your own use later.
 
-#### General Rules:
-- Each website should be within its own folder under the website/implementations directory.
-- Each website should be logically named based on the website it intends to support.
+### Quick Start
 
-## Files and Plumbing
+First consider a valid dash-case name of the website you are adding.
 
-The first thing that you should do is create your folder and `<target-website>.website.ts` file.
+**Examples**
+- Google -> google
+- NewYork -> new-york or newyork
 
-#### Example Folder Structure
-
-```
-implementations /
-    foo /
-        foo.website.ts
-```
-
-You can then use the code sample provided below as a boiler-plate for quick setup
-and then go to [index.ts](../apps/client-server/src/app/websites/implementations/index.ts)
-to add your website into the `enabledWebsites` list. This is all that is required to
-make PostyBirb aware of the new website.
+From the base `postybirb` path, run the command.
+> `node scripts/add-website.js`
 
 #### Sample
 
@@ -74,7 +64,6 @@ export default class Foo extends Website<FooAccountData> {
     return this.loginState.setLogin(true, 'TestUser');
   }
 }
-
 ```
 
 ### Sample Explained
@@ -86,9 +75,9 @@ class as it contains important logic used elsewhere within the application.
 
 #### WebsiteMetadata Decorator
 
-Although this may change in the future, metadata for a website is set through the
-use of one or more decorators. The only required one at the moment is `@WebsiteMetadata`
-to set an Identifying `name` property and a `displayName` that is used within the UI.
+Metadata for a website is set through the use of one or more decorators. The only required one at
+the moment is `@WebsiteMetadata` to set an Identifying `name` property and a `displayName` that is
+used within the UI.
 
 Once a website is officially published the `name` property will likely never be changed
 as it is used to connect pieces of data together for logged in accounts.
@@ -120,6 +109,14 @@ This is where login state and additional data retrieval is intended to occur
 by interacting with the underlying website `loginState` (in memory)
 and `websiteDataStore` (in database).
 
+
+## How To
+
+- [Login and Authenticate Users](./sections/authenticate-a-user.md)
+- [Post Files](./sections/file-website.md)
+- [Post Messages](./sections/message-website.md)
+- [Validate User Input](./sections/validation.md)
+  
 ## Relevant Differences from V3 (PostyBirb+)
 
 - Each user account receives its own object instance so developers no longer

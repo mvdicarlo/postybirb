@@ -5,7 +5,7 @@ import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { SettingsModule } from '../settings/settings.module';
 import { ValidationModule } from '../validation/validation.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
-import { WebsiteImplProvider } from '../websites/implementations';
+import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';

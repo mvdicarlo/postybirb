@@ -1,11 +1,11 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  IWebsiteFormFields,
-  SubmissionRating,
-  SubmissionType,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    IWebsiteFormFields,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -24,7 +24,7 @@ import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
-import { WebsiteImplProvider } from '../websites/implementations';
+import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';

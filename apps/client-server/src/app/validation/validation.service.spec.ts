@@ -4,7 +4,7 @@ import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subsc
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
-import { WebsiteImplProvider } from '../websites/implementations';
+import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
 import { ValidationService } from './validation.service';

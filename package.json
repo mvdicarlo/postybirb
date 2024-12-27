@@ -185,6 +185,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-testing-library": "^5.0.3",
     "exitzero": "^1.0.1",
+    "inquirer": "^12.3.0",
     "jest": "29.4.3",
     "jest-environment-jsdom": "~28.1.1",
     "jsdom": "~22.1.0",

@@ -21,7 +21,7 @@ import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
-import { WebsiteImplProvider } from '../websites/implementations';
+import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { FileService } from './file.service';
 import { MulterFileInfo } from './models/multer-file-info';
