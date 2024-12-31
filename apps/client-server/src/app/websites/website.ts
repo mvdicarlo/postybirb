@@ -133,6 +133,17 @@ export abstract class Website<D extends DynamicObject> {
     return data;
   }
 
+  /**
+   * Returns properties to be used in the form generator.
+   * This should be extended by the website to provide additional properties as needed.
+   */
+  public getFormProperties(): DynamicObject {
+    const longTermData = this.getWebsiteData();
+    return {
+      ...longTermData,
+    };
+  }
+
   public getLoginState() {
     return this.loginState.getState();
   }

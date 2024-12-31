@@ -61,20 +61,25 @@ export default class FurAffinity
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(
-      `${this.BASE_URL}/controls/submissions`,
-      { partition: this.accountId },
-    );
-
-    if (res.body.includes('logout-link')) {
-      const $ = load(res.body);
-      return this.loginState.setLogin(
-        true,
-        $('.loggedin_user_avatar').attr('alt'),
+    try {
+      const res = await Http.get<string>(
+        `${this.BASE_URL}/controls/submissions`,
+        { partition: this.accountId },
       );
-    }
 
-    return this.loginState.setLogin(false, null);
+      if (res.body.includes('logout-link')) {
+        const $ = load(res.body);
+        return this.loginState.setLogin(
+          true,
+          $('.loggedin_user_avatar').attr('alt'),
+        );
+      }
+
+      return this.loginState.setLogin(false, null);
+    } catch (e) {
+      this.logger.error('Failed to login', e);
+      return this.loginState.setLogin(false, null);
+    }
   }
 
   createFileModel(): FurAffinityFileSubmission {

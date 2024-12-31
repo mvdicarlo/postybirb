@@ -47,7 +47,7 @@ export class FormGeneratorService {
     }
 
     // Get data for inserting into form
-    const data = instance.getWebsiteData();
+    const data = instance.getFormProperties();
 
     // Get form model
     let formModel: IWebsiteFormFields = null;

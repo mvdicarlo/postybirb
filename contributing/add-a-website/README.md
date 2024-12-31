@@ -7,9 +7,6 @@ For the purposes of examples, website `Foo` will be used.
 It is not likely to be an exhaustive reference and should be seen as a living document that I will
 do my best to keep updated as things change.
 
-> [!WARNING]
-> Websites that support, promote, or enable illicit or illegal behavior/content will be rejected.
-
 ## Starting Out
 
 To start out you should locate the website directory located [here](../apps/client-server/src/app/websites/implementations/)
@@ -20,6 +17,7 @@ for your own use later.
 First consider a valid dash-case name of the website you are adding.
 
 **Examples**
+
 - Google -> google
 - NewYork -> new-york or newyork
 
@@ -108,7 +106,6 @@ decorator). It also runs once at startup.
 This is where login state and additional data retrieval is intended to occur
 by interacting with the underlying website `loginState` (in memory)
 and `websiteDataStore` (in database).
-
 
 ## How To
 
