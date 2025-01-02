@@ -7,12 +7,11 @@ import {
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UnknownWebsite } from '../../website';
 
-export const FileWebsiteKey = 'FileModel';
+export const FileWebsiteKey = 'createFileModel';
 
 export type ImplementedFileWebsite = FileWebsite<IWebsiteFormFields> &
   UnknownWebsite;
@@ -23,8 +22,6 @@ export type ImplementedFileWebsite = FileWebsite<IWebsiteFormFields> &
  * @interface FileWebsite
  */
 export interface FileWebsite<T extends IWebsiteFormFields> {
-  FileModel: Class<T>;
-
   createFileModel(): T;
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined;

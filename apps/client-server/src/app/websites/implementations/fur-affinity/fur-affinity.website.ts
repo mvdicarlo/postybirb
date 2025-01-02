@@ -11,7 +11,6 @@ import {
   SimpleValidationResult,
 } from '@postybirb/types';
 import { load } from 'cheerio';
-import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -48,11 +47,6 @@ export default class FurAffinity
     MessageWebsite<FurAffinityMessageSubmission>,
     WithCustomDescriptionParser
 {
-  FileModel: Class<FurAffinityFileSubmission> = FurAffinityFileSubmission;
-
-  MessageModel: Class<FurAffinityMessageSubmission> =
-    FurAffinityMessageSubmission;
-
   protected BASE_URL = 'https://furaffinity.net';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FurAffinityAccountData> =
@@ -83,7 +77,7 @@ export default class FurAffinity
   }
 
   createFileModel(): FurAffinityFileSubmission {
-    return new this.FileModel();
+    return new FurAffinityFileSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
@@ -109,11 +103,11 @@ export default class FurAffinity
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
-    return new this.MessageModel();
+    return new FurAffinityMessageSubmission();
   }
 
   onPostMessageSubmission(
-    postData: PostData<FileSubmission, FurAffinityMessageSubmission>,
+    postData: PostData<MessageSubmission, FurAffinityMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');

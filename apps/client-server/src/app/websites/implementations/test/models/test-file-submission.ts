@@ -1,5 +1,4 @@
 import {
-  BooleanField,
   DescriptionField,
   RatingField,
   TagField,
@@ -13,12 +12,6 @@ import {
 } from '@postybirb/types';
 
 export class TestFileSubmission implements IWebsiteFormFields {
-  @BooleanField({ label: 'useThumbnail', defaultValue: true })
-  useThumbnail = true;
-
-  @BooleanField({ label: 'allowResize', defaultValue: true })
-  allowResize = true;
-
   @TextField({ label: 'title', defaultValue: '' })
   title?: string;
 

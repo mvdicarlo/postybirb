@@ -1,0 +1,121 @@
+import {
+  DescriptionType,
+  FileSubmission,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  MessageSubmission,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+} from '@postybirb/types';
+import { CancellableToken } from '../../../post/models/cancellable-token';
+import { PostingFile } from '../../../post/models/posting-file';
+import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { SupportsDescription } from '../../decorators/supports-description.decorator';
+{{#if hasFile}}
+import { SupportsFiles } from '../../decorators/supports-files.decorator';
+{{/if}}
+import { SupportsTags } from '../../decorators/supports-tags.decorator';
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
+import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
+import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
+{{#if hasFile}}
+import { FileWebsite } from '../../models/website-modifiers/file-website';
+{{/if}}
+{{#if hasMessage}}
+import { MessageWebsite } from '../../models/website-modifiers/message-website';
+{{/if}}
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
+import { Website } from '../../website';
+import { {{websiteNameAsPascalCase}}AccountData } from './models/{{websiteName}}-account-data';
+{{#if hasFile}}
+import { {{websiteNameAsPascalCase}}FileSubmission } from './models/{{websiteName}}-file-submission';
+{{/if}}
+{{#if hasMessage}}
+import { {{websiteNameAsPascalCase}}MessageSubmission } from './models/{{websiteName}}-message-submission';
+{{/if}}
+
+@WebsiteMetadata({
+  name: '{{websiteName}}',
+  displayName: '{{websiteName}}',
+})
+@UserLoginFlow('{{websiteUrl}}')
+@SupportsDescription(DescriptionType.HTML)
+@SupportsTags()
+@SupportsFiles(['image/png', 'image/jpeg'])
+export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAsPascalCase}}AccountData>
+  {{#if hasFile}}
+  FileWebsite<{{websiteNameAsPascalCase}}FileSubmission>
+  {{/if}}
+  {{#if hasFile}}
+    {{#if hasMessage}}
+    ,
+    {{/if}}
+  {{/if}}
+  {{#if hasMessage}}
+  MessageWebsite<{{websiteNameAsPascalCase}}MessageSubmission>
+  {{/if}}
+{
+  protected BASE_URL = '{{websiteUrl}}';
+
+  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{websiteNameAsPascalCase}}AccountData> =
+    {};
+
+  public async onLogin(): Promise<ILoginState> {
+    if (this.account.name === 'test') {
+      this.loginState.logout();
+    }
+
+    return this.loginState.setLogin(true, 'TestUser');
+  }
+
+  {{#if hasFile}}
+  createFileModel(): {{websiteNameAsPascalCase}}FileSubmission {
+    return new {{websiteNameAsPascalCase}}FileSubmission();
+  }
+
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+    return undefined;
+  }
+
+  async onPostFileSubmission(
+    postData: PostData<FileSubmission, {{websiteNameAsPascalCase}}FileSubmission>,
+    files: PostingFile[],
+    batchIndex: number,
+    cancellationToken: CancellableToken,
+  ): Promise<PostResponse> {
+    throw new Error('Method not implemented.');
+  }
+
+  async onValidateFileSubmission(
+    postData: PostData<FileSubmission, {{websiteNameAsPascalCase}}FileSubmission>,
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    };
+  {{/if}}
+
+  {{#if hasMessage}}
+    createMessageModel(): {{websiteNameAsPascalCase}}MessageSubmission {
+    return new {{websiteNameAsPascalCase}}MessageSubmission();
+  }
+
+  async onPostMessageSubmission(
+    postData: PostData<MessageSubmission, {{websiteNameAsPascalCase}}MessageSubmission>,
+    cancellationToken: CancellableToken,
+  ): Promise<PostResponse> {
+    throw new Error('Method not implemented.');
+  }
+
+  async onValidateMessageSubmission(
+    postData: PostData<MessageSubmission, {{websiteNameAsPascalCase}}MessageSubmission>,
+  ): Promise<SimpleValidationResult> {
+    return {
+      warnings: [],
+      errors: [],
+    };
+  }
+  {{/if}}
+}
