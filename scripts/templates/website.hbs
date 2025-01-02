@@ -17,7 +17,6 @@ import { SupportsDescription } from '../../decorators/supports-description.decor
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 {{/if}}
 import { SupportsTags } from '../../decorators/supports-tags.decorator';
-import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 {{#if hasFile}}
@@ -26,7 +25,6 @@ import { FileWebsite } from '../../models/website-modifiers/file-website';
 {{#if hasMessage}}
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 {{/if}}
-import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { {{websiteNameAsPascalCase}}AccountData } from './models/{{websiteName}}-account-data';
 {{#if hasFile}}
@@ -44,14 +42,9 @@ import { {{websiteNameAsPascalCase}}MessageSubmission } from './models/{{website
 @SupportsDescription(DescriptionType.HTML)
 @SupportsTags()
 @SupportsFiles(['image/png', 'image/jpeg'])
-export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAsPascalCase}}AccountData>
+export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAsPascalCase}}AccountData> implements
   {{#if hasFile}}
-  FileWebsite<{{websiteNameAsPascalCase}}FileSubmission>
-  {{/if}}
-  {{#if hasFile}}
-    {{#if hasMessage}}
-    ,
-    {{/if}}
+  FileWebsite<{{websiteNameAsPascalCase}}FileSubmission>{{#if hasMessage}},{{/if}}
   {{/if}}
   {{#if hasMessage}}
   MessageWebsite<{{websiteNameAsPascalCase}}MessageSubmission>
@@ -95,10 +88,11 @@ export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAs
       warnings: [],
       errors: [],
     };
+  }
   {{/if}}
 
   {{#if hasMessage}}
-    createMessageModel(): {{websiteNameAsPascalCase}}MessageSubmission {
+  createMessageModel(): {{websiteNameAsPascalCase}}MessageSubmission {
     return new {{websiteNameAsPascalCase}}MessageSubmission();
   }
 

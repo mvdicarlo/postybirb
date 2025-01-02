@@ -4,16 +4,22 @@ const fs = require('fs');
 const hbs = require('hbs');
 
 const websiteTemplate = hbs.compile(
-  fs.readFileSync('./templates/website.hbs', 'utf8'),
+  fs.readFileSync(path.join(__dirname, 'templates/website.hbs'), 'utf8'),
 );
 const accountDataTemplate = hbs.compile(
-  fs.readFileSync('./templates/account-data.hbs', 'utf8'),
+  fs.readFileSync(path.join(__dirname, 'templates/account-data.hbs'), 'utf8'),
 );
 const messageSubmissionTemplate = hbs.compile(
-  fs.readFileSync('./templates/message-submission.hbs', 'utf8'),
+  fs.readFileSync(
+    path.join(__dirname, 'templates/message-submission.hbs'),
+    'utf8',
+  ),
 );
 const fileSubmissionTemplate = hbs.compile(
-  fs.readFileSync('./templates/file-submission.hbs', 'utf8'),
+  fs.readFileSync(
+    path.join(__dirname, 'templates/file-submission.hbs'),
+    'utf8',
+  ),
 );
 
 const isDashCasedOrLowercase = (str) =>
@@ -78,6 +84,10 @@ function createNewWebsite(answers) {
   fs.mkdirSync(websiteFolder, { recursive: true });
   fs.mkdirSync(websiteModelsFolder, { recursive: true });
   fs.writeFileSync(websiteFilePath, websiteFileContent);
+  fs.writeFileSync(
+    path.join(websiteModelsFolder, `${websiteName}-account-data.ts`),
+    accountFileContent,
+  );
   if (messageSubmissionFileContent) {
     const messageSubmissionFilePath = path.join(
       websiteModelsFolder,
