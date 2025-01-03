@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { DefaultDescriptionValue, DescriptionValue } from '@postybirb/types';
 import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';

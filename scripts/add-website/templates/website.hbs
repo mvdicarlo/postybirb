@@ -26,33 +26,33 @@ import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 {{/if}}
 import { Website } from '../../website';
-import { {{websiteNameAsPascalCase}}AccountData } from './models/{{websiteName}}-account-data';
+import { {{pascalWebsiteName}}AccountData } from './models/{{website}}-account-data';
 {{#if hasFile}}
-import { {{websiteNameAsPascalCase}}FileSubmission } from './models/{{websiteName}}-file-submission';
+import { {{pascalWebsiteName}}FileSubmission } from './models/{{website}}-file-submission';
 {{/if}}
 {{#if hasMessage}}
-import { {{websiteNameAsPascalCase}}MessageSubmission } from './models/{{websiteName}}-message-submission';
+import { {{pascalWebsiteName}}MessageSubmission } from './models/{{website}}-message-submission';
 {{/if}}
 
 @WebsiteMetadata({
-  name: '{{websiteName}}',
-  displayName: '{{websiteName}}',
+  name: '{{website}}',
+  displayName: '{{website}}',
 })
 @UserLoginFlow('{{websiteUrl}}')
 @SupportsDescription(DescriptionType.HTML)
 @SupportsTags()
 @SupportsFiles(['image/png', 'image/jpeg'])
-export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAsPascalCase}}AccountData> implements
+export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}AccountData> implements
   {{#if hasFile}}
-  FileWebsite<{{websiteNameAsPascalCase}}FileSubmission>{{#if hasMessage}},{{/if}}
+  FileWebsite<{{pascalWebsiteName}}FileSubmission>{{#if hasMessage}},{{/if}}
   {{/if}}
   {{#if hasMessage}}
-  MessageWebsite<{{websiteNameAsPascalCase}}MessageSubmission>
+  MessageWebsite<{{pascalWebsiteName}}MessageSubmission>
   {{/if}}
 {
   protected BASE_URL = '{{websiteUrl}}';
 
-  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{websiteNameAsPascalCase}}AccountData> =
+  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{pascalWebsiteName}}AccountData> =
     {};
 
   public async onLogin(): Promise<ILoginState> {
@@ -64,8 +64,8 @@ export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAs
   }
 
   {{#if hasFile}}
-  createFileModel(): {{websiteNameAsPascalCase}}FileSubmission {
-    return new {{websiteNameAsPascalCase}}FileSubmission();
+  createFileModel(): {{pascalWebsiteName}}FileSubmission {
+    return new {{pascalWebsiteName}}FileSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
@@ -73,7 +73,7 @@ export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAs
   }
 
   async onPostFileSubmission(
-    postData: PostData<FileSubmission, {{websiteNameAsPascalCase}}FileSubmission>,
+    postData: PostData<FileSubmission, {{pascalWebsiteName}}FileSubmission>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
@@ -82,7 +82,7 @@ export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAs
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, {{websiteNameAsPascalCase}}FileSubmission>,
+    postData: PostData<FileSubmission, {{pascalWebsiteName}}FileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -92,19 +92,19 @@ export default class {{websiteNameAsPascalCase}} extends Website<{{websiteNameAs
   {{/if}}
 
   {{#if hasMessage}}
-  createMessageModel(): {{websiteNameAsPascalCase}}MessageSubmission {
-    return new {{websiteNameAsPascalCase}}MessageSubmission();
+  createMessageModel(): {{pascalWebsiteName}}MessageSubmission {
+    return new {{pascalWebsiteName}}MessageSubmission();
   }
 
   async onPostMessageSubmission(
-    postData: PostData<MessageSubmission, {{websiteNameAsPascalCase}}MessageSubmission>,
+    postData: PostData<MessageSubmission, {{pascalWebsiteName}}MessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, {{websiteNameAsPascalCase}}MessageSubmission>,
+    postData: PostData<MessageSubmission, {{pascalWebsiteName}}MessageSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],

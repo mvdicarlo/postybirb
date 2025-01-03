@@ -1,26 +1,7 @@
 const inquirer = require('inquirer').default;
 const path = require('path');
-const fs = require('fs');
-const hbs = require('hbs');
-
-const websiteTemplate = hbs.compile(
-  fs.readFileSync(path.join(__dirname, 'templates/website.hbs'), 'utf8'),
-);
-const accountDataTemplate = hbs.compile(
-  fs.readFileSync(path.join(__dirname, 'templates/account-data.hbs'), 'utf8'),
-);
-const messageSubmissionTemplate = hbs.compile(
-  fs.readFileSync(
-    path.join(__dirname, 'templates/message-submission.hbs'),
-    'utf8',
-  ),
-);
-const fileSubmissionTemplate = hbs.compile(
-  fs.readFileSync(
-    path.join(__dirname, 'templates/file-submission.hbs'),
-    'utf8',
-  ),
-);
+const createWebsite = require('./add-website/create-website');
+const parseAddWebsiteInput = require('./add-website/parse-add-website-input');
 
 const isDashCasedOrLowercase = (str) =>
   /^[a-z]+(-[a-z]+)*$/.test(str) || /^[a-z]+$/.test(str);
@@ -45,72 +26,6 @@ const baseAppPath = currentPath.includes('postybirb')
       'implementations',
     );
 
-function createNewWebsite(answers) {
-  let { websiteName, submissionTypes, websiteUrl } = answers;
-  websiteName = websiteName.toLowerCase().trim();
-  const websiteFileName = `${websiteName}.website.ts`;
-  const websiteFolder = path.join(baseAppPath, websiteName);
-  const websiteModelsFolder = path.join(baseAppPath, websiteName, 'models');
-  const websiteFilePath = path.join(websiteFolder, websiteFileName);
-
-  console.log('Creating file:', websiteFilePath);
-
-  const websiteNameAsPascalCase = websiteName
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('');
-
-  const data = {
-    websiteName,
-    websiteNameAsPascalCase,
-    hasFile: submissionTypes.includes('file'),
-    hasMessage: submissionTypes.includes('message'),
-    websiteUrl,
-  };
-  const websiteFileContent = websiteTemplate(data);
-  const accountFileContent = accountDataTemplate(data);
-  const messageSubmissionFileContent = data.hasMessage
-    ? messageSubmissionTemplate(data)
-    : null;
-  const fileSubmissionFileContent = data.hasFile
-    ? fileSubmissionTemplate(data)
-    : null;
-
-  if (fs.existsSync(websiteFilePath)) {
-    console.error('File already exists:', websiteFilePath);
-    return;
-  }
-
-  fs.mkdirSync(websiteFolder, { recursive: true });
-  fs.mkdirSync(websiteModelsFolder, { recursive: true });
-  fs.writeFileSync(websiteFilePath, websiteFileContent);
-  fs.writeFileSync(
-    path.join(websiteModelsFolder, `${websiteName}-account-data.ts`),
-    accountFileContent,
-  );
-  if (messageSubmissionFileContent) {
-    const messageSubmissionFilePath = path.join(
-      websiteModelsFolder,
-      `${websiteName}-message-submission.ts`,
-    );
-    fs.writeFileSync(messageSubmissionFilePath, messageSubmissionFileContent);
-  }
-  if (fileSubmissionFileContent) {
-    const fileSubmissionFilePath = path.join(
-      websiteModelsFolder,
-      `${websiteName}-file-submission.ts`,
-    );
-    fs.writeFileSync(fileSubmissionFilePath, fileSubmissionFileContent);
-  }
-  console.log('File(s) created successfully!');
-
-  const indexFilePath = path.join(baseAppPath, 'index.ts');
-  let indexFileContent = fs.readFileSync(indexFilePath, 'utf8');
-  indexFileContent += `\nexport { default as ${websiteNameAsPascalCase} } from './${websiteName}/${websiteFileName.replace('.ts', '')}';`;
-  fs.writeFileSync(indexFilePath, indexFileContent);
-  console.log('Index file updated successfully!');
-}
-
 inquirer
   .prompt([
     {
@@ -125,6 +40,15 @@ inquirer
       type: 'input',
       name: 'websiteUrl',
       message: '(optional) Enter the website URL: (e.g. https://example.com)',
+      validate: (input) => {
+        if (!input) return true;
+        try {
+          new URL(input);
+          return true;
+        } catch (error) {
+          return 'Invalid URL format. Please enter a valid URL.';
+        }
+      },
     },
     {
       type: 'checkbox',
@@ -143,9 +67,36 @@ inquirer
       validate: (input) =>
         input.length > 0 || 'You must select at least one submission type.',
     },
+    {
+      type: 'checkbox',
+      name: 'fileFeatures',
+      when: (answers) => answers.submissionTypes.includes('file'),
+      message: 'Select the features for the website:',
+      choices: [
+        {
+          name: 'Image Submissions (allows users to post images to the website)',
+          value: 'image',
+        },
+        {
+          name: 'Video Submissions (allows users to post videos to the website)',
+          value: 'video',
+        },
+        {
+          name: 'Audio Submissions (allows users to post audio files to the website)',
+          value: 'audio',
+        },
+      ],
+    },
+    {
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Are you sure you want to create the website?',
+    },
   ])
   .then((answers) => {
-    createNewWebsite(answers);
+    if (answers.confirm) {
+      createWebsite(parseAddWebsiteInput(answers), baseAppPath);
+    }
   })
   .catch((error) => {
     console.error('Error:', error);

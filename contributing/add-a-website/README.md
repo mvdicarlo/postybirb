@@ -22,6 +22,7 @@ First consider a valid dash-case name of the website you are adding.
 - NewYork -> new-york or newyork
 
 From the base `postybirb` path, run the command.
+
 > `node scripts/add-website.js`
 
 #### Sample
@@ -44,11 +45,10 @@ export type FooAccountData = {
 export default class Foo extends Website<FooAccountData> {
   protected BASE_URL: string;
 
-  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FooAccountData> =
-    {
-      nonSensitiveProperty: true,
-      sensitiveProperty: false,
-    };
+  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FooAccountData> = {
+    nonSensitiveProperty: true,
+    sensitiveProperty: false,
+  };
 
   public async onLogin(): Promise<ILoginState> {
     if (this.account.name === 'test') {
@@ -113,9 +113,15 @@ and `websiteDataStore` (in database).
 - [Post Files](./sections/file-website.md)
 - [Post Messages](./sections/message-website.md)
 - [Validate User Input](./sections/validation.md)
-  
+- [Description Parsing](./sections/description-parsing.md)
+- [Specifying User Input / UI Form Specification](./sections/defining-submission-data.md)
+
 ## Relevant Differences from V3 (PostyBirb+)
 
 - Each user account receives its own object instance so developers no longer
- need to worry about overwriting data shared with another logged in account.
+  need to worry about overwriting data shared with another logged in account.
 - Most metadata is set through custom decorators.
+- Descriptions are no longer collected as plain HTML and for now (semi-experimental) are
+  using BlockNote.
+- There are many common validations that can occur with the assistance of decorators
+  reducing the need for tons of duplicate code for validations.

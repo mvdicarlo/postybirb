@@ -44,8 +44,6 @@ import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.s
 
 type LoadedPostRecord = Loaded<PostRecord, never>;
 
-// TODO - HEAVILY TEST THIS WITH UNIT AND MANUAL TESTING, ESPECIALLY FILE SUBMISSIONS
-// SCENARIOS - ALT FILES, RESIZE, CONVERT, CANCELLATION, BATCHING, SRC INSERTION
 @Injectable()
 export class PostManagerService {
   private readonly logger = Logger();

@@ -50,20 +50,20 @@ import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 
 @UserLoginFlow('https://foo.com/login')
 export default class Foo extends Website<FooAccountData> {
-    // Class Impl
+  // Class Impl
 }
 ```
 
 PostyBirb supports 3 ways to login a user to their accounts.
 
 1. Direct browser-like login (webview) using the `@UserLoginFlow(url)` decorator
-to automatically hook up login within the UI.
+   to automatically hook up login within the UI.
 2. Custom Login Flow using the `@CustomLoginFlow(name(optional))` which requires the
-creation of a custom React component to handle retrieval of certain information for login.
-A simple example of this can be seen used by the Discord implementation
-[here](../../../apps/postybirb-ui/src/website-components/discord/).
+   creation of a custom React component to handle retrieval of certain information for login.
+   A simple example of this can be seen used by the Discord implementation
+   [here](../../../apps/postybirb-ui/src/website-components/discord/).
 3. OAuth flows. Currently this is still being defined and this documentation will be updated
-once a more stable example has been created.
+   once a more stable example has been created.
 
 ## Storing Account / Login Information
 

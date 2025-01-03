@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import 'reflect-metadata';
 import { Primitive } from 'type-fest';
 import { createFieldDecorator } from '../utils/assign-metadata';

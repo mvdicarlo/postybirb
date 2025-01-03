@@ -7,9 +7,17 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 
-export type ThumbnailOptions = {
-  buffer: Buffer;
-  fileName: string;
+export type ThumbnailOptions = Pick<
+  IFileBuffer,
+  'buffer' | 'height' | 'width' | 'mimeType' | 'fileName'
+>;
+
+export type FormDataFileFormat = {
+  value: Buffer;
+  options: {
+    contentType: string;
+    filename: string;
+  };
 };
 
 export class PostingFile {
@@ -48,5 +56,29 @@ export class PostingFile {
   public withMetadata(metadata: FileMetadataFields): PostingFile {
     this.metadata = metadata;
     return this;
+  }
+
+  public toPostFormat(): FormDataFileFormat {
+    return {
+      value: this.buffer,
+      options: {
+        contentType: this.mimeType,
+        filename: this.fileName,
+      },
+    };
+  }
+
+  public thumbnailToPostFormat(): FormDataFileFormat | undefined {
+    if (!this.thumbnail) {
+      return undefined;
+    }
+
+    return {
+      value: this.thumbnail.buffer,
+      options: {
+        contentType: this.thumbnail.mimeType,
+        filename: this.thumbnail.fileName,
+      },
+    };
   }
 }

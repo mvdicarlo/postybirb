@@ -1,6 +1,10 @@
 import { Logger } from '@nestjs/common';
-import { getPartitionKey } from '@postybirb/utils/electron';
-import { ClientRequest, ClientRequestConstructorOptions, net } from 'electron';
+import {
+  BrowserWindow,
+  ClientRequest,
+  ClientRequestConstructorOptions,
+  net,
+} from 'electron';
 import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
@@ -42,7 +46,12 @@ interface PostOptions extends HttpOptions {
   data: Record<string, unknown>;
 }
 
-interface HttpResponse<T> {
+interface BinaryPostOptions extends HttpOptions {
+  type: 'binary';
+  data: Buffer;
+}
+
+export interface HttpResponse<T> {
   body: T;
   statusCode: number;
   statusMessage: string;
@@ -54,13 +63,15 @@ interface CreateBodyData {
   buffer: Buffer;
 }
 
+function getPartitionKey(partition: string): string {
+  return `persist:${partition}`;
+}
+
 /**
  * Http module that wraps around Electron's {ClientRequest} and {net}.
  * @todo Post testing
- * @todo Re-attempt with BrowserWindow on Cloudflare Challenge
  * @todo Test return the responseUrl
  *
- * @export
  * @class Http
  */
 export class Http {
@@ -120,7 +131,9 @@ export class Http {
     return req;
   }
 
-  private static createPostBody(options: PostOptions): CreateBodyData {
+  private static createPostBody(
+    options: PostOptions | BinaryPostOptions,
+  ): CreateBodyData {
     const { data, type } = options;
     switch (type) {
       case 'json': {
@@ -137,10 +150,21 @@ export class Http {
         };
       }
 
+      case 'binary':
+        return {
+          contentType: 'binary/octet-stream',
+          buffer: data as Buffer,
+        };
+
       case 'multipart': {
         const form = new FormData();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.entries(data).forEach(([key, value]: [string, any]) => {
+          if (value === undefined || value === null) {
+            form.append(key, '');
+            return;
+          }
+
           if (value.options && value.value) {
             form.append(key, value.value, value.options);
           } else if (Array.isArray(value)) {
@@ -180,8 +204,6 @@ export class Http {
   ): void {
     let responseUrl: undefined | string;
 
-    // TODO figure out if I need to call followRedirect even though follow is default behavior
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     req.on('redirect', (statusCode, method, redirectUrl, responseHeaders) => {
       responseUrl = redirectUrl;
     });
@@ -259,6 +281,14 @@ export class Http {
       Http.handleError(req, reject);
       Http.handleResponse(url, req, resolve, reject);
       req.end();
+    }).then((response: HttpResponse<T>) => {
+      const { body } = response;
+      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
+        console.log('Cloudflare detected. Attempting to bypass...');
+        return Http.performBrowserWindowGetRequest<T>(url, options, crOptions);
+      }
+
+      return response;
     });
   }
 
@@ -274,10 +304,10 @@ export class Http {
    */
   static async post<T>(
     url: string,
-    options: PostOptions,
-    crOptions: ClientRequestConstructorOptions,
+    options: PostOptions | BinaryPostOptions,
+    crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
-    return Http.postLike('post', url, options, crOptions);
+    return Http.postLike('post', url, options, crOptions ?? {});
   }
 
   /**
@@ -293,15 +323,15 @@ export class Http {
   static patch<T>(
     url: string,
     options: PostOptions,
-    crOptions: ClientRequestConstructorOptions,
+    crOptions?: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
-    return Http.postLike('patch', url, options, crOptions);
+    return Http.postLike('patch', url, options, crOptions ?? {});
   }
 
   private static postLike<T>(
     method: 'post' | 'patch',
     url: string,
-    options: PostOptions,
+    options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
   ): Promise<HttpResponse<T>> {
     if (!net.isOnline()) {
@@ -321,6 +351,158 @@ export class Http {
       req.setHeader('Content-Type', contentType);
       req.write(buffer);
       req.end();
+    }).then((response: HttpResponse<T>) => {
+      const { body } = response;
+      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
+        console.log('Cloudflare detected. Attempting to bypass...');
+        return Http.performBrowserWindowPostRequest<T>(url, options, crOptions);
+      }
+
+      return response;
+    });
+  }
+
+  private static async performBrowserWindowGetRequest<T>(
+    url: string,
+    options: HttpOptions,
+    crOptions?: ClientRequestConstructorOptions,
+  ): Promise<HttpResponse<T>> {
+    const window = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        partition: getPartitionKey(options.partition),
+      },
+    });
+
+    try {
+      await window.loadURL(url);
+      return await Http.handleCloudFlareChallengePage<T>(window);
+    } catch (err) {
+      console.error(err);
+      return await Promise.reject(err);
+    } finally {
+      window.destroy();
+    }
+  }
+
+  private static async performBrowserWindowPostRequest<T>(
+    url: string,
+    options: PostOptions | BinaryPostOptions,
+    crOptions: ClientRequestConstructorOptions,
+  ): Promise<HttpResponse<T>> {
+    const { contentType, buffer } = Http.createPostBody(options);
+    const headers = Object.entries({
+      ...(options.headers ?? {}),
+      'Content-Type': contentType,
+    })
+      .map(([key, value]) => `${key}: ${value}`)
+      .join('\n');
+
+    const window = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        partition: getPartitionKey(options.partition),
+      },
+    });
+
+    try {
+      await window.loadURL(url, {
+        extraHeaders: headers,
+        postData: [
+          {
+            type: 'rawData',
+            bytes: buffer,
+          },
+        ],
+      });
+      return await Http.handleCloudFlareChallengePage<T>(window);
+    } catch (err) {
+      console.error(err);
+      return await Promise.reject(err);
+    } finally {
+      window.destroy();
+    }
+  }
+
+  private static isOnCloudFlareChallengePage(html: string): boolean {
+    if (
+      html.includes('challenge-error-title') ||
+      html.includes('<title>Just a moment...</title>')
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  private static async awaitCloudFlareChallengePage(
+    window: BrowserWindow,
+  ): Promise<void> {
+    const checkInterval = 1000; // 1 second
+
+    let isShown = false;
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < 60; i++) {
+      await Http.awaitCheckInterval(checkInterval);
+      const html = await window.webContents.executeJavaScript(
+        'document.body.parentElement.innerHTML',
+      );
+      if (i >= 3 && !isShown) {
+        // Try to let it solve itself for 3 seconds before showing the window.
+        window.show();
+        window.focus();
+        isShown = true;
+      }
+      if (!Http.isOnCloudFlareChallengePage(html)) {
+        return;
+      }
+    }
+
+    throw new Error('Unable to bypass Cloudflare challenge.');
+  }
+
+  private static async awaitCheckInterval(interval: number): Promise<void> {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, interval);
+    });
+  }
+
+  private static async handleCloudFlareChallengePage<T>(
+    window: BrowserWindow,
+  ): Promise<HttpResponse<T>> {
+    let html = await window.webContents.executeJavaScript(
+      'document.body.parentElement.innerHTML',
+    );
+
+    if (Http.isOnCloudFlareChallengePage(html)) {
+      await Http.awaitCloudFlareChallengePage(window);
+      html = await window.webContents.executeJavaScript(
+        'document.body.parentElement.innerHTML',
+      );
+    }
+
+    const text = await window.webContents.executeJavaScript(
+      'document.body.innerText',
+    );
+    const pageUrl = await window.webContents.executeJavaScript(
+      'window.location.href',
+    );
+
+    let rValue = html;
+    if (text.startsWith('{') && text.endsWith('}')) {
+      try {
+        rValue = JSON.parse(text);
+      } catch (err) {
+        console.error(pageUrl, text, err);
+      }
+    }
+
+    return Promise.resolve({
+      body: rValue as unknown as T,
+      statusCode: 200,
+      statusMessage: 'OK',
+      responseUrl: pageUrl,
     });
   }
 }
