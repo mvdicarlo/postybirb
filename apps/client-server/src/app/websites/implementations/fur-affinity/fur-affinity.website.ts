@@ -1,7 +1,6 @@
 import { Http } from '@postybirb/http';
 import {
   DescriptionType,
-  FileSubmission,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -85,7 +84,7 @@ export default class FurAffinity
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, FurAffinityFileSubmission>,
+    postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
