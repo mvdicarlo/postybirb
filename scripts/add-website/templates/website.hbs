@@ -73,7 +73,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onPostFileSubmission(
-    postData: PostData<FileSubmission, {{pascalWebsiteName}}FileSubmission>,
+    postData: PostData<{{pascalWebsiteName}}FileSubmission>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
@@ -107,7 +107,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, {{pascalWebsiteName}}FileSubmission>,
+    postData: PostData<{{pascalWebsiteName}}FileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -122,7 +122,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onPostMessageSubmission(
-    postData: PostData<MessageSubmission, {{pascalWebsiteName}}MessageSubmission>,
+    postData: PostData<{{pascalWebsiteName}}MessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
@@ -152,7 +152,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, {{pascalWebsiteName}}MessageSubmission>,
+    postData: PostData<{{pascalWebsiteName}}MessageSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
