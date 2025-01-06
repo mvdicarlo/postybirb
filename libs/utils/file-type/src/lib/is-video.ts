@@ -34,11 +34,14 @@ const SUPPORTED_MIME: string[] = [
   'video/x-sgi-movie',
 ];
 
-export function isVideo(filenameOrExtension: string): boolean {
-  const mimeType = getMimeTypeForFile(filenameOrExtension);
-  return SUPPORTED_MIME.includes(mimeType ?? '');
-}
-
 export function supportsVideo(mimeType: string): boolean {
   return SUPPORTED_MIME.includes(mimeType);
+}
+
+export function isVideo(filenameOrExtension: string): boolean {
+  const mimeType = getMimeTypeForFile(filenameOrExtension);
+  return (
+    SUPPORTED_MIME.includes(mimeType ?? '') ||
+    supportsVideo(filenameOrExtension)
+  );
 }

@@ -31,6 +31,10 @@ export class PostingFile {
 
   public readonly fileName: string;
 
+  public readonly width: number;
+
+  public readonly height: number;
+
   public metadata: FileMetadataFields;
 
   public readonly thumbnail?: ThumbnailOptions;
@@ -43,6 +47,8 @@ export class PostingFile {
     this.id = id;
     this.buffer = file.buffer;
     this.mimeType = file.mimeType;
+    this.width = file.width;
+    this.height = file.height;
     this.fileType = getFileType(file.fileName);
     this.fileName = this.normalizeFileName(file);
     this.thumbnail = thumbnail;

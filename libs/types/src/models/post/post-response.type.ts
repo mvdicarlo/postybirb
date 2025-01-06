@@ -29,5 +29,5 @@ export type PostResponse = {
    * Any additional logging info that may be useful.
    * @type {unknown}
    */
-  additionalInfo: unknown;
+  additionalInfo?: unknown;
 };

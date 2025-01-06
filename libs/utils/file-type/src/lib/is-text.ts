@@ -62,11 +62,13 @@ const SUPPORTED_MIME: string[] = [
   'application/rtf',
 ];
 
-export function isText(filenameOrExtension: string): boolean {
-  const mimeType = getMimeTypeForFile(filenameOrExtension);
-  return SUPPORTED_MIME.includes(mimeType ?? '');
-}
-
 export function supportsText(mimeType: string): boolean {
   return SUPPORTED_MIME.includes(mimeType);
+}
+
+export function isText(filenameOrExtension: string): boolean {
+  const mimeType = getMimeTypeForFile(filenameOrExtension);
+  return (
+    SUPPORTED_MIME.includes(mimeType ?? '') || supportsText(filenameOrExtension)
+  );
 }

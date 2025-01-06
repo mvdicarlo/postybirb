@@ -1,15 +1,13 @@
 import {
   DescriptionType,
-  FileSubmission,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteMetadata,
-  MessageSubmission,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SimpleValidationResult
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -70,7 +68,7 @@ export default class TestWebsite
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, IWebsiteFormFields>,
+    postData: PostData<IWebsiteFormFields>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
@@ -79,7 +77,7 @@ export default class TestWebsite
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, TestFileSubmission>,
+    postData: PostData<TestFileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -88,14 +86,14 @@ export default class TestWebsite
   }
 
   onPostMessageSubmission(
-    postData: PostData<MessageSubmission, TestMessageSubmission>,
+    postData: PostData<TestMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     return undefined;
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, TestMessageSubmission>,
+    postData: PostData<TestMessageSubmission>,
   ): Promise<SimpleValidationResult> {
     const results: SimpleValidationResult = {
       warnings: [],

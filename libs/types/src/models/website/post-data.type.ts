@@ -1,13 +1,11 @@
 import { ISubmission } from '../submission/submission.interface';
 import { IWebsiteFormFields } from '../submission/website-form-fields.interface';
 
-export type PostFields<T extends IWebsiteFormFields> = Omit<
-  T,
-  'description' | 'tags'
-> & {
-  description?: string;
-  tags?: string[];
-};
+export type PostFields<T extends IWebsiteFormFields = IWebsiteFormFields> =
+  Omit<T, 'description' | 'tags'> & {
+    description?: string;
+    tags?: string[];
+  };
 
 /**
  * The data associated with a post request.
@@ -17,7 +15,7 @@ export type PostFields<T extends IWebsiteFormFields> = Omit<
  * @property {PostFields<T>} options - The submission options.
  * @property {S} submission - The submission data.
  */
-export type PostData<S extends ISubmission, T extends IWebsiteFormFields> = {
+export type PostData<T extends IWebsiteFormFields = IWebsiteFormFields> = {
   /**
    * The submission options.
    * @type {T}
@@ -27,5 +25,5 @@ export type PostData<S extends ISubmission, T extends IWebsiteFormFields> = {
    * The submission data.
    * @type {S}
    */
-  submission: S;
+  submission: ISubmission;
 };

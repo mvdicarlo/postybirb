@@ -1,14 +1,11 @@
 import {
   DescriptionType,
-  FileSubmission,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
-  IWebsiteFormFields,
-  MessageSubmission,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SimpleValidationResult
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -70,7 +67,7 @@ export default class Discord
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, IWebsiteFormFields>,
+    postData: PostData,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
@@ -79,7 +76,7 @@ export default class Discord
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, DiscordFileSubmission>,
+    postData: PostData,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -88,14 +85,14 @@ export default class Discord
   }
 
   onPostMessageSubmission(
-    postData: PostData<MessageSubmission, DiscordMessageSubmission>,
+    postData: PostData<DiscordMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, DiscordMessageSubmission>,
+    postData: PostData<DiscordMessageSubmission>,
   ): Promise<SimpleValidationResult<DiscordMessageSubmission>> {
     const result: SimpleValidationResult<DiscordMessageSubmission> = {
       warnings: [],

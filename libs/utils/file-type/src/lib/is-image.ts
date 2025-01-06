@@ -64,11 +64,14 @@ const SUPPORTED_MIME: string[] = [
   'image/x-xwindowdump',
 ];
 
-export function isImage(filenameOrExtension: string): boolean {
-  const mimeType = getMimeTypeForFile(filenameOrExtension);
-  return SUPPORTED_MIME.includes(mimeType ?? '');
-}
-
 export function supportsImage(mimeType: string): boolean {
   return SUPPORTED_MIME.includes(mimeType);
+}
+
+export function isImage(filenameOrExtension: string): boolean {
+  const mimeType = getMimeTypeForFile(filenameOrExtension);
+  return (
+    SUPPORTED_MIME.includes(mimeType ?? '') ||
+    supportsImage(filenameOrExtension)
+  );
 }

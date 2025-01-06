@@ -1,5 +1,4 @@
 import {
-  FileSubmission,
   ImageResizeProps,
   ISubmissionFile,
   IWebsiteFormFields,
@@ -21,7 +20,9 @@ export type ImplementedFileWebsite = FileWebsite<IWebsiteFormFields> &
  * Generally this will always be used by each supported website.
  * @interface FileWebsite
  */
-export interface FileWebsite<T extends IWebsiteFormFields> {
+export interface FileWebsite<
+  T extends IWebsiteFormFields = IWebsiteFormFields,
+> {
   createFileModel(): T;
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined;
@@ -29,21 +30,21 @@ export interface FileWebsite<T extends IWebsiteFormFields> {
   /**
    * Handles the submission of a file to the website.
    *
-   * @param {PostData<FileSubmission, T>} postData
+   * @param {PostData<T>} postData
    * @param {PostingFile[]} files - The files to post
    * @param {number} batchIndex - The index of the batch (if batching is required)
    * @param {CancellableToken} cancellationToken
    * @return {*}  {Promise<PostResponse>}
    */
   onPostFileSubmission(
-    postData: PostData<FileSubmission, T>,
+    postData: PostData<T>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse>;
 
   onValidateFileSubmission(
-    postData: PostData<FileSubmission, T>,
+    postData: PostData<T>,
   ): Promise<SimpleValidationResult>;
 }
 
