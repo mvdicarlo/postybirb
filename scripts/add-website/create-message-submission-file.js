@@ -1,5 +1,6 @@
-const fs = require('fs/promises');
+const fs = require('fs');
 const hbs = require('hbs');
+const path = require('path');
 
 const template = hbs.compile(
   fs.readFileSync(
@@ -9,6 +10,7 @@ const template = hbs.compile(
 );
 
 function create(data, folder) {
+  const { website } = data;
   const fileName = `${website}-file-submission.ts`;
   const filePath = path.join(folder, fileName);
   console.log('Creating file:', filePath);

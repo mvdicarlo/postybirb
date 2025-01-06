@@ -1,11 +1,13 @@
 const fs = require('fs');
 const hbs = require('hbs');
+const path = require('path');
 
 const template = hbs.compile(
   fs.readFileSync(path.join(__dirname, 'templates/account-data.hbs'), 'utf8'),
 );
 
 function create(data, folder) {
+  const { website } = data;
   const fileName = `${website}-account-data.ts`;
   const filePath = path.join(folder, fileName);
   console.log('Creating file:', filePath);

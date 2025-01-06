@@ -6,7 +6,7 @@ const createFileSubmissionFile = require('./create-file-submission-file');
 const createMessageSubmissionFile = require('./create-message-submission-file');
 
 function createWebsite(data, baseAppPath) {
-  let { website, pascalWebsiteName } = data;
+  let { website, pascalWebsiteName, hasFile, hasMessage } = data;
   const websiteFolder = path.join(baseAppPath, website);
   const websiteModelsFolder = path.join(baseAppPath, website, 'models');
 
@@ -16,10 +16,10 @@ function createWebsite(data, baseAppPath) {
     const websiteFileName = createWebsiteFile(data, websiteFolder);
     createAccountDataFile(data, websiteModelsFolder);
 
-    if (messageSubmissionFileContent) {
+    if (hasMessage) {
       createMessageSubmissionFile(data, websiteModelsFolder);
     }
-    if (fileSubmissionFileContent) {
+    if (hasFile) {
       createFileSubmissionFile(data, websiteModelsFolder);
     }
     console.log('File(s) created successfully!');
