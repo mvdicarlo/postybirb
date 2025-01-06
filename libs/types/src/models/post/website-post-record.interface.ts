@@ -1,5 +1,6 @@
 import { IAccount } from '../account/account.interface';
 import { EntityId, IEntity } from '../database/entity.interface';
+import { PostData } from '../website/post-data.type';
 import { IPostRecord } from './post-record.interface';
 
 /**
@@ -37,6 +38,12 @@ export interface IWebsitePostRecord extends IEntity {
    * @type {IWebsiteError[]}
    */
   errors?: IWebsiteError[];
+
+  /**
+   * The post data that was attempted to be posted with.
+   * @type {PostData}
+   */
+  postData?: PostData;
 }
 
 /**

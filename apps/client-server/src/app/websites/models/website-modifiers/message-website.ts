@@ -1,6 +1,5 @@
 import {
   IWebsiteFormFields,
-  MessageSubmission,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -16,18 +15,20 @@ export const MessageWebsiteKey = 'MessageModel';
  * Defines methods for allowing message (notification, journal, blob, etc.) based posting.
  * @interface MessageWebsite
  */
-export interface MessageWebsite<T extends IWebsiteFormFields> {
+export interface MessageWebsite<
+  T extends IWebsiteFormFields = IWebsiteFormFields,
+> {
   MessageModel: Class<T>;
 
   createMessageModel(): T;
 
   onPostMessageSubmission(
-    postData: PostData<MessageSubmission, T>,
+    postData: PostData<T>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse>;
 
   onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, T>,
+    postData: PostData<T>,
   ): Promise<SimpleValidationResult>;
 }
 

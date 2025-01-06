@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { EntityDTO, Loaded, wrap } from '@mikro-orm/core';
+import { EntityDTO, Loaded } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
@@ -9,7 +9,6 @@ import {
   FileSubmission,
   FileType,
   ImageResizeProps,
-  IPostRecord,
   ISubmission,
   ISubmissionFile,
   IWebsiteFormFields,
@@ -36,7 +35,7 @@ import {
   isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
-import { Website } from '../../../websites/website';
+import { UnknownWebsite, Website } from '../../../websites/website';
 import { WebsiteRegistryService } from '../../../websites/website-registry.service';
 import { CancellableToken } from '../../models/cancellable-token';
 import { PostingFile } from '../../models/posting-file';
@@ -177,7 +176,6 @@ export class PostManagerService {
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
   ) {
-    // TODO - Need to consider cancellation scenarios - i.e. if the submission is deleted, or an update occurs
     if (!instance.getLoginState().isLoggedIn) {
       throw new Error('Not logged in');
     }
@@ -191,12 +189,13 @@ export class PostManagerService {
         );
       }
       const data = await this.preparePostData(
-        submission as unknown as ISubmission,
+        submission,
         instance,
         submission.options.find(
           (o) => o.account.id === websitePostRecord.account.id,
-        ) as unknown as IWebsiteOptions,
+        ) as IWebsiteOptions,
       );
+      websitePostRecord.postData = data; // Set for later saving
       const validationResult =
         await this.validationService.validateSubmission(submission);
       if (validationResult.some((v) => v.errors.length > 0)) {
@@ -221,25 +220,25 @@ export class PostManagerService {
   private async attemptToPost(
     submission: ISubmission,
     websitePostRecord: IWebsitePostRecord,
-    instance: Website<unknown>,
-    data: PostData<ISubmission, IWebsiteFormFields>,
+    instance: UnknownWebsite,
+    data: PostData,
   ) {
     this.cancelToken.throwIfCancelled();
     switch (submission.type) {
       case SubmissionType.FILE:
         await this.handleFileSubmission(
           websitePostRecord,
-          submission as unknown as FileSubmission,
+          submission as FileSubmission,
           instance,
-          data as unknown as PostData<FileSubmission, never>,
+          data,
         );
         break;
       case SubmissionType.MESSAGE:
         await this.handleMessageSubmission(
           websitePostRecord,
-          submission as unknown as MessageSubmission,
+          submission as MessageSubmission,
           instance,
-          data as unknown as PostData<MessageSubmission, never>,
+          data,
         );
         break;
       default:
@@ -305,17 +304,17 @@ export class PostManagerService {
    * @param {IWebsitePostRecord} websitePostRecord
    * @param {MessageSubmission} submission
    * @param {Website<unknown>} instance
-   * @param {PostData<MessageSubmission, never>} data
+   * @param {PostData} data
    */
   private async handleMessageSubmission(
     websitePostRecord: IWebsitePostRecord,
     submission: MessageSubmission,
-    instance: Website<unknown>,
-    data: PostData<MessageSubmission, never>,
+    instance: UnknownWebsite,
+    data: PostData,
   ): Promise<void> {
     this.logger.info(`Posting message to ${instance.id}`);
     const result = await (
-      instance as unknown as MessageWebsite<never>
+      instance as unknown as MessageWebsite
     ).onPostMessageSubmission(data, this.cancelToken);
     if (result.exception) {
       await this.handleFailureResult(websitePostRecord, result);
@@ -329,13 +328,13 @@ export class PostManagerService {
    * @param {IWebsitePostRecord} websitePostRecord
    * @param {FileSubmission} submission
    * @param {Website<unknown>} instance
-   * @param {PostData<FileSubmission, never>} data
+   * @param {PostData} data
    */
   private async handleFileSubmission(
     websitePostRecord: IWebsitePostRecord,
     submission: FileSubmission,
-    instance: Website<unknown>,
-    data: PostData<FileSubmission, never>,
+    instance: UnknownWebsite,
+    data: PostData,
   ): Promise<void> {
     if (!isFileWebsite(instance)) {
       throw new Error(
@@ -350,7 +349,7 @@ export class PostManagerService {
     const orderedFiles: ISubmissionFile[] = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
-      .getItems()
+      .toArray() // https://mikro-orm.io/docs/5.9/collections (should protect modification from updating entities)
       .filter(
         // Filter out files that have been marked by the user as ignored for this website.
         (f) => !metadata[f.id]?.ignoredWebsites?.includes(instance.accountId),
@@ -359,8 +358,7 @@ export class PostManagerService {
         // Only post files that haven't been posted
         // Ensures CONTINUED posts don't post files that have already been posted.
         (f) => websitePostRecord.metadata.postedFiles.indexOf(f.id) === -1,
-      )
-      .map((f) => wrap(f).toObject());
+      );
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
       if (file) {
@@ -389,6 +387,11 @@ export class PostManagerService {
         ),
       );
 
+      // Verify files are supported by the website after all processing
+      // and potential conversions are completed.
+      // This could also be due to poorly thought out defined website options causing conflicts.
+      this.verifyPostingFiles(instance, processedFiles);
+
       // Post
       this.cancelToken.throwIfCancelled();
       this.logger.info(`Posting file batch to ${instance.id}`);
@@ -409,6 +412,22 @@ export class PostManagerService {
     }
   }
 
+  private verifyPostingFiles(
+    websiteInstance: UnknownWebsite,
+    postingFiles: PostingFile[],
+  ): void {
+    const acceptedMimeTypes =
+      websiteInstance.decoratedProps.fileOptions.acceptedMimeTypes ?? [];
+    if (acceptedMimeTypes.length === 0) return;
+    postingFiles.forEach((f) => {
+      if (!acceptedMimeTypes.includes(f.mimeType)) {
+        throw new Error(
+          `Website '${websiteInstance.decoratedProps.metadata.displayName}' does not support the file type ${f.mimeType} and attempts convert it did not resolve the issue`,
+        );
+      }
+    });
+  }
+
   private async resizeOrModifyFile(
     file: ISubmissionFile,
     submission: FileSubmission,
@@ -421,7 +440,10 @@ export class PostManagerService {
     const fileType = getFileType(file.mimeType);
     if (fileType === FileType.IMAGE) {
       if (
-        this.fileConverterService.canConvert(file.mimeType, allowedMimeTypes)
+        await this.fileConverterService.canConvert(
+          file.mimeType,
+          allowedMimeTypes,
+        )
       ) {
         file.file = await this.fileConverterService.convert(
           file.file,
@@ -435,7 +457,7 @@ export class PostManagerService {
         // NOTE: Currently the only place dimensions are set are in 'default'.
         // eslint-disable-next-line @typescript-eslint/dot-notation
         fileMetadata?.dimensions['default'] ??
-        fileMetadata?.dimensions[instance.accountId]; // TODO - actually have this be a thing to use
+        fileMetadata?.dimensions[instance.accountId];
       if (userDefinedDimensions) {
         if (userDefinedDimensions.width && userDefinedDimensions.height) {
           resizeParams = resizeParams ?? {};
@@ -452,6 +474,9 @@ export class PostManagerService {
         }
       }
 
+      // We pass to resize even if no resize parameters are set
+      // as it handles the bundling to PostingFile.
+      // Not exactly clean, but this can be refactored later.
       return this.resizerService.resize({
         file,
         resize: resizeParams,
@@ -531,7 +556,7 @@ export class PostManagerService {
   ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
     const websitePairs = entity.children
       .toArray()
-      .filter((c) => !!c.completedAt) // Only post to those that haven't been completed
+      .filter((c) => !c.completedAt) // Only post to those that haven't been completed
       .map((c) => ({
         record: c,
         instance: this.websiteRegistry.findInstance(c.account),
@@ -573,7 +598,7 @@ export class PostManagerService {
     uncreatedOptions.forEach((w) =>
       entity.children.add(
         this.websitePostRecordRepository.create({
-          parent: entity as unknown as IPostRecord,
+          parent: entity,
           account: w.account,
         }),
       ),
@@ -618,13 +643,13 @@ export class PostManagerService {
    * @param {Submission} submission
    * @param {Website<unknown>} instance
    * @param {WebsiteOptions<never>} websiteOptions
-   * @return {*}  {PostData<Submission, never>}
+   * @return {*}  {PostData}
    */
   private preparePostData(
     submission: ISubmission,
     instance: Website<unknown>,
     websiteOptions: IWebsiteOptions,
-  ): Promise<PostData<ISubmission, IWebsiteFormFields>> {
+  ): Promise<PostData> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }
 }

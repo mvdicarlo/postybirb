@@ -2,6 +2,7 @@ import {
   FileMetadataFields,
   FileType,
   IFileBuffer,
+  IFileDimensions,
   SubmissionFileId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -10,7 +11,7 @@ import { parse } from 'path';
 export type ThumbnailOptions = {
   buffer: Buffer;
   fileName: string;
-};
+} & Omit<IFileDimensions, 'size'>;
 
 export class PostingFile {
   public readonly id: SubmissionFileId;
@@ -22,6 +23,10 @@ export class PostingFile {
   public readonly fileType: FileType;
 
   public readonly fileName: string;
+
+  public readonly width: number;
+
+  public readonly height: number;
 
   public metadata: FileMetadataFields;
 
@@ -35,6 +40,8 @@ export class PostingFile {
     this.id = id;
     this.buffer = file.buffer;
     this.mimeType = file.mimeType;
+    this.width = file.width;
+    this.height = file.height;
     this.fileType = getFileType(file.fileName);
     this.fileName = this.normalizeFileName(file);
     this.thumbnail = thumbnail;

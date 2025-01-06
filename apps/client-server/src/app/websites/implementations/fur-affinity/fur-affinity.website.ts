@@ -1,14 +1,12 @@
 import { Http } from '@postybirb/http';
 import {
   DescriptionType,
-  FileSubmission,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
-  MessageSubmission,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SimpleValidationResult
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { Class } from 'type-fest';
@@ -86,7 +84,7 @@ export default class FurAffinity
   }
 
   onPostFileSubmission(
-    postData: PostData<FileSubmission, FurAffinityFileSubmission>,
+    postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
@@ -95,7 +93,7 @@ export default class FurAffinity
   }
 
   async onValidateFileSubmission(
-    postData: PostData<FileSubmission, FurAffinityFileSubmission>,
+    postData: PostData<FurAffinityFileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
@@ -108,14 +106,14 @@ export default class FurAffinity
   }
 
   onPostMessageSubmission(
-    postData: PostData<FileSubmission, FurAffinityMessageSubmission>,
+    postData: PostData<FurAffinityMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     throw new Error('Method not implemented.');
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<MessageSubmission, FurAffinityMessageSubmission>,
+    postData: PostData<FurAffinityMessageSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],

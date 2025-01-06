@@ -40,11 +40,14 @@ const SUPPORTED_MIME: string[] = [
   'audio/3gpp2',
 ];
 
-export function isAudio(filenameOrExtension: string): boolean {
-  const mimeType = getMimeTypeForFile(filenameOrExtension);
-  return SUPPORTED_MIME.includes(mimeType ?? '');
-}
-
 export function supportsAudio(mimeType: string): boolean {
   return SUPPORTED_MIME.includes(mimeType);
+}
+
+export function isAudio(filenameOrExtension: string): boolean {
+  const mimeType = getMimeTypeForFile(filenameOrExtension);
+  return (
+    SUPPORTED_MIME.includes(mimeType ?? '') ||
+    supportsAudio(filenameOrExtension)
+  );
 }

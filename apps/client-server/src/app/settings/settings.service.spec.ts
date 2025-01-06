@@ -45,6 +45,7 @@ describe('SettingsService', () => {
       hiddenWebsites: ['test'],
       language: 'en',
       allowAd: true,
+      queuePaused: false,
     };
     await service.update(record.id, updateDto);
     const updatedRec = await service.findById(record.id);
