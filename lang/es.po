@@ -1,5 +1,15 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2024-11-30 20:05+0000\nLast-Translator: gallegonovato <fran-carro@hotmail.es>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.9-dev\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:89
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -26,10 +36,6 @@ msgstr "Añadir observador de carpeta"
 msgid "Allow PostyBirb to insert an Ad into the description"
 msgstr "Permitir a PostyBirb insertar un anuncio en la descripción"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:15
-msgid "Allow resizing image"
-msgstr "Permitir cambiar el tamaño de la imagen"
-
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:166
 msgid "Alt Text"
 msgstr "Texto alternativo"
@@ -44,7 +50,7 @@ msgstr "Puerto del Servidor de la Aplicación"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:290
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:51
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:283
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:285
 msgid "Apply"
 msgstr "Aplicar"
 
@@ -79,7 +85,7 @@ msgstr "Importadores automáticos (al cambiar de carpeta)"
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:260
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:43
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:280
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:282
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
 msgstr "Cancelar"
@@ -105,9 +111,13 @@ msgstr "Elegir páginas web"
 msgid "Clear"
 msgstr "Limpiar"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:13
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:13
 msgid "Content warning"
 msgstr "Advertencia de contenido"
+
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:109
+msgid "Converted:"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copied"
@@ -181,7 +191,7 @@ msgstr "Guardados por Defecto"
 msgid "Delete"
 msgstr "Borrar"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:8
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:8
 msgid "Description"
 msgstr "Descripción"
 
@@ -205,7 +215,7 @@ msgstr "No publicar en"
 msgid "Drag files here or click to select files"
 msgstr "Arrastre los archivos aquí o haga clic para seleccionar los archivos"
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:109
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:110
 msgid "Drag or use arrow keys to change order."
 msgstr "Arrastra o utiliza las teclas de flecha para cambiar el orden."
 
@@ -281,7 +291,7 @@ msgstr "No se pudo validar el envío: {message}"
 msgid "Fallback Text"
 msgstr "Texto alternativo"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:14
 msgid "Feature"
 msgstr "Característica"
 
@@ -344,7 +354,7 @@ msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr "Cómo crear un webhook"
 
-#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:62
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:102
 msgctxt "override-default"
 msgid "Ignore default tags"
 msgstr "Ignorar etiquetas predeterminadas"
@@ -407,7 +417,7 @@ msgstr "Usuario"
 msgid "Navigation"
 msgstr "Navegar"
 
-#: apps/postybirb-ui/src/components/translations/shared-messages.tsx:4
+#: apps/postybirb-ui/src/components/translations/component-translations.tsx:4
 msgid "No items"
 msgstr "Sin artículos"
 
@@ -439,7 +449,7 @@ msgctxt "internalSchedule.single"
 msgid "Once"
 msgstr "Una vez"
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:273
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
 msgid "Only set scheduled date"
 msgstr "Solo establecer fecha programada"
 
@@ -485,7 +495,7 @@ msgstr "Post seleccionado"
 msgid "Primary"
 msgstr "Primario"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:11
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:11
 msgid "Rating"
 msgstr "Valoración"
 
@@ -580,7 +590,7 @@ msgstr "Tamaño"
 msgid "Spanish"
 msgstr "Español"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:12
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:12
 msgid "Species"
 msgstr "Especies"
 
@@ -649,7 +659,7 @@ msgstr "Se alcanzó el límite de etiquetas ({currentLength} / {maxLength})"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:9
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:9
 msgid "Tags"
 msgstr "Etiquetas"
 
@@ -703,7 +713,7 @@ msgstr "Esto borrará todos los datos asociados a esta cuenta. Deberá iniciar s
 msgid "Thumbnail"
 msgstr "Miniatura"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:10
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:10
 msgid "Title"
 msgstr "Título"
 
@@ -785,10 +795,6 @@ msgstr "Cargar nueva miniatura"
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
 msgstr "Utilizar una descripción personalizada"
-
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:14
-msgid "Use thumbnail"
-msgstr "Usar miniaturas"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:69
 msgid "Video"

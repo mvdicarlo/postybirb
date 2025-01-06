@@ -38,10 +38,6 @@ msgstr ""
 msgid "Allow PostyBirb to insert an Ad into the description"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:15
-msgid "Allow resizing image"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:166
 msgid "Alt Text"
 msgstr ""
@@ -56,7 +52,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:290
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:51
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:283
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:285
 msgid "Apply"
 msgstr ""
 
@@ -91,7 +87,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:260
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:43
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:280
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:282
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
 msgstr ""
@@ -117,8 +113,12 @@ msgstr ""
 msgid "Clear"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:13
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:13
 msgid "Content warning"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:109
+msgid "Converted:"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
@@ -193,7 +193,7 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:8
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:8
 msgid "Description"
 msgstr ""
 
@@ -217,7 +217,7 @@ msgstr ""
 msgid "Drag files here or click to select files"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:109
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:110
 msgid "Drag or use arrow keys to change order."
 msgstr ""
 
@@ -293,7 +293,7 @@ msgstr ""
 msgid "Fallback Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:14
 msgid "Feature"
 msgstr ""
 
@@ -356,7 +356,7 @@ msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:62
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:102
 msgctxt "override-default"
 msgid "Ignore default tags"
 msgstr ""
@@ -419,7 +419,7 @@ msgstr ""
 msgid "Navigation"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/shared-messages.tsx:4
+#: apps/postybirb-ui/src/components/translations/component-translations.tsx:4
 msgid "No items"
 msgstr ""
 
@@ -451,7 +451,7 @@ msgctxt "internalSchedule.single"
 msgid "Once"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:273
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
 msgid "Only set scheduled date"
 msgstr ""
 
@@ -497,7 +497,7 @@ msgstr ""
 msgid "Primary"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:11
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:11
 msgid "Rating"
 msgstr ""
 
@@ -592,7 +592,7 @@ msgstr ""
 msgid "Spanish"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:12
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:12
 msgid "Species"
 msgstr ""
 
@@ -661,7 +661,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:9
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:9
 msgid "Tags"
 msgstr ""
 
@@ -715,7 +715,7 @@ msgstr ""
 msgid "Thumbnail"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:10
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:10
 msgid "Title"
 msgstr ""
 
@@ -796,10 +796,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:14
-msgid "Use thumbnail"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:69

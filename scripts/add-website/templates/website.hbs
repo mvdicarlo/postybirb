@@ -78,7 +78,32 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    throw new Error('Method not implemented.');
+    cancellationToken.throwIfCancelled();
+    const formData = {
+      file: files[0].toPostFormat(),
+      thumb: files[0].thumbnailToPostFormat(),
+      description: postData.options.description,
+      tags: postData.options.tags.join(', '),
+      title: postData.options.title,
+      rating: postData.options.rating,
+    };
+
+    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
+      partition: this.accountId,
+      data: formData,
+      type: 'multipart',
+    });
+
+    if (result.statusCode === 200) {
+      return { additionalInfo: null };
+    }
+    return {
+      additionalInfo: {
+        body: result.body,
+        statusCode: result.statusCode,
+      },
+      exception: new Error('Failed to post'),
+    };
   }
 
   async onValidateFileSubmission(
@@ -100,7 +125,30 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     postData: PostData<MessageSubmission, {{pascalWebsiteName}}MessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    throw new Error('Method not implemented.');
+    cancellationToken.throwIfCancelled();
+    const formData = {
+      description: postData.options.description,
+      tags: postData.options.tags.join(', '),
+      title: postData.options.title,
+      rating: postData.options.rating,
+    };
+
+    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
+      partition: this.accountId,
+      data: formData,
+      type: 'multipart',
+    });
+
+    if (result.statusCode === 200) {
+      return { additionalInfo: null };
+    }
+    return {
+      additionalInfo: {
+        body: result.body,
+        statusCode: result.statusCode,
+      },
+      exception: new Error('Failed to post'),
+    };
   }
 
   async onValidateMessageSubmission(

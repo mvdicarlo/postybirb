@@ -36,10 +36,6 @@ msgstr "Добавить мониторинг папки"
 msgid "Allow PostyBirb to insert an Ad into the description"
 msgstr "Вставлять рекламу PostyBirb в описания постов"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:15
-msgid "Allow resizing image"
-msgstr "Масштабировать изображения"
-
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:166
 msgid "Alt Text"
 msgstr "Alt текст"
@@ -54,7 +50,7 @@ msgstr "Порт сервера"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:290
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:51
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:283
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:285
 msgid "Apply"
 msgstr "Применить"
 
@@ -89,7 +85,7 @@ msgstr "Авто-импортеры (При изменении папки)"
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:260
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:43
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:280
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:282
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
 msgstr "Отмена"
@@ -115,9 +111,13 @@ msgstr "Выберите сайты"
 msgid "Clear"
 msgstr "Очистить"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:13
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:13
 msgid "Content warning"
 msgstr "Предупреждение (CW)"
+
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:109
+msgid "Converted:"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copied"
@@ -191,7 +191,7 @@ msgstr "Опции по умолчанию сохранены"
 msgid "Delete"
 msgstr "Удалить"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:8
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:8
 msgid "Description"
 msgstr "Описание"
 
@@ -215,7 +215,7 @@ msgstr "Не публиковать в"
 msgid "Drag files here or click to select files"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:109
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:110
 msgid "Drag or use arrow keys to change order."
 msgstr "Перетащите или используйте стрелки для изменения порядка."
 
@@ -291,7 +291,7 @@ msgstr ""
 msgid "Fallback Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:14
 msgid "Feature"
 msgstr ""
 
@@ -354,7 +354,7 @@ msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr "Как создать webhook"
 
-#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:62
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:102
 msgctxt "override-default"
 msgid "Ignore default tags"
 msgstr "Игнорировать теги по умолчанию"
@@ -417,7 +417,7 @@ msgstr "Имя"
 msgid "Navigation"
 msgstr "Навигация"
 
-#: apps/postybirb-ui/src/components/translations/shared-messages.tsx:4
+#: apps/postybirb-ui/src/components/translations/component-translations.tsx:4
 msgid "No items"
 msgstr "Нечего отобразить"
 
@@ -449,7 +449,7 @@ msgctxt "internalSchedule.single"
 msgid "Once"
 msgstr "Один раз"
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:273
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
 msgid "Only set scheduled date"
 msgstr "Только установленная дата"
 
@@ -495,7 +495,7 @@ msgstr ""
 msgid "Primary"
 msgstr "Основные значения"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:11
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:11
 msgid "Rating"
 msgstr "Рейтинг"
 
@@ -590,7 +590,7 @@ msgstr "Размер"
 msgid "Spanish"
 msgstr "Испанский"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:12
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:12
 msgid "Species"
 msgstr "Виды"
 
@@ -659,7 +659,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:9
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:9
 msgid "Tags"
 msgstr "Теги"
 
@@ -713,7 +713,7 @@ msgstr ""
 msgid "Thumbnail"
 msgstr "Набросок (Маленькая картинка)"
 
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:10
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:10
 msgid "Title"
 msgstr "Название"
 
@@ -795,10 +795,6 @@ msgstr "Загрузить новую миниатюру"
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
 msgstr "Кастомное описание"
-
-#: apps/postybirb-ui/src/components/form/fields/field-translations.ts:14
-msgid "Use thumbnail"
-msgstr "Использовать миниатюру"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:69
 msgid "Video"
