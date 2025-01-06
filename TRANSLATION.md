@@ -1,4 +1,5 @@
 # Translation guide
+
 ## How to contribute to translation
 
 Go to [PostyBirb site](https://hosted.weblate.org/projects/postybirb/postybirb/), create account and suggest translation!

@@ -135,12 +135,14 @@ export class PostFileResizerService {
       instance = instance.jpeg({ quality: 99 });
     }
 
+  ({ width, height } = await instance.metadata());
     const { name } = parse(thumb.fileName);
     return {
       buffer: await instance.toBuffer(),
       fileName: `${name}${extension}`,
-      width: metadata.width,
-      height: metadata.height,
+      mimeType: thumb.mimeType,
+      height,
+      width
     };
   }
 

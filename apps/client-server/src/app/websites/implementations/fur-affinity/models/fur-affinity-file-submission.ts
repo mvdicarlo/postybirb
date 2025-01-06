@@ -1,9 +1,8 @@
 import {
-  BooleanField,
   DescriptionField,
   RatingField,
   TagField,
-  TextField,
+  TextField
 } from '@postybirb/form-builder';
 import {
   DescriptionValue,
@@ -13,12 +12,6 @@ import {
 } from '@postybirb/types';
 
 export class FurAffinityFileSubmission implements IWebsiteFormFields {
-  @BooleanField({ label: 'useThumbnail', defaultValue: true })
-  useThumbnail = true;
-
-  @BooleanField({ label: 'allowResize', defaultValue: true })
-  allowResize = true;
-
   @TextField({ label: 'title', required: true, row: 0, col: 1 })
   title: string;
 

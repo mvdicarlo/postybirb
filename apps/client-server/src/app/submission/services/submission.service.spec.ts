@@ -3,13 +3,13 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-  DefaultDescriptionValue,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionRating,
-  SubmissionType,
-  WebsiteOptionsDto,
+    DefaultDescriptionValue,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    ScheduleType,
+    SubmissionRating,
+    SubmissionType,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -27,7 +27,7 @@ import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
-import { WebsiteImplProvider } from '../../websites/implementations';
+import { WebsiteImplProvider } from '../../websites/implementations/provider';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { WebsitesModule } from '../../websites/websites.module';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';

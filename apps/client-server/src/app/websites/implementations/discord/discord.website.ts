@@ -7,7 +7,6 @@ import {
   PostResponse,
   SimpleValidationResult
 } from '@postybirb/types';
-import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -39,10 +38,6 @@ export default class Discord
     FileWebsite<DiscordFileSubmission>,
     MessageWebsite<DiscordMessageSubmission>
 {
-  FileModel: Class<DiscordFileSubmission> = DiscordFileSubmission;
-
-  MessageModel: Class<DiscordMessageSubmission> = DiscordMessageSubmission;
-
   protected BASE_URL: string;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<DiscordAccountData> =
@@ -60,11 +55,11 @@ export default class Discord
   }
 
   createMessageModel(): DiscordMessageSubmission {
-    return new this.MessageModel();
+    return new DiscordMessageSubmission();
   }
 
   createFileModel(): DiscordFileSubmission {
-    return new this.FileModel();
+    return new DiscordFileSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {

@@ -4,7 +4,7 @@ import { NullAccount } from '@postybirb/types';
 import { DatabaseModule } from '../database/database.module';
 import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { WebsiteImplProvider } from './implementations';
+import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
 
 describe('WebsiteDataManager', () => {

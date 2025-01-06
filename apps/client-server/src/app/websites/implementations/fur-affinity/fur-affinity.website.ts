@@ -9,7 +9,6 @@ import {
   SimpleValidationResult
 } from '@postybirb/types';
 import { load } from 'cheerio';
-import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -46,11 +45,6 @@ export default class FurAffinity
     MessageWebsite<FurAffinityMessageSubmission>,
     WithCustomDescriptionParser
 {
-  FileModel: Class<FurAffinityFileSubmission> = FurAffinityFileSubmission;
-
-  MessageModel: Class<FurAffinityMessageSubmission> =
-    FurAffinityMessageSubmission;
-
   protected BASE_URL = 'https://furaffinity.net';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FurAffinityAccountData> =
@@ -59,24 +53,29 @@ export default class FurAffinity
     };
 
   public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(
-      `${this.BASE_URL}/controls/submissions`,
-      { partition: this.accountId },
-    );
-
-    if (res.body.includes('logout-link')) {
-      const $ = load(res.body);
-      return this.loginState.setLogin(
-        true,
-        $('.loggedin_user_avatar').attr('alt'),
+    try {
+      const res = await Http.get<string>(
+        `${this.BASE_URL}/controls/submissions`,
+        { partition: this.accountId },
       );
-    }
 
-    return this.loginState.setLogin(false, null);
+      if (res.body.includes('logout-link')) {
+        const $ = load(res.body);
+        return this.loginState.setLogin(
+          true,
+          $('.loggedin_user_avatar').attr('alt'),
+        );
+      }
+
+      return this.loginState.setLogin(false, null);
+    } catch (e) {
+      this.logger.error('Failed to login', e);
+      return this.loginState.setLogin(false, null);
+    }
   }
 
   createFileModel(): FurAffinityFileSubmission {
-    return new this.FileModel();
+    return new FurAffinityFileSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
@@ -102,7 +101,7 @@ export default class FurAffinity
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
-    return new this.MessageModel();
+    return new FurAffinityMessageSubmission();
   }
 
   onPostMessageSubmission(

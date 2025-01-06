@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { DefaultTagValue, TagValue } from '@postybirb/types';
 import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';

@@ -9,7 +9,6 @@ import {
   PostResponse,
   SimpleValidationResult
 } from '@postybirb/types';
-import { Class } from 'type-fest';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -41,10 +40,6 @@ export default class TestWebsite
     MessageWebsite<TestMessageSubmission>,
     OAuthWebsite
 {
-  FileModel: Class<TestFileSubmission> = TestFileSubmission;
-
-  MessageModel: Class<TestMessageSubmission> = TestMessageSubmission;
-
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
     test: true,
   };
@@ -61,11 +56,11 @@ export default class TestWebsite
   }
 
   createFileModel(): TestFileSubmission {
-    return new this.FileModel();
+    return new TestFileSubmission();
   }
 
   createMessageModel(): TestMessageSubmission {
-    return new this.MessageModel();
+    return new TestMessageSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {

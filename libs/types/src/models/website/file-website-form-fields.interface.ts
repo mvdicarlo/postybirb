@@ -2,21 +2,9 @@ import { IWebsiteFormFields } from '../submission/website-form-fields.interface'
 
 /**
  * File submission specific fields.
+ * Empty at the moment
  * @interface FileWebsiteFormFields
- * @extends {ISubmissionFields}
+ * @extends {IWebsiteFormFields}
  */
-export interface FileWebsiteFormFields extends IWebsiteFormFields {
-  /**
-   * Whether the thumbnail should be used.
-   * TODO determine if this makes sense anymore
-   * @type {boolean}
-   */
-  useThumbnail: boolean;
-
-  /**
-   * Whether to allow the file to be resized.
-   * TODO determine if this makes sense anymore
-   * @type {boolean}
-   */
-  allowResize: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface FileWebsiteFormFields extends IWebsiteFormFields {}

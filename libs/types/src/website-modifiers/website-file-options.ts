@@ -10,6 +10,8 @@ export type WebsiteFileOptions = {
   /**
    * The acceptable file size limits in Megabytes.
    * Only needed when using File posting websites.
+   * Supports FileType(FileType.IMAGE), MimeType (image/png), WildCard (image/*),
+   * and File Extension (e.g. '.txt')
    *
    * Example:
    *  {

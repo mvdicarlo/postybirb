@@ -11,7 +11,5 @@ export const FieldLabelTranslations: {
   rating: msg`Rating`,
   species: msg`Species`,
   contentWarning: msg`Content warning`,
-  useThumbnail: msg`Use thumbnail`,
-  allowResize: msg`Allow resizing image`,
   feature: msg`Feature`,
 };
