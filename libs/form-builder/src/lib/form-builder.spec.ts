@@ -22,6 +22,72 @@ describe('formBuilder', () => {
     });
   });
 
+  it('should extend classes', () => {
+    class BooleanType {
+      @BooleanField({ label: 'description', defaultValue: false })
+      public field: boolean;
+    }
+
+    class ExtendedType extends BooleanType {
+      @TextField({ label: 'description', defaultValue: 'Hello' })
+      public field2: string;
+    }
+
+    class ExtendedAndOverrideType extends ExtendedType {
+      @TextField({ label: 'title', defaultValue: 'Goodbye' })
+      public field2: string;
+    }
+
+    expect(formBuilder(new BooleanType(), {})).toEqual({
+      field: {
+        label: 'description',
+        defaultValue: false,
+        type: 'boolean',
+        formField: 'checkbox',
+        row: Number.MAX_SAFE_INTEGER,
+        col: 0,
+      },
+    });
+
+    expect(formBuilder(new ExtendedType(), {})).toEqual({
+      field: {
+        label: 'description',
+        defaultValue: false,
+        type: 'boolean',
+        formField: 'checkbox',
+        row: Number.MAX_SAFE_INTEGER,
+        col: 0,
+      },
+      field2: {
+        label: 'description',
+        defaultValue: 'Hello',
+        type: 'text',
+        formField: 'input',
+        row: Number.MAX_SAFE_INTEGER,
+        col: 0,
+      },
+    });
+
+    expect(formBuilder(new ExtendedAndOverrideType(), {})).toEqual({
+      field: {
+        label: 'description',
+        defaultValue: false,
+        type: 'boolean',
+        formField: 'checkbox',
+        row: Number.MAX_SAFE_INTEGER,
+        col: 0,
+      },
+      field2: {
+        label: 'title',
+        defaultValue: 'Goodbye',
+        type: 'text',
+        formField: 'input',
+        row: Number.MAX_SAFE_INTEGER,
+        col: 0,
+      },
+    });
+  });
+
   it('should build text types', () => {
     class TextType {
       @TextField({ label: 'description', defaultValue: 'Hello' })
