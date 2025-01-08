@@ -5,6 +5,10 @@ import { FieldAggregateType, FieldType } from '../types';
 import { FormBuilderMetadata } from '../types/form-builder-metadata';
 import { PrimitiveRecord } from '../types/primitive-record';
 
+export function getMetadataKey(name: string) {
+  return `__${METADATA_KEY}__${name}__`;
+}
+
 /**
  * Make keys V in type T partial
  */
@@ -92,8 +96,19 @@ export function createFieldDecorator<
         if (typeof propertyKey === 'symbol') return;
 
         const proto = target.constructor;
+        const chain = [];
+        let currentProto = proto;
+        while (currentProto && currentProto.name) {
+          chain.push(currentProto.name);
+          currentProto = Object.getPrototypeOf(currentProto);
+        }
+        const key = getMetadataKey(proto.name);
+        if (!target[key]) {
+          target[key] = Symbol(key);
+        }
+        const sym = target[key];
         const fields: FormBuilderMetadata =
-          Reflect.getMetadata(METADATA_KEY, proto) || {};
+          Reflect.getMetadata(sym, proto) || {};
 
         field.onCreate?.(
           fieldOptions as unknown as FieldType<FieldValue, TypeKey>,
@@ -101,9 +116,26 @@ export function createFieldDecorator<
           propertyKey,
         );
 
+        const chainedFields = chain
+          .reverse()
+          .filter((c) => c !== target.constructor.name)
+          .map((c) => Reflect.getMetadata(target[getMetadataKey(c)], proto));
+
+        for (const c of chainedFields) {
+          if (c) {
+            Object.entries(c).forEach(([fieldKey, value]) => {
+              if (value !== undefined) {
+                fields[fieldKey] = JSON.parse(
+                  JSON.stringify(value),
+                ) as unknown as FieldAggregateType;
+              }
+            });
+          }
+        }
+
         fields[propertyKey] = fieldOptions as unknown as FieldAggregateType;
 
-        Reflect.defineMetadata(METADATA_KEY, fields, proto);
+        Reflect.defineMetadata(sym, fields, proto);
       };
     }
 
