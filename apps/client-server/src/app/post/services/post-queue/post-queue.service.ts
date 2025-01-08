@@ -162,7 +162,6 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
   public async run() {
     if (!(this.initTime + 60_000 <= Date.now())) {
       // Only run after 1 minute to allow the application to start up.
-      this.logger.info('Waiting for queue grace period to end');
       return;
     }
 

@@ -1,5 +1,5 @@
 // eslint-typescript doesn't counts @link as a var use. We use it
-// to make jump-to defenitions and to simplify DX
+// to make jump-to definitions and to simplify DX
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { FieldTranslationId, FieldTranslations } from '@postybirb/types';
@@ -19,9 +19,11 @@ export type FieldType<
   defaultFrom?: keyof T;
 
   /**
-   * The default value when populated
+   * The default value when populated.
+   * This is also populated when the defaultFrom property is defined.
+   * Can also be read from the value of a field set in the object i.e. `field = 'value'`.
    */
-  defaultValue: V;
+  defaultValue?: V;
 
   /**
    * The field will be enabled when all listed props are defined.
@@ -67,4 +69,9 @@ export type FieldType<
    * The column in the grid.
    */
   col?: number;
+
+  /**
+   * Whether the field should be hidden.
+   */
+  hidden?: boolean;
 };

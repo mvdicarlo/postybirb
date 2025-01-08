@@ -25,7 +25,7 @@ import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
-import { DefaultWebsiteOptionsObject } from '../websites/models/default-website-options';
+import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
@@ -96,7 +96,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     };
 
     const mergedData = {
-      ...(isDefault ? DefaultWebsiteOptionsObject : {}), // Only merge default options if this is the default option
+      ...(isDefault ? new DefaultWebsiteOptions() : {}), // Only merge default options if this is the default option
       ...websiteData, // Merge default form fields
       ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
       ...data, // Merge user defined data
@@ -213,7 +213,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       )?.options ?? {};
     Object.assign(entity, {
       data: {
-        ...DefaultWebsiteOptionsObject,
+        ...new DefaultWebsiteOptions(),
         ...defaultOptions,
         title,
       },

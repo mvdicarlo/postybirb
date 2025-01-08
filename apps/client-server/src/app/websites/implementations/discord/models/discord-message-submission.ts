@@ -1,37 +1,10 @@
-import {
-  DescriptionField,
-  RatingField,
-  TextField,
-} from '@postybirb/form-builder';
-import {
-  DefaultDescriptionValue,
-  DescriptionValue,
-  IWebsiteFormFields,
-  SubmissionRating,
-} from '@postybirb/types';
+import { TagField } from '@postybirb/form-builder';
+import { TagValue } from '@postybirb/types';
+import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
-export class DiscordMessageSubmission implements IWebsiteFormFields {
-  @TextField({
-    label: 'title',
-    defaultValue: '',
-    row: 0,
-    col: 1,
+export class DiscordMessageSubmission extends BaseWebsiteOptions {
+  @TagField({
+    hidden: true,
   })
-  title: string;
-
-  @DescriptionField({
-    label: 'Description',
-    defaultValue: DefaultDescriptionValue(),
-    row: 3,
-    col: 1,
-  })
-  description: DescriptionValue;
-
-  @RatingField({
-    required: true,
-    row: 0,
-    col: 0,
-    layout: 'vertical',
-  })
-  rating: SubmissionRating;
+  tags: TagValue;
 }

@@ -1,21 +1,10 @@
-import {
-  DescriptionField,
-  RatingField,
-  TextField,
-} from '@postybirb/form-builder';
-import {
-  DescriptionValue,
-  IWebsiteFormFields,
-  SubmissionRating,
-} from '@postybirb/types';
+import { TagField } from '@postybirb/form-builder';
+import { TagValue } from '@postybirb/types';
+import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
-export class DiscordFileSubmission implements IWebsiteFormFields {
-  @TextField({ label: 'title', defaultValue: '' })
-  title?: string;
-
-  @DescriptionField({})
-  description: DescriptionValue;
-
-  @RatingField({})
-  rating: SubmissionRating;
+export class DiscordFileSubmission extends BaseWebsiteOptions {
+  @TagField({
+    hidden: true,
+  })
+  tags: TagValue;
 }

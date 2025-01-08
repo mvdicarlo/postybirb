@@ -1,14 +1,22 @@
 import 'reflect-metadata';
 import { FormBuilderMetadata } from './types/form-builder-metadata';
 import { PrimitiveRecord } from './types/primitive-record';
-import { getMetadataKey } from './utils/assign-metadata';
+import { getMetadataKey, getParentMetadataKeys } from './utils/assign-metadata';
 
 export function formBuilder(
   target: object,
   data: PrimitiveRecord,
 ): FormBuilderMetadata {
   const key = getMetadataKey(target.constructor.name);
-  const sym = target[key];
+  let sym = target[key];
+  if (!sym) {
+    // Handle case where a class extends another class with metadata, but provides no metadata itself
+    const parentKeys = getParentMetadataKeys(target);
+    for (const parentKey of parentKeys) {
+      sym = target[parentKey];
+      if (sym) break;
+    }
+  }
   if (!sym) throw new Error('No metadata symbol found');
   const metadata = JSON.parse(
     JSON.stringify(Reflect.getMetadata(sym, target.constructor)),

@@ -2,9 +2,11 @@ import { MikroORM } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
   NullAccount,
   SubmissionRating,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -155,10 +157,7 @@ describe('FormGeneratorService', () => {
       },
       description: {
         col: 1,
-        defaultValue: {
-          description: [],
-          overrideDefault: false,
-        },
+        defaultValue: DefaultDescriptionValue(),
         formField: 'description',
         label: 'description',
         row: 3,
@@ -166,6 +165,7 @@ describe('FormGeneratorService', () => {
       },
       rating: {
         col: 0,
+        defaultValue: 'GENERAL',
         formField: 'rating',
         label: 'rating',
         layout: 'vertical',
@@ -193,10 +193,7 @@ describe('FormGeneratorService', () => {
       },
       tags: {
         col: 1,
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
-        },
+        defaultValue: DefaultTagValue(),
         formField: 'tag',
         label: 'tags',
         row: 1,
@@ -225,10 +222,7 @@ describe('FormGeneratorService', () => {
       },
       description: {
         col: 1,
-        defaultValue: {
-          description: [],
-          overrideDefault: false,
-        },
+        defaultValue: DefaultDescriptionValue(),
         formField: 'description',
         label: 'description',
         row: 3,
@@ -236,6 +230,7 @@ describe('FormGeneratorService', () => {
       },
       rating: {
         col: 0,
+        defaultValue: 'GENERAL',
         formField: 'rating',
         label: 'rating',
         layout: 'vertical',
@@ -263,10 +258,7 @@ describe('FormGeneratorService', () => {
       },
       tags: {
         col: 1,
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
-        },
+        defaultValue: DefaultTagValue(),
         formField: 'tag',
         label: 'tags',
         row: 1,

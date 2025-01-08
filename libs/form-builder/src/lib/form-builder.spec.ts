@@ -6,8 +6,8 @@ import { formBuilder } from './form-builder';
 describe('formBuilder', () => {
   it('should build boolean types', () => {
     class BooleanType {
-      @BooleanField({ label: 'description', defaultValue: false })
-      public field: boolean;
+      @BooleanField({ label: 'description' })
+      public field = false;
     }
 
     expect(formBuilder(new BooleanType(), {})).toEqual({
@@ -24,18 +24,18 @@ describe('formBuilder', () => {
 
   it('should extend classes', () => {
     class BooleanType {
-      @BooleanField({ label: 'description', defaultValue: false })
-      public field: boolean;
+      @BooleanField({ label: 'description' })
+      public field = false;
     }
 
     class ExtendedType extends BooleanType {
-      @TextField({ label: 'description', defaultValue: 'Hello' })
-      public field2: string;
+      @TextField({ label: 'description', col: 5 })
+      public field2 = 'hello';
     }
 
     class ExtendedAndOverrideType extends ExtendedType {
-      @TextField({ label: 'title', defaultValue: 'Goodbye' })
-      public field2: string;
+      @TextField({ label: 'title' })
+      public field2 = 'Goodbye';
     }
 
     expect(formBuilder(new BooleanType(), {})).toEqual({
@@ -60,11 +60,11 @@ describe('formBuilder', () => {
       },
       field2: {
         label: 'description',
-        defaultValue: 'Hello',
+        defaultValue: 'hello',
         type: 'text',
         formField: 'input',
         row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        col: 5,
       },
     });
 
@@ -83,15 +83,15 @@ describe('formBuilder', () => {
         type: 'text',
         formField: 'input',
         row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        col: 5,
       },
     });
   });
 
   it('should build text types', () => {
     class TextType {
-      @TextField({ label: 'description', defaultValue: 'Hello' })
-      public field: string;
+      @TextField({ label: 'description' })
+      public field = 'hello';
     }
 
     expect(formBuilder(new TextType(), {})).toEqual({
