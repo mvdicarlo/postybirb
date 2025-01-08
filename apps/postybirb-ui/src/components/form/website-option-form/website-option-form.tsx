@@ -152,6 +152,9 @@ function InnerForm({
   // split form into cols
   const cols: Record<string, FieldEntry[]> = {};
   Object.entries(formFields).forEach(([key, field]) => {
+    if (field.hidden) {
+      return;
+    }
     const col = field.col ?? Number.MAX_SAFE_INTEGER;
     if (!cols[col]) {
       cols[col] = [];

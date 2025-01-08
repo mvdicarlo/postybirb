@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import 'reflect-metadata';
+import { Class } from 'type-fest';
 import { METADATA_KEY } from '../../constants';
 import { FieldAggregateType, FieldType } from '../types';
 import { FormBuilderMetadata } from '../types/form-builder-metadata';
@@ -7,6 +8,16 @@ import { PrimitiveRecord } from '../types/primitive-record';
 
 export function getMetadataKey(name: string) {
   return `__${METADATA_KEY}__${name}__`;
+}
+
+export function getParentMetadataKeys(proto: object) {
+  const chain = [];
+  let currentProto = proto.constructor;
+  while (currentProto && currentProto.name) {
+    chain.push(currentProto.name);
+    currentProto = Object.getPrototypeOf(currentProto);
+  }
+  return chain.map((c) => getMetadataKey(c));
 }
 
 /**
@@ -80,22 +91,33 @@ export function createFieldDecorator<
         keyof Defaults
       >,
     ): PropertyDecorator {
-      if (field.defaults)
+      if (field.defaults) {
         for (const [key, value] of Object.entries(field.defaults)) {
           options[key] ??= value;
         }
+      }
 
       const fieldOptions = options as FieldType<FieldValue, TypeKey, Data> &
         ExtraFields;
 
       fieldOptions.type ??= type;
-      fieldOptions.row ??= Number.MAX_SAFE_INTEGER;
-      fieldOptions.col ??= 0;
 
       return (target, propertyKey) => {
         if (typeof propertyKey === 'symbol') return;
 
         const proto = target.constructor;
+        // eslint-disable-next-line new-cap
+        const obj = new (proto as Class<unknown>)();
+        const propKeyValue = obj[propertyKey];
+        if (propKeyValue !== undefined) {
+          /*
+           * This is to allow for setting of defaults through field setting
+           * @Field()
+           * field = 'value' // makes defaultValue = 'value'
+           */
+          fieldOptions.defaultValue = propKeyValue as FieldValue;
+        }
+
         const chain = [];
         let currentProto = proto;
         while (currentProto && currentProto.name) {
@@ -121,19 +143,28 @@ export function createFieldDecorator<
           .filter((c) => c !== target.constructor.name)
           .map((c) => Reflect.getMetadata(target[getMetadataKey(c)], proto));
 
+        // Iterate over all chained parent classes and merge their fields
+        // Uniqueness is maintained by use of the Symbol(key)
         for (const c of chainedFields) {
           if (c) {
             Object.entries(c).forEach(([fieldKey, value]) => {
               if (value !== undefined) {
-                fields[fieldKey] = JSON.parse(
-                  JSON.stringify(value),
+                fields[fieldKey] = Object.assign(
+                  fields[fieldKey] ?? {},
+                  JSON.parse(JSON.stringify(value)),
                 ) as unknown as FieldAggregateType;
               }
             });
           }
         }
 
-        fields[propertyKey] = fieldOptions as unknown as FieldAggregateType;
+        fields[propertyKey] = Object.assign(
+          fields[propertyKey] ?? {},
+          fieldOptions,
+        ) as unknown as FieldAggregateType;
+
+        fields[propertyKey].row ??= Number.MAX_SAFE_INTEGER;
+        fields[propertyKey].col ??= 0;
 
         Reflect.defineMetadata(sym, fields, proto);
       };

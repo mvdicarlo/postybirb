@@ -1,26 +1,8 @@
-import {
-  DescriptionField,
-  RatingField,
-  TagField,
-  TextField,
-} from '@postybirb/form-builder';
-import {
-  DescriptionValue,
-  IWebsiteFormFields,
-  SubmissionRating,
-  TagValue,
-} from '@postybirb/types';
+import { TagField } from '@postybirb/form-builder';
+import { TagValue } from '@postybirb/types';
+import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
-export class TestFileSubmission implements IWebsiteFormFields {
-  @TextField({ label: 'title', defaultValue: '' })
-  title?: string;
-
+export class TestFileSubmission extends BaseWebsiteOptions {
   @TagField({ maxTags: 10 })
   tags: TagValue;
-
-  @DescriptionField({})
-  description: DescriptionValue;
-
-  @RatingField({})
-  rating: SubmissionRating;
 }

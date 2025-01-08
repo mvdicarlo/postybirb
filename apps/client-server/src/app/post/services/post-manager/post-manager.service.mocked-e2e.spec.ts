@@ -26,7 +26,8 @@ import { FileConverterService } from '../../../file-converter/file-converter.ser
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
 import { defaultWebsiteDecoratorProps } from '../../../websites/decorators/website-decorator-props';
-import { DefaultWebsiteOptionsObject } from '../../../websites/models/default-website-options';
+import { BaseWebsiteOptions } from '../../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../../websites/models/default-website-options';
 import { FileWebsite } from '../../../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../../../websites/website';
@@ -229,7 +230,7 @@ describe('PostManagerServiceMocks', () => {
         isDefault: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        data: { ...DefaultWebsiteOptionsObject },
+        data: { ...new DefaultWebsiteOptions() },
       },
       {
         id: 'instance-options',
@@ -238,7 +239,7 @@ describe('PostManagerServiceMocks', () => {
         isDefault: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        data: { ...DefaultWebsiteOptionsObject },
+        data: { ...new BaseWebsiteOptions() },
       },
     ];
   }
