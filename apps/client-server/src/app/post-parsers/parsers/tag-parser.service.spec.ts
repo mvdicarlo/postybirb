@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { IWebsiteOptions } from '@postybirb/types';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { UnknownWebsite } from '../../websites/website';
 import { TagParserService } from './tag-parser.service';
 
@@ -55,13 +57,13 @@ describe('TagParserService', () => {
       },
     } as IWebsiteOptions;
     const tags = [
-      ...defaultOptions.data.tags.tags,
       ...websiteOptions.data.tags.tags,
+      ...defaultOptions.data.tags.tags,
     ];
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);
@@ -95,8 +97,8 @@ describe('TagParserService', () => {
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);
@@ -125,8 +127,8 @@ describe('TagParserService', () => {
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);
@@ -151,8 +153,8 @@ describe('TagParserService', () => {
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);
@@ -185,8 +187,8 @@ describe('TagParserService', () => {
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);
@@ -217,14 +219,14 @@ describe('TagParserService', () => {
       },
     } as IWebsiteOptions;
     const tags = [
-      ...defaultOptions.data.tags.tags,
       ...websiteOptions.data.tags.tags,
+      ...defaultOptions.data.tags.tags,
     ].map((tag) => tag.toUpperCase());
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);
@@ -253,12 +255,12 @@ describe('TagParserService', () => {
         },
       },
     } as IWebsiteOptions;
-    const tags = [defaultOptions.data.tags.tags[0]];
+    const tags = [websiteOptions.data.tags.tags[0]];
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(result).toEqual(tags);

@@ -5,6 +5,7 @@ import {
   IWebsiteOptions,
   PostData,
 } from '@postybirb/types';
+import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { UnknownWebsite } from '../websites/website';
 import { DescriptionParserService } from './parsers/description-parser.service';
 import { RatingParser } from './parsers/rating-parser';
@@ -29,18 +30,15 @@ export class PostParsersService {
     const defaultOptions: IWebsiteOptions = submission.options.find(
       (o) => o.isDefault,
     );
-    const tags = await this.tagParser.parse(
-      instance,
-      defaultOptions,
-      websiteOptions,
-    );
+    const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
+      ...defaultOptions.data,
+    });
+    const websiteOpts = Object.assign(instance.getModelFor(submission.type), {
+      ...websiteOptions.data,
+    });
+    const tags = await this.tagParser.parse(instance, defaultOpts, websiteOpts);
 
-    const title = await this.titleParser.parse(
-      submission,
-      instance,
-      defaultOptions,
-      websiteOptions,
-    );
+    const title = await this.titleParser.parse(defaultOpts, websiteOpts);
 
     return {
       submission,
@@ -50,13 +48,13 @@ export class PostParsersService {
         tags,
         description: await this.descriptionParser.parse(
           instance,
-          defaultOptions,
-          websiteOptions,
+          defaultOpts,
+          websiteOpts,
           tags,
           title,
         ),
         title,
-        rating: this.ratingParser.parse(defaultOptions, websiteOptions),
+        rating: this.ratingParser.parse(defaultOpts, websiteOpts),
       },
     };
   }

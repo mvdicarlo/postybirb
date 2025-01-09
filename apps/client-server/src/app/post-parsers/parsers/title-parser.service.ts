@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { TextFieldType } from '@postybirb/form-builder';
-import { ISubmission, IWebsiteOptions } from '@postybirb/types';
+import { formBuilder, TextFieldType } from '@postybirb/form-builder';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
-import { UnknownWebsite } from '../../websites/website';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 
 type TitleType = { title: TextFieldType };
 
@@ -11,24 +11,14 @@ export class TitleParserService {
   constructor(private readonly formGeneratorService: FormGeneratorService) {}
 
   public async parse(
-    submission: ISubmission,
-    instance: UnknownWebsite,
-    defaultOptions: IWebsiteOptions,
-    websiteOptions: IWebsiteOptions,
+    defaultOptions: DefaultWebsiteOptions,
+    websiteOptions: BaseWebsiteOptions,
   ): Promise<string> {
-    const defaultForm: TitleType =
-      (await this.formGeneratorService.getDefaultForm(
-        submission.type,
-      )) as unknown as TitleType;
-    const websiteForm: TitleType =
-      defaultOptions.id === websiteOptions.id
-        ? defaultForm
-        : ((await this.formGeneratorService.generateForm({
-            type: submission.type,
-            accountId: instance.accountId,
-          })) as unknown as TitleType);
+    const defaultForm = formBuilder(defaultOptions, {}) as unknown as TitleType;
+    const websiteForm = formBuilder(websiteOptions, {}) as unknown as TitleType;
+    const merged = websiteOptions.mergeDefaults(defaultOptions);
 
-    const title = websiteOptions.data.title ?? defaultOptions.data.title ?? '';
+    const title = merged.title ?? '';
     const field = websiteForm?.title ?? defaultForm?.title;
     const maxLength = field?.maxLength ?? Infinity;
 

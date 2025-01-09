@@ -7,6 +7,8 @@ import {
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { SettingsService } from '../../settings/settings.service';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { UnknownWebsite } from '../../websites/website';
 import { DescriptionParserService } from './description-parser.service';
 
@@ -113,8 +115,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );
@@ -134,8 +136,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );
@@ -157,8 +159,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );
@@ -180,8 +182,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );

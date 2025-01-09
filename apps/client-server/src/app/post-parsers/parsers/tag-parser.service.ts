@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { DefaultTagValue, IWebsiteOptions } from '@postybirb/types';
+import { DefaultTagValue } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { Website } from '../../websites/website';
 
 @Injectable()
@@ -10,21 +12,18 @@ export class TagParserService {
 
   public async parse(
     instance: Website<unknown>,
-    defaultOptions: IWebsiteOptions,
-    websiteOptions: IWebsiteOptions,
+    defaultOptions: DefaultWebsiteOptions,
+    websiteOptions: BaseWebsiteOptions,
   ): Promise<string[]> {
     if (!instance.decoratedProps.tagSupport.supportsTags) {
       return [...DefaultTagValue().tags];
     }
 
-    const defaultTags = defaultOptions.data.tags ?? DefaultTagValue();
-    const websiteTags = websiteOptions.data.tags ?? DefaultTagValue();
+    const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
 
     let tags: string[] = await this.tagConvertersService.convert(
       instance,
-      websiteTags.overrideDefault
-        ? websiteTags.tags
-        : [...defaultTags.tags, ...websiteTags.tags],
+      mergedOptions.tags.tags,
     );
 
     tags = tags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
