@@ -719,23 +719,19 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:142
-msgid "Title is too long"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:140
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:139
 msgid "Title is too long and will be truncated"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:156
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:153
 msgid "Title is too short"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:174
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:171
 msgid "Translation {id} not found"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:239
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:242
 msgid "Unable to display form"
 msgstr ""
 

@@ -28,6 +28,7 @@ export function Field(props: FormFieldProps): JSX.Element | null {
       break;
     case 'input':
     case 'textarea':
+    case 'title':
       formField = <InputField {...(props as FormFieldProps<TextFieldType>)} />;
       break;
     case 'radio':
