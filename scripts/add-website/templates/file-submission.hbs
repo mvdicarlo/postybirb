@@ -1,10 +1,12 @@
-{{#if !supportsTags}}
+{{#if supportsTags}}
+{{else}}
 import { TagField } from '@postybirb/form-builder';
 {{/if}}
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class {{pascalWebsiteName}}FileSubmission extends BaseWebsiteOptions {
-    {{#if !supportsTags}}
+    {{#if supportsTags}}
+    {{else}}
     @TagField({ hidden: true })
     tags: TagValue;
     {{/if}}

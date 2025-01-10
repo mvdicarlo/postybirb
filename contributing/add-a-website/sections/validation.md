@@ -9,7 +9,6 @@ handle many common scenarios out of the box through the use of validation-based 
 
 - [Description](../../../apps/client-server/src/app/websites/decorators/supports-description.decorator.ts)
 - [Files](../../../apps/client-server/src/app/websites/decorators/supports-files.decorator.ts)
-- [Tags](../../../apps/client-server/src/app/websites/decorators/supports-tags.decorator.ts)
 - [Title](../../../apps/client-server/src/app/websites/decorators/supports-title.decorator.ts)
 
 These can be appended to a class to get a lot of default behavior.
