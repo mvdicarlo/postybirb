@@ -1,10 +1,13 @@
 import {
   DescriptionField,
+  DescriptionFieldType,
   formBuilder,
   RatingField,
+  RatingFieldType,
   TagField,
   TagFieldType,
   TextField,
+  TextFieldType,
 } from '@postybirb/form-builder';
 import {
   DefaultDescriptionValue,
@@ -92,8 +95,12 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     return formBuilder(this, params);
   }
 
-  public getTagFormField(): TagFieldType {
-    return this.getFormFields().tags as TagFieldType;
+  public getFormFieldFor(key: 'tags'): TagFieldType;
+  public getFormFieldFor(key: 'description'): DescriptionFieldType;
+  public getFormFieldFor(key: 'title'): TextFieldType;
+  public getFormFieldFor(key: 'rating'): RatingFieldType;
+  public getFormFieldFor(key: keyof IWebsiteFormFields) {
+    return this.getFormFields()[key];
   }
 
   /**
@@ -104,7 +111,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
   public async getProcessedTags(
     additionalProcessor?: (tag) => Promise<string>,
   ): Promise<Tag[]> {
-    const tagsField = this.getTagFormField();
+    const tagsField = this.getFormFieldFor('tags');
     if (tagsField.hidden) {
       return [];
     }

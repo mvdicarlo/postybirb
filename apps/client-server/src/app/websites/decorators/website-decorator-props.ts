@@ -1,26 +1,16 @@
 import {
   CustomLoginType,
-  DescriptionSupport,
-  DescriptionType,
   IWebsiteMetadata,
   TitleSupport,
   UserLoginType,
   UsernameShortcut,
-  WebsiteFileOptions,
+  WebsiteFileOptions
 } from '@postybirb/types';
 import { LogLayer } from 'loglayer';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 
 export type WebsiteDecoratorProps = {
-  /**
-   * Set by {@link SupportsDescription}
-   *
-   * Defines the description support for a website.
-   * @type {DescriptionType}
-   */
-  descriptionSupport: DescriptionSupport;
-
   /**
    * Set by {@link SupportsTitle}
    *
@@ -76,11 +66,6 @@ export type WebsiteDecoratorProps = {
 
 export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
   return {
-    descriptionSupport: {
-      supportsDescriptionType: DescriptionType.NONE,
-      maxDescriptionLength: 0,
-      minDescriptionLength: 0,
-    },
     titleSupport: {
       supportsTitle: true,
       truncateTitle: false,

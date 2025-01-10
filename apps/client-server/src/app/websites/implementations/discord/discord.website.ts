@@ -1,16 +1,14 @@
 import {
-  DescriptionType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
   PostData,
   PostResponse,
-  SimpleValidationResult
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
-import { SupportsDescription } from '../../decorators/supports-description.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -31,7 +29,6 @@ import { DiscordMessageSubmission } from './models/discord-message-submission';
   acceptedFileSizes: {},
   fileBatchSize: 10,
 })
-@SupportsDescription(DescriptionType.MARKDOWN, 2_000)
 export default class Discord
   extends Website<DiscordAccountData>
   implements

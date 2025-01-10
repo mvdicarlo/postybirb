@@ -5,7 +5,7 @@ export async function validateMaxTags({
   data,
   mergedWebsiteOptions,
 }: ValidatorParams) {
-  const tagField = mergedWebsiteOptions.getTagFormField();
+  const tagField = mergedWebsiteOptions.getFormFieldFor('tags');
   if (tagField.hidden !== true) {
     const { tags } = data.options;
     const maxLength = tagField.maxTags ?? Number.MAX_SAFE_INTEGER;
@@ -27,7 +27,7 @@ export async function validateMinTags({
   data,
   mergedWebsiteOptions,
 }: ValidatorParams) {
-  const tagField = mergedWebsiteOptions.getTagFormField();
+  const tagField = mergedWebsiteOptions.getFormFieldFor('tags');
   if (tagField.hidden !== true) {
     const { tags } = data.options;
     const minLength = tagField.minTags ?? -1;
@@ -49,7 +49,7 @@ export async function validateMaxTagLength({
   data,
   mergedWebsiteOptions,
 }: ValidatorParams) {
-  const tagField = mergedWebsiteOptions.getTagFormField();
+  const tagField = mergedWebsiteOptions.getFormFieldFor('tags');
   if (tagField.hidden !== true) {
     const { tags } = data.options;
     const maxLength = tagField.maxTagLength ?? Number.MAX_SAFE_INTEGER;

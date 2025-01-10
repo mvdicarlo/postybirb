@@ -24,7 +24,7 @@ function createWebsite(data, baseAppPath) {
     }
     console.log('File(s) created successfully!');
     const indexFilePath = path.join(baseAppPath, 'index.ts');
-    let indexFileContent = fs.readFileSync(indexFilePath, 'utf8');
+    let indexFileContent = fs.readFileSync(indexFilePath, 'utf8').trim();
     indexFileContent += `\nexport { default as ${pascalWebsiteName} } from './${website}/${websiteFileName.replace('.ts', '')}';`;
     fs.writeFileSync(indexFilePath, indexFileContent);
     console.log('Index file updated successfully!');

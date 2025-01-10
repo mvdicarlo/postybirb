@@ -14,7 +14,6 @@ const getModifiedBlockSpecs = () => {
   };
 
   delete (blockSpecs as Partial<typeof blockSpecs>).table;
-  delete (blockSpecs as Partial<typeof blockSpecs>).image;
   delete (blockSpecs as Partial<typeof blockSpecs>).file;
 
   return blockSpecs;
@@ -46,6 +45,8 @@ export const schema = BlockNoteSchema.create({
     ...defaultStyleSpecs,
   },
 });
+
+console.log(schema.blockSpecs);
 
 export const altFileSchema = BlockNoteSchema.create({
   blockSpecs: {

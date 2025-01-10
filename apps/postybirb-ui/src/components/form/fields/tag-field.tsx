@@ -110,7 +110,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
             </Text>
             <Group display="inline-block" ml="4">
               {convertedTags.map(([tag, convertedTag]) => (
-                <Badge size="xs" variant="light">
+                <Badge key={tag} size="xs" variant="light">
                   {tag}{' '}
                   <IconArrowRight
                     size="0.75rem"
