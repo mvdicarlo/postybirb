@@ -1,20 +1,20 @@
 /* eslint-disable max-classes-per-file */
 import { Test, TestingModule } from '@nestjs/testing';
-import { TextField } from '@postybirb/form-builder';
+import { TitleField } from '@postybirb/form-builder';
 import { IWebsiteOptions } from '@postybirb/types';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
-import { TitleParserService } from './title-parser.service';
+import { TitleParser } from './title-parser';
 
 describe('TitleParserService', () => {
   let module: TestingModule;
-  let service: TitleParserService;
+  let service: TitleParser;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
       providers: [
-        TitleParserService,
+        TitleParser,
         {
           provide: FormGeneratorService,
           useValue: {
@@ -24,7 +24,7 @@ describe('TitleParserService', () => {
         },
       ],
     }).compile();
-    service = module.get(TitleParserService);
+    service = module.get(TitleParser);
   });
 
   afterAll(async () => {
@@ -59,12 +59,12 @@ describe('TitleParserService', () => {
 
   it('should parse title with no website options', async () => {
     class TestWebsiteOptions extends BaseWebsiteOptions {
-      @TextField({ label: 'title', maxLength: 5 })
+      @TitleField({ maxLength: 5 })
       public title: string;
     }
 
     class TestDefaultWebsiteOptions extends DefaultWebsiteOptions {
-      @TextField({ label: 'title', maxLength: 10 })
+      @TitleField({ maxLength: 10 })
       public title: string;
     }
 

@@ -6,6 +6,7 @@ import {
   SelectField,
   TagField,
   TextField,
+  TitleField,
 } from '../decorators';
 import { ExtractFieldTypeFromDecorator } from '../utils/assign-metadata';
 
@@ -15,6 +16,7 @@ export type DescriptionFieldType = ExtractFieldTypeFromDecorator<
   typeof DescriptionField
 >;
 export type TextFieldType = ExtractFieldTypeFromDecorator<typeof TextField>;
+export type TitleFieldType = ExtractFieldTypeFromDecorator<typeof TitleField>;
 export type SelectFieldType = ExtractFieldTypeFromDecorator<typeof SelectField>;
 export type BooleanFieldType = ExtractFieldTypeFromDecorator<
   typeof BooleanField
@@ -28,4 +30,5 @@ export type FieldAggregateType =
   | RatingFieldType
   | TagFieldType
   | DescriptionFieldType
-  | SelectFieldType;
+  | SelectFieldType
+  | TitleFieldType;

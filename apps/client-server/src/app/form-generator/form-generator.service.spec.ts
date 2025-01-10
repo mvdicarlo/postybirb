@@ -141,7 +141,7 @@ describe('FormGeneratorService', () => {
         label: 'title',
         required: true,
         row: 0,
-        type: 'text',
+        type: 'title',
       },
     });
   });
@@ -209,7 +209,7 @@ describe('FormGeneratorService', () => {
         label: 'title',
         required: true,
         row: 0,
-        type: 'text',
+        type: 'title',
       },
     });
 
@@ -275,7 +275,7 @@ describe('FormGeneratorService', () => {
         label: 'title',
         required: true,
         row: 0,
-        type: 'text',
+        type: 'title',
       },
     });
   });

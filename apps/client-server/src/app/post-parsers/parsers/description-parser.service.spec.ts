@@ -257,4 +257,5 @@ describe('DescriptionParserService', () => {
 
   // TODO: Add test for description type CUSTOM
   // TODO: Add test for shortcuts (ensure plaintext works as expected)
+  // TODO: Add test for title and tag insertion
 });

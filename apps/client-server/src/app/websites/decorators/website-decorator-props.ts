@@ -1,24 +1,15 @@
 import {
   CustomLoginType,
   IWebsiteMetadata,
-  TitleSupport,
   UserLoginType,
   UsernameShortcut,
-  WebsiteFileOptions
+  WebsiteFileOptions,
 } from '@postybirb/types';
 import { LogLayer } from 'loglayer';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 
 export type WebsiteDecoratorProps = {
-  /**
-   * Set by {@link SupportsTitle}
-   *
-   * Defines the title support for a website.
-   * @type {TitleSupport}
-   */
-  titleSupport: TitleSupport;
-
   /**
    * Set by {@link SupportsFiles}
    *
@@ -66,12 +57,6 @@ export type WebsiteDecoratorProps = {
 
 export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
   return {
-    titleSupport: {
-      supportsTitle: true,
-      truncateTitle: false,
-      maxTitleLength: Infinity,
-      minTitleLength: -1,
-    },
     fileOptions: undefined,
     loginFlow: undefined,
     metadata: undefined,

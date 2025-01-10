@@ -6,8 +6,8 @@ implement the `FileWebsite<T>` interface.
 ## Sample
 
 ```ts
-class FooFileSubmission implements FileWebsiteFormFields {
-  @TextField({ label: 'title', required: true, row: 0, col: 1 })
+class FooFileSubmission extends BaseWebsiteOptions {
+  @TitleField({ 'title', required: true, row: 0, col: 1 })
   title: string;
 
   @TagField({ row: 2, col: 1 })

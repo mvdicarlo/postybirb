@@ -6,8 +6,8 @@ import {
   RatingFieldType,
   TagField,
   TagFieldType,
-  TextField,
-  TextFieldType,
+  TitleField,
+  TitleFieldType,
 } from '@postybirb/form-builder';
 import {
   DefaultDescriptionValue,
@@ -22,8 +22,7 @@ import { uniq } from 'lodash';
 import { Class } from 'type-fest';
 
 export class BaseWebsiteOptions implements IWebsiteFormFields {
-  @TextField({
-    label: 'title',
+  @TitleField({
     required: true,
     col: 1,
     row: 0,
@@ -97,7 +96,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
 
   public getFormFieldFor(key: 'tags'): TagFieldType;
   public getFormFieldFor(key: 'description'): DescriptionFieldType;
-  public getFormFieldFor(key: 'title'): TextFieldType;
+  public getFormFieldFor(key: 'title'): TitleFieldType;
   public getFormFieldFor(key: 'rating'): RatingFieldType;
   public getFormFieldFor(key: keyof IWebsiteFormFields) {
     return this.getFormFields()[key];
