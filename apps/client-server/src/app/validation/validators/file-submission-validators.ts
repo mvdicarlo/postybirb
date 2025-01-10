@@ -84,6 +84,7 @@ export async function validateAcceptedFiles({
   submission,
   data,
   fileConverterService,
+  ...rest
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
@@ -123,6 +124,7 @@ export async function validateAcceptedFiles({
           file,
           data,
           fileConverterService,
+          ...rest,
         });
         return;
       }

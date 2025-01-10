@@ -1,5 +1,5 @@
 function parseAddWebsiteInput(answers) {
-  const { websiteName, submissionTypes, websiteUrl, fileFeatures } = answers;
+  const { websiteName, submissionTypes, websiteUrl, fileFeatures, supportsTags } = answers;
   const website = websiteName.toLowerCase().trim();
   return {
     website,
@@ -10,6 +10,7 @@ function parseAddWebsiteInput(answers) {
     hasFile: submissionTypes.includes('file'),
     hasMessage: submissionTypes.includes('message'),
     websiteUrl,
+    supportsTags,
   };
 }
 

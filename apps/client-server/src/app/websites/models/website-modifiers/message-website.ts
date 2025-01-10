@@ -7,6 +7,7 @@ import {
 
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { UnknownWebsite } from '../../website';
+import { BaseWebsiteOptions } from '../base-website-options';
 
 export const MessageWebsiteKey = 'createMessageModel';
 
@@ -17,7 +18,7 @@ export const MessageWebsiteKey = 'createMessageModel';
 export interface MessageWebsite<
   T extends IWebsiteFormFields = IWebsiteFormFields,
 > {
-  createMessageModel(): T;
+  createMessageModel(): BaseWebsiteOptions;
 
   onPostMessageSubmission(
     postData: PostData<T>,
@@ -31,9 +32,8 @@ export interface MessageWebsite<
 
 export function isMessageWebsite(
   websiteInstance: UnknownWebsite,
-): websiteInstance is MessageWebsite<IWebsiteFormFields> & UnknownWebsite {
+): websiteInstance is MessageWebsite & UnknownWebsite {
   return Boolean(
-    (websiteInstance as MessageWebsite<IWebsiteFormFields> & UnknownWebsite)
-      .supportsMessage,
+    (websiteInstance as MessageWebsite & UnknownWebsite).supportsMessage,
   );
 }

@@ -14,7 +14,6 @@ import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsDescription } from '../../decorators/supports-description.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
-import { SupportsTags } from '../../decorators/supports-tags.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -35,7 +34,6 @@ import { FurAffinityMessageSubmission } from './models/fur-affinity-message-subm
   id: 'fa',
   url: 'https://furaffinity.net/user/$1',
 })
-@SupportsTags()
 @SupportsFiles(['image/png', 'image/jpeg'])
 @SupportsDescription(DescriptionType.CUSTOM)
 export default class FurAffinity

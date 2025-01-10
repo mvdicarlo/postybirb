@@ -4,9 +4,10 @@ import {
   DescriptionType,
   IWebsiteOptions,
 } from '@postybirb/types';
-import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { SettingsService } from '../../settings/settings.service';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { UnknownWebsite } from '../../websites/website';
 import { DescriptionParserService } from './description-parser.service';
 
@@ -14,7 +15,6 @@ describe('DescriptionParserService', () => {
   let module: TestingModule;
   let service: DescriptionParserService;
   let settingsService: SettingsService;
-  let websiteImplementations: Class<UnknownWebsite>[];
   const testDescription: Description = [
     {
       id: 'test-basic-text',
@@ -77,7 +77,6 @@ describe('DescriptionParserService', () => {
         allowAd: false,
       },
     });
-    websiteImplementations = [];
   });
 
   afterAll(async () => {
@@ -113,8 +112,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );
@@ -134,8 +133,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );
@@ -157,8 +156,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );
@@ -180,8 +179,8 @@ describe('DescriptionParserService', () => {
     const websiteOptions = createWebsiteOptions(undefined);
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
       [],
       '',
     );

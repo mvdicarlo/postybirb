@@ -46,7 +46,16 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
    * @param {string[]} tags
    * @return {*}  {Promise<string[]>}
    */
-  async convert(instance: Website<unknown>, tags: string[]): Promise<string[]> {
+  async convert(instance: Website<unknown>, tags: string): Promise<string>;
+  async convert(instance: Website<unknown>, tags: string[]): Promise<string[]>;
+  async convert(
+    instance: Website<unknown>,
+    tags: string[] | string,
+  ): Promise<string[] | string> {
+    if (typeof tags === 'string') {
+      return (await this.convert(instance, [tags]))[0];
+    }
+
     const converters = await this.repository.find({ tag: { $in: tags } });
     return tags.map((tag) => {
       const converter = converters.find((c) => c.tag === tag);

@@ -1,17 +1,22 @@
 import {
-    DescriptionField,
-    RatingField,
-    TagField,
-    TextField,
+  DescriptionField,
+  formBuilder,
+  RatingField,
+  TagField,
+  TagFieldType,
+  TextField,
 } from '@postybirb/form-builder';
 import {
-    DefaultDescriptionValue,
-    DefaultTagValue,
-    DescriptionValue,
-    IWebsiteFormFields,
-    SubmissionRating,
-    TagValue,
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionValue,
+  IWebsiteFormFields,
+  SubmissionRating,
+  Tag,
+  TagValue,
 } from '@postybirb/types';
+import { uniq } from 'lodash';
+import { Class } from 'type-fest';
 
 export class BaseWebsiteOptions implements IWebsiteFormFields {
   @TextField({
@@ -39,5 +44,97 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     col: 0,
     row: 0,
   })
-  rating: SubmissionRating = SubmissionRating.GENERAL;
+  rating: SubmissionRating;
+
+  constructor(options: Partial<BaseWebsiteOptions | IWebsiteFormFields> = {}) {
+    Object.assign(this, options);
+  }
+
+  /**
+   * Merges the provided options with the default options of the current class.
+   *
+   * @param options - The options to merge with the default options.
+   * @returns A new instance of the current class with the merged options.
+   */
+  public mergeDefaults(options: BaseWebsiteOptions): this {
+    const isNullOrWhiteSpace = (value: string) => !value || !value.trim();
+    const mergedFormFields: IWebsiteFormFields = {
+      rating: this.rating || options.rating,
+      title: (!isNullOrWhiteSpace(this.title)
+        ? this.title
+        : (options.title ?? '')
+      ).trim(),
+      tags: this.tags.overrideDefault
+        ? { ...this.tags }
+        : {
+            overrideDefault: Boolean(this.tags.overrideDefault),
+            tags: [...this.tags.tags, ...options.tags.tags],
+          },
+      description: this.description.overrideDefault
+        ? { ...this.description }
+        : {
+            overrideDefault: Boolean(this.description.overrideDefault),
+            description: options.description.description,
+            insertTitle: options.description.insertTitle,
+            insertTags: options.description.insertTags,
+          },
+    };
+    const newInstance = Object.assign(new (this.constructor as Class<this>)(), {
+      ...options,
+      ...this,
+      ...mergedFormFields,
+    });
+
+    return newInstance;
+  }
+
+  public getFormFields(params: Record<string, never> = {}) {
+    return formBuilder(this, params);
+  }
+
+  public getTagFormField(): TagFieldType {
+    return this.getFormFields().tags as TagFieldType;
+  }
+
+  /**
+   * Processes the tags and returns them as an array of strings.
+   * Performs configured tag properties to filter and transform the tags.
+   * Calls the `processTag` method to transform each tag.
+   */
+  public async getProcessedTags(
+    additionalProcessor?: (tag) => Promise<string>,
+  ): Promise<Tag[]> {
+    const tagsField = this.getTagFormField();
+    if (tagsField.hidden) {
+      return [];
+    }
+
+    return uniq(
+      (
+        await Promise.all(
+          this.tags.tags
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0)
+            .map((tag) => additionalProcessor?.(tag) ?? Promise.resolve(tag)), // Mostly for tag converter insert
+        )
+      )
+        .map(this.processTag)
+        .filter((tag) => tag.length >= (tagsField.minTagLength ?? 0))
+        .filter(
+          (tag) =>
+            tag.length <= (tagsField.maxTagLength ?? Number.MAX_SAFE_INTEGER),
+        ),
+    ).slice(0, tagsField.maxTags ?? Number.MAX_SAFE_INTEGER);
+  }
+
+  /**
+   * Tag transformation function that can be overridden by subclasses.
+   *
+   * @protected
+   * @param {string} tag
+   * @return {*}  {string}
+   */
+  protected processTag(tag: string): string {
+    return tag;
+  }
 }

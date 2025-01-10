@@ -1,14 +1,15 @@
+/* eslint-disable max-classes-per-file */
 import { Test, TestingModule } from '@nestjs/testing';
+import { TextField } from '@postybirb/form-builder';
 import { IWebsiteOptions } from '@postybirb/types';
-import { Submission } from '../../database/entities';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { TitleParserService } from './title-parser.service';
 
 describe('TitleParserService', () => {
   let module: TestingModule;
   let service: TitleParserService;
-  let formGeneratorService: FormGeneratorService;
-  let WebsiteInstanceMock: jest.Mock;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
@@ -24,8 +25,6 @@ describe('TitleParserService', () => {
       ],
     }).compile();
     service = module.get(TitleParserService);
-    formGeneratorService = module.get(FormGeneratorService);
-    WebsiteInstanceMock = jest.fn().mockImplementation(() => ({}));
   });
 
   afterAll(async () => {
@@ -37,7 +36,6 @@ describe('TitleParserService', () => {
   });
 
   it('should parse title', async () => {
-    const submission = new Submission({});
     const defaultOptions: IWebsiteOptions = {
       id: 'default',
       data: {
@@ -50,28 +48,26 @@ describe('TitleParserService', () => {
         title: 'website',
       },
     } as IWebsiteOptions;
-    const defaultForm = { title: [{ maxLength: Infinity }] };
-    const websiteForm = { title: [{ maxLength: Infinity }] };
-    (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
-      defaultForm,
-    );
-    (formGeneratorService.generateForm as jest.Mock).mockResolvedValue(
-      websiteForm,
-    );
 
     const title = await service.parse(
-      submission,
-      new WebsiteInstanceMock(),
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
     expect(title).toBe('website');
   });
 
   it('should parse title with no website options', async () => {
-    const submission = new Submission({});
-    const instance = new WebsiteInstanceMock();
+    class TestWebsiteOptions extends BaseWebsiteOptions {
+      @TextField({ label: 'title', maxLength: 5 })
+      public title: string;
+    }
+
+    class TestDefaultWebsiteOptions extends DefaultWebsiteOptions {
+      @TextField({ label: 'title', maxLength: 10 })
+      public title: string;
+    }
+
     const defaultOptions: IWebsiteOptions = {
       id: 'default',
       data: {
@@ -82,20 +78,10 @@ describe('TitleParserService', () => {
       id: 'website',
       data: {},
     } as IWebsiteOptions;
-    const defaultForm = { title: { maxLength: 10 } };
-    const websiteForm = { title: { maxLength: 5 } };
-    (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
-      defaultForm,
-    );
-    (formGeneratorService.generateForm as jest.Mock).mockResolvedValue(
-      websiteForm,
-    );
 
     const title = await service.parse(
-      submission,
-      instance,
-      defaultOptions,
-      websiteOptions,
+      new TestDefaultWebsiteOptions(defaultOptions.data),
+      new TestWebsiteOptions(websiteOptions.data),
     );
 
     // Title should be truncated
@@ -103,8 +89,6 @@ describe('TitleParserService', () => {
   });
 
   it('should parse title and use default form if website form is not available', async () => {
-    const submission = new Submission({});
-    const instance = new WebsiteInstanceMock();
     const defaultOptions: IWebsiteOptions = {
       id: 'default',
       data: {
@@ -113,23 +97,14 @@ describe('TitleParserService', () => {
     } as IWebsiteOptions;
     const websiteOptions: IWebsiteOptions = {
       id: 'website',
-      data: {
-        title: 'website',
-      },
+      data: {},
     } as IWebsiteOptions;
-    const defaultForm = { title: [{ maxLength: 10 }] };
-    (formGeneratorService.getDefaultForm as jest.Mock).mockResolvedValue(
-      defaultForm,
-    );
-    (formGeneratorService.generateForm as jest.Mock).mockResolvedValue(null);
 
     const title = await service.parse(
-      submission,
-      instance,
-      defaultOptions,
-      websiteOptions,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new BaseWebsiteOptions(websiteOptions.data),
     );
 
-    expect(title).toBe('website');
+    expect(title).toBe('default');
   });
 });

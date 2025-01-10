@@ -9,11 +9,11 @@ import {
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UnknownWebsite } from '../../website';
+import { BaseWebsiteOptions } from '../base-website-options';
 
 export const FileWebsiteKey = 'createFileModel';
 
-export type ImplementedFileWebsite = FileWebsite<IWebsiteFormFields> &
-  UnknownWebsite;
+export type ImplementedFileWebsite = FileWebsite & UnknownWebsite;
 
 /**
  * Defines methods for allowing file based posting.
@@ -23,7 +23,7 @@ export type ImplementedFileWebsite = FileWebsite<IWebsiteFormFields> &
 export interface FileWebsite<
   T extends IWebsiteFormFields = IWebsiteFormFields,
 > {
-  createFileModel(): T;
+  createFileModel(): BaseWebsiteOptions;
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined;
 

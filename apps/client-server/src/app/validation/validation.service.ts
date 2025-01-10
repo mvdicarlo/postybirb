@@ -7,11 +7,12 @@ import {
   PostData,
   SimpleValidationResult,
   SubmissionType,
-  ValidationResult
+  ValidationResult,
 } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
+import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { UnknownWebsite } from '../websites/website';
@@ -81,12 +82,24 @@ export class ValidationService {
         websiteOption,
       );
 
+      const defaultOptions: IWebsiteOptions = submission.options.find(
+        (o) => o.isDefault,
+      );
+      const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
+        ...defaultOptions.data,
+      });
+      const mergedWebsiteOptions = Object.assign(
+        website.getModelFor(submission.type),
+        websiteOption.data,
+      ).mergeDefaults(defaultOpts);
+
       const params: ValidatorParams = {
         result,
         websiteInstance: website,
         data,
         submission,
         fileConverterService: this.fileConverterService,
+        mergedWebsiteOptions,
       };
       // eslint-disable-next-line no-restricted-syntax
       for (const validation of this.validations) {

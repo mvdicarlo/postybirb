@@ -1,18 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  DescriptionType,
-  IWebsiteOptions,
-  UsernameShortcut,
-} from '@postybirb/types';
+import { DescriptionType, UsernameShortcut } from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { SettingsService } from '../../settings/settings.service';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
 import {
   DescriptionNodeTree,
   InsertionOptions,
 } from '../models/description-node/description-node-tree';
+import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
 
 @Injectable()
 export class DescriptionParserService {
@@ -34,8 +33,8 @@ export class DescriptionParserService {
 
   public async parse(
     instance: Website<unknown>,
-    defaultOptions: IWebsiteOptions,
-    websiteOptions: IWebsiteOptions,
+    defaultOptions: DefaultWebsiteOptions,
+    websiteOptions: BaseWebsiteOptions,
     tags: string[],
     title: string,
   ): Promise<string> {
@@ -53,21 +52,18 @@ export class DescriptionParserService {
       allowAd = false;
     }
 
-    const descriptionValue = websiteOptions.data.description?.overrideDefault
-      ? websiteOptions.data.description.description
-      : defaultOptions.data.description.description;
+    const merged = websiteOptions.mergeDefaults(defaultOptions);
+    const descriptionValue = merged.description;
 
     // TODO - verify tag insertions
     const insertionOptions: InsertionOptions = {
-      insertTitle: websiteOptions.data.description.insertTitle
-        ? title
-        : undefined,
-      insertTags: websiteOptions.data.description.insertTags ? tags : undefined,
+      insertTitle: descriptionValue.insertTitle ? title : undefined,
+      insertTags: descriptionValue.insertTags ? tags : undefined,
       insertAd: allowAd,
     };
 
     const tree = new DescriptionNodeTree(
-      descriptionValue as never,
+      descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
       insertionOptions,
       this.websiteShortcuts,
       {

@@ -1,4 +1,6 @@
 import { IWebsiteOptions, SubmissionRating } from '@postybirb/types';
+import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
+import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { RatingParser } from './rating-parser';
 
 describe('RatingParser', () => {
@@ -19,9 +21,12 @@ describe('RatingParser', () => {
         rating: SubmissionRating.GENERAL,
       },
     } as IWebsiteOptions;
-    expect(parser.parse(defaultOptions, options)).toEqual(
-      SubmissionRating.ADULT,
-    );
+    expect(
+      parser.parse(
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(options.data),
+      ),
+    ).toEqual(SubmissionRating.ADULT);
   });
 
   it('should parse default rating', () => {
@@ -33,18 +38,20 @@ describe('RatingParser', () => {
         rating: SubmissionRating.GENERAL,
       },
     } as IWebsiteOptions;
-    expect(parser.parse(defaultOptions, options)).toEqual(
-      SubmissionRating.GENERAL,
-    );
+    expect(
+      parser.parse(
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(options.data),
+      ),
+    ).toEqual(SubmissionRating.GENERAL);
   });
 
   it('should throw on parsing no rating', () => {
-    const options: IWebsiteOptions = {
-      data: {},
-    } as IWebsiteOptions;
-    const defaultOptions: IWebsiteOptions = {
-      data: {},
-    } as IWebsiteOptions;
-    expect(() => parser.parse(defaultOptions, options)).toThrow(Error);
+    expect(() =>
+      parser.parse(
+        { rating: null } as unknown as DefaultWebsiteOptions,
+        { rating: null } as unknown as BaseWebsiteOptions,
+      ),
+    ).toThrow(Error);
   });
 });

@@ -1,10 +1,9 @@
+import { Http } from '@postybirb/http';
 import {
   DescriptionType,
-  FileSubmission,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
-  MessageSubmission,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -16,7 +15,6 @@ import { SupportsDescription } from '../../decorators/supports-description.decor
 {{#if hasFile}}
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 {{/if}}
-import { SupportsTags } from '../../decorators/supports-tags.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 {{#if hasFile}}
@@ -40,7 +38,6 @@ import { {{pascalWebsiteName}}MessageSubmission } from './models/{{website}}-mes
 })
 @UserLoginFlow('{{websiteUrl}}')
 @SupportsDescription(DescriptionType.HTML)
-@SupportsTags()
 @SupportsFiles(['image/png', 'image/jpeg'])
 export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}AccountData> implements
   {{#if hasFile}}

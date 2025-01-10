@@ -1,26 +1,13 @@
-import {
-    DescriptionField,
-    RatingField,
-    TagField,
-    TextField,
-} from '@postybirb/form-builder';
-import {
-    DescriptionValue,
-    FileWebsiteFormFields,
-    SubmissionRating,
-    TagValue,
-} from '@postybirb/types';
+{{#if supportsTags}}
+{{else}}
+import { TagField } from '@postybirb/form-builder';
+{{/if}}
+import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
-export class {{pascalWebsiteName}}FileSubmission implements FileWebsiteFormFields {
-    @TextField({ label: 'title', required: true, row: 0, col: 1 })
-    title: string;
-
-    @TagField({ row: 2, col: 1 })
+export class {{pascalWebsiteName}}FileSubmission extends BaseWebsiteOptions {
+    {{#if supportsTags}}
+    {{else}}
+    @TagField({ hidden: true })
     tags: TagValue;
-
-    @DescriptionField({ row: 3, col: 1 })
-    description: DescriptionValue;
-
-    @RatingField({ required: true, row: 0, col: 0 })
-    rating: SubmissionRating;
+    {{/if}}
 }

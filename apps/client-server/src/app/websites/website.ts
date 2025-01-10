@@ -12,8 +12,14 @@ import { WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
-import { FileWebsiteKey } from './models/website-modifiers/file-website';
-import { MessageWebsiteKey } from './models/website-modifiers/message-website';
+import {
+  FileWebsiteKey,
+  isFileWebsite,
+} from './models/website-modifiers/file-website';
+import {
+  isMessageWebsite,
+  MessageWebsiteKey,
+} from './models/website-modifiers/message-website';
 import WebsiteDataManager from './website-data-manager';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,6 +101,18 @@ export abstract class Website<D extends DynamicObject> {
    */
   public get supportsMessage(): boolean {
     return MessageWebsiteKey in this;
+  }
+
+  getModelFor(type: SubmissionType) {
+    if (type === SubmissionType.FILE && isFileWebsite(this)) {
+      return this.createFileModel();
+    }
+
+    if (type === SubmissionType.MESSAGE && isMessageWebsite(this)) {
+      return this.createMessageModel();
+    }
+
+    throw new Error(`Unsupported submission type: ${type}`);
   }
 
   constructor(userAccount: IAccount) {

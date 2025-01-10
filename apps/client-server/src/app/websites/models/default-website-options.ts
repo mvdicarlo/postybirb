@@ -1,4 +1,5 @@
-import { TextField } from '@postybirb/form-builder';
+import { RatingField, TextField } from '@postybirb/form-builder';
+import { SubmissionRating } from '@postybirb/types';
 import { BaseWebsiteOptions } from './base-website-options';
 
 export class DefaultWebsiteOptions extends BaseWebsiteOptions {
@@ -8,4 +9,7 @@ export class DefaultWebsiteOptions extends BaseWebsiteOptions {
     row: 2,
   })
   contentWarning = '';
+
+  @RatingField({})
+  rating: SubmissionRating = SubmissionRating.GENERAL;
 }
