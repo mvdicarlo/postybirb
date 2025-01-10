@@ -89,6 +89,11 @@ inquirer
     },
     {
       type: 'confirm',
+      name: 'supportsTags',
+      message: 'Does the website support tags / in-description tags?',
+    },
+    {
+      type: 'confirm',
       name: 'confirm',
       message: 'Are you sure you want to create the website?',
     },

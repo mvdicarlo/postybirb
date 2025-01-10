@@ -4,7 +4,6 @@ import {
   DescriptionType,
   IWebsiteOptions,
 } from '@postybirb/types';
-import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
@@ -16,7 +15,6 @@ describe('DescriptionParserService', () => {
   let module: TestingModule;
   let service: DescriptionParserService;
   let settingsService: SettingsService;
-  let websiteImplementations: Class<UnknownWebsite>[];
   const testDescription: Description = [
     {
       id: 'test-basic-text',
@@ -79,7 +77,6 @@ describe('DescriptionParserService', () => {
         allowAd: false,
       },
     });
-    websiteImplementations = [];
   });
 
   afterAll(async () => {

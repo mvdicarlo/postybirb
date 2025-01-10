@@ -3,7 +3,6 @@ import {
   DescriptionSupport,
   DescriptionType,
   IWebsiteMetadata,
-  TagSupport,
   TitleSupport,
   UserLoginType,
   UsernameShortcut,
@@ -12,7 +11,6 @@ import {
 import { LogLayer } from 'loglayer';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
-import { TagParserFunction } from './supports-tags.decorator';
 
 export type WebsiteDecoratorProps = {
   /**
@@ -22,23 +20,6 @@ export type WebsiteDecoratorProps = {
    * @type {DescriptionType}
    */
   descriptionSupport: DescriptionSupport;
-
-  /**
-   * Set by {@link SupportsTags}
-   *
-   * Defines the tag support for a website.
-   * @type {TagSupport}
-   */
-  tagSupport: TagSupport;
-
-  /**
-   * Set by {@link SupportsTags}
-   *
-   * Defines the tag parser function for a website.
-   * This is used to parse tags before sending them to the website.
-   * @type {TagParserFunction}
-   */
-  tagParser?: TagParserFunction;
 
   /**
    * Set by {@link SupportsTitle}
@@ -100,8 +81,6 @@ export function defaultWebsiteDecoratorProps(): WebsiteDecoratorProps {
       maxDescriptionLength: 0,
       minDescriptionLength: 0,
     },
-    tagSupport: { supportsTags: false },
-    tagParser: (tag) => tag,
     titleSupport: {
       supportsTitle: true,
       truncateTitle: false,

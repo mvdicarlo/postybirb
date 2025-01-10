@@ -2,13 +2,13 @@ import { ValidatorParams } from './validator.type';
 
 export async function validateMaxTags({
   result,
-  websiteInstance,
   data,
+  mergedWebsiteOptions,
 }: ValidatorParams) {
-  const { tagSupport } = websiteInstance.decoratedProps;
-  if (tagSupport?.supportsTags === true) {
+  const tagField = mergedWebsiteOptions.getTagFormField();
+  if (tagField.hidden !== true) {
     const { tags } = data.options;
-    const maxLength = tagSupport.maxTags ?? Number.MAX_SAFE_INTEGER;
+    const maxLength = tagField.maxTags ?? Number.MAX_SAFE_INTEGER;
     if (tags.length > maxLength) {
       result.warnings.push({
         id: 'validation.tags.max-tags',
@@ -24,13 +24,13 @@ export async function validateMaxTags({
 
 export async function validateMinTags({
   result,
-  websiteInstance,
   data,
+  mergedWebsiteOptions,
 }: ValidatorParams) {
-  const { tagSupport } = websiteInstance.decoratedProps;
-  if (tagSupport?.supportsTags === true) {
+  const tagField = mergedWebsiteOptions.getTagFormField();
+  if (tagField.hidden !== true) {
     const { tags } = data.options;
-    const minLength = tagSupport.minTags ?? -1;
+    const minLength = tagField.minTags ?? -1;
     if (tags.length < minLength) {
       result.errors.push({
         id: 'validation.tags.min-tags',
@@ -46,13 +46,13 @@ export async function validateMinTags({
 
 export async function validateMaxTagLength({
   result,
-  websiteInstance,
   data,
+  mergedWebsiteOptions,
 }: ValidatorParams) {
-  const { tagSupport } = websiteInstance.decoratedProps;
-  if (tagSupport?.supportsTags === true) {
+  const tagField = mergedWebsiteOptions.getTagFormField();
+  if (tagField.hidden !== true) {
     const { tags } = data.options;
-    const maxLength = tagSupport.maxTagLength ?? Number.MAX_SAFE_INTEGER;
+    const maxLength = tagField.maxTagLength ?? Number.MAX_SAFE_INTEGER;
     const invalidTags = tags.filter((tag) => tag.length > maxLength);
     if (invalidTags.length > 0) {
       result.warnings.push({

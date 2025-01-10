@@ -1,7 +1,9 @@
 import {
   DescriptionField,
+  formBuilder,
   RatingField,
   TagField,
+  TagFieldType,
   TextField,
 } from '@postybirb/form-builder';
 import {
@@ -10,8 +12,10 @@ import {
   DescriptionValue,
   IWebsiteFormFields,
   SubmissionRating,
+  Tag,
   TagValue,
 } from '@postybirb/types';
+import { uniq } from 'lodash';
 import { Class } from 'type-fest';
 
 export class BaseWebsiteOptions implements IWebsiteFormFields {
@@ -82,5 +86,55 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     });
 
     return newInstance;
+  }
+
+  public getFormFields(params: Record<string, never> = {}) {
+    return formBuilder(this, params);
+  }
+
+  public getTagFormField(): TagFieldType {
+    return this.getFormFields().tags as TagFieldType;
+  }
+
+  /**
+   * Processes the tags and returns them as an array of strings.
+   * Performs configured tag properties to filter and transform the tags.
+   * Calls the `processTag` method to transform each tag.
+   */
+  public async getProcessedTags(
+    additionalProcessor?: (tag) => Promise<string>,
+  ): Promise<Tag[]> {
+    const tagsField = this.getTagFormField();
+    if (tagsField.hidden) {
+      return [];
+    }
+
+    return uniq(
+      (
+        await Promise.all(
+          this.tags.tags
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0)
+            .map((tag) => additionalProcessor?.(tag) ?? Promise.resolve(tag)), // Mostly for tag converter insert
+        )
+      )
+        .map(this.processTag)
+        .filter((tag) => tag.length >= (tagsField.minTagLength ?? 0))
+        .filter(
+          (tag) =>
+            tag.length <= (tagsField.maxTagLength ?? Number.MAX_SAFE_INTEGER),
+        ),
+    ).slice(0, tagsField.maxTags ?? Number.MAX_SAFE_INTEGER);
+  }
+
+  /**
+   * Tag transformation function that can be overridden by subclasses.
+   *
+   * @protected
+   * @param {string} tag
+   * @return {*}  {string}
+   */
+  protected processTag(tag: string): string {
+    return tag;
   }
 }

@@ -2,7 +2,12 @@ import { DefaultTagValue, TagValue } from '@postybirb/types';
 import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';
 
-type TagExtraFields = { minTags?: number; maxTags?: number };
+type TagExtraFields = {
+  minTags?: number;
+  maxTags?: number;
+  maxTagLength?: number;
+  minTagLength?: number;
+};
 
 export const TagField = createFieldDecorator<TagValue, TagExtraFields>('tag')({
   defaults: {

@@ -118,9 +118,9 @@ function TagConverters() {
     return <Loader />;
   }
 
-  const tagSupportingWebsites = (websiteInfo ?? [])
-    .sort((a, b) => a.displayName.localeCompare(b.displayName))
-    .filter((website) => website.tagSupport.supportsTags);
+  const tagSupportingWebsites = (websiteInfo ?? []).sort((a, b) =>
+    a.displayName.localeCompare(b.displayName),
+  );
 
   return (
     <Box>
