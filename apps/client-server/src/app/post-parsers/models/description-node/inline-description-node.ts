@@ -44,6 +44,11 @@ export class DescriptionInlineNode
   }
 
   toString(): string {
+    if (this.type === 'link') {
+      return `${this.content.map((child) => child.toString()).join('')}: ${
+        this.href ?? this.props.href
+      }`;
+    }
     return this.content.map((child) => child.toString()).join('');
   }
 

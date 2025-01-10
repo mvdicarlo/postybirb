@@ -4,9 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
+  DescriptionType,
   NullAccount,
   SubmissionRating,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -92,6 +93,7 @@ describe('FormGeneratorService', () => {
         label: 'description',
         row: 3,
         type: 'description',
+        descriptionType: DescriptionType.HTML,
       },
       rating: {
         col: 0,
@@ -162,6 +164,7 @@ describe('FormGeneratorService', () => {
         label: 'description',
         row: 3,
         type: 'description',
+        descriptionType: DescriptionType.HTML,
       },
       rating: {
         col: 0,
@@ -227,6 +230,7 @@ describe('FormGeneratorService', () => {
         label: 'description',
         row: 3,
         type: 'description',
+        descriptionType: DescriptionType.HTML,
       },
       rating: {
         col: 0,

@@ -38,10 +38,11 @@ export class DescriptionParserService {
     tags: string[],
     title: string,
   ): Promise<string> {
-    const { descriptionSupport } = instance.decoratedProps;
-    const { supportsDescriptionType } = descriptionSupport;
+    const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
+    const { descriptionType, hidden } =
+      mergedOptions.getFormFieldFor('description');
 
-    if (supportsDescriptionType === DescriptionType.NONE) {
+    if (descriptionType === DescriptionType.NONE || hidden) {
       return undefined;
     }
 
@@ -52,10 +53,8 @@ export class DescriptionParserService {
       allowAd = false;
     }
 
-    const merged = websiteOptions.mergeDefaults(defaultOptions);
-    const descriptionValue = merged.description;
+    const descriptionValue = mergedOptions.description;
 
-    // TODO - verify tag insertions
     const insertionOptions: InsertionOptions = {
       insertTitle: descriptionValue.insertTitle ? title : undefined,
       insertTags: descriptionValue.insertTags ? tags : undefined,
@@ -72,7 +71,7 @@ export class DescriptionParserService {
       },
     );
 
-    switch (supportsDescriptionType) {
+    switch (descriptionType) {
       case DescriptionType.MARKDOWN:
         return tree.toMarkdown();
       case DescriptionType.HTML:
@@ -90,7 +89,7 @@ export class DescriptionParserService {
           `Website does not implement custom description parser: ${instance.constructor.name}`,
         );
       default:
-        throw new Error(`Unsupported description type: ${descriptionSupport}`);
+        throw new Error(`Unsupported description type: ${descriptionType}`);
     }
   }
 }

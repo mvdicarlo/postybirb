@@ -78,6 +78,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
   }
 
   public async enqueue(submissionIds: SubmissionId[]) {
+    if (!submissionIds.length) {
+      return;
+    }
     const release = await this.queueModificationMutex.acquire();
     this.logger.withMetadata({ submissionIds }).info('Enqueueing posts');
 

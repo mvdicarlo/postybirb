@@ -3,21 +3,21 @@ import { ValidatorParams } from './validator.type';
 
 export async function validateDescriptionMaxLength({
   result,
-  websiteInstance,
   data,
+  mergedWebsiteOptions,
 }: ValidatorParams) {
-  const { descriptionSupport } = websiteInstance.decoratedProps;
+  const { hidden, descriptionType, maxDescriptionLength } =
+    mergedWebsiteOptions.getFormFieldFor('description');
   if (
-    websiteInstance.decoratedProps.descriptionSupport === undefined ||
-    websiteInstance.decoratedProps.descriptionSupport
-      .supportsDescriptionType === DescriptionType.NONE
+    descriptionType === undefined ||
+    descriptionType === DescriptionType.NONE ||
+    hidden
   ) {
     return;
   }
 
   const { description } = data.options;
-  const maxLength =
-    descriptionSupport.maxDescriptionLength ?? Number.MAX_SAFE_INTEGER;
+  const maxLength = maxDescriptionLength ?? Number.MAX_SAFE_INTEGER;
   if (description.length > maxLength) {
     result.warnings.push({
       id: 'validation.description.max-length',
@@ -32,20 +32,21 @@ export async function validateDescriptionMaxLength({
 
 export async function validateDescriptionMinLength({
   result,
-  websiteInstance,
   data,
+  mergedWebsiteOptions,
 }: ValidatorParams) {
-  const { descriptionSupport } = websiteInstance.decoratedProps;
+  const { hidden, descriptionType, minDescriptionLength } =
+    mergedWebsiteOptions.getFormFieldFor('description');
   if (
-    websiteInstance.decoratedProps.descriptionSupport === undefined ||
-    websiteInstance.decoratedProps.descriptionSupport
-      .supportsDescriptionType === DescriptionType.NONE
+    descriptionType === undefined ||
+    descriptionType === DescriptionType.NONE ||
+    hidden
   ) {
     return;
   }
 
   const { description } = data.options;
-  const minLength = descriptionSupport.minDescriptionLength ?? -1;
+  const minLength = minDescriptionLength ?? -1;
   if (description.length < minLength) {
     result.errors.push({
       id: 'validation.description.min-length',

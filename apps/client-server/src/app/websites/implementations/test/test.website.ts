@@ -1,5 +1,4 @@
 import {
-  DescriptionType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -12,7 +11,6 @@ import {
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
-import { SupportsDescription } from '../../decorators/supports-description.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -30,7 +28,6 @@ export const TestMetadata: IWebsiteMetadata = {
 @WebsiteMetadata(TestMetadata)
 @UserLoginFlow('https://furaffinity.net')
 @SupportsFiles(['image/png', 'image/jpeg'])
-@SupportsDescription(DescriptionType.HTML)
 export default class TestWebsite
   extends Website<{ test: string }>
   implements

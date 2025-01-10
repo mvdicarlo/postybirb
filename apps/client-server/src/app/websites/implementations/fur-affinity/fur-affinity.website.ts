@@ -1,6 +1,5 @@
 import { Http } from '@postybirb/http';
 import {
-  DescriptionType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -12,7 +11,6 @@ import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
-import { SupportsDescription } from '../../decorators/supports-description.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -35,7 +33,6 @@ import { FurAffinityMessageSubmission } from './models/fur-affinity-message-subm
   url: 'https://furaffinity.net/user/$1',
 })
 @SupportsFiles(['image/png', 'image/jpeg'])
-@SupportsDescription(DescriptionType.CUSTOM)
 export default class FurAffinity
   extends Website<FurAffinityAccountData>
   implements
