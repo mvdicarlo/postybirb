@@ -2,13 +2,13 @@ import {
   BooleanField,
   DescriptionField,
   TagField,
-  TextField,
+  TitleField,
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class FurAffinityMessageSubmission extends BaseWebsiteOptions {
-  @TextField({ label: 'title', maxLength: 60 })
+  @TitleField({ maxLength: 60 })
   title: string;
 
   @DescriptionField({

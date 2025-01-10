@@ -10,7 +10,7 @@ import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
-import { TitleParserService } from '../post-parsers/parsers/title-parser.service';
+import { TitleParser } from '../post-parsers/parsers/title-parser';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
@@ -89,7 +89,7 @@ describe('FileService', () => {
         PostParsersService,
         TagParserService,
         DescriptionParserService,
-        TitleParserService,
+        TitleParser,
         TagConvertersService,
         SettingsService,
         FormGeneratorService,

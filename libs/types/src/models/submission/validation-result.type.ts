@@ -120,7 +120,6 @@ export interface ValidationMessages {
   'validation.title.max-length': {
     currentLength: number;
     maxLength: number;
-    willTruncate: boolean;
   };
 
   'validation.title.min-length': {

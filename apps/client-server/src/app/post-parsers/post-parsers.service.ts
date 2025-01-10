@@ -10,15 +10,16 @@ import { UnknownWebsite } from '../websites/website';
 import { DescriptionParserService } from './parsers/description-parser.service';
 import { RatingParser } from './parsers/rating-parser';
 import { TagParserService } from './parsers/tag-parser.service';
-import { TitleParserService } from './parsers/title-parser.service';
+import { TitleParser } from './parsers/title-parser';
 
 @Injectable()
 export class PostParsersService {
   private readonly ratingParser: RatingParser = new RatingParser();
 
+  private readonly titleParser: TitleParser = new TitleParser();
+
   constructor(
     private readonly tagParser: TagParserService,
-    private readonly titleParser: TitleParserService,
     private readonly descriptionParser: DescriptionParserService,
   ) {}
 

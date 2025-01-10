@@ -134,13 +134,10 @@ export const TranslationMessages: Partial<TranslationsMap> = {
   },
 
   'validation.title.max-length': (props) => {
-    const { maxLength, currentLength, willTruncate } = props.values;
-    let translatedMsg;
-    if (willTruncate) {
-      translatedMsg = <Trans>Title is too long and will be truncated</Trans>;
-    } else {
-      translatedMsg = <Trans>Title is too long</Trans>;
-    }
+    const { maxLength, currentLength } = props.values;
+    const translatedMsg = (
+      <Trans>Title is too long and will be truncated</Trans>
+    );
 
     return (
       <>

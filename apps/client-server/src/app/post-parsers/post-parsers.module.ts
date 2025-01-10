@@ -6,7 +6,6 @@ import { TagConvertersModule } from '../tag-converters/tag-converters.module';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { DescriptionParserService } from './parsers/description-parser.service';
 import { TagParserService } from './parsers/tag-parser.service';
-import { TitleParserService } from './parsers/title-parser.service';
 import { PostParsersService } from './post-parsers.service';
 
 @Module({
@@ -19,15 +18,9 @@ import { PostParsersService } from './post-parsers.service';
   providers: [
     PostParsersService,
     TagParserService,
-    TitleParserService,
     WebsiteImplProvider,
     DescriptionParserService,
   ],
-  exports: [
-    PostParsersService,
-    TagParserService,
-    TitleParserService,
-    DescriptionParserService,
-  ],
+  exports: [PostParsersService, TagParserService, DescriptionParserService],
 })
 export class PostParsersModule {}

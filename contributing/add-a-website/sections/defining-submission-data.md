@@ -19,6 +19,7 @@ more dynamic requirements are implemented.
 - **@SelectField** - Dropdown selection (best used when more than 5 choices are available)
 - **@TagField** - Standard tag field to be used for tag retrieval.
 - **@TextField** - Text / Text Area
+- **@TitleField** - Text
 
 ## Defining Layout
 
@@ -68,8 +69,8 @@ export const FieldLabelTranslations: {
 ## Sample Submission Class
 
 ```ts
-class FooFileSubmission implements FileWebsiteFormFields {
-  @TextField({ label: 'title', required: true, row: 0, col: 1 })
+class FooFileSubmission extends BaseWebsiteOptions {
+  @TitleField({ required: true, row: 0, col: 1 })
   title: string;
 
   @TagField({ row: 2, col: 1 })
