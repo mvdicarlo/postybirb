@@ -1,15 +1,19 @@
 import { Trans } from '@lingui/macro';
-import { Box, Button, Stack, TextInput } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Checkbox,
+  NumberInput,
+  Stack,
+  TextInput,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
+import { DiscordAccountData } from '@postybirb/types';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
-
-type DiscordAccountData = {
-  webhook: string;
-};
 
 const formId = 'discord-login-form';
 
@@ -25,7 +29,13 @@ const isStringValid = (str: string): boolean | undefined => {
     }
   }
 
-  return false;
+  try {
+    // eslint-disable-next-line no-new
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export default function DiscordLoginView(
@@ -34,6 +44,10 @@ export default function DiscordLoginView(
   const { account } = props;
   const { data, id } = account;
   const [webhook, setWebhook] = useState<string>(data?.webhook ?? '');
+  const [serverLevel, setServerLevel] = useState<number>(
+    data?.serverLevel ?? 0,
+  );
+  const [isForum, setIsForum] = useState<boolean>(data?.isForum ?? false);
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
   const isWebhookValid = isStringValid(webhook);
@@ -49,6 +63,8 @@ export default function DiscordLoginView(
             id,
             data: {
               webhook,
+              serverLevel,
+              isForum,
             },
           })
           .then(() => {
@@ -92,8 +108,29 @@ export default function DiscordLoginView(
               </Trans>
             </ExternalLink>
           }
+          onBlur={(event) => {
+            setWebhook(event.currentTarget.value.trim());
+          }}
+        />
+        <NumberInput
+          label={<Trans>Server Level</Trans>}
+          value={serverLevel}
+          min={0}
+          max={3}
+          description={
+            <ExternalLink href="https://support.discord.com/hc/en-us/articles/360028038352-Server-Boosting-FAQ#h_419c3bd5-addd-4989-b7cf-c7957ef92583">
+              <Trans>Server level perks</Trans>
+            </ExternalLink>
+          }
+          onBlur={(event) => {
+            setServerLevel(event.currentTarget.valueAsNumber);
+          }}
+        />
+        <Checkbox
+          label={<Trans>Is a forum</Trans>}
+          checked={isForum}
           onChange={(event) => {
-            setWebhook(event.currentTarget.value);
+            setIsForum(event.currentTarget.checked);
           }}
         />
         <Box>

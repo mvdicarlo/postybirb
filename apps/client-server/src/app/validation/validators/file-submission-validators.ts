@@ -201,7 +201,7 @@ export async function validateFileSize({
       acceptedFileSizes[`${getFileType(file.fileName).toLowerCase()}/*`] ??
       acceptedFileSizes['*'];
 
-    if (maxFileSize && file.size > maxFileSize * 1024 * 1024) {
+    if (maxFileSize && file.size > maxFileSize) {
       const issue: ValidationMessage = {
         id: 'validation.file.file-size',
         field: 'files',

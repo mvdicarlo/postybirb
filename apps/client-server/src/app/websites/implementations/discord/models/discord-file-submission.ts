@@ -1,4 +1,8 @@
-import { DescriptionField, TagField } from '@postybirb/form-builder';
+import {
+  BooleanField,
+  DescriptionField,
+  TagField,
+} from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -13,4 +17,10 @@ export class DiscordFileSubmission extends BaseWebsiteOptions {
     hidden: true,
   })
   tags: TagValue;
+
+  @BooleanField({ label: 'spoiler' })
+  isSpoiler = false;
+
+  @BooleanField({ label: 'useTitle' })
+  useTitle = true;
 }
