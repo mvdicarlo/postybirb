@@ -80,6 +80,11 @@ export class Account extends PostyBirbEntity implements IAccount {
     this.groups = account.groups;
   }
 
+  // TODO: This is more of a hack as the "DTO" field is not properly typed.
+  // Would either need to inject the instance type to correctly populate the fields
+  // or just actually create a separate DTO typing.
+  // I should really track down any other type hacks in the app since it feels
+  // gross.
   toJSON(): IAccountDto {
     return serialize(this) as IAccountDto;
   }
