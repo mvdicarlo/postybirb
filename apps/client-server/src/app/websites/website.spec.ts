@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseModule } from '../database/database.module';
-import { WebsiteData } from '../database/entities';
+import { Account, WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
@@ -39,14 +39,16 @@ describe('Website', () => {
   });
 
   it('should store data', async () => {
-    const website = new TestWebsite({
-      id: 'store',
-      name: 'test',
-      website: 'test',
-      groups: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const website = new TestWebsite(
+      new Account({
+        id: 'store',
+        name: 'test',
+        website: 'test',
+        groups: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    );
     await website.onInitialize(repository);
     website.onBeforeLogin();
     await website.onLogin();

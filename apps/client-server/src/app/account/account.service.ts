@@ -208,7 +208,7 @@ export class AccountService
    * @param {CreateAccountDto} createDto
    * @return {*}  {Promise<Account>}
    */
-  async create(createDto: CreateAccountDto): Promise<IAccountDto> {
+  async create(createDto: CreateAccountDto): Promise<Account> {
     this.logger
       .withMetadata(createDto)
       .info(`Creating Account '${createDto.name}:${createDto.website}`);
@@ -221,7 +221,7 @@ export class AccountService
     await this.repository.persistAndFlush(account);
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
-    return instance.accountDto;
+    return account;
   }
 
   public findById(id: string, options?: FindOptions) {
@@ -240,18 +240,18 @@ export class AccountService
    * @param {Account} account
    * @return {*}  {Account}
    */
-  private getAccountDto(account: Account): IAccountDto {
+  public getAccountDto(account: Account): IAccountDto {
     const instance = this.websiteRegistry.findInstance(account);
     if (instance) {
       return instance.accountDto;
     }
 
-    throw new Error(`Unable to find instance for account ${account.id}`);
+    return account.toJSON();
   }
 
   async update(id: string, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.getAccountDto(await this.repository.update(id, update));
+    return this.repository.update(id, update);
   }
 
   async remove(id: string) {
