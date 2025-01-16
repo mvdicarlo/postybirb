@@ -219,7 +219,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
         });
         top.postRecord = postRecord as IPostRecord;
         this.logger
-          .withMetadata({ postRecord })
+          .withMetadata({ postRecord: postRecord.toJSON() })
           .info('Creating PostRecord and starting PostManager');
         await this.postRecordRepository.persistAndFlush(postRecord);
         this.postManager.startPost(postRecord);

@@ -8,6 +8,7 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
+import DefaultWebsite from '../../websites/implementations/default/default.website';
 import {
   ImplementedFileWebsite,
   isFileWebsite,
@@ -50,7 +51,8 @@ function validateTextFileRequiresFallback({
 }: ValidatorParams & { file: ISubmissionFile }) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
-    !isFileSubmission(submission)
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite
   ) {
     return;
   }
@@ -78,6 +80,33 @@ function validateTextFileRequiresFallback({
   });
 }
 
+export async function validateNotAllFilesIgnored({
+  result,
+  websiteInstance,
+  submission,
+}: ValidatorParams) {
+  if (
+    !isFileHandlingWebsite(websiteInstance) ||
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite
+  ) {
+    return;
+  }
+
+  const numFiles = submission.files
+    .getItems()
+    .filter(
+      (file) => !isFileFiltered(file, submission, websiteInstance),
+    ).length;
+  if (numFiles === 0) {
+    result.warnings.push({
+      id: 'validation.file.all-ignored',
+      field: 'files',
+      values: {},
+    });
+  }
+}
+
 export async function validateAcceptedFiles({
   result,
   websiteInstance,
@@ -88,7 +117,8 @@ export async function validateAcceptedFiles({
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
-    !isFileSubmission(submission)
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite
   ) {
     return;
   }
@@ -97,6 +127,10 @@ export async function validateAcceptedFiles({
     websiteInstance.decoratedProps.fileOptions?.acceptedMimeTypes ?? [];
   const supportedFileTypes =
     websiteInstance.decoratedProps.fileOptions?.supportedFileTypes ?? [];
+
+  if (!acceptedMimeTypes.length && !supportedFileTypes.length) {
+    return;
+  }
 
   submission.files.getItems().forEach((file) => {
     if (isFileFiltered(file, submission, websiteInstance)) {
@@ -151,7 +185,8 @@ export async function validateFileBatchSize({
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
-    !isFileSubmission(submission)
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite
   ) {
     return;
   }
@@ -183,7 +218,8 @@ export async function validateFileSize({
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
-    !isFileSubmission(submission)
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite
   ) {
     return;
   }
@@ -228,7 +264,8 @@ export async function validateImageFileDimensions({
 }: ValidatorParams) {
   if (
     !isFileHandlingWebsite(websiteInstance) ||
-    !isFileSubmission(submission)
+    !isFileSubmission(submission) ||
+    websiteInstance instanceof DefaultWebsite
   ) {
     return;
   }

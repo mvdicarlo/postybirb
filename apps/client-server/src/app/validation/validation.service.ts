@@ -9,6 +9,7 @@ import {
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
+import { Account } from '../database/entities';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
@@ -59,7 +60,7 @@ export class ValidationService {
   ): Promise<ValidationResult> {
     try {
       const website = websiteOption.isDefault
-        ? new DefaultWebsite(websiteOption.account)
+        ? new DefaultWebsite(new Account(websiteOption.account))
         : this.websiteRegistry.findInstance(websiteOption.account);
       if (!website) {
         this.logger.error(
@@ -72,6 +73,7 @@ export class ValidationService {
       // All sub-validations mutate the result object
       const result: ValidationResult = {
         id: websiteOption.id,
+        account: website.accountInfo,
         warnings: [],
         errors: [],
       };
@@ -124,6 +126,7 @@ export class ValidationService {
       );
       return {
         id: websiteOption.id,
+        account: new Account(websiteOption.account).toJSON(),
         warnings: [
           {
             id: 'validation.failed',
@@ -157,6 +160,7 @@ export class ValidationService {
 
       return {
         id: websiteId,
+        account: website.accountInfo,
         warnings: result?.warnings,
         errors: result?.errors,
       };
@@ -167,6 +171,7 @@ export class ValidationService {
       );
       return {
         id: websiteId,
+        account: website.accountInfo,
         warnings: [
           {
             id: 'validation.failed',

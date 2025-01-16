@@ -2,13 +2,15 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   DynamicObject,
   IAccount,
+  IAccountDto,
+  IEntityDto,
   ILoginState,
   LoginState,
   SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
-import { WebsiteData } from '../database/entities';
+import { Account, WebsiteData } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
@@ -31,7 +33,7 @@ export abstract class Website<D extends DynamicObject> {
   /**
    * User account info for reference primarily during posting and login.
    */
-  protected readonly account: IAccount;
+  protected readonly account: Account;
 
   /**
    * Data store for website data that is persisted to dick and read on initialization.
@@ -83,6 +85,24 @@ export abstract class Website<D extends DynamicObject> {
     return this.account.id;
   }
 
+  public get accountInfo() {
+    return this.account.toJSON() as IEntityDto<IAccount>;
+  }
+
+  public get accountDto(): IAccountDto {
+    return {
+      ...this.accountInfo,
+      state: this.getLoginState(),
+      data: this.getWebsiteData(),
+      websiteInfo: {
+        websiteDisplayName:
+          this.decoratedProps.metadata.displayName ||
+          this.decoratedProps.metadata.name,
+        supports: this.getSupportedTypes(),
+      },
+    };
+  }
+
   /**
    * Whether or not this class supports {SubmissionType.FILE}.
    *
@@ -103,6 +123,9 @@ export abstract class Website<D extends DynamicObject> {
     return MessageWebsiteKey in this;
   }
 
+  /**
+   * Creates a model for file submissions.
+   */
   getModelFor(type: SubmissionType) {
     if (type === SubmissionType.FILE && isFileWebsite(this)) {
       return this.createFileModel();
@@ -115,7 +138,7 @@ export abstract class Website<D extends DynamicObject> {
     throw new Error(`Unsupported submission type: ${type}`);
   }
 
-  constructor(userAccount: IAccount) {
+  constructor(userAccount: Account) {
     this.account = userAccount;
     this.logger = Logger();
     this.websiteDataStore = new WebsiteDataManager(userAccount);
@@ -162,6 +185,9 @@ export abstract class Website<D extends DynamicObject> {
     };
   }
 
+  /**
+   * Returns the login state of the website.
+   */
   public getLoginState() {
     return this.loginState.getState();
   }

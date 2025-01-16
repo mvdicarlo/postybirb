@@ -16,6 +16,7 @@ import { WebsiteVisibilityPicker } from './website-visibility-picker';
 export function AccountDrawer() {
   const [visible, toggle] = useDrawerToggle('accountDrawerVisible');
   const { accounts, isLoading, filteredWebsites } = useWebsites();
+  console.log(accounts);
   const [loginAccount, setLoginAccount] = useState<{
     account: IAccountDto;
     website: IWebsiteInfoDto;

@@ -53,7 +53,7 @@ export default class Discord
   public async onLogin(): Promise<ILoginState> {
     const data = this.websiteDataStore.getData();
     if (data.webhook) {
-      return this.loginState.setLogin(true, '');
+      return this.loginState.setLogin(true, this.account.name);
     }
 
     if (data.serverLevel > 0) {

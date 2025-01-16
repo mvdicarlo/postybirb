@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import 'reflect-metadata';
 import { FormBuilderMetadata } from './types/form-builder-metadata';
 import { PrimitiveRecord } from './types/primitive-record';
@@ -8,12 +9,12 @@ export function formBuilder(
   data: PrimitiveRecord,
 ): FormBuilderMetadata {
   const key = getMetadataKey(target.constructor.name);
-  let sym = target[key];
+  let sym: symbol = (target as any)[key];
   if (!sym) {
     // Handle case where a class extends another class with metadata, but provides no metadata itself
     const parentKeys = getParentMetadataKeys(target);
     for (const parentKey of parentKeys) {
-      sym = target[parentKey];
+      sym = (target as any)[parentKey];
       if (sym) break;
     }
   }

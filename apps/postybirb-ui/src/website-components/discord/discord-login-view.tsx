@@ -23,16 +23,15 @@ const isStringValid = (str: string): boolean | undefined => {
   }
 
   // Account name must be provided and greater than 0 characters (trimmed)
-  if (str && str.length) {
-    if (str.trim().length > 0) {
-      return true;
-    }
-  }
-
   try {
     // eslint-disable-next-line no-new
     new URL(str);
-    return true;
+    if (str && str.length) {
+      if (str.trim().length > 0) {
+        return true;
+      }
+    }
+    return false;
   } catch {
     return false;
   }
@@ -97,7 +96,7 @@ export default function DiscordLoginView(
           name="webhook"
           required
           minLength={1}
-          value={webhook}
+          defaultValue={webhook}
           error={
             isWebhookValid === false ? <Trans>Webhook is required</Trans> : null
           }
@@ -114,7 +113,7 @@ export default function DiscordLoginView(
         />
         <NumberInput
           label={<Trans>Server Level</Trans>}
-          value={serverLevel}
+          defaultValue={serverLevel}
           min={0}
           max={3}
           description={

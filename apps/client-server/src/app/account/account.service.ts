@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
+  IAccountDto,
   IWebsiteMetadata,
   NULL_ACCOUNT_ID,
   NullAccount,
@@ -119,7 +120,7 @@ export class AccountService
 
   protected async emit() {
     const dtos = await this.findAll().then((results) =>
-      results.map((account) => account.toJSON()),
+      results.map((account) => this.getAccountDto(account)),
     );
     super.emit({
       event: ACCOUNT_UPDATES,
@@ -162,6 +163,7 @@ export class AccountService
     } finally {
       website.onAfterLogin();
       this.emit();
+      this.websiteRegistry.emit();
     }
   }
 
@@ -206,7 +208,7 @@ export class AccountService
    * @param {CreateAccountDto} createDto
    * @return {*}  {Promise<Account>}
    */
-  async create(createDto: CreateAccountDto): Promise<Account> {
+  async create(createDto: CreateAccountDto): Promise<IAccountDto> {
     this.logger
       .withMetadata(createDto)
       .info(`Creating Account '${createDto.name}:${createDto.website}`);
@@ -219,21 +221,17 @@ export class AccountService
     await this.repository.persistAndFlush(account);
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
-    return this.populateAccount(account);
+    return instance.accountDto;
   }
 
   public findById(id: string, options?: FindOptions) {
-    return this.repository
-      .findById(id, options)
-      .then((result) => (result ? this.populateAccount(result) : undefined));
+    return this.repository.findById(id, options);
   }
 
   public async findAll() {
-    return (
-      await this.repository.find({
-        id: { $ne: NULL_ACCOUNT_ID },
-      })
-    ).map((result) => this.populateAccount(result));
+    return this.repository.find({
+      id: { $ne: NULL_ACCOUNT_ID },
+    });
   }
 
   /**
@@ -242,30 +240,18 @@ export class AccountService
    * @param {Account} account
    * @return {*}  {Account}
    */
-  private populateAccount(account: Account): Account {
+  private getAccountDto(account: Account): IAccountDto {
     const instance = this.websiteRegistry.findInstance(account);
     if (instance) {
-      // eslint-disable-next-line no-param-reassign
-      account.data = instance.getWebsiteData();
-
-      // eslint-disable-next-line no-param-reassign
-      account.state = instance.getLoginState();
-
-      // eslint-disable-next-line no-param-reassign
-      account.websiteInfo = {
-        websiteDisplayName:
-          instance.decoratedProps.metadata.displayName ||
-          instance.decoratedProps.metadata.name,
-        supports: instance.getSupportedTypes(),
-      };
+      return instance.accountDto;
     }
 
-    return account;
+    throw new Error(`Unable to find instance for account ${account.id}`);
   }
 
   async update(id: string, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.populateAccount(await this.repository.update(id, update));
+    return this.getAccountDto(await this.repository.update(id, update));
   }
 
   async remove(id: string) {
