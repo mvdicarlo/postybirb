@@ -10,12 +10,12 @@ class PostQueueApi extends BaseApi<
     super('post-queue');
   }
 
-  enqueue(ids: string[]) {
-    return this.client.post('enqueue', { ids });
+  enqueue(submissionIds: string[]) {
+    return this.client.post('enqueue', { submissionIds });
   }
 
-  dequeue(ids: string[]) {
-    return this.client.post('dequeue', { ids });
+  dequeue(submissionIds: string[]) {
+    return this.client.post('dequeue', { submissionIds });
   }
 }
 

@@ -12,4 +12,6 @@ export const FieldLabelTranslations: {
   species: msg`Species`,
   contentWarning: msg`Content warning`,
   feature: msg`Feature`,
+  spoiler: msg`Spoiler`,
+  useTitle: msg`Use title`,
 };

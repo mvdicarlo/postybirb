@@ -3,7 +3,7 @@ import { createFieldDecorator } from '../utils/assign-metadata';
 
 type SelectOption = {
   label: string;
-  value: unknown;
+  value: string;
   options?: SelectOption[];
 };
 

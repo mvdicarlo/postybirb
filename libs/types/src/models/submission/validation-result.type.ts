@@ -1,10 +1,12 @@
+import { IEntityDto } from '../../dtos';
 import { FileType } from '../../enums';
+import { IAccount } from '../account/account.interface';
 import { ImageResizeProps } from '../website/image-resize-props';
 import { IWebsiteFormFields } from './website-form-fields.interface';
 
 export type SimpleValidationResult<T extends IWebsiteFormFields = never> = Omit<
   ValidationResult<T>,
-  'id'
+  'id' | 'account'
 >;
 
 export type ValidationResult<T extends IWebsiteFormFields = never> = {
@@ -12,6 +14,12 @@ export type ValidationResult<T extends IWebsiteFormFields = never> = {
    * Id that associates with the website options the validation was performed on.
    */
   id: string;
+
+  /**
+   * The account associated with the website options.
+   * More for readability and to avoid having to look up the account from the website options.
+   */
+  account: IEntityDto<IAccount>;
 
   /**
    * Non-blocking issues with the validated submission.
@@ -61,6 +69,8 @@ export interface ValidationMessages {
     acceptedMimeTypes: string[];
     fileId: string;
   };
+
+  'validation.file.all-ignored': object;
 
   'validation.file.unsupported-file-type': {
     fileName: string;

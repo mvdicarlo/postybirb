@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-param-reassign */
 import 'reflect-metadata';
 import { Class } from 'type-fest';
@@ -81,7 +82,7 @@ export function createFieldDecorator<
      */
     onCreate?: (
       options: FieldType<FieldValue, TypeKey>,
-      target: object,
+      target: any,
       propertyKey: string | symbol,
     ) => void;
   }) {
@@ -93,7 +94,7 @@ export function createFieldDecorator<
     ): PropertyDecorator {
       if (field.defaults) {
         for (const [key, value] of Object.entries(field.defaults)) {
-          options[key] ??= value;
+          (options as any)[key] ??= value;
         }
       }
 
@@ -102,13 +103,13 @@ export function createFieldDecorator<
 
       fieldOptions.type ??= type;
 
-      return (target, propertyKey) => {
+      return (target: any, propertyKey) => {
         if (typeof propertyKey === 'symbol') return;
 
         const proto = target.constructor;
         // eslint-disable-next-line new-cap
-        const obj = new (proto as Class<unknown>)();
-        const propKeyValue = obj[propertyKey];
+        const obj = new (proto as Class<object>)();
+        const propKeyValue = (obj as any)[propertyKey];
         if (propKeyValue !== undefined) {
           /*
            * This is to allow for setting of defaults through field setting

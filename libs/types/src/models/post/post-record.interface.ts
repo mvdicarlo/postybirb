@@ -1,3 +1,5 @@
+// TODO: I would like to remove the need to insert Rel and Collection because it makes things more complicated than they need to be.
+// Largely would just need to fix up anywhere the Rel and Collection are used to be the actual type instead of the Rel and Collection.
 import { Collection, Rel } from '@mikro-orm/core';
 import { PostRecordResumeMode, PostRecordState } from '../../enums';
 import { IEntity } from '../database/entity.interface';

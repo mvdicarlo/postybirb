@@ -9,7 +9,7 @@ import userSpecifiedWebsiteOptionsApi from '../../../api/user-specified-website-
 import { getTranslatedLabel } from '../fields/field-label';
 
 type UserSpecifiedWebsiteOptionsSaveModalProps = {
-  form: FormBuilderMetadata<never>;
+  form: FormBuilderMetadata;
   values: Record<string, unknown>;
   account: AccountId;
   type: SubmissionType;

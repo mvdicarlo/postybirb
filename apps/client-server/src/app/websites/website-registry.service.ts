@@ -75,7 +75,7 @@ export class WebsiteRegistryService {
     );
   }
 
-  private async emit() {
+  public async emit() {
     if (this.webSocket) {
       this.webSocket.emit({
         event: WEBSITE_UPDATES,
@@ -109,7 +109,7 @@ export class WebsiteRegistryService {
    * Creates an instance of a Website associated with an Account.
    * @param {Account} account
    */
-  public async create(account: IAccount): Promise<UnknownWebsite> {
+  public async create(account: Account): Promise<UnknownWebsite> {
     const { website, id } = account;
     if (this.canCreate(account.website)) {
       const WebsiteCtor = this.availableWebsites[website];

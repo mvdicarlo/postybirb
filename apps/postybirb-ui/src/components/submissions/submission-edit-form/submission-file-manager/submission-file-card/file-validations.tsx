@@ -15,7 +15,7 @@ type FileValidationsProps = {
   file: ISubmissionFileDto;
 };
 
-type ModifiedValidationResult = Required<ValidationResult> & {
+type ModifiedValidationResult = Required<Omit<ValidationResult, 'account'>> & {
   account: IAccountDto;
 };
 

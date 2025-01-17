@@ -8,15 +8,16 @@ export type WebsiteFileOptions = {
   acceptedMimeTypes: string[];
 
   /**
-   * The acceptable file size limits in Megabytes.
+   * The acceptable file size limits in bytes.
    * Only needed when using File posting websites.
    * Supports FileType(FileType.IMAGE), MimeType (image/png), WildCard (image/*),
    * and File Extension (e.g. '.txt')
    *
    * Example:
    *  {
-   *    'image/*': 5,
-   *    'text/*': 2
+   *    'image/*': 5 * 1024 * 1024,
+   *    'text/*': 2 * 1024 * 1024,
+   *    '*': 10 * 1024 * 1024,
    *  }
    */
   acceptedFileSizes?: Record<string, number>;

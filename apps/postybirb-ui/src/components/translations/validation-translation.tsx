@@ -58,6 +58,10 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     );
   },
 
+  'validation.file.all-ignored': () => (
+    <Trans>All files are marked ignored.</Trans>
+  ),
+
   'validation.file.unsupported-file-type': (props) => {
     const { fileType } = props.values;
     let fileTypeString;

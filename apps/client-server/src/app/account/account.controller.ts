@@ -29,7 +29,7 @@ export class AccountController extends PostyBirbController<Account> {
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.service
       .create(createAccountDto)
-      .then((account) => account.toJSON());
+      .then((account) => this.service.getAccountDto(account));
   }
 
   @Post('/clear/:id')
@@ -52,7 +52,7 @@ export class AccountController extends PostyBirbController<Account> {
   update(@Body() updateAccountDto: UpdateAccountDto, @Param('id') id: string) {
     return this.service
       .update(id, updateAccountDto)
-      .then((entity) => entity.toJSON());
+      .then((account) => this.service.getAccountDto(account));
   }
 
   @Post('/account-data')

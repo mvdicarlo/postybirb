@@ -30,4 +30,10 @@ export type PostResponse = {
    * @type {unknown}
    */
   additionalInfo?: unknown;
+
+  /**
+   * The instance id of the post.
+   * @type {string}
+   */
+  instanceId?: string;
 };

@@ -1,17 +1,21 @@
 import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
+  Alert,
   Box,
   Card,
   Flex,
   Input,
+  List,
   Loader,
   ScrollArea,
   Stack,
 } from '@mantine/core';
 import {
   AccountId,
+  IAccount,
   IAccountDto,
+  IEntityDto,
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
   NullAccount,
@@ -20,6 +24,7 @@ import {
 } from '@postybirb/types';
 import {
   IconArrowsMove,
+  IconExclamationCircle,
   IconSquare,
   IconSquareFilled,
 } from '@tabler/icons-react';
@@ -32,6 +37,7 @@ import { AccountStore } from '../../../../stores/account.store';
 import { useStore } from '../../../../stores/use-store';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { WebsiteSelect } from '../../../form/website-select/website-select';
+import { ValidationTranslation } from '../../../translations/validation-translation';
 import { SubmissionFilePreview } from '../../submission-file-preview/submission-file-preview';
 import { SubmissionScheduler } from '../../submission-scheduler/submission-scheduler';
 import { SubmissionViewCardActions } from './submission-view-card-actions';
@@ -106,6 +112,20 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     return <Loader />;
   }
 
+  const fileValidationIssues = submission.validations.reduce(
+    (prev, curr) => ({
+      id: prev.id,
+      account: prev.account,
+      errors: [...(prev.errors ?? []), ...(curr.errors ?? [])].filter(
+        (e) => e.field === 'files',
+      ),
+      warnings: [...(prev.warnings ?? []), ...(curr.warnings ?? [])].filter(
+        (e) => e.field === 'files',
+      ),
+    }),
+    { id: '', errors: [], warnings: [], account: {} as IEntityDto<IAccount> },
+  );
+
   return (
     <Card
       shadow="xs"
@@ -135,9 +155,55 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
             {type === SubmissionType.FILE && files.length ? (
               <SubmissionFilePreview file={files[0]} height={75} width={75} />
             ) : null}
-
             <Box mx="xs" flex="10">
               <Stack gap="xs">
+                {fileValidationIssues.errors?.length ? (
+                  <Alert
+                    variant="outline"
+                    color="red"
+                    icon={<IconExclamationCircle />}
+                  >
+                    <List
+                      withPadding
+                      listStyleType="disc"
+                      spacing="xs"
+                      size="sm"
+                    >
+                      {fileValidationIssues.errors.map((error) => (
+                        <List.Item key={error.id}>
+                          <ValidationTranslation
+                            id={error.id}
+                            values={error.values}
+                          />
+                        </List.Item>
+                      ))}
+                    </List>
+                  </Alert>
+                ) : null}
+
+                {fileValidationIssues.warnings?.length ? (
+                  <Alert
+                    variant="outline"
+                    color="orange"
+                    icon={<IconExclamationCircle />}
+                  >
+                    <List
+                      withPadding
+                      listStyleType="disc"
+                      spacing="xs"
+                      size="sm"
+                    >
+                      {fileValidationIssues.warnings.map((warning) => (
+                        <List.Item key={warning.id}>
+                          <ValidationTranslation
+                            id={warning.id}
+                            values={warning.values}
+                          />
+                        </List.Item>
+                      ))}
+                    </List>
+                  </Alert>
+                ) : null}
                 <Input.Wrapper label={<Trans>Schedule</Trans>}>
                   <SubmissionScheduler
                     schedule={submission.schedule}

@@ -3,11 +3,11 @@
  * @class FileSize
  */
 export default class FileSize {
-  static MBtoBytes(size: number): number {
+  static mbToBytes(size: number): number {
     return size * 1048576;
   }
 
-  static BytesToMB(size: number): number {
+  static bytesToMB(size: number): number {
     return size / 1048576;
   }
 }

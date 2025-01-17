@@ -6,6 +6,8 @@ export interface FieldTranslations {
   contentWarning: true;
   feature: true;
   species: true;
+  spoiler: true;
+  useTitle: true;
 }
 
 export type FieldTranslationId = keyof FieldTranslations;
