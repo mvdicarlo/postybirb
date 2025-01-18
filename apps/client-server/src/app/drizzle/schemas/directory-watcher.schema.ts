@@ -22,6 +22,9 @@ export const directoryWatcher = sqliteTable('directory-watcher', {
 export const directoryWatcherRelations = relations(
   directoryWatcher,
   ({ one }) => ({
-    template: one(submission),
+    template: one(submission, {
+      fields: [directoryWatcher.templateId],
+      references: [submission.id],
+    }),
   }),
 );

@@ -16,5 +16,8 @@ export const websiteData = sqliteTable('website-data', {
 });
 
 export const websiteDataRelations = relations(websiteData, ({ one }) => ({
-  account: one(account),
+  account: one(account, {
+    fields: [websiteData.accountId],
+    references: [account.id],
+  }),
 }));

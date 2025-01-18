@@ -20,6 +20,12 @@ export const websiteOptions = sqliteTable('website-options', {
 });
 
 export const websiteOptionsRelations = relations(websiteOptions, ({ one }) => ({
-  account: one(websiteOptions),
-  submission: one(submission),
+  account: one(account, {
+    fields: [websiteOptions.accountId],
+    references: [account.id],
+  }),
+  submission: one(submission, {
+    fields: [websiteOptions.submissionId],
+    references: [submission.id],
+  }),
 }));
