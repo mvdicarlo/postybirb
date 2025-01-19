@@ -1,4 +1,3 @@
-import { Collection } from '@mikro-orm/core';
 import { SubmissionType } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IPostQueueRecord } from '../post/post-queue-record.interface';
@@ -30,7 +29,7 @@ export interface ISubmission<
    * The options associated with the submission.
    * @type {Collection<IWebsiteOptions<IWebsiteFormFields>>}
    */
-  options: Collection<IWebsiteOptions<IWebsiteFormFields>>;
+  options: IWebsiteOptions<IWebsiteFormFields>[];
 
   /**
    * The post queue record associated with the submission.
@@ -45,6 +44,19 @@ export interface ISubmission<
   isScheduled: boolean;
 
   /**
+   * Indicates whether the submission is a template.
+   * @type {boolean}
+   */
+  isTemplate: boolean;
+
+  /**
+   * Indicates whether or not the submission is a auto-created
+   * multi-submission.
+   * @type {boolean}
+   */
+  isMultiSubmission: boolean;
+
+  /**
    * Information about the schedule for the submission.
    * @type {ISubmissionScheduleInfo}
    */
@@ -54,7 +66,7 @@ export interface ISubmission<
    * The files associated with the submission.
    * @type {Collection<ISubmissionFile>}
    */
-  files: Collection<ISubmissionFile>;
+  files: ISubmissionFile[];
 
   /**
    * The metadata associated with the submission.
@@ -66,7 +78,7 @@ export interface ISubmission<
    * The post records associated with the submission.
    * @type {Collection<IPostRecord>}
    */
-  posts: Collection<IPostRecord>;
+  posts: IPostRecord[];
 
   /**
    * The index of the submission for display purposes.

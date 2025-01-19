@@ -1,6 +1,7 @@
-import { DirectoryWatcherImportAction } from '@postybirb/types';
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { DirectoryWatcherImportAction } from '../../../../../../libs/types/src/index';
 import { commonSchema } from './common.schema';
 import { submission } from './submission.schema';
 

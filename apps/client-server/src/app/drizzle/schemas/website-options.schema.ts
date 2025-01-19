@@ -3,10 +3,12 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { account } from './account.schema';
 import { commonSchema } from './common.schema';
 import { submission } from './submission.schema';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { IWebsiteFormFields } from '../../../../../../libs/types/src/index';
 
 export const websiteOptions = sqliteTable('website-options', {
   ...commonSchema(),
-  data: text({ mode: 'json' }).notNull().default('{}'),
+  data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),
   accountId: integer()
     .notNull()
     .references(() => account.id, {

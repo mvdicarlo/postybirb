@@ -1,6 +1,7 @@
-import { IPostRecordMetadata, PostData } from '@postybirb/types';
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { IPostRecordMetadata, PostData } from '../../../../../../libs/types/src/index';
 import { account } from './account.schema';
 import { commonSchema } from './common.schema';
 import { postRecord } from './post-record.schema';

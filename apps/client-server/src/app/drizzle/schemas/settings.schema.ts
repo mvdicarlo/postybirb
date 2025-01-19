@@ -1,4 +1,5 @@
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { SettingsConstants } from '../../settings/settings.constants';
 import { commonSchema } from './common.schema';
 

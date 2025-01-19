@@ -7,7 +7,7 @@ export const websiteData = sqliteTable('website-data', {
   ...commonSchema(),
   name: text().notNull(),
   website: text().notNull(),
-  data: text({ mode: 'json' }).notNull().default('{}'),
+  data: text({ mode: 'json' }).notNull().default({}),
   accountId: integer()
     .notNull()
     .references(() => account.id, {

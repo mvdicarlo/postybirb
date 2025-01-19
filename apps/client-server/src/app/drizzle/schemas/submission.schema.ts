@@ -1,6 +1,10 @@
-import { ISubmissionScheduleInfo } from '@postybirb/types';
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import {
+  ISubmissionMetadata,
+  ISubmissionScheduleInfo,
+} from '../../../../../../libs/types/src/index';
 import { commonSchema, submissionType } from './common.schema';
 import { postRecord } from './post-record.schema';
 import { submissionFile } from './submission-file.schema';
@@ -11,8 +15,9 @@ export const submission = sqliteTable('submission', {
   ...submissionType(),
   isScheduled: integer({ mode: 'boolean' }).default(false),
   isTemplate: integer({ mode: 'boolean' }).default(false),
-  schedule: text({ mode: 'json' }).$type<ISubmissionScheduleInfo>(),
-  metadata: text({ mode: 'json' }).notNull().default('{}'),
+  isMultiSubmission: integer({ mode: 'boolean' }).default(false),
+  schedule: text({ mode: 'json' }).notNull().$type<ISubmissionScheduleInfo>(),
+  metadata: text({ mode: 'json' }).notNull().$type<ISubmissionMetadata>(),
   order: integer().notNull(),
 });
 

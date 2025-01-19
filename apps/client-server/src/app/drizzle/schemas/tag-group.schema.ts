@@ -4,5 +4,5 @@ import { commonSchema } from './common.schema';
 export const tagGroup = sqliteTable('tag-group', {
   ...commonSchema(),
   name: text().notNull().unique(),
-  tags: text({ mode: 'json' }).notNull().default('[]'),
+  tags: text({ mode: 'json' }).notNull().$type<string[]>(),
 });

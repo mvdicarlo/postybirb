@@ -1,6 +1,7 @@
-import { PostRecordResumeMode, PostRecordState } from '@postybirb/types';
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { PostRecordResumeMode, PostRecordState } from '../../../../../../libs/types/src/index';
 import { commonSchema } from './common.schema';
 import { postQueueRecord } from './post-queue-record.schema';
 import { submission } from './submission.schema';

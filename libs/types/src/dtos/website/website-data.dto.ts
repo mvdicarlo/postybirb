@@ -1,6 +1,7 @@
-import { IWebsiteData, DynamicObject } from '../../models';
+import { DynamicObject, IWebsiteData } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
 
-export type IWebsiteDataDto<T extends DynamicObject> = IEntityDto<
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type IWebsiteDataDto<T extends DynamicObject = any> = IEntityDto<
   IWebsiteData<T>
 >;

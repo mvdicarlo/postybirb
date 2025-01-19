@@ -1,14 +1,19 @@
-import { SubmissionType } from '@postybirb/types';
-import { sql } from 'drizzle-orm';
-import { integer, text } from 'drizzle-orm/sqlite-core';
+import { text } from 'drizzle-orm/sqlite-core';
+import { v4 } from 'uuid';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { SubmissionType } from '../../../../../../libs/types/src/index';
 
 export function commonSchema() {
   return {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    createdAt: text().default(sql`(CURRENT_TIMESTAMP)`),
+    id: text()
+      .primaryKey()
+      .unique()
+      .notNull()
+      .$default(() => v4()),
+    createdAt: text().$default(() => new Date().toISOString()),
     updatedAt: text()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+      .$default(() => new Date().toISOString())
+      .$onUpdate(() => new Date().toISOString()),
   };
 }
 
