@@ -1,12 +1,7 @@
 import { IAccount, IAccountDto } from '@postybirb/types';
-import {
-    Exclude,
-    instanceToPlain,
-    plainToClass,
-    Type,
-} from 'class-transformer';
-import { account } from '../schemas';
-import { DatabaseEntity } from './database-entity';
+import { Exclude, instanceToPlain, Type } from 'class-transformer';
+import { UnknownWebsite } from '../../websites/website';
+import { DatabaseEntity, fromDatabaseRecord } from './database-entity';
 import { WebsiteData } from './website-data.entity';
 
 export class Account extends DatabaseEntity implements IAccount {
@@ -17,8 +12,16 @@ export class Account extends DatabaseEntity implements IAccount {
   @Exclude()
   groups: string[];
 
+  /**
+   * we don't want to pass this down to users unless filtered
+   * by the website instance.
+   */
+  @Exclude()
   @Type(() => WebsiteData)
   websiteData: WebsiteData;
+
+  @Exclude()
+  websiteInstance?: UnknownWebsite;
 
   toObject(): IAccount {
     return instanceToPlain(this, {
@@ -27,16 +30,27 @@ export class Account extends DatabaseEntity implements IAccount {
   }
 
   toDTO(): IAccountDto {
-    return this.toObject() as unknown as IAccountDto;
+    const dto: IAccountDto = {
+      ...(this.toObject() as unknown as IAccountDto),
+      data: this.websiteInstance?.getWebsiteData() ?? {},
+      state: this.websiteInstance?.getLoginState() ?? {
+        isLoggedIn: false,
+        username: '',
+        pending: false,
+      },
+      websiteInfo: {
+        websiteDisplayName:
+          this.websiteInstance?.decoratedProps.metadata.displayName ?? '',
+        supports: this.websiteInstance?.getSupportedTypes() ?? [],
+      },
+    };
+    return dto;
   }
 
-  toJson(): string {
-    return JSON.stringify(this.toObject());
+  withWebsiteInstance(websiteInstance: UnknownWebsite): this {
+    this.websiteInstance = websiteInstance;
+    return this;
   }
 
-  static fromDBO(entity: typeof account.$inferSelect): Account {
-    return plainToClass(Account, entity, {
-      enableCircularCheck: true,
-    });
-  }
+  static fromDBO = fromDatabaseRecord.bind(null, Account);
 }

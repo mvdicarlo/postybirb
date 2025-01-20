@@ -9,10 +9,10 @@ export const fileBuffer = sqliteTable('file-buffer', {
     .references(() => submissionFile.id, {
       onDelete: 'cascade',
     }),
-  buffer: blob({ mode: 'buffer' }).notNull(),
+  buffer: blob({ mode: 'buffer' }).notNull().$type<Buffer>(),
   fileName: text().notNull(),
   mimeType: text().notNull(),
-  size: integer().notNull().default(0),
-  width: integer().notNull().default(0),
-  height: integer().notNull().default(0),
+  size: integer().notNull(),
+  width: integer().notNull(),
+  height: integer().notNull(),
 });

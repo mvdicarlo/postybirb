@@ -11,21 +11,16 @@ export const submissionFile = sqliteTable('submission-file', {
     .references(() => submission.id),
   fileName: text().notNull(),
   hash: text().notNull(),
-  size: integer().notNull().default(0),
+  size: integer().notNull(),
   mimeType: text().notNull(),
-  width: integer().notNull().default(0),
-  height: integer().notNull().default(0),
-  hasThumbnail: integer({ mode: 'boolean' }).notNull().default(false),
+  width: integer().notNull(),
+  height: integer().notNull(),
+  hasThumbnail: integer({ mode: 'boolean' }).notNull(),
   hasAltFile: integer({ mode: 'boolean' }).notNull().default(false),
-  primaryFileId: integer()
-    .notNull()
-    .references(() => fileBuffer.id),
-  thumbnailId: integer()
-    .notNull()
-    .references(() => fileBuffer.id),
-  altFileId: integer()
-    .notNull()
-    .references(() => fileBuffer.id),
+  hasCustomThumbnail: integer({ mode: 'boolean' }).notNull().default(false),
+  primaryFileId: integer().references(() => fileBuffer.id),
+  thumbnailId: integer().references(() => fileBuffer.id),
+  altFileId: integer().references(() => fileBuffer.id),
 });
 
 export const submissionFileRelations = relations(submissionFile, ({ one }) => ({

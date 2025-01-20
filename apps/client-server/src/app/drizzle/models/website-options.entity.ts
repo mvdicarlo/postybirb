@@ -31,10 +31,6 @@ export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
     return this.toObject() as unknown as WebsiteOptionsDto;
   }
 
-  toJson(): string {
-    return JSON.stringify(this.toObject());
-  }
-
   static fromDBO(entity: typeof websiteOptions.$inferSelect): WebsiteOptions {
     return plainToClass(WebsiteOptions, entity, {
       enableCircularCheck: true,

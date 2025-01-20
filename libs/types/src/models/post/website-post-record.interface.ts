@@ -25,7 +25,7 @@ export interface IWebsitePostRecord extends IEntity {
    * The date the post was completed.
    * @type {Date}
    */
-  completedAt: Date;
+  completedAt?: Date;
 
   /**
    * The account the post is made with.

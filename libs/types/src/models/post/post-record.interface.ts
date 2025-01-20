@@ -1,6 +1,3 @@
-// TODO: I would like to remove the need to insert Rel and Collection because it makes things more complicated than they need to be.
-// Largely would just need to fix up anywhere the Rel and Collection are used to be the actual type instead of the Rel and Collection.
-import { Collection, Rel } from '@mikro-orm/core';
 import { PostRecordResumeMode, PostRecordState } from '../../enums';
 import { IEntity } from '../database/entity.interface';
 import { ISubmission } from '../submission/submission.interface';
@@ -17,7 +14,7 @@ export interface IPostRecord extends IEntity {
    * Parent submission Id.
    * @type {SubmissionId}
    */
-  parent: Rel<ISubmission>;
+  parent: ISubmission;
 
   /**
    * The date the post was completed.
@@ -42,7 +39,7 @@ export interface IPostRecord extends IEntity {
    * The children of the post record.
    * @type {IWebsitePostRecord[]}
    */
-  children: Collection<IWebsitePostRecord>;
+  children: IWebsitePostRecord[];
 
   /**
    * The post queue record associated with the post record.

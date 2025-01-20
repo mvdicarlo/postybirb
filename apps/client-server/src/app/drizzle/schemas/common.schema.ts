@@ -10,8 +10,11 @@ export function commonSchema() {
       .unique()
       .notNull()
       .$default(() => v4()),
-    createdAt: text().$default(() => new Date().toISOString()),
+    createdAt: text()
+      .notNull()
+      .$default(() => new Date().toISOString()),
     updatedAt: text()
+      .notNull()
       .$default(() => new Date().toISOString())
       .$onUpdate(() => new Date().toISOString()),
   };

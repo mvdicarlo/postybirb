@@ -19,10 +19,6 @@ export class Settings extends DatabaseEntity implements ISettings {
     return this.toObject() as unknown as SettingsDto;
   }
 
-  toJson(): string {
-    return JSON.stringify(this.toObject());
-  }
-
   static fromDBO(entity: typeof settings.$inferSelect): Settings {
     return plainToClass(Settings, entity, {
       enableCircularCheck: true,

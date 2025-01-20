@@ -1,7 +1,10 @@
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { PostRecordResumeMode, PostRecordState } from '../../../../../../libs/types/src/index';
+import {
+  PostRecordResumeMode,
+  PostRecordState,
+} from '../../../../../../libs/types/src/index';
 import { commonSchema } from './common.schema';
 import { postQueueRecord } from './post-queue-record.schema';
 import { submission } from './submission.schema';
@@ -28,9 +31,8 @@ export const postRecord = sqliteTable('post-record', {
   })
     .notNull()
     .default(PostRecordResumeMode.CONTINUE),
-  submissionId: integer()
-    .notNull()
-    .references(() => submission.id),
+  submissionId: integer().references(() => submission.id),
+  postQueueRecordId: integer().references(() => postQueueRecord.id),
   completedAt: text(),
 });
 
@@ -39,6 +41,9 @@ export const postRecordRelations = relations(postRecord, ({ one, many }) => ({
     fields: [postRecord.submissionId],
     references: [submission.id],
   }),
-  postQueueRecord: one(postQueueRecord),
+  postQueueRecord: one(postQueueRecord, {
+    fields: [postRecord.postQueueRecordId],
+    references: [postQueueRecord.id],
+  }),
   children: many(websitePostRecord),
 }));

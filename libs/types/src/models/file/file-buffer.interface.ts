@@ -1,5 +1,4 @@
 import { IEntity } from '../database/entity.interface';
-import { ISubmissionFile } from '../submission/submission-file.interface';
 import { IFileDimensions } from './file-dimensions.interface';
 
 /**
@@ -12,11 +11,6 @@ export interface IFileBuffer extends IFileDimensions, IEntity {
    * Buffer for the file.
    */
   buffer: Buffer;
-
-  /**
-   * Parent submission file associated with the buffer.
-   */
-  parent: ISubmissionFile;
 
   /**
    * Name of the file.

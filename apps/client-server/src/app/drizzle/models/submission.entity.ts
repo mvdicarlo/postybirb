@@ -2,7 +2,6 @@ import {
   IPostRecord,
   ISubmission,
   ISubmissionDto,
-  ISubmissionFile,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   ScheduleType,
@@ -12,6 +11,7 @@ import { instanceToPlain, plainToClass, Type } from 'class-transformer';
 import { submission } from '../schemas';
 import { DatabaseEntity } from './database-entity';
 import { PostQueueRecord } from './post-queue-record.entity';
+import { SubmissionFile } from './submission-file.entity';
 import { WebsiteOptions } from './website-options.entity';
 
 export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
@@ -21,7 +21,7 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   type: SubmissionType;
 
   @Type(() => WebsiteOptions)
-  options: WebsiteOptions[] = [];
+  options: WebsiteOptions[];
 
   @Type(() => PostQueueRecord)
   postQueueRecord?: PostQueueRecord;
@@ -36,11 +36,12 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
     scheduleType: ScheduleType.NONE,
   };
 
-  files: ISubmissionFile[] = [];
+  @Type(() => SubmissionFile)
+  files: SubmissionFile[];
 
   metadata: T;
 
-  posts: IPostRecord[] = [];
+  posts: IPostRecord[];
 
   order: number;
 
@@ -52,10 +53,6 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   toDTO(): ISubmissionDto {
     return this.toObject() as unknown as ISubmissionDto;
-  }
-
-  toJson(): string {
-    return JSON.stringify(this.toObject());
   }
 
   static fromDBO(entity: typeof submission.$inferSelect): Submission {

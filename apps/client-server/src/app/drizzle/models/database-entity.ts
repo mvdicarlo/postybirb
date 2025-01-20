@@ -1,5 +1,28 @@
 import { IEntity, IEntityDto } from '@postybirb/types';
-import { Transform } from 'class-transformer';
+import { Exclude, plainToClass, Transform } from 'class-transformer';
+import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
+import { Class } from 'type-fest';
+import * as schema from '../schemas';
+
+export function fromDatabaseRecord<TEntity extends DatabaseEntity>(
+  entity: Class<TEntity>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  record: any[],
+): TEntity[];
+export function fromDatabaseRecord<TEntity extends DatabaseEntity>(
+  entity: Class<TEntity>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  record: any,
+): TEntity;
+export function fromDatabaseRecord<TEntity extends DatabaseEntity>(
+  entity: Class<TEntity>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  record: any | any[],
+): TEntity | TEntity[] {
+  return plainToClass(entity, record, {
+    enableCircularCheck: true,
+  });
+}
 
 export abstract class DatabaseEntity implements IEntity {
   public readonly id: string;
@@ -20,6 +43,9 @@ export abstract class DatabaseEntity implements IEntity {
   })
   public readonly updatedAt: Date;
 
+  @Exclude()
+  protected db: BetterSQLite3Database<typeof schema>;
+
   constructor(entity: IEntity) {
     Object.assign(this, entity);
   }
@@ -27,4 +53,13 @@ export abstract class DatabaseEntity implements IEntity {
   public abstract toObject(): IEntity;
 
   public abstract toDTO(): IEntityDto;
+
+  public toJson(): string {
+    return JSON.stringify(this.toDTO());
+  }
+
+  public withDB(db: BetterSQLite3Database<typeof schema>): this {
+    this.db = db;
+    return this;
+  }
 }

@@ -7,7 +7,7 @@ export const userSpecifiedWebsiteOptions = sqliteTable(
   'user-specified-website-options',
   {
     ...commonSchema(),
-    options: text({ mode: 'json' }).notNull().default('{}'),
+    options: text({ mode: 'json' }).notNull(),
     ...submissionType(),
     accountId: integer()
       .notNull()

@@ -1,18 +1,16 @@
-import {
-    IPostQueueRecord,
-    IPostRecord,
-    PostQueueRecordDto,
-} from '@postybirb/types';
+import { IPostQueueRecord, PostQueueRecordDto } from '@postybirb/types';
 import { instanceToPlain, plainToClass, Type } from 'class-transformer';
 import { postQueueRecord } from '../schemas';
 import { DatabaseEntity } from './database-entity';
+import { PostRecord } from './post-record.entity';
 import { Submission } from './submission.entity';
 
 export class PostQueueRecord
   extends DatabaseEntity
   implements IPostQueueRecord
 {
-  postRecord?: IPostRecord;
+  @Type(() => PostRecord)
+  postRecord?: PostRecord;
 
   @Type(() => Submission)
   submission: Submission;
@@ -25,10 +23,6 @@ export class PostQueueRecord
 
   toDTO(): PostQueueRecordDto {
     return this.toObject() as unknown as PostQueueRecordDto;
-  }
-
-  toJson(): string {
-    return JSON.stringify(this.toObject());
   }
 
   static fromDBO(entity: typeof postQueueRecord.$inferSelect): PostQueueRecord {

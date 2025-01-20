@@ -1,9 +1,7 @@
-import { Rel } from '@mikro-orm/core';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IFileBuffer } from '../file/file-buffer.interface';
 import { IFileDimensions } from '../file/file-dimensions.interface';
 import { FileSubmissionMetadata } from './file-submission/file-submission-metadata.type';
-import { ISubmissionFileProps } from './submission-file-props.interface';
 import { ISubmission } from './submission.interface';
 
 export type SubmissionFileId = EntityId;
@@ -21,7 +19,7 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    *
    * @type {ISubmission<FileSubmissionMetadata>}
    */
-  submission: Rel<ISubmission<FileSubmissionMetadata>>;
+  submission: ISubmission<FileSubmissionMetadata>;
 
   /**
    * Name of the file.
@@ -57,7 +55,7 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    *
    * @type {(IFileBuffer | undefined)}
    */
-  thumbnail?: Rel<IFileBuffer>;
+  thumbnail?: IFileBuffer;
 
   /**
    * Alternate file to post instead of the main.
@@ -65,7 +63,7 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
    *
    * @type {(IFileBuffer | undefined)}
    */
-  altFile?: Rel<IFileBuffer>;
+  altFile?: IFileBuffer;
 
   /**
    * Status flag for internal processing.
@@ -82,10 +80,9 @@ export interface ISubmissionFile extends IFileDimensions, IEntity {
   hasAltFile: boolean;
 
   /**
-   * Additional props for modifying or tracking state
-   * of the file.
-   *
-   * @type {ISubmissionFileProps}
+   * Whether or not the file has a custom thumbnail that was not
+   * auto-generated and instead added by the user.
+   * @type {boolean}
    */
-  props: ISubmissionFileProps;
+  hasCustomThumbnail: boolean;
 }

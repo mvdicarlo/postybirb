@@ -1,7 +1,10 @@
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { IPostRecordMetadata, PostData } from '../../../../../../libs/types/src/index';
+import {
+  IPostRecordMetadata,
+  PostData,
+} from '../../../../../../libs/types/src/index';
 import { account } from './account.schema';
 import { commonSchema } from './common.schema';
 import { postRecord } from './post-record.schema';
@@ -15,17 +18,12 @@ export const websitePostRecord = sqliteTable('website-post-record', {
     .notNull()
     .references(() => account.id),
   completedAt: text(),
-  errors: text().default('[]'),
+  errors: text().$type<string[]>().default([]),
   postData: text({ mode: 'json' }).$type<PostData>(),
   metadata: text({ mode: 'json' })
     .notNull()
-    .default(
-      JSON.stringify({
-        sourceMap: {},
-        postedFiles: [],
-        nextBatchNumber: 1,
-      }),
-    )
+    .$type<IPostRecordMetadata>()
+    .default({ sourceMap: {}, postedFiles: [], nextBatchNumber: 1 })
     .$type<IPostRecordMetadata>(),
 });
 

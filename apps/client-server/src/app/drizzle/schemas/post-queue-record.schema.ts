@@ -6,9 +6,7 @@ import { submission } from './submission.schema';
 
 export const postQueueRecord = sqliteTable('post-queue', {
   ...commonSchema(),
-  postRecordId: integer()
-    .notNull()
-    .references(() => postRecord.id),
+  postRecordId: integer().references(() => postRecord.id),
   submissionId: integer()
     .notNull()
     .references(() => submission.id),
