@@ -6,13 +6,7 @@ import {
   PostData,
   WebsitePostRecordDto,
 } from '@postybirb/types';
-import {
-  instanceToPlain,
-  plainToClass,
-  Transform,
-  Type,
-} from 'class-transformer';
-import { websitePostRecord } from '../schemas';
+import { instanceToPlain, Transform, Type } from 'class-transformer';
 import { Account } from './account.entity';
 import { DatabaseEntity } from './database-entity';
 
@@ -51,13 +45,5 @@ export class WebsitePostRecord
 
   toDTO(): WebsitePostRecordDto {
     return this.toObject() as unknown as WebsitePostRecordDto;
-  }
-
-  static fromDBO(
-    entity: typeof websitePostRecord.$inferSelect,
-  ): WebsitePostRecord {
-    return plainToClass(WebsitePostRecord, entity, {
-      enableCircularCheck: true,
-    });
   }
 }

@@ -3,8 +3,7 @@ import {
   DirectoryWatcherImportAction,
   IDirectoryWatcher,
 } from '@postybirb/types';
-import { instanceToPlain, plainToClass, Type } from 'class-transformer';
-import { directoryWatcher } from '../schemas';
+import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 import { Submission } from './submission.entity';
 
@@ -27,13 +26,5 @@ export class DirectoryWatcher
 
   toDTO(): DirectoryWatcherDto {
     return this.toObject() as unknown as DirectoryWatcherDto;
-  }
-
-  static fromDBO(
-    entity: typeof directoryWatcher.$inferSelect,
-  ): DirectoryWatcher {
-    return plainToClass(DirectoryWatcher, entity, {
-      enableCircularCheck: true,
-    });
   }
 }

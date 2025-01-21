@@ -7,8 +7,7 @@ import {
   ScheduleType,
   SubmissionType,
 } from '@postybirb/types';
-import { instanceToPlain, plainToClass, Type } from 'class-transformer';
-import { submission } from '../schemas';
+import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 import { PostQueueRecord } from './post-queue-record.entity';
 import { SubmissionFile } from './submission-file.entity';
@@ -53,11 +52,5 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   toDTO(): ISubmissionDto {
     return this.toObject() as unknown as ISubmissionDto;
-  }
-
-  static fromDBO(entity: typeof submission.$inferSelect): Submission {
-    return plainToClass(Submission, entity, {
-      enableCircularCheck: true,
-    });
   }
 }

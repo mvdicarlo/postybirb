@@ -1,4 +1,6 @@
+import { eq as equals } from 'drizzle-orm';
 import 'reflect-metadata';
+import * as schema from '../schemas';
 import { PostyBirbDatabase } from './postybirb-database';
 
 describe('PostyBirbDatabase', () => {
@@ -37,7 +39,7 @@ describe('PostyBirbDatabase', () => {
     });
 
     const foundAccount = await service.findById(account.id, {
-      failIfNotFound: true,
+      failOnMissing: true,
     });
     expect(foundAccount).toBeTruthy();
     expect(foundAccount.id).toBe(account.id);
@@ -45,14 +47,14 @@ describe('PostyBirbDatabase', () => {
     expect(foundAccount.website).toBe('test');
 
     const notFoundAccount = await service.findById('not-found', {
-      failIfNotFound: false,
+      failOnMissing: false,
     });
     expect(notFoundAccount).toBeNull();
   });
 
   it('should throw on find by id not found', async () => {
     await expect(
-      service.findById('not-found', { failIfNotFound: true }),
+      service.findById('not-found', { failOnMissing: true }),
     ).rejects.toThrow('Record with id not-found not found');
   });
 
@@ -67,7 +69,7 @@ describe('PostyBirbDatabase', () => {
     });
 
     const updatedAccount = await service.findById(account.id, {
-      failIfNotFound: true,
+      failOnMissing: true,
     });
     expect(updatedAccount).toBeTruthy();
     expect(updatedAccount.id).toBe(account.id);
@@ -124,5 +126,18 @@ describe('PostyBirbDatabase', () => {
     });
 
     expect(subscriber).toHaveBeenCalledWith([entity.id], 'insert');
+  });
+
+  it('should select', async () => {
+    await service.insert({
+      name: 'test',
+      website: 'test',
+    });
+
+    const foundAccounts = await service.select(
+      equals(schema.account.name, 'test'),
+    );
+
+    expect(foundAccounts).toHaveLength(1);
   });
 });

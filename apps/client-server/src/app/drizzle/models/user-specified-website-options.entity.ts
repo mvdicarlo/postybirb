@@ -4,8 +4,7 @@ import {
   SubmissionType,
   UserSpecifiedWebsiteOptionsDto,
 } from '@postybirb/types';
-import { instanceToPlain, plainToClass, Type } from 'class-transformer';
-import { userSpecifiedWebsiteOptions } from '../schemas';
+import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
 import { DatabaseEntity } from './database-entity';
 
@@ -28,13 +27,5 @@ export class UserSpecifiedWebsiteOptions
 
   toDTO(): UserSpecifiedWebsiteOptionsDto {
     return this.toObject() as unknown as UserSpecifiedWebsiteOptionsDto;
-  }
-
-  static fromDBO(
-    entity: typeof userSpecifiedWebsiteOptions.$inferSelect,
-  ): UserSpecifiedWebsiteOptions {
-    return plainToClass(UserSpecifiedWebsiteOptions, entity, {
-      enableCircularCheck: true,
-    });
   }
 }

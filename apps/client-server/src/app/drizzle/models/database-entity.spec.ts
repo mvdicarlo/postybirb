@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { fromDatabaseRecord } from './database-entity';
 import { TagConverter } from './tag-converter.entity';
 
 describe('DatabaseEntity', () => {
@@ -31,7 +32,7 @@ describe('DatabaseEntity', () => {
       tag: 'tag',
       convertTo: { tag: 'tag' },
     };
-    const obj = TagConverter.fromDBO(dbObj);
+    const obj = fromDatabaseRecord(TagConverter, dbObj);
     expect(obj).toBeTruthy();
     expect(obj.id).toBe(dbObj.id);
     expect(obj.createdAt).toEqual(new Date(dbObj.createdAt));

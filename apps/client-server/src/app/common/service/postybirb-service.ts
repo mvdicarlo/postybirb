@@ -1,11 +1,13 @@
 import { FilterQuery } from '@mikro-orm/core';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { PostyBirbEntity } from '../../database/entities/postybirb-entity';
+import { EntityId } from '@postybirb/types';
+import { SQL } from 'drizzle-orm';
+import { FindOptions } from '../../database/repositories/postybirb-repository';
 import {
-  FindOptions,
-  PostyBirbRepository,
-} from '../../database/repositories/postybirb-repository';
+  PostyBirbDatabase,
+  SchemaKey,
+} from '../../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 
@@ -15,13 +17,14 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  * @class PostyBirbService
  */
 @Injectable()
-export abstract class PostyBirbService<
-  T extends PostyBirbEntity = PostyBirbEntity,
-> {
+export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
   protected readonly logger = Logger();
 
+  protected readonly repository: PostyBirbDatabase<TSchemaKey> =
+    new PostyBirbDatabase(this.table);
+
   constructor(
-    protected readonly repository: PostyBirbRepository<T>,
+    private readonly table: TSchemaKey,
     private readonly webSocket?: WSGateway,
   ) {}
 
@@ -37,18 +40,20 @@ export abstract class PostyBirbService<
     }
   }
 
+  protected get schema() {
+    return this.repository.schemaEntity;
+  }
+
   /**
    * Throws exception if a record matching the query already exists.
    *
    * @protected
    * @param {FilterQuery<T>} where
    */
-  protected async throwIfExists(where: FilterQuery<T>) {
-    const exists = await this.repository.findOne(where);
-    if (exists) {
-      const err = new BadRequestException(
-        `An entity with query '${JSON.stringify(where)}' already exists`,
-      );
+  protected async throwIfExists(where: SQL) {
+    const exists = await this.repository.select(where);
+    if (exists.length) {
+      const err = new BadRequestException(`A duplicate entity already exists`);
       this.logger.withError(err).error();
       throw err;
     }
@@ -64,9 +69,9 @@ export abstract class PostyBirbService<
     return this.repository.findAll();
   }
 
-  public remove(id: string) {
+  public remove(id: EntityId) {
     this.logger.withMetadata({ id }).info(`Removing entity '${id}'`);
-    return this.repository.delete(id);
+    return this.repository.deleteById([id]);
   }
 
   // END Repository Wrappers

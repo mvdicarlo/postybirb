@@ -7,14 +7,14 @@ import * as schema from '../schemas';
 
 export type PostyBirbDatabaseType = BetterSQLite3Database<typeof schema>;
 
-const migrationsFolder = !IsTestEnvironment()
-  ? join(__dirname, 'migrations')
-  : join(__dirname.split('apps')[0], 'apps', 'postybirb', 'src', 'migrations');
+const migrationsFolder = IsTestEnvironment()
+  ? join(__dirname.split('apps')[0], 'apps', 'postybirb', 'src', 'migrations')
+  : join(__dirname, 'migrations');
+
 const path = IsTestEnvironment()
   ? ':memory:'
   : join(PostyBirbDirectories.DATA_DIRECTORY, 'drizzle.db');
-let db = drizzle(path, { schema });
-migrate(db, { migrationsFolder });
+let db: PostyBirbDatabaseType;
 
 /**
  * Get the database instance

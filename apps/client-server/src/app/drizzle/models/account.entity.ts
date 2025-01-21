@@ -1,7 +1,7 @@
 import { IAccount, IAccountDto } from '@postybirb/types';
 import { Exclude, instanceToPlain, Type } from 'class-transformer';
 import { UnknownWebsite } from '../../websites/website';
-import { DatabaseEntity, fromDatabaseRecord } from './database-entity';
+import { DatabaseEntity } from './database-entity';
 import { WebsiteData } from './website-data.entity';
 
 export class Account extends DatabaseEntity implements IAccount {
@@ -51,6 +51,4 @@ export class Account extends DatabaseEntity implements IAccount {
     this.websiteInstance = websiteInstance;
     return this;
   }
-
-  static fromDBO = fromDatabaseRecord.bind(null, Account);
 }

@@ -2,15 +2,9 @@ import {
   IPostRecord,
   PostRecordDto,
   PostRecordResumeMode,
-  PostRecordState
+  PostRecordState,
 } from '@postybirb/types';
-import {
-  instanceToPlain,
-  plainToClass,
-  Transform,
-  Type,
-} from 'class-transformer';
-import { postRecord } from '../schemas';
+import { instanceToPlain, Transform, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 import { PostQueueRecord } from './post-queue-record.entity';
 import { Submission } from './submission.entity';
@@ -46,11 +40,5 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
 
   toDTO(): PostRecordDto {
     return this.toObject() as unknown as PostRecordDto;
-  }
-
-  static fromDBO(entity: typeof postRecord.$inferSelect): PostRecord {
-    return plainToClass(PostRecord, entity, {
-      enableCircularCheck: true,
-    });
   }
 }

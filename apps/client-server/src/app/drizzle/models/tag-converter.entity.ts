@@ -1,6 +1,5 @@
 import { ITagConverter, TagConverterDto } from '@postybirb/types';
-import { instanceToPlain, plainToClass } from 'class-transformer';
-import { tagConverter } from '../schemas';
+import { instanceToPlain } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
 export class TagConverter extends DatabaseEntity implements ITagConverter {
@@ -21,9 +20,5 @@ export class TagConverter extends DatabaseEntity implements ITagConverter {
 
   toDTO(): TagConverterDto {
     return this.toObject() as unknown as TagConverterDto;
-  }
-
-  static fromDBO(entity: typeof tagConverter.$inferSelect): TagConverter {
-    return plainToClass(TagConverter, entity, { enableCircularCheck: true });
   }
 }

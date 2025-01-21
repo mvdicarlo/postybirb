@@ -1,6 +1,5 @@
 import { IFileBuffer, ISubSubmissionFileDto } from '@postybirb/types';
-import { instanceToPlain, plainToClass, Type } from 'class-transformer';
-import { fileBuffer } from '../schemas';
+import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
 export class FileBuffer extends DatabaseEntity implements IFileBuffer {
@@ -27,11 +26,5 @@ export class FileBuffer extends DatabaseEntity implements IFileBuffer {
 
   toDTO(): ISubSubmissionFileDto {
     return this.toObject() as unknown as ISubSubmissionFileDto;
-  }
-
-  static fromDBO(entity: typeof fileBuffer.$inferSelect): FileBuffer {
-    return plainToClass(FileBuffer, entity, {
-      enableCircularCheck: true,
-    });
   }
 }

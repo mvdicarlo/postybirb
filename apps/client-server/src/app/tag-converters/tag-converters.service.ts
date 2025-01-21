@@ -1,37 +1,28 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, Optional } from '@nestjs/common';
 import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
+import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { TagConverter } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
+import { TagConverter } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 
 @Injectable()
-export class TagConvertersService extends PostyBirbService<TagConverter> {
-  constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
-    @InjectRepository(TagConverter)
-    repository: PostyBirbRepository<TagConverter>,
-    @Optional() webSocket?: WSGateway,
-  ) {
-    super(repository, webSocket);
-    repository.addUpdateListener(dbSubscriber, [TagConverter], () =>
-      this.emit(),
-    );
+export class TagConvertersService extends PostyBirbService<'tagConverter'> {
+  constructor(@Optional() webSocket?: WSGateway) {
+    super('tagConverter', webSocket);
+    this.repository.subscribe('tagConverter', () => {
+      this.emit();
+    });
   }
 
   async create(createDto: CreateTagConverterDto): Promise<TagConverter> {
     this.logger
       .withMetadata(createDto)
       .info(`Creating TagConverter '${createDto.tag}'`);
-    await this.throwIfExists({ tag: createDto.tag });
-    const tagConverter = this.repository.create(createDto);
-    await this.repository.persistAndFlush(tagConverter);
-    return tagConverter;
+    await this.throwIfExists(eq(this.schema.tag, createDto.tag));
+    return this.repository.insert(createDto);
   }
 
   update(id: string, update: UpdateTagConverterDto) {
@@ -56,7 +47,10 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
       return (await this.convert(instance, [tags]))[0];
     }
 
-    const converters = await this.repository.find({ tag: { $in: tags } });
+    // { tag: { $in: tags } }
+    const converters = await this.repository.find({
+      where: (converter, { inArray }) => inArray(converter.tag, tags),
+    });
     return tags.map((tag) => {
       const converter = converters.find((c) => c.tag === tag);
       if (!converter) {
@@ -73,7 +67,7 @@ export class TagConvertersService extends PostyBirbService<TagConverter> {
   protected async emit() {
     super.emit({
       event: TAG_CONVERTER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toJSON()),
+      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
     });
   }
 }

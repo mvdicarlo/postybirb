@@ -1,6 +1,6 @@
 import { Delete, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { PostyBirbEntity } from '../../database/entities/postybirb-entity';
+import { SchemaKey } from '../../drizzle/postybirb-database/postybirb-database';
 import { PostyBirbService } from '../service/postybirb-service';
 
 /**
@@ -8,7 +8,7 @@ import { PostyBirbService } from '../service/postybirb-service';
  *
  * @class PostyBirbController
  */
-export abstract class PostyBirbController<T extends PostyBirbEntity> {
+export abstract class PostyBirbController<T extends SchemaKey> {
   constructor(protected readonly service: PostyBirbService<T>) {}
 
   @Get(':id')

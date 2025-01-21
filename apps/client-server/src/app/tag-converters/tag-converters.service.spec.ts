@@ -1,7 +1,5 @@
-import { MikroORM } from '@mikro-orm/core';
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 import { TagConvertersService } from './tag-converters.service';
@@ -9,7 +7,6 @@ import { TagConvertersService } from './tag-converters.service';
 describe('TagConvertersService', () => {
   let service: TagConvertersService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   function createTagConverterDto(
     tag: string,
@@ -22,22 +19,19 @@ describe('TagConvertersService', () => {
   }
 
   beforeEach(async () => {
-    module = await Test.createTestingModule({
-      imports: [DatabaseModule],
-      providers: [TagConvertersService],
-    }).compile();
-
-    service = module.get<TagConvertersService>(TagConvertersService);
-    orm = module.get(MikroORM);
     try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
+      module = await Test.createTestingModule({
+        imports: [],
+        providers: [TagConvertersService],
+      }).compile();
+
+      service = module.get<TagConvertersService>(TagConvertersService);
+    } catch (e) {
+      console.log(e);
     }
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -53,7 +47,7 @@ describe('TagConvertersService', () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].tag).toEqual(dto.tag);
     expect(groups[0].convertTo).toEqual(dto.convertTo);
-    expect(record.toJSON()).toEqual({
+    expect(record.toObject()).toEqual({
       tag: dto.tag,
       convertTo: dto.convertTo,
       id: record.id,
