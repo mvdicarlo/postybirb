@@ -1,20 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { EntityId } from '@postybirb/types';
 import { eq, KnownKeysOnly } from 'drizzle-orm';
-import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import {
   DBQueryConfig,
   ExtractTablesWithRelations,
 } from 'drizzle-orm/relations';
-import { DatabaseEntity } from './models/database-entity';
-import * as schema from './schemas';
+import { IsTestEnvironment } from '../../utils/test.util';
+import { fromDatabaseRecord } from '../models/database-entity';
+import * as schema from '../schemas';
+import { getDatabase, PostyBirbDatabaseType } from './database-instance';
+import {
+  DatabaseSchemaEntityMap,
+  DatabaseSchemaEntityMapConst,
+} from './schema-entity-map';
 
-export type DrizzleDatabase = BetterSQLite3Database<typeof schema>;
-
-type SchemaKey = keyof DrizzleDatabase['_']['schema'];
-type EntityConverter<TEntityClass extends DatabaseEntity> = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any,
-) => TEntityClass;
+export type SchemaKey = keyof PostyBirbDatabaseType['_']['schema'];
 
 type Insert<TSchemaKey extends SchemaKey> =
   (typeof schema)[TSchemaKey]['$inferInsert'];
@@ -25,14 +25,16 @@ type Select<TSchemaKey extends SchemaKey> =
 type ExtractedRelations = ExtractTablesWithRelations<typeof schema>;
 
 type Relation<TSchemaKey extends SchemaKey> =
-  DrizzleDatabase['_']['schema'][TSchemaKey];
+  PostyBirbDatabaseType['_']['schema'][TSchemaKey];
 
 export type Action = 'delete' | 'insert' | 'update';
 
-export class DatabaseService<
+export class PostyBirbDatabase<
   TSchemaKey extends SchemaKey,
-  TEntityClass extends DatabaseEntity,
+  TEntityClass = DatabaseSchemaEntityMap[TSchemaKey],
 > {
+  private readonly db: PostyBirbDatabaseType;
+
   private static readonly subscribers: Record<
     SchemaKey,
     Array<(ids: EntityId[], action: Action) => void>
@@ -53,30 +55,42 @@ export class DatabaseService<
     websitePostRecord: [],
   };
 
-  constructor(
-    public readonly db: DrizzleDatabase,
-    private readonly schemaKey: TSchemaKey,
-    private readonly classConverter: EntityConverter<TEntityClass>,
-  ) {}
+  constructor(private readonly schemaKey: TSchemaKey) {
+    this.db = getDatabase(IsTestEnvironment());
+  }
 
-  public static subscribe(
+  public subscribe(
     key: SchemaKey,
     callback: (ids: EntityId[], action: Action) => void,
   ) {
-    if (!DatabaseService.subscribers[key]) {
-      DatabaseService.subscribers[key] = [];
+    if (!PostyBirbDatabase.subscribers[key]) {
+      PostyBirbDatabase.subscribers[key] = [];
     }
-    DatabaseService.subscribers[key].push(callback);
+    PostyBirbDatabase.subscribers[key].push(callback);
   }
 
   private notify(ids: EntityId[], action: Action) {
-    DatabaseService.subscribers[this.schemaKey].forEach((callback) =>
+    PostyBirbDatabase.subscribers[this.schemaKey].forEach((callback) =>
       callback(ids, action),
     );
   }
 
+  private get EntityClass() {
+    return DatabaseSchemaEntityMapConst[this.schemaKey];
+  }
+
   private get schemaEntity() {
     return schema[this.schemaKey];
+  }
+
+  private classConverter(value: unknown): TEntityClass;
+  private classConverter(value: unknown[]): TEntityClass[];
+  private classConverter(
+    value: unknown | unknown[],
+  ): TEntityClass | TEntityClass[] {
+    return fromDatabaseRecord(this.EntityClass, value) as
+      | TEntityClass
+      | TEntityClass[];
   }
 
   public async insert(value: Insert<TSchemaKey>): Promise<TEntityClass>;
@@ -104,9 +118,7 @@ export class DatabaseService<
   }
 
   public async findById(id: EntityId, options?: { failIfNotFound: boolean }) {
-    const record = await this.db.query[
-      this.schemaKey as keyof typeof schema
-    ].findFirst({
+    const record = await this.db.query[this.schemaKey].findFirst({
       where: eq(this.schemaEntity.id, id),
     });
 
@@ -130,7 +142,10 @@ export class DatabaseService<
       DBQueryConfig<'many', true, ExtractedRelations, Relation<TSchemaKey>>
     >,
   ) {
-    const record = (await this.db.query[this.schemaKey].findMany(query)) ?? [];
+    const record =
+      (await this.db.query[
+        this.schemaKey as keyof PostyBirbDatabaseType
+      ].findMany(query)) ?? [];
     return this.classConverter(record);
   }
 
@@ -149,24 +164,24 @@ export class DatabaseService<
     >,
   ) {
     const record =
-      await this.db.query[this.schemaKey as keyof DrizzleDatabase].findFirst(
-        query,
-      );
+      await this.db.query[
+        this.schemaKey as keyof PostyBirbDatabaseType
+      ].findFirst(query);
     return record ? this.classConverter(record) : null;
   }
 
   public async findAll(): Promise<TEntityClass[]> {
-    const records = await this.db.query[
-      this.schemaKey as keyof typeof schema
-    ].findMany({});
-    return records.map(this.classConverter);
+    const records: object[] = await this.db.query[this.schemaKey].findMany({});
+    return records.map((record) => this.classConverter(record));
   }
 
   public async update(id: EntityId, set: Partial<Select<TSchemaKey>>) {
-    await this.db
+    const entity = await this.db
       .update(this.schemaEntity)
       .set(set)
-      .where(eq(this.schemaEntity.id, id));
+      .where(eq(this.schemaEntity.id, id))
+      .returning();
     this.notify([id], 'update');
+    return this.classConverter(entity);
   }
 }

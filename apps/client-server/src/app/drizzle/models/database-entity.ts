@@ -1,25 +1,25 @@
 import { IEntity, IEntityDto } from '@postybirb/types';
-import { Exclude, plainToClass, Transform } from 'class-transformer';
+import { Exclude, plainToInstance, Transform } from 'class-transformer';
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import { Class } from 'type-fest';
 import * as schema from '../schemas';
 
-export function fromDatabaseRecord<TEntity extends DatabaseEntity>(
-  entity: Class<TEntity>,
+export function fromDatabaseRecord<TEntity>(
+  entity: TEntity,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   record: any[],
 ): TEntity[];
-export function fromDatabaseRecord<TEntity extends DatabaseEntity>(
-  entity: Class<TEntity>,
+export function fromDatabaseRecord<TEntity>(
+  entity: TEntity,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   record: any,
 ): TEntity;
-export function fromDatabaseRecord<TEntity extends DatabaseEntity>(
-  entity: Class<TEntity>,
+export function fromDatabaseRecord<TEntity extends Class<any>>(
+  entity: TEntity,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   record: any | any[],
 ): TEntity | TEntity[] {
-  return plainToClass(entity, record, {
+  return plainToInstance(entity, record, {
     enableCircularCheck: true,
   });
 }

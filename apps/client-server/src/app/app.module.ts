@@ -7,7 +7,6 @@ import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
-import { DrizzleModule } from './drizzle/drizzle.module';
 import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
@@ -48,7 +47,6 @@ import { WebsitesModule } from './websites/websites.module';
     PostParsersModule,
     ValidationModule,
     FileConverterModule,
-    DrizzleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

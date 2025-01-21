@@ -1,27 +1,11 @@
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
-import { join } from 'path';
 import 'reflect-metadata';
-import { DatabaseService } from './database-service';
-import { Account } from './models/account.entity';
-import * as schema from './schemas';
+import { PostyBirbDatabase } from './postybirb-database';
 
-describe('DatabaseService', () => {
-  let service: DatabaseService<'account', Account>;
+describe('PostyBirbDatabase', () => {
+  let service: PostyBirbDatabase<'account'>;
 
   beforeEach(() => {
-    const migrationsFolder = join(
-      __dirname.split('apps')[0],
-      'apps',
-      'postybirb',
-      'src',
-      'migrations',
-    );
-    const db = drizzle(':memory:', { schema });
-    migrate(db, { migrationsFolder });
-    service = new DatabaseService(db, 'account', (value) =>
-      Account.fromDBO(value),
-    );
+    service = new PostyBirbDatabase('account');
   });
 
   it('should be created', () => {
@@ -128,5 +112,17 @@ describe('DatabaseService', () => {
     });
 
     expect(foundAccounts).toHaveLength(0);
+  });
+
+  it('should notify subscribers on create', async () => {
+    const subscriber = jest.fn();
+    service.subscribe('account', subscriber);
+
+    const entity = await service.insert({
+      name: 'test',
+      website: 'test',
+    });
+
+    expect(subscriber).toHaveBeenCalledWith([entity.id], 'insert');
   });
 });
