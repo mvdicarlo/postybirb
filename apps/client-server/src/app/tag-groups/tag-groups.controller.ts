@@ -6,7 +6,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { TagGroup } from '../database/entities';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
@@ -17,7 +16,7 @@ import { TagGroupsService } from './tag-groups.service';
  */
 @ApiTags('tag-groups')
 @Controller('tag-groups')
-export class TagGroupsController extends PostyBirbController<TagGroup> {
+export class TagGroupsController extends PostyBirbController<'tagGroup'> {
   constructor(readonly service: TagGroupsService) {
     super(service);
   }
@@ -26,13 +25,13 @@ export class TagGroupsController extends PostyBirbController<TagGroup> {
   @ApiOkResponse({ description: 'Tag group created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createDto: CreateTagGroupDto) {
-    return this.service.create(createDto).then((entity) => entity.toJSON());
+    return this.service.create(createDto).then((entity) => entity.toDTO());
   }
 
   @Patch(':id')
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
   update(@Param('id') id: string, @Body() updateDto: UpdateTagGroupDto) {
-    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
+    return this.service.update(id, updateDto).then((entity) => entity.toDTO());
   }
 }

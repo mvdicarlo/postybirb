@@ -10,7 +10,7 @@ export const settings = sqliteTable('settings', {
     .notNull()
     .default(SettingsConstants.DEFAULT_PROFILE_NAME)
     .unique(),
-  data: text({ mode: 'json' })
+  settings: text({ mode: 'json' })
     .notNull()
     .$type<ISettingsOptions>()
     .default(SettingsConstants.DEFAULT_SETTINGS),

@@ -1,10 +1,9 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { Settings } from '../database/entities';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
-import { SettingsService } from './settings.service';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
+import { SettingsService } from './settings.service';
 
 /**
  * CRUD operations for settings.
@@ -12,7 +11,7 @@ import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
  */
 @ApiTags('settings')
 @Controller('settings')
-export class SettingsController extends PostyBirbController<Settings> {
+export class SettingsController extends PostyBirbController<'settings'> {
   constructor(readonly service: SettingsService) {
     super(service);
   }
@@ -26,7 +25,7 @@ export class SettingsController extends PostyBirbController<Settings> {
   ) {
     return this.service
       .update(id, updateSettingsDto)
-      .then((entity) => entity.toJSON());
+      .then((entity) => entity.toDTO());
   }
 
   @Get('startup')

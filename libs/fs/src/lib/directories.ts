@@ -16,7 +16,7 @@ const STARTUP_OPTIONS = getStartupOptions();
  * Base PostyBirb document directory.
  */
 const POSTYBIRB_DIRECTORY = IsTestEnvironment()
-  ? join('./', 'test')
+  ? join(__dirname.split('libs')[0], 'test')
   : (STARTUP_OPTIONS.appDataPath ??
     join(app.getPath('documents'), 'PostyBirb'));
 
@@ -41,10 +41,8 @@ function initializeDirectories() {
 }
 
 export {
-  DATA_DIRECTORY,
-  LOGS_DIRECTORY,
+  clearTempDirectory, DATA_DIRECTORY, initializeDirectories, LOGS_DIRECTORY,
   POSTYBIRB_DIRECTORY,
-  TEMP_DIRECTORY,
-  clearTempDirectory,
-  initializeDirectories,
+  TEMP_DIRECTORY
 };
+

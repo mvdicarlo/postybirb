@@ -195,4 +195,8 @@ export class PostyBirbDatabase<
     this.notify([id], 'update');
     return this.classConverter(entity[0]);
   }
+
+  public count(filter?: SQL): Promise<number> {
+    return this.db.$count(this.schemaEntity, filter);
+  }
 }
