@@ -1,4 +1,5 @@
 import {
+  EntityPrimitive,
   IPostRecord,
   IPostRecordMetadata,
   IWebsiteError,
@@ -37,10 +38,10 @@ export class WebsitePostRecord
 
   postData?: PostData;
 
-  toObject(): IWebsitePostRecord {
+  toObject(): EntityPrimitive<IWebsitePostRecord> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as IWebsitePostRecord;
+    }) as EntityPrimitive<IWebsitePostRecord>;
   }
 
   toDTO(): WebsitePostRecordDto {

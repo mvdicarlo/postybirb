@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { PostRecord } from '../database/entities';
+import { PostRecord } from '../drizzle/models';
 import { PostService } from './post.service';
 
 /**

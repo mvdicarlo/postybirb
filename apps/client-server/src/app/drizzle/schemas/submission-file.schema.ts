@@ -1,14 +1,11 @@
 import { relations } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
-import { commonSchema } from './common.schema';
+import { commonSchema, id } from './common.schema';
 import { fileBuffer } from './file-buffer.schema';
 import { submission } from './submission.schema';
 
 export const submissionFile = sqliteTable('submission-file', {
   ...commonSchema(),
-  submissionId: integer()
-    .notNull()
-    .references(() => submission.id),
   fileName: text().notNull(),
   hash: text().notNull(),
   size: integer().notNull(),
@@ -18,9 +15,12 @@ export const submissionFile = sqliteTable('submission-file', {
   hasThumbnail: integer({ mode: 'boolean' }).notNull(),
   hasAltFile: integer({ mode: 'boolean' }).notNull().default(false),
   hasCustomThumbnail: integer({ mode: 'boolean' }).notNull().default(false),
-  primaryFileId: integer().references(() => fileBuffer.id),
-  thumbnailId: integer().references(() => fileBuffer.id),
-  altFileId: integer().references(() => fileBuffer.id),
+  submissionId: id()
+    .notNull()
+    .references(() => submission.id),
+  primaryFileId: id().references(() => fileBuffer.id),
+  thumbnailId: id().references(() => fileBuffer.id),
+  altFileId: id().references(() => fileBuffer.id),
 });
 
 export const submissionFileRelations = relations(submissionFile, ({ one }) => ({

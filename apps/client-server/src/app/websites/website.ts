@@ -1,17 +1,14 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   DynamicObject,
-  IAccount,
-  IAccountDto,
-  IEntityDto,
   ILoginState,
   LoginState,
   SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
-import { Account, WebsiteData } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { Account } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
@@ -83,24 +80,6 @@ export abstract class Website<D extends DynamicObject> {
    */
   public get accountId(): string {
     return this.account.id;
-  }
-
-  public get accountInfo() {
-    return this.account.toJSON() as IEntityDto<IAccount>;
-  }
-
-  public get accountDto(): IAccountDto {
-    return {
-      ...this.accountInfo,
-      state: this.getLoginState(),
-      data: this.getWebsiteData(),
-      websiteInfo: {
-        websiteDisplayName:
-          this.decoratedProps.metadata.displayName ||
-          this.decoratedProps.metadata.name,
-        supports: this.getSupportedTypes(),
-      },
-    };
   }
 
   /**
@@ -225,7 +204,7 @@ export abstract class Website<D extends DynamicObject> {
    * Method that runs once on initialization of the Website class.
    */
   public async onInitialize(
-    websiteDataRepository: PostyBirbRepository<WebsiteData<D>>,
+    websiteDataRepository: PostyBirbDatabase<'websiteData'>,
   ): Promise<void> {
     await this.websiteDataStore.initialize(websiteDataRepository);
   }

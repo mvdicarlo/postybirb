@@ -1,17 +1,17 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
-  EntityId,
-  FileMetadataFields,
-  FileSubmission,
-  ISubmission,
-  SubmissionMetadataType,
-  SubmissionType,
-  isFileSubmission,
+    EntityId,
+    FileMetadataFields,
+    FileSubmission,
+    ISubmission,
+    SubmissionMetadataType,
+    SubmissionType,
+    isFileSubmission,
 } from '@postybirb/types';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { Submission } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
+import { Submission } from '../../drizzle/models';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';

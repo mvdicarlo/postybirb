@@ -1,27 +1,27 @@
 import { Collection, Loaded } from '@mikro-orm/core';
 import {
-  FileSubmission,
-  FileType,
-  IAccount,
-  IFileBuffer,
-  ILoginState,
-  ISubmission,
-  ISubmissionFile,
-  IWebsiteOptions,
-  IWebsitePostRecord,
-  MessageSubmission,
-  NullAccount,
-  PostData,
-  PostRecordResumeMode,
-  PostRecordState,
-  PostResponse,
-  SubmissionRating,
-  SubmissionType,
+    FileSubmission,
+    FileType,
+    IAccount,
+    IFileBuffer,
+    ILoginState,
+    ISubmission,
+    ISubmissionFile,
+    IWebsiteOptions,
+    IWebsitePostRecord,
+    MessageSubmission,
+    NullAccount,
+    PostData,
+    PostRecordResumeMode,
+    PostRecordState,
+    PostResponse,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { PostRecord, WebsitePostRecord } from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import { PostRecord, WebsitePostRecord } from '../../../drizzle/models';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';

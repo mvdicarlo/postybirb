@@ -30,6 +30,8 @@ type Relation<TSchemaKey extends SchemaKey> =
 
 export type Action = 'delete' | 'insert' | 'update';
 
+type SubscribeCallback = (ids: EntityId[], action: Action) => void;
+
 export class PostyBirbDatabase<
   TSchemaKey extends SchemaKey,
   TEntityClass = DatabaseSchemaEntityMap[TSchemaKey],
@@ -38,7 +40,7 @@ export class PostyBirbDatabase<
 
   private static readonly subscribers: Record<
     SchemaKey,
-    Array<(ids: EntityId[], action: Action) => void>
+    Array<SubscribeCallback>
   > = {
     account: [],
     directoryWatcher: [],
@@ -60,14 +62,21 @@ export class PostyBirbDatabase<
     this.db = getDatabase(IsTestEnvironment());
   }
 
+  public subscribe(key: SchemaKey[], callback: SubscribeCallback): this;
+  public subscribe(key: SchemaKey, callback: SubscribeCallback): this;
   public subscribe(
-    key: SchemaKey,
-    callback: (ids: EntityId[], action: Action) => void,
-  ) {
+    key: SchemaKey | SchemaKey[],
+    callback: SubscribeCallback,
+  ): this {
+    if (Array.isArray(key)) {
+      key.forEach((k) => this.subscribe(k, callback));
+      return this;
+    }
     if (!PostyBirbDatabase.subscribers[key]) {
       PostyBirbDatabase.subscribers[key] = [];
     }
     PostyBirbDatabase.subscribers[key].push(callback);
+    return this;
   }
 
   private notify(ids: EntityId[], action: Action) {

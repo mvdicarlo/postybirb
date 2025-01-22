@@ -1,5 +1,6 @@
 import { Delete, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { EntityId } from '@postybirb/types';
 import { SchemaKey } from '../../drizzle/postybirb-database/postybirb-database';
 import { PostyBirbService } from '../service/postybirb-service';
 
@@ -13,10 +14,10 @@ export abstract class PostyBirbController<T extends SchemaKey> {
 
   @Get(':id')
   @ApiOkResponse({ description: 'Record by Id.' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: EntityId) {
     return this.service
       .findById(id, { failOnMissing: true })
-      .then((record) => record.toJSON());
+      .then((record) => record.toDTO());
   }
 
   @Get()
@@ -24,14 +25,14 @@ export abstract class PostyBirbController<T extends SchemaKey> {
   findAll() {
     return this.service
       .findAll()
-      .then((records) => records.map((record) => record.toJSON()));
+      .then((records) => records.map((record) => record.toDTO()));
   }
 
   @Delete()
   @ApiOkResponse({
     description: 'Records removed.',
   })
-  async remove(@Query('ids') ids: string | string[]) {
+  async remove(@Query('ids') ids: EntityId | EntityId[]) {
     return Promise.all(
       (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id)),
     ).then(() => ({

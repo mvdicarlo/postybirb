@@ -1,4 +1,5 @@
 import {
+  EntityPrimitive,
   IPostRecord,
   ISubmission,
   ISubmissionDto,
@@ -44,10 +45,10 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   order: number;
 
-  toObject(): ISubmission {
+  toObject(): EntityPrimitive<ISubmission> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as ISubmission;
+    }) as EntityPrimitive<ISubmission>;
   }
 
   toDTO(): ISubmissionDto {

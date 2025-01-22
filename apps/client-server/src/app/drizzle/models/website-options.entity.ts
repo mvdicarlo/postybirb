@@ -1,4 +1,5 @@
 import {
+  EntityPrimitive,
   IWebsiteFormFields,
   IWebsiteOptions,
   WebsiteOptionsDto,
@@ -20,10 +21,10 @@ export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
 
   isDefault = false;
 
-  toObject(): IWebsiteOptions {
+  toObject(): EntityPrimitive<IWebsiteOptions> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as IWebsiteOptions;
+    }) as EntityPrimitive<IWebsiteOptions>;
   }
 
   toDTO(): WebsiteOptionsDto {

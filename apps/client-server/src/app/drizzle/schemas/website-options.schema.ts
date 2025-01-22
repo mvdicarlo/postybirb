@@ -1,7 +1,7 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { account } from './account.schema';
-import { commonSchema } from './common.schema';
+import { commonSchema, id } from './common.schema';
 import { submission } from './submission.schema';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { IWebsiteFormFields } from '../../../../../../libs/types/src/index';
@@ -9,12 +9,12 @@ import { IWebsiteFormFields } from '../../../../../../libs/types/src/index';
 export const websiteOptions = sqliteTable('website-options', {
   ...commonSchema(),
   data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),
-  accountId: integer()
+  accountId: id()
     .notNull()
     .references(() => account.id, {
       onDelete: 'cascade',
     }),
-  submissionId: integer()
+  submissionId: id()
     .notNull()
     .references(() => submission.id, {
       onDelete: 'cascade',

@@ -1,4 +1,8 @@
-import { IFileBuffer, ISubSubmissionFileDto } from '@postybirb/types';
+import {
+  EntityPrimitive,
+  IFileBuffer,
+  ISubSubmissionFileDto,
+} from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
@@ -18,10 +22,10 @@ export class FileBuffer extends DatabaseEntity implements IFileBuffer {
 
   height: number;
 
-  toObject(): IFileBuffer {
+  toObject(): EntityPrimitive<IFileBuffer> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as IFileBuffer;
+    }) as EntityPrimitive<IFileBuffer>;
   }
 
   toDTO(): ISubSubmissionFileDto {

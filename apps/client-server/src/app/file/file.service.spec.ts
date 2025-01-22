@@ -5,7 +5,6 @@ import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
-import { DatabaseModule } from '../database/database.module';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
@@ -71,7 +70,6 @@ describe('FileService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [
         UserSpecifiedWebsiteOptionsService,
         SubmissionService,

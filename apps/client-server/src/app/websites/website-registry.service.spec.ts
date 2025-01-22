@@ -1,7 +1,5 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
-import { Account } from '../database/entities';
+import { Account } from '../drizzle/models';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -9,25 +7,16 @@ import { WebsiteRegistryService } from './website-registry.service';
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
 
     service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

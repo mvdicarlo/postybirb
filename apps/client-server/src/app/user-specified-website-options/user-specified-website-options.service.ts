@@ -1,19 +1,15 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
-import { AccountId, SubmissionType } from '@postybirb/types';
+import { AccountId, EntityId, SubmissionType } from '@postybirb/types';
+import { and, eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UserSpecifiedWebsiteOptions } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { UserSpecifiedWebsiteOptions } from '../drizzle/models';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 
 @Injectable()
-export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpecifiedWebsiteOptions> {
-  constructor(
-    @InjectRepository(UserSpecifiedWebsiteOptions)
-    repository: PostyBirbRepository<UserSpecifiedWebsiteOptions>,
-  ) {
-    super(repository);
+export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'userSpecifiedWebsiteOptions'> {
+  constructor() {
+    super('userSpecifiedWebsiteOptions');
   }
 
   async create(
@@ -21,20 +17,20 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
   ): Promise<UserSpecifiedWebsiteOptions> {
     this.logger
       .withMetadata(createDto)
-      .info(`Creating UserSpecifiedWebsiteOptions '${createDto.account}'`);
-    await this.throwIfExists({
-      account: createDto.account,
-      type: createDto.type,
-    });
-    const entity = this.repository.create({
-      id: createDto.account,
+      .info(`Creating UserSpecifiedWebsiteOptions '${createDto.accountId}'`);
+    await this.throwIfExists(
+      and(
+        eq(this.schema.accountId, createDto.accountId),
+        eq(this.schema.type, createDto.type),
+      ),
+    );
+    return this.repository.insert({
+      accountId: createDto.accountId,
       ...createDto,
     });
-    await this.repository.persistAndFlush(entity);
-    return entity;
   }
 
-  update(id: string, update: UpdateUserSpecifiedWebsiteOptionsDto) {
+  update(id: EntityId, update: UpdateUserSpecifiedWebsiteOptionsDto) {
     this.logger
       .withMetadata(update)
       .info(`Updating UserSpecifiedWebsiteOptions '${id}'`);
@@ -45,6 +41,10 @@ export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<UserSpe
     accountId: AccountId,
     type: SubmissionType,
   ) {
-    return this.repository.findOne({ account: accountId, type });
+    return this.repository.findOne({
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      where: (options, { and, eq }) =>
+        and(eq(options.accountId, accountId), eq(options.type, type)),
+    });
   }
 }

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IEntity, IEntityDto } from '@postybirb/types';
+import { EntityPrimitive, IEntity, IEntityDto } from '@postybirb/types';
 import {
   ClassConstructor,
   Exclude,
@@ -53,11 +53,11 @@ export abstract class DatabaseEntity implements IEntity {
   @Exclude()
   protected db: BetterSQLite3Database<typeof schema>;
 
-  constructor(entity: IEntity) {
+  constructor(entity: Partial<IEntity>) {
     Object.assign(this, entity);
   }
 
-  public abstract toObject(): IEntity;
+  public abstract toObject(): EntityPrimitive;
 
   public abstract toDTO(): IEntityDto;
 

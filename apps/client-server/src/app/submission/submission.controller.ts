@@ -1,25 +1,25 @@
 import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Patch,
-  Post,
-  UploadedFiles,
-  UseInterceptors,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFiles,
+    UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import {
-  ApiBadRequestResponse,
-  ApiConsumes,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiTags,
+    ApiBadRequestResponse,
+    ApiConsumes,
+    ApiNotFoundResponse,
+    ApiOkResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { IEntityDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { Submission } from '../database/entities';
+import { Submission } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';

@@ -1,26 +1,26 @@
 import { Collection } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import {
-  AccountId,
-  DynamicObject,
-  ISubmission,
-  ISubmissionMetadata,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionMetadataType,
-  SubmissionType,
-  ValidationResult,
+    AccountId,
+    DynamicObject,
+    ISubmission,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionMetadataType,
+    SubmissionType,
+    ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../database/entities';
 import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { Submission, WebsiteOptions } from '../drizzle/models';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';

@@ -1,25 +1,25 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-  Injectable,
-  InternalServerErrorException,
-  Optional,
+    Injectable,
+    InternalServerErrorException,
+    Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-  IPostRecord,
-  PostRecordResumeMode,
-  PostRecordState,
-  SubmissionId,
+    IPostRecord,
+    PostRecordResumeMode,
+    PostRecordState,
+    SubmissionId,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import {
-  PostQueueRecord,
-  PostRecord,
-  Submission,
-} from '../../../database/entities';
 import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import {
+    PostQueueRecord,
+    PostRecord,
+    Submission,
+} from '../../../drizzle/models';
 import { SettingsService } from '../../../settings/settings.service';
 import { IsTestEnvironment } from '../../../utils/test.util';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';

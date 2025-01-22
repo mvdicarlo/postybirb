@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../../../common/controller/postybirb-controller';
-import { PostQueueRecord } from '../../../database/entities';
+import { PostQueueRecord } from '../../../drizzle/models';
 import { PostQueueActionDto } from '../../dtos/post-queue-action.dto';
 import { PostQueueService } from './post-queue.service';
 

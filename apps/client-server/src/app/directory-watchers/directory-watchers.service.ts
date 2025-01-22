@@ -1,13 +1,15 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
+import {
+  DirectoryWatcherImportAction,
+  EntityId,
+  SubmissionType,
+} from '@postybirb/types';
 import { readFile, readdir, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { DirectoryWatcher } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { DirectoryWatcher } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { SubmissionService } from '../submission/services/submission.service';
 import { IsTestEnvironment } from '../utils/test.util';
@@ -29,14 +31,12 @@ type WatcherMetadata = {
  * @extends {PostyBirbService<DirectoryWatcher>}
  */
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher> {
+export class DirectoryWatchersService extends PostyBirbService<'directoryWatcher'> {
   constructor(
-    @InjectRepository(DirectoryWatcher)
-    repository: PostyBirbRepository<DirectoryWatcher>,
     private readonly submissionService: SubmissionService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super(repository, webSocket);
+    super('directoryWatcher', webSocket);
   }
 
   /**
@@ -161,26 +161,24 @@ export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcher>
   async create(
     createDto: CreateDirectoryWatcherDto,
   ): Promise<DirectoryWatcher> {
-    const entity = this.repository.create(createDto);
-    await this.repository.persistAndFlush(entity);
-    return entity;
+    return this.repository.insert(createDto);
   }
 
-  async update(id: string, update: UpdateDirectoryWatcherDto) {
+  async update(id: EntityId, update: UpdateDirectoryWatcherDto) {
     this.logger.withMetadata(update).info(`Updating DirectoryWatcher '${id}'`);
     const entity = await this.repository.findById(id, { failOnMissing: true });
-    const template = update.template
-      ? await this.submissionService.findById(update.template, {
+    const template = update.templateId
+      ? await this.submissionService.findById(update.templateId, {
           failOnMissing: true,
         })
       : null;
-    if (template && !template.metadata.template) {
+    if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');
     }
-    entity.importAction = update.importAction ?? entity.importAction;
-    entity.path = update.path ?? entity.path;
-    entity.template = template;
-    await this.repository.persistAndFlush(entity);
-    return entity;
+    return this.repository.update(id, {
+      importAction: update.importAction ?? entity.importAction,
+      path: update.path ?? entity.path,
+      templateId: update.templateId ?? entity.templateId,
+    });
   }
 }

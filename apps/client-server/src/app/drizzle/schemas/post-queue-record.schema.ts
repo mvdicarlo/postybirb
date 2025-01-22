@@ -1,13 +1,13 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable } from 'drizzle-orm/sqlite-core';
-import { commonSchema } from './common.schema';
+import { sqliteTable } from 'drizzle-orm/sqlite-core';
+import { commonSchema, id } from './common.schema';
 import { postRecord } from './post-record.schema';
 import { submission } from './submission.schema';
 
 export const postQueueRecord = sqliteTable('post-queue', {
   ...commonSchema(),
-  postRecordId: integer().references(() => postRecord.id),
-  submissionId: integer()
+  postRecordId: id().references(() => postRecord.id),
+  submissionId: id()
     .notNull()
     .references(() => submission.id),
 });

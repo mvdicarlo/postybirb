@@ -2,9 +2,9 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { FileType } from '@postybirb/types';
@@ -13,8 +13,8 @@ import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
 import { promisify } from 'util';
-import { SubmissionFile } from '../../database/entities';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
+import { SubmissionFile } from '../../drizzle/models';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 import { CreateFileService } from './create-file.service';

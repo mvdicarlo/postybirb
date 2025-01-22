@@ -4,5 +4,5 @@ export type ICreateUserSpecifiedWebsiteOptionsDto = Pick<
   IUserSpecifiedWebsiteOptions,
   'options' | 'type'
 > & {
-  account: AccountId;
+  accountId: AccountId;
 };

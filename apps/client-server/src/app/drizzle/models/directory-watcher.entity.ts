@@ -1,6 +1,7 @@
 import {
   DirectoryWatcherDto,
   DirectoryWatcherImportAction,
+  EntityPrimitive,
   IDirectoryWatcher,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
@@ -18,10 +19,10 @@ export class DirectoryWatcher
   @Type(() => Submission)
   template?: Submission;
 
-  toObject(): IDirectoryWatcher {
+  toObject(): EntityPrimitive<IDirectoryWatcher> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as IDirectoryWatcher;
+    }) as EntityPrimitive<IDirectoryWatcher>;
   }
 
   toDTO(): DirectoryWatcherDto {

@@ -1,4 +1,3 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   DefaultDescription,
@@ -9,7 +8,6 @@ import {
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
-import { DatabaseModule } from '../../../database/database.module';
 import { FileConverterModule } from '../../../file-converter/file-converter.module';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
@@ -34,7 +32,6 @@ import { PostQueueService } from './post-queue.service';
 describe('PostQueueService', () => {
   let service: PostQueueService;
   let module: TestingModule;
-  let orm: MikroORM;
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let websiteOptionsService: WebsiteOptionsService;
@@ -46,7 +43,6 @@ describe('PostQueueService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
-          DatabaseModule,
           SubmissionModule,
           AccountModule,
           WebsiteOptionsModule,
@@ -80,12 +76,6 @@ describe('PostQueueService', () => {
       );
       postService = module.get<PostService>(PostService);
       postManager = module.get<PostManagerService>(PostManagerService);
-      orm = module.get(MikroORM);
-      try {
-        await orm.getSchemaGenerator().refreshDatabase();
-      } catch {
-        // none
-      }
       await accountService.onModuleInit();
       await settingsService.onModuleInit();
     } catch (err) {
@@ -130,7 +120,6 @@ describe('PostQueueService', () => {
   }
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

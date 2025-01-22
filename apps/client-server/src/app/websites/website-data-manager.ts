@@ -1,7 +1,7 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import { DynamicObject, IAccount } from '@postybirb/types';
-import { WebsiteData } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { WebsiteData } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 
 /**
  * Saves website specific data associated with an account.
@@ -17,7 +17,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   private initialized: boolean;
 
-  private repository: PostyBirbRepository<WebsiteData>;
+  private repository: PostyBirbDatabase<'websiteData'>;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -26,30 +26,28 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   }
 
   private async createOrLoadWebsiteData() {
-    let entity: WebsiteData<T> = await this.repository.findById(
-      this.account.id,
-    );
+    let entity: WebsiteData = await this.repository.findById(this.account.id);
 
     if (!entity) {
-      entity = this.repository.create({
-        id: this.account.id,
-        data: {} as T,
-      } as WebsiteData<T>);
-      await this.repository.persistAndFlush(entity);
+      entity = await this.repository.insert({
+        accountId: this.account.id,
+      });
     }
 
     this.entity = entity;
   }
 
   private async saveData() {
-    await this.repository.persistAndFlush(this.entity);
+    await this.repository.update(this.entity.id, {
+      data: this.entity.data,
+    });
   }
 
   /**
    * Initializes the internal WebsiteData entity.
-   * @param {PostyBirbRepository<WebsiteData<T>>} repository
+   * @param {PostyBirbDatabase<'websiteData'>} repository
    */
-  public async initialize(repository: PostyBirbRepository<WebsiteData<T>>) {
+  public async initialize(repository: PostyBirbDatabase<'websiteData'>) {
     if (!this.initialized) {
       this.repository = repository;
       await this.createOrLoadWebsiteData();
@@ -66,7 +64,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
    */
   public async clearData() {
     this.logger.info('Clearing website data');
-    await this.repository.removeAndFlush(this.entity);
+    await this.repository.deleteById([this.entity.id]);
 
     // Do a reload to recreate an object that hasn't been saved.
     await this.createOrLoadWebsiteData();

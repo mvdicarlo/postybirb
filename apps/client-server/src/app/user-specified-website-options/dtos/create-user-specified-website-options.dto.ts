@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   DynamicObject,
+  EntityId,
   ICreateUserSpecifiedWebsiteOptionsDto,
   SubmissionType,
 } from '@postybirb/types';
@@ -18,5 +19,5 @@ export class CreateUserSpecifiedWebsiteOptionsDto
   type: SubmissionType;
 
   @IsString()
-  account: string;
+  accountId: EntityId;
 }

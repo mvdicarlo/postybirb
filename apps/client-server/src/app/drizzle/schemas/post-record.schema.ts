@@ -1,11 +1,11 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import {
   PostRecordResumeMode,
   PostRecordState,
 } from '../../../../../../libs/types/src/index';
-import { commonSchema } from './common.schema';
+import { commonSchema, id } from './common.schema';
 import { postQueueRecord } from './post-queue-record.schema';
 import { submission } from './submission.schema';
 import { websitePostRecord } from './website-post-record.schema';
@@ -31,8 +31,8 @@ export const postRecord = sqliteTable('post-record', {
   })
     .notNull()
     .default(PostRecordResumeMode.CONTINUE),
-  submissionId: integer().references(() => submission.id),
-  postQueueRecordId: integer().references(() => postQueueRecord.id),
+  submissionId: id().references(() => submission.id),
+  postQueueRecordId: id().references(() => postQueueRecord.id),
   completedAt: text(),
 });
 

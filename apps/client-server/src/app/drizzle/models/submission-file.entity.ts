@@ -1,4 +1,5 @@
 import {
+  EntityPrimitive,
   FileSubmissionMetadata,
   ISubmissionFile,
   ISubmissionFileDto,
@@ -39,10 +40,10 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
 
   height: number;
 
-  toObject(): ISubmissionFile {
+  toObject(): EntityPrimitive<ISubmissionFile> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as ISubmissionFile;
+    }) as EntityPrimitive<ISubmissionFile>;
   }
 
   toDTO(): ISubmissionFileDto {

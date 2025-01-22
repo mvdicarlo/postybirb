@@ -12,13 +12,13 @@ import * as mammoth from 'mammoth';
 import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
+import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import {
   AltFile,
   PrimaryFile,
   SubmissionFile,
   ThumbnailFile,
-} from '../../database/entities';
-import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
+} from '../../drizzle/models';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 

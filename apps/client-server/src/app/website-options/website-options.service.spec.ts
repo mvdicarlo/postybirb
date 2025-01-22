@@ -1,4 +1,3 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
   DefaultDescriptionValue,
@@ -10,7 +9,6 @@ import {
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
-import { DatabaseModule } from '../database/database.module';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
@@ -35,7 +33,6 @@ describe('WebsiteOptionsService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   async function createAccount() {
     const dto = new CreateAccountDto();
@@ -60,10 +57,8 @@ describe('WebsiteOptionsService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
-          DatabaseModule,
           WebsitesModule,
           AccountModule,
-          DatabaseModule,
           UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FormGeneratorModule,
@@ -89,12 +84,6 @@ describe('WebsiteOptionsService', () => {
       service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
       submissionService = module.get<SubmissionService>(SubmissionService);
       accountService = module.get<AccountService>(AccountService);
-      orm = module.get(MikroORM);
-      try {
-        await orm.getSchemaGenerator().refreshDatabase();
-      } catch {
-        // none
-      }
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -102,7 +91,6 @@ describe('WebsiteOptionsService', () => {
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

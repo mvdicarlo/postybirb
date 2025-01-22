@@ -1,15 +1,16 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { account } from './account.schema';
-import { commonSchema, submissionType } from './common.schema';
+import { commonSchema, id, submissionType } from './common.schema';
 
 export const userSpecifiedWebsiteOptions = sqliteTable(
   'user-specified-website-options',
   {
     ...commonSchema(),
+    ...submissionType(),
     options: text({ mode: 'json' }).notNull(),
     ...submissionType(),
-    accountId: integer()
+    accountId: id()
       .notNull()
       .references(() => account.id, {
         onDelete: 'cascade',

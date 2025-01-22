@@ -1,6 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';
@@ -10,11 +8,9 @@ describe('AccountsService', () => {
   let service: AccountService;
   let registryService: WebsiteRegistryService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [AccountService, WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
 
@@ -22,18 +18,11 @@ describe('AccountsService', () => {
     registryService = module.get<WebsiteRegistryService>(
       WebsiteRegistryService,
     );
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
 
     await service.onModuleInit();
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

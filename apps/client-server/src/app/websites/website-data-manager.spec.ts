@@ -1,34 +1,21 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { NullAccount } from '@postybirb/types';
-import { DatabaseModule } from '../database/database.module';
-import { WebsiteData } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
 
 describe('WebsiteDataManager', () => {
   let module: TestingModule;
-  let orm: MikroORM;
-  let repository: PostyBirbRepository<WebsiteData>;
+  let repository: PostyBirbDatabase<'websiteData'>;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [WebsiteImplProvider],
     }).compile();
-
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-      repository = orm.em.getRepository(WebsiteData);
-    } catch {
-      // none
-    }
+    repository = new PostyBirbDatabase('websiteData');
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

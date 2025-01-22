@@ -1,8 +1,6 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
-import { DatabaseModule } from '../database/database.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
@@ -15,11 +13,10 @@ describe('DirectoryWatchersService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule, SubmissionModule],
+      imports: [SubmissionModule],
       providers: [DirectoryWatchersService],
     }).compile();
 
@@ -27,12 +24,6 @@ describe('DirectoryWatchersService', () => {
     submissionService = module.get<SubmissionService>(SubmissionService);
     accountService = module.get<AccountService>(AccountService);
 
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
     await accountService.onModuleInit();
   });
 
@@ -47,7 +38,6 @@ describe('DirectoryWatchersService', () => {
   }
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -92,7 +82,7 @@ describe('DirectoryWatchersService', () => {
     const record = await service.create(dto);
     expect(record.path).toBe(dto.path);
     const updateDto = new UpdateDirectoryWatcherDto();
-    updateDto.template = template.id;
+    updateDto.templateId = template.id;
 
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.template).toBeDefined();

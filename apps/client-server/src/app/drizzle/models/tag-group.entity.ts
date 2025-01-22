@@ -1,4 +1,4 @@
-import { ITagGroup, TagGroupDto } from '@postybirb/types';
+import { EntityPrimitive, ITagGroup, TagGroupDto } from '@postybirb/types';
 import { instanceToPlain } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
@@ -7,10 +7,10 @@ export class TagGroup extends DatabaseEntity implements ITagGroup {
 
   tags: string[] = [];
 
-  toObject(): ITagGroup {
+  toObject(): EntityPrimitive<ITagGroup> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as ITagGroup;
+    }) as EntityPrimitive<ITagGroup>;
   }
 
   toDTO(): TagGroupDto {

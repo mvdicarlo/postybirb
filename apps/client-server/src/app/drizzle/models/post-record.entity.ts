@@ -1,4 +1,5 @@
 import {
+  EntityPrimitive,
   IPostRecord,
   PostRecordDto,
   PostRecordResumeMode,
@@ -32,10 +33,10 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
   @Type(() => PostQueueRecord)
   postQueueRecord?: PostQueueRecord;
 
-  toObject(): IPostRecord {
+  toObject(): EntityPrimitive<IPostRecord> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as IPostRecord;
+    }) as EntityPrimitive<IPostRecord>;
   }
 
   toDTO(): PostRecordDto {

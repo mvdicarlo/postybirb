@@ -1,4 +1,8 @@
-import { ITagConverter, TagConverterDto } from '@postybirb/types';
+import {
+  EntityPrimitive,
+  ITagConverter,
+  TagConverterDto,
+} from '@postybirb/types';
 import { instanceToPlain } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
@@ -12,10 +16,10 @@ export class TagConverter extends DatabaseEntity implements ITagConverter {
     super(entity);
   }
 
-  toObject(): ITagConverter {
+  toObject(): EntityPrimitive<ITagConverter> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as ITagConverter;
+    }) as EntityPrimitive<ITagConverter>;
   }
 
   toDTO(): TagConverterDto {

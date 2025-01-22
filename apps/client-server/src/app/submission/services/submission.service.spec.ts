@@ -1,4 +1,3 @@
-import { MikroORM } from '@mikro-orm/core';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
@@ -14,7 +13,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
-import { DatabaseModule } from '../../database/database.module';
 import { FileConverterService } from '../../file-converter/file-converter.service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -40,7 +38,6 @@ describe('SubmissionService', () => {
   let testFile: Buffer | null = null;
   let service: SubmissionService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
@@ -53,7 +50,6 @@ describe('SubmissionService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
-          DatabaseModule,
           AccountModule,
           WebsitesModule,
           UserSpecifiedWebsiteOptionsModule,
@@ -78,12 +74,6 @@ describe('SubmissionService', () => {
       }).compile();
 
       service = module.get<SubmissionService>(SubmissionService);
-      orm = module.get(MikroORM);
-      try {
-        await orm.getSchemaGenerator().refreshDatabase();
-      } catch {
-        // none
-      }
       const accountService = module.get<AccountService>(AccountService);
       await accountService.onModuleInit();
     } catch (e) {
@@ -92,7 +82,6 @@ describe('SubmissionService', () => {
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

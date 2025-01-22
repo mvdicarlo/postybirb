@@ -4,5 +4,5 @@ export type IUpdateDirectoryWatcherDto = Pick<
   IDirectoryWatcher,
   'importAction' | 'path'
 > & {
-  template?: SubmissionId;
+  templateId?: SubmissionId;
 };

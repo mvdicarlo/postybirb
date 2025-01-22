@@ -3,9 +3,11 @@ import { v4 } from 'uuid';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { SubmissionType } from '../../../../../../libs/types/src/index';
 
+export const id = text;
+
 export function commonSchema() {
   return {
-    id: text()
+    id: id()
       .primaryKey()
       .unique()
       .notNull()
@@ -22,7 +24,7 @@ export function commonSchema() {
 
 export function submissionType() {
   return {
-    submissionType: text({
+    type: text({
       enum: [SubmissionType.FILE, SubmissionType.MESSAGE],
     }).notNull(),
   };

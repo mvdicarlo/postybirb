@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
 import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
@@ -14,7 +13,7 @@ describe('ValidationService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [WebsitesModule, PostParsersModule, DatabaseModule],
+      imports: [WebsitesModule, PostParsersModule],
       providers: [
         WebsiteImplProvider,
         ValidationService,

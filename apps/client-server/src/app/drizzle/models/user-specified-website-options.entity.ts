@@ -1,5 +1,6 @@
 import {
   DynamicObject,
+  EntityPrimitive,
   IUserSpecifiedWebsiteOptions,
   SubmissionType,
   UserSpecifiedWebsiteOptionsDto,
@@ -19,10 +20,10 @@ export class UserSpecifiedWebsiteOptions
 
   options: DynamicObject;
 
-  toObject(): IUserSpecifiedWebsiteOptions {
+  toObject(): EntityPrimitive<IUserSpecifiedWebsiteOptions> {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as IUserSpecifiedWebsiteOptions;
+    }) as EntityPrimitive<IUserSpecifiedWebsiteOptions>;
   }
 
   toDTO(): UserSpecifiedWebsiteOptionsDto {

@@ -1,14 +1,11 @@
-import { MikroORM } from '@mikro-orm/core';
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
 
 describe('TagGroupsService', () => {
   let service: TagGroupsService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   function createTagGroupDto(name: string, tags: string[]) {
     const dto = new CreateTagGroupDto();
@@ -19,21 +16,13 @@ describe('TagGroupsService', () => {
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [TagGroupsService],
     }).compile();
 
     service = module.get<TagGroupsService>(TagGroupsService);
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

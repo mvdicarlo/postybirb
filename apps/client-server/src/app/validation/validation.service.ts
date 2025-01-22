@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-  EntityId,
-  ISubmission,
-  IWebsiteOptions,
-  PostData,
-  SimpleValidationResult,
-  SubmissionType,
-  ValidationResult,
+    EntityId,
+    ISubmission,
+    IWebsiteOptions,
+    PostData,
+    SimpleValidationResult,
+    SubmissionType,
+    ValidationResult,
 } from '@postybirb/types';
-import { Account } from '../database/entities';
+import { Account } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
