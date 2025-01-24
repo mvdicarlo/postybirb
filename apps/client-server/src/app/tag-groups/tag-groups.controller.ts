@@ -5,6 +5,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
@@ -31,7 +32,7 @@ export class TagGroupsController extends PostyBirbController<'tagGroup'> {
   @Patch(':id')
   @ApiOkResponse({ description: 'Tag group updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Tag group not found.' })
-  update(@Param('id') id: string, @Body() updateDto: UpdateTagGroupDto) {
+  update(@Param('id') id: EntityId, @Body() updateDto: UpdateTagGroupDto) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());
   }
 }

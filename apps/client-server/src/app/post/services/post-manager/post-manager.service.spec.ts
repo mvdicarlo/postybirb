@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  AccountId,
   DefaultDescription,
+  SubmissionId,
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
@@ -90,12 +92,12 @@ describe('PostManagerService', () => {
   }
 
   function createWebsiteOptionsDto(
-    submissionId: string,
-    accountId: string,
+    submissionId: SubmissionId,
+    accountId: AccountId,
   ): CreateWebsiteOptionsDto {
     const dto = new CreateWebsiteOptionsDto();
-    dto.submission = submissionId;
-    dto.account = accountId;
+    dto.submissionId = submissionId;
+    dto.accountId = accountId;
     dto.data = {
       title: 'Test Title',
       tags: {

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AccountId,
   ICreateWebsiteOptionsDto,
   IWebsiteFormFields,
   SubmissionId,
@@ -12,7 +13,7 @@ export class CreateWebsiteOptionsDto<
 {
   @ApiProperty()
   @IsString()
-  account: string;
+  accountId: AccountId;
 
   @ApiProperty({ type: Object })
   @IsOptional()
@@ -21,7 +22,7 @@ export class CreateWebsiteOptionsDto<
 
   @ApiProperty()
   @IsString()
-  submission: SubmissionId;
+  submissionId: SubmissionId;
 
   isDefault?: boolean = false;
 }

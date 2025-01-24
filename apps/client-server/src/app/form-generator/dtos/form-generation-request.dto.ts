@@ -1,11 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IFormGenerationRequestDto, SubmissionType } from '@postybirb/types';
+import {
+  AccountId,
+  IFormGenerationRequestDto,
+  SubmissionType,
+} from '@postybirb/types';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class FormGenerationRequestDto implements IFormGenerationRequestDto {
   @ApiProperty()
   @IsString()
-  accountId: string;
+  accountId: AccountId;
 
   @ApiProperty({ enum: SubmissionType })
   @IsEnum(SubmissionType)

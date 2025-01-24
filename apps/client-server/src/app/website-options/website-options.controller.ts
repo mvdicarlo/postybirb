@@ -5,7 +5,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IWebsiteFormFields } from '@postybirb/types';
+import { EntityId, IWebsiteFormFields, SubmissionId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
@@ -46,7 +46,7 @@ export class WebsiteOptionsController extends PostyBirbController<'websiteOption
   update(
     @Body()
     updateDto: UpdateWebsiteOptionsDto<IWebsiteFormFields>,
-    @Param('id') id: string,
+    @Param('id') id: EntityId,
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());
   }
@@ -57,7 +57,7 @@ export class WebsiteOptionsController extends PostyBirbController<'websiteOption
   updateSubmission(
     @Body()
     updateDto: UpdateSubmissionWebsiteOptionsDto,
-    @Param('id') submissionId: string,
+    @Param('id') submissionId: SubmissionId,
   ) {
     return this.service
       .updateSubmissionOptions(submissionId, updateDto)
@@ -76,7 +76,7 @@ export class WebsiteOptionsController extends PostyBirbController<'websiteOption
   @ApiOkResponse({ description: 'Submission validation completed.' })
   @ApiBadRequestResponse()
   @ApiNotFoundResponse({ description: 'Submission not found.' })
-  validateSubmission(@Param('submissionId') submissionId: string) {
+  validateSubmission(@Param('submissionId') submissionId: SubmissionId) {
     return this.service.validateSubmission(submissionId);
   }
 }

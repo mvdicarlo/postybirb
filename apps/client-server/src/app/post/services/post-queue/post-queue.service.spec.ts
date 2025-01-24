@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  AccountId,
   DefaultDescription,
   PostRecordState,
+  SubmissionId,
   SubmissionRating,
   SubmissionType,
 } from '@postybirb/types';
@@ -98,12 +100,12 @@ describe('PostQueueService', () => {
   }
 
   function createWebsiteOptionsDto(
-    submissionId: string,
-    accountId: string,
+    submissionId: SubmissionId,
+    accountId: AccountId,
   ): CreateWebsiteOptionsDto {
     const dto = new CreateWebsiteOptionsDto();
-    dto.submission = submissionId;
-    dto.account = accountId;
+    dto.submissionId = submissionId;
+    dto.accountId = accountId;
     dto.data = {
       title: 'Test Title',
       tags: {

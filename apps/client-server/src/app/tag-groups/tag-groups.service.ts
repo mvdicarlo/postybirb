@@ -1,5 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
+import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { TagGroup } from '../drizzle/models';
@@ -22,7 +23,7 @@ export class TagGroupsService extends PostyBirbService<'tagGroup'> {
     return this.repository.insert(createDto);
   }
 
-  update(id: string, update: UpdateTagGroupDto) {
+  update(id: EntityId, update: UpdateTagGroupDto) {
     this.logger.withMetadata(update).info(`Updating TagGroup '${id}'`);
     return this.repository.update(id, update);
   }

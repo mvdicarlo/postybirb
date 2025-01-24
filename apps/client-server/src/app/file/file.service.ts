@@ -156,10 +156,10 @@ export class FileService {
 
   /**
    * Updates the raw text of an alt text file.
-   * @param {string} id
+   * @param {EntityId} id
    * @param {UpdateAltFileDto} update
    */
-  async updateAltText(id: string, update: UpdateAltFileDto) {
+  async updateAltText(id: EntityId, update: UpdateAltFileDto) {
     return this.fileBufferRepository.update(id, {
       buffer: Buffer.from(update.html ?? ''),
     });

@@ -1,13 +1,14 @@
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
-    EntityId,
-    FileMetadataFields,
-    FileSubmission,
-    ISubmission,
-    SubmissionMetadataType,
-    SubmissionType,
-    isFileSubmission,
+  EntityId,
+  FileMetadataFields,
+  FileSubmission,
+  ISubmission,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
+  isFileSubmission,
 } from '@postybirb/types';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
@@ -76,7 +77,7 @@ export class FileSubmissionService
    * @param {MulterFileInfo} file
    */
   async appendFile(
-    id: string | FileSubmission,
+    id: EntityId | FileSubmission,
     file: MulterFileInfo,
     persist = true,
   ) {
@@ -117,7 +118,7 @@ export class FileSubmissionService
     return submission;
   }
 
-  async replaceFile(id: string, fileId: string, file: MulterFileInfo) {
+  async replaceFile(id: EntityId, fileId: EntityId, file: MulterFileInfo) {
     const submission = (await this.repository.findById(id)) as FileSubmission;
     this.guardIsFileSubmission(submission);
 
@@ -136,11 +137,15 @@ export class FileSubmissionService
   /**
    * Replaces a thumbnail file.
    *
-   * @param {string} id
-   * @param {string} fileId
+   * @param {SubmissionId} id
+   * @param {EntityId} fileId
    * @param {MulterFileInfo} file
    */
-  async replaceThumbnail(id: string, fileId: string, file: MulterFileInfo) {
+  async replaceThumbnail(
+    id: SubmissionId,
+    fileId: EntityId,
+    file: MulterFileInfo,
+  ) {
     const submission = (await this.repository.findById(id)) as FileSubmission;
     this.guardIsFileSubmission(submission);
 
@@ -151,10 +156,10 @@ export class FileSubmissionService
   /**
    * Removes a file of thumbnail that matches file id.
    *
-   * @param {string} id
-   * @param {string} fileId
+   * @param {SubmissionId} id
+   * @param {EntityId} fileId
    */
-  async removeFile(id: string, fileId: string) {
+  async removeFile(id: SubmissionId, fileId: EntityId) {
     const submission = (await this.repository.findById(id)) as FileSubmission;
     this.guardIsFileSubmission(submission);
 

@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { IFileBuffer } from '@postybirb/types';
+import { EntityId, IFileBuffer } from '@postybirb/types';
 import { getType } from 'mime';
 import { FileService } from './file.service';
 
@@ -12,7 +12,7 @@ export class FileController {
   @Get('thumbnail/:id')
   @ApiOkResponse()
   @ApiNotFoundResponse()
-  async getThumbnail(@Param('id') id: string, @Res() response) {
+  async getThumbnail(@Param('id') id: EntityId, @Res() response) {
     const file = await this.service.findFile(id);
     let imageProvidingEntity: IFileBuffer | null = null;
     if (file.thumbnail) {
@@ -25,7 +25,7 @@ export class FileController {
   @Get('file/:id')
   @ApiOkResponse()
   @ApiNotFoundResponse()
-  async getImage(@Param('id') id: string, @Res() response) {
+  async getImage(@Param('id') id: EntityId, @Res() response) {
     const { file } = await this.service.findFile(id);
     response.contentType(getType(file.fileName));
     response.send(file.buffer);

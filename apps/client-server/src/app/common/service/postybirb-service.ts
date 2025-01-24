@@ -61,7 +61,7 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
 
   // Repository Wrappers
 
-  public findById(id: string, options?: FindOptions) {
+  public findById(id: EntityId, options?: FindOptions) {
     return this.repository.findById(id, options);
   }
 

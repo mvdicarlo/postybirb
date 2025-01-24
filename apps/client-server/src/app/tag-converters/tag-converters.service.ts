@@ -1,5 +1,6 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
+import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { TagConverter } from '../drizzle/models';
@@ -25,7 +26,7 @@ export class TagConvertersService extends PostyBirbService<'tagConverter'> {
     return this.repository.insert(createDto);
   }
 
-  update(id: string, update: UpdateTagConverterDto) {
+  update(id: EntityId, update: UpdateTagConverterDto) {
     this.logger.withMetadata(update).info(`Updating TagConverter '${id}'`);
     return this.repository.update(id, update);
   }

@@ -83,8 +83,6 @@ export class SubmissionService
    * Emits submissions onto websocket.
    */
   public async emit() {
-    // !BUG - This protects against unit test failures, but is not a good solution.
-    // Ideally fixed by upgrading mikro-orm and using a proper event emitter.
     if (IsTestEnvironment()) {
       return;
     }
@@ -273,10 +271,10 @@ export class SubmissionService
   /**
    * Updates a submission.
    *
-   * @param {string} id
+   * @param {SubmissionId} id
    * @param {UpdateSubmissionDto} update
    */
-  async update(id: string, update: UpdateSubmissionDto) {
+  async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
 
@@ -329,9 +327,9 @@ export class SubmissionService
         } else {
           optionChanges.push(
             this.websiteOptionsService.create({
-              account: option.account,
+              accountId: option.account,
               data: option.data,
-              submission: submission.id,
+              submissionId: submission.id,
             }),
           );
         }
@@ -349,7 +347,7 @@ export class SubmissionService
     }
   }
 
-  public async remove(id: string) {
+  public async remove(id: SubmissionId) {
     await super.remove(id);
     this.emit();
   }
@@ -420,7 +418,7 @@ export class SubmissionService
    * !Somewhat janky method of doing a clone.
    * @param {string} id
    */
-  public async duplicate(id: string) {
+  public async duplicate(id: SubmissionId) {
     this.logger.info(`Duplicating Submission '${id}'`);
     const entityToDuplicate = await this.repository.findOne(
       { id },
@@ -488,7 +486,7 @@ export class SubmissionService
   }
 
   async updateTemplateName(
-    id: string,
+    id: SubmissionId,
     updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     const entity = await this.findById(id, { failOnMissing: true });
@@ -543,7 +541,7 @@ export class SubmissionService
     this.emit();
   }
 
-  public findPopulatedById(id: string) {
+  public findPopulatedById(id: SubmissionId) {
     return this.repository.findOneOrFail(
       { id },
       { populate: ['options', 'options.account'] },

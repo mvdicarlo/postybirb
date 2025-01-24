@@ -247,7 +247,7 @@ export class AccountService
    *
    * @param {string} id
    */
-  async clearAccountData(id: string) {
+  async clearAccountData(id: AccountId) {
     this.logger.withMetadata({ id }).info(`Clearing Account data for '${id}'`);
     const account = await this.findById(id);
     if (account) {

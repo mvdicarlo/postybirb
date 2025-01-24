@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { UpdateStartupSettingsDto } from './dtos/update-startup-settings.dto';
@@ -21,7 +22,7 @@ export class SettingsController extends PostyBirbController<'settings'> {
   @ApiNotFoundResponse({ description: 'Settings profile not found.' })
   update(
     @Body() updateSettingsDto: UpdateSettingsDto,
-    @Param('id') id: string,
+    @Param('id') id: EntityId,
   ) {
     return this.service
       .update(id, updateSettingsDto)

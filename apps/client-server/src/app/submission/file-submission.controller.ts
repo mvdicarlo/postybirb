@@ -75,7 +75,7 @@ export class FileSubmissionController {
   async replaceFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
-    @Param('fileId') fileId: string,
+    @Param('fileId') fileId: EntityId,
     @UploadedFile() file: MulterFileInfo,
   ) {
     switch (target) {
@@ -98,7 +98,7 @@ export class FileSubmissionController {
   async removeFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
-    @Param('fileId') fileId: string,
+    @Param('fileId') fileId: EntityId,
   ) {
     switch (target) {
       case 'file':

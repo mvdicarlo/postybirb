@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
-import { FileType } from '@postybirb/types';
+import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
@@ -46,7 +46,7 @@ export class UpdateFileService {
    */
   public async update(
     file: MulterFileInfo,
-    submissionFileId: string,
+    submissionFileId: EntityId,
     buf: Buffer,
     target?: 'thumbnail',
   ): Promise<SubmissionFile> {
@@ -293,9 +293,9 @@ export class UpdateFileService {
   /**
    * Returns file by Id.
    *
-   * @param {string} id
+   * @param {EntityId} id
    */
-  private async findFile(id: string): Promise<SubmissionFile> {
+  private async findFile(id: EntityId): Promise<SubmissionFile> {
     try {
       const entity = await this.fileRepository.findOne({
         where: (f, { eq: equals }) => equals(f.id, id),

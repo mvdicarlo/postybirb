@@ -6,6 +6,7 @@ import {
   ISubmissionScheduleInfo,
   IWebsiteFormFields,
   PostRecordDto,
+  SubmissionId,
   SubmissionType,
   ValidationResult,
   WebsiteOptionsDto,
@@ -90,11 +91,11 @@ export class SubmissionDto<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   /**
    * Id of a submission.
-   * @type {string}
+   * @type {SubmissionId}
    */
   @ApiProperty()
   @IsString()
-  id: string;
+  id: SubmissionId;
 
   @ApiProperty()
   @IsString()

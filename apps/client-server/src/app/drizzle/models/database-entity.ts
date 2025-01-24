@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EntityPrimitive, IEntity, IEntityDto } from '@postybirb/types';
+import {
+  EntityId,
+  EntityPrimitive,
+  IEntity,
+  IEntityDto,
+} from '@postybirb/types';
 import {
   ClassConstructor,
   Exclude,
@@ -32,7 +37,7 @@ export function fromDatabaseRecord<TEntity>(
 }
 
 export abstract class DatabaseEntity implements IEntity {
-  public readonly id: string;
+  public readonly id: EntityId;
 
   @Transform(({ value }) => new Date(value), {
     toClassOnly: true,

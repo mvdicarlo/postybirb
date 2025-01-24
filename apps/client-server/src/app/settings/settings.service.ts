@@ -5,6 +5,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
+import { EntityId } from '@postybirb/types';
 import {
   StartupOptions,
   getStartupOptions,
@@ -73,10 +74,16 @@ export class SettingsService
     });
   }
 
+  /**
+   * Gets the startup settings.
+   */
   public getStartupSettings() {
     return getStartupOptions();
   }
 
+  /**
+   * Gets the default settings.
+   */
   public getDefaultSettings() {
     return this.repository.findOne({
       where: (setting, { eq: equals }) =>
@@ -106,11 +113,13 @@ export class SettingsService
   }
 
   /**
-   * Updates a settings profile.
+   * Updates settings.
    *
+   * @param {string} id
    * @param {UpdateSettingsDto} updateSettingsDto
+   * @return {*}
    */
-  async update(id: string, updateSettingsDto: UpdateSettingsDto) {
+  async update(id: EntityId, updateSettingsDto: UpdateSettingsDto) {
     this.logger
       .withMetadata(updateSettingsDto)
       .info(`Updating Settings '${id}'`);

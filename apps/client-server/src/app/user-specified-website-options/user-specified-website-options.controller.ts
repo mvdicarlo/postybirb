@@ -5,6 +5,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
@@ -38,7 +39,7 @@ export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<'
   @ApiOkResponse({ description: 'Entity updated.', type: Boolean })
   @ApiNotFoundResponse()
   update(
-    @Param('id') id: string,
+    @Param('id') id: EntityId,
     @Body() updateDto: UpdateUserSpecifiedWebsiteOptionsDto,
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());

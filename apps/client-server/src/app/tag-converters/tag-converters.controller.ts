@@ -5,6 +5,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { EntityId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
@@ -33,7 +34,7 @@ export class TagConvertersController extends PostyBirbController<'tagConverter'>
   @Patch(':id')
   @ApiOkResponse({ description: 'Tag converter updated.' })
   @ApiNotFoundResponse({ description: 'Tag converter not found.' })
-  update(@Body() updateDto: UpdateTagConverterDto, @Param('id') id: string) {
+  update(@Body() updateDto: UpdateTagConverterDto, @Param('id') id: EntityId) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());
   }
 }

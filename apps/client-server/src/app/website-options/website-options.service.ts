@@ -8,10 +8,12 @@ import {
 import {
   AccountId,
   DynamicObject,
+  EntityId,
   ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
   NULL_ACCOUNT_ID,
+  SubmissionId,
   SubmissionMetadataType,
   SubmissionType,
   ValidationResult,
@@ -108,18 +110,18 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
   async create<T extends IWebsiteFormFields>(
     createDto: CreateWebsiteOptionsDto<T>,
   ) {
-    const account = await this.accountService.findById(createDto.account, {
+    const account = await this.accountService.findById(createDto.accountId, {
       failOnMissing: true,
     });
 
     let submission: ISubmission<SubmissionMetadataType>;
     try {
-      submission = await this.submissionRepository.findOneOrFail(
-        createDto.submission,
+      submission = await this.submissionRepository.findById(
+        createDto.submissionId,
       );
     } catch {
       throw new NotFoundException(
-        `Submission ${createDto.submission} not found.`,
+        `Submission ${createDto.submissionId} not found.`,
       );
     }
 
@@ -162,7 +164,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     return submissionOptions;
   }
 
-  update(id: string, update: UpdateWebsiteOptionsDto) {
+  update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     return this.repository.update(id, update);
   }
@@ -221,7 +223,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
-    const { websiteOptionId, submission: submissionId } = validate;
+    const { websiteOptionId, submissionId: submissionId } = validate;
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });
@@ -233,17 +235,17 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
 
   /**
    * Validates all submission options for a submission.
-   * @param {string} submissionId
+   * @param {SubmissionId} submissionId
    * @return {*}  {Promise<ValidationResult[]>}
    */
-  async validateSubmission(submissionId: string) {
+  async validateSubmission(submissionId: SubmissionId) {
     const submission =
       await this.submissionService.findPopulatedById(submissionId);
     return this.validationService.validateSubmission(submission);
   }
 
   async updateSubmissionOptions(
-    submissionId: string,
+    submissionId: SubmissionId,
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     const submission = await this.submissionService.findById(submissionId, {
@@ -269,7 +271,9 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
 
     if (add?.length) {
       const options = await Promise.all(
-        add.map((dto) => this.createOption(submission, dto.account, dto.data)),
+        add.map((dto) =>
+          this.createOption(submission, dto.accountId, dto.data),
+        ),
       );
       submission.options.add(...options);
     }

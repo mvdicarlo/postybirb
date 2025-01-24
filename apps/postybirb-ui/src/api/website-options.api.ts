@@ -4,6 +4,7 @@ import {
   IUpdateWebsiteOptionsDto,
   IValidateWebsiteOptionsDto,
   IWebsiteFormFields,
+  SubmissionId,
   ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
@@ -22,12 +23,12 @@ class WebsiteOptionsApi extends BaseApi<
     return this.client.post<ValidationResult>('validate', dto);
   }
 
-  validateSubmission(submissionId: string) {
+  validateSubmission(submissionId: SubmissionId) {
     return this.client.get<ValidationResult[]>(`validate/${submissionId}`);
   }
 
   modifySubmission(
-    submissionId: string,
+    submissionId: SubmissionId,
     dto: IUpdateSubmissionWebsiteOptionsDto,
   ) {
     return this.client.patch<WebsiteOptionsDto>(

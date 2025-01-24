@@ -1,6 +1,6 @@
 import { EntityId, SubmissionId } from '../../models';
 
 export interface IValidateWebsiteOptionsDto {
-  submission: SubmissionId;
+  submissionId: SubmissionId;
   websiteOptionId: EntityId;
 }
