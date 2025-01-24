@@ -27,6 +27,11 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
 
   resumeMode: PostRecordResumeMode;
 
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+  constructor(entity: Partial<IPostRecord>) {
+    super(entity);
+  }
+
   @Type(() => WebsitePostRecord)
   children: WebsitePostRecord[];
 

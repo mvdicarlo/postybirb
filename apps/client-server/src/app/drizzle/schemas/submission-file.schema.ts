@@ -28,7 +28,7 @@ export const submissionFileRelations = relations(submissionFile, ({ one }) => ({
     fields: [submissionFile.submissionId],
     references: [submission.id],
   }),
-  primaryFile: one(fileBuffer, {
+  file: one(fileBuffer, {
     fields: [submissionFile.primaryFileId],
     references: [fileBuffer.id],
   }),

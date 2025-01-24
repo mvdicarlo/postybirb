@@ -1,25 +1,20 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-    Injectable,
-    InternalServerErrorException,
-    Optional,
+  Injectable,
+  InternalServerErrorException,
+  Optional,
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import {
-    IPostRecord,
-    PostRecordResumeMode,
-    PostRecordState,
-    SubmissionId,
+  EntityId,
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionId,
 } from '@postybirb/types';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
-import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
-import {
-    PostQueueRecord,
-    PostRecord,
-    Submission,
-} from '../../../drizzle/models';
+import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
 import { IsTestEnvironment } from '../../../utils/test.util';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
@@ -32,24 +27,23 @@ import { PostManagerService } from '../post-manager/post-manager.service';
  * @class PostQueueService
  */
 @Injectable()
-export class PostQueueService extends PostyBirbService<PostQueueRecord> {
+export class PostQueueService extends PostyBirbService<'postQueueRecord'> {
   private readonly queueModificationMutex = new Mutex();
 
   private readonly queueMutex = new Mutex();
 
   private readonly initTime = Date.now();
 
+  private readonly postRecordRepository = new PostyBirbDatabase('postRecord');
+
+  private readonly submissionRepository = new PostyBirbDatabase('submission');
+
   constructor(
-    @InjectRepository(PostQueueRecord)
-    readonly repository: PostyBirbRepository<PostQueueRecord>,
-    @InjectRepository(Submission)
-    private readonly submissionRepository: PostyBirbRepository<Submission>,
     private readonly postManager: PostManagerService,
-    private readonly postRecordRepository: PostyBirbRepository<PostRecord>,
     private readonly settingsService: SettingsService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super(repository, webSocket);
+    super('postQueueRecord', webSocket);
   }
 
   public async isPaused(): Promise<boolean> {
@@ -73,7 +67,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
     });
   }
 
-  public override remove(id: string) {
+  public override remove(id: EntityId) {
     return this.dequeue([id]);
   }
 
@@ -86,12 +80,15 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
 
     try {
       for (const submissionId of submissionIds) {
-        if (!(await this.repository.findOne({ submission: submissionId }))) {
-          const record = this.repository.create({
-            submission: submissionId,
+        if (
+          !(await this.repository.findOne({
+            where: (queueRecord, { eq }) =>
+              eq(queueRecord.submissionId, submissionId),
+          }))
+        ) {
+          await this.repository.insert({
+            submissionId,
           });
-
-          await this.repository.persistAndFlush(record);
         }
       }
     } catch (error) {
@@ -108,12 +105,13 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
 
     try {
       const records = await this.repository.find({
-        submission: { $in: submissionIds },
+        where: (queueRecord, { inArray }) =>
+          inArray(queueRecord.submissionId, submissionIds),
       });
 
       submissionIds.forEach((id) => this.postManager.cancelIfRunning(id));
 
-      await this.repository.removeAndFlush(records);
+      await this.repository.deleteById(records.map((r) => r.id));
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to dequeue posts');
       throw new InternalServerErrorException(error.message);
@@ -132,7 +130,7 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
     }
 
     const entities = await this.submissionRepository.find({
-      isScheduled: true,
+      where: (queueRecord, { eq }) => eq(queueRecord.isScheduled, true),
     });
     const now = Date.now();
     const sorted = entities
@@ -150,7 +148,9 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
         if (next) {
           // eslint-disable-next-line no-param-reassign
           s.schedule.scheduledFor = next;
-          this.submissionRepository.persistAndFlush(s);
+          this.submissionRepository.update(s.id, {
+            schedule: s.schedule,
+          });
         }
       });
   }
@@ -217,11 +217,16 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
           state: PostRecordState.PENDING,
           postQueueRecord: top,
         });
-        top.postRecord = postRecord as IPostRecord;
+        top.postRecord = await this.postRecordRepository.update(postRecord.id, {
+          submissionId: submission.id,
+          resumeMode: PostRecordResumeMode.CONTINUE,
+          state: PostRecordState.PENDING,
+          postQueueRecordId: top.id,
+        });
         this.logger
-          .withMetadata({ postRecord: postRecord.toJSON() })
+          .withMetadata({ postRecord: postRecord.toObject() })
           .info('Creating PostRecord and starting PostManager');
-        await this.postRecordRepository.persistAndFlush(postRecord);
+
         this.postManager.startPost(postRecord);
       } else if (
         record.state === PostRecordState.DONE ||
@@ -254,23 +259,36 @@ export class PostQueueService extends PostyBirbService<PostQueueRecord> {
    * Based on the createdAt date.
    */
   public async peek(): Promise<PostQueueRecord | undefined> {
-    const all = await this.repository.findAll({
-      limit: 1,
-      orderBy: { createdAt: 'ASC' },
-      populate: [
-        'postRecord',
-        'postRecord.children',
-        'postRecord.parent',
-        'postRecord.parent.options',
-        'postRecord.parent.options.account',
-        'submission',
-        'submission.files',
-        'submission.files.file',
-        'submission.files.altFile',
-        'submission.files.thumbnail',
-      ],
+    return this.repository.findOne({
+      orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
+      with: {
+        postRecord: {
+          with: {
+            children: true,
+            parent: {
+              with: {
+                options: {
+                  with: {
+                    account: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        submission: {
+          with: {
+            options: true,
+            files: {
+              with: {
+                file: true,
+                altFile: true,
+                thumbnail: true,
+              },
+            },
+          },
+        },
+      },
     });
-
-    return all[0];
   }
 }

@@ -44,7 +44,7 @@ describe('AccountsService', () => {
     expect(groups[0].name).toEqual(dto.name);
     expect(groups[0].website).toEqual(dto.website);
     expect(groups[0].groups).toEqual(dto.groups);
-    expect(service.getAccountDto(record)).toEqual({
+    expect(record.toDTO()).toEqual({
       groups: dto.groups,
       name: dto.name,
       website: dto.website,

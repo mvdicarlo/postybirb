@@ -1,20 +1,23 @@
 /* eslint-disable no-param-reassign */
 import * as rtf from '@iarna/rtf-to-html';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-    BadRequestException,
-    Injectable,
-    NotFoundException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
+import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
 import { promisify } from 'util';
-import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
 import { SubmissionFile } from '../../drizzle/models';
+import {
+  PostyBirbDatabase,
+  PostyBirbTransaction,
+} from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 import { CreateFileService } from './create-file.service';
@@ -26,18 +29,19 @@ import { CreateFileService } from './create-file.service';
 export class UpdateFileService {
   private readonly logger = Logger();
 
-  constructor(
-    private readonly createFileService: CreateFileService,
-    @InjectRepository(SubmissionFile)
-    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
-  ) {}
+  private readonly fileRepository = new PostyBirbDatabase('submissionFile');
+
+  private readonly fileBufferRepository = new PostyBirbDatabase('fileBuffer');
+
+  constructor(private readonly createFileService: CreateFileService) {}
 
   /**
    * Creates file entity and stores it.
-   * @todo figure out what to do about non-image
    *
    * @param {MulterFileInfo} file
    * @param {MulterFileInfo} submission
+   * @param {Buffer} buf
+   * @param {string} target
    * @return {*}  {Promise<SubmissionFile>}
    */
   public async update(
@@ -47,80 +51,132 @@ export class UpdateFileService {
     target?: 'thumbnail',
   ): Promise<SubmissionFile> {
     const submissionFile = await this.findFile(submissionFileId);
-    if (target === 'thumbnail') {
-      await this.replaceFileThumbnail(submissionFile, file, buf);
-    } else {
-      await this.replacePrimaryFile(submissionFile, file, buf);
-    }
+    await this.fileRepository.db.transaction(
+      async (tx: PostyBirbTransaction) => {
+        if (target === 'thumbnail') {
+          this.replaceFileThumbnail(tx, submissionFile, file, buf);
+        }
+        this.replacePrimaryFile(tx, submissionFile, file, buf);
+      },
+    );
 
-    return submissionFile;
+    // return the latest
+    return this.findFile(submissionFileId);
   }
 
   private async replaceFileThumbnail(
+    tx: PostyBirbTransaction,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
   ) {
     const thumbnailDetails = await this.getImageDetails(file, buf);
+    let { thumbnail } = submissionFile;
     if (!submissionFile.thumbnail) {
-      submissionFile.thumbnail = this.createFileService.createFileBufferEntity(
+      thumbnail = await this.createFileService.createFileBufferEntity(
+        tx,
         submissionFile,
         thumbnailDetails.buffer,
-        'thumbnail',
+        {
+          width: thumbnailDetails.width,
+          height: thumbnailDetails.height,
+          mimeType: file.mimetype,
+        },
       );
+    } else {
+      await tx.update(this.fileBufferRepository.schemaEntity).set({
+        buffer: thumbnailDetails.buffer,
+        mimeType: file.mimetype,
+        width: thumbnailDetails.width,
+        height: thumbnailDetails.height,
+      });
     }
 
-    submissionFile.thumbnail.buffer = thumbnailDetails.buffer;
-    submissionFile.thumbnail.mimeType = file.mimetype;
-    submissionFile.thumbnail.width = thumbnailDetails.width;
-    submissionFile.thumbnail.height = thumbnailDetails.height;
-
-    submissionFile.hasThumbnail = true;
-    submissionFile.props.hasCustomThumbnail = true;
-    await this.fileRepository.persistAndFlush(submissionFile);
+    await tx
+      .update(this.fileRepository.schemaEntity)
+      .set({
+        thumbnailId: thumbnail.id,
+        hasCustomThumbnail: true,
+        hasThumbnail: true,
+      })
+      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
   }
 
   async replacePrimaryFile(
+    tx: PostyBirbTransaction,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    await this.updateFileEntity(submissionFile, file, buf);
-    await this.fileRepository.persistAndFlush(submissionFile);
+    return this.updateFileEntity(tx, submissionFile, file, buf);
   }
 
   private async updateFileEntity(
+    tx: PostyBirbTransaction,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
-  ): Promise<void> {
+  ) {
     const fileHash = await hash(buf, { algorithm: 'sha256' });
 
     // Only need to replace when unique file is given
     if (submissionFile.hash !== fileHash) {
       const fileType = getFileType(file.filename);
       if (fileType === FileType.IMAGE) {
-        await this.updateImageFileProps(submissionFile, file, buf);
+        await this.updateImageFileProps(tx, submissionFile, file, buf);
       }
 
       // Update submission file entity
-      submissionFile.size = buf.length;
-      submissionFile.fileName = file.filename;
-      submissionFile.mimeType = file.mimetype;
-      submissionFile.hash = fileHash;
+      await tx
+        .update(this.fileRepository.schemaEntity)
+        .set({
+          hash: fileHash,
+          size: buf.length,
+          fileName: file.filename,
+          mimeType: file.mimetype,
+        })
+        .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+
+      // Just to get the latest data
 
       // Duplicate props to primary file
-      submissionFile.file.buffer = buf;
-      submissionFile.file.fileName = submissionFile.fileName;
-      submissionFile.file.mimeType = submissionFile.mimeType;
-      submissionFile.file.width = submissionFile.width;
-      submissionFile.file.height = submissionFile.height;
+      await tx
+        .update(this.fileBufferRepository.schemaEntity)
+        .set({
+          buffer: buf,
+          fileName: file.filename,
+          mimeType: file.mimetype,
+        })
+        .where(
+          eq(this.fileBufferRepository.schemaEntity.id, submissionFile.file.id),
+        );
 
-      if (getFileType(file.originalname) === FileType.TEXT) {
-        submissionFile.altFile.buffer =
+      if (
+        getFileType(file.originalname) === FileType.TEXT &&
+        submissionFile.hasAltFile
+      ) {
+        const altFileText =
           (await this.repopulateTextFile(file, buf)) ||
-          submissionFile?.altFile.buffer;
-        submissionFile.hasAltFile = !!submissionFile.altFile?.buffer;
+          submissionFile?.altFile?.buffer;
+        if (altFileText) {
+          await tx
+            .update(this.fileBufferRepository.schemaEntity)
+            .set({
+              buffer: altFileText,
+            })
+            .where(
+              eq(
+                this.fileBufferRepository.schemaEntity.id,
+                submissionFile.altFile.id,
+              ),
+            );
+          await tx
+            .update(this.fileRepository.schemaEntity)
+            .set({
+              hasAltFile: true,
+            })
+            .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+        }
       }
     }
   }
@@ -158,11 +214,12 @@ export class UpdateFileService {
     }
 
     return altText
-      ? Buffer.from(htmlBeautify(altText, { wrap_line_length: 100 }))
+      ? Buffer.from(htmlBeautify(altText, { wrap_line_length: 120 }))
       : null;
   }
 
   private async updateImageFileProps(
+    tx: PostyBirbTransaction,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
@@ -171,13 +228,25 @@ export class UpdateFileService {
       file,
       buf,
     );
-    submissionFile.width = width;
-    submissionFile.height = height;
+    await tx
+      .update(this.fileRepository.schemaEntity)
+      .set({
+        width,
+        height,
+      })
+      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
 
-    if (
-      submissionFile.hasThumbnail &&
-      !submissionFile.props.hasCustomThumbnail
-    ) {
+    await tx
+      .update(this.fileBufferRepository.schemaEntity)
+      .set({
+        width,
+        height,
+      })
+      .where(
+        eq(this.fileBufferRepository.schemaEntity.id, submissionFile.file.id),
+      );
+
+    if (submissionFile.hasThumbnail && !submissionFile.hasCustomThumbnail) {
       // Regenerate auto-thumbnail;
       const {
         buffer: thumbnailBuf,
@@ -188,9 +257,20 @@ export class UpdateFileService {
         height,
         width,
       );
-      submissionFile.thumbnail.buffer = thumbnailBuf;
-      submissionFile.thumbnail.width = thumbnailWidth;
-      submissionFile.thumbnail.height = thumbnailHeight;
+
+      await tx
+        .update(this.fileBufferRepository.schemaEntity)
+        .set({
+          buffer: thumbnailBuf,
+          width: thumbnailWidth,
+          height: thumbnailHeight,
+        })
+        .where(
+          eq(
+            this.fileBufferRepository.schemaEntity.id,
+            submissionFile.thumbnailId,
+          ),
+        );
     }
   }
 
@@ -217,10 +297,14 @@ export class UpdateFileService {
    */
   private async findFile(id: string): Promise<SubmissionFile> {
     try {
-      const entity = await this.fileRepository.findOneOrFail(
-        { id },
-        { populate: true },
-      );
+      const entity = await this.fileRepository.findOne({
+        where: (f, { eq: equals }) => equals(f.id, id),
+        with: {
+          thumbnail: true,
+          primaryFile: true,
+          altFile: true,
+        },
+      });
 
       return entity;
     } catch (e) {

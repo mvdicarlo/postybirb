@@ -17,10 +17,14 @@ import {
 
 export type SchemaKey = keyof PostyBirbDatabaseType['_']['schema'];
 
-type Insert<TSchemaKey extends SchemaKey> =
+export type PostyBirbTransaction = Parameters<
+  Parameters<PostyBirbDatabaseType['transaction']>['0']
+>['0'];
+
+export type Insert<TSchemaKey extends SchemaKey> =
   (typeof schema)[TSchemaKey]['$inferInsert'];
 
-type Select<TSchemaKey extends SchemaKey> =
+export type Select<TSchemaKey extends SchemaKey> =
   (typeof schema)[TSchemaKey]['$inferSelect'];
 
 type ExtractedRelations = ExtractTablesWithRelations<typeof schema>;
@@ -36,7 +40,7 @@ export class PostyBirbDatabase<
   TSchemaKey extends SchemaKey,
   TEntityClass = DatabaseSchemaEntityMap[TSchemaKey],
 > {
-  private readonly db: PostyBirbDatabaseType;
+  public readonly db: PostyBirbDatabaseType;
 
   private static readonly subscribers: Record<
     SchemaKey,
@@ -58,7 +62,13 @@ export class PostyBirbDatabase<
     websitePostRecord: [],
   };
 
-  constructor(private readonly schemaKey: TSchemaKey) {
+  constructor(
+    private readonly schemaKey: TSchemaKey,
+    private readonly load?: Pick<
+      DBQueryConfig<'many', true, ExtractedRelations, Relation<TSchemaKey>>,
+      'with'
+    >,
+  ) {
     this.db = getDatabase(IsTestEnvironment());
   }
 
@@ -132,6 +142,9 @@ export class PostyBirbDatabase<
   ): Promise<TEntityClass | null> {
     const record = await this.db.query[this.schemaKey].findFirst({
       where: eq(this.schemaEntity.id, id),
+      with: {
+        ...(this.load ?? {}),
+      },
     });
 
     if (!record && options?.failOnMissing) {
@@ -162,7 +175,14 @@ export class PostyBirbDatabase<
     const record: any[] =
       (await this.db.query[
         this.schemaKey as keyof PostyBirbDatabaseType
-      ].findMany(query)) ?? [];
+      ].findMany({
+        ...query,
+        with: query.with
+          ? query.with
+          : {
+              ...(this.load ?? {}),
+            },
+      })) ?? [];
     return this.classConverter(record);
   }
 
@@ -180,15 +200,25 @@ export class PostyBirbDatabase<
       >
     >,
   ): Promise<TEntityClass | null> {
-    const record =
-      await this.db.query[
-        this.schemaKey as keyof PostyBirbDatabaseType
-      ].findFirst(query);
+    const record = await this.db.query[
+      this.schemaKey as keyof PostyBirbDatabaseType
+    ].findFirst({
+      ...query,
+      with: query.with
+        ? query.with
+        : {
+            ...(this.load ?? {}),
+          },
+    });
     return record ? this.classConverter(record) : null;
   }
 
   public async findAll(): Promise<TEntityClass[]> {
-    const records: object[] = await this.db.query[this.schemaKey].findMany({});
+    const records: object[] = await this.db.query[this.schemaKey].findMany({
+      with: {
+        ...(this.load ?? {}),
+      },
+    });
     return this.classConverter(records);
   }
 

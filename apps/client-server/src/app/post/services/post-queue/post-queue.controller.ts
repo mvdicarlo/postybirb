@@ -1,7 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../../../common/controller/postybirb-controller';
-import { PostQueueRecord } from '../../../drizzle/models';
 import { PostQueueActionDto } from '../../dtos/post-queue-action.dto';
 import { PostQueueService } from './post-queue.service';
 
@@ -11,7 +10,7 @@ import { PostQueueService } from './post-queue.service';
  */
 @ApiTags('post-queue')
 @Controller('post-queue')
-export class PostQueueController extends PostyBirbController<PostQueueRecord> {
+export class PostQueueController extends PostyBirbController<'postQueueRecord'> {
   constructor(readonly service: PostQueueService) {
     super(service);
   }

@@ -1,4 +1,5 @@
 import {
+  EntityId,
   EntityPrimitive,
   FileSubmissionMetadata,
   ISubmissionFile,
@@ -39,6 +40,8 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
   width: number;
 
   height: number;
+
+  thumbnailId?: EntityId;
 
   toObject(): EntityPrimitive<ISubmissionFile> {
     return instanceToPlain(this, {

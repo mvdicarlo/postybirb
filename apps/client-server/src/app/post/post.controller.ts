@@ -1,7 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { PostRecord } from '../drizzle/models';
 import { PostService } from './post.service';
 
 /**
@@ -10,7 +9,7 @@ import { PostService } from './post.service';
  */
 @ApiTags('post')
 @Controller('post')
-export class PostController extends PostyBirbController<PostRecord> {
+export class PostController extends PostyBirbController<'postRecord'> {
   constructor(readonly service: PostService) {
     super(service);
   }
