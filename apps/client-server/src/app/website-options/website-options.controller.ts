@@ -1,13 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiTags,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { IWebsiteFormFields } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { WebsiteOptions } from '../drizzle/models';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
@@ -21,7 +20,7 @@ import { WebsiteOptionsService } from './website-options.service';
  */
 @ApiTags('website-option')
 @Controller('website-option')
-export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions> {
+export class WebsiteOptionsController extends PostyBirbController<'websiteOptions'> {
   constructor(readonly service: WebsiteOptionsService) {
     super(service);
   }
@@ -38,7 +37,7 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
     @Body()
     createDto: CreateWebsiteOptionsDto<IWebsiteFormFields>,
   ) {
-    return this.service.create(createDto).then((entity) => entity.toJSON());
+    return this.service.create(createDto).then((entity) => entity.toDTO());
   }
 
   @Patch(':id')
@@ -49,7 +48,7 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
     updateDto: UpdateWebsiteOptionsDto<IWebsiteFormFields>,
     @Param('id') id: string,
   ) {
-    return this.service.update(id, updateDto).then((entity) => entity.toJSON());
+    return this.service.update(id, updateDto).then((entity) => entity.toDTO());
   }
 
   @Patch('submission/:id')
@@ -62,7 +61,7 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
   ) {
     return this.service
       .updateSubmissionOptions(submissionId, updateDto)
-      .then((entity) => entity.toJSON());
+      .then((entity) => entity.toDTO());
   }
 
   @Post('validate')

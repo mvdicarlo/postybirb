@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    EntityId,
-    ISubmission,
-    IWebsiteOptions,
-    PostData,
-    SimpleValidationResult,
-    SubmissionType,
-    ValidationResult,
+  EntityId,
+  ISubmission,
+  IWebsiteOptions,
+  PostData,
+  SimpleValidationResult,
+  SubmissionType,
+  ValidationResult,
 } from '@postybirb/types';
 import { Account } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
@@ -126,7 +126,7 @@ export class ValidationService {
       );
       return {
         id: websiteOption.id,
-        account: new Account(websiteOption.account).toJSON(),
+        account: new Account(websiteOption.account).toDTO(),
         warnings: [
           {
             id: 'validation.failed',

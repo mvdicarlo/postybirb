@@ -43,7 +43,7 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
     expect(await service.findAll()).toHaveLength(1);
     expect(record.options).toEqual(dto.options);
     expect(record.type).toEqual(dto.type);
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       account: NULL_ACCOUNT_ID,
       createdAt: record.createdAt.toISOString(),
       id: record.id,

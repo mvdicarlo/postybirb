@@ -1,22 +1,22 @@
 import { Collection, Loaded } from '@mikro-orm/core';
 import {
-    FileSubmission,
-    FileType,
-    IAccount,
-    IFileBuffer,
-    ILoginState,
-    ISubmission,
-    ISubmissionFile,
-    IWebsiteOptions,
-    IWebsitePostRecord,
-    MessageSubmission,
-    NullAccount,
-    PostData,
-    PostRecordResumeMode,
-    PostRecordState,
-    PostResponse,
-    SubmissionRating,
-    SubmissionType,
+  FileSubmission,
+  FileType,
+  IAccount,
+  IFileBuffer,
+  ILoginState,
+  ISubmission,
+  ISubmissionFile,
+  IWebsiteOptions,
+  IWebsitePostRecord,
+  MessageSubmission,
+  NullAccount,
+  PostData,
+  PostRecordResumeMode,
+  PostRecordState,
+  PostResponse,
+  SubmissionRating,
+  SubmissionType,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -189,9 +189,7 @@ describe('PostManagerServiceMocks', () => {
     return submission as FileSubmission;
   }
 
-  function createPostRecord(
-    submission: ISubmission,
-  ): Loaded<PostRecord, string> {
+  function createPostRecord(submission: ISubmission): PostRecord {
     const postRecord = {
       parent: submission,
       state: PostRecordState.PENDING,
@@ -200,11 +198,11 @@ describe('PostManagerServiceMocks', () => {
       updatedAt: new Date(),
       id: 'test-post-record',
       children: patchCollection<IWebsitePostRecord>([]) as never,
-      toJSON: jest.fn().mockReturnValue({}),
+      toDTO: jest.fn().mockReturnValue({}),
     };
 
-    postRecord.toJSON = jest.fn().mockReturnValue({});
-    return postRecord as Loaded<PostRecord, string>;
+    postRecord.toDTO = jest.fn().mockReturnValue({});
+    return postRecord as unknown as PostRecord;
   }
 
   function createAccount(): IAccount {

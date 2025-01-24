@@ -4,24 +4,24 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
-    EntityId,
-    FileMetadataFields,
-    FileSubmission,
-    FileType,
-    ImageResizeProps,
-    ISubmission,
-    ISubmissionFile,
-    IWebsiteFormFields,
-    IWebsiteOptions,
-    IWebsitePostRecord,
-    MessageSubmission,
-    ModifiedFileDimension,
-    PostData,
-    PostRecordResumeMode,
-    PostRecordState,
-    PostResponse,
-    SubmissionId,
-    SubmissionType,
+  EntityId,
+  FileMetadataFields,
+  FileSubmission,
+  FileType,
+  ImageResizeProps,
+  ISubmission,
+  ISubmissionFile,
+  IWebsiteFormFields,
+  IWebsiteOptions,
+  IWebsitePostRecord,
+  MessageSubmission,
+  ModifiedFileDimension,
+  PostData,
+  PostRecordResumeMode,
+  PostRecordState,
+  PostResponse,
+  SubmissionId,
+  SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
@@ -31,8 +31,8 @@ import { FileConverterService } from '../../../file-converter/file-converter.ser
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
 import {
-    ImplementedFileWebsite,
-    isFileWebsite,
+  ImplementedFileWebsite,
+  isFileWebsite,
 } from '../../../websites/models/website-modifiers/file-website';
 import { MessageWebsite } from '../../../websites/models/website-modifiers/message-website';
 import { UnknownWebsite, Website } from '../../../websites/website';
@@ -110,7 +110,7 @@ export class PostManagerService {
       if (this.currentPost) return;
       this.cancelToken = new CancellableToken();
 
-      this.logger.withMetadata(entity.toJSON()).info(`Initializing post`);
+      this.logger.withMetadata(entity.toDTO()).info(`Initializing post`);
       this.currentPost = entity;
       await this.protectedUpdate(entity, {
         state: PostRecordState.RUNNING,

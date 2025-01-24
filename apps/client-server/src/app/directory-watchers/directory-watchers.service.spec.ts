@@ -87,7 +87,7 @@ describe('DirectoryWatchersService', () => {
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.template).toBeDefined();
     expect(updatedRecord.template?.id).toBe(template.id);
-    expect(updatedRecord.toJSON()).toEqual({
+    expect(updatedRecord.toDTO()).toEqual({
       createdAt: updatedRecord.createdAt.toISOString(),
       updatedAt: updatedRecord.updatedAt.toISOString(),
       id: updatedRecord.id,

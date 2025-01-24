@@ -121,7 +121,7 @@ describe('WebsiteOptionsService', () => {
     expect(groups[1].data).toEqual(dto.data);
     expect(groups[1].submission.id).toEqual(dto.submission);
 
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       data: record.data,
       isDefault: false,
       id: record.id,

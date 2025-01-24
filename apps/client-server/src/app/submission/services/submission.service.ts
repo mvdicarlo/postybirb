@@ -1,44 +1,33 @@
 /* eslint-disable no-param-reassign */
 import { serialize } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-    BadRequestException,
-    Inject,
-    Injectable,
-    NotFoundException,
-    OnModuleInit,
-    Optional,
-    forwardRef,
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+  Optional,
+  forwardRef,
 } from '@nestjs/common';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
-    FileSubmission,
-    FileSubmissionMetadata,
-    ISubmission,
-    ISubmissionDto,
-    ISubmissionMetadata,
-    MessageSubmission,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionId,
-    SubmissionMetadataType,
-    SubmissionType,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmission,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
 } from '@postybirb/types';
 import { cloneDeep } from 'lodash';
 import * as path from 'path';
 import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
-import {
-    AltFile,
-    PostRecord,
-    PrimaryFile,
-    Submission,
-    SubmissionFile,
-    ThumbnailFile,
-    WebsiteOptions,
-} from '../../drizzle/models';
+import { Submission, WebsiteOptions } from '../../drizzle/models';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
@@ -58,36 +47,29 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<SubmissionEntity>
+  extends PostyBirbService<'submission'>
   implements OnModuleInit
 {
   constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
-    @InjectRepository(Submission)
-    repository: PostyBirbRepository<SubmissionEntity>,
     @Inject(forwardRef(() => WebsiteOptionsService))
     private readonly websiteOptionsService: WebsiteOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway,
   ) {
-    super(repository, webSocket);
-
-    // Listen to changes to PostRecord as it is a child of Submission
-    repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
-    // repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
-    //   this.emit()
-    // );
-    // This might be dangerous depending on the creation order of the services
-    repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
-      this.emit(),
-    );
-    repository.addUpdateListener(dbSubscriber, [PrimaryFile], () =>
-      this.emit(),
-    );
-    repository.addUpdateListener(dbSubscriber, [AltFile], () => this.emit());
-    repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
-      this.emit(),
+    super('submission', webSocket);
+    this.repository.subscribe(
+      [
+        'postRecord',
+        'websitePostRecord',
+        'postQueueRecord',
+        'submissionFile',
+        'fileBuffer',
+        'websiteOptions',
+      ],
+      () => {
+        this.emit();
+      },
     );
   }
 
@@ -118,7 +100,7 @@ export class SubmissionService
       all.map(
         async (s) =>
           ({
-            ...s.toJSON(),
+            ...s.toDTO(),
             validations: await this.websiteOptionsService.validateSubmission(
               s.id,
             ),

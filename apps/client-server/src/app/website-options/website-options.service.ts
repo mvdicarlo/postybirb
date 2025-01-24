@@ -1,55 +1,48 @@
 import { Collection } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import {
-    AccountId,
-    DynamicObject,
-    ISubmission,
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    SubmissionMetadataType,
-    SubmissionType,
-    ValidationResult,
+  AccountId,
+  DynamicObject,
+  ISubmission,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  SubmissionMetadataType,
+  SubmissionType,
+  ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
 import { Submission, WebsiteOptions } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
-import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
-export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
+export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
+  private readonly submissionRepository = new PostyBirbDatabase('submission');
+
   constructor(
-    @InjectRepository(WebsiteOptions)
-    readonly repository: PostyBirbRepository<WebsiteOptions>,
-    @InjectRepository(Submission)
-    private readonly submissionRepository: PostyBirbRepository<
-      Submission<SubmissionMetadataType>
-    >,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
-    private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService,
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
   ) {
-    super(repository);
+    super('websiteOptions');
   }
 
   /**

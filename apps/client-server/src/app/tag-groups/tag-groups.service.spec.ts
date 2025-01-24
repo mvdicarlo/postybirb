@@ -38,7 +38,7 @@ describe('TagGroupsService', () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].name).toEqual(dto.name);
     expect(groups[0].tags).toEqual(dto.tags);
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       name: dto.name,
       tags: dto.tags,
       id: record.id,

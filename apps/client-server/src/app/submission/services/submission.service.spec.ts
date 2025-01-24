@@ -125,7 +125,7 @@ describe('SubmissionService', () => {
     expect(records).toHaveLength(1);
     expect(records[0].type).toEqual(createDto.type);
     expect(records[0].options).toHaveLength(1);
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       id: record.id,
       createdAt: record.createdAt.toISOString(),
       updatedAt: record.updatedAt.toISOString(),
@@ -192,7 +192,7 @@ describe('SubmissionService', () => {
     expect(records[0].type).toEqual(createDto.type);
     expect(records[0].options).toHaveLength(1);
     expect(records[0].files).toHaveLength(1);
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       id: record.id,
       createdAt: record.createdAt.toISOString(),
       updatedAt: record.updatedAt.toISOString(),

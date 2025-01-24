@@ -14,7 +14,7 @@ import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
 import { AppModule } from './app/app.module';
-import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
+import { DatabaseEntity } from './app/drizzle/models';
 import { SSL } from './app/security-and-authentication/ssl';
 import { IsTestEnvironment } from './app/utils/test.util';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
@@ -26,7 +26,7 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   ): PlainLiteralObject | PlainLiteralObject[] {
     // Attempts to deal with recursive objects
     return super.serialize(
-      response instanceof PostyBirbEntity ? response.toJSON() : response,
+      response instanceof DatabaseEntity ? response.toDTO() : response,
       options,
     );
   }
