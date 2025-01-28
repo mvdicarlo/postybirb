@@ -20,13 +20,18 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
 export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
   protected readonly logger = Logger();
 
-  protected readonly repository: PostyBirbDatabase<TSchemaKey> =
-    new PostyBirbDatabase(this.table);
+  protected readonly repository: PostyBirbDatabase<TSchemaKey>;
 
   constructor(
-    private readonly table: TSchemaKey,
+    private readonly table: TSchemaKey | PostyBirbDatabase<TSchemaKey>,
     private readonly webSocket?: WSGateway,
-  ) {}
+  ) {
+    if (typeof table === 'string') {
+      this.repository = new PostyBirbDatabase(table);
+    } else {
+      this.repository = table;
+    }
+  }
 
   /**
    * Emits events onto the websocket

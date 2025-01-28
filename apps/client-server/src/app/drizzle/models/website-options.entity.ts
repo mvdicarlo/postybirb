@@ -1,7 +1,9 @@
 import {
+  AccountId,
   EntityPrimitive,
   IWebsiteFormFields,
   IWebsiteOptions,
+  SubmissionId,
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
@@ -11,6 +13,10 @@ import { DatabaseEntity } from './database-entity';
 import { Submission } from './submission.entity';
 
 export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
+  accountId: AccountId;
+
+  submissionId: SubmissionId;
+
   @Type(() => Submission)
   submission: Submission;
 

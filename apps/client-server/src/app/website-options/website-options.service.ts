@@ -1,4 +1,3 @@
-import { Collection } from '@mikro-orm/core';
 import {
   forwardRef,
   Inject,
@@ -21,7 +20,10 @@ import {
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Submission, WebsiteOptions } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import {
+  Insert,
+  PostyBirbDatabase,
+} from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
@@ -47,6 +49,21 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     super('websiteOptions');
   }
 
+  async createOption(
+    submission: ISubmission,
+    accountId: AccountId,
+    data: DynamicObject,
+    title?: string,
+  ): Promise<WebsiteOptions> {
+    const option = await this.createOptionInsertObject(
+      submission,
+      accountId,
+      data,
+      title,
+    );
+    return this.repository.insert(option);
+  }
+
   /**
    * Creates a submission option for a submission.
    *
@@ -55,12 +72,12 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
    * @param {DynamicObject} data
    * @param {string} [title]
    */
-  async createOption(
+  async createOptionInsertObject(
     submission: ISubmission,
     accountId: AccountId,
     data: DynamicObject,
     title?: string,
-  ) {
+  ): Promise<Insert<'websiteOptions'>> {
     const account = await this.accountService.findById(accountId, {
       failOnMissing: true,
     });
@@ -90,7 +107,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
       ),
     };
 
-    const mergedData = {
+    const mergedData: IWebsiteFormFields = {
       ...(isDefault ? new DefaultWebsiteOptions() : {}), // Only merge default options if this is the default option
       ...websiteData, // Merge default form fields
       ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
@@ -98,11 +115,12 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
       title, // Override title (optional)
     };
 
-    const option = new WebsiteOptions({
-      submission,
-      account,
-      data: mergedData as IWebsiteFormFields,
-    });
+    const option: Insert<'websiteOptions'> = {
+      submissionId: submission.id,
+      accountId: account.id,
+      data: mergedData,
+      isDefault,
+    };
 
     return option;
   }
@@ -125,9 +143,10 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
       );
     }
 
-    const exists = submission.options
-      .toArray()
-      .find((option) => option.account.id === account.id);
+    const exists = await this.repository.findOne({
+      where: (wo, { and, eq }) =>
+        and(eq(wo.submissionId, submission.id), eq(wo.accountId, account.id)),
+    });
     if (exists) {
       // Opt to just update the existing option
       return this.update(exists.id, { data: createDto.data });
@@ -153,15 +172,13 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
         {} as IWebsiteFormFields,
       ),
     };
-    const submissionOptions = new WebsiteOptions({
-      submission,
+
+    return this.repository.insert({
+      submissionId: submission.id,
       data: websiteData,
-      account,
+      accountId: account.id,
+      isDefault: account.id === NULL_ACCOUNT_ID,
     });
-
-    await this.repository.persistAndFlush(submissionOptions);
-
-    return submissionOptions;
   }
 
   update(id: EntityId, update: UpdateWebsiteOptionsDto) {
@@ -184,21 +201,26 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     this.logger
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
-    const options = new WebsiteOptions({
-      isDefault: true,
-      submission,
-      account: await this.accountService.findById(NULL_ACCOUNT_ID),
-    });
 
-    await this.populateDefaultWebsiteOptions(submission.type, options, title);
-    return options;
+    const options: Insert<'websiteOptions'> = {
+      isDefault: true,
+      submissionId: submission.id,
+      accountId: NULL_ACCOUNT_ID,
+      data: await this.populateDefaultWebsiteOptions(
+        NULL_ACCOUNT_ID,
+        submission.type,
+        title,
+      ),
+    };
+
+    return this.repository.insert(options);
   }
 
   private async populateDefaultWebsiteOptions(
+    accountId: AccountId,
     type: SubmissionType,
-    entity: WebsiteOptions,
     title?: string,
-  ) {
+  ): Promise<IWebsiteFormFields> {
     const defaultOptions =
       (
         await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
@@ -206,13 +228,13 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
           type,
         )
       )?.options ?? {};
-    Object.assign(entity, {
-      data: {
-        ...new DefaultWebsiteOptions(),
-        ...defaultOptions,
-        title,
-      },
-    });
+
+    const websiteFormFields: IWebsiteFormFields = {
+      ...new DefaultWebsiteOptions(),
+      ...defaultOptions,
+      title,
+    };
+    return websiteFormFields;
   }
 
   /**
@@ -223,7 +245,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
-    const { websiteOptionId, submissionId: submissionId } = validate;
+    const { websiteOptionId, submissionId } = validate;
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });
@@ -254,32 +276,30 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
 
     const { remove, add } = updateDto;
     if (remove?.length) {
-      const items = (
-        submission.options as Collection<WebsiteOptions>
-      ).getItems();
+      const items = submission.options;
+      const removableIds = [];
       // eslint-disable-next-line no-restricted-syntax
       for (const id of remove) {
         const option = items.find((opt) => opt.id === id);
         if (option) {
-          this.logger.debug(
-            `Removing option ${id} from submission ${submissionId}`,
-          );
-          submission.options.remove(option);
+          removableIds.push(id);
         }
       }
+      this.logger.debug(
+        `Removing option(s) [${removableIds.join(', ')}] from submission ${submissionId}`,
+      );
+      await this.repository.deleteById(removableIds);
     }
 
     if (add?.length) {
       const options = await Promise.all(
         add.map((dto) =>
-          this.createOption(submission, dto.accountId, dto.data),
+          this.createOptionInsertObject(submission, dto.accountId, dto.data),
         ),
       );
-      submission.options.add(...options);
+      await this.repository.insert(options);
     }
 
-    await this.submissionRepository.persistAndFlush(submission);
     this.submissionService.emit();
-    return submission;
   }
 }
