@@ -46,7 +46,12 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
   ) {
-    super('websiteOptions');
+    super(
+      new PostyBirbDatabase('websiteOptions', {
+        account: true,
+        submission: true,
+      }),
+    );
   }
 
   async createOption(
@@ -136,8 +141,9 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     try {
       submission = await this.submissionRepository.findById(
         createDto.submissionId,
+        { failOnMissing: true },
       );
-    } catch {
+    } catch (err) {
       throw new NotFoundException(
         `Submission ${createDto.submissionId} not found.`,
       );
@@ -301,5 +307,6 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     }
 
     this.submissionService.emit();
+    return this.submissionService.findById(submissionId);
   }
 }

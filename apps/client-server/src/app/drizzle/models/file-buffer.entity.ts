@@ -1,4 +1,5 @@
 import {
+  EntityId,
   EntityPrimitive,
   IFileBuffer,
   ISubSubmissionFileDto,
@@ -7,6 +8,8 @@ import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
 export class FileBuffer extends DatabaseEntity implements IFileBuffer {
+  submissionFileId: EntityId;
+
   @Type(() => Buffer)
   buffer: Buffer;
 

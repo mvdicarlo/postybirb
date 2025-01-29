@@ -57,7 +57,7 @@ function validateTextFileRequiresFallback({
     return;
   }
 
-  submission.files.getItems().forEach((file) => {
+  submission.files.forEach((file) => {
     if (isFileFiltered(file, submission, websiteInstance)) {
       return;
     }
@@ -93,11 +93,9 @@ export async function validateNotAllFilesIgnored({
     return;
   }
 
-  const numFiles = submission.files
-    .getItems()
-    .filter(
-      (file) => !isFileFiltered(file, submission, websiteInstance),
-    ).length;
+  const numFiles = submission.files.filter(
+    (file) => !isFileFiltered(file, submission, websiteInstance),
+  ).length;
   if (numFiles === 0) {
     result.warnings.push({
       id: 'validation.file.all-ignored',
@@ -132,7 +130,7 @@ export async function validateAcceptedFiles({
     return;
   }
 
-  submission.files.getItems().forEach((file) => {
+  submission.files.forEach((file) => {
     if (isFileFiltered(file, submission, websiteInstance)) {
       return;
     }
@@ -193,11 +191,9 @@ export async function validateFileBatchSize({
 
   const maxBatchSize =
     websiteInstance.decoratedProps.fileOptions?.fileBatchSize ?? 0;
-  const numFiles = submission.files
-    .getItems()
-    .filter(
-      (file) => !isFileFiltered(file, submission, websiteInstance),
-    ).length;
+  const numFiles = submission.files.filter(
+    (file) => !isFileFiltered(file, submission, websiteInstance),
+  ).length;
   if (numFiles > maxBatchSize) {
     const expectedBatchesToCreate = Math.ceil(numFiles / maxBatchSize);
     result.warnings.push({
@@ -227,7 +223,7 @@ export async function validateFileSize({
   const acceptedFileSizes =
     websiteInstance.decoratedProps.fileOptions?.acceptedFileSizes ?? {};
 
-  submission.files.getItems().forEach((file) => {
+  submission.files.forEach((file) => {
     if (isFileFiltered(file, submission, websiteInstance)) {
       return;
     }
@@ -270,7 +266,7 @@ export async function validateImageFileDimensions({
     return;
   }
 
-  submission.files.getItems().forEach((file) => {
+  submission.files.forEach((file) => {
     if (isFileFiltered(file, submission, websiteInstance)) {
       return;
     }

@@ -175,6 +175,7 @@ export class DirectoryWatchersService extends PostyBirbService<'directoryWatcher
     if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');
     }
+    // TODO - Move schemas to type or its own lib. Then use schemas to augment the ITypes
     return this.repository.update(id, {
       importAction: update.importAction ?? entity.importAction,
       path: update.path ?? entity.path,

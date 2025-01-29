@@ -9,6 +9,7 @@ import {
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
@@ -54,6 +55,7 @@ describe('WebsiteOptionsService', () => {
   }
 
   beforeEach(async () => {
+    clearDatabase();
     try {
       module = await Test.createTestingModule({
         imports: [
@@ -125,9 +127,12 @@ describe('WebsiteOptionsService', () => {
       data: record.data,
       isDefault: false,
       id: record.id,
-      account: account.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      accountId: account.id,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      account: record.account.toObject(),
+      submissionId: submission.id,
+      submission: record.submission.toDTO(),
     });
   });
 

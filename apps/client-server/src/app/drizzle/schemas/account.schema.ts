@@ -8,6 +8,7 @@ export const account = sqliteTable('account', {
   ...commonSchema(),
   name: text().notNull(),
   website: text().notNull(),
+  groups: text({ mode: 'json' }).notNull().$type<string[]>(),
 });
 
 export const accountRelations = relations(account, ({ one, many }) => ({

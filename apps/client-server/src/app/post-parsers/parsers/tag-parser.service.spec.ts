@@ -2,6 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TagField } from '@postybirb/form-builder';
 import { IWebsiteOptions, TagValue } from '@postybirb/types';
+import { clearDatabase } from '../../drizzle/postybirb-database/database-instance';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
@@ -13,6 +14,7 @@ describe('TagParserService', () => {
   let service: TagParserService;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [
         TagParserService,

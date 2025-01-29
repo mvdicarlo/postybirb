@@ -6,7 +6,6 @@ import {
   ExtractTablesWithRelations,
 } from 'drizzle-orm/relations';
 import { FindOptions } from '../../database/repositories/postybirb-repository';
-import { IsTestEnvironment } from '../../utils/test.util';
 import { fromDatabaseRecord } from '../models/database-entity';
 import * as schema from '../schemas';
 import { getDatabase, PostyBirbDatabaseType } from './database-instance';
@@ -64,12 +63,14 @@ export class PostyBirbDatabase<
 
   constructor(
     private readonly schemaKey: TSchemaKey,
-    private readonly load?: Pick<
-      DBQueryConfig<'many', true, ExtractedRelations, Relation<TSchemaKey>>,
-      'with'
-    >,
+    private readonly load?: DBQueryConfig<
+      'many',
+      true,
+      ExtractedRelations,
+      Relation<TSchemaKey>
+    >['with'],
   ) {
-    this.db = getDatabase(IsTestEnvironment());
+    this.db = getDatabase();
   }
 
   public subscribe(key: SchemaKey[], callback: SubscribeCallback): this;
@@ -125,7 +126,10 @@ export class PostyBirbDatabase<
       inserts.map((insert) => insert.id),
       'insert',
     );
-    return this.classConverter(inserts.length > 1 ? inserts : inserts[0]);
+    const result = await Promise.all(
+      inserts.map((insert) => this.findById(insert.id)),
+    );
+    return inserts.length > 1 ? result : result[0];
   }
 
   public async deleteById(ids: EntityId[]) {
@@ -226,13 +230,12 @@ export class PostyBirbDatabase<
     id: EntityId,
     set: Partial<Select<TSchemaKey>>,
   ): Promise<TEntityClass> {
-    const entity = await this.db
+    await this.db
       .update(this.schemaEntity)
       .set(set)
-      .where(eq(this.schemaEntity.id, id))
-      .returning();
+      .where(eq(this.schemaEntity.id, id));
     this.notify([id], 'update');
-    return this.classConverter(entity[0]);
+    return this.findById(id);
   }
 
   public count(filter?: SQL): Promise<number> {

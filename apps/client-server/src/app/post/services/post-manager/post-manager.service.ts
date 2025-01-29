@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 import { EntityDTO, Loaded } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
@@ -25,8 +24,8 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
-import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
-import { PostRecord, WebsitePostRecord } from '../../../drizzle/models';
+import { PostRecord } from '../../../drizzle/models';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -59,11 +58,13 @@ export class PostManagerService {
    */
   private cancelToken: CancellableToken = null;
 
+  private readonly postRepository = new PostyBirbDatabase('postRecord');
+
+  private readonly websitePostRecordRepository = new PostyBirbDatabase(
+    'websitePostRecord',
+  );
+
   constructor(
-    @InjectRepository(PostRecord)
-    private readonly postRepository: PostyBirbRepository<PostRecord>,
-    @InjectRepository(WebsitePostRecord)
-    private readonly websitePostRecordRepository: PostyBirbRepository<WebsitePostRecord>,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
     private readonly postParserService: PostParsersService,
@@ -75,7 +76,7 @@ export class PostManagerService {
     entity: LoadedPostRecord,
     data: Partial<EntityDTO<Loaded<LoadedPostRecord, never>>>,
   ) {
-    const exists = await this.postRepository.findOne(entity.id);
+    const exists = await this.postRepository.findById(entity.id);
     if (!exists) {
       throw new Error(`Entity ${entity.id} not found in database`);
     }
@@ -142,10 +143,8 @@ export class PostManagerService {
     this.currentPost = null;
     this.cancelToken = null;
 
-    const allCompleted = entity.children
-      .toArray()
-      .every((c) => !!c.completedAt);
-    const entityInDb = await this.postRepository.findOne(entity.id);
+    const allCompleted = entity.children.every((c) => !!c.completedAt);
+    const entityInDb = await this.postRepository.findById(entity.id);
     if (!entityInDb && !allCompleted) {
       this.logger.error(
         `Entity ${entity.id} not found in database. It may have been deleted while posting.`,
@@ -347,7 +346,6 @@ export class PostManagerService {
     const orderedFiles: ISubmissionFile[] = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
-      .toArray() // https://mikro-orm.io/docs/5.9/collections (should protect modification from updating entities)
       .filter(
         // Filter out files that have been marked by the user as ignored for this website.
         (f) => !metadata[f.id]?.ignoredWebsites?.includes(instance.accountId),
@@ -553,7 +551,6 @@ export class PostManagerService {
     entity: LoadedPostRecord,
   ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
     const websitePairs = entity.children
-      .toArray()
       .filter((c) => !c.completedAt) // Only post to those that haven't been completed
       .map((c) => ({
         record: c,
@@ -590,8 +587,7 @@ export class PostManagerService {
       submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
-      (o) =>
-        !entity.children.toArray().some((c) => c.account.id === o.account.id),
+      (o) => !entity.children.some((c) => c.account.id === o.account.id),
     );
     uncreatedOptions.forEach((w) =>
       entity.children.add(
@@ -614,19 +610,18 @@ export class PostManagerService {
   ): Promise<void> {
     switch (entity.resumeMode) {
       case PostRecordResumeMode.RESTART:
-        entity.children.removeAll();
-        await this.postRepository.persistAndFlush(entity);
+        await this.websitePostRecordRepository.deleteById(
+          entity.children.map((c) => c.id),
+        );
         break;
       case PostRecordResumeMode.CONTINUE_RETRY:
         await Promise.all(
           entity.children
-            .toArray()
             .filter((c) => !c.completedAt)
-            .map((c) => {
+            .map((c) =>
               // Easiest way to reset the record is to remove it and re-add it
-              entity.children.remove(c as unknown as IWebsitePostRecord);
-              return this.postRepository.persistAndFlush(entity);
-            }),
+              this.websitePostRecordRepository.deleteById([c.id]),
+            ),
         );
         break;
       case PostRecordResumeMode.CONTINUE:

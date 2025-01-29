@@ -34,6 +34,9 @@ export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
   }
 
   toDTO(): WebsiteOptionsDto {
-    return this.toObject() as unknown as WebsiteOptionsDto;
+    return {
+      ...this.toObject(),
+      submission: this.submission?.toDTO(),
+    } as unknown as WebsiteOptionsDto;
   }
 }

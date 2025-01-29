@@ -109,8 +109,8 @@ export class AccountService
   }
 
   protected async emit() {
-    const dtos = await this.findAll().then(
-      this.injectWebisteInstance.bind(this),
+    const dtos = await this.findAll().then((accounts) =>
+      accounts.map((a) => this.injectWebsiteInstance(a)),
     );
     super.emit({
       event: ACCOUNT_UPDATES,
@@ -216,7 +216,7 @@ export class AccountService
   public findById(id: AccountId, options?: FindOptions) {
     return this.repository
       .findById(id, options)
-      .then(this.injectWebisteInstance.bind(this));
+      .then((account) => this.injectWebsiteInstance(account));
   }
 
   public async findAll() {
@@ -224,14 +224,16 @@ export class AccountService
       .find({
         where: (account, { ne }) => ne(account.id, NULL_ACCOUNT_ID),
       })
-      .then((accounts) => accounts.map(this.injectWebisteInstance));
+      .then((accounts) =>
+        accounts.map((account) => this.injectWebsiteInstance(account)),
+      );
   }
 
   async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
     return this.repository
       .update(id, update)
-      .then(this.injectWebisteInstance.bind(this));
+      .then((account) => this.injectWebsiteInstance(account));
   }
 
   async remove(id: AccountId) {
@@ -270,7 +272,7 @@ export class AccountService
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
   }
 
-  private injectWebisteInstance(account?: Account): Account | null {
+  private injectWebsiteInstance(account?: Account): Account | null {
     if (!account) {
       return null;
     }

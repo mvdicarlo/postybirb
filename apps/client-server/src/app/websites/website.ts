@@ -30,7 +30,7 @@ export abstract class Website<D extends DynamicObject> {
   /**
    * User account info for reference primarily during posting and login.
    */
-  protected readonly account: Account;
+  public readonly account: Account;
 
   /**
    * Data store for website data that is persisted to dick and read on initialization.

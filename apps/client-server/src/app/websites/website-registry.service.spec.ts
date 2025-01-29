@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account } from '../drizzle/models';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -9,6 +10,7 @@ describe('WebsiteRegistryService', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();

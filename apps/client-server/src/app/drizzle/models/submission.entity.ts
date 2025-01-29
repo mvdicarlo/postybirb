@@ -32,6 +32,8 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   isMultiSubmission = false;
 
+  isArchived = false;
+
   schedule: ISubmissionScheduleInfo = {
     scheduleType: ScheduleType.NONE,
   };

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NullAccount } from '@postybirb/types';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
@@ -9,6 +10,7 @@ describe('WebsiteDataManager', () => {
   let repository: PostyBirbDatabase<'websiteData'>;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [WebsiteImplProvider],
     }).compile();

@@ -54,9 +54,9 @@ export class CreateFileService {
   ): Promise<SubmissionFile> {
     try {
       this.logger.withMetadata(file).info(`Creating SubmissionFile entity`);
-      return await this.fileRepository.db.transaction(
+      const newSubmission = await this.fileRepository.db.transaction(
         async (tx: PostyBirbTransaction) => {
-          const entity = await this.createSubmissionFile(
+          let entity = await this.createSubmissionFile(
             tx,
             file,
             submission,
@@ -65,7 +65,7 @@ export class CreateFileService {
 
           if (ImageUtil.isImage(file.mimetype, true)) {
             this.logger.info('[Mutation] Populating as Image');
-            await this.populateAsImageFile(tx, entity, file, buf);
+            entity = await this.populateAsImageFile(tx, entity, file, buf);
           }
 
           if (getFileType(file.originalname) === FileType.TEXT) {
@@ -79,9 +79,8 @@ export class CreateFileService {
           );
           await tx
             .update(this.fileRepository.schemaEntity)
-            .set({ primaryId: primaryFile.id })
+            .set({ primaryFileId: primaryFile.id })
             .where(eq(this.fileRepository.schemaEntity.id, entity.id));
-          // submission.files.add(entity); TODO - probably removable
           this.logger
             .withMetadata({ id: entity.id })
             .info('SubmissionFile Created');
@@ -89,6 +88,7 @@ export class CreateFileService {
           return entity;
         },
       );
+      return await this.fileRepository.findById(newSubmission.id);
     } catch (err) {
       this.logger.error(err.message, err.stack);
       return await Promise.reject(err);
@@ -194,11 +194,15 @@ export class CreateFileService {
           fileName: originalname,
           size,
           hash: await hash(buf, { algorithm: 'sha256' }),
+          width: 0,
+          height: 0,
+          hasThumbnail: false,
+          hasAltFile: false,
         })
         .returning(),
     );
 
-    return sf;
+    return sf[0];
   }
 
   /**
@@ -215,7 +219,7 @@ export class CreateFileService {
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
-  ): Promise<void> {
+  ): Promise<SubmissionFile> {
     const sharpInstance = ImageUtil.load(buf);
 
     const meta = await sharpInstance.metadata();
@@ -232,10 +236,14 @@ export class CreateFileService {
       thumbnailId: thumbnail.id,
     };
 
-    await tx
-      .update(this.fileRepository.schemaEntity)
-      .set(update)
-      .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+    return fromDatabaseRecord(
+      SubmissionFile,
+      await tx
+        .update(this.fileRepository.schemaEntity)
+        .set(update)
+        .where(eq(this.fileRepository.schemaEntity.id, entity.id))
+        .returning(),
+    )[0];
   }
 
   /**
@@ -302,7 +310,7 @@ export class CreateFileService {
 
     const buffer = await sharpInstance
       .resize(width, height)
-      .png({ quality: 90, force: true })
+      .png({ quality: 92, force: true })
       .toBuffer();
 
     return { buffer, height, width };
@@ -324,14 +332,15 @@ export class CreateFileService {
   ): Promise<FileBuffer> {
     const { mimeType, height, width, fileName } = fileEntity;
     const data: Insert<typeof this.fileBufferRepository.schemaEntity> = {
-      ...opts,
       id: uuid(),
       buffer: buf,
-      parent: fileEntity,
+      submissionFileId: fileEntity.id,
       height,
       width,
       fileName,
       mimeType,
+      size: buf.length,
+      ...opts,
     };
 
     return fromDatabaseRecord(
@@ -340,6 +349,6 @@ export class CreateFileService {
         .insert(this.fileBufferRepository.schemaEntity)
         .values(data)
         .returning(),
-    );
+    )[0];
   }
 }

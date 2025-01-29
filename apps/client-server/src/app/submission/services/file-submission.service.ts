@@ -1,4 +1,3 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   EntityId,
@@ -6,20 +5,15 @@ import {
   FileSubmission,
   ISubmission,
   SubmissionId,
-  SubmissionMetadataType,
   SubmissionType,
   isFileSubmission,
 } from '@postybirb/types';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
-import { Submission } from '../../drizzle/models';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
 import { ISubmissionService } from './submission-service.interface';
-
-type SubmissionEntity = Submission<SubmissionMetadataType>;
 
 /**
  * Service that implements logic for manipulating a FileSubmission.
@@ -30,15 +24,11 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class FileSubmissionService
-  extends PostyBirbService<SubmissionEntity>
+  extends PostyBirbService<'submission'>
   implements ISubmissionService<FileSubmission>
 {
-  constructor(
-    @InjectRepository(Submission)
-    repository: PostyBirbRepository<SubmissionEntity>,
-    private readonly fileService: FileService,
-  ) {
-    super(repository);
+  constructor(private readonly fileService: FileService) {
+    super('submission');
   }
 
   async populate(
@@ -92,7 +82,6 @@ export class FileSubmissionService
     this.guardIsFileSubmission(submission);
 
     const createdFile = await this.fileService.create(file, submission);
-    submission.files.add(createdFile);
     submission.metadata.order.push(createdFile.id);
     this.logger
       .withMetadata(submission)
@@ -113,13 +102,17 @@ export class FileSubmissionService
     // eslint-disable-next-line no-param-reassign
     submission.metadata.fileMetadata[createdFile.id] = fileModifications;
     if (persist) {
-      await this.repository.persistAndFlush(submission);
+      await this.repository.update(submission.id, {
+        metadata: submission.metadata,
+      });
     }
     return submission;
   }
 
   async replaceFile(id: EntityId, fileId: EntityId, file: MulterFileInfo) {
-    const submission = (await this.repository.findById(id)) as FileSubmission;
+    const submission = (await this.repository.findById(
+      id,
+    )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
 
     if (
@@ -131,7 +124,9 @@ export class FileSubmissionService
     }
 
     await this.fileService.update(file, fileId, false);
-    await this.repository.persistAndFlush(submission);
+    await this.repository.update(submission.id, {
+      metadata: submission.metadata,
+    });
   }
 
   /**
@@ -146,11 +141,12 @@ export class FileSubmissionService
     fileId: EntityId,
     file: MulterFileInfo,
   ) {
-    const submission = (await this.repository.findById(id)) as FileSubmission;
+    const submission = (await this.repository.findById(
+      id,
+    )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
 
     await this.fileService.update(file, fileId, true);
-    await this.repository.persistAndFlush(submission);
   }
 
   /**
@@ -160,7 +156,9 @@ export class FileSubmissionService
    * @param {EntityId} fileId
    */
   async removeFile(id: SubmissionId, fileId: EntityId) {
-    const submission = (await this.repository.findById(id)) as FileSubmission;
+    const submission = (await this.repository.findById(
+      id,
+    )) as unknown as FileSubmission;
     this.guardIsFileSubmission(submission);
 
     await this.fileService.remove(fileId);
@@ -168,7 +166,9 @@ export class FileSubmissionService
     submission.metadata.order = submission.metadata.order.filter(
       (metaFileOrderId) => metaFileOrderId !== fileId,
     );
-    await this.repository.persistAndFlush(submission);
+    await this.repository.update(submission.id, {
+      metadata: submission.metadata,
+    });
   }
 
   getAltFileText(id: EntityId) {

@@ -57,6 +57,12 @@ export interface ISubmission<
   isMultiSubmission: boolean;
 
   /**
+   * Indicates whether the submission is archived (manually or through post completion).
+   * @type {boolean}
+   */
+  isArchived: boolean;
+
+  /**
    * Information about the schedule for the submission.
    * @type {ISubmissionScheduleInfo}
    */

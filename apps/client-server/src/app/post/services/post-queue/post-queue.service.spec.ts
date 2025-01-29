@@ -10,6 +10,7 @@ import {
 import { AccountModule } from '../../../account/account.module';
 import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
+import { clearDatabase } from '../../../drizzle/postybirb-database/database-instance';
 import { FileConverterModule } from '../../../file-converter/file-converter.module';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
@@ -42,6 +43,7 @@ describe('PostQueueService', () => {
   let postManager: PostManagerService;
 
   beforeEach(async () => {
+    clearDatabase();
     try {
       module = await Test.createTestingModule({
         imports: [

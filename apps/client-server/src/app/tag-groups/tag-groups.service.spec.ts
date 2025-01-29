@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
 
@@ -15,6 +16,7 @@ describe('TagGroupsService', () => {
   }
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [TagGroupsService],
     }).compile();
@@ -42,8 +44,8 @@ describe('TagGroupsService', () => {
       name: dto.name,
       tags: dto.tags,
       id: record.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     });
   });
 

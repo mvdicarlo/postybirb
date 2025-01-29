@@ -9,8 +9,7 @@ export class Account extends DatabaseEntity implements IAccount {
 
   website: string;
 
-  @Exclude()
-  groups: string[];
+  groups: string[] = [];
 
   /**
    * we don't want to pass this down to users unless filtered
@@ -23,11 +22,9 @@ export class Account extends DatabaseEntity implements IAccount {
   @Exclude()
   websiteInstance?: UnknownWebsite;
 
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(entity: Partial<IAccount>) {
     super(entity);
-    this.name = entity.name ?? '';
-    this.website = entity.website ?? '';
-    this.groups = entity.groups ?? [];
   }
 
   toObject(): EntityPrimitive<IAccount> {

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { eq } from 'drizzle-orm';
 import { Account, fromDatabaseRecord } from '../drizzle/models';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
@@ -9,10 +10,10 @@ import { WebsiteRegistryService } from './website-registry.service';
 describe('Website', () => {
   let module: TestingModule;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let repository: PostyBirbDatabase<'websiteData'>;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();

@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 import { TagConvertersService } from './tag-converters.service';
@@ -19,6 +20,7 @@ describe('TagConvertersService', () => {
   }
 
   beforeEach(async () => {
+    clearDatabase();
     try {
       module = await Test.createTestingModule({
         imports: [],
@@ -51,8 +53,8 @@ describe('TagConvertersService', () => {
       tag: dto.tag,
       convertTo: dto.convertTo,
       id: record.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     });
   });
 

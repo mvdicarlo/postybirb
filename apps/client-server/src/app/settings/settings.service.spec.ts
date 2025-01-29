@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
 
@@ -7,6 +8,7 @@ describe('SettingsService', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [SettingsService],
     }).compile();

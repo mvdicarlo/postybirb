@@ -12,8 +12,8 @@ CREATE TABLE `directory-watcher` (
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
 	`path` text,
-	`importActions` text DEFAULT 'NEW_SUBMISSION' NOT NULL,
-	`templateId` integer,
+	`importAction` text DEFAULT 'NEW_SUBMISSION' NOT NULL,
+	`templateId` text,
 	FOREIGN KEY (`templateId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -22,7 +22,7 @@ CREATE TABLE `file-buffer` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
-	`submissionFileId` integer NOT NULL,
+	`submissionFileId` text NOT NULL,
 	`buffer` blob NOT NULL,
 	`fileName` text NOT NULL,
 	`mimeType` text NOT NULL,
@@ -37,8 +37,8 @@ CREATE TABLE `post-queue` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
-	`postRecordId` integer,
-	`submissionId` integer NOT NULL,
+	`postRecordId` text,
+	`submissionId` text NOT NULL,
 	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -50,8 +50,8 @@ CREATE TABLE `post-record` (
 	`updatedAt` text NOT NULL,
 	`state` text DEFAULT 'PENDING' NOT NULL,
 	`resumeMode` text DEFAULT 'CONTINUE' NOT NULL,
-	`submissionId` integer,
-	`postQueueRecordId` integer,
+	`submissionId` text,
+	`postQueueRecordId` text,
 	`completedAt` text,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`postQueueRecordId`) REFERENCES `post-queue`(`id`) ON UPDATE no action ON DELETE no action
@@ -63,7 +63,7 @@ CREATE TABLE `settings` (
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
 	`profile` text DEFAULT 'default' NOT NULL,
-	`data` text DEFAULT '{"hiddenWebsites":[],"language":"en","allowAd":true,"queuePaused":false}' NOT NULL
+	`settings` text DEFAULT '{"hiddenWebsites":[],"language":"en","allowAd":true,"queuePaused":false}' NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `settings_id_unique` ON `settings` (`id`);--> statement-breakpoint
@@ -72,7 +72,6 @@ CREATE TABLE `submission-file` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
-	`submissionId` integer NOT NULL,
 	`fileName` text NOT NULL,
 	`hash` text NOT NULL,
 	`size` integer NOT NULL,
@@ -82,9 +81,10 @@ CREATE TABLE `submission-file` (
 	`hasThumbnail` integer NOT NULL,
 	`hasAltFile` integer DEFAULT false NOT NULL,
 	`hasCustomThumbnail` integer DEFAULT false NOT NULL,
-	`primaryFileId` integer,
-	`thumbnailId` integer,
-	`altFileId` integer,
+	`submissionId` text NOT NULL,
+	`primaryFileId` text,
+	`thumbnailId` text,
+	`altFileId` text,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`primaryFileId`) REFERENCES `file-buffer`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`thumbnailId`) REFERENCES `file-buffer`(`id`) ON UPDATE no action ON DELETE no action,
@@ -96,10 +96,11 @@ CREATE TABLE `submission` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
-	`submissionType` text NOT NULL,
-	`isScheduled` integer DEFAULT false,
-	`isTemplate` integer DEFAULT false,
-	`isMultiSubmission` integer DEFAULT false,
+	`type` text NOT NULL,
+	`isScheduled` integer NOT NULL,
+	`isTemplate` integer NOT NULL,
+	`isMultiSubmission` integer NOT NULL,
+	`isArchived` integer DEFAULT false,
 	`schedule` text NOT NULL,
 	`metadata` text NOT NULL,
 	`order` integer NOT NULL
@@ -130,9 +131,9 @@ CREATE TABLE `user-specified-website-options` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
+	`type` text NOT NULL,
 	`options` text NOT NULL,
-	`submissionType` text NOT NULL,
-	`accountId` integer NOT NULL,
+	`accountId` text NOT NULL,
 	FOREIGN KEY (`accountId`) REFERENCES `account`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -141,10 +142,8 @@ CREATE TABLE `website-data` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
-	`name` text NOT NULL,
-	`website` text NOT NULL,
 	`data` text DEFAULT '{}' NOT NULL,
-	`accountId` integer NOT NULL,
+	`accountId` text NOT NULL,
 	FOREIGN KEY (`accountId`) REFERENCES `account`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -154,8 +153,9 @@ CREATE TABLE `website-options` (
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
 	`data` text NOT NULL,
-	`accountId` integer NOT NULL,
-	`submissionId` integer NOT NULL,
+	`isDefault` integer NOT NULL,
+	`accountId` text NOT NULL,
+	`submissionId` text NOT NULL,
 	FOREIGN KEY (`accountId`) REFERENCES `account`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade
 );
@@ -165,8 +165,8 @@ CREATE TABLE `website-post-record` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` text NOT NULL,
 	`updatedAt` text NOT NULL,
-	`postRecordId` integer NOT NULL,
-	`accountId` integer NOT NULL,
+	`postRecordId` text NOT NULL,
+	`accountId` text NOT NULL,
 	`completedAt` text,
 	`errors` text DEFAULT '[]',
 	`postData` text,

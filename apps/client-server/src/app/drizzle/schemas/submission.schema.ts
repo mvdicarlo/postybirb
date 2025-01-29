@@ -17,6 +17,7 @@ export const submission = sqliteTable('submission', {
   isScheduled: integer({ mode: 'boolean' }).notNull(),
   isTemplate: integer({ mode: 'boolean' }).notNull(),
   isMultiSubmission: integer({ mode: 'boolean' }).notNull(),
+  isArchived: integer({ mode: 'boolean' }).default(false),
   schedule: text({ mode: 'json' }).notNull().$type<ISubmissionScheduleInfo>(),
   metadata: text({ mode: 'json' }).notNull().$type<ISubmissionMetadata>(),
   order: integer().notNull(),

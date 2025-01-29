@@ -21,11 +21,19 @@ let db: PostyBirbDatabaseType;
  * @param {boolean} newInstance - Whether to get a new instance of the database or force a
  * new instance (mostly for testing)
  */
-export function getDatabase(newInstance: boolean) {
-  if (newInstance || !db) {
+export function getDatabase() {
+  if (!db) {
     db = drizzle(path, { schema });
     migrate(db, { migrationsFolder });
   }
 
   return db;
+}
+
+/**
+ * Clear the database instance.
+ * Used for testing.
+ */
+export function clearDatabase() {
+  db = undefined;
 }

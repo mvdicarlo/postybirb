@@ -2,6 +2,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TitleField } from '@postybirb/form-builder';
 import { IWebsiteOptions } from '@postybirb/types';
+import { clearDatabase } from '../../drizzle/postybirb-database/database-instance';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
@@ -12,6 +13,7 @@ describe('TitleParserService', () => {
   let service: TitleParser;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [
         TitleParser,

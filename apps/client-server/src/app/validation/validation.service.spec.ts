@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -12,6 +13,7 @@ describe('ValidationService', () => {
   let service: ValidationService;
 
   beforeEach(async () => {
+    clearDatabase();
     const module: TestingModule = await Test.createTestingModule({
       imports: [WebsitesModule, PostParsersModule],
       providers: [

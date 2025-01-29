@@ -54,9 +54,9 @@ export class UpdateFileService {
     await this.fileRepository.db.transaction(
       async (tx: PostyBirbTransaction) => {
         if (target === 'thumbnail') {
-          this.replaceFileThumbnail(tx, submissionFile, file, buf);
+          await this.replaceFileThumbnail(tx, submissionFile, file, buf);
         }
-        this.replacePrimaryFile(tx, submissionFile, file, buf);
+        await this.replacePrimaryFile(tx, submissionFile, file, buf);
       },
     );
 
@@ -72,7 +72,7 @@ export class UpdateFileService {
   ) {
     const thumbnailDetails = await this.getImageDetails(file, buf);
     let { thumbnail } = submissionFile;
-    if (!submissionFile.thumbnail) {
+    if (!submissionFile.thumbnailId) {
       thumbnail = await this.createFileService.createFileBufferEntity(
         tx,
         submissionFile,
@@ -148,7 +148,10 @@ export class UpdateFileService {
           mimeType: file.mimetype,
         })
         .where(
-          eq(this.fileBufferRepository.schemaEntity.id, submissionFile.file.id),
+          eq(
+            this.fileBufferRepository.schemaEntity.id,
+            submissionFile.primaryFileId,
+          ),
         );
 
       if (
@@ -243,7 +246,10 @@ export class UpdateFileService {
         height,
       })
       .where(
-        eq(this.fileBufferRepository.schemaEntity.id, submissionFile.file.id),
+        eq(
+          this.fileBufferRepository.schemaEntity.id,
+          submissionFile.primaryFileId,
+        ),
       );
 
     if (submissionFile.hasThumbnail && !submissionFile.hasCustomThumbnail) {
@@ -299,11 +305,12 @@ export class UpdateFileService {
     try {
       const entity = await this.fileRepository.findOne({
         where: (f, { eq: equals }) => equals(f.id, id),
-        with: {
-          thumbnail: true,
-          primaryFile: true,
-          altFile: true,
-        },
+        // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
+        // with: {
+        //   thumbnail: true,
+        //   primaryFile: true,
+        //   altFile: true,
+        // },
       });
 
       return entity;

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
@@ -15,6 +16,7 @@ describe('DirectoryWatchersService', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       imports: [SubmissionModule],
       providers: [DirectoryWatchersService],
@@ -43,7 +45,6 @@ describe('DirectoryWatchersService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-    expect(orm).toBeDefined();
     expect(module).toBeDefined();
   });
 
@@ -88,8 +89,8 @@ describe('DirectoryWatchersService', () => {
     expect(updatedRecord.template).toBeDefined();
     expect(updatedRecord.template?.id).toBe(template.id);
     expect(updatedRecord.toDTO()).toEqual({
-      createdAt: updatedRecord.createdAt.toISOString(),
-      updatedAt: updatedRecord.updatedAt.toISOString(),
+      createdAt: updatedRecord.createdAt,
+      updatedAt: updatedRecord.updatedAt,
       id: updatedRecord.id,
       importAction: DirectoryWatcherImportAction.NEW_SUBMISSION,
       path: 'path',

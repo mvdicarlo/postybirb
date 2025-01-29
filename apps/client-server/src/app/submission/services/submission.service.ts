@@ -1,16 +1,17 @@
 /* eslint-disable no-param-reassign */
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
   OnModuleInit,
   Optional,
-  forwardRef,
 } from '@nestjs/common';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
+  FileSubmissionMetadata,
   ISubmissionDto,
   ISubmissionMetadata,
   MessageSubmission,
@@ -18,19 +19,20 @@ import {
   ScheduleType,
   SubmissionId,
   SubmissionMetadataType,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
-import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../../drizzle/models';
+import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
 import {
   Insert,
   PostyBirbDatabase,
   PostyBirbTransaction,
 } from '../../drizzle/postybirb-database/postybirb-database';
 import {
+  fileBuffer,
+  submissionFile,
   submission as SubmissionSchema,
   websiteOptions,
 } from '../../drizzle/schemas';
@@ -65,16 +67,14 @@ export class SubmissionService
   ) {
     super(
       new PostyBirbDatabase('submission', {
-        with: {
-          options: {
-            with: {
-              account: true,
-            },
+        options: {
+          with: {
+            account: true,
           },
-          posts: true,
-          postQueueRecord: true,
-          files: true,
         },
+        posts: true,
+        postQueueRecord: true,
+        files: true,
       }),
       webSocket,
     );
@@ -223,6 +223,7 @@ export class SubmissionService
             );
           }
 
+          // This currently mutates the submission object metadata
           await this.fileSubmissionService.populate(
             newSubmission as unknown as FileSubmission,
             createSubmissionDto,
@@ -479,40 +480,112 @@ export class SubmissionService
           isDefault: option.account.id === NULL_ACCOUNT_ID,
         })),
       );
+
+      for (const file of entityToDuplicate.files) {
+        const newFile = await tx
+          .insert(submissionFile)
+          .values({
+            submissionId: newSubmission.id,
+            fileName: file.fileName,
+            mimeType: file.mimeType,
+            hash: file.hash,
+            size: file.size,
+            height: file.height,
+            width: file.width,
+            hasThumbnail: file.hasThumbnail,
+            hasCustomThumbnail: file.hasCustomThumbnail,
+            hasAltFile: file.hasAltFile,
+          })
+          .returning()[0];
+
+        const primaryFile = await tx
+          .insert(fileBuffer)
+          .values({
+            ...file.file,
+            id: undefined,
+            submissionFileId: newFile.id,
+          })
+          .returning()[0];
+
+        const thumbnail: FileBuffer | undefined = file.thumbnail
+          ? await tx
+              .insert(fileBuffer)
+              .values({
+                ...file.thumbnail,
+                id: undefined,
+                submissionFileId: newFile.id,
+              })
+              .returning()[0]
+          : undefined;
+
+        const altFile: FileBuffer | undefined = file.altFile
+          ? await tx
+              .insert(fileBuffer)
+              .values({
+                ...file.altFile,
+                id: undefined,
+                submissionFileId: newFile.id,
+              })
+              .returning()[0]
+          : undefined;
+
+        await tx
+          .update(submissionFile)
+          .set({
+            primaryFileId: primaryFile.id,
+            thumbnailId: thumbnail?.id,
+            altFileId: altFile?.id,
+          })
+          .where(eq(submissionFile.id, newFile.id));
+
+        const oldId = file.id;
+        // eslint-disable-next-line prefer-destructuring
+        const metadata: FileSubmissionMetadata = newSubmission.metadata;
+        // Fix metadata
+        const index = metadata.order.findIndex((fileId) => fileId === file.id);
+        if (index > -1) {
+          metadata.order[index] = newFile.id;
+        }
+
+        if (metadata.fileMetadata[oldId]) {
+          metadata.fileMetadata[newFile.id] = metadata.fileMetadata[oldId];
+          delete metadata.fileMetadata[oldId];
+        }
+      }
     });
 
-    copy.files.forEach((fileEntity) => {
-      delete fileEntity.submission;
-      const oldId = fileEntity.id;
-      // Fix metadata
-      const index = metadata.order.findIndex(
-        (fileId) => fileId === fileEntity.id,
-      );
-      fileEntity.id = v4();
-      if (index > -1) {
-        metadata.order[index] = fileEntity.id;
-      }
+    // copy.files.forEach((fileEntity) => {
+    //   delete fileEntity.submission;
+    //   const oldId = fileEntity.id;
+    //   // Fix metadata
+    //   const index = metadata.order.findIndex(
+    //     (fileId) => fileId === fileEntity.id,
+    //   );
+    //   fileEntity.id = v4();
+    //   if (index > -1) {
+    //     metadata.order[index] = fileEntity.id;
+    //   }
 
-      if (metadata.fileMetadata[oldId]) {
-        metadata.fileMetadata[fileEntity.id] = metadata.fileMetadata[oldId];
-        delete metadata.fileMetadata[oldId];
-      }
+    //   if (metadata.fileMetadata[oldId]) {
+    //     metadata.fileMetadata[fileEntity.id] = metadata.fileMetadata[oldId];
+    //     delete metadata.fileMetadata[oldId];
+    //   }
 
-      if (fileEntity.altFile) {
-        fileEntity.altFile.id = v4();
-        delete fileEntity.altFile.parent;
-      }
+    //   if (fileEntity.altFile) {
+    //     fileEntity.altFile.id = v4();
+    //     delete fileEntity.altFile.parent;
+    //   }
 
-      if (fileEntity.file) {
-        fileEntity.file.id = v4();
-        delete fileEntity.file.parent;
-      }
+    //   if (fileEntity.file) {
+    //     fileEntity.file.id = v4();
+    //     delete fileEntity.file.parent;
+    //   }
 
-      if (fileEntity.thumbnail) {
-        fileEntity.thumbnail.id = v4();
-        delete fileEntity.thumbnail.parent;
-      }
-    });
+    //   if (fileEntity.thumbnail) {
+    //     fileEntity.thumbnail.id = v4();
+    //     delete fileEntity.thumbnail.parent;
+    //   }
+    // });
 
     this.emit();
   }

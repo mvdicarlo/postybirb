@@ -13,6 +13,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
+import { clearDatabase } from '../../drizzle/postybirb-database/database-instance';
 import { FileConverterService } from '../../file-converter/file-converter.service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -47,6 +48,7 @@ describe('SubmissionService', () => {
   });
 
   beforeEach(async () => {
+    clearDatabase();
     try {
       module = await Test.createTestingModule({
         imports: [
@@ -127,8 +129,8 @@ describe('SubmissionService', () => {
     expect(records[0].options).toHaveLength(1);
     expect(record.toDTO()).toEqual({
       id: record.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
       type: record.type,
       isScheduled: false,
       schedule: {
@@ -143,8 +145,8 @@ describe('SubmissionService', () => {
       options: [
         {
           id: defaultOptions.id,
-          createdAt: defaultOptions.createdAt.toISOString(),
-          updatedAt: defaultOptions.updatedAt.toISOString(),
+          createdAt: defaultOptions.createdAt,
+          updatedAt: defaultOptions.updatedAt,
           isDefault: true,
           account: NULL_ACCOUNT_ID,
           submission: record.id,
@@ -194,8 +196,8 @@ describe('SubmissionService', () => {
     expect(records[0].files).toHaveLength(1);
     expect(record.toDTO()).toEqual({
       id: record.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
       type: record.type,
       isScheduled: false,
       schedule: {
@@ -221,7 +223,7 @@ describe('SubmissionService', () => {
       },
       files: [
         {
-          createdAt: file.createdAt.toISOString(),
+          createdAt: file.createdAt,
           file: file.file.id,
           fileName: fileInfo.originalname,
           hasThumbnail: true,
@@ -237,7 +239,7 @@ describe('SubmissionService', () => {
           size: testFile.length,
           submission: record.id,
           thumbnail: file.thumbnail?.id,
-          updatedAt: file.updatedAt.toISOString(),
+          updatedAt: file.updatedAt,
         },
       ],
       posts: [],
@@ -245,8 +247,8 @@ describe('SubmissionService', () => {
       options: [
         {
           id: defaultOptions.id,
-          createdAt: defaultOptions.createdAt.toISOString(),
-          updatedAt: defaultOptions.updatedAt.toISOString(),
+          createdAt: defaultOptions.createdAt,
+          updatedAt: defaultOptions.updatedAt,
           isDefault: true,
           account: NULL_ACCOUNT_ID,
           submission: record.id,

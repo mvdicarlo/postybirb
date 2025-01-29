@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';
@@ -10,6 +11,7 @@ describe('AccountsService', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [AccountService, WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
@@ -49,8 +51,8 @@ describe('AccountsService', () => {
       name: dto.name,
       website: dto.website,
       id: record.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
       state: {
         isLoggedIn: true,
         pending: false,

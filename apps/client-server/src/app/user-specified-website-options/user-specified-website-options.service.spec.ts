@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
+import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 import { UserSpecifiedWebsiteOptionsService } from './user-specified-website-options.service';
@@ -12,6 +13,7 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       imports: [AccountModule],
       providers: [UserSpecifiedWebsiteOptionsService],
@@ -44,12 +46,12 @@ describe('UserSpecifiedWebsiteOptionsService', () => {
     expect(record.options).toEqual(dto.options);
     expect(record.type).toEqual(dto.type);
     expect(record.toDTO()).toEqual({
-      account: NULL_ACCOUNT_ID,
-      createdAt: record.createdAt.toISOString(),
+      accountId: NULL_ACCOUNT_ID,
+      createdAt: record.createdAt,
       id: record.id,
       options: dto.options,
       type: dto.type,
-      updatedAt: record.updatedAt.toISOString(),
+      updatedAt: record.updatedAt,
     });
   });
 

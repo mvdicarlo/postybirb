@@ -73,7 +73,7 @@ export class ValidationService {
       // All sub-validations mutate the result object
       const result: ValidationResult = {
         id: websiteOption.id,
-        account: website.accountInfo,
+        account: website.account.toDTO(),
         warnings: [],
         errors: [],
       };
@@ -160,7 +160,7 @@ export class ValidationService {
 
       return {
         id: websiteId,
-        account: website.accountInfo,
+        account: website.account.toDTO(),
         warnings: result?.warnings,
         errors: result?.errors,
       };
@@ -171,7 +171,7 @@ export class ValidationService {
       );
       return {
         id: websiteId,
-        account: website.accountInfo,
+        account: website.account.toDTO(),
         warnings: [
           {
             id: 'validation.failed',

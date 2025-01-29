@@ -8,8 +8,8 @@ import {
 import {
   ClassConstructor,
   Exclude,
-  plainToInstance,
-  Transform,
+  plainToClass,
+  plainToInstance
 } from 'class-transformer';
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
 import * as schema from '../schemas';
@@ -31,7 +31,7 @@ export function fromDatabaseRecord<TEntity>(
       plainToInstance(entity, r, { enableCircularCheck: true }),
     ) as TEntity[];
   }
-  return plainToInstance(entity, record, {
+  return plainToClass(entity, record, {
     enableCircularCheck: true,
   }) as TEntity;
 }
@@ -39,21 +39,9 @@ export function fromDatabaseRecord<TEntity>(
 export abstract class DatabaseEntity implements IEntity {
   public readonly id: EntityId;
 
-  @Transform(({ value }) => new Date(value), {
-    toClassOnly: true,
-  })
-  @Transform(({ value }) => value.toISOString(), {
-    toPlainOnly: true,
-  })
-  public readonly createdAt: Date;
+  public readonly createdAt: string;
 
-  @Transform(({ value }) => new Date(value), {
-    toClassOnly: true,
-  })
-  @Transform(({ value }) => value.toISOString(), {
-    toPlainOnly: true,
-  })
-  public readonly updatedAt: Date;
+  public readonly updatedAt: string;
 
   @Exclude()
   protected db: BetterSQLite3Database<typeof schema>;

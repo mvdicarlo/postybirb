@@ -6,11 +6,23 @@ import {
   ISubmissionFileDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
+import { Select } from '../postybirb-database/postybirb-database';
 import { DatabaseEntity } from './database-entity';
 import { FileBuffer } from './file-buffer.entity';
 import { Submission } from './submission.entity';
 
-export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
+export class SubmissionFile
+  extends DatabaseEntity
+  implements ISubmissionFile, Select<'submissionFile'>
+{
+  submissionId: EntityId;
+
+  primaryFileId: EntityId;
+
+  altFileId: EntityId;
+
+  thumbnailId: EntityId;
+
   @Type(() => Submission)
   submission: Submission<FileSubmissionMetadata>;
 
@@ -40,8 +52,6 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
   width: number;
 
   height: number;
-
-  thumbnailId?: EntityId;
 
   toObject(): EntityPrimitive<ISubmissionFile> {
     return instanceToPlain(this, {
