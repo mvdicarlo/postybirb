@@ -10,13 +10,13 @@ import {
   PostRecordState,
   SubmissionId,
 } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Mutex } from 'async-mutex';
 import { Cron as CronGenerator } from 'croner';
 import { PostyBirbService } from '../../../common/service/postybirb-service';
 import { PostQueueRecord, PostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { SettingsService } from '../../../settings/settings.service';
-import { IsTestEnvironment } from '../../../utils/test.util';
 import { WSGateway } from '../../../web-socket/web-socket-gateway';
 import { PostManagerService } from '../post-manager/post-manager.service';
 

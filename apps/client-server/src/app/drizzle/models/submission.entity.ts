@@ -1,15 +1,15 @@
 import {
-  IPostRecord,
   ISubmission,
   ISubmissionDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   ScheduleType,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 import { PostQueueRecord } from './post-queue-record.entity';
+import { PostRecord } from './post-record.entity';
 import { SubmissionFile } from './submission-file.entity';
 import { WebsiteOptions } from './website-options.entity';
 
@@ -42,7 +42,8 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   metadata: T;
 
-  posts: IPostRecord[];
+  @Type(() => PostRecord)
+  posts: PostRecord[];
 
   order: number;
 
@@ -53,6 +54,15 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   }
 
   toDTO(): ISubmissionDto {
-    return this.toObject() as unknown as ISubmissionDto;
+    const dto: ISubmissionDto = {
+      ...this.toObject(),
+      files: this.files.map((file) => file.toDTO()),
+      options: this.options.map((option) => option.toDTO()),
+      posts: this.posts.map((post) => post.toDTO()),
+      postQueueRecord: this.postQueueRecord?.toDTO(),
+      validations: [],
+    };
+
+    return dto;
   }
 }

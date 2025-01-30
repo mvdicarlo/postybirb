@@ -25,6 +25,7 @@ export class Account extends DatabaseEntity implements IAccount {
   // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(entity: Partial<IAccount>) {
     super(entity);
+    Object.assign(this, entity);
   }
 
   toObject(): IAccount {

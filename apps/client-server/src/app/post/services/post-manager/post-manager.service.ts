@@ -152,7 +152,7 @@ export class PostManagerService {
     }
     await this.protectedUpdate(entity, {
       state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
-      completedAt: new Date(),
+      completedAt: new Date().toISOString(),
     });
   }
 
@@ -260,7 +260,7 @@ export class PostManagerService {
       // Only really applies to message submissions
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
-    websitePostRecord.completedAt = new Date();
+    websitePostRecord.completedAt = new Date().toISOString();
     await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
   }
 
@@ -538,11 +538,11 @@ export class PostManagerService {
   /**
    * Gets the post order for the given post record.
    * Additionally filters out any websites that have already been completed.
-   * @param {LoadedPostRecord} entity
+   * @param {PostRecord} entity
    * @return {*}  {Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]>}
    */
   private getPostOrder(
-    entity: LoadedPostRecord,
+    entity: PostRecord,
   ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
     const websitePairs = entity.children
       .filter((c) => !c.completedAt) // Only post to those that haven't been completed

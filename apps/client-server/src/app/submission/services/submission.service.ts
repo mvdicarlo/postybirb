@@ -13,7 +13,7 @@ import {
   Insert,
   PostyBirbTransaction,
   SubmissionFileSchema,
-  SubmissionSchema as submissionSchema,
+  SubmissionSchema,
   WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
@@ -29,13 +29,13 @@ import {
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
-import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
@@ -365,7 +365,7 @@ export class SubmissionService
         } else {
           optionChanges.push(
             this.websiteOptionsService.create({
-              accountId: option.account,
+              accountId: option.accountId,
               data: option.data,
               submissionId: submission.id,
             }),
@@ -459,7 +459,7 @@ export class SubmissionService
     });
     await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
       const newSubmission = await tx
-        .insert(submissionSchema)
+        .insert(SubmissionSchema)
         .values({
           metadata: entityToDuplicate.metadata,
           type: entityToDuplicate.type,

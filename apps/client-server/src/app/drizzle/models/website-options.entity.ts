@@ -3,7 +3,7 @@ import {
   IWebsiteFormFields,
   IWebsiteOptions,
   SubmissionId,
-  WebsiteOptionsDto
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
@@ -24,7 +24,7 @@ export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
   @Type(() => Account)
   account: Account;
 
-  isDefault = false;
+  isDefault: boolean;
 
   toObject(): IWebsiteOptions {
     return instanceToPlain(this, {

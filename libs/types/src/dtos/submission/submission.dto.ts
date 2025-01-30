@@ -1,7 +1,6 @@
 import {
   ISubmission,
   ISubmissionMetadata,
-  IWebsiteFormFields,
   ValidationResult,
 } from '../../models';
 import { IEntityDto } from '../database/entity.dto';
@@ -16,7 +15,7 @@ export type ISubmissionDto<
   Omit<ISubmission<T>, 'files' | 'options' | 'posts' | 'postQueueRecord'>
 > & {
   files: ISubmissionFileDto[];
-  options: WebsiteOptionsDto<IWebsiteFormFields>[];
+  options: WebsiteOptionsDto[];
   posts: PostRecordDto[];
   validations: ValidationResult[];
   postQueueRecord?: PostQueueRecordDto;

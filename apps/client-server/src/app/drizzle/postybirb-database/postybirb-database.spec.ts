@@ -1,7 +1,7 @@
 import { Schemas } from '@postybirb/database';
 import { eq as equals } from 'drizzle-orm';
 import 'reflect-metadata';
-import { PostyBirbDatabase } from './postybirb-database/postybirb-database';
+import { PostyBirbDatabase } from './postybirb-database';
 
 describe('PostyBirbDatabase', () => {
   let service: PostyBirbDatabase<'AccountSchema'>;

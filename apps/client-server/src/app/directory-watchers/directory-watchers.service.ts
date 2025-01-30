@@ -5,6 +5,7 @@ import {
   EntityId,
   SubmissionType,
 } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { readFile, readdir, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
@@ -12,7 +13,6 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { DirectoryWatcher } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { SubmissionService } from '../submission/services/submission.service';
-import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
@@ -175,7 +175,6 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');
     }
-    // TODO - Move schemas to type or its own lib. Then use schemas to augment the ITypes
     return this.repository.update(id, {
       importAction: update.importAction ?? entity.importAction,
       path: update.path ?? entity.path,

@@ -1,4 +1,3 @@
-import { wrap } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
@@ -43,9 +42,9 @@ export class PostFileResizerService {
 
   private async process(request: ResizeRequest): Promise<PostingFile> {
     const { resize } = request;
-    let { file } = request;
+    const { file } = request;
     if (!file.file) {
-      file = await wrap(file).init(true, ['file']); // ensure primary file is loaded
+      throw new Error('File buffer is missing');
     }
 
     return new PostingFile(
@@ -135,14 +134,14 @@ export class PostFileResizerService {
       instance = instance.jpeg({ quality: 99 });
     }
 
-  ({ width, height } = await instance.metadata());
+    ({ width, height } = await instance.metadata());
     const { name } = parse(thumb.fileName);
     return {
       buffer: await instance.toBuffer(),
       fileName: `${name}${extension}`,
       mimeType: thumb.mimeType,
       height,
-      width
+      width,
     };
   }
 

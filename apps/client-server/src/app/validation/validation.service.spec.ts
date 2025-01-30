@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
-import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
@@ -19,7 +18,6 @@ describe('ValidationService', () => {
       providers: [
         WebsiteImplProvider,
         ValidationService,
-        DatabaseUpdateSubscriber,
         WebsiteRegistryService,
         PostParsersService,
         FileConverterService,

@@ -1,11 +1,10 @@
-import { getStartupOptions } from '@postybirb/utils/electron';
+import {
+  getStartupOptions,
+  IsTestEnvironment,
+} from '@postybirb/utils/electron';
 import { app } from 'electron';
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';
-
-function IsTestEnvironment(): boolean {
-  return (process.env.NODE_ENV || '').toLowerCase() === 'test';
-}
 
 /**
  * Startup options
@@ -41,7 +40,10 @@ function initializeDirectories() {
 }
 
 export {
-  clearTempDirectory, DATA_DIRECTORY, initializeDirectories, LOGS_DIRECTORY,
+  clearTempDirectory,
+  DATA_DIRECTORY,
+  initializeDirectories,
+  LOGS_DIRECTORY,
   POSTYBIRB_DIRECTORY,
   TEMP_DIRECTORY
 };

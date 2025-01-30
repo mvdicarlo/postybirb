@@ -1,4 +1,3 @@
-import { Select } from '@postybirb/database';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { WebsiteId } from '../website/website.type';
 
@@ -7,7 +6,7 @@ export type AccountId = EntityId;
 /**
  * Represents an account with its associated properties.
  */
-export interface IAccount extends IEntity, Select<'AccountSchema'> {
+export interface IAccount extends IEntity {
   /**
    * The unique identifier of the account and the session partition key.
    * @type {AccountId}

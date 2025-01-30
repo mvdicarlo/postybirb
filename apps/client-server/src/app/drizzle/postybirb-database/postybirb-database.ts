@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { NotFoundException } from '@nestjs/common';
 import {
   getDatabase,
   Insert,
@@ -7,7 +8,7 @@ import {
   Schemas,
   Select,
 } from '@postybirb/database';
-import { EntityId } from '@postybirb/types';
+import { EntityId, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { eq, KnownKeysOnly, SQL } from 'drizzle-orm';
 import {
   DBQueryConfig,
@@ -127,6 +128,9 @@ export class PostyBirbDatabase<
   }
 
   public async deleteById(ids: EntityId[]) {
+    if (ids.find((id) => id === NULL_ACCOUNT_ID)) {
+      throw new Error('Cannot delete the null account');
+    }
     const result = await this.db
       .delete(this.schemaEntity)
       .where(eq(this.schemaEntity.id, ids));
@@ -146,7 +150,7 @@ export class PostyBirbDatabase<
     });
 
     if (!record && options?.failOnMissing) {
-      throw new Error(`Record with id ${id} not found`);
+      throw new NotFoundException(`Record with id ${id} not found`);
     }
 
     return record ? this.classConverter(record) : null;

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { AccountService } from './account.service';
@@ -42,6 +43,7 @@ describe('AccountsService', () => {
     expect(registryService.findInstance(record)).toBeDefined();
 
     const groups = await service.findAll();
+    await waitUntil(() => !record.websiteInstance?.getLoginState().pending, 50);
     expect(groups).toHaveLength(1);
     expect(groups[0].name).toEqual(dto.name);
     expect(groups[0].website).toEqual(dto.website);

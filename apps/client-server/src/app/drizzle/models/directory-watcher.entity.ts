@@ -1,8 +1,8 @@
 import {
   DirectoryWatcherDto,
   DirectoryWatcherImportAction,
-  EntityId,
-  IDirectoryWatcher
+  IDirectoryWatcher,
+  SubmissionId,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -12,9 +12,9 @@ export class DirectoryWatcher
   extends DatabaseEntity
   implements IDirectoryWatcher
 {
-  path: string;
+  path?: string;
 
-  templateId: EntityId;
+  templateId: SubmissionId;
 
   importAction: DirectoryWatcherImportAction;
 

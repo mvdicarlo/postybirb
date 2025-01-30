@@ -23,9 +23,12 @@ export const SubmissionSchema = sqliteTable('submission', {
   order: integer().notNull(),
 });
 
-export const SubmissionRelations = relations(SubmissionSchema, ({ many }) => ({
-  options: many(WebsiteOptionsSchema),
-  posts: many(PostRecordSchema),
-  files: many(SubmissionFileSchema),
-  postQueueRecord: many(PostQueueRecordSchema),
-}));
+export const SubmissionRelations = relations(
+  SubmissionSchema,
+  ({ one, many }) => ({
+    options: many(WebsiteOptionsSchema),
+    posts: many(PostRecordSchema),
+    files: many(SubmissionFileSchema),
+    postQueueRecord: one(PostQueueRecordSchema),
+  }),
+);

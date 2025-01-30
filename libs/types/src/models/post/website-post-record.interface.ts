@@ -1,5 +1,4 @@
-import { Select } from '@postybirb/database';
-import { IAccount } from '../account/account.interface';
+import { AccountId, IAccount } from '../account/account.interface';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { PostData } from '../website/post-data.type';
 import { IPostRecord } from './post-record.interface';
@@ -9,9 +8,9 @@ import { IPostRecord } from './post-record.interface';
  * @interface IWebsitePostRecord
  * @extends {IEntity}
  */
-export interface IWebsitePostRecord
-  extends IEntity,
-    Select<'WebsitePostRecordSchema'> {
+export interface IWebsitePostRecord extends IEntity {
+  postRecordId: EntityId;
+
   /**
    * The parent post record.
    * @type {IPostRecord}
@@ -29,6 +28,8 @@ export interface IWebsitePostRecord
    * @type {string}
    */
   completedAt: string;
+
+  accountId: AccountId;
 
   /**
    * The account the post is made with.

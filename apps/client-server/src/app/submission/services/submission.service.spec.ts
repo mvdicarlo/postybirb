@@ -4,7 +4,6 @@ import { clearDatabase } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
   ScheduleType,
   SubmissionRating,
   SubmissionType,
@@ -26,7 +25,6 @@ import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website
 import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations/provider';
-import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { WebsitesModule } from '../../websites/websites.module';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
@@ -121,7 +119,6 @@ describe('SubmissionService', () => {
   it('should create message entities', async () => {
     const createDto = createSubmissionDto();
     const record = await service.create(createDto);
-    const defaultOptions = record.options[0];
 
     const records = await service.findAll();
     expect(records).toHaveLength(1);
@@ -133,29 +130,19 @@ describe('SubmissionService', () => {
       updatedAt: record.updatedAt,
       type: record.type,
       isScheduled: false,
+      isTemplate: false,
+      isArchived: false,
+      isMultiSubmission: false,
       schedule: {
-        cron: undefined,
-        scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
       },
       metadata: {},
       files: [],
       order: 1,
       posts: [],
-      options: [
-        {
-          id: defaultOptions.id,
-          createdAt: defaultOptions.createdAt,
-          updatedAt: defaultOptions.updatedAt,
-          isDefault: true,
-          account: NULL_ACCOUNT_ID,
-          submission: record.id,
-          data: {
-            ...new DefaultWebsiteOptions(),
-            title: 'Test',
-          },
-        },
-      ],
+      postQueueRecord: undefined,
+      options: [record.options[0].toDTO()],
+      validations: [],
     });
   });
 
@@ -200,9 +187,11 @@ describe('SubmissionService', () => {
       updatedAt: record.updatedAt,
       type: record.type,
       isScheduled: false,
+      postQueueRecord: undefined,
+      isTemplate: false,
+      isMultiSubmission: false,
+      isArchived: false,
       schedule: {
-        cron: undefined,
-        scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
       },
       metadata: {
@@ -224,40 +213,27 @@ describe('SubmissionService', () => {
       files: [
         {
           createdAt: file.createdAt,
-          file: file.file.id,
+          primaryFileId: file.primaryFileId,
           fileName: fileInfo.originalname,
           hasThumbnail: true,
+          hasCustomThumbnail: false,
           hasAltFile: false,
           hash: file.hash,
           height: 202,
           width: 138,
           id: file.id,
           mimeType: fileInfo.mimetype,
-          props: {
-            hasCustomThumbnail: false,
-          },
           size: testFile.length,
-          submission: record.id,
-          thumbnail: file.thumbnail?.id,
+          submissionId: record.id,
+          altFileId: null,
+          thumbnailId: file.thumbnailId,
           updatedAt: file.updatedAt,
         },
       ],
       posts: [],
       order: 1,
-      options: [
-        {
-          id: defaultOptions.id,
-          createdAt: defaultOptions.createdAt,
-          updatedAt: defaultOptions.updatedAt,
-          isDefault: true,
-          account: NULL_ACCOUNT_ID,
-          submission: record.id,
-          data: {
-            ...new DefaultWebsiteOptions(),
-            title: 'Test',
-          },
-        },
-      ],
+      options: [defaultOptions.toObject()],
+      validations: [],
     });
   });
 
@@ -342,5 +318,13 @@ describe('SubmissionService', () => {
 
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.options[0].data.title).toEqual('Updated');
+  });
+
+  it('should serialize entity', async () => {
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+
+    const serialized = JSON.stringify(record.toDTO());
+    expect(serialized).toBeDefined();
   });
 });

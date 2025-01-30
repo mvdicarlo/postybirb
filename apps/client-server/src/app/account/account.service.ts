@@ -11,10 +11,11 @@ import {
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
+import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { FindOptions } from '../database/repositories/postybirb-repository';
 import { Account } from '../drizzle/models';
+import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -77,7 +78,7 @@ export class AccountService
    */
   private async initWebsiteRegistry(): Promise<void> {
     const accounts = await this.repository.find({
-      where: (account, { ne }) => ne(account.id, NULL_ACCOUNT_ID),
+      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account)),
@@ -207,7 +208,7 @@ export class AccountService
         `Website ${createDto.website} is not supported.`,
       );
     }
-    const account = await this.repository.insert(createDto);
+    const account = await this.repository.insert(new Account(createDto));
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
     return account.withWebsiteInstance(instance);
@@ -222,7 +223,7 @@ export class AccountService
   public async findAll() {
     return this.repository
       .find({
-        where: (account, { ne }) => ne(account.id, NULL_ACCOUNT_ID),
+        where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
       })
       .then((accounts) =>
         accounts.map((account) => this.injectWebsiteInstance(account)),

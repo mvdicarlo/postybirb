@@ -7,11 +7,11 @@ import {
 import { Logger } from '@postybirb/logger';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import { DynamicObject, IAccount, IWebsiteInfoDto } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
-import { IsTestEnvironment } from '../utils/test.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';

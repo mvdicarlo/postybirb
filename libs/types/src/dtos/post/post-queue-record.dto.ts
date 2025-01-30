@@ -1,10 +1,3 @@
-import { EntityId, IPostQueueRecord, SubmissionId } from '../../models';
-import { IEntityDto } from '../database/entity.dto';
+import { IPostQueueRecord } from '../../models';
 
-export type PostQueueRecordDto = IEntityDto<
-  Omit<IPostQueueRecord, 'postRecord' | 'SubmissionSchema'>
-> & {
-  postRecord?: EntityId;
-
-  submission: SubmissionId;
-};
+export type PostQueueRecordDto = IPostQueueRecord;

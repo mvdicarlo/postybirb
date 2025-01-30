@@ -88,6 +88,7 @@ export class UpdateFileService {
     } else {
       await tx.update(this.fileBufferRepository.schemaEntity).set({
         buffer: thumbnailDetails.buffer,
+        size: thumbnailDetails.buffer.length,
         mimeType: file.mimetype,
         width: thumbnailDetails.width,
         height: thumbnailDetails.height,
@@ -146,6 +147,7 @@ export class UpdateFileService {
         .update(this.fileBufferRepository.schemaEntity)
         .set({
           buffer: buf,
+          size: buf.length,
           fileName: file.filename,
           mimeType: file.mimetype,
         })
@@ -168,6 +170,7 @@ export class UpdateFileService {
             .update(this.fileBufferRepository.schemaEntity)
             .set({
               buffer: altFileText,
+              size: altFileText.length,
             })
             .where(
               eq(
@@ -272,6 +275,7 @@ export class UpdateFileService {
           buffer: thumbnailBuf,
           width: thumbnailWidth,
           height: thumbnailHeight,
+          size: thumbnailBuf.length,
         })
         .where(
           eq(

@@ -20,7 +20,7 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
   @Type(() => Submission)
   parent: Submission;
 
-  completedAt: string;
+  completedAt?: string;
 
   state: PostRecordState;
 

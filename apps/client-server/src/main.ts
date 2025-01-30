@@ -10,13 +10,15 @@ import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
-import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
+import {
+  IsTestEnvironment,
+  PostyBirbEnvConfig,
+} from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { DatabaseEntity } from './app/drizzle/models';
 import { SSL } from './app/security-and-authentication/ssl';
-import { IsTestEnvironment } from './app/utils/test.util';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {

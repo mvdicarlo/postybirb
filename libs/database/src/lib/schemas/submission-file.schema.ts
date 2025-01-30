@@ -17,7 +17,9 @@ export const SubmissionFileSchema = sqliteTable('submission-file', {
   hasCustomThumbnail: integer({ mode: 'boolean' }).notNull().default(false),
   submissionId: id()
     .notNull()
-    .references(() => SubmissionSchema.id),
+    .references(() => SubmissionSchema.id, {
+      onDelete: 'cascade',
+    }),
   primaryFileId: id().references(() => FileBufferSchema.id),
   thumbnailId: id().references(() => FileBufferSchema.id),
   altFileId: id().references(() => FileBufferSchema.id),

@@ -35,12 +35,14 @@ describe('PostFileResizerService', () => {
       hasThumbnail: false,
       hasCustomThumbnail: false,
       hasAltFile: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       submission: {} as ISubmission<never>,
       width,
       height,
+      primaryFileId: 'test',
       file: {
+        submissionFileId: 'test',
         fileName,
         mimeType,
         id: 'test',
@@ -48,8 +50,8 @@ describe('PostFileResizerService', () => {
         size: buf.length,
         width,
         height,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     };
   }

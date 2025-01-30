@@ -14,6 +14,7 @@ export * from './settings/settings.dto';
 export * from './settings/update-settings.dto';
 export * from './submission/apply-multi-submission.dto';
 export * from './submission/create-submission.dto';
+export * from './submission/file-buffer.dto';
 export * from './submission/submission-file.dto';
 export * from './submission/submission.dto';
 export * from './submission/update-alt-file.dto';
@@ -38,4 +39,3 @@ export * from './website/oauth-website-request.dto';
 export * from './website/set-website-data-request.dto';
 export * from './website/website-data.dto';
 export * from './website/website-info.dto';
-

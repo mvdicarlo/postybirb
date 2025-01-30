@@ -5,7 +5,7 @@ import {
   Optional,
 } from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
-import { EntityId } from '@postybirb/types';
+import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
   StartupOptions,
   getStartupOptions,
@@ -16,7 +16,6 @@ import { PostyBirbService } from '../common/service/postybirb-service';
 import { Settings } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
-import { SettingsConstants } from './settings.constants';
 
 @Injectable()
 export class SettingsService

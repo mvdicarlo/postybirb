@@ -1,4 +1,3 @@
-import { Select } from '@postybirb/database';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IFileBuffer } from '../file/file-buffer.interface';
 import { IFileDimensions } from '../file/file-dimensions.interface';
@@ -14,10 +13,7 @@ export type SubmissionFileId = EntityId;
  * @extends {IFileDimensions}
  * @extends {IEntity}
  */
-export interface ISubmissionFile
-  extends IFileDimensions,
-    IEntity,
-    Select<'SubmissionFileSchema'> {
+export interface ISubmissionFile extends IFileDimensions, IEntity {
   /**
    * Parent submission.
    *
@@ -89,4 +85,10 @@ export interface ISubmissionFile
    * @type {boolean}
    */
   hasCustomThumbnail: boolean;
+
+  primaryFileId: EntityId;
+
+  thumbnailId?: EntityId;
+
+  altFileId?: EntityId;
 }

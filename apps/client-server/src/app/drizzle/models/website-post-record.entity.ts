@@ -1,9 +1,11 @@
 import {
+  AccountId,
+  EntityId,
   IPostRecordMetadata,
   IWebsiteError,
   IWebsitePostRecord,
   PostData,
-  WebsitePostRecordDto
+  WebsitePostRecordDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
@@ -14,9 +16,9 @@ export class WebsitePostRecord
   extends DatabaseEntity
   implements IWebsitePostRecord
 {
-  postRecordId: string;
+  postRecordId: EntityId;
 
-  accountId: string;
+  accountId: AccountId;
 
   @Type(() => PostRecord)
   parent: PostRecord;

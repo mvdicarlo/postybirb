@@ -1,7 +1,6 @@
-import { Select } from '@postybirb/database';
 import { PostRecordResumeMode, PostRecordState } from '../../enums';
-import { IEntity } from '../database/entity.interface';
-import { ISubmission } from '../submission/submission.interface';
+import { EntityId, IEntity } from '../database/entity.interface';
+import { ISubmission, SubmissionId } from '../submission/submission.interface';
 import { IPostQueueRecord } from './post-queue-record.interface';
 import { IWebsitePostRecord } from './website-post-record.interface';
 
@@ -10,7 +9,9 @@ import { IWebsitePostRecord } from './website-post-record.interface';
  * @interface IPostRecord
  * @extends {IEntity}
  */
-export interface IPostRecord extends IEntity, Select<'PostRecordSchema'> {
+export interface IPostRecord extends IEntity {
+  submissionId: SubmissionId;
+
   /**
    * Parent submission Id.
    * @type {SubmissionId}
@@ -21,7 +22,7 @@ export interface IPostRecord extends IEntity, Select<'PostRecordSchema'> {
    * The date the post was completed.
    * @type {Date}
    */
-  completedAt: string;
+  completedAt?: string;
 
   /**
    * The state of the post record.
@@ -41,6 +42,8 @@ export interface IPostRecord extends IEntity, Select<'PostRecordSchema'> {
    * @type {IWebsitePostRecord[]}
    */
   children: IWebsitePostRecord[];
+
+  postQueueRecordId: EntityId;
 
   /**
    * The post queue record associated with the post record.

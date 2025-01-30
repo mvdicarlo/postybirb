@@ -1,4 +1,4 @@
-import { IAccount } from '../account/account.interface';
+import { AccountId, IAccount } from '../account/account.interface';
 import { IEntity } from '../database/entity.interface';
 import { ISubmissionMetadata } from '../submission/submission-metadata.interface';
 import { ISubmission } from '../submission/submission.interface';
@@ -24,6 +24,8 @@ export interface IWebsiteOptions<
    * @type {T}
    */
   data: T;
+
+  accountId: AccountId;
 
   /**
    * The account associated with the options.

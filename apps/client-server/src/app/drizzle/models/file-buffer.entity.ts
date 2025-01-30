@@ -1,24 +1,19 @@
-import {
-  EntityId,
-  IFileBuffer,
-  ISubSubmissionFileDto
-} from '@postybirb/types';
-import { instanceToPlain, Type } from 'class-transformer';
+import { EntityId, FileBufferDto, IFileBuffer } from '@postybirb/types';
+import { Exclude, instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
 export class FileBuffer extends DatabaseEntity implements IFileBuffer {
   submissionFileId: EntityId;
 
   @Type(() => Buffer)
+  @Exclude({ toPlainOnly: true })
   buffer: Buffer;
 
   fileName: string;
 
   mimeType: string;
 
-  get size(): number {
-    return this.buffer?.length || 0;
-  }
+  size: number;
 
   width: number;
 
@@ -30,7 +25,7 @@ export class FileBuffer extends DatabaseEntity implements IFileBuffer {
     }) as IFileBuffer;
   }
 
-  toDTO(): ISubSubmissionFileDto {
-    return this.toObject() as unknown as ISubSubmissionFileDto;
+  toDTO(): FileBufferDto {
+    return this.toObject() as unknown as FileBufferDto;
   }
 }

@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schemas } from '@postybirb/database';
-import {
-  EntityId,
-  EntityPrimitive,
-  IEntity,
-  IEntityDto,
-} from '@postybirb/types';
+import { EntityId, IEntity, IEntityDto } from '@postybirb/types';
 import {
   ClassConstructor,
   Exclude,
@@ -50,7 +45,7 @@ export abstract class DatabaseEntity implements IEntity {
     Object.assign(this, entity);
   }
 
-  public abstract toObject(): EntityPrimitive;
+  public abstract toObject(): IEntity;
 
   public abstract toDTO(): IEntityDto;
 
