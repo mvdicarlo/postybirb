@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "25c463e2-77af-4f33-bcd9-9d692d135541",
+  "id": "ca9a4d11-735d-4670-93da-6ea9b0faca85",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -37,6 +37,13 @@
         },
         "website": {
           "name": "website",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "groups": {
+          "name": "groups",
           "type": "text",
           "primaryKey": false,
           "notNull": true,

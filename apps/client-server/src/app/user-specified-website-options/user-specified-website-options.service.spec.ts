@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specified-website-options.dto';
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 import { UserSpecifiedWebsiteOptionsService } from './user-specified-website-options.service';

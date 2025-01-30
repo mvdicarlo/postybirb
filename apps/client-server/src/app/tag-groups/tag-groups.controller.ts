@@ -17,7 +17,7 @@ import { TagGroupsService } from './tag-groups.service';
  */
 @ApiTags('tag-groups')
 @Controller('tag-groups')
-export class TagGroupsController extends PostyBirbController<'tagGroup'> {
+export class TagGroupsController extends PostyBirbController<'TagGroupSchema'> {
   constructor(readonly service: TagGroupsService) {
     super(service);
   }

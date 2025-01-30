@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { SubmissionType } from '../../enums';
 import { IAccount } from '../account/account.interface';
 import { DynamicObject } from '../common/dynamic-object';
@@ -8,7 +9,9 @@ import { IEntity } from '../database/entity.interface';
  * @interface IUserSpecifiedWebsiteOptions
  * @extends {IEntity}
  */
-export interface IUserSpecifiedWebsiteOptions extends IEntity {
+export interface IUserSpecifiedWebsiteOptions
+  extends IEntity,
+    Select<'UserSpecifiedWebsiteOptionsSchema'> {
   /**
    * The account the options are tied to.
    * @type {IAccount}

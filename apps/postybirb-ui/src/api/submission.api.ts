@@ -15,7 +15,7 @@ class SubmissionsApi extends BaseApi<
   IUpdateSubmissionDto
 > {
   constructor() {
-    super('submission');
+    super('SubmissionSchema');
   }
 
   createMessageSubmission(name: string) {

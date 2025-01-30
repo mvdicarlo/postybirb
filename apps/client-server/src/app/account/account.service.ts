@@ -29,7 +29,7 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbService<'account'>
+  extends PostyBirbService<'AccountSchema'>
   implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<
@@ -44,8 +44,8 @@ export class AccountService
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('account', webSocket);
-    this.repository.subscribe('account', () => this.emit());
+    super('AccountSchema', webSocket);
+    this.repository.subscribe('AccountSchema', () => this.emit());
   }
 
   /**

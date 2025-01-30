@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
@@ -9,7 +10,6 @@ import {
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';

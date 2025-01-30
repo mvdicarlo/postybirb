@@ -9,7 +9,7 @@ import { PostService } from './post.service';
  */
 @ApiTags('post')
 @Controller('post')
-export class PostController extends PostyBirbController<'postRecord'> {
+export class PostController extends PostyBirbController<'PostRecordSchema'> {
   constructor(readonly service: PostService) {
     super(service);
   }

@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { SubmissionFile } from '../drizzle/models';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
@@ -35,7 +35,7 @@ describe('FileService', () => {
   let service: FileService;
   let submissionService: SubmissionService;
   let module: TestingModule;
-  let fileBufferRepository: PostyBirbDatabase<'fileBuffer'>;
+  let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
 
   async function createSubmission() {
     const dto = new CreateSubmissionDto();
@@ -118,7 +118,7 @@ describe('FileService', () => {
         FileConverterService,
       ],
     }).compile();
-    fileBufferRepository = new PostyBirbDatabase('fileBuffer');
+    fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
     service = module.get<FileService>(FileService);
     submissionService = module.get<SubmissionService>(SubmissionService);
 

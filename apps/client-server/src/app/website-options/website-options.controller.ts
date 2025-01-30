@@ -20,7 +20,7 @@ import { WebsiteOptionsService } from './website-options.service';
  */
 @ApiTags('website-option')
 @Controller('website-option')
-export class WebsiteOptionsController extends PostyBirbController<'websiteOptions'> {
+export class WebsiteOptionsController extends PostyBirbController<'WebsiteOptionsSchema'> {
   constructor(readonly service: WebsiteOptionsService) {
     super(service);
   }

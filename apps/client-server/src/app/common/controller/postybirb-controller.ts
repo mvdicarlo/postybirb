@@ -1,7 +1,7 @@
 import { Delete, Get, Param, Query } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { SchemaKey } from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
-import { SchemaKey } from '../../drizzle/postybirb-database/postybirb-database';
 import { PostyBirbService } from '../service/postybirb-service';
 
 /**

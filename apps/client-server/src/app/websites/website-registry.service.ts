@@ -33,9 +33,9 @@ export class WebsiteRegistryService {
 
   private readonly websiteInstances: WebsiteInstances = {};
 
-  private readonly accountRepository: PostyBirbDatabase<'account'>;
+  private readonly accountRepository: PostyBirbDatabase<'AccountSchema'>;
 
-  private readonly websiteDataRepository: PostyBirbDatabase<'websiteData'>;
+  private readonly websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>;
 
   constructor(
     @Inject(WEBSITE_IMPLEMENTATIONS)
@@ -64,10 +64,11 @@ export class WebsiteRegistryService {
       },
     );
 
-    this.accountRepository = new PostyBirbDatabase('account');
-    this.websiteDataRepository = new PostyBirbDatabase('websiteData');
-    this.accountRepository.subscribe(['account', 'websiteData'], () =>
-      this.emit(),
+    this.accountRepository = new PostyBirbDatabase('AccountSchema');
+    this.websiteDataRepository = new PostyBirbDatabase('WebsiteDataSchema');
+    this.accountRepository.subscribe(
+      ['AccountSchema', 'WebsiteDataSchema'],
+      () => this.emit(),
     );
   }
 

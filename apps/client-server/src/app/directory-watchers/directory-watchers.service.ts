@@ -31,12 +31,12 @@ type WatcherMetadata = {
  * @extends {PostyBirbService<DirectoryWatcher>}
  */
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbService<'directoryWatcher'> {
+export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
   constructor(
     private readonly submissionService: SubmissionService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('directoryWatcher', webSocket);
+    super('DirectoryWatcherSchema', webSocket);
   }
 
   /**

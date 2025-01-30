@@ -1,20 +1,15 @@
 import {
   EntityId,
-  EntityPrimitive,
   FileSubmissionMetadata,
   ISubmissionFile,
-  ISubmissionFileDto,
+  ISubmissionFileDto
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
-import { Select } from '../postybirb-database/postybirb-database';
 import { DatabaseEntity } from './database-entity';
 import { FileBuffer } from './file-buffer.entity';
 import { Submission } from './submission.entity';
 
-export class SubmissionFile
-  extends DatabaseEntity
-  implements ISubmissionFile, Select<'submissionFile'>
-{
+export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
   submissionId: EntityId;
 
   primaryFileId: EntityId;
@@ -53,10 +48,10 @@ export class SubmissionFile
 
   height: number;
 
-  toObject(): EntityPrimitive<ISubmissionFile> {
+  toObject(): ISubmissionFile {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<ISubmissionFile>;
+    }) as ISubmissionFile;
   }
 
   toDTO(): ISubmissionFileDto {

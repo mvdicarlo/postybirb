@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Schemas } from '@postybirb/database';
 import {
   EntityId,
   EntityPrimitive,
@@ -9,10 +10,9 @@ import {
   ClassConstructor,
   Exclude,
   plainToClass,
-  plainToInstance
+  plainToInstance,
 } from 'class-transformer';
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3';
-import * as schema from '../schemas';
 
 export function fromDatabaseRecord<TEntity>(
   entity: ClassConstructor<TEntity>,
@@ -44,7 +44,7 @@ export abstract class DatabaseEntity implements IEntity {
   public readonly updatedAt: string;
 
   @Exclude()
-  protected db: BetterSQLite3Database<typeof schema>;
+  protected db: BetterSQLite3Database<typeof Schemas>;
 
   constructor(entity: Partial<IEntity>) {
     Object.assign(this, entity);
@@ -58,7 +58,7 @@ export abstract class DatabaseEntity implements IEntity {
     return JSON.stringify(this.toDTO());
   }
 
-  public withDB(db: BetterSQLite3Database<typeof schema>): this {
+  public withDB(db: BetterSQLite3Database<typeof Schemas>): this {
     this.db = db;
     return this;
   }

@@ -1,3 +1,4 @@
+import { SchemaKey } from '@postybirb/database';
 import {
   Account,
   DirectoryWatcher,
@@ -14,23 +15,24 @@ import {
   WebsiteOptions,
   WebsitePostRecord,
 } from '../models';
-import { SchemaKey } from './postybirb-database';
 
 export type DatabaseSchemaEntityMap = {
-  account: InstanceType<typeof Account>;
-  directoryWatcher: InstanceType<typeof DirectoryWatcher>;
-  fileBuffer: InstanceType<typeof FileBuffer>;
-  postQueueRecord: InstanceType<typeof PostQueueRecord>;
-  postRecord: InstanceType<typeof PostRecord>;
-  settings: InstanceType<typeof Settings>;
-  submissionFile: InstanceType<typeof SubmissionFile>;
-  submission: InstanceType<typeof Submission>;
-  tagConverter: InstanceType<typeof TagConverter>;
-  tagGroup: InstanceType<typeof TagGroup>;
-  userSpecifiedWebsiteOptions: InstanceType<typeof UserSpecifiedWebsiteOptions>;
-  websiteData: InstanceType<typeof WebsiteData>;
-  websiteOptions: InstanceType<typeof WebsiteOptions>;
-  websitePostRecord: InstanceType<typeof WebsitePostRecord>;
+  AccountSchema: InstanceType<typeof Account>;
+  DirectoryWatcherSchema: InstanceType<typeof DirectoryWatcher>;
+  FileBufferSchema: InstanceType<typeof FileBuffer>;
+  PostQueueRecordSchema: InstanceType<typeof PostQueueRecord>;
+  PostRecordSchema: InstanceType<typeof PostRecord>;
+  SettingsSchema: InstanceType<typeof Settings>;
+  SubmissionFileSchema: InstanceType<typeof SubmissionFile>;
+  SubmissionSchema: InstanceType<typeof Submission>;
+  TagConverterSchema: InstanceType<typeof TagConverter>;
+  TagGroupSchema: InstanceType<typeof TagGroup>;
+  UserSpecifiedWebsiteOptionsSchema: InstanceType<
+    typeof UserSpecifiedWebsiteOptions
+  >;
+  WebsiteDataSchema: InstanceType<typeof WebsiteData>;
+  WebsiteOptionsSchema: InstanceType<typeof WebsiteOptions>;
+  WebsitePostRecordSchema: InstanceType<typeof WebsitePostRecord>;
 };
 
 export const DatabaseSchemaEntityMapConst: Record<
@@ -38,18 +40,18 @@ export const DatabaseSchemaEntityMapConst: Record<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   InstanceType<any>
 > = {
-  account: Account,
-  directoryWatcher: DirectoryWatcher,
-  fileBuffer: FileBuffer,
-  postQueueRecord: PostQueueRecord,
-  postRecord: PostRecord,
-  settings: Settings,
-  submissionFile: SubmissionFile,
-  submission: Submission,
-  tagConverter: TagConverter,
-  tagGroup: TagGroup,
-  userSpecifiedWebsiteOptions: UserSpecifiedWebsiteOptions,
-  websiteData: WebsiteData,
-  websiteOptions: WebsiteOptions,
-  websitePostRecord: WebsitePostRecord,
+  AccountSchema: Account,
+  DirectoryWatcherSchema: DirectoryWatcher,
+  FileBufferSchema: FileBuffer,
+  PostQueueRecordSchema: PostQueueRecord,
+  PostRecordSchema: PostRecord,
+  SettingsSchema: Settings,
+  SubmissionFileSchema: SubmissionFile,
+  SubmissionSchema: Submission,
+  TagConverterSchema: TagConverter,
+  TagGroupSchema: TagGroup,
+  UserSpecifiedWebsiteOptionsSchema: UserSpecifiedWebsiteOptions,
+  WebsiteDataSchema: WebsiteData,
+  WebsiteOptionsSchema: WebsiteOptions,
+  WebsitePostRecordSchema: WebsitePostRecord,
 };

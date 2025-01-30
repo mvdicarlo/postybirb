@@ -1,8 +1,7 @@
 import {
-  EntityPrimitive,
   ISettings,
   ISettingsOptions,
-  SettingsDto,
+  SettingsDto
 } from '@postybirb/types';
 import { instanceToPlain } from 'class-transformer';
 import { SettingsConstants } from '../../settings/settings.constants';
@@ -13,10 +12,10 @@ export class Settings extends DatabaseEntity implements ISettings {
 
   settings: ISettingsOptions = { ...SettingsConstants.DEFAULT_SETTINGS };
 
-  toObject(): EntityPrimitive<ISettings> {
+  toObject(): ISettings {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<ISettings>;
+    }) as ISettings;
   }
 
   toDTO(): SettingsDto {

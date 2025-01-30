@@ -24,11 +24,11 @@ import { ISubmissionService } from './submission-service.interface';
  */
 @Injectable()
 export class FileSubmissionService
-  extends PostyBirbService<'submission'>
+  extends PostyBirbService<'SubmissionSchema'>
   implements ISubmissionService<FileSubmission>
 {
   constructor(private readonly fileService: FileService) {
-    super('submission');
+    super('SubmissionSchema');
   }
 
   async populate(

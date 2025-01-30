@@ -18,7 +18,7 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @ApiTags('account')
 @Controller('account')
-export class AccountController extends PostyBirbController<'account'> {
+export class AccountController extends PostyBirbController<'AccountSchema'> {
   constructor(readonly service: AccountService) {
     super(service);
   }

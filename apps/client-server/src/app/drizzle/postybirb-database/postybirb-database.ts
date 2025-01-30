@@ -1,32 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  getDatabase,
+  Insert,
+  PostyBirbDatabaseType,
+  SchemaKey,
+  Schemas,
+  Select,
+} from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
 import { eq, KnownKeysOnly, SQL } from 'drizzle-orm';
 import {
   DBQueryConfig,
   ExtractTablesWithRelations,
 } from 'drizzle-orm/relations';
-import { FindOptions } from '../../database/repositories/postybirb-repository';
-import { fromDatabaseRecord } from '../models/database-entity';
-import * as schema from '../schemas';
-import { getDatabase, PostyBirbDatabaseType } from './database-instance';
+import { fromDatabaseRecord } from '../models';
+import { FindOptions } from './find-options.type';
 import {
   DatabaseSchemaEntityMap,
   DatabaseSchemaEntityMapConst,
 } from './schema-entity-map';
 
-export type SchemaKey = keyof PostyBirbDatabaseType['_']['schema'];
-
-export type PostyBirbTransaction = Parameters<
-  Parameters<PostyBirbDatabaseType['transaction']>['0']
->['0'];
-
-export type Insert<TSchemaKey extends SchemaKey> =
-  (typeof schema)[TSchemaKey]['$inferInsert'];
-
-export type Select<TSchemaKey extends SchemaKey> =
-  (typeof schema)[TSchemaKey]['$inferSelect'];
-
-type ExtractedRelations = ExtractTablesWithRelations<typeof schema>;
+type ExtractedRelations = ExtractTablesWithRelations<typeof Schemas>;
 
 type Relation<TSchemaKey extends SchemaKey> =
   PostyBirbDatabaseType['_']['schema'][TSchemaKey];
@@ -45,20 +39,20 @@ export class PostyBirbDatabase<
     SchemaKey,
     Array<SubscribeCallback>
   > = {
-    account: [],
-    directoryWatcher: [],
-    fileBuffer: [],
-    postQueueRecord: [],
-    postRecord: [],
-    settings: [],
-    submissionFile: [],
-    submission: [],
-    tagConverter: [],
-    tagGroup: [],
-    userSpecifiedWebsiteOptions: [],
-    websiteData: [],
-    websiteOptions: [],
-    websitePostRecord: [],
+    AccountSchema: [],
+    DirectoryWatcherSchema: [],
+    FileBufferSchema: [],
+    PostQueueRecordSchema: [],
+    PostRecordSchema: [],
+    SettingsSchema: [],
+    SubmissionFileSchema: [],
+    SubmissionSchema: [],
+    TagConverterSchema: [],
+    TagGroupSchema: [],
+    UserSpecifiedWebsiteOptionsSchema: [],
+    WebsiteDataSchema: [],
+    WebsiteOptionsSchema: [],
+    WebsitePostRecordSchema: [],
   };
 
   constructor(
@@ -101,7 +95,7 @@ export class PostyBirbDatabase<
   }
 
   public get schemaEntity() {
-    return schema[this.schemaKey];
+    return Schemas[this.schemaKey];
   }
 
   private classConverter(value: any[]): TEntityClass[];

@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { IAccount } from '../account/account.interface';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { PostData } from '../website/post-data.type';
@@ -8,7 +9,9 @@ import { IPostRecord } from './post-record.interface';
  * @interface IWebsitePostRecord
  * @extends {IEntity}
  */
-export interface IWebsitePostRecord extends IEntity {
+export interface IWebsitePostRecord
+  extends IEntity,
+    Select<'WebsitePostRecordSchema'> {
   /**
    * The parent post record.
    * @type {IPostRecord}
@@ -23,9 +26,9 @@ export interface IWebsitePostRecord extends IEntity {
 
   /**
    * The date the post was completed.
-   * @type {Date}
+   * @type {string}
    */
-  completedAt?: Date;
+  completedAt: string;
 
   /**
    * The account the post is made with.
@@ -37,13 +40,13 @@ export interface IWebsitePostRecord extends IEntity {
    * The error(s) associated with the post record.
    * @type {IWebsiteError[]}
    */
-  errors?: IWebsiteError[];
+  errors: IWebsiteError[];
 
   /**
    * The post data that was attempted to be posted with.
    * @type {PostData}
    */
-  postData?: PostData;
+  postData: PostData;
 }
 
 /**

@@ -27,23 +27,27 @@ import { PostManagerService } from '../post-manager/post-manager.service';
  * @class PostQueueService
  */
 @Injectable()
-export class PostQueueService extends PostyBirbService<'postQueueRecord'> {
+export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> {
   private readonly queueModificationMutex = new Mutex();
 
   private readonly queueMutex = new Mutex();
 
   private readonly initTime = Date.now();
 
-  private readonly postRecordRepository = new PostyBirbDatabase('postRecord');
+  private readonly postRecordRepository = new PostyBirbDatabase(
+    'PostRecordSchema',
+  );
 
-  private readonly submissionRepository = new PostyBirbDatabase('submission');
+  private readonly submissionRepository = new PostyBirbDatabase(
+    'SubmissionSchema',
+  );
 
   constructor(
     private readonly postManager: PostManagerService,
     private readonly settingsService: SettingsService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super('postQueueRecord', webSocket);
+    super('PostQueueRecordSchema', webSocket);
   }
 
   public async isPaused(): Promise<boolean> {

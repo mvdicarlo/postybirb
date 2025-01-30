@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   IWebsiteFormFields,
@@ -13,7 +14,6 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
-import { clearDatabase } from '../../drizzle/postybirb-database/database-instance';
 import { FileConverterService } from '../../file-converter/file-converter.service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';

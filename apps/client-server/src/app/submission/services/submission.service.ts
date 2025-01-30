@@ -8,6 +8,14 @@ import {
   OnModuleInit,
   Optional,
 } from '@nestjs/common';
+import {
+  FileBufferSchema,
+  Insert,
+  PostyBirbTransaction,
+  SubmissionFileSchema,
+  SubmissionSchema as submissionSchema,
+  WebsiteOptionsSchema,
+} from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
@@ -25,17 +33,7 @@ import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
-import {
-  Insert,
-  PostyBirbDatabase,
-  PostyBirbTransaction,
-} from '../../drizzle/postybirb-database/postybirb-database';
-import {
-  fileBuffer,
-  submissionFile,
-  submission as SubmissionSchema,
-  websiteOptions,
-} from '../../drizzle/schemas';
+import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
@@ -55,7 +53,7 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<'submission'>
+  extends PostyBirbService<'SubmissionSchema'>
   implements OnModuleInit
 {
   constructor(
@@ -66,7 +64,7 @@ export class SubmissionService
     @Optional() webSocket: WSGateway,
   ) {
     super(
-      new PostyBirbDatabase('submission', {
+      new PostyBirbDatabase('SubmissionSchema', {
         options: {
           with: {
             account: true,
@@ -80,12 +78,12 @@ export class SubmissionService
     );
     this.repository.subscribe(
       [
-        'postRecord',
-        'websitePostRecord',
-        'postQueueRecord',
-        'submissionFile',
-        'fileBuffer',
-        // 'websiteOptions',
+        'PostRecordSchema',
+        'WebsitePostRecordSchema',
+        'PostQueueRecordSchema',
+        'SubmissionFileSchema',
+        'FileBufferSchema',
+        // 'WebsiteOptionsSchema',
       ],
       () => {
         this.emit();
@@ -154,7 +152,7 @@ export class SubmissionService
     file?: MulterFileInfo,
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
-    const submission: Insert<'submission'> = {
+    const submission: Insert<'SubmissionSchema'> = {
       isScheduled: false,
       isMultiSubmission: !!createSubmissionDto.isMultiSubmission,
       isTemplate: !!createSubmissionDto.isTemplate,
@@ -282,21 +280,22 @@ export class SubmissionService
     await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
       // clear all existing options
       await tx
-        .delete(websiteOptions)
-        .where(eq(websiteOptions.submissionId, id));
+        .delete(WebsiteOptionsSchema)
+        .where(eq(WebsiteOptionsSchema.submissionId, id));
 
-      const newOptionInsertions: Insert<'websiteOptions'>[] = await Promise.all(
-        template.options.map((option) =>
-          this.websiteOptionsService.createOptionInsertObject(
-            submission,
-            option.account.id,
-            option.data,
-            (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
+      const newOptionInsertions: Insert<'WebsiteOptionsSchema'>[] =
+        await Promise.all(
+          template.options.map((option) =>
+            this.websiteOptionsService.createOptionInsertObject(
+              submission,
+              option.account.id,
+              option.data,
+              (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
+            ),
           ),
-        ),
-      );
+        );
 
-      await tx.insert(websiteOptions).values(newOptionInsertions);
+      await tx.insert(WebsiteOptionsSchema).values(newOptionInsertions);
     });
 
     try {
@@ -460,7 +459,7 @@ export class SubmissionService
     });
     await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
       const newSubmission = await tx
-        .insert(SubmissionSchema)
+        .insert(submissionSchema)
         .values({
           metadata: entityToDuplicate.metadata,
           type: entityToDuplicate.type,
@@ -472,7 +471,7 @@ export class SubmissionService
         })
         .returning()[0];
 
-      await tx.insert(websiteOptions).values(
+      await tx.insert(WebsiteOptionsSchema).values(
         entityToDuplicate.options.map((option) => ({
           accountId: option.accountId,
           data: option.data,
@@ -483,7 +482,7 @@ export class SubmissionService
 
       for (const file of entityToDuplicate.files) {
         const newFile = await tx
-          .insert(submissionFile)
+          .insert(SubmissionFileSchema)
           .values({
             submissionId: newSubmission.id,
             fileName: file.fileName,
@@ -499,7 +498,7 @@ export class SubmissionService
           .returning()[0];
 
         const primaryFile = await tx
-          .insert(fileBuffer)
+          .insert(FileBufferSchema)
           .values({
             ...file.file,
             id: undefined,
@@ -509,7 +508,7 @@ export class SubmissionService
 
         const thumbnail: FileBuffer | undefined = file.thumbnail
           ? await tx
-              .insert(fileBuffer)
+              .insert(FileBufferSchema)
               .values({
                 ...file.thumbnail,
                 id: undefined,
@@ -520,7 +519,7 @@ export class SubmissionService
 
         const altFile: FileBuffer | undefined = file.altFile
           ? await tx
-              .insert(fileBuffer)
+              .insert(FileBufferSchema)
               .values({
                 ...file.altFile,
                 id: undefined,
@@ -530,13 +529,13 @@ export class SubmissionService
           : undefined;
 
         await tx
-          .update(submissionFile)
+          .update(SubmissionFileSchema)
           .set({
             primaryFileId: primaryFile.id,
             thumbnailId: thumbnail?.id,
             altFileId: altFile?.id,
           })
-          .where(eq(submissionFile.id, newFile.id));
+          .where(eq(SubmissionFileSchema.id, newFile.id));
 
         const oldId = file.id;
         // eslint-disable-next-line prefer-destructuring

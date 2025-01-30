@@ -1,3 +1,4 @@
+import { clearDatabase } from '@postybirb/database';
 import {
   FileSubmission,
   FileType,
@@ -18,12 +19,12 @@ import {
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+
 import {
   PostRecord,
   Submission,
   WebsitePostRecord,
 } from '../../../drizzle/models';
-import { clearDatabase } from '../../../drizzle/postybirb-database/database-instance';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
@@ -41,9 +42,9 @@ import { PostManagerService } from './post-manager.service';
 
 describe('PostManagerServiceMocks', () => {
   let service: PostManagerService;
-  let postRepositoryMock: jest.Mocked<PostyBirbDatabase<'postRecord'>>;
+  let postRepositoryMock: jest.Mocked<PostyBirbDatabase<'PostRecordSchema'>>;
   let websitePostRecordRepositoryMock: jest.Mocked<
-    PostyBirbDatabase<'websitePostRecord'>
+    PostyBirbDatabase<'WebsitePostRecordSchema'>
   >;
   let websiteRegistryMock: jest.Mocked<WebsiteRegistryService>;
   let resizerService: PostFileResizerService;
@@ -57,13 +58,13 @@ describe('PostManagerServiceMocks', () => {
       findOne: jest.fn(),
       findById: jest.fn(),
       update: jest.fn(),
-    } as unknown as jest.Mocked<PostyBirbDatabase<'postRecord'>>;
+    } as unknown as jest.Mocked<PostyBirbDatabase<'PostRecordSchema'>>;
     websitePostRecordRepositoryMock = {
       insert: jest.fn(),
       findOne: jest.fn(),
       findById: jest.fn(),
       update: jest.fn(),
-    } as unknown as jest.Mocked<PostyBirbDatabase<'websitePostRecord'>>;
+    } as unknown as jest.Mocked<PostyBirbDatabase<'WebsitePostRecordSchema'>>;
     websiteRegistryMock = {
       findInstance: jest.fn(),
       findOne: jest.fn(),

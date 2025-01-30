@@ -1,9 +1,9 @@
 import {
+  AccountId,
   DynamicObject,
-  EntityPrimitive,
   IUserSpecifiedWebsiteOptions,
   SubmissionType,
-  UserSpecifiedWebsiteOptionsDto,
+  UserSpecifiedWebsiteOptionsDto
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
@@ -13,6 +13,8 @@ export class UserSpecifiedWebsiteOptions
   extends DatabaseEntity
   implements IUserSpecifiedWebsiteOptions
 {
+  accountId: AccountId;
+
   @Type(() => Account)
   account: Account;
 
@@ -20,10 +22,10 @@ export class UserSpecifiedWebsiteOptions
 
   options: DynamicObject;
 
-  toObject(): EntityPrimitive<IUserSpecifiedWebsiteOptions> {
+  toObject(): IUserSpecifiedWebsiteOptions {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<IUserSpecifiedWebsiteOptions>;
+    }) as IUserSpecifiedWebsiteOptions;
   }
 
   toDTO(): UserSpecifiedWebsiteOptionsDto {

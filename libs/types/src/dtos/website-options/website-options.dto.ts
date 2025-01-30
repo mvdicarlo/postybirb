@@ -6,7 +6,7 @@ export type WebsiteOptionsDto<
   T extends IWebsiteFormFields = IWebsiteFormFields,
 > = Omit<
   IEntityDto<IWebsiteOptions<T>>,
-  'account' | 'submission' | 'template'
+  'account' | 'SubmissionSchema' | 'template'
 > & {
   account: AccountId;
   submission: ISubmissionDto;

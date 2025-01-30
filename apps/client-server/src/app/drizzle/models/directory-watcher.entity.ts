@@ -1,8 +1,8 @@
 import {
   DirectoryWatcherDto,
   DirectoryWatcherImportAction,
-  EntityPrimitive,
-  IDirectoryWatcher,
+  EntityId,
+  IDirectoryWatcher
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -12,17 +12,19 @@ export class DirectoryWatcher
   extends DatabaseEntity
   implements IDirectoryWatcher
 {
-  path?: string;
+  path: string;
+
+  templateId: EntityId;
 
   importAction: DirectoryWatcherImportAction;
 
   @Type(() => Submission)
-  template?: Submission;
+  template: Submission;
 
-  toObject(): EntityPrimitive<IDirectoryWatcher> {
+  toObject(): IDirectoryWatcher {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<IDirectoryWatcher>;
+    }) as IDirectoryWatcher;
   }
 
   toDTO(): DirectoryWatcherDto {

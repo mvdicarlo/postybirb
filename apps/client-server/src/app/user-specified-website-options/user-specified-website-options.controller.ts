@@ -17,7 +17,7 @@ import { UserSpecifiedWebsiteOptionsService } from './user-specified-website-opt
  */
 @ApiTags('user-specified-website-options')
 @Controller('user-specified-website-options')
-export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<'userSpecifiedWebsiteOptions'> {
+export class UserSpecifiedWebsiteOptionsController extends PostyBirbController<'UserSpecifiedWebsiteOptionsSchema'> {
   constructor(readonly service: UserSpecifiedWebsiteOptionsService) {
     super(service);
   }

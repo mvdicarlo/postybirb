@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { PostyBirbTransaction } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
@@ -14,10 +15,7 @@ import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
 import { promisify } from 'util';
 import { SubmissionFile } from '../../drizzle/models';
-import {
-  PostyBirbDatabase,
-  PostyBirbTransaction,
-} from '../../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 import { CreateFileService } from './create-file.service';
@@ -29,9 +27,13 @@ import { CreateFileService } from './create-file.service';
 export class UpdateFileService {
   private readonly logger = Logger();
 
-  private readonly fileRepository = new PostyBirbDatabase('submissionFile');
+  private readonly fileRepository = new PostyBirbDatabase(
+    'SubmissionFileSchema',
+  );
 
-  private readonly fileBufferRepository = new PostyBirbDatabase('fileBuffer');
+  private readonly fileBufferRepository = new PostyBirbDatabase(
+    'FileBufferSchema',
+  );
 
   constructor(private readonly createFileService: CreateFileService) {}
 

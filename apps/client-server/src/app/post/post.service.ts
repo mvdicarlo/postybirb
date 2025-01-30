@@ -7,8 +7,8 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
  * @class PostService
  */
 @Injectable()
-export class PostService extends PostyBirbService<'postRecord'> {
+export class PostService extends PostyBirbService<'PostRecordSchema'> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('postRecord', webSocket);
+    super('PostRecordSchema', webSocket);
   }
 }

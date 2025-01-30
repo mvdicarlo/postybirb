@@ -1,10 +1,9 @@
 import {
   AccountId,
-  EntityPrimitive,
   IWebsiteFormFields,
   IWebsiteOptions,
   SubmissionId,
-  WebsiteOptionsDto,
+  WebsiteOptionsDto
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
@@ -27,10 +26,10 @@ export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
 
   isDefault = false;
 
-  toObject(): EntityPrimitive<IWebsiteOptions> {
+  toObject(): IWebsiteOptions {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<IWebsiteOptions>;
+    }) as IWebsiteOptions;
   }
 
   toDTO(): WebsiteOptionsDto {

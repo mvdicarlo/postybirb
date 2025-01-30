@@ -1,21 +1,25 @@
 import {
-  EntityPrimitive,
-  IPostRecord,
   IPostRecordMetadata,
   IWebsiteError,
   IWebsitePostRecord,
   PostData,
-  WebsitePostRecordDto,
+  WebsitePostRecordDto
 } from '@postybirb/types';
-import { instanceToPlain, Transform, Type } from 'class-transformer';
+import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
 import { DatabaseEntity } from './database-entity';
+import { PostRecord } from './post-record.entity';
 
 export class WebsitePostRecord
   extends DatabaseEntity
   implements IWebsitePostRecord
 {
-  parent: IPostRecord;
+  postRecordId: string;
+
+  accountId: string;
+
+  @Type(() => PostRecord)
+  parent: PostRecord;
 
   metadata: IPostRecordMetadata = {
     sourceMap: {},
@@ -23,25 +27,19 @@ export class WebsitePostRecord
     nextBatchNumber: 1,
   };
 
-  @Transform(({ value }) => (value ? new Date(value) : undefined), {
-    toClassOnly: true,
-  })
-  @Transform(({ value }) => value?.toISOString(), {
-    toPlainOnly: true,
-  })
-  completedAt?: Date;
+  completedAt: string;
 
   @Type(() => Account)
   account: Account;
 
-  errors?: IWebsiteError[];
+  errors: IWebsiteError[] = [];
 
-  postData?: PostData;
+  postData: PostData;
 
-  toObject(): EntityPrimitive<IWebsitePostRecord> {
+  toObject(): IWebsitePostRecord {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<IWebsitePostRecord>;
+    }) as IWebsitePostRecord;
   }
 
   toDTO(): WebsitePostRecordDto {

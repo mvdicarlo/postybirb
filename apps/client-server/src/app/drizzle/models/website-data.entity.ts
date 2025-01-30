@@ -1,8 +1,8 @@
 import {
+  AccountId,
   DynamicObject,
-  EntityPrimitive,
   IWebsiteData,
-  IWebsiteDataDto,
+  IWebsiteDataDto
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
@@ -13,13 +13,15 @@ export class WebsiteData<T extends DynamicObject = any>
   extends DatabaseEntity
   implements IWebsiteData<T>
 {
+  accountId: AccountId;
+
   data: T = {} as T;
 
   @Type(() => Account)
   account: Account;
 
-  toObject(): EntityPrimitive<IWebsiteData> {
-    return instanceToPlain(this) as EntityPrimitive<IWebsiteData>;
+  toObject(): IWebsiteData {
+    return instanceToPlain(this) as IWebsiteData;
   }
 
   toDTO(): IWebsiteDataDto {

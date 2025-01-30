@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Insert } from '@postybirb/database';
 import {
   AccountId,
   DynamicObject,
@@ -19,11 +20,8 @@ import {
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../drizzle/models';
-import {
-  Insert,
-  PostyBirbDatabase,
-} from '../drizzle/postybirb-database/postybirb-database';
+import { WebsiteOptions } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
@@ -35,8 +33,10 @@ import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
-export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
-  private readonly submissionRepository = new PostyBirbDatabase('submission');
+export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchema'> {
+  private readonly submissionRepository = new PostyBirbDatabase(
+    'SubmissionSchema',
+  );
 
   constructor(
     @Inject(forwardRef(() => SubmissionService))
@@ -47,7 +47,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     private readonly validationService: ValidationService,
   ) {
     super(
-      new PostyBirbDatabase('websiteOptions', {
+      new PostyBirbDatabase('WebsiteOptionsSchema', {
         account: true,
         submission: true,
       }),
@@ -82,7 +82,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
     accountId: AccountId,
     data: DynamicObject,
     title?: string,
-  ): Promise<Insert<'websiteOptions'>> {
+  ): Promise<Insert<'WebsiteOptionsSchema'>> {
     const account = await this.accountService.findById(accountId, {
       failOnMissing: true,
     });
@@ -120,7 +120,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
       title, // Override title (optional)
     };
 
-    const option: Insert<'websiteOptions'> = {
+    const option: Insert<'WebsiteOptionsSchema'> = {
       submissionId: submission.id,
       accountId: account.id,
       data: mergedData,
@@ -208,7 +208,7 @@ export class WebsiteOptionsService extends PostyBirbService<'websiteOptions'> {
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
 
-    const options: Insert<'websiteOptions'> = {
+    const options: Insert<'WebsiteOptionsSchema'> = {
       isDefault: true,
       submissionId: submission.id,
       accountId: NULL_ACCOUNT_ID,

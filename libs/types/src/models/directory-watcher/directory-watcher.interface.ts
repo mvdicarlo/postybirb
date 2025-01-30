@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { DirectoryWatcherImportAction } from '../../enums/directory-watcher-import-action.enum';
 import { IEntity } from '../database/entity.interface';
 import { ISubmission } from '../submission/submission.interface';
@@ -7,12 +8,14 @@ import { ISubmission } from '../submission/submission.interface';
  * @interface IDirectoryWatcher
  * @extends {IEntity}
  */
-export interface IDirectoryWatcher extends IEntity {
+export interface IDirectoryWatcher
+  extends IEntity,
+    Select<'DirectoryWatcherSchema'> {
   /**
    * The path that is read for file ingestion.
    * @type {string|undefined}
    */
-  path?: string;
+  path: string;
 
   /**
    * The action that is applied when ingesting files.

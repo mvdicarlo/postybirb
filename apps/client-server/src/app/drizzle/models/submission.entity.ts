@@ -1,12 +1,11 @@
 import {
-  EntityPrimitive,
   IPostRecord,
   ISubmission,
   ISubmissionDto,
   ISubmissionMetadata,
   ISubmissionScheduleInfo,
   ScheduleType,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -47,10 +46,10 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   order: number;
 
-  toObject(): EntityPrimitive<ISubmission> {
+  toObject(): ISubmission {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<ISubmission>;
+    }) as ISubmission;
   }
 
   toDTO(): ISubmissionDto {

@@ -20,12 +20,12 @@ import { SettingsConstants } from './settings.constants';
 
 @Injectable()
 export class SettingsService
-  extends PostyBirbService<'settings'>
+  extends PostyBirbService<'SettingsSchema'>
   implements OnModuleInit
 {
   constructor(@Optional() webSocket: WSGateway) {
-    super('settings', webSocket);
-    this.repository.subscribe('settings', () => this.emit());
+    super('SettingsSchema', webSocket);
+    this.repository.subscribe('SettingsSchema', () => this.emit());
   }
 
   /**

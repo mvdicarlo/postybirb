@@ -17,7 +17,7 @@ import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
  */
 @ApiTags('directory-watchers')
 @Controller('directory-watchers')
-export class DirectoryWatchersController extends PostyBirbController<'directoryWatcher'> {
+export class DirectoryWatchersController extends PostyBirbController<'DirectoryWatcherSchema'> {
   constructor(readonly service: DirectoryWatchersService) {
     super(service);
   }

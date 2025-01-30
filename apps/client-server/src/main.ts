@@ -74,7 +74,7 @@ async function bootstrap() {
     .addTag('form-generator')
     .addTag('post')
     .addTag('post-queue')
-    .addTag('submission')
+    .addTag('SubmissionSchema')
     .addTag('tag-converters')
     .addTag('tag-groups')
     .addTag('website-option')

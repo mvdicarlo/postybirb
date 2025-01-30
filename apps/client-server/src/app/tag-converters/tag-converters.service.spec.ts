@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
+import { clearDatabase } from '@postybirb/database';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 import { TagConvertersService } from './tag-converters.service';

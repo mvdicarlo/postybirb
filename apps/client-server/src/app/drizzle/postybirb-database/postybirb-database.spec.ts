@@ -1,13 +1,13 @@
+import { Schemas } from '@postybirb/database';
 import { eq as equals } from 'drizzle-orm';
 import 'reflect-metadata';
-import * as schema from '../schemas';
-import { PostyBirbDatabase } from './postybirb-database';
+import { PostyBirbDatabase } from './postybirb-database/postybirb-database';
 
 describe('PostyBirbDatabase', () => {
-  let service: PostyBirbDatabase<'account'>;
+  let service: PostyBirbDatabase<'AccountSchema'>;
 
   beforeEach(() => {
-    service = new PostyBirbDatabase('account');
+    service = new PostyBirbDatabase('AccountSchema');
   });
 
   it('should be created', () => {
@@ -18,6 +18,7 @@ describe('PostyBirbDatabase', () => {
     const account = await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     const accounts = await service.findAll();
@@ -36,6 +37,7 @@ describe('PostyBirbDatabase', () => {
     const account = await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     const foundAccount = await service.findById(account.id, {
@@ -62,6 +64,7 @@ describe('PostyBirbDatabase', () => {
     const account = await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     await service.update(account.id, {
@@ -80,6 +83,7 @@ describe('PostyBirbDatabase', () => {
     await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     const foundAccount = await service.findOne({
@@ -94,11 +98,13 @@ describe('PostyBirbDatabase', () => {
     await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     await service.insert({
       name: 'test2',
       website: 'test',
+      groups: [],
     });
 
     const foundAccounts = await service.find({
@@ -118,11 +124,12 @@ describe('PostyBirbDatabase', () => {
 
   it('should notify subscribers on create', async () => {
     const subscriber = jest.fn();
-    service.subscribe('account', subscriber);
+    service.subscribe('AccountSchema', subscriber);
 
     const entity = await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     expect(subscriber).toHaveBeenCalledWith([entity.id], 'insert');
@@ -132,10 +139,11 @@ describe('PostyBirbDatabase', () => {
     await service.insert({
       name: 'test',
       website: 'test',
+      groups: [],
     });
 
     const foundAccounts = await service.select(
-      equals(schema.account.name, 'test'),
+      equals(Schemas.AccountSchema.name, 'test'),
     );
 
     expect(foundAccounts).toHaveLength(1);

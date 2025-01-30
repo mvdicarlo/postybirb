@@ -1,13 +1,10 @@
-import { FilterQuery } from '@mikro-orm/core';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { SchemaKey } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId } from '@postybirb/types';
 import { SQL } from 'drizzle-orm';
-import { FindOptions } from '../../database/repositories/postybirb-repository';
-import {
-  PostyBirbDatabase,
-  SchemaKey,
-} from '../../drizzle/postybirb-database/postybirb-database';
+import { FindOptions } from '../../drizzle/postybirb-database/find-options.type';
+import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebSocketEvents } from '../../web-socket/web-socket.events';
 

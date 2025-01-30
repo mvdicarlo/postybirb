@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
+import { clearDatabase } from '@postybirb/database';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
 

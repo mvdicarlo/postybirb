@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';

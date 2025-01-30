@@ -1,5 +1,6 @@
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
+import { Insert, PostyBirbTransaction, Select } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import { FileSubmission, FileType, IFileBuffer } from '@postybirb/types';
@@ -11,17 +12,13 @@ import * as mammoth from 'mammoth';
 import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
+
 import {
   FileBuffer,
   fromDatabaseRecord,
   SubmissionFile,
 } from '../../drizzle/models';
-import {
-  Insert,
-  PostyBirbDatabase,
-  PostyBirbTransaction,
-  Select,
-} from '../../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 
@@ -33,9 +30,13 @@ import { ImageUtil } from '../utils/image.util';
 export class CreateFileService {
   private readonly logger = Logger();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase('fileBuffer');
+  private readonly fileBufferRepository = new PostyBirbDatabase(
+    'FileBufferSchema',
+  );
 
-  private readonly fileRepository = new PostyBirbDatabase('submissionFile');
+  private readonly fileRepository = new PostyBirbDatabase(
+    'SubmissionFileSchema',
+  );
 
   /**
    * Creates file entity and stores it.

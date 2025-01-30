@@ -1,7 +1,8 @@
 import {
-  EntityPrimitive,
+  EntityId,
   IPostQueueRecord,
   PostQueueRecordDto,
+  SubmissionId
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -12,16 +13,20 @@ export class PostQueueRecord
   extends DatabaseEntity
   implements IPostQueueRecord
 {
+  postRecordId: EntityId;
+
+  submissionId: SubmissionId;
+
   @Type(() => PostRecord)
-  postRecord?: PostRecord;
+  postRecord: PostRecord;
 
   @Type(() => Submission)
   submission: Submission;
 
-  toObject(): EntityPrimitive<IPostQueueRecord> {
+  toObject(): IPostQueueRecord {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<IPostQueueRecord>;
+    }) as IPostQueueRecord;
   }
 
   toDTO(): PostQueueRecordDto {

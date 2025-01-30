@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { IEntity } from '../database/entity.interface';
 import { IFileDimensions } from './file-dimensions.interface';
 
@@ -6,7 +7,10 @@ import { IFileDimensions } from './file-dimensions.interface';
  * @interface IFileBuffer
  * @extends {FileDimensions, IEntity}
  */
-export interface IFileBuffer extends IFileDimensions, IEntity {
+export interface IFileBuffer
+  extends IFileDimensions,
+    IEntity,
+    Select<'FileBufferSchema'> {
   /**
    * Buffer for the file.
    */

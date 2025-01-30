@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { IEntity } from '../database/entity.interface';
 import { WebsiteId } from '../website/website.type';
 import { Tag } from './tag.type';
@@ -7,7 +8,7 @@ import { Tag } from './tag.type';
  * @interface ITagConverter
  * @extends {IEntity}
  */
-export interface ITagConverter extends IEntity {
+export interface ITagConverter extends IEntity, Select<'TagConverterSchema'> {
   /**
    * The tag to convert.
    * @type {Tag}

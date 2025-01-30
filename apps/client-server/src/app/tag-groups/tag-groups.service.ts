@@ -9,10 +9,10 @@ import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
 
 @Injectable()
-export class TagGroupsService extends PostyBirbService<'tagGroup'> {
+export class TagGroupsService extends PostyBirbService<'TagGroupSchema'> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('tagGroup', webSocket);
-    this.repository.subscribe('tagGroup', () => this.emit());
+    super('TagGroupSchema', webSocket);
+    this.repository.subscribe('TagGroupSchema', () => this.emit());
   }
 
   async create(createDto: CreateTagGroupDto): Promise<TagGroup> {

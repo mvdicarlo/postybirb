@@ -17,7 +17,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   private initialized: boolean;
 
-  private repository: PostyBirbDatabase<'websiteData'>;
+  private repository: PostyBirbDatabase<'WebsiteDataSchema'>;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -45,9 +45,9 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   /**
    * Initializes the internal WebsiteData entity.
-   * @param {PostyBirbDatabase<'websiteData'>} repository
+   * @param {PostyBirbDatabase<'WebsiteDataSchema'>} repository
    */
-  public async initialize(repository: PostyBirbDatabase<'websiteData'>) {
+  public async initialize(repository: PostyBirbDatabase<'WebsiteDataSchema'>) {
     if (!this.initialized) {
       this.repository = repository;
       await this.createOrLoadWebsiteData();

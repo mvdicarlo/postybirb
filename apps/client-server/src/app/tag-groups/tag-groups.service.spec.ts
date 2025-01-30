@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '../drizzle/postybirb-database/database-instance';
+import { clearDatabase } from '@postybirb/database';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
 

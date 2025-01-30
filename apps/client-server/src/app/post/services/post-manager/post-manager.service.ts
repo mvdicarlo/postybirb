@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import { EntityDTO, Loaded } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
@@ -40,8 +39,6 @@ import { CancellableToken } from '../../models/cancellable-token';
 import { PostingFile } from '../../models/posting-file';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
-type LoadedPostRecord = Loaded<PostRecord, never>;
-
 @Injectable()
 export class PostManagerService {
   private readonly logger = Logger();
@@ -50,7 +47,7 @@ export class PostManagerService {
    * The current post being processed.
    * @type {(LoadedPostRecord | null)}
    */
-  private currentPost: LoadedPostRecord | null = null;
+  private currentPost: PostRecord | null = null;
 
   /**
    * The current cancel token for the current post.
@@ -58,10 +55,10 @@ export class PostManagerService {
    */
   private cancelToken: CancellableToken = null;
 
-  private readonly postRepository = new PostyBirbDatabase('postRecord');
+  private readonly postRepository = new PostyBirbDatabase('PostRecordSchema');
 
   private readonly websitePostRecordRepository = new PostyBirbDatabase(
-    'websitePostRecord',
+    'WebsitePostRecordSchema',
   );
 
   constructor(
@@ -72,10 +69,7 @@ export class PostManagerService {
     private readonly fileConverterService: FileConverterService,
   ) {}
 
-  private async protectedUpdate(
-    entity: LoadedPostRecord,
-    data: Partial<EntityDTO<Loaded<LoadedPostRecord, never>>>,
-  ) {
+  private async protectedUpdate(entity: PostRecord, data: Partial<PostRecord>) {
     const exists = await this.postRepository.findById(entity.id);
     if (!exists) {
       throw new Error(`Entity ${entity.id} not found in database`);
@@ -106,7 +100,7 @@ export class PostManagerService {
    * Starts a post attempt.
    * @param {PostRecord} entity
    */
-  public async startPost(entity: LoadedPostRecord) {
+  public async startPost(entity: PostRecord) {
     try {
       if (this.currentPost) return;
       this.cancelToken = new CancellableToken();
@@ -139,7 +133,7 @@ export class PostManagerService {
     }
   }
 
-  private async finishPost(entity: LoadedPostRecord) {
+  private async finishPost(entity: PostRecord) {
     this.currentPost = null;
     this.cancelToken = null;
 
@@ -164,12 +158,12 @@ export class PostManagerService {
 
   /**
    * Posts to the given website.
-   * @param {LoadedPostRecord} entity
+   * @param {PostRecord} entity
    * @param {IWebsitePostRecord} websitePostRecord
    * @param {Website<unknown>} instance
    */
   private async post(
-    entity: LoadedPostRecord,
+    entity: PostRecord,
     websitePostRecord: IWebsitePostRecord,
     instance: Website<unknown>,
   ) {
@@ -576,7 +570,7 @@ export class PostManagerService {
    * on the resume mode.
    * @param {PostRecord} entity
    */
-  private async createWebsitePostRecords(entity: LoadedPostRecord) {
+  private async createWebsitePostRecords(entity: PostRecord) {
     // If there are existing website post records, update them if necessary based on mode.
     if (entity.children.length > 0) {
       await this.updateExistingWebsitePostRecords(entity);
@@ -606,7 +600,7 @@ export class PostManagerService {
    * @return {*}
    */
   private async updateExistingWebsitePostRecords(
-    entity: LoadedPostRecord,
+    entity: PostRecord,
   ): Promise<void> {
     switch (entity.resumeMode) {
       case PostRecordResumeMode.RESTART:

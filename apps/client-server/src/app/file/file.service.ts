@@ -29,9 +29,13 @@ export class FileService {
     Task
   >(this, this.doTask, Math.min(cpus().length, 5));
 
-  private readonly fileBufferRepository = new PostyBirbDatabase('fileBuffer');
+  private readonly fileBufferRepository = new PostyBirbDatabase(
+    'FileBufferSchema',
+  );
 
-  private readonly fileRepository = new PostyBirbDatabase('submissionFile');
+  private readonly fileRepository = new PostyBirbDatabase(
+    'SubmissionFileSchema',
+  );
 
   constructor(
     private readonly createFileService: CreateFileService,

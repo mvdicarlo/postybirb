@@ -12,7 +12,7 @@ import { SettingsService } from './settings.service';
  */
 @ApiTags('settings')
 @Controller('settings')
-export class SettingsController extends PostyBirbController<'settings'> {
+export class SettingsController extends PostyBirbController<'SettingsSchema'> {
   constructor(readonly service: SettingsService) {
     super(service);
   }

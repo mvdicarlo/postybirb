@@ -1,4 +1,4 @@
-import { EntityPrimitive, IAccount, IAccountDto } from '@postybirb/types';
+import { IAccount, IAccountDto } from '@postybirb/types';
 import { Exclude, instanceToPlain, Type } from 'class-transformer';
 import { UnknownWebsite } from '../../websites/website';
 import { DatabaseEntity } from './database-entity';
@@ -27,10 +27,10 @@ export class Account extends DatabaseEntity implements IAccount {
     super(entity);
   }
 
-  toObject(): EntityPrimitive<IAccount> {
+  toObject(): IAccount {
     return instanceToPlain(this, {
       enableCircularCheck: true,
-    }) as EntityPrimitive<IAccount>;
+    }) as IAccount;
   }
 
   toDTO(): IAccountDto {

@@ -10,7 +10,7 @@ import { PostQueueService } from './post-queue.service';
  */
 @ApiTags('post-queue')
 @Controller('post-queue')
-export class PostQueueController extends PostyBirbController<'postQueueRecord'> {
+export class PostQueueController extends PostyBirbController<'PostQueueRecordSchema'> {
   constructor(readonly service: PostQueueService) {
     super(service);
   }

@@ -7,9 +7,9 @@ import { CreateUserSpecifiedWebsiteOptionsDto } from './dtos/create-user-specifi
 import { UpdateUserSpecifiedWebsiteOptionsDto } from './dtos/update-user-specified-website-options.dto';
 
 @Injectable()
-export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'userSpecifiedWebsiteOptions'> {
+export class UserSpecifiedWebsiteOptionsService extends PostyBirbService<'UserSpecifiedWebsiteOptionsSchema'> {
   constructor() {
-    super('userSpecifiedWebsiteOptions');
+    super('UserSpecifiedWebsiteOptionsSchema');
   }
 
   async create(

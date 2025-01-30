@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { IEntity } from '../database/entity.interface';
 import { Tag } from './tag.type';
 
@@ -6,7 +7,7 @@ import { Tag } from './tag.type';
  * @interface ITagGroup
  * @extends {IEntity}
  */
-export interface ITagGroup extends IEntity {
+export interface ITagGroup extends IEntity, Select<'TagGroupSchema'> {
   /**
    * User provided name of a tag group.
    * @type {string}

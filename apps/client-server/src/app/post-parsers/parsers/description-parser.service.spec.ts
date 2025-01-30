@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { DescriptionField } from '@postybirb/form-builder';
 import {
   Description,
@@ -8,7 +9,6 @@ import {
   IWebsiteOptions,
 } from '@postybirb/types';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
-import { clearDatabase } from '../../drizzle/postybirb-database/database-instance';
 import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';

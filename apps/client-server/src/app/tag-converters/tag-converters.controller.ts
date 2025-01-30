@@ -17,7 +17,7 @@ import { TagConvertersService } from './tag-converters.service';
  */
 @ApiTags('tag-converters')
 @Controller('tag-converters')
-export class TagConvertersController extends PostyBirbController<'tagConverter'> {
+export class TagConvertersController extends PostyBirbController<'TagConverterSchema'> {
   constructor(readonly service: TagConvertersService) {
     super(service);
   }

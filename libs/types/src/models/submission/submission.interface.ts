@@ -1,3 +1,4 @@
+import { Select } from '@postybirb/database';
 import { SubmissionType } from '../../enums';
 import { EntityId, IEntity } from '../database/entity.interface';
 import { IPostQueueRecord } from '../post/post-queue-record.interface';
@@ -18,7 +19,8 @@ export type SubmissionId = EntityId;
  */
 export interface ISubmission<
   T extends ISubmissionMetadata = ISubmissionMetadata,
-> extends IEntity {
+> extends IEntity,
+    Select<'SubmissionSchema'> {
   /**
    * The type of the submission.
    * @type {SubmissionType}

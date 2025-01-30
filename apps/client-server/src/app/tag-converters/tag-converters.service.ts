@@ -10,10 +10,10 @@ import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
 
 @Injectable()
-export class TagConvertersService extends PostyBirbService<'tagConverter'> {
+export class TagConvertersService extends PostyBirbService<'TagConverterSchema'> {
   constructor(@Optional() webSocket?: WSGateway) {
-    super('tagConverter', webSocket);
-    this.repository.subscribe('tagConverter', () => {
+    super('TagConverterSchema', webSocket);
+    this.repository.subscribe('TagConverterSchema', () => {
       this.emit();
     });
   }
