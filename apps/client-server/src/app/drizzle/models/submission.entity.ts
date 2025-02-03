@@ -47,6 +47,11 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
   order: number;
 
+  constructor(entity: Partial<ISubmission<T>>) {
+    super(entity);
+    Object.assign(this, entity);
+  }
+
   toObject(): ISubmission {
     return instanceToPlain(this, {
       enableCircularCheck: true,
@@ -56,9 +61,9 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
   toDTO(): ISubmissionDto {
     const dto: ISubmissionDto = {
       ...this.toObject(),
-      files: this.files.map((file) => file.toDTO()),
-      options: this.options.map((option) => option.toDTO()),
-      posts: this.posts.map((post) => post.toDTO()),
+      files: this.files?.map((file) => file.toDTO()),
+      options: this.options?.map((option) => option.toDTO()),
+      posts: this.posts?.map((post) => post.toDTO()),
       postQueueRecord: this.postQueueRecord?.toDTO(),
       validations: [],
     };

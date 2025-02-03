@@ -13,7 +13,9 @@ export const DirectoryWatcherSchema = sqliteTable('directory-watcher', {
   })
     .notNull()
     .default(DirectoryWatcherImportAction.NEW_SUBMISSION),
-  templateId: id().references(() => SubmissionSchema.id),
+  templateId: id().references(() => SubmissionSchema.id, {
+    onDelete: 'set null',
+  }),
 });
 
 export const DirectoryWatcherRelations = relations(

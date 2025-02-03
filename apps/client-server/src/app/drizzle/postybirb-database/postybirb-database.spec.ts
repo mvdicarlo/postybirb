@@ -1,4 +1,4 @@
-import { Schemas } from '@postybirb/database';
+import { clearDatabase, Schemas } from '@postybirb/database';
 import { eq as equals } from 'drizzle-orm';
 import 'reflect-metadata';
 import { PostyBirbDatabase } from './postybirb-database';
@@ -7,6 +7,7 @@ describe('PostyBirbDatabase', () => {
   let service: PostyBirbDatabase<'AccountSchema'>;
 
   beforeEach(() => {
+    clearDatabase();
     service = new PostyBirbDatabase('AccountSchema');
   });
 

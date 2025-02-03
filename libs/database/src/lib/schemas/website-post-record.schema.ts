@@ -14,10 +14,14 @@ export const WebsitePostRecordSchema = sqliteTable('website-post-record', {
   ...CommonSchema(),
   postRecordId: id()
     .notNull()
-    .references(() => PostRecordSchema.id),
+    .references(() => PostRecordSchema.id, {
+      onDelete: 'cascade',
+    }),
   accountId: id()
     .notNull()
-    .references(() => AccountSchema.id),
+    .references(() => AccountSchema.id, {
+      onDelete: 'set null',
+    }),
   completedAt: text(),
   errors: text().$type<IWebsiteError[]>().default([]),
   postData: text({ mode: 'json' }).$type<PostData>(),

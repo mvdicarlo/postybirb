@@ -11,7 +11,6 @@ import {
   ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteOptions,
-  IWebsitePostRecord,
   MessageSubmission,
   ModifiedFileDimension,
   PostData,
@@ -23,7 +22,7 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
-import { PostRecord } from '../../../drizzle/models';
+import { PostRecord, WebsitePostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
@@ -69,14 +68,6 @@ export class PostManagerService {
     private readonly fileConverterService: FileConverterService,
   ) {}
 
-  private async protectedUpdate(entity: PostRecord, data: Partial<PostRecord>) {
-    const exists = await this.postRepository.findById(entity.id);
-    if (!exists) {
-      throw new Error(`Entity ${entity.id} not found in database`);
-    }
-    await this.postRepository.update(entity.id, data);
-  }
-
   /**
    * Cancels the current post if it is running and matches the Id.
    * To be used when an external event occurs that requires the current post to be cancelled.
@@ -107,9 +98,8 @@ export class PostManagerService {
 
       this.logger.withMetadata(entity.toDTO()).info(`Initializing post`);
       this.currentPost = entity;
-      await this.protectedUpdate(entity, {
-        state: PostRecordState.RUNNING,
-      });
+      entity.state = PostRecordState.RUNNING;
+      await entity.save();
 
       await this.createWebsitePostRecords(entity);
 
@@ -150,21 +140,20 @@ export class PostManagerService {
         `Entity ${entity.id} not found in database. It may have been deleted while posting. Updating anyways due to all websites being completed.`,
       );
     }
-    await this.protectedUpdate(entity, {
-      state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
-      completedAt: new Date().toISOString(),
-    });
+    entity.state = allCompleted ? PostRecordState.DONE : PostRecordState.FAILED;
+    entity.completedAt = new Date().toISOString();
+    await entity.save(true);
   }
 
   /**
    * Posts to the given website.
    * @param {PostRecord} entity
-   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {WebsitePostRecord} websitePostRecord
    * @param {Website<unknown>} instance
    */
   private async post(
     entity: PostRecord,
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     instance: Website<unknown>,
   ) {
     if (!instance.getLoginState().isLoggedIn) {
@@ -210,7 +199,7 @@ export class PostManagerService {
 
   private async attemptToPost(
     submission: ISubmission,
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     instance: UnknownWebsite,
     data: PostData,
   ) {
@@ -242,12 +231,12 @@ export class PostManagerService {
   /**
    * Handles a successful result from a website post.
    * Marks the post as completed and updates the metadata.
-   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {WebsitePostRecord} websitePostRecord
    * @param {PostResponse} res
    * @param {EntityId[]} [fileIds]
    */
   private async handleSuccessResult(
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     res: PostResponse,
     fileIds?: EntityId[],
   ): Promise<void> {
@@ -261,17 +250,17 @@ export class PostManagerService {
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
     websitePostRecord.completedAt = new Date().toISOString();
-    await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
+    await websitePostRecord.save();
   }
 
   /**
    * Handles a failure result from a website post.
-   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {WebsitePostRecord} websitePostRecord
    * @param {PostResponse} res
    * @param {EntityId[]} [fileIds]
    */
   private async handleFailureResult(
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     res: PostResponse,
     fileIds?: EntityId[],
   ): Promise<void> {
@@ -287,18 +276,18 @@ export class PostManagerService {
       });
     }
 
-    await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
+    await websitePostRecord.save();
   }
 
   /**
    * Handles posting a message submission.
-   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {WebsitePostRecord} websitePostRecord
    * @param {MessageSubmission} submission
    * @param {Website<unknown>} instance
    * @param {PostData} data
    */
   private async handleMessageSubmission(
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     submission: MessageSubmission,
     instance: UnknownWebsite,
     data: PostData,
@@ -316,13 +305,13 @@ export class PostManagerService {
 
   /**
    * Handles posting a file submission.
-   * @param {IWebsitePostRecord} websitePostRecord
+   * @param {WebsitePostRecord} websitePostRecord
    * @param {FileSubmission} submission
    * @param {Website<unknown>} instance
    * @param {PostData} data
    */
   private async handleFileSubmission(
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     submission: FileSubmission,
     instance: UnknownWebsite,
     data: PostData,
@@ -496,14 +485,14 @@ export class PostManagerService {
   }
 
   private async markFilesAsPosted(
-    websitePostRecord: IWebsitePostRecord,
+    websitePostRecord: WebsitePostRecord,
     submission: FileSubmission,
     files: ISubmissionFile[],
   ) {
     const fileIds = files.map((f) => f.id);
     websitePostRecord.metadata.nextBatchNumber += 1;
     websitePostRecord.metadata.postedFiles.push(...fileIds);
-    await this.websitePostRecordRepository.persistAndFlush(websitePostRecord);
+    await websitePostRecord.save();
   }
 
   private getResizeParameters(
@@ -539,11 +528,11 @@ export class PostManagerService {
    * Gets the post order for the given post record.
    * Additionally filters out any websites that have already been completed.
    * @param {PostRecord} entity
-   * @return {*}  {Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]>}
+   * @return {*}  {Array<{ record: WebsitePostRecord; instance: Website<unknown> }[]>}
    */
   private getPostOrder(
     entity: PostRecord,
-  ): Array<{ record: IWebsitePostRecord; instance: Website<unknown> }[]> {
+  ): Array<{ record: WebsitePostRecord; instance: Website<unknown> }[]> {
     const websitePairs = entity.children
       .filter((c) => !c.completedAt) // Only post to those that haven't been completed
       .map((c) => ({
@@ -584,14 +573,14 @@ export class PostManagerService {
       (o) => !entity.children.some((c) => c.account.id === o.account.id),
     );
     uncreatedOptions.forEach((w) =>
-      entity.children.add(
-        this.websitePostRecordRepository.create({
-          parent: entity,
+      entity.children.push(
+        new WebsitePostRecord({
+          postRecordId: entity.id,
           account: w.account,
         }),
       ),
     );
-    await this.postRepository.persistAndFlush(entity);
+    await entity.save(true);
   }
 
   /**
@@ -607,6 +596,7 @@ export class PostManagerService {
         await this.websitePostRecordRepository.deleteById(
           entity.children.map((c) => c.id),
         );
+        entity.children = [];
         break;
       case PostRecordResumeMode.CONTINUE_RETRY:
         await Promise.all(

@@ -38,6 +38,11 @@ export class WebsitePostRecord
 
   postData: PostData;
 
+  constructor(websitePostRecord: Partial<IWebsitePostRecord>) {
+    super(websitePostRecord);
+    Object.assign(this, websitePostRecord);
+  }
+
   toObject(): IWebsitePostRecord {
     return instanceToPlain(this, {
       enableCircularCheck: true,

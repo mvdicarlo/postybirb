@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1738207232283,
-      "tag": "0000_common_ozymandias",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1738243148031,
-      "tag": "0001_familiar_santa_claus",
+      "when": 1738553705939,
+      "tag": "0000_colossal_adam_warlock",
       "breakpoints": true
     }
   ]

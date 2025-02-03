@@ -31,8 +31,12 @@ export const PostRecordSchema = sqliteTable('post-record', {
   })
     .notNull()
     .default(PostRecordResumeMode.CONTINUE),
-  submissionId: id().references(() => SubmissionSchema.id),
-  postQueueRecordId: id().references(() => PostQueueRecordSchema.id),
+  submissionId: id().references(() => SubmissionSchema.id, {
+    onDelete: 'cascade',
+  }),
+  postQueueRecordId: id().references(() => PostQueueRecordSchema.id, {
+    onDelete: 'set null',
+  }),
   completedAt: text(),
 });
 

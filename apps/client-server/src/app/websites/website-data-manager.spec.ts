@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
-import { NullAccount } from '@postybirb/types';
+import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
@@ -21,12 +21,21 @@ describe('WebsiteDataManager', () => {
     await module.close();
   });
 
+  function populateAccount(): Promise<Account> {
+    return new Account({
+      name: 'test',
+      website: 'test',
+      groups: [],
+      id: 'test',
+    }).save();
+  }
+
   it('should be defined', () => {
     expect(repository).toBeDefined();
   });
 
   it('should initialize entity', async () => {
-    const account = new NullAccount();
+    const account = await populateAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();
@@ -38,7 +47,7 @@ describe('WebsiteDataManager', () => {
   });
 
   it('should be able to set new data', async () => {
-    const account = new NullAccount();
+    const account = await populateAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();
@@ -54,7 +63,7 @@ describe('WebsiteDataManager', () => {
   });
 
   it('should be able to clear data', async () => {
-    const account = new NullAccount();
+    const account = await populateAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();

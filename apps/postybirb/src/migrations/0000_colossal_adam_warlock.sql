@@ -15,7 +15,7 @@ CREATE TABLE `directory-watcher` (
 	`path` text,
 	`importAction` text DEFAULT 'NEW_SUBMISSION' NOT NULL,
 	`templateId` text,
-	FOREIGN KEY (`templateId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`templateId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `directory-watcher_id_unique` ON `directory-watcher` (`id`);--> statement-breakpoint
@@ -41,7 +41,7 @@ CREATE TABLE `post-queue` (
 	`postRecordId` text,
 	`submissionId` text NOT NULL,
 	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `post-queue_id_unique` ON `post-queue` (`id`);--> statement-breakpoint
@@ -54,8 +54,8 @@ CREATE TABLE `post-record` (
 	`submissionId` text,
 	`postQueueRecordId` text,
 	`completedAt` text,
-	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`postQueueRecordId`) REFERENCES `post-queue`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`postQueueRecordId`) REFERENCES `post-queue`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `post-record_id_unique` ON `post-record` (`id`);--> statement-breakpoint
@@ -86,7 +86,7 @@ CREATE TABLE `submission-file` (
 	`primaryFileId` text,
 	`thumbnailId` text,
 	`altFileId` text,
-	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`primaryFileId`) REFERENCES `file-buffer`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`thumbnailId`) REFERENCES `file-buffer`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`altFileId`) REFERENCES `file-buffer`(`id`) ON UPDATE no action ON DELETE no action
@@ -172,8 +172,8 @@ CREATE TABLE `website-post-record` (
 	`errors` text DEFAULT '[]',
 	`postData` text,
 	`metadata` text DEFAULT '{"sourceMap":{},"postedFiles":[],"nextBatchNumber":1}' NOT NULL,
-	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`accountId`) REFERENCES `account`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`accountId`) REFERENCES `account`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `website-post-record_id_unique` ON `website-post-record` (`id`);

@@ -9,7 +9,9 @@ export const PostQueueRecordSchema = sqliteTable('post-queue', {
   postRecordId: id().references(() => PostRecordSchema.id),
   submissionId: id()
     .notNull()
-    .references(() => SubmissionSchema.id),
+    .references(() => SubmissionSchema.id, {
+      onDelete: 'cascade',
+    }),
 });
 
 export const PostQueueRecordRelations = relations(

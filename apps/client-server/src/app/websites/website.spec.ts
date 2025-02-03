@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { eq } from 'drizzle-orm';
-import { Account, fromDatabaseRecord } from '../drizzle/models';
+import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
@@ -29,23 +29,25 @@ describe('Website', () => {
     expect(repository).toBeDefined();
   });
 
+  function populateAccount(): Promise<Account> {
+    return new Account({
+      name: 'test',
+      website: 'test',
+      groups: [],
+      id: 'test',
+    }).save();
+  }
+
   it('should store data', async () => {
-    const website = new TestWebsite(
-      fromDatabaseRecord(Account, {
-        id: 'store',
-        name: 'test',
-        website: 'test',
-        groups: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    );
+    const website = new TestWebsite(await populateAccount());
     await website.onInitialize(repository);
     website.onBeforeLogin();
     await website.onLogin();
     website.onAfterLogin();
-    const entity = await repository.select(
-      eq(repository.schemaEntity.accountId, website.accountId),
+    const entity = (
+      await repository.select(
+        eq(repository.schemaEntity.accountId, website.accountId),
+      )
     )[0];
     expect(entity.data).toEqual({ test: 'test-mode' });
   });

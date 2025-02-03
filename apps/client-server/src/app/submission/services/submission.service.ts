@@ -152,7 +152,8 @@ export class SubmissionService
     file?: MulterFileInfo,
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
-    const submission: Insert<'SubmissionSchema'> = {
+
+    const submission = new Submission({
       isScheduled: false,
       isMultiSubmission: !!createSubmissionDto.isMultiSubmission,
       isTemplate: !!createSubmissionDto.isTemplate,
@@ -162,19 +163,15 @@ export class SubmissionService
         scheduleType: ScheduleType.NONE,
         cron: undefined,
       },
-      metadata: {},
-      order: await this.repository.count(),
-    };
+      metadata: {
+        template: createSubmissionDto.isTemplate
+          ? { name: createSubmissionDto.name.trim() }
+          : undefined,
+      },
+      order: (await this.repository.count()) + 1,
+    });
 
-    if (createSubmissionDto.isTemplate) {
-      submission.metadata.template = {
-        name: createSubmissionDto.name.trim(),
-      };
-    }
-
-    if (createSubmissionDto.isMultiSubmission) {
-      submission.isMultiSubmission = true;
-    }
+    await submission.save();
 
     let name = 'New submission';
     if (createSubmissionDto.name) {
@@ -183,11 +180,9 @@ export class SubmissionService
       name = path.parse(file.filename).name;
     }
 
-    submission.order = (await this.repository.count()) + 1;
-    const newSubmission = await this.repository.insert(submission);
     try {
       await this.websiteOptionsService.createDefaultSubmissionOptions(
-        newSubmission,
+        submission,
         name,
       );
 
@@ -200,7 +195,7 @@ export class SubmissionService
           }
 
           await this.messageSubmissionService.populate(
-            newSubmission as unknown as MessageSubmission,
+            submission as unknown as MessageSubmission,
             createSubmissionDto,
           );
           break;
@@ -223,7 +218,7 @@ export class SubmissionService
 
           // This currently mutates the submission object metadata
           await this.fileSubmissionService.populate(
-            newSubmission as unknown as FileSubmission,
+            submission as unknown as FileSubmission,
             createSubmissionDto,
             file,
           );
@@ -238,16 +233,13 @@ export class SubmissionService
       }
 
       // Re-save to capture any mutations during population
-      const updated = await this.repository.update(
-        newSubmission.id,
-        newSubmission.toObject(),
-      );
+      await submission.save(true);
       this.emit();
-      return updated;
+      return await this.findById(submission.id);
     } catch (err) {
       // Clean up on error, tx is too much work
       this.logger.error(err, 'Error creating submission');
-      await this.repository.deleteById([newSubmission.id]);
+      await this.repository.deleteById([submission.id]);
       throw err;
     }
   }

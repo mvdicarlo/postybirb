@@ -153,7 +153,7 @@ export class PostyBirbDatabase<
       throw new NotFoundException(`Record with id ${id} not found`);
     }
 
-    return record ? this.classConverter(record) : null;
+    return record ? (this.classConverter(record) as TEntityClass) : null;
   }
 
   public async select(query: SQL): Promise<TEntityClass[]> {
