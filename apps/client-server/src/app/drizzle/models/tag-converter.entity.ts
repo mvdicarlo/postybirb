@@ -1,7 +1,4 @@
-import {
-  ITagConverter,
-  TagConverterDto
-} from '@postybirb/types';
+import { ITagConverter, TagConverterDto } from '@postybirb/types';
 import { instanceToPlain } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
 
@@ -10,9 +7,9 @@ export class TagConverter extends DatabaseEntity implements ITagConverter {
 
   public convertTo: Record<string, string> = {};
 
-  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(entity: ITagConverter) {
     super(entity);
+    Object.assign(this, entity);
   }
 
   toObject(): ITagConverter {

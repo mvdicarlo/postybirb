@@ -153,7 +153,7 @@ export class SubmissionService
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
 
-    const submission = new Submission({
+    let submission = new Submission<ISubmissionMetadata>({
       isScheduled: false,
       isMultiSubmission: !!createSubmissionDto.isMultiSubmission,
       isTemplate: !!createSubmissionDto.isTemplate,
@@ -171,7 +171,7 @@ export class SubmissionService
       order: (await this.repository.count()) + 1,
     });
 
-    await submission.save();
+    submission = await this.repository.insert(submission);
 
     let name = 'New submission';
     if (createSubmissionDto.name) {
@@ -233,7 +233,7 @@ export class SubmissionService
       }
 
       // Re-save to capture any mutations during population
-      await submission.save(true);
+      await this.repository.update(submission.id, submission.toObject());
       this.emit();
       return await this.findById(submission.id);
     } catch (err) {
@@ -280,7 +280,7 @@ export class SubmissionService
           template.options.map((option) =>
             this.websiteOptionsService.createOptionInsertObject(
               submission,
-              option.account.id,
+              option.accountId,
               option.data,
               (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
             ),
@@ -399,7 +399,7 @@ export class SubmissionService
       for (const submission of submissions) {
         for (const option of origin.options) {
           const existingOption = submission.options.find(
-            (o) => o.account.id === option.account.id,
+            (o) => o.accountId === option.accountId,
           );
           if (existingOption) {
             // Don't overwrite set title
@@ -408,7 +408,7 @@ export class SubmissionService
           } else {
             await this.websiteOptionsService.createOption(
               submission,
-              option.account.id,
+              option.accountId,
               option.data,
               option.isDefault ? undefined : option.data.title,
             );
@@ -468,7 +468,7 @@ export class SubmissionService
           accountId: option.accountId,
           data: option.data,
           submissionId: newSubmission.id,
-          isDefault: option.account.id === NULL_ACCOUNT_ID,
+          isDefault: option.accountId === NULL_ACCOUNT_ID,
         })),
       );
 

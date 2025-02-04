@@ -24,7 +24,7 @@ let db: PostyBirbDatabaseType;
 export function getDatabase() {
   if (!db) {
     PostyBirbDirectories.initializeDirectories();
-    db = drizzle(path, { schema, logger: true });
+    db = drizzle(path, { schema });
     migrate(db, { migrationsFolder });
   }
 

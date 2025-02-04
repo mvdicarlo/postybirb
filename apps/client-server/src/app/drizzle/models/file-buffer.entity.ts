@@ -19,6 +19,11 @@ export class FileBuffer extends DatabaseEntity implements IFileBuffer {
 
   height: number;
 
+  constructor(entity: Partial<FileBuffer>) {
+    super(entity);
+    Object.assign(this, entity);
+  }
+
   toObject(): IFileBuffer {
     return instanceToPlain(this, {
       enableCircularCheck: true,

@@ -4,7 +4,7 @@ import {
   IPostRecordMetadata,
   IWebsiteError,
   IWebsitePostRecord,
-  PostData,
+  WebsitePostRecordData,
   WebsitePostRecordDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
@@ -36,7 +36,10 @@ export class WebsitePostRecord
 
   errors: IWebsiteError[] = [];
 
-  postData: PostData = {};
+  postData: WebsitePostRecordData = {
+    parsedOptions: undefined,
+    websiteOptions: [],
+  };
 
   constructor(websitePostRecord: Partial<IWebsitePostRecord>) {
     super(websitePostRecord);

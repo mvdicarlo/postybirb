@@ -3,6 +3,7 @@ import { clearDatabase } from '@postybirb/database';
 import { eq } from 'drizzle-orm';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -30,12 +31,14 @@ describe('Website', () => {
   });
 
   function populateAccount(): Promise<Account> {
-    return new Account({
-      name: 'test',
-      website: 'test',
-      groups: [],
-      id: 'test',
-    }).save();
+    return PostyBirbDatabaseUtil.saveFromEntity(
+      new Account({
+        name: 'test',
+        website: 'test',
+        groups: [],
+        id: 'test',
+      }),
+    );
   }
 
   it('should store data', async () => {

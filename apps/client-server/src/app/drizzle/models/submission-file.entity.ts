@@ -2,7 +2,7 @@ import {
   EntityId,
   FileSubmissionMetadata,
   ISubmissionFile,
-  ISubmissionFileDto
+  ISubmissionFileDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -47,6 +47,11 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
   width: number;
 
   height: number;
+
+  constructor(entity: Partial<SubmissionFile>) {
+    super(entity);
+    Object.assign(this, entity);
+  }
 
   toObject(): ISubmissionFile {
     return instanceToPlain(this, {

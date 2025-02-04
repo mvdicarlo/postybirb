@@ -14,6 +14,9 @@ import { Submission } from './submission.entity';
 export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
   accountId: AccountId;
 
+  @Type(() => Account)
+  account: Account;
+
   submissionId: SubmissionId;
 
   @Type(() => Submission)
@@ -21,10 +24,12 @@ export class WebsiteOptions extends DatabaseEntity implements IWebsiteOptions {
 
   data: IWebsiteFormFields = new BaseWebsiteOptions();
 
-  @Type(() => Account)
-  account: Account;
-
   isDefault: boolean;
+
+  constructor(entity: Partial<WebsiteOptions>) {
+    super(entity);
+    Object.assign(this, entity);
+  }
 
   toObject(): IWebsiteOptions {
     return instanceToPlain(this, {

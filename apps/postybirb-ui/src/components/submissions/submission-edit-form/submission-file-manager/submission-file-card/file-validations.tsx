@@ -103,7 +103,7 @@ export function FileValidations(props: FileValidationsProps) {
       if (!websiteOption) {
         return;
       }
-      const account = accounts.find((a) => a.id === websiteOption.account);
+      const account = accounts.find((a) => a.id === websiteOption.accountId);
       if (!account) {
         return;
       }

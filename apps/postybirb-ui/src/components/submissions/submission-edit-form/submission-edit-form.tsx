@@ -44,7 +44,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
 
   const defaultOption = submission.getDefaultOptions();
   const isSpecialSubmissionType =
-    submission.isMultiSubmission() || submission.isTemplate();
+    submission.isMultiSubmission || submission.isTemplate;
   const top = 109;
 
   const optionsGroupedByWebsiteId = useMemo(
@@ -55,7 +55,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           .reduce(
             (acc, option) => {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const account = accounts.find((a) => a.id === option.account)!;
+              const account = accounts.find((a) => a.id === option.accountId)!;
               const websiteId = account.website;
               if (!acc[websiteId]) {
                 acc[websiteId] = {
@@ -116,7 +116,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const removeAccount = (account: IAccountDto) => {
     const optionToDelete = submission.options
       .filter((o) => !o.isDefault)
-      .find((o) => o.account === account.id);
+      .find((o) => o.accountId === account.id);
     if (optionToDelete) {
       websiteOptionsApi.remove([optionToDelete.id]);
     }
@@ -169,7 +169,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             const newAccounts: AccountId[] = [];
             selectedAccounts.forEach((account) => {
               const exists = existingOptions.find(
-                (o) => o.account === account.id,
+                (o) => o.accountId === account.id,
               );
               if (!exists) {
                 newAccounts.push(account.id);
@@ -177,7 +177,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             });
             existingOptions.forEach((option) => {
               const exists = selectedAccounts.find(
-                (a) => a.id === option.account,
+                (a) => a.id === option.accountId,
               );
               if (!exists) {
                 removedOptions.push(option);
@@ -185,9 +185,9 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             });
             websiteOptionsApi.modifySubmission(submission.id, {
               remove: removedOptions.map((o) => o.id),
-              add: newAccounts.map((account) => ({
-                account,
-                submission: submission.id,
+              add: newAccounts.map((accountId) => ({
+                accountId,
+                submissionId: submission.id,
                 data: {} as IWebsiteFormFields,
               })),
             });

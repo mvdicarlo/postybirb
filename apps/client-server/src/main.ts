@@ -1,4 +1,3 @@
-import { MikroORM } from '@mikro-orm/core';
 import {
   ClassSerializerInterceptor,
   INestApplication,
@@ -48,9 +47,6 @@ async function bootstrap() {
   } else {
     app = await NestFactory.create(AppModule);
   }
-
-  await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
-  await app.get(MikroORM).getSchemaGenerator().updateSchema();
 
   const globalPrefix = 'api';
   app.enableCors();

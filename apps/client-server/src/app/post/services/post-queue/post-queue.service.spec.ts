@@ -156,7 +156,7 @@ describe('PostQueueService', () => {
 
     await service.dequeue([submission.id]);
     expect((await service.findAll()).length).toBe(0);
-    expect(await service.peek()).toBeUndefined();
+    expect(await service.peek()).toBeNull();
   });
 
   async function waitForPostManager(): Promise<void> {

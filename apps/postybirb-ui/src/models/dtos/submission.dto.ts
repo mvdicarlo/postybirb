@@ -3,6 +3,8 @@ import { msg } from '@lingui/macro';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
+  IAccountDto,
+  IPostQueueRecord,
   ISubmissionDto,
   ISubmissionFileDto,
   ISubmissionMetadata,
@@ -50,6 +52,14 @@ export class SubmissionDto<
 
   private defaultOption?: WebsiteOptionsDto;
 
+  isTemplate!: boolean;
+
+  isMultiSubmission!: boolean;
+
+  isArchived!: boolean;
+
+  postQueueRecord?: IPostQueueRecord | undefined;
+
   constructor(entity: ISubmissionDto) {
     Object.assign(this, entity);
     this.files = this.files ?? [];
@@ -64,7 +74,8 @@ export class SubmissionDto<
           createdAt: '',
           updatedAt: '',
           submission: {} as ISubmissionDto,
-          account: NULL_ACCOUNT_ID,
+          accountId: NULL_ACCOUNT_ID,
+          account: {} as IAccountDto,
           isDefault: true,
           data: {
             title: '',
@@ -116,14 +127,6 @@ export class SubmissionDto<
   public overwrite(from: SubmissionDto<T, O>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Object.apply(this, from.copy() as any);
-  }
-
-  public isTemplate(): boolean {
-    return Boolean(this.metadata.template);
-  }
-
-  public isMultiSubmission(): boolean {
-    return Boolean(this.metadata.isMultiSubmission);
   }
 
   public getTemplateName() {

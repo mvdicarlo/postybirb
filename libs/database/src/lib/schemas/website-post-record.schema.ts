@@ -1,5 +1,10 @@
 import { relations } from 'drizzle-orm';
 import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  IPostRecordMetadata,
+  IWebsiteError,
+  WebsitePostRecordData,
+} from 'libs/types/src/models';
 import { AccountSchema } from './account.schema';
 import { CommonSchema, id } from './common.schema';
 import { PostRecordSchema } from './post-record.schema';
@@ -17,9 +22,9 @@ export const WebsitePostRecordSchema = sqliteTable('website-post-record', {
       onDelete: 'set null',
     }),
   completedAt: text(),
-  errors: text({ mode: 'json' }).notNull(),
-  postData: text({ mode: 'json' }).notNull(),
-  metadata: text({ mode: 'json' }).notNull(),
+  errors: text({ mode: 'json' }).notNull().$type<IWebsiteError[]>(),
+  postData: text({ mode: 'json' }).notNull().$type<WebsitePostRecordData>(),
+  metadata: text({ mode: 'json' }).notNull().$type<IPostRecordMetadata>(),
 });
 
 export const WebsitepostRecordRelations = relations(

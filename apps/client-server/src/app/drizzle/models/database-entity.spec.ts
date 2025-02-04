@@ -1,17 +1,36 @@
+import { IEntity, IEntityDto } from '@postybirb/types';
+import { instanceToPlain } from 'class-transformer';
 import 'reflect-metadata';
-import { fromDatabaseRecord } from './database-entity';
-import { TagConverter } from './tag-converter.entity';
+import { DatabaseEntity, fromDatabaseRecord } from './database-entity';
+
+class TestEntity extends DatabaseEntity {
+  public testField: string;
+
+  constructor(entity: Partial<TestEntity>) {
+    super(entity);
+    Object.assign(this, entity);
+  }
+
+  toObject(): IEntity {
+    return instanceToPlain(this, {
+      enableCircularCheck: true,
+    }) as unknown as IEntity;
+  }
+
+  toDTO(): IEntityDto {
+    return this.toObject() as unknown as IEntityDto;
+  }
+}
 
 describe('DatabaseEntity', () => {
-  let entity: TagConverter;
+  let entity: TestEntity;
 
   beforeEach(() => {
-    entity = new TagConverter({
+    entity = new TestEntity({
       id: 'id',
+      testField: 'test',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      tag: 'tag',
-      convertTo: { tag: 'tag' },
     });
   });
 
@@ -29,16 +48,14 @@ describe('DatabaseEntity', () => {
       id: 'id',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      tag: 'tag',
-      convertTo: { tag: 'tag' },
+      testField: 'test',
     };
-    const obj = fromDatabaseRecord(TagConverter, dbObj);
+    const obj = fromDatabaseRecord(TestEntity, dbObj);
     expect(obj).toBeTruthy();
     expect(obj.id).toBe(dbObj.id);
     expect(obj.createdAt).toEqual(dbObj.createdAt);
     expect(obj.updatedAt).toEqual(dbObj.updatedAt);
-    expect(obj.tag).toBe(dbObj.tag);
-    expect(obj.convertTo).toEqual(dbObj.convertTo);
+    expect(obj.testField).toBe(dbObj.testField);
   });
 
   it('should convert toObject', () => {
@@ -47,7 +64,7 @@ describe('DatabaseEntity', () => {
     expect(obj.id).toBe(entity.id);
     expect(obj.createdAt).toBe(entity.createdAt);
     expect(obj.updatedAt).toBe(entity.updatedAt);
-    expect(obj.tag).toBe(entity.tag);
-    expect(obj.convertTo).toEqual(entity.convertTo);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((obj as any).testField).toBe(entity.testField);
   });
 });

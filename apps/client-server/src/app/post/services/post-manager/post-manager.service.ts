@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
   EntityId,
@@ -21,9 +21,13 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { inArray } from 'drizzle-orm';
 import { chunk } from 'lodash';
-import { PostRecord, WebsitePostRecord } from '../../../drizzle/models';
+import {
+  PostRecord,
+  Submission,
+  WebsiteOptions,
+  WebsitePostRecord,
+} from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
@@ -55,19 +59,27 @@ export class PostManagerService {
    */
   private cancelToken: CancellableToken = null;
 
-  private readonly postRepository = new PostyBirbDatabase('PostRecordSchema');
+  private readonly postRepository;
 
-  private readonly websitePostRecordRepository = new PostyBirbDatabase(
-    'WebsitePostRecordSchema',
-  );
+  private readonly websitePostRecordRepository;
 
   constructor(
+    @Optional()
+    postRepository: PostyBirbDatabase<'PostRecordSchema'>,
+    @Optional()
+    websitePostRecordRepository: PostyBirbDatabase<'WebsitePostRecordSchema'>,
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly resizerService: PostFileResizerService,
     private readonly postParserService: PostParsersService,
     private readonly validationService: ValidationService,
     private readonly fileConverterService: FileConverterService,
-  ) {}
+  ) {
+    this.postRepository =
+      postRepository ?? new PostyBirbDatabase('PostRecordSchema');
+    this.websitePostRecordRepository =
+      websitePostRecordRepository ??
+      new PostyBirbDatabase('WebsitePostRecordSchema');
+  }
 
   /**
    * Cancels the current post if it is running and matches the Id.
@@ -171,14 +183,16 @@ export class PostManagerService {
           `Website '${instance.decoratedProps.metadata.displayName}' does not support ${submission.type}`,
         );
       }
-      const data = await this.preparePostData(
-        submission,
-        instance,
-        submission.options.find(
-          (o) => o.account.id === websitePostRecord.account.id,
-        ) as IWebsiteOptions,
+
+      const option = submission.options.find(
+        (o) => o.accountId === websitePostRecord.account.id,
       );
-      websitePostRecord.postData = data; // Set for later saving
+
+      const data = await this.preparePostData(submission, instance, option);
+      websitePostRecord.postData = {
+        parsedOptions: data.options,
+        websiteOptions: [submission.options.find((o) => o.isDefault), option],
+      }; // Set for later saving
       const validationResult =
         await this.validationService.validateSubmission(submission);
       if (validationResult.some((v) => v.errors.length > 0)) {
@@ -579,14 +593,14 @@ export class PostManagerService {
       submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
-      (o) => !entity.children.some((c) => c.account.id === o.account.id),
+      (o) => !entity.children.some((c) => c.account.id === o.accountId),
     );
-    const children = await Promise.all(
-      uncreatedOptions.map((w) =>
-        this.websitePostRecordRepository.insert({
+    const children = uncreatedOptions.map(
+      (w) =>
+        new WebsitePostRecord({
           postRecordId: entity.id,
-          accountId: w.account.id,
-          postData: {},
+          accountId: w.accountId,
+          account: w.account,
           metadata: {
             postedFiles: [],
             sourceMap: {},
@@ -594,17 +608,9 @@ export class PostManagerService {
           },
           errors: [],
         }),
-      ),
     );
-    entity.children = await this.websitePostRecordRepository.find({
-      where: inArray(
-        this.websitePostRecordRepository.schemaEntity.id,
-        children.map((c) => c.id),
-      ),
-      with: {
-        account: true,
-      },
-    });
+    await this.websitePostRecordRepository.insert(children);
+    entity.children = children;
   }
 
   /**
@@ -647,9 +653,9 @@ export class PostManagerService {
    * @return {*}  {PostData}
    */
   private preparePostData(
-    submission: ISubmission,
+    submission: Submission,
     instance: Website<unknown>,
-    websiteOptions: IWebsiteOptions,
+    websiteOptions: WebsiteOptions,
   ): Promise<PostData> {
     return this.postParserService.parse(submission, instance, websiteOptions);
   }

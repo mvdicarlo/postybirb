@@ -167,7 +167,7 @@ function InnerForm({
       <UserSpecifiedWebsiteOptionsSaveModal
         opened={userSpecifiedModalVisible}
         onClose={userSpecifiedModalClosed}
-        account={account}
+        accountId={account}
         form={formFields}
         type={submission.type}
         values={form.getValues()}
@@ -218,15 +218,15 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     onUserSpecifiedModalClosed,
     userSpecifiedModalVisible,
   } = props;
-  const { account } = option;
+  const { accountId } = option;
   const { isLoading: isLoadingFormFields, data: formFields } = useQuery(
     `website-option-${option.id}`,
     () =>
       formGeneratorApi
         .getForm({
-          accountId: account,
+          accountId,
           type: submission.type,
-          isMultiSubmission: submission.isMultiSubmission(),
+          isMultiSubmission: submission.isMultiSubmission,
         })
         .then((res) => res.body),
   );
@@ -249,7 +249,7 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
       formFields={formFields}
       option={option}
       defaultOption={defaultOption}
-      account={account}
+      account={accountId}
       submission={submission}
       userSpecifiedModalVisible={userSpecifiedModalVisible}
       userSpecifiedModalClosed={onUserSpecifiedModalClosed}

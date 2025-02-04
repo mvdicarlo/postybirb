@@ -118,7 +118,7 @@ describe('WebsiteOptionsService', () => {
     const groups = await service.findAll();
     expect(groups).toHaveLength(2); // 2 because default
 
-    expect(groups[1].account.id).toEqual(dto.accountId);
+    expect(groups[1].accountId).toEqual(dto.accountId);
     expect(groups[1].isDefault).toEqual(false);
     expect(groups[1].data).toEqual(dto.data);
     expect(groups[1].submission.id).toEqual(dto.submissionId);
@@ -193,7 +193,7 @@ describe('WebsiteOptionsService', () => {
     dto.submissionId = submission.id;
 
     const record = await service.create(dto);
-    expect(record.account.id).toEqual(dto.accountId);
+    expect(record.accountId).toEqual(dto.accountId);
     expect(record.isDefault).toEqual(false);
     expect(record.data).toEqual(dto.data);
     expect(record.submission.id).toEqual(dto.submissionId);

@@ -327,4 +327,19 @@ describe('SubmissionService', () => {
     const serialized = JSON.stringify(record.toDTO());
     expect(serialized).toBeDefined();
   });
+
+  it('should reorder entities', async () => {
+    const createDto = createSubmissionDto();
+    const record1 = await service.create(createDto);
+    const record2 = await service.create(createDto);
+    const record3 = await service.create(createDto);
+
+    await service.reorder(record1.id, 1);
+    const records = (await service.findAll()).sort((a, b) => a.order - b.order);
+    expect(records[0].id).toEqual(record2.id);
+    expect(records[1].id).toEqual(record1.id);
+    expect(records[2].id).toEqual(record3.id);
+  });
+
+  // TODO: template apply test
 });

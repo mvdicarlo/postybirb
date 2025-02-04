@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
 import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
 
@@ -22,12 +23,14 @@ describe('WebsiteDataManager', () => {
   });
 
   function populateAccount(): Promise<Account> {
-    return new Account({
-      name: 'test',
-      website: 'test',
-      groups: [],
-      id: 'test',
-    }).save();
+    return PostyBirbDatabaseUtil.saveFromEntity(
+      new Account({
+        name: 'test',
+        website: 'test',
+        groups: [],
+        id: 'test',
+      }),
+    );
   }
 
   it('should be defined', () => {

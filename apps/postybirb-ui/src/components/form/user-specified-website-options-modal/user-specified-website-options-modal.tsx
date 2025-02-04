@@ -11,7 +11,7 @@ import { getTranslatedLabel } from '../fields/field-label';
 type UserSpecifiedWebsiteOptionsSaveModalProps = {
   form: FormBuilderMetadata;
   values: Record<string, unknown>;
-  account: AccountId;
+  accountId: AccountId;
   type: SubmissionType;
   opened: boolean;
   onClose: () => void;
@@ -22,7 +22,7 @@ export function UserSpecifiedWebsiteOptionsSaveModal(
 ) {
   const { _ } = useLingui();
   const [isSaving, setIsSaving] = useState(false);
-  const { opened, type, account, values, form, onClose } = props;
+  const { opened, type, accountId, values, form, onClose } = props;
   const [selectedFields, setSelectedFields] = useState<Record<string, boolean>>(
     {},
   );
@@ -67,7 +67,7 @@ export function UserSpecifiedWebsiteOptionsSaveModal(
 
             userSpecifiedWebsiteOptionsApi
               .create({
-                account,
+                accountId,
                 type,
                 options: copy,
               })

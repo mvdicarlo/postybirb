@@ -1,6 +1,7 @@
 import { AccountId, IAccount } from '../account/account.interface';
 import { EntityId, IEntity } from '../database/entity.interface';
-import { PostData } from '../website/post-data.type';
+import { IWebsiteOptions } from '../website-options/website-options.interface';
+import { PostFields } from '../website/post-data.type';
 import { IPostRecord } from './post-record.interface';
 
 /**
@@ -45,9 +46,9 @@ export interface IWebsitePostRecord extends IEntity {
 
   /**
    * The post data that was attempted to be posted with.
-   * @type {PostData}
+   * @type {WebsitePostRecordData}
    */
-  postData: PostData;
+  postData: WebsitePostRecordData;
 }
 
 /**
@@ -74,7 +75,6 @@ export interface IPostRecordMetadata {
   postedFiles: EntityId[];
 
   /**
-   * TODO - Ensure this value is saved to the database as post runs.
    * The next batch number.
    * More of an internal tracker for resuming posts.
    * @type {number}
@@ -123,3 +123,17 @@ export interface IWebsiteError {
    */
   timestamp: string;
 }
+
+export type WebsitePostRecordData = {
+  /**
+   * The merged parsed website options form data.
+   * @type {PostFields}
+   */
+  parsedOptions?: PostFields;
+
+  /**
+   * The website options used.
+   * @type {IWebsiteOptions}
+   */
+  websiteOptions: IWebsiteOptions[];
+};
