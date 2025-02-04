@@ -17,7 +17,7 @@
     "build:prod": "nx run-many -t build --configuration=production --projects=postybirb,postybirb-ui --parallel",
     "lingui:extract": "lingui extract --clean",
     "make": "electron-builder -w",
-    "test:client-server": "nx test client-server && rimraf test",
+    "test:client-server": "nx test client-server --codeCoverage=true && rimraf test",
     "test": "nx run-many -t test --parallel",
     "lint": "nx run-many -t lint --parallel --fix",
     "format": "prettier -w apps libs",

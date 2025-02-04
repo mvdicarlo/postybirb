@@ -12,4 +12,7 @@ export default {
     '<rootDir>/libs/website-metadata',
     '<rootDir>/libs/form-builder',
   ],
+  collectCoverage: true,
+  coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: ['html', 'text', 'lcov'],
 };

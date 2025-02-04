@@ -97,7 +97,7 @@ describe('formBuilder', () => {
     expect(formBuilder(new TextType(), {})).toEqual({
       field: {
         label: 'description',
-        defaultValue: 'Hello',
+        defaultValue: 'hello',
         type: 'text',
         formField: 'input',
         row: Number.MAX_SAFE_INTEGER,
