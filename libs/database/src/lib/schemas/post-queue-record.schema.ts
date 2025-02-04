@@ -6,7 +6,9 @@ import { SubmissionSchema } from './submission.schema';
 
 export const PostQueueRecordSchema = sqliteTable('post-queue', {
   ...CommonSchema(),
-  postRecordId: id().references(() => PostRecordSchema.id),
+  postRecordId: id().references(() => PostRecordSchema.id, {
+    onDelete: 'set null',
+  }),
   submissionId: id()
     .notNull()
     .references(() => SubmissionSchema.id, {

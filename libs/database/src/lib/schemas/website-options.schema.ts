@@ -22,13 +22,16 @@ export const WebsiteOptionsSchema = sqliteTable('website-options', {
     }),
 });
 
-export const WebsiteOptionsRelations = relations(WebsiteOptionsSchema, ({ one }) => ({
-  account: one(AccountSchema, {
-    fields: [WebsiteOptionsSchema.accountId],
-    references: [AccountSchema.id],
+export const WebsiteOptionsRelations = relations(
+  WebsiteOptionsSchema,
+  ({ one }) => ({
+    account: one(AccountSchema, {
+      fields: [WebsiteOptionsSchema.accountId],
+      references: [AccountSchema.id],
+    }),
+    submission: one(SubmissionSchema, {
+      fields: [WebsiteOptionsSchema.submissionId],
+      references: [SubmissionSchema.id],
+    }),
   }),
-  submission: one(SubmissionSchema, {
-    fields: [WebsiteOptionsSchema.submissionId],
-    references: [SubmissionSchema.id],
-  }),
-}));
+);

@@ -228,7 +228,10 @@ export class PostyBirbDatabase<
     id: EntityId,
     set: Partial<Select<TSchemaKey>>,
   ): Promise<TEntityClass> {
+    await this.findById(id, { failOnMissing: true });
+
     await this.db
+      // eslint-disable-next-line testing-library/await-async-query
       .update(this.schemaEntity)
       .set(set)
       .where(eq(this.schemaEntity.id, id));

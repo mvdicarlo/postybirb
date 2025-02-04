@@ -18,7 +18,7 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
   submissionId: SubmissionId;
 
   @Type(() => Submission)
-  parent: Submission;
+  submission: Submission;
 
   completedAt?: string;
 

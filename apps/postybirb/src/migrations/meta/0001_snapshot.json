@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "609fe006-669c-41de-afc5-0dd04ecb2e79",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "e46338c8-e802-47db-8cd8-7efabed9c8fd",
+  "prevId": "609fe006-669c-41de-afc5-0dd04ecb2e79",
   "tables": {
     "account": {
       "name": "account",
@@ -1153,8 +1153,7 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": "'[]'"
+          "autoincrement": false
         },
         "postData": {
           "name": "postData",
@@ -1167,9 +1166,8 @@
           "name": "metadata",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'{\"sourceMap\":{},\"postedFiles\":[],\"nextBatchNumber\":1}'"
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {

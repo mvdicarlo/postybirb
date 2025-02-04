@@ -6,7 +6,6 @@ import {
   PostRecordState,
 } from '../../../../types/src/index';
 import { CommonSchema, id } from './common.schema';
-import { PostQueueRecordSchema } from './post-queue-record.schema';
 import { SubmissionSchema } from './submission.schema';
 import { WebsitePostRecordSchema } from './website-post-record.schema';
 
@@ -34,22 +33,15 @@ export const PostRecordSchema = sqliteTable('post-record', {
   submissionId: id().references(() => SubmissionSchema.id, {
     onDelete: 'cascade',
   }),
-  postQueueRecordId: id().references(() => PostQueueRecordSchema.id, {
-    onDelete: 'set null',
-  }),
   completedAt: text(),
 });
 
 export const PostRecordRelations = relations(
   PostRecordSchema,
   ({ one, many }) => ({
-    parent: one(SubmissionSchema, {
+    submission: one(SubmissionSchema, {
       fields: [PostRecordSchema.submissionId],
       references: [SubmissionSchema.id],
-    }),
-    postQueueRecord: one(PostQueueRecordSchema, {
-      fields: [PostRecordSchema.postQueueRecordId],
-      references: [PostQueueRecordSchema.id],
     }),
     children: many(WebsitePostRecordSchema),
   }),

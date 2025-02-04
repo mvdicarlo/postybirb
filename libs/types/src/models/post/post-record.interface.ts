@@ -16,7 +16,7 @@ export interface IPostRecord extends IEntity {
    * Parent submission Id.
    * @type {SubmissionId}
    */
-  parent: ISubmission;
+  submission: ISubmission;
 
   /**
    * The date the post was completed.

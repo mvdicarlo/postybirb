@@ -21,6 +21,7 @@ import {
   SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
+import { inArray } from 'drizzle-orm';
 import { chunk } from 'lodash';
 import { PostRecord, WebsitePostRecord } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
@@ -75,7 +76,7 @@ export class PostManagerService {
    * @param {SubmissionId} id
    */
   public async cancelIfRunning(id: SubmissionId): Promise<boolean> {
-    if (this.currentPost && this.currentPost.parent?.id === id) {
+    if (this.currentPost && this.currentPost.submissionId === id) {
       this.logger.info(`Cancelling current post`);
       this.cancelToken.cancel();
       return true;
@@ -98,8 +99,9 @@ export class PostManagerService {
 
       this.logger.withMetadata(entity.toDTO()).info(`Initializing post`);
       this.currentPost = entity;
-      entity.state = PostRecordState.RUNNING;
-      await entity.save();
+      await this.postRepository.update(entity.id, {
+        state: PostRecordState.RUNNING,
+      });
 
       await this.createWebsitePostRecords(entity);
 
@@ -140,9 +142,10 @@ export class PostManagerService {
         `Entity ${entity.id} not found in database. It may have been deleted while posting. Updating anyways due to all websites being completed.`,
       );
     }
-    entity.state = allCompleted ? PostRecordState.DONE : PostRecordState.FAILED;
-    entity.completedAt = new Date().toISOString();
-    await entity.save(true);
+    await this.postRepository.update(entity.id, {
+      completedAt: new Date().toISOString(),
+      state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
+    });
   }
 
   /**
@@ -160,7 +163,7 @@ export class PostManagerService {
       throw new Error('Not logged in');
     }
 
-    const submission = entity.parent;
+    const { submission } = entity;
     try {
       const supportedTypes = instance.getSupportedTypes();
       if (!supportedTypes.includes(submission.type)) {
@@ -250,7 +253,9 @@ export class PostManagerService {
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
     websitePostRecord.completedAt = new Date().toISOString();
-    await websitePostRecord.save();
+    await this.postRepository.update(websitePostRecord.id, {
+      completedAt: websitePostRecord.completedAt,
+    });
   }
 
   /**
@@ -276,7 +281,9 @@ export class PostManagerService {
       });
     }
 
-    await websitePostRecord.save();
+    await this.websitePostRecordRepository.update(websitePostRecord.id, {
+      errors: websitePostRecord.errors,
+    });
   }
 
   /**
@@ -492,7 +499,9 @@ export class PostManagerService {
     const fileIds = files.map((f) => f.id);
     websitePostRecord.metadata.nextBatchNumber += 1;
     websitePostRecord.metadata.postedFiles.push(...fileIds);
-    await websitePostRecord.save();
+    await this.websitePostRecordRepository.update(websitePostRecord.id, {
+      metadata: websitePostRecord.metadata,
+    });
   }
 
   private getResizeParameters(
@@ -565,22 +574,37 @@ export class PostManagerService {
       await this.updateExistingWebsitePostRecords(entity);
     }
 
-    const submission = entity.parent;
+    const { submission } = entity;
     const options: IWebsiteOptions<IWebsiteFormFields>[] =
       submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
       (o) => !entity.children.some((c) => c.account.id === o.account.id),
     );
-    uncreatedOptions.forEach((w) =>
-      entity.children.push(
-        new WebsitePostRecord({
+    const children = await Promise.all(
+      uncreatedOptions.map((w) =>
+        this.websitePostRecordRepository.insert({
           postRecordId: entity.id,
-          account: w.account,
+          accountId: w.account.id,
+          postData: {},
+          metadata: {
+            postedFiles: [],
+            sourceMap: {},
+            nextBatchNumber: 1,
+          },
+          errors: [],
         }),
       ),
     );
-    await entity.save(true);
+    entity.children = await this.websitePostRecordRepository.find({
+      where: inArray(
+        this.websitePostRecordRepository.schemaEntity.id,
+        children.map((c) => c.id),
+      ),
+      with: {
+        account: true,
+      },
+    });
   }
 
   /**

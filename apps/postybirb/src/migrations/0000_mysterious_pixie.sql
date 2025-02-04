@@ -40,7 +40,7 @@ CREATE TABLE `post-queue` (
 	`updatedAt` text NOT NULL,
 	`postRecordId` text,
 	`submissionId` text NOT NULL,
-	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE set null,
 	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -52,10 +52,8 @@ CREATE TABLE `post-record` (
 	`state` text DEFAULT 'PENDING' NOT NULL,
 	`resumeMode` text DEFAULT 'CONTINUE' NOT NULL,
 	`submissionId` text,
-	`postQueueRecordId` text,
 	`completedAt` text,
-	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`postQueueRecordId`) REFERENCES `post-queue`(`id`) ON UPDATE no action ON DELETE set null
+	FOREIGN KEY (`submissionId`) REFERENCES `submission`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `post-record_id_unique` ON `post-record` (`id`);--> statement-breakpoint

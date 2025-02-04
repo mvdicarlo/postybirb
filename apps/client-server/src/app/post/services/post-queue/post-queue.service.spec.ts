@@ -184,7 +184,7 @@ describe('PostQueueService', () => {
     let postRecord = (await postService.findAll())[0];
     let queueRecord = await service.peek();
     expect(postRecord).toBeDefined();
-    expect(postRecord.parent.id).toBe(submission.id);
+    expect(postRecord.submissionId).toBe(submission.id);
     expect(postManager.isPosting()).toBe(true);
     expect(queueRecord).toBeDefined();
     expect(queueRecord.postRecord).toBeDefined();

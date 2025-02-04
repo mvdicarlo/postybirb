@@ -215,23 +215,39 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
           this.logger.info('Queue is paused');
           return;
         }
-        const postRecord = new PostRecord({
-          parent: submission,
-          resumeMode: PostRecordResumeMode.CONTINUE,
-          state: PostRecordState.PENDING,
-          postQueueRecord: top,
-        });
-        top.postRecord = await this.postRecordRepository.update(postRecord.id, {
+        const insertedRecord = await this.postRecordRepository.insert({
           submissionId: submission.id,
           resumeMode: PostRecordResumeMode.CONTINUE,
           state: PostRecordState.PENDING,
-          postQueueRecordId: top.id,
+        });
+        await this.repository.update(top.id, {
+          postRecordId: insertedRecord.id,
+        });
+        const fullyLoadedRecord = await this.repository.findOne({
+          where: (r, { eq }) => eq(r.id, top.id),
+          with: {
+            postRecord: {
+              with: {
+                children: true,
+                submission: {
+                  with: {
+                    options: {
+                      with: {
+                        account: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            submission: true,
+          },
         });
         this.logger
-          .withMetadata({ postRecord: postRecord.toObject() })
+          .withMetadata({ postRecord: insertedRecord.toObject() })
           .info('Creating PostRecord and starting PostManager');
 
-        this.postManager.startPost(postRecord);
+        this.postManager.startPost(fullyLoadedRecord.postRecord);
       } else if (
         record.state === PostRecordState.DONE ||
         record.state === PostRecordState.FAILED
@@ -253,6 +269,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
       }
     } catch (error) {
       this.logger.withMetadata({ error }).error('Failed to run queue');
+      throw error;
     } finally {
       release();
     }
@@ -269,7 +286,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
         postRecord: {
           with: {
             children: true,
-            parent: {
+            submission: {
               with: {
                 options: {
                   with: {
@@ -280,18 +297,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
             },
           },
         },
-        submission: {
-          with: {
-            options: true,
-            files: {
-              with: {
-                file: true,
-                altFile: true,
-                thumbnail: true,
-              },
-            },
-          },
-        },
+        submission: true,
       },
     });
   }

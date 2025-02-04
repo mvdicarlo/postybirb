@@ -20,10 +20,10 @@ export type PostData<T extends IWebsiteFormFields = IWebsiteFormFields> = {
    * The submission options.
    * @type {T}
    */
-  options: PostFields<T>;
+  options?: PostFields<T>;
   /**
    * The submission data.
    * @type {S}
    */
-  submission: ISubmission;
+  submission?: ISubmission;
 };

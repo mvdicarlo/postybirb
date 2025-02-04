@@ -36,7 +36,7 @@ export class WebsitePostRecord
 
   errors: IWebsiteError[] = [];
 
-  postData: PostData;
+  postData: PostData = {};
 
   constructor(websitePostRecord: Partial<IWebsitePostRecord>) {
     super(websitePostRecord);
