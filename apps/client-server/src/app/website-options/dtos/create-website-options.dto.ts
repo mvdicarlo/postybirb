@@ -7,10 +7,7 @@ import {
 } from '@postybirb/types';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
-export class CreateWebsiteOptionsDto<
-  T extends IWebsiteFormFields = IWebsiteFormFields,
-> implements ICreateWebsiteOptionsDto
-{
+export class CreateWebsiteOptionsDto implements ICreateWebsiteOptionsDto {
   @ApiProperty()
   @IsString()
   accountId: AccountId;
@@ -18,7 +15,7 @@ export class CreateWebsiteOptionsDto<
   @ApiProperty({ type: Object })
   @IsOptional()
   @IsObject()
-  data: T;
+  data: IWebsiteFormFields;
 
   @ApiProperty()
   @IsString()

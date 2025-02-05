@@ -3,9 +3,8 @@ import { clearDatabase } from '@postybirb/database';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
-  IWebsiteFormFields,
   SubmissionRating,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -104,7 +103,7 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
@@ -140,7 +139,7 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
@@ -161,7 +160,7 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
@@ -182,7 +181,7 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),

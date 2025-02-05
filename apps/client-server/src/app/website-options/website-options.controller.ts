@@ -5,7 +5,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { EntityId, IWebsiteFormFields, SubmissionId } from '@postybirb/types';
+import { EntityId, SubmissionId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
@@ -35,7 +35,7 @@ export class WebsiteOptionsController extends PostyBirbController<'WebsiteOption
   })
   create(
     @Body()
-    createDto: CreateWebsiteOptionsDto<IWebsiteFormFields>,
+    createDto: CreateWebsiteOptionsDto,
   ) {
     return this.service.create(createDto).then((entity) => entity.toDTO());
   }
@@ -45,7 +45,7 @@ export class WebsiteOptionsController extends PostyBirbController<'WebsiteOption
   @ApiNotFoundResponse({ description: 'Submission option Id not found.' })
   update(
     @Body()
-    updateDto: UpdateWebsiteOptionsDto<IWebsiteFormFields>,
+    updateDto: UpdateWebsiteOptionsDto,
     @Param('id') id: EntityId,
   ) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());

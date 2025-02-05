@@ -130,9 +130,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     return option;
   }
 
-  async create<T extends IWebsiteFormFields>(
-    createDto: CreateWebsiteOptionsDto<T>,
-  ) {
+  async create(createDto: CreateWebsiteOptionsDto) {
     const account = await this.accountService.findById(createDto.accountId, {
       failOnMissing: true,
     });
@@ -267,8 +265,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
    * @return {*}  {Promise<ValidationResult[]>}
    */
   async validateSubmission(submissionId: SubmissionId) {
-    const submission =
-      await this.submissionService.findPopulatedById(submissionId);
+    const submission = await this.submissionService.findById(submissionId);
     return this.validationService.validateSubmission(submission);
   }
 

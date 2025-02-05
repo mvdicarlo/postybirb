@@ -109,7 +109,7 @@ export class AccountService
     });
   }
 
-  protected async emit() {
+  public async emit() {
     const dtos = await this.findAll().then((accounts) =>
       accounts.map((a) => this.injectWebsiteInstance(a)),
     );
@@ -148,9 +148,7 @@ export class AccountService
       this.emit();
       await website.onLogin();
     } catch (e) {
-      if (e instanceof Error) {
-        this.logger.withError(e).error(`onLogin failed for ${website.id}`);
-      }
+      this.logger.withError(e).error(`onLogin failed for ${website.id}`);
     } finally {
       website.onAfterLogin();
       this.emit();
@@ -251,7 +249,7 @@ export class AccountService
    * @param {string} id
    */
   async clearAccountData(id: AccountId) {
-    this.logger.withMetadata({ id }).info(`Clearing Account data for '${id}'`);
+    this.logger.info(`Clearing Account data for '${id}'`);
     const account = await this.findById(id);
     if (account) {
       const instance = this.websiteRegistry.findInstance(account);
@@ -265,6 +263,9 @@ export class AccountService
    * @param {SetWebsiteDataRequestDto} setWebsiteDataRequestDto
    */
   async setAccountData(setWebsiteDataRequestDto: SetWebsiteDataRequestDto) {
+    this.logger.info(
+      `Setting Account data for '${setWebsiteDataRequestDto.id}'`,
+    );
     const account = await this.repository.findById(
       setWebsiteDataRequestDto.id,
       { failOnMissing: true },

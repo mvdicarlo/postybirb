@@ -13,6 +13,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
+import { CreateAccountDto } from '../../account/dtos/create-account.dto';
 import { FileConverterService } from '../../file-converter/file-converter.service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -22,6 +23,7 @@ import { FormGeneratorModule } from '../../form-generator/form-generator.module'
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
+import { waitUntilPromised } from '../../utils/wait.util';
 import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations/provider';
@@ -36,6 +38,8 @@ import { SubmissionService } from './submission.service';
 describe('SubmissionService', () => {
   let testFile: Buffer | null = null;
   let service: SubmissionService;
+  let websiteOptionsService: WebsiteOptionsService;
+  let accountService: AccountService;
   let module: TestingModule;
 
   beforeAll(() => {
@@ -74,7 +78,10 @@ describe('SubmissionService', () => {
       }).compile();
 
       service = module.get<SubmissionService>(SubmissionService);
-      const accountService = module.get<AccountService>(AccountService);
+      websiteOptionsService = module.get<WebsiteOptionsService>(
+        WebsiteOptionsService,
+      );
+      accountService = module.get<AccountService>(AccountService);
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -89,6 +96,16 @@ describe('SubmissionService', () => {
     const path = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.jpg`;
     writeSync(path, testFile);
     return path;
+  }
+
+  async function createAccount() {
+    const dto = new CreateAccountDto();
+    dto.groups = ['test'];
+    dto.name = 'test';
+    dto.website = 'test';
+
+    const record = await accountService.create(dto);
+    return record;
   }
 
   function createSubmissionDto(): CreateSubmissionDto {
@@ -168,6 +185,7 @@ describe('SubmissionService', () => {
 
   it('should create file entities', async () => {
     const createDto = createSubmissionDto();
+    delete createDto.name; // To ensure file name check
     createDto.type = SubmissionType.FILE;
     const path = setup();
     const fileInfo = createMulterData(path);
@@ -341,5 +359,148 @@ describe('SubmissionService', () => {
     expect(records[2].id).toEqual(record3.id);
   });
 
-  // TODO: template apply test
+  it('should create multi submissions onModuleInit', async () => {
+    service.onModuleInit();
+    await waitUntilPromised(async () => {
+      const records = await service.findAll();
+      return records.length === 2;
+    }, 50);
+    const records = await service.findAll();
+    expect(records).toHaveLength(2);
+    expect(records[0].isMultiSubmission).toBeTruthy();
+    expect(records[1].isMultiSubmission).toBeTruthy();
+  });
+
+  it('should apply template', async () => {
+    const account = await createAccount();
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+
+    createDto.isTemplate = true;
+    createDto.name = 'Template';
+    const template = await service.create(createDto);
+    await websiteOptionsService.create({
+      submissionId: template.id,
+      accountId: account.id,
+      data: {
+        title: 'Template Test',
+        rating: SubmissionRating.MATURE,
+      },
+    });
+
+    const updatedTemplate = await service.updateTemplateName(template.id, {
+      name: 'Updated',
+    });
+
+    expect(updatedTemplate.metadata.template.name).toEqual('Updated');
+
+    const updatedRecord = await service.applyOverridingTemplate(
+      record.id,
+      template.id,
+    );
+    const defaultOptions = updatedRecord.options[0];
+    // The default title should not be updated
+    expect(defaultOptions.data.title).not.toEqual('Template Test');
+    const nonDefault = updatedRecord.options.find((o) => !o.isDefault);
+    expect(nonDefault).toBeDefined();
+    expect(nonDefault?.data.title).toEqual('Template Test');
+    expect(nonDefault?.data.rating).toEqual(SubmissionRating.MATURE);
+  });
+
+  it('should apply multi submission merge', async () => {
+    const account = await createAccount();
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+
+    createDto.isMultiSubmission = true;
+    createDto.name = 'Multi';
+    const multi = await service.create(createDto);
+    await websiteOptionsService.create({
+      submissionId: multi.id,
+      accountId: account.id,
+      data: {
+        title: 'Multi Test',
+        rating: SubmissionRating.MATURE,
+      },
+    });
+
+    await service.applyMultiSubmission({
+      submissionToApply: multi.id,
+      submissionIds: [record.id],
+      merge: true,
+    });
+
+    const updatedRecord = await service.findById(record.id);
+    const defaultOptions = updatedRecord.options[0];
+    const multiDefaultOptions = multi.options.find((o) => o.isDefault);
+    // The default title should not be updated
+    expect(defaultOptions.data.title).not.toEqual(
+      multiDefaultOptions?.data.title,
+    );
+    const nonDefault = updatedRecord.options.find((o) => !o.isDefault);
+    expect(nonDefault).toBeDefined();
+    expect(nonDefault?.data.title).toEqual('Multi Test');
+    expect(nonDefault?.data.rating).toEqual(SubmissionRating.MATURE);
+  });
+
+  it('should apply multi submission without merge', async () => {
+    const account = await createAccount();
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+
+    createDto.isMultiSubmission = true;
+    createDto.name = 'Multi';
+    const multi = await service.create(createDto);
+    await websiteOptionsService.create({
+      submissionId: multi.id,
+      accountId: account.id,
+      data: {
+        title: 'Multi Test',
+        rating: SubmissionRating.MATURE,
+      },
+    });
+
+    await service.applyMultiSubmission({
+      submissionToApply: multi.id,
+      submissionIds: [record.id],
+      merge: false,
+    });
+
+    const updatedRecord = await service.findById(record.id);
+    const multiSubmission = await service.findById(multi.id);
+    expect(updatedRecord.options).toHaveLength(multiSubmission.options.length);
+    const defaultOptions = updatedRecord.options.find((o) => o.isDefault);
+    const nonDefault = updatedRecord.options.find((o) => !o.isDefault);
+    expect(nonDefault).toBeDefined();
+    expect(nonDefault.data).toEqual(multiSubmission.options[1].data);
+    expect(defaultOptions).toBeDefined();
+    expect(defaultOptions.data).toEqual({
+      ...multiSubmission.options[0].data,
+      title: defaultOptions.data.title,
+    });
+  });
+
+  it('should duplicate submission', async () => {
+    const account = await createAccount();
+    const createDto = createSubmissionDto();
+    const record = await service.create(createDto);
+    await websiteOptionsService.create({
+      submissionId: record.id,
+      accountId: account.id,
+      data: {
+        title: 'Duplicate Test',
+        rating: SubmissionRating.MATURE,
+      },
+    });
+
+    await service.duplicate(record.id);
+
+    const records = await service.findAll();
+    const duplicated = records.find((r) => r.id !== record.id);
+    expect(duplicated).toBeDefined();
+    expect(duplicated?.type).toEqual(record.type);
+    expect(duplicated?.options).toHaveLength(2);
+    expect(duplicated?.files).toHaveLength(0);
+    expect(duplicated.order).toEqual(record.order);
+  });
 });

@@ -6,7 +6,7 @@ export class ApplyMultiSubmissionDto implements IApplyMultiSubmissionDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  originId: SubmissionId;
+  submissionToApply: SubmissionId;
 
   @ApiProperty()
   @IsArray()

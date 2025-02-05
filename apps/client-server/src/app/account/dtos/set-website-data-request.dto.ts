@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AccountId,
   DynamicObject,
-  EntityId,
   ISetWebsiteDataRequestDto,
 } from '@postybirb/types';
 import { IsObject, IsString } from 'class-validator';
@@ -11,7 +11,7 @@ export class SetWebsiteDataRequestDto
 {
   @ApiProperty()
   @IsString()
-  id: EntityId;
+  id: AccountId;
 
   @ApiProperty({
     type: Object,

@@ -387,8 +387,8 @@ export class SubmissionService
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
-    const { originId, submissionIds, merge } = applyMultiSubmissionDto;
-    const origin = await this.repository.findById(originId, {
+    const { submissionToApply, submissionIds, merge } = applyMultiSubmissionDto;
+    const origin = await this.repository.findById(submissionToApply, {
       failOnMissing: true,
     });
     const submissions = await this.repository.find({
@@ -404,7 +404,9 @@ export class SubmissionService
           if (existingOption) {
             // Don't overwrite set title
             const opts = { ...option.data, title: existingOption.data.title };
-            existingOption.data = opts;
+            await this.websiteOptionsService.update(existingOption.id, {
+              data: opts,
+            });
           } else {
             await this.websiteOptionsService.createOption(
               submission,
@@ -418,7 +420,25 @@ export class SubmissionService
     } else {
       // Removes all options not included in the origin submission
       for (const submission of submissions) {
-        await this.applyOverridingTemplate(submission.id, originId);
+        const { options } = submission;
+        const defaultOptions = options.find((option) => option.isDefault);
+        const defaultTitle = defaultOptions?.data.title;
+        await Promise.all(
+          options.map((option) => this.websiteOptionsService.remove(option.id)),
+        );
+        // eslint-disable-next-line no-restricted-syntax
+        for (const option of origin.options) {
+          const opts = { ...option.data };
+          if (option.isDefault) {
+            opts.title = defaultTitle;
+          }
+          await this.websiteOptionsService.createOption(
+            submission,
+            option.accountId,
+            opts,
+            option.isDefault ? defaultTitle : option.data.title,
+          );
+        }
       }
     }
 
@@ -427,7 +447,6 @@ export class SubmissionService
 
   /**
    * Duplicates a submission.
-   * !Somewhat janky method of doing a clone.
    * @param {string} id
    */
   public async duplicate(id: SubmissionId) {
@@ -450,74 +469,83 @@ export class SubmissionService
       },
     });
     await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
-      const newSubmission = await tx
-        .insert(SubmissionSchema)
-        .values({
-          metadata: entityToDuplicate.metadata,
-          type: entityToDuplicate.type,
-          isScheduled: entityToDuplicate.isScheduled,
-          schedule: entityToDuplicate.schedule,
-          isMultiSubmission: entityToDuplicate.isMultiSubmission,
-          isTemplate: entityToDuplicate.isTemplate,
-          order: entityToDuplicate.order,
-        })
-        .returning()[0];
+      const newSubmission = (
+        await tx
+          .insert(SubmissionSchema)
+          .values({
+            metadata: entityToDuplicate.metadata,
+            type: entityToDuplicate.type,
+            isScheduled: entityToDuplicate.isScheduled,
+            schedule: entityToDuplicate.schedule,
+            isMultiSubmission: entityToDuplicate.isMultiSubmission,
+            isTemplate: entityToDuplicate.isTemplate,
+            order: entityToDuplicate.order,
+          })
+          .returning()
+      )[0];
 
       await tx.insert(WebsiteOptionsSchema).values(
         entityToDuplicate.options.map((option) => ({
-          accountId: option.accountId,
-          data: option.data,
+          ...option,
+          id: undefined,
           submissionId: newSubmission.id,
-          isDefault: option.accountId === NULL_ACCOUNT_ID,
         })),
       );
 
       for (const file of entityToDuplicate.files) {
-        const newFile = await tx
-          .insert(SubmissionFileSchema)
-          .values({
-            submissionId: newSubmission.id,
-            fileName: file.fileName,
-            mimeType: file.mimeType,
-            hash: file.hash,
-            size: file.size,
-            height: file.height,
-            width: file.width,
-            hasThumbnail: file.hasThumbnail,
-            hasCustomThumbnail: file.hasCustomThumbnail,
-            hasAltFile: file.hasAltFile,
-          })
-          .returning()[0];
+        const newFile = (
+          await tx
+            .insert(SubmissionFileSchema)
+            .values({
+              submissionId: newSubmission.id,
+              fileName: file.fileName,
+              mimeType: file.mimeType,
+              hash: file.hash,
+              size: file.size,
+              height: file.height,
+              width: file.width,
+              hasThumbnail: file.hasThumbnail,
+              hasCustomThumbnail: file.hasCustomThumbnail,
+              hasAltFile: file.hasAltFile,
+            })
+            .returning()
+        )[0];
 
-        const primaryFile = await tx
-          .insert(FileBufferSchema)
-          .values({
-            ...file.file,
-            id: undefined,
-            submissionFileId: newFile.id,
-          })
-          .returning()[0];
+        const primaryFile = (
+          await tx
+            .insert(FileBufferSchema)
+            .values({
+              ...file.file,
+              id: undefined,
+              submissionFileId: newFile.id,
+            })
+            .returning()
+        )[0];
 
         const thumbnail: FileBuffer | undefined = file.thumbnail
-          ? await tx
-              .insert(FileBufferSchema)
-              .values({
-                ...file.thumbnail,
-                id: undefined,
-                submissionFileId: newFile.id,
-              })
-              .returning()[0]
+          ? (
+              await tx
+                .insert(FileBufferSchema)
+                .values({
+                  ...file.thumbnail,
+                  id: undefined,
+                  submissionFileId: newFile.id,
+                })
+                .returning()
+            )[0]
           : undefined;
 
         const altFile: FileBuffer | undefined = file.altFile
-          ? await tx
-              .insert(FileBufferSchema)
-              .values({
-                ...file.altFile,
-                id: undefined,
-                submissionFileId: newFile.id,
-              })
-              .returning()[0]
+          ? (
+              await tx
+                .insert(FileBufferSchema)
+                .values({
+                  ...file.altFile,
+                  id: undefined,
+                  submissionFileId: newFile.id,
+                })
+                .returning()
+            )[0]
           : undefined;
 
         await tx
@@ -531,7 +559,8 @@ export class SubmissionService
 
         const oldId = file.id;
         // eslint-disable-next-line prefer-destructuring
-        const metadata: FileSubmissionMetadata = newSubmission.metadata;
+        const metadata: FileSubmissionMetadata =
+          newSubmission.metadata as FileSubmissionMetadata;
         // Fix metadata
         const index = metadata.order.findIndex((fileId) => fileId === file.id);
         if (index > -1) {
@@ -544,39 +573,6 @@ export class SubmissionService
         }
       }
     });
-
-    // copy.files.forEach((fileEntity) => {
-    //   delete fileEntity.submission;
-    //   const oldId = fileEntity.id;
-    //   // Fix metadata
-    //   const index = metadata.order.findIndex(
-    //     (fileId) => fileId === fileEntity.id,
-    //   );
-    //   fileEntity.id = v4();
-    //   if (index > -1) {
-    //     metadata.order[index] = fileEntity.id;
-    //   }
-
-    //   if (metadata.fileMetadata[oldId]) {
-    //     metadata.fileMetadata[fileEntity.id] = metadata.fileMetadata[oldId];
-    //     delete metadata.fileMetadata[oldId];
-    //   }
-
-    //   if (fileEntity.altFile) {
-    //     fileEntity.altFile.id = v4();
-    //     delete fileEntity.altFile.parent;
-    //   }
-
-    //   if (fileEntity.file) {
-    //     fileEntity.file.id = v4();
-    //     delete fileEntity.file.parent;
-    //   }
-
-    //   if (fileEntity.thumbnail) {
-    //     fileEntity.thumbnail.id = v4();
-    //     delete fileEntity.thumbnail.parent;
-    //   }
-    // });
 
     this.emit();
   }
@@ -640,9 +636,5 @@ export class SubmissionService
       ),
     );
     this.emit();
-  }
-
-  public findPopulatedById(id: SubmissionId) {
-    return this.repository.findById(id, { failOnMissing: true });
   }
 }
