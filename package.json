@@ -73,7 +73,7 @@
     "cropperjs": "^1.6.2",
     "dayjs": "^1.11.13",
     "document-register-element": "1.13.1",
-    "drizzle-orm": "^0.38.4",
+    "drizzle-orm": "^0.39.2",
     "electron-context-menu": "^3.1.1",
     "electron-updater": "^6.3.9",
     "express": "^4.21.0",
@@ -116,7 +116,8 @@
     "turndown": "^7.2.0",
     "type-fest": "^4.26.1",
     "uuid": "^10.0.0",
-    "winston": "^3.14.2"
+    "winston": "^3.14.2",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -169,7 +170,7 @@
     "babel-plugin-macros": "^3.1.0",
     "cypress": "^7.3.0",
     "dotenv": "10.0.0",
-    "drizzle-kit": "^0.30.2",
+    "drizzle-kit": "^0.30.4",
     "electron": "^32",
     "electron-builder": "^24.13.3",
     "eslint": "8.48.0",

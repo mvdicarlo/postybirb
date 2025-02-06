@@ -1,0 +1,1 @@
+ALTER TABLE `website-post-record` RENAME COLUMN "postReponse" TO "postResponse";

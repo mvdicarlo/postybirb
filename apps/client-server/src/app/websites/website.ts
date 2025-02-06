@@ -69,7 +69,7 @@ export abstract class Website<D extends DynamicObject> {
    * @type {string}
    */
   public get id(): string {
-    return `${this.account.website}:${this.account.id}[${this.account.name}]`;
+    return `${this.account.website}:an=[${this.account.name}]:acid=[${this.account.id}]`;
   }
 
   /**

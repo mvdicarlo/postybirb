@@ -124,7 +124,7 @@ export class PostyBirbDatabase<
     const result = await Promise.all(
       inserts.map((insert) => this.findById(insert.id)),
     );
-    return inserts.length > 1 ? result : result[0];
+    return Array.isArray(value) ? result : result[0];
   }
 
   public async deleteById(ids: EntityId[]) {
@@ -141,11 +141,17 @@ export class PostyBirbDatabase<
   public async findById(
     id: EntityId,
     options?: FindOptions,
+    load?: DBQueryConfig<
+      'many',
+      true,
+      ExtractedRelations,
+      Relation<TSchemaKey>
+    >['with'],
   ): Promise<TEntityClass | null> {
     const record = await this.db.query[this.schemaKey].findFirst({
       where: eq(this.schemaEntity.id, id),
       with: {
-        ...(this.load ?? {}),
+        ...(load ?? this.load ?? {}),
       },
     });
 

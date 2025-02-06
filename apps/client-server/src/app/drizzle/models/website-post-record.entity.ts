@@ -2,6 +2,7 @@ import {
   AccountId,
   EntityId,
   IPostRecordMetadata,
+  IPostResponse,
   IWebsiteError,
   IWebsitePostRecord,
   WebsitePostRecordData,
@@ -40,6 +41,8 @@ export class WebsitePostRecord
     parsedOptions: undefined,
     websiteOptions: [],
   };
+
+  postResponse: IPostResponse[] = [];
 
   constructor(websitePostRecord: Partial<IWebsitePostRecord>) {
     super(websitePostRecord);

@@ -54,6 +54,16 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     );
   }
 
+  /**
+   * Creates a submission option for a submission.
+   * No longer remember why this is a separate method from create.
+   *
+   * @param {ISubmission} submission
+   * @param {AccountId} accountId
+   * @param {DynamicObject} data
+   * @param {string} [title]
+   * @return {*}  {Promise<WebsiteOptions>}
+   */
   async createOption(
     submission: ISubmission,
     accountId: AccountId,
@@ -130,6 +140,14 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     return option;
   }
 
+  /**
+   * The default create method for WebsiteOptions.
+   * Performs user saved options and other merging operations.
+   * Performs and update if it already exists.
+   *
+   * @param {CreateWebsiteOptionsDto} createDto
+   * @return {*}
+   */
   async create(createDto: CreateWebsiteOptionsDto) {
     const account = await this.accountService.findById(createDto.accountId, {
       failOnMissing: true,

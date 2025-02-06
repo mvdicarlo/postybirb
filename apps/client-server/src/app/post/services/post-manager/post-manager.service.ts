@@ -5,26 +5,24 @@ import {
   EntityId,
   FileMetadataFields,
   FileSubmission,
+  FileSubmissionMetadata,
   FileType,
   ImageResizeProps,
-  ISubmission,
-  ISubmissionFile,
-  IWebsiteFormFields,
-  IWebsiteOptions,
-  MessageSubmission,
+  IPostResponse,
   ModifiedFileDimension,
   PostData,
   PostRecordResumeMode,
   PostRecordState,
-  PostResponse,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk } from 'lodash';
 import {
+  FileBuffer,
   PostRecord,
   Submission,
+  SubmissionFile,
   WebsiteOptions,
   WebsitePostRecord,
 } from '../../../drizzle/models';
@@ -59,9 +57,9 @@ export class PostManagerService {
    */
   private cancelToken: CancellableToken = null;
 
-  private readonly postRepository;
+  private readonly postRepository: PostyBirbDatabase<'PostRecordSchema'>;
 
-  private readonly websitePostRecordRepository;
+  private readonly websitePostRecordRepository: PostyBirbDatabase<'WebsitePostRecordSchema'>;
 
   constructor(
     @Optional()
@@ -78,7 +76,9 @@ export class PostManagerService {
       postRepository ?? new PostyBirbDatabase('PostRecordSchema');
     this.websitePostRecordRepository =
       websitePostRecordRepository ??
-      new PostyBirbDatabase('WebsitePostRecordSchema');
+      new PostyBirbDatabase('WebsitePostRecordSchema', {
+        account: true,
+      });
   }
 
   /**
@@ -215,7 +215,7 @@ export class PostManagerService {
   }
 
   private async attemptToPost(
-    submission: ISubmission,
+    submission: Submission,
     websitePostRecord: WebsitePostRecord,
     instance: UnknownWebsite,
     data: PostData,
@@ -225,7 +225,7 @@ export class PostManagerService {
       case SubmissionType.FILE:
         await this.handleFileSubmission(
           websitePostRecord,
-          submission as FileSubmission,
+          submission as Submission<FileSubmissionMetadata>,
           instance,
           data,
         );
@@ -233,7 +233,7 @@ export class PostManagerService {
       case SubmissionType.MESSAGE:
         await this.handleMessageSubmission(
           websitePostRecord,
-          submission as MessageSubmission,
+          submission,
           instance,
           data,
         );
@@ -249,12 +249,12 @@ export class PostManagerService {
    * Handles a successful result from a website post.
    * Marks the post as completed and updates the metadata.
    * @param {WebsitePostRecord} websitePostRecord
-   * @param {PostResponse} res
+   * @param {IPostResponse} res
    * @param {EntityId[]} [fileIds]
    */
   private async handleSuccessResult(
     websitePostRecord: WebsitePostRecord,
-    res: PostResponse,
+    res: IPostResponse,
     fileIds?: EntityId[],
   ): Promise<void> {
     if (fileIds?.length) {
@@ -267,20 +267,23 @@ export class PostManagerService {
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
     websitePostRecord.completedAt = new Date().toISOString();
-    await this.postRepository.update(websitePostRecord.id, {
+    await this.websitePostRecordRepository.update(websitePostRecord.id, {
       completedAt: websitePostRecord.completedAt,
+      metadata: websitePostRecord.metadata,
+      postResponse: websitePostRecord.postResponse,
+      postData: websitePostRecord.postData,
     });
   }
 
   /**
    * Handles a failure result from a website post.
    * @param {WebsitePostRecord} websitePostRecord
-   * @param {PostResponse} res
+   * @param {IPostResponse} res
    * @param {EntityId[]} [fileIds]
    */
   private async handleFailureResult(
     websitePostRecord: WebsitePostRecord,
-    res: PostResponse,
+    res: IPostResponse,
     fileIds?: EntityId[],
   ): Promise<void> {
     if (res.exception) {
@@ -297,19 +300,22 @@ export class PostManagerService {
 
     await this.websitePostRecordRepository.update(websitePostRecord.id, {
       errors: websitePostRecord.errors,
+      metadata: websitePostRecord.metadata,
+      postResponse: websitePostRecord.postResponse,
+      postData: websitePostRecord.postData,
     });
   }
 
   /**
    * Handles posting a message submission.
    * @param {WebsitePostRecord} websitePostRecord
-   * @param {MessageSubmission} submission
+   * @param {Submission} submission
    * @param {Website<unknown>} instance
    * @param {PostData} data
    */
   private async handleMessageSubmission(
     websitePostRecord: WebsitePostRecord,
-    submission: MessageSubmission,
+    submission: Submission,
     instance: UnknownWebsite,
     data: PostData,
   ): Promise<void> {
@@ -317,6 +323,7 @@ export class PostManagerService {
     const result = await (
       instance as unknown as MessageWebsite
     ).onPostMessageSubmission(data, this.cancelToken);
+    websitePostRecord.postResponse.push(result);
     if (result.exception) {
       await this.handleFailureResult(websitePostRecord, result);
     } else {
@@ -327,13 +334,13 @@ export class PostManagerService {
   /**
    * Handles posting a file submission.
    * @param {WebsitePostRecord} websitePostRecord
-   * @param {FileSubmission} submission
+   * @param {Submission<FileSubmissionMetadata>} submission
    * @param {Website<unknown>} instance
    * @param {PostData} data
    */
   private async handleFileSubmission(
     websitePostRecord: WebsitePostRecord,
-    submission: FileSubmission,
+    submission: Submission<FileSubmissionMetadata>,
     instance: UnknownWebsite,
     data: PostData,
   ): Promise<void> {
@@ -347,7 +354,7 @@ export class PostManagerService {
       instance.decoratedProps.fileOptions.fileBatchSize ?? 1,
       1,
     );
-    const orderedFiles: ISubmissionFile[] = [];
+    const orderedFiles: SubmissionFile[] = [];
     const metadata = submission.metadata.fileMetadata;
     const files = submission.files
       .filter(
@@ -362,7 +369,7 @@ export class PostManagerService {
     submission.metadata.order.forEach((fileId) => {
       const file = files.find((f) => f.id === fileId);
       if (file) {
-        orderedFiles.push(file as unknown as ISubmissionFile);
+        orderedFiles.push(file);
       }
     });
 
@@ -376,7 +383,9 @@ export class PostManagerService {
       // Resize files if necessary
       const processedFiles: PostingFile[] = (
         await Promise.all(
-          batch.map((f) => this.resizeOrModifyFile(f, submission, instance)),
+          batch.map((submissionFile) =>
+            this.resizeOrModifyFile(submissionFile, submission, instance),
+          ),
         )
       ).map((f) =>
         f.withMetadata(
@@ -403,6 +412,7 @@ export class PostManagerService {
       );
 
       const batchIds = batch.map((f) => f.id);
+      websitePostRecord.postResponse.push(result);
       if (result.exception) {
         await this.handleFailureResult(websitePostRecord, result, batchIds);
       } else {
@@ -429,10 +439,11 @@ export class PostManagerService {
   }
 
   private async resizeOrModifyFile(
-    file: ISubmissionFile,
+    file: SubmissionFile,
     submission: FileSubmission,
     instance: ImplementedFileWebsite,
   ): Promise<PostingFile> {
+    await file.load();
     const fileMetadata: FileMetadataFields = submission.metadata[file.id];
     let resizeParams: ImageResizeProps | undefined;
     const { fileOptions } = instance.decoratedProps;
@@ -445,9 +456,8 @@ export class PostManagerService {
           allowedMimeTypes,
         )
       ) {
-        file.file = await this.fileConverterService.convert(
-          file.file,
-          allowedMimeTypes,
+        file.file = new FileBuffer(
+          await this.fileConverterService.convert(file.file, allowedMimeTypes),
         );
       }
       resizeParams = this.getResizeParameters(submission, instance, file);
@@ -495,9 +505,11 @@ export class PostManagerService {
           allowedMimeTypes,
         )
       ) {
-        file.file = await this.fileConverterService.convert(
-          file.altFile,
-          allowedMimeTypes,
+        file.file = new FileBuffer(
+          await this.fileConverterService.convert(
+            file.altFile,
+            allowedMimeTypes,
+          ),
         );
       }
     }
@@ -508,7 +520,7 @@ export class PostManagerService {
   private async markFilesAsPosted(
     websitePostRecord: WebsitePostRecord,
     submission: FileSubmission,
-    files: ISubmissionFile[],
+    files: SubmissionFile[],
   ) {
     const fileIds = files.map((f) => f.id);
     websitePostRecord.metadata.nextBatchNumber += 1;
@@ -521,7 +533,7 @@ export class PostManagerService {
   private getResizeParameters(
     submission: FileSubmission,
     instance: ImplementedFileWebsite,
-    file: ISubmissionFile,
+    file: SubmissionFile,
   ) {
     const params = instance.calculateImageResize(file);
 
@@ -589,8 +601,7 @@ export class PostManagerService {
     }
 
     const { submission } = entity;
-    const options: IWebsiteOptions<IWebsiteFormFields>[] =
-      submission.options.filter((o) => !o.isDefault);
+    const options = submission.options.filter((o) => !o.isDefault);
     // Only care to create children for those that don't already exist.
     const uncreatedOptions = options.filter(
       (o) => !entity.children.some((c) => c.account.id === o.accountId),
@@ -609,8 +620,9 @@ export class PostManagerService {
           errors: [],
         }),
     );
-    await this.websitePostRecordRepository.insert(children);
-    entity.children = children;
+    entity.children.push(
+      ...(await this.websitePostRecordRepository.insert(children)),
+    );
   }
 
   /**

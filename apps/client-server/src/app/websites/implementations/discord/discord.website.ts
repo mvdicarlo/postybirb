@@ -3,6 +3,7 @@ import {
   DiscordAccountData,
   ILoginState,
   ImageResizeProps,
+  IPostResponse,
   ISubmissionFile,
   PostData,
   PostResponse,
@@ -91,7 +92,7 @@ export default class Discord
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse> {
+  ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();
     const { webhook } = this.websiteDataStore.getData();
     const payload = {
@@ -139,7 +140,7 @@ export default class Discord
   onPostMessageSubmission(
     postData: PostData<DiscordMessageSubmission>,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse> {
+  ): Promise<IPostResponse> {
     cancellationToken.throwIfCancelled();
     const { webhook } = this.websiteDataStore.getData();
     const messageData = this.buildDescription(
@@ -158,28 +159,25 @@ export default class Discord
 
   onValidateMessageSubmission = validatorPassthru;
 
-  private handleResponse(res: HttpResponse<unknown>): PostResponse {
+  private handleResponse(res: HttpResponse<unknown>): IPostResponse {
     if (res.statusCode >= 300) {
       throw new Error(
         `Failed to post message: ${res.statusCode ?? -1} ${res.body}`,
       );
     }
-    return {
-      additionalInfo: res.body,
-    };
+    return PostResponse.fromWebsite(this).withAdditionalInfo(res.body);
   }
 
-  private handleError(error: Error, payload: unknown): PostResponse {
+  private handleError(error: Error, payload: unknown): IPostResponse {
     this.logger.error(
       'Failed to post message',
       error.message,
       error.stack,
       JSON.stringify(payload, null, 1),
     );
-    return {
-      exception: error,
-      additionalInfo: payload,
-    };
+    return PostResponse.fromWebsite(this)
+      .withException(error)
+      .withAdditionalInfo(payload);
   }
 
   private buildDescription(

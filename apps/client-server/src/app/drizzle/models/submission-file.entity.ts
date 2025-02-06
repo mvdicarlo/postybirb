@@ -5,6 +5,7 @@ import {
   ISubmissionFileDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
+import { PostyBirbDatabase } from '../postybirb-database/postybirb-database';
 import { DatabaseEntity } from './database-entity';
 import { FileBuffer } from './file-buffer.entity';
 import { Submission } from './submission.entity';
@@ -61,5 +62,21 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
 
   toDTO(): ISubmissionFileDto {
     return this.toObject() as unknown as ISubmissionFileDto;
+  }
+
+  /**
+   * Load the submission file from the database
+   * More of a workaround for the lack of proper ORM support with
+   * blob relations loading from nested with queries.
+   */
+  public async load() {
+    const db = new PostyBirbDatabase('FileBufferSchema');
+    this.file = await db.findById(this.primaryFileId);
+    if (this.thumbnailId) {
+      this.thumbnail = await db.findById(this.thumbnailId);
+    }
+    if (this.altFileId) {
+      this.altFile = await db.findById(this.altFileId);
+    }
   }
 }

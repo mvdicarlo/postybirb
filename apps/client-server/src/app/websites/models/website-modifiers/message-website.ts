@@ -1,8 +1,8 @@
 import {
-  IWebsiteFormFields,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    IPostResponse,
+    IWebsiteFormFields,
+    PostData,
+    SimpleValidationResult,
 } from '@postybirb/types';
 
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -23,7 +23,7 @@ export interface MessageWebsite<
   onPostMessageSubmission(
     postData: PostData<T>,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse>;
+  ): Promise<IPostResponse>;
 
   onValidateMessageSubmission(
     postData: PostData<T>,

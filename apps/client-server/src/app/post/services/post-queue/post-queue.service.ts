@@ -200,7 +200,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
       }
 
       const isPaused = await this.isPaused();
-      const { postRecord: record, submission } = top;
+      const { postRecord: record, submissionId } = top;
       if (!record) {
         // No record present, create one and start the post manager (if not paused)
         if (this.postManager.isPosting()) {
@@ -216,7 +216,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
           return;
         }
         const insertedRecord = await this.postRecordRepository.insert({
-          submissionId: submission.id,
+          submissionId,
           resumeMode: PostRecordResumeMode.CONTINUE,
           state: PostRecordState.PENDING,
         });
@@ -231,6 +231,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
                 children: true,
                 submission: {
                   with: {
+                    files: true,
                     options: {
                       with: {
                         account: true,
@@ -240,7 +241,6 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
                 },
               },
             },
-            submission: true,
           },
         });
         this.logger
@@ -253,7 +253,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
         record.state === PostRecordState.FAILED
       ) {
         // Post is in a terminal state, remove from queue
-        await this.dequeue([submission.id]);
+        await this.dequeue([submissionId]);
       } else if (!this.postManager.isPosting()) {
         // Post is not in a terminal state, but the post manager is not posting, so restart it.
         if (isPaused) {
@@ -283,11 +283,13 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
     return this.repository.findOne({
       orderBy: (queueRecord, { asc }) => asc(queueRecord.createdAt),
       with: {
+        submission: true,
         postRecord: {
           with: {
             children: true,
             submission: {
               with: {
+                files: true,
                 options: {
                   with: {
                     account: true,
@@ -297,7 +299,6 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
             },
           },
         },
-        submission: true,
       },
     });
   }

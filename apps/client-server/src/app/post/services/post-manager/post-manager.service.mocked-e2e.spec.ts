@@ -3,11 +3,11 @@ import {
     FileSubmissionMetadata,
     FileType,
     ILoginState,
+    IPostResponse,
     NullAccount,
     PostData,
     PostRecordResumeMode,
     PostRecordState,
-    PostResponse,
     SubmissionRating,
     SubmissionType,
 } from '@postybirb/types';
@@ -363,7 +363,7 @@ describe('PostManagerServiceMocks', () => {
     const { postRecord, websiteInstance, postData, submission } =
       mockFileSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -403,7 +403,7 @@ describe('PostManagerServiceMocks', () => {
   it('should post a file submission with resize', async () => {
     const { postRecord, websiteInstance } = mockFileSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -438,7 +438,7 @@ describe('PostManagerServiceMocks', () => {
     // This more or less tests the happy path
     const { postRecord, websiteInstance } = mockMessageSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -465,7 +465,7 @@ describe('PostManagerServiceMocks', () => {
     // This more or less tests the happy path
     const { postRecord, websiteInstance } = mockMessageSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: new Error('Test Error'),
     };
     (websiteInstance as unknown as MessageWebsite).onPostMessageSubmission =

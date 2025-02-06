@@ -3,6 +3,7 @@ import { EntityId, IEntity } from '../database/entity.interface';
 import { IWebsiteOptions } from '../website-options/website-options.interface';
 import { PostFields } from '../website/post-data.type';
 import { IPostRecord } from './post-record.interface';
+import { IPostResponse } from './post-response.type';
 
 /**
  * Represents a record in queue to post (or already posted) to a specific website.
@@ -49,6 +50,12 @@ export interface IWebsitePostRecord extends IEntity {
    * @type {WebsitePostRecordData}
    */
   postData: WebsitePostRecordData;
+
+  /**
+   * The response from the post.
+   * @type {IPostResponse}
+   */
+  postResponse: IPostResponse[];
 }
 
 /**

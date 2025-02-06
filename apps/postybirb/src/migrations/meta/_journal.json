@@ -15,6 +15,27 @@
       "when": 1738643792780,
       "tag": "0001_blushing_thena",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1738845559319,
+      "tag": "0002_lucky_namor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1738849042640,
+      "tag": "0003_rare_thunderbolt_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1738849629307,
+      "tag": "0004_wonderful_nebula",
+      "breakpoints": true
     }
   ]
 }
