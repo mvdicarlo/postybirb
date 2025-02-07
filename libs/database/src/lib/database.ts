@@ -10,10 +10,6 @@ export type PostyBirbDatabaseType = BetterSQLite3Database<typeof schema>;
 const migrationsFolder = IsTestEnvironment()
   ? join(__dirname.split('libs')[0], 'apps', 'postybirb', 'src', 'migrations')
   : join(__dirname, 'migrations');
-
-const path = IsTestEnvironment()
-  ? ':memory:'
-  : join(PostyBirbDirectories.DATA_DIRECTORY, 'drizzle.db');
 let db: PostyBirbDatabaseType;
 
 /**
@@ -23,6 +19,12 @@ let db: PostyBirbDatabaseType;
  */
 export function getDatabase() {
   if (!db) {
+    const path = IsTestEnvironment()
+      ? ':memory:'
+      : join(
+          PostyBirbDirectories.DATA_DIRECTORY,
+          `database-${process.env.POSTYBIRB_ENV}.sqlite`,
+        );
     PostyBirbDirectories.initializeDirectories();
     db = drizzle(path, { schema });
     migrate(db, { migrationsFolder });

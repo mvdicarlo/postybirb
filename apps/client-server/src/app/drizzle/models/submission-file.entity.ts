@@ -69,8 +69,26 @@ export class SubmissionFile extends DatabaseEntity implements ISubmissionFile {
    * More of a workaround for the lack of proper ORM support with
    * blob relations loading from nested with queries.
    */
-  public async load() {
+  public async load(fileTarget?: 'file' | 'thumbnail' | 'alt') {
     const db = new PostyBirbDatabase('FileBufferSchema');
+
+    if (fileTarget) {
+      switch (fileTarget) {
+        case 'file':
+          this.file = await db.findById(this.primaryFileId);
+          break;
+        case 'thumbnail':
+          this.thumbnail = await db.findById(this.thumbnailId);
+          break;
+        case 'alt':
+          this.altFile = await db.findById(this.altFileId);
+          break;
+        default:
+          throw new Error('Invalid file target');
+      }
+      return;
+    }
+
     this.file = await db.findById(this.primaryFileId);
     if (this.thumbnailId) {
       this.thumbnail = await db.findById(this.thumbnailId);

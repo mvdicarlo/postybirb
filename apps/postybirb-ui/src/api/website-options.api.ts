@@ -3,7 +3,6 @@ import {
   IUpdateSubmissionWebsiteOptionsDto,
   IUpdateWebsiteOptionsDto,
   IValidateWebsiteOptionsDto,
-  IWebsiteFormFields,
   SubmissionId,
   ValidationResult,
   WebsiteOptionsDto,
@@ -13,7 +12,7 @@ import { BaseApi } from './base.api';
 class WebsiteOptionsApi extends BaseApi<
   WebsiteOptionsDto,
   ICreateWebsiteOptionsDto,
-  IUpdateWebsiteOptionsDto<IWebsiteFormFields>
+  IUpdateWebsiteOptionsDto
 > {
   constructor() {
     super('website-option');

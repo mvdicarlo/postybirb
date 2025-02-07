@@ -185,7 +185,7 @@ export class PostManagerService {
       }
 
       const option = submission.options.find(
-        (o) => o.accountId === websitePostRecord.account.id,
+        (o) => o.accountId === websitePostRecord.accountId,
       );
 
       const data = await this.preparePostData(submission, instance, option);
@@ -443,7 +443,9 @@ export class PostManagerService {
     submission: FileSubmission,
     instance: ImplementedFileWebsite,
   ): Promise<PostingFile> {
-    await file.load();
+    if (!file.file) {
+      await file.load();
+    }
     const fileMetadata: FileMetadataFields = submission.metadata[file.id];
     let resizeParams: ImageResizeProps | undefined;
     const { fileOptions } = instance.decoratedProps;

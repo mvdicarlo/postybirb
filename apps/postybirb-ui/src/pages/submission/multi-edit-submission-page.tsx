@@ -84,7 +84,7 @@ function ApplyMultiSubmissionAction({
       onApply={(submissions) => {
         submissionApi
           .applyToMultipleSubmissions({
-            originId: submission.id,
+            submissionToApply: submission.id,
             submissionIds: submissions,
             merge: mergeMode === '1',
           })

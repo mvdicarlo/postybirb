@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "609fe006-669c-41de-afc5-0dd04ecb2e79",
+  "id": "bd40c0d4-752c-4025-bbd9-8d1386b82eb0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -1152,15 +1152,14 @@
           "name": "errors",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'[]'"
+          "notNull": true,
+          "autoincrement": false
         },
         "postData": {
           "name": "postData",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "metadata": {
@@ -1168,8 +1167,14 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false,
-          "default": "'{\"sourceMap\":{},\"postedFiles\":[],\"nextBatchNumber\":1}'"
+          "autoincrement": false
+        },
+        "postResponse": {
+          "name": "postResponse",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {

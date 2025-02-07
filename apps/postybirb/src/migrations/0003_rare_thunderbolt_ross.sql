@@ -1,1 +1,0 @@
-ALTER TABLE `website-post-record` ADD `postReponse` text;

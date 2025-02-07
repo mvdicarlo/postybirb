@@ -31,8 +31,8 @@ import { SubmissionService } from './services/submission.service';
  *
  * @class SubmissionController
  */
-@ApiTags('SubmissionSchema')
-@Controller('SubmissionSchema')
+@ApiTags('submissions')
+@Controller('submissions')
 export class SubmissionController extends PostyBirbController<'SubmissionSchema'> {
   constructor(readonly service: SubmissionService) {
     super(service);

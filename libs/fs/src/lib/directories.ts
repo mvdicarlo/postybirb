@@ -23,7 +23,7 @@ const POSTYBIRB_DIRECTORY = IsTestEnvironment()
 const DATA_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'data');
 
 /** Directory that stores application logs. */
-const LOGS_DIRECTORY = join(DATA_DIRECTORY, 'logs');
+const LOGS_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'logs');
 
 /** Directory used for storing uploaded files. */
 const TEMP_DIRECTORY = join(POSTYBIRB_DIRECTORY, 'temp');

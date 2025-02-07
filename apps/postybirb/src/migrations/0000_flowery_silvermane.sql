@@ -167,9 +167,10 @@ CREATE TABLE `website-post-record` (
 	`postRecordId` text NOT NULL,
 	`accountId` text NOT NULL,
 	`completedAt` text,
-	`errors` text DEFAULT '[]',
-	`postData` text,
-	`metadata` text DEFAULT '{"sourceMap":{},"postedFiles":[],"nextBatchNumber":1}' NOT NULL,
+	`errors` text NOT NULL,
+	`postData` text NOT NULL,
+	`metadata` text NOT NULL,
+	`postResponse` text,
 	FOREIGN KEY (`postRecordId`) REFERENCES `post-record`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`accountId`) REFERENCES `account`(`id`) ON UPDATE no action ON DELETE set null
 );
