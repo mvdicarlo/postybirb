@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-12 13:23+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: German <https://hosted.weblate.org/projects/postybirb/postybirb/de/>\nLanguage: de\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.8.2\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2025-02-12 04:02+0000\nLast-Translator: Ettore Atalan <atalanttore@googlemail.com>\nLanguage-Team: German <https://hosted.weblate.org/projects/postybirb/postybirb/de/>\nLanguage: de\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.10-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:53
 msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -12,15 +12,15 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
 msgid "Accounts"
-msgstr ""
+msgstr "Konten"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:83
 msgid "Action"
-msgstr ""
+msgstr "Aktion"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:177
 msgid "Actions"
-msgstr ""
+msgstr "Aktionen"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:183
 msgid "Add folder watcher"
@@ -36,7 +36,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
 msgid "App Folder"
-msgstr ""
+msgstr "App-Ordner"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:81
 msgid "App Server Port"
@@ -45,12 +45,12 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:283
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:275
 msgid "Apply"
-msgstr ""
+msgstr "Anwenden"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/apply-submission-template-action.tsx:25
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:138
 msgid "Apply Template"
-msgstr ""
+msgstr "Vorlage anwenden"
 
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx:24
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx:32
@@ -71,32 +71,32 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:272
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
-msgstr ""
+msgstr "Abbrechen"
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:36
 msgid "Choose Fields"
-msgstr ""
+msgstr "Felder auswählen"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:211
 msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
-msgstr ""
+msgstr "Vorlagen auswählen"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx:25
 msgid "Choose websites"
-msgstr ""
+msgstr "Websites auswählen"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:72
 msgid "Clear"
-msgstr ""
+msgstr "Leeren"
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copied"
-msgstr ""
+msgstr "Kopiert"
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copy"
-msgstr ""
+msgstr "Kopieren"
 
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:44
 msgid "Create Message Submission"
@@ -104,29 +104,29 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:54
 msgid "Create new submission"
-msgstr ""
+msgstr "Neue Einreichung erstellen"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:131
 msgid "Create new tag converter"
-msgstr ""
+msgstr "Neuen Schlagwortkonverter erstellen"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:131
 msgid "Create new tag group"
-msgstr ""
+msgstr "Neue Schlagwortgruppe erstellen"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:78
 msgid "Create Submission Template"
-msgstr ""
+msgstr "Einreichungsvorlage erstellen"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:85
 msgid "CRON Format"
-msgstr ""
+msgstr "CRON-Format"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx:72
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx:141
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:107
 msgid "Crop"
-msgstr ""
+msgstr "Zuschneiden"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:212
 msgid "Crop new thumbnail from original file"
@@ -134,11 +134,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:215
 msgid "Date"
-msgstr ""
+msgstr "Datum"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:226
 msgid "Days"
-msgstr ""
+msgstr "Tage"
 
 #: apps/postybirb-ui/src/components/form/fields/radio-field.tsx:27
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:44
@@ -147,7 +147,7 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:154
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:83
 msgid "Default"
-msgstr ""
+msgstr "Standard"
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:77
 msgctxt "default-options-saved"
@@ -160,11 +160,11 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx:113
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/delete-submissions-action.tsx:52
 msgid "Delete"
-msgstr ""
+msgstr "Löschen"
 
 #: apps/postybirb-ui/src/external-translations.ts:5
 msgid "Description"
-msgstr ""
+msgstr "Beschreibung"
 
 #: apps/postybirb-ui/src/components/translations/translation.tsx:19
 msgid "Description is greater than {maxLength} characters long"
