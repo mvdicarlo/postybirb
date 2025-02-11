@@ -5,7 +5,7 @@ import { SubmissionDto } from '../models/dtos/submission.dto';
 import StoreManager from './store-manager';
 
 const filter = (submission: SubmissionDto | ISubmissionDto) =>
-  Boolean(submission.metadata.isMultiSubmission);
+  Boolean(submission.isMultiSubmission);
 
 export const MultiSubmissionStore: StoreManager<SubmissionDto> =
   new StoreManager<SubmissionDto>(

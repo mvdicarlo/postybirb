@@ -30,7 +30,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     isLoading,
     isFetching,
   } = useQuery([], () =>
-    fileSubmissionApi.getAltText(file.altFile).then((res) => res.body),
+    fileSubmissionApi.getAltText(file.altFileId!).then((res) => res.body),
   );
   const theme = useMantineColorScheme();
   // Creates a new editor instance.
@@ -44,7 +44,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     debounce(async () => {
       const blocks = editor.document;
       const html = await editor.blocksToHTMLLossy(blocks);
-      fileSubmissionApi.updateAltText(file.altFile, html);
+      fileSubmissionApi.updateAltText(file.altFileId!, html);
     }, 500),
     [editor],
   );

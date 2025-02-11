@@ -1,12 +1,13 @@
 import {
   ILoginState,
   ImageResizeProps,
+  IPostResponse,
   ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteMetadata,
   PostData,
   PostResponse,
-  SimpleValidationResult
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -62,13 +63,16 @@ export default class TestWebsite
     return undefined;
   }
 
-  onPostFileSubmission(
+  async onPostFileSubmission(
     postData: PostData<IWebsiteFormFields>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse> {
-    throw new Error('Method not implemented.');
+  ): Promise<IPostResponse> {
+    cancellationToken.throwIfCancelled();
+    return PostResponse.fromWebsite(this)
+      .atStage('test')
+      .withMessage('test message');
   }
 
   async onValidateFileSubmission(
@@ -80,11 +84,14 @@ export default class TestWebsite
     };
   }
 
-  onPostMessageSubmission(
+  async onPostMessageSubmission(
     postData: PostData<TestMessageSubmission>,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse> {
-    return undefined;
+  ): Promise<IPostResponse> {
+    cancellationToken.throwIfCancelled();
+    return PostResponse.fromWebsite(this)
+      .atStage('test')
+      .withMessage('test message');
   }
 
   async onValidateMessageSubmission(

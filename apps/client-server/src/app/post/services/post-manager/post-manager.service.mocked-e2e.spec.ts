@@ -1,27 +1,30 @@
-import { Collection, Loaded } from '@mikro-orm/core';
+import { clearDatabase } from '@postybirb/database';
 import {
-  FileSubmission,
-  FileType,
-  IAccount,
-  IFileBuffer,
-  ILoginState,
-  ISubmission,
-  ISubmissionFile,
-  IWebsiteOptions,
-  IWebsitePostRecord,
-  MessageSubmission,
-  NullAccount,
-  PostData,
-  PostRecordResumeMode,
-  PostRecordState,
-  PostResponse,
-  SubmissionRating,
-  SubmissionType,
+    FileSubmissionMetadata,
+    FileType,
+    ILoginState,
+    IPostResponse,
+    NullAccount,
+    PostData,
+    PostRecordResumeMode,
+    PostRecordState,
+    SubmissionRating,
+    SubmissionType,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { PostRecord, WebsitePostRecord } from '../../../database/entities';
-import { PostyBirbRepository } from '../../../database/repositories/postybirb-repository';
+import 'reflect-metadata';
+
+import {
+    Account,
+    FileBuffer,
+    PostRecord,
+    Submission,
+    SubmissionFile,
+    WebsiteOptions,
+    WebsitePostRecord,
+} from '../../../drizzle/models';
+import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -38,9 +41,9 @@ import { PostManagerService } from './post-manager.service';
 
 describe('PostManagerServiceMocks', () => {
   let service: PostManagerService;
-  let postRepositoryMock: jest.Mocked<PostyBirbRepository<PostRecord>>;
+  let postRepositoryMock: jest.Mocked<PostyBirbDatabase<'PostRecordSchema'>>;
   let websitePostRecordRepositoryMock: jest.Mocked<
-    PostyBirbRepository<WebsitePostRecord>
+    PostyBirbDatabase<'WebsitePostRecordSchema'>
   >;
   let websiteRegistryMock: jest.Mocked<WebsiteRegistryService>;
   let resizerService: PostFileResizerService;
@@ -49,29 +52,28 @@ describe('PostManagerServiceMocks', () => {
   let fileConverterService: FileConverterService;
 
   beforeEach(async () => {
+    clearDatabase();
     postRepositoryMock = {
-      findOne: jest.fn(),
+      findById: jest.fn(),
+      find: jest.fn(),
       update: jest.fn(),
-      persistAndFlush: jest.fn(),
-    } as unknown as jest.Mocked<PostyBirbRepository<PostRecord>>;
+    } as unknown as jest.Mocked<PostyBirbDatabase<'PostRecordSchema'>>;
     websitePostRecordRepositoryMock = {
-      create: jest.fn(),
-      findOne: jest.fn(),
+      insert: jest.fn(),
+      findById: jest.fn(),
+      find: jest.fn(),
       update: jest.fn(),
-      persistAndFlush: jest.fn(),
-    } as unknown as jest.Mocked<PostyBirbRepository<WebsitePostRecord>>;
+    } as unknown as jest.Mocked<PostyBirbDatabase<'WebsitePostRecordSchema'>>;
     websiteRegistryMock = {
       findInstance: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
-      persistAndFlush: jest.fn(),
     } as unknown as jest.Mocked<WebsiteRegistryService>;
     resizerService = new PostFileResizerService();
     postParserServiceMock = {
       parse: jest.fn(),
       findOne: jest.fn(),
       update: jest.fn(),
-      persistAndFlush: jest.fn(),
     } as unknown as jest.Mocked<PostParsersService>;
     validationServiceMock = {
       validateSubmission: jest.fn(),
@@ -89,64 +91,56 @@ describe('PostManagerServiceMocks', () => {
     );
   });
 
-  function patchCollection<TCollection extends object>(
-    referenceArray: TCollection[],
-  ): Collection<TCollection> {
-    const refAsCollection =
-      referenceArray as unknown as Collection<TCollection>;
-    refAsCollection.add = (...items: TCollection[]) => {
-      referenceArray.push(...items);
-    };
-    refAsCollection.toArray = () => referenceArray as never;
-    refAsCollection.getItems = () => referenceArray as never;
-    return refAsCollection;
-  }
-
-  function createMessageSubmission(): MessageSubmission {
-    const submission = {
+  function createMessageSubmission(): Submission {
+    const submission = new Submission({
       id: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       metadata: {},
       type: SubmissionType.MESSAGE,
-      files: [] as never,
-      options: patchCollection<IWebsiteOptions>([]) as never,
+      files: [],
+      options: [],
       isScheduled: false,
       schedule: {} as never,
       order: 1,
       posts: [] as never,
-    };
+      isTemplate: false,
+      isMultiSubmission: false,
+      isArchived: false,
+    });
 
-    return submission as MessageSubmission;
+    return submission;
   }
 
-  function createFileSubmission(): FileSubmission {
-    const submission: FileSubmission = {
+  function createFileSubmission(): Submission<FileSubmissionMetadata> {
+    const submission = new Submission<FileSubmissionMetadata>({
       id: 'test',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       metadata: {
         order: [],
         fileMetadata: {},
       },
       type: SubmissionType.FILE,
-      files: patchCollection<ISubmissionFile>([]),
-      options: patchCollection<IWebsiteOptions>([]) as never,
+      files: [],
+      options: [],
       isScheduled: false,
       schedule: {} as never,
       order: 1,
       posts: [] as never,
-    };
+      isTemplate: false,
+      isMultiSubmission: false,
+      isArchived: false,
+    });
 
     // 600 x 600 image (png)
     const testFile = readFileSync(
       join(__dirname, '../../../test-files/png_no_alpha.png'),
     );
-    const file: ISubmissionFile = {
-      submission,
+    const file: SubmissionFile = new SubmissionFile({
       id: 'test-file',
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       fileName: 'test.png',
       hash: 'fake-hash',
       mimeType: 'image/png',
@@ -155,26 +149,19 @@ describe('PostManagerServiceMocks', () => {
       height: 600,
       hasAltFile: false,
       hasThumbnail: false,
-      file: {} as IFileBuffer,
-      props: {
-        hasCustomThumbnail: false,
+      hasCustomThumbnail: false,
+      file: new FileBuffer({
+        id: 'test-file-buffer',
+        fileName: 'test.png',
+        mimeType: 'image/png',
+        buffer: testFile,
+        size: testFile.length,
         width: 600,
         height: 600,
-      },
-    };
-
-    file.file = {
-      parent: file,
-      id: 'test-file-buffer',
-      fileName: 'test.png',
-      mimeType: 'image/png',
-      buffer: testFile,
-      size: testFile.length,
-      width: 600,
-      height: 600,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }),
+    });
 
     submission.metadata.order.push(file.id);
     submission.metadata.fileMetadata[file.id] = {
@@ -184,63 +171,59 @@ describe('PostManagerServiceMocks', () => {
       dimensions: {},
     };
 
-    submission.files.add(file);
+    submission.files.push(file);
 
-    return submission as FileSubmission;
+    return submission;
   }
 
-  function createPostRecord(
-    submission: ISubmission,
-  ): Loaded<PostRecord, string> {
-    const postRecord = {
-      parent: submission,
+  function createPostRecord(submission: Submission): PostRecord {
+    const postRecord = new PostRecord({
+      submission: submission as Submission,
       state: PostRecordState.PENDING,
       resumeMode: PostRecordResumeMode.CONTINUE,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       id: 'test-post-record',
-      children: patchCollection<IWebsitePostRecord>([]) as never,
-      toJSON: jest.fn().mockReturnValue({}),
-    };
+      children: [],
+    });
 
-    postRecord.toJSON = jest.fn().mockReturnValue({});
-    return postRecord as Loaded<PostRecord, string>;
+    return postRecord;
   }
 
-  function createAccount(): IAccount {
-    return {
+  function createAccount(): Account {
+    return new Account({
       id: 'test-account',
       name: 'Test Account',
       website: 'test',
       groups: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   function createWebsiteOptions(
-    submission: ISubmission,
-    account: IAccount,
-  ): IWebsiteOptions[] {
+    submission: Submission,
+    account: Account,
+  ): WebsiteOptions[] {
     return [
-      {
+      new WebsiteOptions({
         id: 'default',
-        account: new NullAccount(),
+        account: new Account(new NullAccount()),
         submission,
         isDefault: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         data: { ...new DefaultWebsiteOptions() },
-      },
-      {
+      }),
+      new WebsiteOptions({
         id: 'instance-options',
         account,
         submission,
         isDefault: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         data: { ...new BaseWebsiteOptions() },
-      },
+      }),
     ];
   }
 
@@ -248,8 +231,8 @@ describe('PostManagerServiceMocks', () => {
     const submission = createFileSubmission();
     const account = createAccount();
     const websiteOptions = createWebsiteOptions(submission, account);
-    websiteOptions.forEach((option) => submission.options.add(option));
-    const postRecord: Loaded<PostRecord, string> = createPostRecord(submission);
+    websiteOptions.forEach((option) => submission.options.push(option));
+    const postRecord: PostRecord = createPostRecord(submission);
     const websiteInstance: UnknownWebsite = {
       id: 'test',
       supportsFile: true,
@@ -270,24 +253,25 @@ describe('PostManagerServiceMocks', () => {
       getSupportedTypes: jest.fn().mockReturnValue([SubmissionType.FILE]),
     } as unknown as UnknownWebsite;
 
-    postRepositoryMock.findOne.mockResolvedValue(Promise.resolve(postRecord));
-    postRepositoryMock.update.mockImplementation(async (id, record) => {
+    postRepositoryMock.findById.mockResolvedValue(Promise.resolve(postRecord));
+    postRepositoryMock.update.mockImplementation(async (id, record: never) => {
       Object.assign(postRecord, record);
-      return record as unknown as Loaded<PostRecord, never>;
+      return record;
     });
-    websitePostRecordRepositoryMock.create.mockImplementation(
-      (record) =>
-        ({
+    websitePostRecordRepositoryMock.insert.mockImplementation((record) =>
+      Promise.resolve([
+        new WebsitePostRecord({
           ...record,
           id: new Date().getTime().toString(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           metadata: {
             sourceMap: {},
             postedFiles: [],
             nextBatchNumber: 1,
           },
-        }) as WebsitePostRecord,
+        }),
+      ]),
     );
     websiteRegistryMock.findInstance.mockReturnValue(websiteInstance);
     const postData: PostData = {
@@ -317,8 +301,8 @@ describe('PostManagerServiceMocks', () => {
     const submission = createMessageSubmission();
     const account = createAccount();
     const websiteOptions = createWebsiteOptions(submission, account);
-    websiteOptions.forEach((option) => submission.options.add(option));
-    const postRecord: Loaded<PostRecord, string> = createPostRecord(submission);
+    websiteOptions.forEach((option) => submission.options.push(option));
+    const postRecord: PostRecord = createPostRecord(submission);
     const websiteInstance: UnknownWebsite = {
       id: 'test',
       supportsFile: false,
@@ -332,24 +316,25 @@ describe('PostManagerServiceMocks', () => {
       getSupportedTypes: jest.fn().mockReturnValue([SubmissionType.MESSAGE]),
     } as unknown as UnknownWebsite;
 
-    postRepositoryMock.findOne.mockResolvedValue(Promise.resolve(postRecord));
+    postRepositoryMock.findById.mockResolvedValue(Promise.resolve(postRecord));
     postRepositoryMock.update.mockImplementation(async (id, record) => {
       Object.assign(postRecord, record);
-      return record as unknown as Loaded<PostRecord, never>;
+      return record as unknown as PostRecord;
     });
-    websitePostRecordRepositoryMock.create.mockImplementation(
-      (record) =>
-        ({
+    websitePostRecordRepositoryMock.insert.mockImplementation((record) =>
+      Promise.resolve([
+        new WebsitePostRecord({
           ...record,
           id: new Date().getTime().toString(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           metadata: {
             sourceMap: {},
             postedFiles: [],
             nextBatchNumber: 1,
           },
-        }) as WebsitePostRecord,
+        }),
+      ]),
     );
     websiteRegistryMock.findInstance.mockReturnValue(websiteInstance);
     postParserServiceMock.parse.mockResolvedValue({
@@ -378,7 +363,7 @@ describe('PostManagerServiceMocks', () => {
     const { postRecord, websiteInstance, postData, submission } =
       mockFileSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -407,29 +392,24 @@ describe('PostManagerServiceMocks', () => {
     );
     expect(postRecord.state).toBe(PostRecordState.DONE);
     expect(postRecord.completedAt).toBeDefined();
-    expect(postRecord.children.toArray()).toHaveLength(1);
-    expect(postRecord.children.toArray()[0].completedAt).toBeDefined();
-    expect(postRecord.children.toArray()[0].errors).toBeUndefined();
+    expect(postRecord.children).toHaveLength(1);
+    expect(postRecord.children[0].completedAt).toBeDefined();
+    expect(postRecord.children[0].errors.length).toBe(0);
     expect(
-      postRecord.children.toArray()[0].metadata.sourceMap[
-        submission.files[0].id
-      ],
+      postRecord.children[0].metadata.sourceMap[submission.files[0].id],
     ).toEqual(response.sourceUrl);
   });
 
   it('should post a file submission with resize', async () => {
-    const { postRecord, websiteInstance, postData, submission } =
-      mockFileSubmissionPost();
+    const { postRecord, websiteInstance } = mockFileSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
     (websiteInstance as unknown as FileWebsite).onPostFileSubmission = async (
       d,
       files,
-      i,
-      c,
     ) => {
       if (files[0].height === 300 && files[0].width === 300) {
         return response;
@@ -458,7 +438,7 @@ describe('PostManagerServiceMocks', () => {
     // This more or less tests the happy path
     const { postRecord, websiteInstance } = mockMessageSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -475,19 +455,17 @@ describe('PostManagerServiceMocks', () => {
     );
     expect(postRecord.state).toBe(PostRecordState.DONE);
     expect(postRecord.completedAt).toBeDefined();
-    expect(postRecord.children.toArray()).toHaveLength(1);
-    expect(postRecord.children.toArray()[0].completedAt).toBeDefined();
-    expect(postRecord.children.toArray()[0].errors).toBeUndefined();
-    expect(postRecord.children.toArray()[0].metadata.source).toEqual(
-      response.sourceUrl,
-    );
+    expect(postRecord.children).toHaveLength(1);
+    expect(postRecord.children[0].completedAt).toBeDefined();
+    expect(postRecord.children[0].errors.length).toBe(0);
+    expect(postRecord.children[0].metadata.source).toEqual(response.sourceUrl);
   });
 
   it('should post a message submission unsuccessfully at post time', async () => {
     // This more or less tests the happy path
     const { postRecord, websiteInstance } = mockMessageSubmissionPost();
 
-    const response: PostResponse = {
+    const response: IPostResponse = {
       exception: new Error('Test Error'),
     };
     (websiteInstance as unknown as MessageWebsite).onPostMessageSubmission =
@@ -503,8 +481,8 @@ describe('PostManagerServiceMocks', () => {
     );
     expect(postRecord.state).toBe(PostRecordState.FAILED);
     expect(postRecord.completedAt).toBeDefined();
-    expect(postRecord.children.toArray()).toHaveLength(1);
-    expect(postRecord.children.toArray()[0].completedAt).toBeUndefined();
-    expect(postRecord.children.toArray()[0].errors).toBeDefined();
+    expect(postRecord.children).toHaveLength(1);
+    expect(postRecord.children[0].completedAt).toBeUndefined();
+    expect(postRecord.children[0].errors).toBeDefined();
   });
 });

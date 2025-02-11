@@ -47,8 +47,8 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
       searchable
       data={options}
       defaultValue={submission.options
-        .filter((o) => o.account !== NULL_ACCOUNT_ID)
-        .map((o) => o.account)}
+        .filter((o) => o.accountId !== NULL_ACCOUNT_ID)
+        .map((o) => o.accountId)}
       label={<Trans>Websites</Trans>}
       onChange={(value) => {
         onCommitChanges(accounts.filter((a) => value.includes(a.id)));

@@ -1,32 +1,22 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ISubmission, ISubmissionFile } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { DatabaseModule } from '../../../database/database.module';
 import { ImageUtil } from '../../../file/utils/image.util';
 import { PostFileResizerService } from './post-file-resizer.service';
 
 describe('PostFileResizerService', () => {
   let service: PostFileResizerService;
   let module: TestingModule;
-  let orm: MikroORM;
   let testFile: Buffer;
   let file: ISubmissionFile;
 
   beforeEach(async () => {
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [PostFileResizerService],
     }).compile();
 
     service = module.get<PostFileResizerService>(PostFileResizerService);
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
   });
 
   function createFile(
@@ -43,19 +33,16 @@ describe('PostFileResizerService', () => {
       mimeType,
       size: testFile.length,
       hasThumbnail: false,
+      hasCustomThumbnail: false,
       hasAltFile: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       submission: {} as ISubmission<never>,
       width,
       height,
-      props: {
-        hasCustomThumbnail: false,
-        width,
-        height,
-      },
+      primaryFileId: 'test',
       file: {
-        parent: {} as ISubmissionFile,
+        submissionFileId: 'test',
         fileName,
         mimeType,
         id: 'test',
@@ -63,8 +50,8 @@ describe('PostFileResizerService', () => {
         size: buf.length,
         width,
         height,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     };
   }
@@ -77,7 +64,6 @@ describe('PostFileResizerService', () => {
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

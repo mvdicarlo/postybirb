@@ -1,20 +1,25 @@
 /* eslint-disable no-param-reassign */
-import { serialize } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
   OnModuleInit,
   Optional,
-  forwardRef,
 } from '@nestjs/common';
+import {
+  FileBufferSchema,
+  Insert,
+  PostyBirbTransaction,
+  SubmissionFileSchema,
+  SubmissionSchema,
+  WebsiteOptionsSchema,
+} from '@postybirb/database';
 import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
   FileSubmissionMetadata,
-  ISubmission,
   ISubmissionDto,
   ISubmissionMetadata,
   MessageSubmission,
@@ -24,23 +29,13 @@ import {
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
-import { cloneDeep } from 'lodash';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { eq } from 'drizzle-orm';
 import * as path from 'path';
-import { v4 } from 'uuid';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import {
-  AltFile,
-  PostRecord,
-  PrimaryFile,
-  Submission,
-  SubmissionFile,
-  ThumbnailFile,
-  WebsiteOptions,
-} from '../../database/entities';
-import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../../database/subscribers/database.subscriber';
+import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
+import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
-import { IsTestEnvironment } from '../../utils/test.util';
 import { WSGateway } from '../../web-socket/web-socket-gateway';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
@@ -58,36 +53,41 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<SubmissionEntity>
+  extends PostyBirbService<'SubmissionSchema'>
   implements OnModuleInit
 {
   constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
-    @InjectRepository(Submission)
-    repository: PostyBirbRepository<SubmissionEntity>,
     @Inject(forwardRef(() => WebsiteOptionsService))
     private readonly websiteOptionsService: WebsiteOptionsService,
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
     @Optional() webSocket: WSGateway,
   ) {
-    super(repository, webSocket);
-
-    // Listen to changes to PostRecord as it is a child of Submission
-    repository.addUpdateListener(dbSubscriber, [PostRecord], () => this.emit());
-    // repository.addUpdateListener(dbSubscriber, [WebsiteOptions], () =>
-    //   this.emit()
-    // );
-    // This might be dangerous depending on the creation order of the services
-    repository.addUpdateListener(dbSubscriber, [SubmissionFile], () =>
-      this.emit(),
+    super(
+      new PostyBirbDatabase('SubmissionSchema', {
+        options: {
+          with: {
+            account: true,
+          },
+        },
+        posts: true,
+        postQueueRecord: true,
+        files: true,
+      }),
+      webSocket,
     );
-    repository.addUpdateListener(dbSubscriber, [PrimaryFile], () =>
-      this.emit(),
-    );
-    repository.addUpdateListener(dbSubscriber, [AltFile], () => this.emit());
-    repository.addUpdateListener(dbSubscriber, [ThumbnailFile], () =>
-      this.emit(),
+    this.repository.subscribe(
+      [
+        'PostRecordSchema',
+        'WebsitePostRecordSchema',
+        'PostQueueRecordSchema',
+        'SubmissionFileSchema',
+        'FileBufferSchema',
+        // 'WebsiteOptionsSchema',
+      ],
+      () => {
+        this.emit();
+      },
     );
   }
 
@@ -101,8 +101,6 @@ export class SubmissionService
    * Emits submissions onto websocket.
    */
   public async emit() {
-    // !BUG - This protects against unit test failures, but is not a good solution.
-    // Ideally fixed by upgrading mikro-orm and using a proper event emitter.
     if (IsTestEnvironment()) {
       return;
     }
@@ -118,7 +116,7 @@ export class SubmissionService
       all.map(
         async (s) =>
           ({
-            ...s.toJSON(),
+            ...s.toDTO(),
             validations: await this.websiteOptionsService.validateSubmission(
               s.id,
             ),
@@ -129,8 +127,11 @@ export class SubmissionService
 
   private async populateMultiSubmission(type: SubmissionType) {
     const existing = await this.repository.findOne({
-      type,
-      metadata: { isMultiSubmission: true },
+      where: (submission, { eq: equals, and }) =>
+        and(
+          eq(submission.id, type),
+          equals(submission.isMultiSubmission, true),
+        ),
     });
     if (existing) {
       return;
@@ -151,26 +152,26 @@ export class SubmissionService
     file?: MulterFileInfo,
   ): Promise<SubmissionEntity> {
     this.logger.withMetadata(createSubmissionDto).info('Creating Submission');
-    const submission = new Submission({
-      ...createSubmissionDto,
+
+    let submission = new Submission<ISubmissionMetadata>({
       isScheduled: false,
+      isMultiSubmission: !!createSubmissionDto.isMultiSubmission,
+      isTemplate: !!createSubmissionDto.isTemplate,
+      ...createSubmissionDto,
       schedule: {
         scheduledFor: undefined,
         scheduleType: ScheduleType.NONE,
         cron: undefined,
       },
+      metadata: {
+        template: createSubmissionDto.isTemplate
+          ? { name: createSubmissionDto.name.trim() }
+          : undefined,
+      },
+      order: (await this.repository.count()) + 1,
     });
 
-    if (createSubmissionDto.isTemplate) {
-      submission.metadata.template = {
-        name: createSubmissionDto.name.trim(),
-      };
-    }
-
-    if (createSubmissionDto.isMultiSubmission) {
-      submission.metadata.isMultiSubmission = true;
-      submission.id = `MULTI-${submission.type}`;
-    }
+    submission = await this.repository.insert(submission);
 
     let name = 'New submission';
     if (createSubmissionDto.name) {
@@ -179,73 +180,77 @@ export class SubmissionService
       name = path.parse(file.filename).name;
     }
 
-    submission.options.add(
+    try {
       await this.websiteOptionsService.createDefaultSubmissionOptions(
-        submission as ISubmission,
+        submission,
         name,
-      ),
-    );
+      );
 
-    submission.order = (await this.repository.count()) + 1;
-    await this.repository.persist(submission);
+      switch (createSubmissionDto.type) {
+        case SubmissionType.MESSAGE: {
+          if (file) {
+            throw new BadRequestException(
+              'A file was provided for SubmissionType Message.',
+            );
+          }
 
-    switch (createSubmissionDto.type) {
-      case SubmissionType.MESSAGE: {
-        if (file) {
-          throw new BadRequestException(
-            'A file was provided for SubmissionType Message.',
+          await this.messageSubmissionService.populate(
+            submission as unknown as MessageSubmission,
+            createSubmissionDto,
           );
-        }
-
-        await this.messageSubmissionService.populate(
-          submission as unknown as MessageSubmission,
-          createSubmissionDto,
-        );
-        break;
-      }
-
-      case SubmissionType.FILE: {
-        if (
-          createSubmissionDto.isTemplate ||
-          createSubmissionDto.isMultiSubmission
-        ) {
-          // Don't need to populate on a template
           break;
         }
 
-        if (!file) {
-          throw new BadRequestException(
-            'No file provided for SubmissionType FILE.',
+        case SubmissionType.FILE: {
+          if (
+            createSubmissionDto.isTemplate ||
+            createSubmissionDto.isMultiSubmission
+          ) {
+            // Don't need to populate on a template
+            break;
+          }
+
+          if (!file) {
+            throw new BadRequestException(
+              'No file provided for SubmissionType FILE.',
+            );
+          }
+
+          // This currently mutates the submission object metadata
+          await this.fileSubmissionService.populate(
+            submission as unknown as FileSubmission,
+            createSubmissionDto,
+            file,
           );
+          break;
         }
 
-        await this.fileSubmissionService.populate(
-          submission as unknown as FileSubmission,
-          createSubmissionDto,
-          file,
-        );
-        break;
+        default: {
+          throw new BadRequestException(
+            `Unknown SubmissionType: ${createSubmissionDto.type}.`,
+          );
+        }
       }
 
-      default: {
-        throw new BadRequestException(
-          `Unknown SubmissionType: ${createSubmissionDto.type}.`,
-        );
-      }
+      // Re-save to capture any mutations during population
+      await this.repository.update(submission.id, submission.toObject());
+      this.emit();
+      return await this.findById(submission.id);
+    } catch (err) {
+      // Clean up on error, tx is too much work
+      this.logger.error(err, 'Error creating submission');
+      await this.repository.deleteById([submission.id]);
+      throw err;
     }
-
-    // Re-save to capture any mutations during population
-    await this.repository.persistAndFlush(submission);
-    this.emit();
-    return submission;
   }
 
   /**
    * Applies a template to a submission.
    * Primarily used when a submission is created from a template.
+   * Or when applying overriding multi-submission options.
    *
-   * @param {string} id
-   * @param {string} templateId
+   * @param {SubmissionId} id
+   * @param {SubmissionId} templateId
    */
   async applyOverridingTemplate(id: SubmissionId, templateId: SubmissionId) {
     this.logger
@@ -260,27 +265,32 @@ export class SubmissionService
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
-    const defaultOption: WebsiteOptions = submission.options
-      .getItems()
-      .find((option: WebsiteOptions) => option.account.id === NULL_ACCOUNT_ID);
-    submission.options.removeAll();
-    const options = template.options.getItems();
-    const newOptions = await Promise.all(
-      options.map(async (option: WebsiteOptions) => {
-        const newOption = await this.websiteOptionsService.createOption(
-          submission,
-          option.account.id,
-          option.data,
-          defaultOption.data.title,
-        );
-        return newOption;
-      }),
+    const defaultOption: WebsiteOptions = submission.options.find(
+      (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
+    const defaultTitle = defaultOption?.data?.title;
+    await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
+      // clear all existing options
+      await tx
+        .delete(WebsiteOptionsSchema)
+        .where(eq(WebsiteOptionsSchema.submissionId, id));
 
-    submission.options.add(newOptions);
+      const newOptionInsertions: Insert<'WebsiteOptionsSchema'>[] =
+        await Promise.all(
+          template.options.map((option) =>
+            this.websiteOptionsService.createOptionInsertObject(
+              submission,
+              option.accountId,
+              option.data,
+              (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
+            ),
+          ),
+        );
+
+      await tx.insert(WebsiteOptionsSchema).values(newOptionInsertions);
+    });
 
     try {
-      await this.repository.persistAndFlush(submission);
       this.emit();
       return await this.findById(id);
     } catch (err) {
@@ -291,10 +301,10 @@ export class SubmissionService
   /**
    * Updates a submission.
    *
-   * @param {string} id
+   * @param {SubmissionId} id
    * @param {UpdateSubmissionDto} update
    */
-  async update(id: string, update: UpdateSubmissionDto) {
+  async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
 
@@ -347,9 +357,9 @@ export class SubmissionService
         } else {
           optionChanges.push(
             this.websiteOptionsService.create({
-              account: option.account,
+              accountId: option.accountId,
               data: option.data,
-              submission: submission.id,
+              submissionId: submission.id,
             }),
           );
         }
@@ -359,7 +369,11 @@ export class SubmissionService
     await Promise.allSettled(optionChanges);
 
     try {
-      await this.repository.flush();
+      await this.repository.update(id, {
+        metadata: submission.metadata,
+        isScheduled: submission.isScheduled,
+        schedule: submission.schedule,
+      });
       this.emit();
       return await this.findById(id);
     } catch (err) {
@@ -367,149 +381,211 @@ export class SubmissionService
     }
   }
 
-  public async remove(id: string) {
+  public async remove(id: SubmissionId) {
     await super.remove(id);
     this.emit();
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
-    const { originId, submissionIds, merge } = applyMultiSubmissionDto;
-    const origin = await this.repository.findOneOrFail({ id: originId });
+    const { submissionToApply, submissionIds, merge } = applyMultiSubmissionDto;
+    const origin = await this.repository.findById(submissionToApply, {
+      failOnMissing: true,
+    });
     const submissions = await this.repository.find({
-      id: { $in: submissionIds },
+      where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
     if (merge) {
-      // Keeps unique options, overwrites overlapping options\
-      // eslint-disable-next-line no-restricted-syntax
+      // Keeps unique options, overwrites overlapping options
       for (const submission of submissions) {
-        // eslint-disable-next-line no-restricted-syntax
-        for (const option of origin.options.getItems()) {
-          const existingOption = submission.options
-            .getItems()
-            .find((o) => o.account.id === option.account.id);
+        for (const option of origin.options) {
+          const existingOption = submission.options.find(
+            (o) => o.accountId === option.accountId,
+          );
           if (existingOption) {
             // Don't overwrite set title
             const opts = { ...option.data, title: existingOption.data.title };
-            existingOption.data = opts;
+            await this.websiteOptionsService.update(existingOption.id, {
+              data: opts,
+            });
           } else {
-            submission.options.add(
-              await this.websiteOptionsService.createOption(
-                submission,
-                option.account.id,
-                option.data,
-                option.isDefault ? undefined : option.data.title,
-              ),
+            await this.websiteOptionsService.createOption(
+              submission,
+              option.accountId,
+              option.data,
+              option.isDefault ? undefined : option.data.title,
             );
           }
         }
       }
     } else {
       // Removes all options not included in the origin submission
-      // eslint-disable-next-line no-restricted-syntax
       for (const submission of submissions) {
-        const items = submission.options.getItems();
-        const defaultOptions = items.find((option) => option.isDefault);
+        const { options } = submission;
+        const defaultOptions = options.find((option) => option.isDefault);
         const defaultTitle = defaultOptions?.data.title;
-        submission.options.removeAll();
+        await Promise.all(
+          options.map((option) => this.websiteOptionsService.remove(option.id)),
+        );
         // eslint-disable-next-line no-restricted-syntax
-        for (const option of origin.options.getItems()) {
+        for (const option of origin.options) {
           const opts = { ...option.data };
           if (option.isDefault) {
             opts.title = defaultTitle;
           }
-          submission.options.add(
-            await this.websiteOptionsService.createOption(
-              submission,
-              option.account.id,
-              opts,
-              option.isDefault ? defaultTitle : option.data.title,
-            ),
+          await this.websiteOptionsService.createOption(
+            submission,
+            option.accountId,
+            opts,
+            option.isDefault ? defaultTitle : option.data.title,
           );
         }
       }
     }
 
-    await this.repository.persistAndFlush(submissions);
     this.emit();
   }
 
   /**
    * Duplicates a submission.
-   * !Somewhat janky method of doing a clone.
    * @param {string} id
    */
-  public async duplicate(id: string) {
+  public async duplicate(id: SubmissionId) {
     this.logger.info(`Duplicating Submission '${id}'`);
-    const entityToDuplicate = await this.repository.findOne(
-      { id },
-      { populate: true },
-    );
-
-    if (!entityToDuplicate) {
-      throw new NotFoundException(`No entity with id '${id}' found`);
-    }
-
-    const copy = cloneDeep(
-      serialize(entityToDuplicate, {
-        populate: true,
-        ignoreSerializers: true,
-      }),
-    );
-    copy.id = v4();
-    copy.options.forEach((option: WebsiteOptions) => {
-      option.id = v4();
-      if (option.account.id === NULL_ACCOUNT_ID) {
-        option.data.title = `${option.data.title} copy`;
-      }
-      delete option.submission;
+    const entityToDuplicate = await this.repository.findOne({
+      where: (submission, { eq: equals }) => equals(submission.id, id),
+      with: {
+        options: {
+          with: {
+            account: true,
+          },
+        },
+        files: {
+          with: {
+            file: true,
+            altFile: true,
+            thumbnail: true,
+          },
+        },
+      },
     });
-    const metadata = JSON.parse(
-      JSON.stringify(copy.metadata),
-    ) as FileSubmissionMetadata;
-    copy.metadata = metadata;
-    copy.files.forEach((fileEntity) => {
-      delete fileEntity.submission;
-      const oldId = fileEntity.id;
-      // Fix metadata
-      const index = metadata.order.findIndex(
-        (fileId) => fileId === fileEntity.id,
+    await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
+      const newSubmission = (
+        await tx
+          .insert(SubmissionSchema)
+          .values({
+            metadata: entityToDuplicate.metadata,
+            type: entityToDuplicate.type,
+            isScheduled: entityToDuplicate.isScheduled,
+            schedule: entityToDuplicate.schedule,
+            isMultiSubmission: entityToDuplicate.isMultiSubmission,
+            isTemplate: entityToDuplicate.isTemplate,
+            order: entityToDuplicate.order,
+          })
+          .returning()
+      )[0];
+
+      await tx.insert(WebsiteOptionsSchema).values(
+        entityToDuplicate.options.map((option) => ({
+          ...option,
+          id: undefined,
+          submissionId: newSubmission.id,
+        })),
       );
-      fileEntity.id = v4();
-      if (index > -1) {
-        metadata.order[index] = fileEntity.id;
-      }
 
-      if (metadata.fileMetadata[oldId]) {
-        metadata.fileMetadata[fileEntity.id] = metadata.fileMetadata[oldId];
-        delete metadata.fileMetadata[oldId];
-      }
+      for (const file of entityToDuplicate.files) {
+        const newFile = (
+          await tx
+            .insert(SubmissionFileSchema)
+            .values({
+              submissionId: newSubmission.id,
+              fileName: file.fileName,
+              mimeType: file.mimeType,
+              hash: file.hash,
+              size: file.size,
+              height: file.height,
+              width: file.width,
+              hasThumbnail: file.hasThumbnail,
+              hasCustomThumbnail: file.hasCustomThumbnail,
+              hasAltFile: file.hasAltFile,
+            })
+            .returning()
+        )[0];
 
-      if (fileEntity.altFile) {
-        fileEntity.altFile.id = v4();
-        delete fileEntity.altFile.parent;
-      }
+        const primaryFile = (
+          await tx
+            .insert(FileBufferSchema)
+            .values({
+              ...file.file,
+              id: undefined,
+              submissionFileId: newFile.id,
+            })
+            .returning()
+        )[0];
 
-      if (fileEntity.file) {
-        fileEntity.file.id = v4();
-        delete fileEntity.file.parent;
-      }
+        const thumbnail: FileBuffer | undefined = file.thumbnail
+          ? (
+              await tx
+                .insert(FileBufferSchema)
+                .values({
+                  ...file.thumbnail,
+                  id: undefined,
+                  submissionFileId: newFile.id,
+                })
+                .returning()
+            )[0]
+          : undefined;
 
-      if (fileEntity.thumbnail) {
-        fileEntity.thumbnail.id = v4();
-        delete fileEntity.thumbnail.parent;
+        const altFile: FileBuffer | undefined = file.altFile
+          ? (
+              await tx
+                .insert(FileBufferSchema)
+                .values({
+                  ...file.altFile,
+                  id: undefined,
+                  submissionFileId: newFile.id,
+                })
+                .returning()
+            )[0]
+          : undefined;
+
+        await tx
+          .update(SubmissionFileSchema)
+          .set({
+            primaryFileId: primaryFile.id,
+            thumbnailId: thumbnail?.id,
+            altFileId: altFile?.id,
+          })
+          .where(eq(SubmissionFileSchema.id, newFile.id));
+
+        const oldId = file.id;
+        // eslint-disable-next-line prefer-destructuring
+        const metadata: FileSubmissionMetadata =
+          newSubmission.metadata as FileSubmissionMetadata;
+        // Fix metadata
+        const index = metadata.order.findIndex((fileId) => fileId === file.id);
+        if (index > -1) {
+          metadata.order[index] = newFile.id;
+        }
+
+        if (metadata.fileMetadata[oldId]) {
+          metadata.fileMetadata[newFile.id] = metadata.fileMetadata[oldId];
+          delete metadata.fileMetadata[oldId];
+        }
       }
     });
 
-    const created = this.repository.create(copy);
-    await this.repository.persistAndFlush(created);
     this.emit();
   }
 
   async updateTemplateName(
-    id: string,
+    id: SubmissionId,
     updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
     const entity = await this.findById(id, { failOnMissing: true });
+
+    if (!entity.isTemplate) {
+      throw new BadRequestException(`Submission '${id}' is not a template`);
+    }
 
     const name = updateSubmissionDto.name.trim();
     if (!updateSubmissionDto.name) {
@@ -520,11 +596,8 @@ export class SubmissionService
 
     if (entity.metadata.template) {
       entity.metadata.template.name = name;
-      await this.repository.flush();
-      return entity;
     }
-
-    throw new BadRequestException(`Submission '${id}' is not a template`);
+    return this.repository.update(id, { metadata: entity.metadata });
   }
 
   async reorder(id: SubmissionId, index: number) {
@@ -557,14 +630,11 @@ export class SubmissionService
     });
 
     // Save changes
-    await this.repository.persistAndFlush(allSubmissions);
-    this.emit();
-  }
-
-  public findPopulatedById(id: string) {
-    return this.repository.findOneOrFail(
-      { id },
-      { populate: ['options', 'options.account'] },
+    await Promise.all(
+      allSubmissions.map((s) =>
+        this.repository.update(s.id, { order: s.order }),
+      ),
     );
+    this.emit();
   }
 }

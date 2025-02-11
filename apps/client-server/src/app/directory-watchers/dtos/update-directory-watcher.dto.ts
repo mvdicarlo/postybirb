@@ -20,5 +20,5 @@ export class UpdateDirectoryWatcherDto implements IUpdateDirectoryWatcherDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  template?: SubmissionId;
+  templateId?: SubmissionId;
 }

@@ -9,11 +9,13 @@ export type IAccountDto<T = any> = IEntityDto<IAccount> & {
    * @type {ILoginState}
    */
   state: ILoginState;
+
   /**
    * Additional information from website data entity.
    * @type {T}
    */
   data: T;
+
   /**
    * Website info for display purposes from API consumers.
    * @type {IWebsiteInfo}

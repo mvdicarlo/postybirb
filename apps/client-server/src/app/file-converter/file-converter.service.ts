@@ -7,8 +7,8 @@ import { TextFileConverter } from './converters/text-file-converter';
 export class FileConverterService {
   private readonly converters: IFileConverter[] = [new TextFileConverter()];
 
-  public async convert(
-    file: IFileBuffer,
+  public async convert<T extends IFileBuffer>(
+    file: T,
     allowableOutputMimeTypes: string[],
   ): Promise<IFileBuffer> {
     const converter = this.converters.find((c) =>

@@ -11,14 +11,14 @@ export interface IEntity {
   id: EntityId;
 
   /**
-   * The date when the entity was created.
-   * @type {Date}
+   * The date string when the entity was created.
+   * @type {string}
    */
-  createdAt: Date;
+  createdAt: string;
 
   /**
-   * The date when the entity was last updated.
-   * @type {Date}
+   * The date string when the entity was last updated.
+   * @type {string}
    */
-  updatedAt: Date;
+  updatedAt: string;
 }

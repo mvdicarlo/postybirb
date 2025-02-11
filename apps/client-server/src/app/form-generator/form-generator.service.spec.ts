@@ -1,6 +1,6 @@
-import { MikroORM } from '@mikro-orm/core';
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
@@ -11,7 +11,6 @@ import {
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
-import { DatabaseModule } from '../database/database.module';
 import { CreateUserSpecifiedWebsiteOptionsDto } from '../user-specified-website-options/dtos/create-user-specified-website-options.dto';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
@@ -23,12 +22,11 @@ describe('FormGeneratorService', () => {
   let userSpecifiedService: UserSpecifiedWebsiteOptionsService;
   let accountService: AccountService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       imports: [
-        DatabaseModule,
         AccountModule,
         WebsitesModule,
         UserSpecifiedWebsiteOptionsModule,
@@ -41,18 +39,11 @@ describe('FormGeneratorService', () => {
     userSpecifiedService = module.get<UserSpecifiedWebsiteOptionsService>(
       UserSpecifiedWebsiteOptionsService,
     );
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
 
     await accountService.onModuleInit();
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -68,7 +59,7 @@ describe('FormGeneratorService', () => {
 
   it('should return user specific defaults', async () => {
     const userSpecifiedDto = new CreateUserSpecifiedWebsiteOptionsDto();
-    userSpecifiedDto.account = new NullAccount().id;
+    userSpecifiedDto.accountId = new NullAccount().id;
     userSpecifiedDto.type = SubmissionType.MESSAGE;
     userSpecifiedDto.options = { rating: SubmissionRating.ADULT };
     await userSpecifiedService.create(userSpecifiedDto);

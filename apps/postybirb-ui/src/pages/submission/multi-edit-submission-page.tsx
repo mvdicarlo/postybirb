@@ -33,8 +33,8 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
         Promise.all(
           options.map((option) =>
             websiteOptionsApi.create({
-              submission: submission.id,
-              account: option.account,
+              submissionId: submission.id,
+              accountId: option.accountId,
               data: option.data,
             }),
           ),
@@ -84,7 +84,7 @@ function ApplyMultiSubmissionAction({
       onApply={(submissions) => {
         submissionApi
           .applyToMultipleSubmissions({
-            originId: submission.id,
+            submissionToApply: submission.id,
             submissionIds: submissions,
             merge: mergeMode === '1',
           })

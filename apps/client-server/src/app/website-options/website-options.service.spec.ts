@@ -1,16 +1,14 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import {
   DefaultDescriptionValue,
   DefaultTagValue,
-  IWebsiteFormFields,
   SubmissionRating,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 import { CreateAccountDto } from '../account/dtos/create-account.dto';
-import { DatabaseModule } from '../database/database.module';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
@@ -35,7 +33,6 @@ describe('WebsiteOptionsService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   async function createAccount() {
     const dto = new CreateAccountDto();
@@ -57,13 +54,12 @@ describe('WebsiteOptionsService', () => {
   }
 
   beforeEach(async () => {
+    clearDatabase();
     try {
       module = await Test.createTestingModule({
         imports: [
-          DatabaseModule,
           WebsitesModule,
           AccountModule,
-          DatabaseModule,
           UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FormGeneratorModule,
@@ -89,12 +85,6 @@ describe('WebsiteOptionsService', () => {
       service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
       submissionService = module.get<SubmissionService>(SubmissionService);
       accountService = module.get<AccountService>(AccountService);
-      orm = module.get(MikroORM);
-      try {
-        await orm.getSchemaGenerator().refreshDatabase();
-      } catch {
-        // none
-      }
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -102,7 +92,6 @@ describe('WebsiteOptionsService', () => {
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -114,32 +103,35 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
-    dto.account = account.id;
-    dto.submission = submission.id;
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
 
     const record = await service.create(dto);
     const groups = await service.findAll();
     expect(groups).toHaveLength(2); // 2 because default
 
-    expect(groups[1].account.id).toEqual(dto.account);
+    expect(groups[1].accountId).toEqual(dto.accountId);
     expect(groups[1].isDefault).toEqual(false);
     expect(groups[1].data).toEqual(dto.data);
-    expect(groups[1].submission.id).toEqual(dto.submission);
+    expect(groups[1].submission.id).toEqual(dto.submissionId);
 
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       data: record.data,
       isDefault: false,
       id: record.id,
-      account: account.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      accountId: account.id,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      account: record.account.toObject(),
+      submissionId: submission.id,
+      submission: record.submission.toDTO(),
     });
   });
 
@@ -147,15 +139,15 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
-    dto.account = account.id;
-    dto.submission = submission.id;
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
 
     const record = await service.create(dto);
     expect(await service.findAll()).toHaveLength(2); // 2 because default
@@ -168,15 +160,15 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
-    dto.account = account.id;
-    dto.submission = submission.id;
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
 
     await service.create(dto);
     expect(await service.findAll()).toHaveLength(2); // 2 because default
@@ -189,21 +181,21 @@ describe('WebsiteOptionsService', () => {
     const account = await createAccount();
     const submission = await createSubmission();
 
-    const dto = new CreateWebsiteOptionsDto<IWebsiteFormFields>();
+    const dto = new CreateWebsiteOptionsDto();
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };
-    dto.account = account.id;
-    dto.submission = submission.id;
+    dto.accountId = account.id;
+    dto.submissionId = submission.id;
 
     const record = await service.create(dto);
-    expect(record.account.id).toEqual(dto.account);
+    expect(record.accountId).toEqual(dto.accountId);
     expect(record.isDefault).toEqual(false);
     expect(record.data).toEqual(dto.data);
-    expect(record.submission.id).toEqual(dto.submission);
+    expect(record.submission.id).toEqual(dto.submissionId);
 
     const update = await service.update(record.id, {
       data: {

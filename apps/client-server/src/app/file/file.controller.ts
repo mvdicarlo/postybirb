@@ -1,7 +1,13 @@
-import { Controller, Get, Param, Res } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Param,
+  Res,
+} from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { IFileBuffer } from '@postybirb/types';
-import { getType } from 'mime';
+import { EntityId, IFileBuffer } from '@postybirb/types';
+import { SubmissionFile } from '../drizzle/models';
 import { FileService } from './file.service';
 
 @ApiTags('file')
@@ -9,25 +15,40 @@ import { FileService } from './file.service';
 export class FileController {
   constructor(private readonly service: FileService) {}
 
-  @Get('thumbnail/:id')
+  @Get(':fileTarget/:id')
   @ApiOkResponse()
   @ApiNotFoundResponse()
-  async getThumbnail(@Param('id') id: string, @Res() response) {
-    const file = await this.service.findFile(id);
-    let imageProvidingEntity: IFileBuffer | null = null;
-    if (file.thumbnail) {
-      imageProvidingEntity = file.thumbnail;
+  async getThumbnail(
+    @Param('fileTarget') fileTarget: 'file' | 'thumbnail' | 'alt',
+    @Param('id') id: EntityId,
+    @Res() response,
+  ) {
+    const submissionFile = await this.service.findFile(id);
+    await submissionFile.load(fileTarget);
+    const imageProvidingEntity = this.getFileBufferForTarget(
+      fileTarget,
+      submissionFile,
+    );
+    if (!imageProvidingEntity) {
+      throw new BadRequestException(`No ${fileTarget} found for file ${id}`);
     }
-    response.contentType(imageProvidingEntity?.mimeType ?? 'image/jpeg');
-    response.send(imageProvidingEntity?.buffer ?? Buffer.from([]));
+    response.contentType(imageProvidingEntity.mimeType);
+    response.send(imageProvidingEntity.buffer);
   }
 
-  @Get('file/:id')
-  @ApiOkResponse()
-  @ApiNotFoundResponse()
-  async getImage(@Param('id') id: string, @Res() response) {
-    const { file } = await this.service.findFile(id);
-    response.contentType(getType(file.fileName));
-    response.send(file.buffer);
+  private getFileBufferForTarget(
+    fileTarget: 'file' | 'thumbnail' | 'alt',
+    submissionFile: SubmissionFile,
+  ): IFileBuffer | undefined {
+    switch (fileTarget) {
+      case 'file':
+        return submissionFile.file;
+      case 'thumbnail':
+        return submissionFile.thumbnail;
+      case 'alt':
+        return submissionFile.altFile;
+      default:
+        throw new BadRequestException('Invalid file target');
+    }
   }
 }

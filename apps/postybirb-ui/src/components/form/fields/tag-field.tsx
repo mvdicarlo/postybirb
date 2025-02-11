@@ -53,7 +53,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const validations = useValidations(props);
   const { state: tagConverters } = useStore(TagConverterStore);
   const { accounts } = useWebsites();
-  const account = accounts.find((acc) => acc.id === option.account);
+  const account = accounts.find((acc) => acc.id === option.accountId);
   const overrideProps = form.getInputProps(`${propKey}.overrideDefault`);
   const tagsProps = form.getInputProps(`${propKey}.tags`);
   const tagValue = tagsProps.defaultValue as Tag[];

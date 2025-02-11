@@ -1,36 +1,28 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
-import { Account, WebsiteData } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { clearDatabase } from '@postybirb/database';
+import { eq } from 'drizzle-orm';
+import { Account } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
 
 describe('Website', () => {
   let module: TestingModule;
-  let orm: MikroORM;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let repository: PostyBirbRepository<WebsiteData<any>>;
+  let repository: PostyBirbDatabase<'WebsiteDataSchema'>;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
     const service = module.get(WebsiteRegistryService);
     repository = service.getRepository();
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -38,22 +30,28 @@ describe('Website', () => {
     expect(repository).toBeDefined();
   });
 
-  it('should store data', async () => {
-    const website = new TestWebsite(
+  function populateAccount(): Promise<Account> {
+    return PostyBirbDatabaseUtil.saveFromEntity(
       new Account({
-        id: 'store',
         name: 'test',
         website: 'test',
         groups: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        id: 'test',
       }),
     );
+  }
+
+  it('should store data', async () => {
+    const website = new TestWebsite(await populateAccount());
     await website.onInitialize(repository);
     website.onBeforeLogin();
     await website.onLogin();
     website.onAfterLogin();
-    const entity = await repository.findOne(website.accountId);
+    const entity = (
+      await repository.select(
+        eq(repository.schemaEntity.accountId, website.accountId),
+      )
+    )[0];
     expect(entity.data).toEqual({ test: 'test-mode' });
   });
 

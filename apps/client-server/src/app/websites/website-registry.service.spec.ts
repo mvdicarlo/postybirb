@@ -1,7 +1,7 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
-import { Account } from '../database/entities';
+import { clearDatabase } from '@postybirb/database';
+import { Account } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -9,25 +9,19 @@ import { WebsiteRegistryService } from './website-registry.service';
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
   let module: TestingModule;
-  let orm: MikroORM;
+  let accountRepository: PostyBirbDatabase<'AccountSchema'>;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [WebsiteRegistryService, WebsiteImplProvider],
     }).compile();
 
     service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
+    accountRepository = new PostyBirbDatabase('AccountSchema');
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -42,11 +36,13 @@ describe('WebsiteRegistryService', () => {
   });
 
   it('should successfully create website instance', async () => {
-    const account = new Account({
-      name: 'test',
-      id: 'test',
-      website: TestWebsite.prototype.decoratedProps.metadata.name,
-    });
+    const account = await accountRepository.insert(
+      new Account({
+        name: 'test',
+        id: 'test',
+        website: TestWebsite.prototype.decoratedProps.metadata.name,
+      }),
+    );
 
     const instance = await service.create(account);
     expect(instance instanceof TestWebsite).toBe(true);
@@ -55,11 +51,13 @@ describe('WebsiteRegistryService', () => {
   });
 
   it('should successfully remove website instance', async () => {
-    const account = new Account({
-      name: 'test',
-      id: 'test',
-      website: TestWebsite.prototype.decoratedProps.metadata.name,
-    });
+    const account = await accountRepository.insert(
+      new Account({
+        name: 'test',
+        id: 'test',
+        website: TestWebsite.prototype.decoratedProps.metadata.name,
+      }),
+    );
 
     const instance = await service.create(account);
     await instance.onLogin();

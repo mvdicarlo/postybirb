@@ -1,14 +1,12 @@
-import { MikroORM } from '@mikro-orm/core';
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
+import { clearDatabase } from '@postybirb/database';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { TagGroupsService } from './tag-groups.service';
 
 describe('TagGroupsService', () => {
   let service: TagGroupsService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   function createTagGroupDto(name: string, tags: string[]) {
     const dto = new CreateTagGroupDto();
@@ -18,22 +16,15 @@ describe('TagGroupsService', () => {
   }
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [TagGroupsService],
     }).compile();
 
     service = module.get<TagGroupsService>(TagGroupsService);
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 
@@ -49,12 +40,12 @@ describe('TagGroupsService', () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].name).toEqual(dto.name);
     expect(groups[0].tags).toEqual(dto.tags);
-    expect(record.toJSON()).toEqual({
+    expect(record.toDTO()).toEqual({
       name: dto.name,
       tags: dto.tags,
       id: record.id,
-      createdAt: record.createdAt.toISOString(),
-      updatedAt: record.updatedAt.toISOString(),
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     });
   });
 

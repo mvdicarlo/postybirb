@@ -59,7 +59,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     .filter((o) => !o.isDefault)
     .reduce(
       (acc, option) => {
-        const account = accounts.find((a) => a.id === option.account);
+        const account = accounts.find((a) => a.id === option.accountId);
         if (!account) {
           return acc;
         }
@@ -81,13 +81,13 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
 
   const removeAccount = (account: IAccountDto) => {
     const options = submission.options
-      .filter((o) => o.account !== account.id)
+      .filter((o) => o.accountId !== account.id)
       .filter((o) => !o.isDefault);
     websiteOptionsApi.remove(submission.options.map((o) => o.id));
     options.forEach((o) => {
       websiteOptionsApi.create({
-        account: o.account,
-        submission: submission.id,
+        accountId: o.account.id,
+        submissionId: submission.id,
         data: o.data,
       });
     });
@@ -222,7 +222,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     const newAccounts: AccountId[] = [];
                     selectedAccounts.forEach((account) => {
                       const exists = existingOptions.find(
-                        (o) => o.account === account.id,
+                        (o) => o.accountId === account.id,
                       );
                       if (!exists) {
                         newAccounts.push(account.id);
@@ -230,7 +230,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     });
                     existingOptions.forEach((option) => {
                       const exists = selectedAccounts.find(
-                        (a) => a.id === option.account,
+                        (a) => a.id === option.accountId,
                       );
                       if (!exists) {
                         removedOptions.push(option);
@@ -241,8 +241,8 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     });
                     newAccounts.forEach((account) => {
                       websiteOptionsApi.create({
-                        account,
-                        submission: submission.id,
+                        accountId: account,
+                        submissionId: submission.id,
                         data: {} as IWebsiteFormFields,
                       });
                     });

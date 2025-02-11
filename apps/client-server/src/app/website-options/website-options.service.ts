@@ -1,55 +1,82 @@
-import { Collection } from '@mikro-orm/core';
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   forwardRef,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Insert } from '@postybirb/database';
 import {
   AccountId,
   DynamicObject,
+  EntityId,
   ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
   NULL_ACCOUNT_ID,
+  SubmissionId,
   SubmissionMetadataType,
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { WebsiteOptions } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
-import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
-export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
+export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchema'> {
+  private readonly submissionRepository = new PostyBirbDatabase(
+    'SubmissionSchema',
+  );
+
   constructor(
-    @InjectRepository(WebsiteOptions)
-    readonly repository: PostyBirbRepository<WebsiteOptions>,
-    @InjectRepository(Submission)
-    private readonly submissionRepository: PostyBirbRepository<
-      Submission<SubmissionMetadataType>
-    >,
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
-    private readonly websiteRegistry: WebsiteRegistryService,
     private readonly accountService: AccountService,
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
   ) {
-    super(repository);
+    super(
+      new PostyBirbDatabase('WebsiteOptionsSchema', {
+        account: true,
+        submission: true,
+      }),
+    );
+  }
+
+  /**
+   * Creates a submission option for a submission.
+   * No longer remember why this is a separate method from create.
+   *
+   * @param {ISubmission} submission
+   * @param {AccountId} accountId
+   * @param {DynamicObject} data
+   * @param {string} [title]
+   * @return {*}  {Promise<WebsiteOptions>}
+   */
+  async createOption(
+    submission: ISubmission,
+    accountId: AccountId,
+    data: DynamicObject,
+    title?: string,
+  ): Promise<WebsiteOptions> {
+    const option = await this.createOptionInsertObject(
+      submission,
+      accountId,
+      data,
+      title,
+    );
+    return this.repository.insert(option);
   }
 
   /**
@@ -60,12 +87,12 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
    * @param {DynamicObject} data
    * @param {string} [title]
    */
-  async createOption(
+  async createOptionInsertObject(
     submission: ISubmission,
     accountId: AccountId,
     data: DynamicObject,
     title?: string,
-  ) {
+  ): Promise<Insert<'WebsiteOptionsSchema'>> {
     const account = await this.accountService.findById(accountId, {
       failOnMissing: true,
     });
@@ -95,7 +122,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       ),
     };
 
-    const mergedData = {
+    const mergedData: IWebsiteFormFields = {
       ...(isDefault ? new DefaultWebsiteOptions() : {}), // Only merge default options if this is the default option
       ...websiteData, // Merge default form fields
       ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
@@ -103,36 +130,45 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
       title, // Override title (optional)
     };
 
-    const option = new WebsiteOptions({
-      submission,
-      account,
-      data: mergedData as IWebsiteFormFields,
-    });
+    const option: Insert<'WebsiteOptionsSchema'> = {
+      submissionId: submission.id,
+      accountId: account.id,
+      data: mergedData,
+      isDefault,
+    };
 
     return option;
   }
 
-  async create<T extends IWebsiteFormFields>(
-    createDto: CreateWebsiteOptionsDto<T>,
-  ) {
-    const account = await this.accountService.findById(createDto.account, {
+  /**
+   * The default create method for WebsiteOptions.
+   * Performs user saved options and other merging operations.
+   * Performs and update if it already exists.
+   *
+   * @param {CreateWebsiteOptionsDto} createDto
+   * @return {*}
+   */
+  async create(createDto: CreateWebsiteOptionsDto) {
+    const account = await this.accountService.findById(createDto.accountId, {
       failOnMissing: true,
     });
 
     let submission: ISubmission<SubmissionMetadataType>;
     try {
-      submission = await this.submissionRepository.findOneOrFail(
-        createDto.submission,
+      submission = await this.submissionRepository.findById(
+        createDto.submissionId,
+        { failOnMissing: true },
       );
-    } catch {
+    } catch (err) {
       throw new NotFoundException(
-        `Submission ${createDto.submission} not found.`,
+        `Submission ${createDto.submissionId} not found.`,
       );
     }
 
-    const exists = submission.options
-      .toArray()
-      .find((option) => option.account.id === account.id);
+    const exists = await this.repository.findOne({
+      where: (wo, { and, eq }) =>
+        and(eq(wo.submissionId, submission.id), eq(wo.accountId, account.id)),
+    });
     if (exists) {
       // Opt to just update the existing option
       return this.update(exists.id, { data: createDto.data });
@@ -158,18 +194,16 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
         {} as IWebsiteFormFields,
       ),
     };
-    const submissionOptions = new WebsiteOptions({
-      submission,
+
+    return this.repository.insert({
+      submissionId: submission.id,
       data: websiteData,
-      account,
+      accountId: account.id,
+      isDefault: account.id === NULL_ACCOUNT_ID,
     });
-
-    await this.repository.persistAndFlush(submissionOptions);
-
-    return submissionOptions;
   }
 
-  update(id: string, update: UpdateWebsiteOptionsDto) {
+  update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     return this.repository.update(id, update);
   }
@@ -189,21 +223,26 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
     this.logger
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
-    const options = new WebsiteOptions({
-      isDefault: true,
-      submission,
-      account: await this.accountService.findById(NULL_ACCOUNT_ID),
-    });
 
-    await this.populateDefaultWebsiteOptions(submission.type, options, title);
-    return options;
+    const options: Insert<'WebsiteOptionsSchema'> = {
+      isDefault: true,
+      submissionId: submission.id,
+      accountId: NULL_ACCOUNT_ID,
+      data: await this.populateDefaultWebsiteOptions(
+        NULL_ACCOUNT_ID,
+        submission.type,
+        title,
+      ),
+    };
+
+    return this.repository.insert(options);
   }
 
   private async populateDefaultWebsiteOptions(
+    accountId: AccountId,
     type: SubmissionType,
-    entity: WebsiteOptions,
     title?: string,
-  ) {
+  ): Promise<IWebsiteFormFields> {
     const defaultOptions =
       (
         await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
@@ -211,13 +250,13 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
           type,
         )
       )?.options ?? {};
-    Object.assign(entity, {
-      data: {
-        ...new DefaultWebsiteOptions(),
-        ...defaultOptions,
-        title,
-      },
-    });
+
+    const websiteFormFields: IWebsiteFormFields = {
+      ...new DefaultWebsiteOptions(),
+      ...defaultOptions,
+      title,
+    };
+    return websiteFormFields;
   }
 
   /**
@@ -228,7 +267,7 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
   async validateWebsiteOption(
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
-    const { websiteOptionId, submission: submissionId } = validate;
+    const { websiteOptionId, submissionId } = validate;
     const submission = await this.submissionService.findById(submissionId, {
       failOnMissing: true,
     });
@@ -240,17 +279,16 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
 
   /**
    * Validates all submission options for a submission.
-   * @param {string} submissionId
+   * @param {SubmissionId} submissionId
    * @return {*}  {Promise<ValidationResult[]>}
    */
-  async validateSubmission(submissionId: string) {
-    const submission =
-      await this.submissionService.findPopulatedById(submissionId);
+  async validateSubmission(submissionId: SubmissionId) {
+    const submission = await this.submissionService.findById(submissionId);
     return this.validationService.validateSubmission(submission);
   }
 
   async updateSubmissionOptions(
-    submissionId: string,
+    submissionId: SubmissionId,
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     const submission = await this.submissionService.findById(submissionId, {
@@ -259,30 +297,31 @@ export class WebsiteOptionsService extends PostyBirbService<WebsiteOptions> {
 
     const { remove, add } = updateDto;
     if (remove?.length) {
-      const items = (
-        submission.options as Collection<WebsiteOptions>
-      ).getItems();
+      const items = submission.options;
+      const removableIds = [];
       // eslint-disable-next-line no-restricted-syntax
       for (const id of remove) {
         const option = items.find((opt) => opt.id === id);
         if (option) {
-          this.logger.debug(
-            `Removing option ${id} from submission ${submissionId}`,
-          );
-          submission.options.remove(option);
+          removableIds.push(id);
         }
       }
+      this.logger.debug(
+        `Removing option(s) [${removableIds.join(', ')}] from submission ${submissionId}`,
+      );
+      await this.repository.deleteById(removableIds);
     }
 
     if (add?.length) {
       const options = await Promise.all(
-        add.map((dto) => this.createOption(submission, dto.account, dto.data)),
+        add.map((dto) =>
+          this.createOptionInsertObject(submission, dto.accountId, dto.data),
+        ),
       );
-      submission.options.add(...options);
+      await this.repository.insert(options);
     }
 
-    await this.submissionRepository.persistAndFlush(submission);
     this.submissionService.emit();
-    return submission;
+    return this.submissionService.findById(submissionId);
   }
 }

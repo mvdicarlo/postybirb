@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { TitleField } from '@postybirb/form-builder';
 import { IWebsiteOptions } from '@postybirb/types';
 import { FormGeneratorService } from '../../form-generator/form-generator.service';
@@ -12,6 +13,7 @@ describe('TitleParserService', () => {
   let service: TitleParser;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [
         TitleParser,

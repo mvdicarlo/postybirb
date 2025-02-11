@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AccountModule } from '../account/account.module';
-import { DatabaseModule } from '../database/database.module';
 import { FormGeneratorModule } from '../form-generator/form-generator.module';
 import { SubmissionModule } from '../submission/submission.module';
 import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
@@ -14,7 +13,6 @@ import { WebsiteOptionsService } from './website-options.service';
     forwardRef(() => SubmissionModule),
     WebsitesModule,
     AccountModule,
-    DatabaseModule,
     UserSpecifiedWebsiteOptionsModule,
     FormGeneratorModule,
     ValidationModule,

@@ -1,24 +1,24 @@
-/* eslint-disable no-param-reassign */
 import * as rtf from '@iarna/rtf-to-html';
-import { InjectRepository } from '@mikro-orm/nestjs';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Insert, PostyBirbTransaction, Select } from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import { FileSubmission, FileType, IFileBuffer } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
+import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
 import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
+
 import {
-  AltFile,
-  PrimaryFile,
+  FileBuffer,
+  fromDatabaseRecord,
   SubmissionFile,
-  ThumbnailFile,
-} from '../../database/entities';
-import { PostyBirbRepository } from '../../database/repositories/postybirb-repository';
+} from '../../drizzle/models';
+import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
 
@@ -30,16 +30,13 @@ import { ImageUtil } from '../utils/image.util';
 export class CreateFileService {
   private readonly logger = Logger();
 
-  constructor(
-    @InjectRepository(SubmissionFile)
-    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
-    @InjectRepository(PrimaryFile)
-    private readonly primaryFileRepository: PostyBirbRepository<PrimaryFile>,
-    @InjectRepository(AltFile)
-    private readonly altFileRepository: PostyBirbRepository<AltFile>,
-    @InjectRepository(ThumbnailFile)
-    private readonly thumbnailRepository: PostyBirbRepository<ThumbnailFile>,
-  ) {}
+  private readonly fileBufferRepository = new PostyBirbDatabase(
+    'FileBufferSchema',
+  );
+
+  private readonly fileRepository = new PostyBirbDatabase(
+    'SubmissionFileSchema',
+  );
 
   /**
    * Creates file entity and stores it.
@@ -48,6 +45,7 @@ export class CreateFileService {
    *
    * @param {MulterFileInfo} file
    * @param {MulterFileInfo} submission
+   * @param {Buffer} buf
    * @return {*}  {Promise<SubmissionFile>}
    */
   public async create(
@@ -57,22 +55,41 @@ export class CreateFileService {
   ): Promise<SubmissionFile> {
     try {
       this.logger.withMetadata(file).info(`Creating SubmissionFile entity`);
-      const entity = await this.createSubmissionFile(file, submission, buf);
-      if (ImageUtil.isImage(file.mimetype, true)) {
-        this.logger.info('[Mutation] Populating as Image');
-        await this.populateAsImageFile(entity, file, buf);
-      }
+      const newSubmission = await this.fileRepository.db.transaction(
+        async (tx: PostyBirbTransaction) => {
+          let entity = await this.createSubmissionFile(
+            tx,
+            file,
+            submission,
+            buf,
+          );
 
-      if (getFileType(file.originalname) === FileType.TEXT) {
-        await this.createSubmissionTextAltFile(entity, file, buf);
-      }
+          if (ImageUtil.isImage(file.mimetype, true)) {
+            this.logger.info('[Mutation] Populating as Image');
+            entity = await this.populateAsImageFile(tx, entity, file, buf);
+          }
 
-      entity.file = this.createFileBufferEntity(entity, buf, 'primary');
-      submission.files.add(entity);
-      this.logger
-        .withMetadata({ id: entity.id })
-        .info('SubmissionFile Created');
-      return entity;
+          if (getFileType(file.originalname) === FileType.TEXT) {
+            await this.createSubmissionTextAltFile(tx, entity, file, buf);
+          }
+
+          const primaryFile = await this.createFileBufferEntity(
+            tx,
+            entity,
+            buf,
+          );
+          await tx
+            .update(this.fileRepository.schemaEntity)
+            .set({ primaryFileId: primaryFile.id })
+            .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+          this.logger
+            .withMetadata({ id: entity.id })
+            .info('SubmissionFile Created');
+
+          return entity;
+        },
+      );
+      return await this.fileRepository.findById(newSubmission.id);
     } catch (err) {
       this.logger.error(err.message, err.stack);
       return await Promise.reject(err);
@@ -92,6 +109,7 @@ export class CreateFileService {
    * @param {Buffer} buf
    */
   async createSubmissionTextAltFile(
+    tx: PostyBirbTransaction,
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
@@ -128,13 +146,24 @@ export class CreateFileService {
 
     if (altText) {
       const prettifiedBuf = Buffer.from(
-        htmlBeautify(altText, { wrap_line_length: 100 }),
+        htmlBeautify(altText, { wrap_line_length: 120 }),
       );
-      const altFile = this.createFileBufferEntity(entity, prettifiedBuf, 'alt');
-      altFile.mimeType = 'text/html';
-      altFile.fileName = `${entity.fileName}.html`;
-      entity.altFile = altFile;
-      entity.hasAltFile = true;
+      const altFile = await this.createFileBufferEntity(
+        tx,
+        entity,
+        prettifiedBuf,
+        {
+          mimeType: 'text/html',
+          fileName: `${entity.fileName}.html`,
+        },
+      );
+      await tx
+        .update(this.fileRepository.schemaEntity)
+        .set({
+          altFileId: altFile.id,
+          hasAltFile: true,
+        })
+        .where(eq(this.fileRepository.schemaEntity.id, entity.id));
       this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
     } else {
       this.logger.info('No Alt File Created');
@@ -150,21 +179,31 @@ export class CreateFileService {
    * @return {*}  {Promise<SubmissionFile>}
    */
   private async createSubmissionFile(
+    tx: PostyBirbTransaction,
     file: MulterFileInfo,
     submission: FileSubmission,
     buf: Buffer,
   ): Promise<SubmissionFile> {
     const { mimetype: mimeType, originalname, size } = file;
-    const entity = this.fileRepository.create({
-      id: uuid(),
-      mimeType,
-      fileName: originalname,
-      size,
-      submission,
-    });
+    const sf = fromDatabaseRecord(
+      SubmissionFile,
+      await tx
+        .insert(this.fileRepository.schemaEntity)
+        .values({
+          submissionId: submission.id,
+          mimeType,
+          fileName: originalname,
+          size,
+          hash: await hash(buf, { algorithm: 'sha256' }),
+          width: 0,
+          height: 0,
+          hasThumbnail: false,
+          hasAltFile: false,
+        })
+        .returning(),
+    );
 
-    entity.hash = await hash(buf, { algorithm: 'sha256' });
-    return entity;
+    return sf[0];
   }
 
   /**
@@ -177,36 +216,48 @@ export class CreateFileService {
    * @return {*}  {Promise<void>}
    */
   private async populateAsImageFile(
+    tx: PostyBirbTransaction,
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
-  ): Promise<void> {
+  ): Promise<SubmissionFile> {
     const sharpInstance = ImageUtil.load(buf);
-    let height = 0;
-    let width = 0;
 
     const meta = await sharpInstance.metadata();
-    height = meta.height;
-    width = meta.width;
-
-    entity.width = width;
-    entity.height = height;
-    entity.hasThumbnail = true;
-    entity.thumbnail = await this.createFileThumbnail(
+    const thumbnail = await this.createFileThumbnail(
+      tx,
       entity,
       file,
       sharpInstance,
     );
+    const update: Select<typeof this.fileRepository.schemaEntity> = {
+      width: meta.width ?? 0,
+      height: meta.height ?? 0,
+      hasThumbnail: true,
+      thumbnailId: thumbnail.id,
+    };
+
+    return fromDatabaseRecord(
+      SubmissionFile,
+      await tx
+        .update(this.fileRepository.schemaEntity)
+        .set(update)
+        .where(eq(this.fileRepository.schemaEntity.id, entity.id))
+        .returning(),
+    )[0];
   }
 
   /**
    * Returns a thumbnail entity for a file.
    *
+   * @param {SubmissionFile} fileEntity
    * @param {File} fileEntity
    * @param {MulterFileInfo} file
+   * @param {Sharp} sharpInstance
    * @return {*}  {Promise<IFileBuffer>}
    */
   public async createFileThumbnail(
+    tx: PostyBirbTransaction,
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
     sharpInstance: Sharp,
@@ -220,18 +271,12 @@ export class CreateFileService {
       fileEntity.height,
       fileEntity.width,
     );
-    const thumbnailEntity = this.createFileBufferEntity(
-      fileEntity,
-      thumbnailBuf,
-      'thumbnail',
-    );
-
-    thumbnailEntity.height = height;
-    thumbnailEntity.width = width;
-    thumbnailEntity.fileName = `thumbnail_${thumbnailEntity.fileName}.png`;
-    thumbnailEntity.mimeType = 'image/png';
-
-    return thumbnailEntity;
+    return this.createFileBufferEntity(tx, fileEntity, thumbnailBuf, {
+      height,
+      width,
+      mimeType: 'image/png',
+      fileName: `thumbnail_${fileEntity.fileName}.png`,
+    });
   }
 
   /**
@@ -266,7 +311,7 @@ export class CreateFileService {
 
     const buffer = await sharpInstance
       .resize(width, height)
-      .png({ quality: 90, force: true })
+      .png({ quality: 92, force: true })
       .toBuffer();
 
     return { buffer, height, width };
@@ -280,31 +325,31 @@ export class CreateFileService {
    * @param {string} type - thumbnail/alt/primary
    * @return {*}  {IFileBuffer}
    */
-  public createFileBufferEntity(
+  public async createFileBufferEntity(
+    tx: PostyBirbTransaction,
     fileEntity: SubmissionFile,
     buf: Buffer,
-    type: 'thumbnail' | 'alt' | 'primary',
-  ): IFileBuffer {
+    opts: Select<typeof this.fileBufferRepository.schemaEntity> = {},
+  ): Promise<FileBuffer> {
     const { mimeType, height, width, fileName } = fileEntity;
-    const data: Partial<IFileBuffer> = {
+    const data: Insert<typeof this.fileBufferRepository.schemaEntity> = {
       id: uuid(),
       buffer: buf,
-      parent: fileEntity,
+      submissionFileId: fileEntity.id,
       height,
       width,
       fileName,
       mimeType,
+      size: buf.length,
+      ...opts,
     };
 
-    switch (type) {
-      case 'primary':
-        return this.primaryFileRepository.create(data);
-      case 'alt':
-        return this.altFileRepository.create(data);
-      case 'thumbnail':
-        return this.thumbnailRepository.create(data);
-      default:
-        throw new BadRequestException(`${type} is not a valid option`);
-    }
+    return fromDatabaseRecord(
+      FileBuffer,
+      await tx
+        .insert(this.fileBufferRepository.schemaEntity)
+        .values(data)
+        .returning(),
+    )[0];
   }
 }

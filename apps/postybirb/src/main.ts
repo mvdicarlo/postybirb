@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
-import { app, BrowserWindow, powerSaveBlocker } from 'electron';
+import { app, BrowserWindow, powerSaveBlocker, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
@@ -22,6 +22,10 @@ app.commandLine.appendSwitch('disable-features', 'CrossOriginOpenerPolicy');
 // Inject environment for use in preload
 process.env.POSTYBIRB_PORT = PostyBirbEnvConfig.port;
 process.env.POSTYBIRB_VERSION = environment.version;
+process.env.POSTYBIRB_ENV =
+  (process.env.POSTYBIRB_ENV ?? environment.production)
+    ? 'production'
+    : 'development';
 
 // Setup Metrics
 startMetrics();
@@ -50,6 +54,26 @@ app.on(
     }
   },
 );
+
+// Suppress SSL error messages
+app.on('ready', () => {
+  session.defaultSession.setCertificateVerifyProc((request, callback) => {
+    if (request.errorCode === 0) {
+      callback(0); // Allow the certificate
+    } else {
+      const { certificate } = request;
+      if (
+        certificate.issuerName === 'postybirb.com' &&
+        certificate.subject.organizations[0] === 'PostyBirb' &&
+        certificate.issuer.country === 'US'
+      ) {
+        callback(0);
+      } else {
+        callback(-2);
+      }
+    }
+  });
+});
 
 contextMenu();
 

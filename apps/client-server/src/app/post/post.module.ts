@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '../database/database.module';
 import { FileConverterModule } from '../file-converter/file-converter.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { SettingsModule } from '../settings/settings.module';
@@ -16,7 +15,6 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
 
 @Module({
   imports: [
-    DatabaseModule,
     WebsiteOptionsModule,
     WebsitesModule,
     PostParsersModule,

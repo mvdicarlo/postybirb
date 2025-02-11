@@ -10,7 +10,7 @@ export type IApplyMultiSubmissionDto = {
    * The origin submission id.
    * @type {SubmissionId}
    */
-  originId: SubmissionId;
+  submissionToApply: SubmissionId;
 
   /**
    * The submission ids to apply the origin submission to.

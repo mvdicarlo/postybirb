@@ -5,8 +5,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AccountId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { Account } from '../database/entities/account.entity';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
@@ -18,7 +18,7 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @ApiTags('account')
 @Controller('account')
-export class AccountController extends PostyBirbController<Account> {
+export class AccountController extends PostyBirbController<'AccountSchema'> {
   constructor(readonly service: AccountService) {
     super(service);
   }
@@ -29,30 +29,33 @@ export class AccountController extends PostyBirbController<Account> {
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.service
       .create(createAccountDto)
-      .then((account) => this.service.getAccountDto(account));
+      .then((account) => account.toDTO());
   }
 
   @Post('/clear/:id')
   @ApiOkResponse({ description: 'Account data cleared.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
-  async clear(@Param('id') id: string) {
+  async clear(@Param('id') id: AccountId) {
     await this.service.clearAccountData(id);
     return this.service.manuallyExecuteOnLogin(id);
   }
 
   @Get('/refresh/:id')
   @ApiOkResponse({ description: 'Account login check queued.' })
-  async refresh(@Param('id') id: string) {
+  async refresh(@Param('id') id: AccountId) {
     this.service.manuallyExecuteOnLogin(id);
   }
 
   @Patch(':id')
   @ApiOkResponse({ description: 'Account updated.', type: Boolean })
   @ApiNotFoundResponse({ description: 'Account Id not found.' })
-  update(@Body() updateAccountDto: UpdateAccountDto, @Param('id') id: string) {
+  update(
+    @Body() updateAccountDto: UpdateAccountDto,
+    @Param('id') id: AccountId,
+  ) {
     return this.service
       .update(id, updateAccountDto)
-      .then((account) => this.service.getAccountDto(account));
+      .then((account) => account.toDTO());
   }
 
   @Post('/account-data')

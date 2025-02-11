@@ -1,6 +1,7 @@
 import { IEntityDto } from '../../dtos';
 import { FileType } from '../../enums';
 import { IAccount } from '../account/account.interface';
+import { EntityId } from '../database/entity.interface';
 import { ImageResizeProps } from '../website/image-resize-props';
 import { IWebsiteFormFields } from './website-form-fields.interface';
 
@@ -13,7 +14,7 @@ export type ValidationResult<T extends IWebsiteFormFields = never> = {
   /**
    * Id that associates with the website options the validation was performed on.
    */
-  id: string;
+  id: EntityId;
 
   /**
    * The account associated with the website options.

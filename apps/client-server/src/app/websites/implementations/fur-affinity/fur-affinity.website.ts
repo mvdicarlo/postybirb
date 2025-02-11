@@ -1,11 +1,11 @@
 import { Http } from '@postybirb/http';
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SimpleValidationResult
+    ILoginState,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    PostData,
+    SimpleValidationResult
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -82,7 +82,7 @@ export default class FurAffinity
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse> {
+  ): Promise<IPostResponse> {
     throw new Error('Method not implemented.');
   }
 
@@ -102,7 +102,7 @@ export default class FurAffinity
   onPostMessageSubmission(
     postData: PostData<FurAffinityMessageSubmission>,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse> {
+  ): Promise<IPostResponse> {
     throw new Error('Method not implemented.');
   }
 

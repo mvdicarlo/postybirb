@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { DescriptionField } from '@postybirb/form-builder';
 import {
   Description,
@@ -53,6 +54,7 @@ describe('DescriptionParserService', () => {
   ];
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [
         DescriptionParserService,

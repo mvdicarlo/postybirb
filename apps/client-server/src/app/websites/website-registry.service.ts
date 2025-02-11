@@ -1,4 +1,3 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
   Inject,
@@ -8,12 +7,11 @@ import {
 import { Logger } from '@postybirb/logger';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
 import { DynamicObject, IAccount, IWebsiteInfoDto } from '@postybirb/types';
+import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
-import { Account, WebsiteData } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
-import { IsTestEnvironment } from '../utils/test.util';
+import { Account } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
@@ -35,14 +33,11 @@ export class WebsiteRegistryService {
 
   private readonly websiteInstances: WebsiteInstances = {};
 
+  private readonly accountRepository: PostyBirbDatabase<'AccountSchema'>;
+
+  private readonly websiteDataRepository: PostyBirbDatabase<'WebsiteDataSchema'>;
+
   constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
-    @InjectRepository(WebsiteData)
-    private readonly websiteDataRepository: PostyBirbRepository<
-      WebsiteData<DynamicObject>
-    >,
-    @InjectRepository(Account)
-    private readonly accountRepository: PostyBirbRepository<Account>,
     @Inject(WEBSITE_IMPLEMENTATIONS)
     private readonly websiteImplementations: Class<UnknownWebsite>[],
     @Optional() private readonly webSocket?: WSGateway,
@@ -68,9 +63,11 @@ export class WebsiteRegistryService {
           website;
       },
     );
-    accountRepository.addUpdateListener(
-      dbSubscriber,
-      [Account, WebsiteData],
+
+    this.accountRepository = new PostyBirbDatabase('AccountSchema');
+    this.websiteDataRepository = new PostyBirbDatabase('WebsiteDataSchema');
+    this.accountRepository.subscribe(
+      ['AccountSchema', 'WebsiteDataSchema'],
       () => this.emit(),
     );
   }
@@ -181,7 +178,8 @@ export class WebsiteRegistryService {
     // eslint-disable-next-line no-restricted-syntax
     for (const website of availableWebsites) {
       const accounts = await this.accountRepository.find({
-        website: website.prototype.decoratedProps.metadata.name,
+        where: (account, { eq }) =>
+          eq(account.website, website.prototype.decoratedProps.metadata.name),
       });
       dtos.push({
         loginType: website.prototype.decoratedProps.loginFlow,
@@ -192,23 +190,7 @@ export class WebsiteRegistryService {
         fileOptions: website.prototype.decoratedProps.fileOptions,
         accounts: accounts.map((account) => {
           const instance = this.findInstance(account);
-          if (instance) {
-            // eslint-disable-next-line no-param-reassign
-            account.data = instance.getWebsiteData();
-
-            // eslint-disable-next-line no-param-reassign
-            account.state = instance.getLoginState();
-
-            // eslint-disable-next-line no-param-reassign
-            account.websiteInfo = {
-              websiteDisplayName:
-                instance.decoratedProps.metadata.displayName ||
-                instance.decoratedProps.metadata.name,
-              supports: instance.getSupportedTypes(),
-            };
-          }
-
-          return account.toJSON();
+          return account.withWebsiteInstance(instance).toDTO();
         }),
       });
     }

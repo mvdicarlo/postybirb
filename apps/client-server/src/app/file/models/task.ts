@@ -1,4 +1,4 @@
-import { FileSubmission } from '@postybirb/types';
+import { EntityId, FileSubmission } from '@postybirb/types';
 import { MulterFileInfo } from './multer-file-info';
 import { TaskType } from './task-type.enum';
 
@@ -31,9 +31,9 @@ export type UpdateTask = {
   file: MulterFileInfo;
   /**
    * SubmissionFile being updated.
-   * @type {string}
+   * @type {EntityId}
    */
-  submissionFileId: string;
+  submissionFileId: EntityId;
   /**
    * The target type being updates (primary on empty).
    * @type {string}

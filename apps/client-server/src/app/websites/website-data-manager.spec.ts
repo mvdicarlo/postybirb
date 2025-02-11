@@ -1,43 +1,44 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { NullAccount } from '@postybirb/types';
-import { DatabaseModule } from '../database/database.module';
-import { WebsiteData } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { clearDatabase } from '@postybirb/database';
+import { Account } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { PostyBirbDatabaseUtil } from '../drizzle/postybirb-database/postybirb-database.util';
 import { WebsiteImplProvider } from './implementations/provider';
 import WebsiteDataManager from './website-data-manager';
 
 describe('WebsiteDataManager', () => {
   let module: TestingModule;
-  let orm: MikroORM;
-  let repository: PostyBirbRepository<WebsiteData>;
+  let repository: PostyBirbDatabase<'WebsiteDataSchema'>;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [WebsiteImplProvider],
     }).compile();
-
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-      repository = orm.em.getRepository(WebsiteData);
-    } catch {
-      // none
-    }
+    repository = new PostyBirbDatabase('WebsiteDataSchema');
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
+
+  function populateAccount(): Promise<Account> {
+    return PostyBirbDatabaseUtil.saveFromEntity(
+      new Account({
+        name: 'test',
+        website: 'test',
+        groups: [],
+        id: 'test',
+      }),
+    );
+  }
 
   it('should be defined', () => {
     expect(repository).toBeDefined();
   });
 
   it('should initialize entity', async () => {
-    const account = new NullAccount();
+    const account = await populateAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();
@@ -49,7 +50,7 @@ describe('WebsiteDataManager', () => {
   });
 
   it('should be able to set new data', async () => {
-    const account = new NullAccount();
+    const account = await populateAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();
@@ -65,7 +66,7 @@ describe('WebsiteDataManager', () => {
   });
 
   it('should be able to clear data', async () => {
-    const account = new NullAccount();
+    const account = await populateAccount();
     const manager = new WebsiteDataManager(account);
     // Pre-load
     expect(manager.isInitialized()).toBeFalsy();

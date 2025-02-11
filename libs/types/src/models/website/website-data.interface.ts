@@ -10,11 +10,8 @@ import { IEntity } from '../database/entity.interface';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface IWebsiteData<T extends DynamicObject = any> extends IEntity {
-  /**
-   * The ID of the associated account.
-   * @type {AccountId}
-   */
-  id: AccountId;
+  accountId: AccountId;
+
   /**
    * The data associated with the website.
    * @type {T}

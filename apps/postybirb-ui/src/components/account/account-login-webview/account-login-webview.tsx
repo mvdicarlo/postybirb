@@ -1,4 +1,5 @@
 import { Box, Loader } from '@mantine/core';
+import { AccountId } from '@postybirb/types';
 import { debounce } from 'lodash';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import accountApi from '../../../api/account.api';
@@ -6,7 +7,7 @@ import { WebviewTag } from './webview-tag';
 
 type AccountLoginWebviewProps = {
   src: string;
-  id: string; // Account Id
+  id: AccountId;
 };
 
 export function AccountLoginWebview(props: AccountLoginWebviewProps) {

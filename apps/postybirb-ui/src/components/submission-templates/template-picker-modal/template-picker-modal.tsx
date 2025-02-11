@@ -55,7 +55,7 @@ function groupWebsiteOptions(
   submissions.forEach((submission) => {
     submission.options.forEach((option) => {
       const account =
-        accounts.find((a) => a.id === option.account) ??
+        accounts.find((a) => a.id === option.accountId) ??
         ({
           id: NULL_ACCOUNT_ID,
           name: _(msg`Default`),
@@ -234,7 +234,7 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
               }
 
               template.options.forEach((o) => {
-                sub[o.account] = o;
+                sub[o.accountId] = o;
               });
               setSelectedWebsiteOptions(sub);
             }

@@ -1,4 +1,3 @@
-import { MikroORM } from '@mikro-orm/core';
 import {
   ClassSerializerInterceptor,
   INestApplication,
@@ -10,13 +9,15 @@ import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
-import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
+import {
+  IsTestEnvironment,
+  PostyBirbEnvConfig,
+} from '@postybirb/utils/electron';
 import compression from 'compression';
 import sharp from 'sharp';
 import { AppModule } from './app/app.module';
-import { PostyBirbEntity } from './app/database/entities/postybirb-entity';
+import { DatabaseEntity } from './app/drizzle/models';
 import { SSL } from './app/security-and-authentication/ssl';
-import { IsTestEnvironment } from './app/utils/test.util';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
@@ -26,7 +27,7 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   ): PlainLiteralObject | PlainLiteralObject[] {
     // Attempts to deal with recursive objects
     return super.serialize(
-      response instanceof PostyBirbEntity ? response.toJSON() : response,
+      response instanceof DatabaseEntity ? response.toDTO() : response,
       options,
     );
   }
@@ -46,9 +47,6 @@ async function bootstrap() {
   } else {
     app = await NestFactory.create(AppModule);
   }
-
-  await app.get(MikroORM).getSchemaGenerator().ensureDatabase();
-  await app.get(MikroORM).getSchemaGenerator().updateSchema();
 
   const globalPrefix = 'api';
   app.enableCors();
@@ -74,7 +72,7 @@ async function bootstrap() {
     .addTag('form-generator')
     .addTag('post')
     .addTag('post-queue')
-    .addTag('submission')
+    .addTag('submissions')
     .addTag('tag-converters')
     .addTag('tag-groups')
     .addTag('website-option')

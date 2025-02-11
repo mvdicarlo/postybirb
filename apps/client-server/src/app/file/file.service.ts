@@ -1,5 +1,4 @@
 /* eslint-disable no-param-reassign */
-import { InjectRepository } from '@mikro-orm/nestjs';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
@@ -8,8 +7,8 @@ import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { AltFile, SubmissionFile } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
+import { SubmissionFile } from '../drizzle/models';
+import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
 import { CreateTask, Task, UpdateTask } from './models/task';
@@ -30,26 +29,28 @@ export class FileService {
     Task
   >(this, this.doTask, Math.min(cpus().length, 5));
 
+  private readonly fileBufferRepository = new PostyBirbDatabase(
+    'FileBufferSchema',
+  );
+
+  private readonly fileRepository = new PostyBirbDatabase(
+    'SubmissionFileSchema',
+  );
+
   constructor(
     private readonly createFileService: CreateFileService,
     private readonly updateFileService: UpdateFileService,
-    @InjectRepository(SubmissionFile)
-    private readonly fileRepository: PostyBirbRepository<SubmissionFile>,
-    @InjectRepository(AltFile)
-    private readonly altFileRepository: PostyBirbRepository<AltFile>,
   ) {}
 
   /**
    * Deletes a file.
    *
-   * @param {string} id
+   * @param {EntityId} id
    * @return {*}
    */
-  public async remove(id: string) {
+  public async remove(id: EntityId) {
     this.logger.info(id, `Removing entity '${id}'`);
-    return this.fileRepository.removeAndFlush(
-      await this.fileRepository.findById(id),
-    );
+    return this.fileRepository.deleteById([id]);
   }
 
   /**
@@ -70,12 +71,13 @@ export class FileService {
    * Queues a file to update.
    *
    * @param {MulterFileInfo} file
-   * @param {FileSubmission} submission
+   * @param {EntityId} submissionFileId
+   * @param {boolean} forThumbnail
    * @return {*}  {Promise<SubmissionFile>}
    */
   public async update(
     file: MulterFileInfo,
-    submissionFileId: string,
+    submissionFileId: EntityId,
     forThumbnail: boolean,
   ): Promise<SubmissionFile> {
     return this.queue.push({
@@ -135,18 +137,20 @@ export class FileService {
   /**
    * Returns file by Id.
    *
-   * @param {string} id
+   * @param {EntityId} id
    */
-  public async findFile(id: string): Promise<SubmissionFile> {
+  public async findFile(id: EntityId): Promise<SubmissionFile> {
     return this.fileRepository.findById(id, { failOnMissing: true });
   }
 
   /**
    * Gets the raw text of an alt text file.
-   * @param {string} id
+   * @param {EntityId} id
    */
   async getAltText(id: EntityId): Promise<string> {
-    const altFile = await this.altFileRepository.findOneOrFail({ id });
+    const altFile = await this.fileBufferRepository.findById(id, {
+      failOnMissing: true,
+    });
     if (altFile.size) {
       return altFile.buffer.toString();
     }
@@ -156,12 +160,12 @@ export class FileService {
 
   /**
    * Updates the raw text of an alt text file.
-   * @param {string} id
+   * @param {EntityId} id
    * @param {UpdateAltFileDto} update
    */
-  async updateAltText(id: string, update: UpdateAltFileDto) {
-    const altFile = await this.altFileRepository.findOneOrFail({ id });
-    altFile.buffer = Buffer.from(update.html ?? '');
-    await this.altFileRepository.persistAndFlush(altFile);
+  async updateAltText(id: EntityId, update: UpdateAltFileDto) {
+    return this.fileBufferRepository.update(id, {
+      buffer: Buffer.from(update.html ?? ''),
+    });
   }
 }

@@ -9,7 +9,7 @@ import {
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
-import { Account } from '../database/entities';
+import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import DefaultWebsite from '../websites/implementations/default/default.website';
@@ -40,7 +40,7 @@ export class ValidationService {
    * @return {*}  {Promise<ValidationResult[]>}
    */
   public async validateSubmission(
-    submission: ISubmission,
+    submission: Submission,
   ): Promise<ValidationResult[]> {
     return Promise.all(
       submission.options.map((website) => this.validate(submission, website)),
@@ -55,8 +55,8 @@ export class ValidationService {
    * @return {*}  {Promise<ValidationResult>}
    */
   public async validate(
-    submission: ISubmission,
-    websiteOption: IWebsiteOptions,
+    submission: Submission,
+    websiteOption: WebsiteOptions,
   ): Promise<ValidationResult> {
     try {
       const website = websiteOption.isDefault
@@ -64,16 +64,16 @@ export class ValidationService {
         : this.websiteRegistry.findInstance(websiteOption.account);
       if (!website) {
         this.logger.error(
-          `Failed to find website instance for account ${websiteOption.account.id}`,
+          `Failed to find website instance for account ${websiteOption.accountId}`,
         );
         throw new Error(
-          `Failed to find website instance for account ${websiteOption.account.id}`,
+          `Failed to find website instance for account ${websiteOption.accountId}`,
         );
       }
       // All sub-validations mutate the result object
       const result: ValidationResult = {
         id: websiteOption.id,
-        account: website.accountInfo,
+        account: website.account.toDTO(),
         warnings: [],
         errors: [],
       };
@@ -126,7 +126,7 @@ export class ValidationService {
       );
       return {
         id: websiteOption.id,
-        account: new Account(websiteOption.account).toJSON(),
+        account: new Account(websiteOption.account).toDTO(),
         warnings: [
           {
             id: 'validation.failed',
@@ -160,7 +160,7 @@ export class ValidationService {
 
       return {
         id: websiteId,
-        account: website.accountInfo,
+        account: website.account.toDTO(),
         warnings: result?.warnings,
         errors: result?.errors,
       };
@@ -171,7 +171,7 @@ export class ValidationService {
       );
       return {
         id: websiteId,
-        account: website.accountInfo,
+        account: website.account.toDTO(),
         warnings: [
           {
             id: 'validation.failed',

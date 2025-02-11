@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Test, TestingModule } from '@nestjs/testing';
+import { clearDatabase } from '@postybirb/database';
 import { TagField } from '@postybirb/form-builder';
 import { IWebsiteOptions, TagValue } from '@postybirb/types';
 import { TagConvertersService } from '../../tag-converters/tag-converters.service';
@@ -13,6 +14,7 @@ describe('TagParserService', () => {
   let service: TagParserService;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
       providers: [
         TagParserService,

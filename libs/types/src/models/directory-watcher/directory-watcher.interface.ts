@@ -1,6 +1,6 @@
 import { DirectoryWatcherImportAction } from '../../enums/directory-watcher-import-action.enum';
 import { IEntity } from '../database/entity.interface';
-import { ISubmission } from '../submission/submission.interface';
+import { ISubmission, SubmissionId } from '../submission/submission.interface';
 
 /**
  * Defines an entity that reads in files to the app from a folder.
@@ -25,4 +25,10 @@ export interface IDirectoryWatcher extends IEntity {
    * @type {object|undefined}
    */
   template?: ISubmission;
+
+  /**
+   * Template FK.
+   * @type {SubmissionId}
+   */
+  templateId?: SubmissionId;
 }

@@ -1,6 +1,3 @@
-import { IWebsiteOptions, IWebsiteFormFields } from '../../models';
+import { IWebsiteOptions } from '../../models';
 
-export type IUpdateWebsiteOptionsDto<T extends IWebsiteFormFields> = Pick<
-  IWebsiteOptions<T>,
-  'data'
->;
+export type IUpdateWebsiteOptionsDto = Pick<IWebsiteOptions, 'data'>;

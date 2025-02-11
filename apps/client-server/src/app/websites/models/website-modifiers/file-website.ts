@@ -1,10 +1,10 @@
 import {
-  ImageResizeProps,
-  ISubmissionFile,
-  IWebsiteFormFields,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
+    ImageResizeProps,
+    IPostResponse,
+    ISubmissionFile,
+    IWebsiteFormFields,
+    PostData,
+    SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -34,14 +34,14 @@ export interface FileWebsite<
    * @param {PostingFile[]} files - The files to post
    * @param {number} batchIndex - The index of the batch (if batching is required)
    * @param {CancellableToken} cancellationToken
-   * @return {*}  {Promise<PostResponse>}
+   * @return {*}  {Promise<IPostResponse>}
    */
   onPostFileSubmission(
     postData: PostData<T>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
-  ): Promise<PostResponse>;
+  ): Promise<IPostResponse>;
 
   onValidateFileSubmission(
     postData: PostData<T>,

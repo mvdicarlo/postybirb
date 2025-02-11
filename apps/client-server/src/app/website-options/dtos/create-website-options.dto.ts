@@ -1,27 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AccountId,
   ICreateWebsiteOptionsDto,
   IWebsiteFormFields,
   SubmissionId,
 } from '@postybirb/types';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 
-export class CreateWebsiteOptionsDto<
-  T extends IWebsiteFormFields = IWebsiteFormFields,
-> implements ICreateWebsiteOptionsDto
-{
+export class CreateWebsiteOptionsDto implements ICreateWebsiteOptionsDto {
   @ApiProperty()
   @IsString()
-  account: string;
+  accountId: AccountId;
 
   @ApiProperty({ type: Object })
   @IsOptional()
   @IsObject()
-  data: T;
+  data: IWebsiteFormFields;
 
   @ApiProperty()
   @IsString()
-  submission: SubmissionId;
+  submissionId: SubmissionId;
 
   isDefault?: boolean = false;
 }

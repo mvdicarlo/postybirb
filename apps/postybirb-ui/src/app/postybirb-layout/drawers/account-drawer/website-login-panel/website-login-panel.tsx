@@ -1,10 +1,14 @@
 import { Trans } from '@lingui/macro';
 import { Box, CloseButton, Flex, Title } from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
+import { useEffect } from 'react';
 import accountApi from '../../../../../api/account.api';
 import { AccountLoginWebview } from '../../../../../components/account/account-login-webview/account-login-webview';
 import { getCustomLoginComponent } from '../../../../../website-components/custom-login-components';
-import { getOverlayOffset } from '../../drawer.util';
+import {
+  getOverlayOffset,
+  getVerticalScrollbarOffset,
+} from '../../drawer.util';
 import './website-login-panel.css';
 
 type WebsiteLoginPanelProps = {
@@ -20,7 +24,11 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
 
   if (website.loginType.type === 'user') {
     loginMethod = (
-      <AccountLoginWebview src={website.loginType.url} id={account.id} />
+      <AccountLoginWebview
+        src={website.loginType.url}
+        id={account.id}
+        key={account.id}
+      />
     );
   } else if (website.loginType.type === 'custom') {
     const CustomLoginComponent = getCustomLoginComponent(
@@ -29,7 +37,11 @@ function LoginPanel(props: Omit<WebsiteLoginPanelProps, 'onClose'>) {
 
     if (CustomLoginComponent !== undefined) {
       loginMethod = (
-        <CustomLoginComponent account={account} website={website} />
+        <CustomLoginComponent
+          account={account}
+          website={website}
+          key={account.id}
+        />
       );
     }
   }
@@ -49,12 +61,21 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
       .getElementsByClassName('account-drawer')[0]
       ?.querySelector('section')?.offsetWidth ?? 0;
 
+  useEffect(
+    () => () => {
+      accountApi.refreshLogin(account.id);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   if (!offset) {
     return null;
   }
 
   const totalOffset = offset - 1;
-  const widthOffset = offset + getOverlayOffset() - 1;
+  const widthOffset =
+    offset + getOverlayOffset() + getVerticalScrollbarOffset();
   return (
     <Box
       p="sm"
@@ -73,7 +94,6 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
             <CloseButton
               variant="transparent"
               onClick={() => {
-                accountApi.refreshLogin(account.id);
                 onClose();
               }}
             />

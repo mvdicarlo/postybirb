@@ -40,9 +40,7 @@ export class FileSubmissionController {
   ) {}
 
   private findOne(id: SubmissionId) {
-    return this.submissionService
-      .findById(id)
-      .then((record) => record.toJSON());
+    return this.submissionService.findById(id).then((record) => record.toDTO());
   }
 
   @Post('add/:target/:id')
@@ -77,7 +75,7 @@ export class FileSubmissionController {
   async replaceFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
-    @Param('fileId') fileId: string,
+    @Param('fileId') fileId: EntityId,
     @UploadedFile() file: MulterFileInfo,
   ) {
     switch (target) {
@@ -100,7 +98,7 @@ export class FileSubmissionController {
   async removeFile(
     @Param('target') target: Target,
     @Param('id') id: SubmissionId,
-    @Param('fileId') fileId: string,
+    @Param('fileId') fileId: EntityId,
   ) {
     switch (target) {
       case 'file':

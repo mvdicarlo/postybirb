@@ -1,5 +1,5 @@
 import { SubmissionType } from '../../enums';
-import { IAccount } from '../account/account.interface';
+import { AccountId, IAccount } from '../account/account.interface';
 import { DynamicObject } from '../common/dynamic-object';
 import { IEntity } from '../database/entity.interface';
 
@@ -9,6 +9,8 @@ import { IEntity } from '../database/entity.interface';
  * @extends {IEntity}
  */
 export interface IUserSpecifiedWebsiteOptions extends IEntity {
+  accountId: AccountId;
+
   /**
    * The account the options are tied to.
    * @type {IAccount}

@@ -1,7 +1,9 @@
-import { IAccount } from '../account/account.interface';
+import { AccountId, IAccount } from '../account/account.interface';
 import { EntityId, IEntity } from '../database/entity.interface';
-import { PostData } from '../website/post-data.type';
+import { IWebsiteOptions } from '../website-options/website-options.interface';
+import { PostFields } from '../website/post-data.type';
 import { IPostRecord } from './post-record.interface';
+import { IPostResponse } from './post-response.type';
 
 /**
  * Represents a record in queue to post (or already posted) to a specific website.
@@ -9,6 +11,8 @@ import { IPostRecord } from './post-record.interface';
  * @extends {IEntity}
  */
 export interface IWebsitePostRecord extends IEntity {
+  postRecordId: EntityId;
+
   /**
    * The parent post record.
    * @type {IPostRecord}
@@ -23,9 +27,11 @@ export interface IWebsitePostRecord extends IEntity {
 
   /**
    * The date the post was completed.
-   * @type {Date}
+   * @type {string}
    */
-  completedAt: Date;
+  completedAt: string;
+
+  accountId: AccountId;
 
   /**
    * The account the post is made with.
@@ -37,13 +43,19 @@ export interface IWebsitePostRecord extends IEntity {
    * The error(s) associated with the post record.
    * @type {IWebsiteError[]}
    */
-  errors?: IWebsiteError[];
+  errors: IWebsiteError[];
 
   /**
    * The post data that was attempted to be posted with.
-   * @type {PostData}
+   * @type {WebsitePostRecordData}
    */
-  postData?: PostData;
+  postData: WebsitePostRecordData;
+
+  /**
+   * The response from the post.
+   * @type {IPostResponse}
+   */
+  postResponse: IPostResponse[];
 }
 
 /**
@@ -70,7 +82,6 @@ export interface IPostRecordMetadata {
   postedFiles: EntityId[];
 
   /**
-   * TODO - Ensure this value is saved to the database as post runs.
    * The next batch number.
    * More of an internal tracker for resuming posts.
    * @type {number}
@@ -119,3 +130,17 @@ export interface IWebsiteError {
    */
   timestamp: string;
 }
+
+export type WebsitePostRecordData = {
+  /**
+   * The merged parsed website options form data.
+   * @type {PostFields}
+   */
+  parsedOptions?: PostFields;
+
+  /**
+   * The website options used.
+   * @type {IWebsiteOptions}
+   */
+  websiteOptions: IWebsiteOptions[];
+};

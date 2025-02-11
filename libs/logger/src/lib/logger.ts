@@ -1,7 +1,10 @@
+import { PostyBirbDirectories } from '@postybirb/fs';
 import { LogLayer, LoggerType } from 'loglayer';
+import * as winston from 'winston';
 import { Logger as WinstonLogger } from 'winston';
-import { serializeError } from './serializers/serialize-errors';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import { SerializeDevLog } from './serializers/serialize-dev-log';
+import { serializeError } from './serializers/serialize-errors';
 
 export { SerializeDevLog };
 export type PostyBirbLogger = LogLayer<WinstonLogger>;
@@ -28,11 +31,20 @@ export function initializeLogger(
 }
 
 function initializeTestLogger() {
-  // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
-  const winston: typeof import('winston') = require('winston');
+  PostyBirbDirectories.initializeDirectories();
+
+  const transport = new DailyRotateFile({
+    filename: 'postybirb-%DATE%.log',
+    datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
+    maxSize: '20m',
+    maxFiles: '14d',
+    dirname: PostyBirbDirectories.LOGS_DIRECTORY,
+  });
+
   const instance = winston.createLogger({
     format: new SerializeDevLog(),
-    transports: [new winston.transports.Console()],
+    transports: [new winston.transports.Console(), transport],
   });
   initializeLogger(instance, false);
 }

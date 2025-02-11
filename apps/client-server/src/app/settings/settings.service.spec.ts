@@ -1,32 +1,23 @@
-import { MikroORM } from '@mikro-orm/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from '../database/database.module';
+import { clearDatabase } from '@postybirb/database';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
 import { SettingsService } from './settings.service';
 
 describe('SettingsService', () => {
   let service: SettingsService;
   let module: TestingModule;
-  let orm: MikroORM;
 
   beforeEach(async () => {
+    clearDatabase();
     module = await Test.createTestingModule({
-      imports: [DatabaseModule],
       providers: [SettingsService],
     }).compile();
 
     service = module.get<SettingsService>(SettingsService);
-    orm = module.get(MikroORM);
-    try {
-      await orm.getSchemaGenerator().refreshDatabase();
-    } catch {
-      // none
-    }
     await service.onModuleInit();
   });
 
   afterAll(async () => {
-    await orm.close(true);
     await module.close();
   });
 

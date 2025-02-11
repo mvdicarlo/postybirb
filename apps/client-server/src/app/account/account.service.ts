@@ -1,4 +1,3 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
   Injectable,
@@ -7,19 +6,16 @@ import {
 } from '@nestjs/common';
 import { ACCOUNT_UPDATES } from '@postybirb/socket-events';
 import {
-  IAccountDto,
+  AccountId,
   IWebsiteMetadata,
   NULL_ACCOUNT_ID,
   NullAccount,
 } from '@postybirb/types';
+import { ne } from 'drizzle-orm';
 import { Class } from 'type-fest';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Account } from '../database/entities';
-import {
-  FindOptions,
-  PostyBirbRepository,
-} from '../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
+import { Account } from '../drizzle/models';
+import { FindOptions } from '../drizzle/postybirb-database/find-options.type';
 import { waitUntil } from '../utils/wait.util';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
@@ -34,7 +30,7 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @Injectable()
 export class AccountService
-  extends PostyBirbService<Account>
+  extends PostyBirbService<'AccountSchema'>
   implements OnModuleInit
 {
   private readonly loginRefreshTimers: Record<
@@ -46,14 +42,11 @@ export class AccountService
   > = {};
 
   constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
-    @InjectRepository(Account)
-    repository: PostyBirbRepository<Account>,
     private readonly websiteRegistry: WebsiteRegistryService,
     @Optional() webSocket?: WSGateway,
   ) {
-    super(repository, webSocket);
-    repository.addUpdateListener(dbSubscriber, [Account], () => this.emit());
+    super('AccountSchema', webSocket);
+    this.repository.subscribe('AccountSchema', () => this.emit());
   }
 
   /**
@@ -76,9 +69,7 @@ export class AccountService
    */
   private async populateNullAccount(): Promise<void> {
     if (!(await this.repository.findById(NULL_ACCOUNT_ID))) {
-      await this.repository.persistAndFlush(
-        this.repository.create(new NullAccount()),
-      );
+      await this.repository.insert(new NullAccount());
     }
   }
 
@@ -87,7 +78,7 @@ export class AccountService
    */
   private async initWebsiteRegistry(): Promise<void> {
     const accounts = await this.repository.find({
-      id: { $ne: NULL_ACCOUNT_ID },
+      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
     });
     await Promise.all(
       accounts.map((account) => this.websiteRegistry.create(account)),
@@ -118,13 +109,13 @@ export class AccountService
     });
   }
 
-  protected async emit() {
-    const dtos = await this.findAll().then((results) =>
-      results.map((account) => this.getAccountDto(account)),
+  public async emit() {
+    const dtos = await this.findAll().then((accounts) =>
+      accounts.map((a) => this.injectWebsiteInstance(a)),
     );
     super.emit({
       event: ACCOUNT_UPDATES,
-      data: dtos,
+      data: dtos.map((dto) => dto.toDTO()),
     });
   }
 
@@ -157,9 +148,7 @@ export class AccountService
       this.emit();
       await website.onLogin();
     } catch (e) {
-      if (e instanceof Error) {
-        this.logger.withError(e).error(`onLogin failed for ${website.id}`);
-      }
+      this.logger.withError(e).error(`onLogin failed for ${website.id}`);
     } finally {
       website.onAfterLogin();
       this.emit();
@@ -194,10 +183,10 @@ export class AccountService
    * Executes a login refresh initiated from an external source.
    * Will always wait for current pending to complete.
    *
-   * @param {string} id
+   * @param {AccountId} id
    */
-  async manuallyExecuteOnLogin(id: string): Promise<void> {
-    const account = await this.repository.findOne(id);
+  async manuallyExecuteOnLogin(id: AccountId): Promise<void> {
+    const account = await this.repository.findById(id);
     const instance = this.websiteRegistry.findInstance(account);
     await this.awaitPendingLogin(instance);
     await this.executeOnLogin(instance);
@@ -217,44 +206,36 @@ export class AccountService
         `Website ${createDto.website} is not supported.`,
       );
     }
-    const account = this.repository.create(createDto);
-    await this.repository.persistAndFlush(account);
+    const account = await this.repository.insert(new Account(createDto));
     const instance = await this.websiteRegistry.create(account);
     this.afterCreate(account, instance);
-    return account;
+    return account.withWebsiteInstance(instance);
   }
 
-  public findById(id: string, options?: FindOptions) {
-    return this.repository.findById(id, options);
+  public findById(id: AccountId, options?: FindOptions) {
+    return this.repository
+      .findById(id, options)
+      .then((account) => this.injectWebsiteInstance(account));
   }
 
   public async findAll() {
-    return this.repository.find({
-      id: { $ne: NULL_ACCOUNT_ID },
-    });
+    return this.repository
+      .find({
+        where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+      })
+      .then((accounts) =>
+        accounts.map((account) => this.injectWebsiteInstance(account)),
+      );
   }
 
-  /**
-   * Mutates account and sets externally populate info.
-   *
-   * @param {Account} account
-   * @return {*}  {Account}
-   */
-  public getAccountDto(account: Account): IAccountDto {
-    const instance = this.websiteRegistry.findInstance(account);
-    if (instance) {
-      return instance.accountDto;
-    }
-
-    return account.toJSON();
-  }
-
-  async update(id: string, update: UpdateAccountDto) {
+  async update(id: AccountId, update: UpdateAccountDto) {
     this.logger.withMetadata(update).info(`Updating Account '${id}'`);
-    return this.repository.update(id, update);
+    return this.repository
+      .update(id, update)
+      .then((account) => this.injectWebsiteInstance(account));
   }
 
-  async remove(id: string) {
+  async remove(id: AccountId) {
     const account = await this.findById(id);
     if (account) {
       this.websiteRegistry.remove(account);
@@ -267,8 +248,8 @@ export class AccountService
    *
    * @param {string} id
    */
-  async clearAccountData(id: string) {
-    this.logger.withMetadata({ id }).info(`Clearing Account data for '${id}'`);
+  async clearAccountData(id: AccountId) {
+    this.logger.info(`Clearing Account data for '${id}'`);
     const account = await this.findById(id);
     if (account) {
       const instance = this.websiteRegistry.findInstance(account);
@@ -282,11 +263,23 @@ export class AccountService
    * @param {SetWebsiteDataRequestDto} setWebsiteDataRequestDto
    */
   async setAccountData(setWebsiteDataRequestDto: SetWebsiteDataRequestDto) {
+    this.logger.info(
+      `Setting Account data for '${setWebsiteDataRequestDto.id}'`,
+    );
     const account = await this.repository.findById(
       setWebsiteDataRequestDto.id,
       { failOnMissing: true },
     );
     const instance = this.websiteRegistry.findInstance(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
+  }
+
+  private injectWebsiteInstance(account?: Account): Account | null {
+    if (!account) {
+      return null;
+    }
+    return account.withWebsiteInstance(
+      this.websiteRegistry.findInstance(account),
+    );
   }
 }

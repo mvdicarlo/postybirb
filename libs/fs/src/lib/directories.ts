@@ -1,11 +1,10 @@
-import { getStartupOptions } from '@postybirb/utils/electron';
+import {
+  getStartupOptions,
+  IsTestEnvironment,
+} from '@postybirb/utils/electron';
 import { app } from 'electron';
 import { join } from 'path';
 import { deleteDirSync, ensureDirSync } from './fs';
-
-function IsTestEnvironment(): boolean {
-  return (process.env.NODE_ENV || '').toLowerCase() === 'test';
-}
 
 /**
  * Startup options
@@ -16,7 +15,7 @@ const STARTUP_OPTIONS = getStartupOptions();
  * Base PostyBirb document directory.
  */
 const POSTYBIRB_DIRECTORY = IsTestEnvironment()
-  ? join('./', 'test')
+  ? join(__dirname.split('libs')[0], 'test')
   : (STARTUP_OPTIONS.appDataPath ??
     join(app.getPath('documents'), 'PostyBirb'));
 
@@ -41,10 +40,11 @@ function initializeDirectories() {
 }
 
 export {
+  clearTempDirectory,
   DATA_DIRECTORY,
+  initializeDirectories,
   LOGS_DIRECTORY,
   POSTYBIRB_DIRECTORY,
-  TEMP_DIRECTORY,
-  clearTempDirectory,
-  initializeDirectories,
+  TEMP_DIRECTORY
 };
+

@@ -16,10 +16,9 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IEntityDto, SubmissionId, SubmissionType } from '@postybirb/types';
+import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
 import { parse } from 'path';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { Submission } from '../database/entities';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
 import { CreateSubmissionDto } from './dtos/create-submission.dto';
@@ -32,15 +31,15 @@ import { SubmissionService } from './services/submission.service';
  *
  * @class SubmissionController
  */
-@ApiTags('submission')
-@Controller('submission')
-export class SubmissionController extends PostyBirbController<Submission> {
+@ApiTags('submissions')
+@Controller('submissions')
+export class SubmissionController extends PostyBirbController<'SubmissionSchema'> {
   constructor(readonly service: SubmissionService) {
     super(service);
   }
 
   @Get()
-  async findAll(): Promise<IEntityDto[]> {
+  async findAll(): Promise<ISubmissionDto[]> {
     return this.service.findAllAsDto();
   }
 
@@ -53,7 +52,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
     @Body() createSubmissionDto: CreateSubmissionDto,
     @UploadedFiles() files: MulterFileInfo[],
   ) {
-    const mapper = (res) => res.toJSON();
+    const mapper = (res) => res.toDTO();
     if ((files || []).length) {
       const results = [];
       // !NOTE: Currently this shouldn't be able to happen with the current UI, but may need to be addressed in the future.
@@ -95,7 +94,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   ) {
     return this.service
       .update(id, updateSubmissionDto)
-      .then((entity) => entity.toJSON());
+      .then((entity) => entity.toDTO());
   }
 
   @Patch('reorder/:id/:index')
@@ -114,7 +113,7 @@ export class SubmissionController extends PostyBirbController<Submission> {
   ) {
     return this.service
       .updateTemplateName(id, updateSubmissionDto)
-      .then((entity) => entity.toJSON());
+      .then((entity) => entity.toDTO());
   }
 
   @Patch('apply/multi')

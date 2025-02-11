@@ -1,4 +1,3 @@
-import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   BadRequestException,
   Injectable,
@@ -6,32 +5,26 @@ import {
   Optional,
 } from '@nestjs/common';
 import { SETTINGS_UPDATES } from '@postybirb/socket-events';
+import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
   StartupOptions,
   getStartupOptions,
   setStartupOptions,
 } from '@postybirb/utils/electron';
+import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Settings } from '../database/entities';
-import { PostyBirbRepository } from '../database/repositories/postybirb-repository';
-import { DatabaseUpdateSubscriber } from '../database/subscribers/database.subscriber';
+import { Settings } from '../drizzle/models';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
-import { SettingsConstants } from './settings.constants';
 
 @Injectable()
 export class SettingsService
-  extends PostyBirbService<Settings>
+  extends PostyBirbService<'SettingsSchema'>
   implements OnModuleInit
 {
-  constructor(
-    dbSubscriber: DatabaseUpdateSubscriber,
-    @InjectRepository(Settings)
-    repository: PostyBirbRepository<Settings>,
-    @Optional() webSocket: WSGateway,
-  ) {
-    super(repository, webSocket);
-    repository.addUpdateListener(dbSubscriber, [Settings], () => this.emit());
+  constructor(@Optional() webSocket: WSGateway) {
+    super('SettingsSchema', webSocket);
+    this.repository.subscribe('SettingsSchema', () => this.emit());
   }
 
   /**
@@ -39,9 +32,9 @@ export class SettingsService
    */
   async onModuleInit() {
     if (
-      !(await this.repository.count({
-        profile: SettingsConstants.DEFAULT_PROFILE_NAME,
-      }))
+      !(await this.repository.count(
+        eq(this.schema.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+      ))
     ) {
       this.createDefaultSettings();
     }
@@ -57,14 +50,12 @@ export class SettingsService
    * Creates the default settings record.
    */
   private createDefaultSettings() {
-    const entity = this.repository.create({
-      profile: SettingsConstants.DEFAULT_PROFILE_NAME,
-      settings: SettingsConstants.DEFAULT_SETTINGS,
-    });
-
     this.repository
-      .persistAndFlush(entity)
-      .then(() => {
+      .insert({
+        profile: SettingsConstants.DEFAULT_PROFILE_NAME,
+        settings: SettingsConstants.DEFAULT_SETTINGS,
+      })
+      .then((entity) => {
         this.logger.withMetadata(entity).debug('Default settings created');
       })
       .catch((err: Error) => {
@@ -82,13 +73,20 @@ export class SettingsService
     });
   }
 
+  /**
+   * Gets the startup settings.
+   */
   public getStartupSettings() {
     return getStartupOptions();
   }
 
+  /**
+   * Gets the default settings.
+   */
   public getDefaultSettings() {
     return this.repository.findOne({
-      profile: SettingsConstants.DEFAULT_PROFILE_NAME,
+      where: (setting, { eq: equals }) =>
+        equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
     });
   }
 
@@ -114,11 +112,13 @@ export class SettingsService
   }
 
   /**
-   * Updates a settings profile.
+   * Updates settings.
    *
+   * @param {string} id
    * @param {UpdateSettingsDto} updateSettingsDto
+   * @return {*}
    */
-  async update(id: string, updateSettingsDto: UpdateSettingsDto) {
+  async update(id: EntityId, updateSettingsDto: UpdateSettingsDto) {
     this.logger
       .withMetadata(updateSettingsDto)
       .info(`Updating Settings '${id}'`);
