@@ -6,15 +6,15 @@ import { WebsiteOptionsSchema } from './website-options.schema';
 
 export const AccountSchema = sqliteTable('account', {
   ...CommonSchema(),
+  groups: text({ mode: 'json' }).notNull().$type<string[]>(),
   name: text().notNull(),
   website: text().notNull(),
-  groups: text({ mode: 'json' }).notNull().$type<string[]>(),
 });
 
 export const AccountRelations = relations(AccountSchema, ({ one, many }) => ({
   websiteOptions: many(WebsiteOptionsSchema),
   websiteData: one(WebsiteDataSchema, {
     fields: [AccountSchema.id],
-    references: [WebsiteDataSchema.accountId],
+    references: [WebsiteDataSchema.id],
   }),
 }));

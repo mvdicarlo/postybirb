@@ -151,8 +151,8 @@ export function createFieldDecorator<
             Object.entries(c).forEach(([fieldKey, value]) => {
               if (value !== undefined) {
                 fields[fieldKey] = Object.assign(
-                  fields[fieldKey] ?? {},
                   JSON.parse(JSON.stringify(value)),
+                  fields[fieldKey] ?? {},
                 ) as unknown as FieldAggregateType;
               }
             });

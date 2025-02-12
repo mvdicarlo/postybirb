@@ -7,15 +7,15 @@ import { SubmissionSchema } from './submission.schema';
 
 export const DirectoryWatcherSchema = sqliteTable('directory-watcher', {
   ...CommonSchema(),
-  path: text(),
+  templateId: id().references(() => SubmissionSchema.id, {
+    onDelete: 'set null',
+  }),
   importAction: text({
     enum: [DirectoryWatcherImportAction.NEW_SUBMISSION],
   })
     .notNull()
     .default(DirectoryWatcherImportAction.NEW_SUBMISSION),
-  templateId: id().references(() => SubmissionSchema.id, {
-    onDelete: 'set null',
-  }),
+  path: text(),
 });
 
 export const DirectoryWatcherRelations = relations(

@@ -96,7 +96,7 @@ export default class Discord
     cancellationToken.throwIfCancelled();
     const { webhook } = this.websiteDataStore.getData();
     const payload = {
-      ...(batchIndex === 0
+      ...(batchIndex === 1
         ? {
             ...this.buildDescription(
               postData.options.title,
@@ -117,7 +117,7 @@ export default class Discord
       if (isSpoiler) {
         postableFile.options.filename = `SPOILER_${postableFile.options.filename}`;
       }
-      formData[`files[${i}]`] = file;
+      formData[`files[${i}]`] = postableFile;
       payload.attachments.push({
         id: i,
         filename: postableFile.options.filename,

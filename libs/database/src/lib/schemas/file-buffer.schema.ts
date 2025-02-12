@@ -11,8 +11,8 @@ export const FileBufferSchema = sqliteTable('file-buffer', {
     }),
   buffer: blob({ mode: 'buffer' }).notNull(),
   fileName: text().notNull(),
+  height: integer().notNull(),
   mimeType: text().notNull(),
   size: integer().notNull(),
   width: integer().notNull(),
-  height: integer().notNull(),
 });

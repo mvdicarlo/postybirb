@@ -208,7 +208,7 @@ export class WebsiteRegistryService {
     const instance = this.findInstance(account);
     if (instance) {
       this.logger.info(`Removing and cleaning up ${website} - ${name} - ${id}`);
-      await instance.clearLoginStateAndData();
+      await instance.clearLoginStateAndData(true);
       delete this.websiteInstances[website][id];
     }
   }

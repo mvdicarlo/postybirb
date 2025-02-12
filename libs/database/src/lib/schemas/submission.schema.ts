@@ -14,13 +14,13 @@ import { WebsiteOptionsSchema } from './website-options.schema';
 export const SubmissionSchema = sqliteTable('submission', {
   ...CommonSchema(),
   ...submissionType(),
+  isArchived: integer({ mode: 'boolean' }).default(false),
+  isMultiSubmission: integer({ mode: 'boolean' }).notNull(),
   isScheduled: integer({ mode: 'boolean' }).notNull(),
   isTemplate: integer({ mode: 'boolean' }).notNull(),
-  isMultiSubmission: integer({ mode: 'boolean' }).notNull(),
-  isArchived: integer({ mode: 'boolean' }).default(false),
-  schedule: text({ mode: 'json' }).notNull().$type<ISubmissionScheduleInfo>(),
   metadata: text({ mode: 'json' }).notNull().$type<ISubmissionMetadata>(),
   order: integer().notNull(),
+  schedule: text({ mode: 'json' }).notNull().$type<ISubmissionScheduleInfo>(),
 });
 
 export const SubmissionRelations = relations(
