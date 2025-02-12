@@ -117,9 +117,9 @@ export class SubmissionService
         async (s) =>
           ({
             ...s.toDTO(),
-            validations: await this.websiteOptionsService.validateSubmission(
-              s.id,
-            ),
+            validations: s.isArchived
+              ? []
+              : await this.websiteOptionsService.validateSubmission(s.id),
           }) as ISubmissionDto<ISubmissionMetadata>,
       ),
     );
