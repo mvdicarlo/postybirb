@@ -1,6 +1,5 @@
 import { Http } from '@postybirb/http';
 import {
-  DescriptionType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -11,43 +10,36 @@ import {
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
-{{#if hasFile}}
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
-{{/if}}
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
-{{#if hasFile}}
 import { FileWebsite } from '../../models/website-modifiers/file-website';
-{{/if}}
-{{#if hasMessage}}
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
-{{/if}}
 import { Website } from '../../website';
-import { {{pascalWebsiteName}}AccountData } from './models/{{website}}-account-data';
-{{#if hasFile}}
-import { {{pascalWebsiteName}}FileSubmission } from './models/{{website}}-file-submission';
-{{/if}}
-{{#if hasMessage}}
-import { {{pascalWebsiteName}}MessageSubmission } from './models/{{website}}-message-submission';
-{{/if}}
+import { WeasylAccountData } from './models/weasyl-account-data';
+import { WeasylFileSubmission } from './models/weasyl-file-submission';
+import { WeasylMessageSubmission } from './models/weasyl-message-submission';
 
 @WebsiteMetadata({
-  name: '{{website}}',
-  displayName: '{{website}}',
+  name: 'weasyl',
+  displayName: 'weasyl',
 })
-@UserLoginFlow('{{websiteUrl}}')
+@UserLoginFlow('https://weasyl.com')
 @SupportsFiles(['image/png', 'image/jpeg'])
-export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}AccountData> implements
-  {{#if hasFile}}
-  FileWebsite<{{pascalWebsiteName}}FileSubmission>{{#if hasMessage}},{{/if}}
-  {{/if}}
-  {{#if hasMessage}}
-  MessageWebsite<{{pascalWebsiteName}}MessageSubmission>
-  {{/if}}
+@SupportsUsernameShortcut({
+  id: 'weasyl',
+  url: 'https://weasyl.com/~$1',
+})
+export default class Weasyl
+  extends Website<WeasylAccountData>
+  implements
+    FileWebsite<WeasylFileSubmission>,
+    MessageWebsite<WeasylMessageSubmission>
 {
-  protected BASE_URL = '{{websiteUrl}}';
+  protected BASE_URL = 'https://weasyl.com';
 
-  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{pascalWebsiteName}}AccountData> =
+  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<WeasylAccountData> =
     {};
 
   public async onLogin(): Promise<ILoginState> {
@@ -58,9 +50,8 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     return this.loginState.setLogin(true, 'TestUser');
   }
 
-  {{#if hasFile}}
-  createFileModel(): {{pascalWebsiteName}}FileSubmission {
-    return new {{pascalWebsiteName}}FileSubmission();
+  createFileModel(): WeasylFileSubmission {
+    return new WeasylFileSubmission();
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
@@ -68,7 +59,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onPostFileSubmission(
-    postData: PostData<{{pascalWebsiteName}}FileSubmission>,
+    postData: PostData<WeasylFileSubmission>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
@@ -102,22 +93,20 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onValidateFileSubmission(
-    postData: PostData<{{pascalWebsiteName}}FileSubmission>,
+    postData: PostData<WeasylFileSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
       errors: [],
     };
   }
-  {{/if}}
 
-  {{#if hasMessage}}
-  createMessageModel(): {{pascalWebsiteName}}MessageSubmission {
-    return new {{pascalWebsiteName}}MessageSubmission();
+  createMessageModel(): WeasylMessageSubmission {
+    return new WeasylMessageSubmission();
   }
 
   async onPostMessageSubmission(
-    postData: PostData<{{pascalWebsiteName}}MessageSubmission>,
+    postData: PostData<WeasylMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
@@ -147,12 +136,11 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   }
 
   async onValidateMessageSubmission(
-    postData: PostData<{{pascalWebsiteName}}MessageSubmission>,
+    postData: PostData<WeasylMessageSubmission>,
   ): Promise<SimpleValidationResult> {
     return {
       warnings: [],
       errors: [],
     };
   }
-  {{/if}}
 }
