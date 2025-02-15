@@ -93,10 +93,10 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     });
 
     if (result.statusCode === 200) {
-      return new PostResponse().withAdditionalInfo(null);
+      return PostResponse().fromWebsite(this).withAdditionalInfo(null);
     }
 
-    return new PostResponse()
+    return PostResponse().fromWebsite(this)
       .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
@@ -138,10 +138,10 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     });
 
     if (result.statusCode === 200) {
-      return new PostResponse().withAdditionalInfo(null);
+      return PostResponse().fromWebsite(this).withAdditionalInfo(null);
     }
 
-    return new PostResponse()
+    return PostResponse().fromWebsite(this)
       .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
