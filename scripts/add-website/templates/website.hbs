@@ -48,7 +48,10 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   protected BASE_URL = '{{websiteUrl}}';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{pascalWebsiteName}}AccountData> =
-    {};
+    {
+      username: true,
+      apiToken: false
+    };
 
   public async onLogin(): Promise<ILoginState> {
     if (this.account.name === 'test') {

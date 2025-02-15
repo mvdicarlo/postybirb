@@ -63,12 +63,16 @@ module.exports = {
     {
       files: ['*.ts', '*.tsx'],
       extends: ['plugin:@nrwl/nx/typescript'],
-      rules: {},
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+      },
     },
     {
       files: ['*.js', '*.jsx'],
       extends: ['plugin:@nrwl/nx/javascript'],
-      rules: {},
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+      },
     },
   ],
   rules: {
@@ -80,6 +84,8 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'no-restricted-syntax': 'off',
     '@typescript-eslint/ban-types': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'import/extension': 'off',
     'import/no-extraneous-dependencies': [
       'warn',
       {

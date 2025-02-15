@@ -1,12 +1,15 @@
-{{#if supportsTags}}
-{{else}}
-import { TagField } from '@postybirb/form-builder';
-{{/if}}
+import { DescriptionField{{#if supportsTags}}{{else}}, TagField {{/if}} } from '@postybirb/form-builder';
+import { DescriptionType, DescriptionValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class {{pascalWebsiteName}}FileSubmission extends BaseWebsiteOptions {
+    @DescriptionField({
+        descriptionType: DescriptionType.HTML
+    })
+    description: DescriptionValue;
     {{#if supportsTags}}
     {{else}}
+    
     @TagField({ hidden: true })
     tags: TagValue;
     {{/if}}

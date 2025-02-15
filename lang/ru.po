@@ -11,7 +11,7 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:89
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:93
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
 msgstr ""
 
@@ -31,6 +31,10 @@ msgstr "Действия"
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:183
 msgid "Add folder watcher"
 msgstr "Добавить мониторинг папки"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:62
+msgid "All files are marked ignored."
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:31
 msgid "Allow PostyBirb to insert an Ad into the description"
@@ -74,7 +78,7 @@ msgstr "Вы уверены, что хотите удалить? Это дейс
 msgid "Are you sure you want to post all selected submissions?"
 msgstr "Вы уверены, что хотите опубликовать все выбранные посты?"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:75
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:79
 msgid "Audio"
 msgstr ""
 
@@ -309,7 +313,7 @@ msgstr "Посты с файлами"
 msgid "File types do not match. Please upload a file of the same type."
 msgstr "Типы файлов не совпадают. Пожалуйста, загрузите файл того же типа."
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:97
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:101
 msgid "File will be modified to support website requirements"
 msgstr ""
 
@@ -349,7 +353,7 @@ msgstr "Главная страница"
 msgid "Hours"
 msgstr "Часы"
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:90
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:105
 msgctxt "discord.webhook-help"
 msgid "How to create a webhook"
 msgstr "Как создать webhook"
@@ -359,7 +363,7 @@ msgctxt "override-default"
 msgid "Ignore default tags"
 msgstr "Игнорировать теги по умолчанию"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:66
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:70
 msgid "Image"
 msgstr ""
 
@@ -378,6 +382,10 @@ msgstr "Неверная строка CRON"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:158
 msgid "Invalid file type"
 msgstr "Неверный тип файла"
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:129
+msgid "Is a forum"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:174
 msgid "Logged In As"
@@ -421,7 +429,7 @@ msgstr "Навигация"
 msgid "No items"
 msgstr "Нечего отобразить"
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-login-panel/website-login-panel.tsx:19
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-login-panel/website-login-panel.tsx:23
 msgid "No login component found."
 msgstr "Не найдено компонента входа."
 
@@ -514,7 +522,7 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Заменить заголовок"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:122
 msgid "Requires at least {minLength} tags"
 msgstr ""
 
@@ -529,7 +537,7 @@ msgstr "Русский"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:190
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:171
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:96
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:106
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:142
 msgid "Save"
 msgstr "Сохранить"
 
@@ -549,7 +557,7 @@ msgstr "Сохранить изменения загрузки папки"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:153
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:141
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:207
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
 msgid "Schedule"
 msgstr "Отложить"
@@ -576,6 +584,14 @@ msgstr "Выбрать папку"
 msgid "Send Messages"
 msgstr "Сообщения"
 
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:115
+msgid "Server Level"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:121
+msgid "Server level perks"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
 msgid "Settings"
@@ -593,6 +609,10 @@ msgstr "Испанский"
 #: apps/postybirb-ui/src/components/translations/field-translations.ts:12
 msgid "Species"
 msgstr "Виды"
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:15
+msgid "Spoiler"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:177
 msgid "Spoiler Text"
@@ -653,7 +673,7 @@ msgstr "Группа тегов обновлена"
 msgid "Tag Groups"
 msgstr "Группы тегов"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:108
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:112
 msgid "Tag limit reached ({currentLength} / {maxLength})"
 msgstr ""
 
@@ -663,12 +683,12 @@ msgstr ""
 msgid "Tags"
 msgstr "Теги"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:130
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:134
 msgid "Tags longer than {maxLength} characters will be skipped"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:98
-#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:130
+#: apps/postybirb-ui/src/models/dtos/submission.dto.ts:133
 msgid "Template"
 msgstr "Шаблон"
 
@@ -697,7 +717,7 @@ msgstr ""
 msgid "Templates"
 msgstr "Шаблоны"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:72
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:76
 msgid "Text"
 msgstr ""
 
@@ -717,15 +737,15 @@ msgstr "Набросок (Маленькая картинка)"
 msgid "Title"
 msgstr "Название"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:139
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:143
 msgid "Title is too long and will be truncated"
 msgstr "Название слишком длинное и будет сокращено"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:153
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:157
 msgid "Title is too short"
 msgstr "Название слишком короткое"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:171
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:175
 msgid "Translation {id} not found"
 msgstr "Перевод {id} не найден"
 
@@ -738,7 +758,7 @@ msgstr "Не удалось показать форму"
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:145
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:97
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx:55
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:78
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:82
 msgid "Unknown"
 msgstr "Неизвестно"
 
@@ -759,7 +779,7 @@ msgstr ""
 msgid "Unsupported file type {mimeType}"
 msgstr "Неподдерживаемый тип файла {mimeType}"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:81
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:85
 msgid "Unsupported submission type: {fileTypeString}"
 msgstr ""
 
@@ -792,11 +812,15 @@ msgstr "Загрузить новую миниатюру"
 msgid "Use custom description"
 msgstr "Кастомное описание"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:69
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:16
+msgid "Use title"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:73
 msgid "Video"
 msgstr ""
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
+#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:101
 msgid "Webhook is required"
 msgstr ""
 

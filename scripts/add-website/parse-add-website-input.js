@@ -1,5 +1,22 @@
-function parseAddWebsiteInput(answers) {
-  const { websiteName, submissionTypes, websiteUrl, fileFeatures, supportsTags } = answers;
+/**
+ * @param {{
+ *  websiteName: string;
+ *  websiteUrl: string;
+ *  submissionTypes: string[];
+ *  fileFeatures: boolean;
+ *  supportsTags: boolean;
+ *  confirm: boolean;
+ * }} answers
+ */
+export function parseAddWebsiteInput(answers) {
+  const {
+    websiteName,
+    submissionTypes,
+    websiteUrl,
+    fileFeatures,
+    supportsTags,
+  } = answers;
+
   const website = websiteName.toLowerCase().trim();
   return {
     website,
@@ -14,4 +31,6 @@ function parseAddWebsiteInput(answers) {
   };
 }
 
-module.exports = parseAddWebsiteInput;
+/**
+ * @typedef {ReturnType<typeof parseAddWebsiteInput>} AddWebsiteContext
+ */
