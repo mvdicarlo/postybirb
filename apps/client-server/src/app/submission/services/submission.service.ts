@@ -117,9 +117,9 @@ export class SubmissionService
         async (s) =>
           ({
             ...s.toDTO(),
-            validations: await this.websiteOptionsService.validateSubmission(
-              s.id,
-            ),
+            validations: s.isArchived
+              ? []
+              : await this.websiteOptionsService.validateSubmission(s.id),
           }) as ISubmissionDto<ISubmissionMetadata>,
       ),
     );
@@ -129,7 +129,7 @@ export class SubmissionService
     const existing = await this.repository.findOne({
       where: (submission, { eq: equals, and }) =>
         and(
-          eq(submission.id, type),
+          eq(submission.type, type),
           equals(submission.isMultiSubmission, true),
         ),
     });
@@ -459,13 +459,7 @@ export class SubmissionService
             account: true,
           },
         },
-        files: {
-          with: {
-            file: true,
-            altFile: true,
-            thumbnail: true,
-          },
-        },
+        files: true,
       },
     });
     await this.repository.db.transaction(async (tx: PostyBirbTransaction) => {
@@ -493,6 +487,7 @@ export class SubmissionService
       );
 
       for (const file of entityToDuplicate.files) {
+        await file.load();
         const newFile = (
           await tx
             .insert(SubmissionFileSchema)

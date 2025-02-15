@@ -11,6 +11,20 @@ import { WebsitePostRecordSchema } from './website-post-record.schema';
 
 export const PostRecordSchema = sqliteTable('post-record', {
   ...CommonSchema(),
+  submissionId: id().references(() => SubmissionSchema.id, {
+    onDelete: 'cascade',
+  }),
+
+  completedAt: text(),
+  resumeMode: text({
+    enum: [
+      PostRecordResumeMode.CONTINUE,
+      PostRecordResumeMode.RESTART,
+      PostRecordResumeMode.CONTINUE_RETRY,
+    ],
+  })
+    .notNull()
+    .default(PostRecordResumeMode.CONTINUE),
   state: text({
     enum: [
       PostRecordState.DONE,
@@ -21,19 +35,6 @@ export const PostRecordSchema = sqliteTable('post-record', {
   })
     .notNull()
     .default(PostRecordState.PENDING),
-  resumeMode: text({
-    enum: [
-      PostRecordResumeMode.CONTINUE,
-      PostRecordResumeMode.RESTART,
-      PostRecordResumeMode.CONTINUE_RETRY,
-    ],
-  })
-    .notNull()
-    .default(PostRecordResumeMode.CONTINUE),
-  submissionId: id().references(() => SubmissionSchema.id, {
-    onDelete: 'cascade',
-  }),
-  completedAt: text(),
 });
 
 export const PostRecordRelations = relations(

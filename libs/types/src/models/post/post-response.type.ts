@@ -35,7 +35,7 @@ export type IPostResponse = {
    * The instance id of the post.
    * @type {string}
    */
-  instanceId?: string;
+  instanceId: string;
 };
 
 export class PostResponse implements IPostResponse {
@@ -49,7 +49,7 @@ export class PostResponse implements IPostResponse {
 
   additionalInfo?: unknown;
 
-  instanceId?: string;
+  instanceId: string;
 
   static fromWebsite(website: { id: string }) {
     const response = new PostResponse();

@@ -13,6 +13,7 @@ import {
   PostData,
   PostRecordResumeMode,
   PostRecordState,
+  ScheduleType,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
@@ -29,6 +30,7 @@ import {
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
+import { SubmissionService } from '../../../submission/services/submission.service';
 import { ValidationService } from '../../../validation/validation.service';
 import {
   ImplementedFileWebsite,
@@ -43,7 +45,7 @@ import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.s
 
 @Injectable()
 export class PostManagerService {
-  private readonly logger = Logger();
+  private readonly logger = Logger(this.constructor.name);
 
   /**
    * The current post being processed.
@@ -71,6 +73,7 @@ export class PostManagerService {
     private readonly postParserService: PostParsersService,
     private readonly validationService: ValidationService,
     private readonly fileConverterService: FileConverterService,
+    private readonly submissionService: SubmissionService,
   ) {
     this.postRepository =
       postRepository ?? new PostyBirbDatabase('PostRecordSchema');
@@ -158,6 +161,14 @@ export class PostManagerService {
       completedAt: new Date().toISOString(),
       state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
     });
+    if (
+      allCompleted &&
+      entity.submission.schedule.scheduleType !== ScheduleType.RECURRING
+    ) {
+      await this.submissionService.update(entity.submissionId, {
+        isArchived: true,
+      });
+    }
   }
 
   /**
@@ -188,11 +199,14 @@ export class PostManagerService {
         (o) => o.accountId === websitePostRecord.accountId,
       );
 
+      this.logger.info('Preparing post data');
       const data = await this.preparePostData(submission, instance, option);
+      this.logger.withMetadata(data).info('Post data prepared');
       websitePostRecord.postData = {
         parsedOptions: data.options,
         websiteOptions: [submission.options.find((o) => o.isDefault), option],
       }; // Set for later saving
+      this.logger.info('Validating submission');
       const validationResult =
         await this.validationService.validateSubmission(submission);
       if (validationResult.some((v) => v.errors.length > 0)) {
@@ -204,6 +218,7 @@ export class PostManagerService {
         .withError(error)
         .error(`Error posting to website: ${instance.id}`);
       await this.handleFailureResult(websitePostRecord, {
+        instanceId: instance.id,
         exception: error,
         additionalInfo: null,
         message: `An unexpected error occurred while posting to ${
@@ -221,6 +236,7 @@ export class PostManagerService {
     data: PostData,
   ) {
     this.cancelToken.throwIfCancelled();
+    this.logger.info(`Attempting to post to ${instance.id}`);
     switch (submission.type) {
       case SubmissionType.FILE:
         await this.handleFileSubmission(
@@ -298,6 +314,7 @@ export class PostManagerService {
       });
     }
 
+    this.logger.withMetadata(res).error(`Failed to post to ${res.instanceId}`);
     await this.websitePostRecordRepository.update(websitePostRecord.id, {
       errors: websitePostRecord.errors,
       metadata: websitePostRecord.metadata,
@@ -403,7 +420,16 @@ export class PostManagerService {
 
       // Post
       this.cancelToken.throwIfCancelled();
-      this.logger.info(`Posting file batch to ${instance.id}`);
+      const fileIds = batch.map((f) => f.id);
+      this.logger
+        .withMetadata({
+          batchIndex,
+          totalBatches: batches.length,
+          totalFiles: files.length,
+          totalFilesInBatch: batch.length,
+          fileIds,
+        })
+        .info(`Posting file batch to ${instance.id}`);
       const result = await instance.onPostFileSubmission(
         data,
         processedFiles,
@@ -411,13 +437,15 @@ export class PostManagerService {
         this.cancelToken,
       );
 
-      const batchIds = batch.map((f) => f.id);
-      websitePostRecord.postResponse.push(result);
       if (result.exception) {
-        await this.handleFailureResult(websitePostRecord, result, batchIds);
+        await this.handleFailureResult(websitePostRecord, result, fileIds);
       } else {
-        await this.handleSuccessResult(websitePostRecord, result, batchIds);
+        await this.handleSuccessResult(websitePostRecord, result, fileIds);
         await this.markFilesAsPosted(websitePostRecord, submission, batch);
+        websitePostRecord.postResponse.push(result);
+        this.logger
+          .withMetadata(result)
+          .info(`File batch posted to ${instance.id}`);
       }
     }
   }

@@ -195,12 +195,14 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       ),
     };
 
-    return this.repository.insert({
+    const record = await this.repository.insert({
       submissionId: submission.id,
       data: websiteData,
       accountId: account.id,
       isDefault: account.id === NULL_ACCOUNT_ID,
     });
+    this.submissionService.emit();
+    return record;
   }
 
   update(id: EntityId, update: UpdateWebsiteOptionsDto) {

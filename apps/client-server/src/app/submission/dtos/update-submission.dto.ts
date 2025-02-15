@@ -21,23 +21,28 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsBoolean()
-  isScheduled: boolean;
+  isArchived?: boolean;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  isScheduled?: boolean;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
   @IsISO8601()
-  scheduledFor: string | null | undefined;
+  scheduledFor?: string | null | undefined;
 
   @ApiProperty({ enum: ScheduleType })
   @IsOptional()
   @IsEnum(ScheduleType)
-  scheduleType: ScheduleType;
+  scheduleType?: ScheduleType;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  cron: string | null | undefined;
+  cron?: string | null | undefined;
 
   @ApiProperty()
   @IsOptional()
@@ -52,5 +57,5 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsObject()
-  metadata: ISubmissionMetadata | FileSubmissionMetadata;
+  metadata?: ISubmissionMetadata | FileSubmissionMetadata;
 }

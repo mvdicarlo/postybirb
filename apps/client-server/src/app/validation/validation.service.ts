@@ -3,9 +3,11 @@ import { Logger } from '@postybirb/logger';
 import {
   EntityId,
   ISubmission,
+  ISubmissionMetadata,
   IWebsiteOptions,
   PostData,
   SimpleValidationResult,
+  SubmissionId,
   SubmissionType,
   ValidationResult,
 } from '@postybirb/types';
@@ -21,17 +23,69 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { validators } from './validators';
 import { Validator, ValidatorParams } from './validators/validator.type';
 
+type ValidationCacheRecord = {
+  submissionLastUpdatedTimestamp: string;
+  metadataSnapshot: ISubmissionMetadata;
+  results: Record<
+    EntityId,
+    {
+      validationResult: ValidationResult;
+      websiteOptionLastUpdatedTimestamp: string;
+    }
+  >;
+};
+
 @Injectable()
 export class ValidationService {
-  private readonly logger = Logger();
+  private readonly logger = Logger(this.constructor.name);
 
   private readonly validations: Validator[] = validators;
+
+  private readonly validationCache = new Map<
+    SubmissionId,
+    ValidationCacheRecord
+  >();
 
   constructor(
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly postParserService: PostParsersService,
     private readonly fileConverterService: FileConverterService,
   ) {}
+
+  private getCachedValidation(
+    submissionId: SubmissionId,
+  ): ValidationCacheRecord | undefined {
+    return this.validationCache.get(submissionId);
+  }
+
+  private clearCachedValidation(submissionId: SubmissionId) {
+    this.validationCache.delete(submissionId);
+  }
+
+  private setCachedValidation(
+    submission: Submission,
+    websiteOption: WebsiteOptions,
+    validationResult: ValidationResult,
+  ) {
+    const cachedValidation = this.getCachedValidation(submission.id);
+    if (!cachedValidation) {
+      this.validationCache.set(submission.id, {
+        submissionLastUpdatedTimestamp: submission.updatedAt,
+        metadataSnapshot: submission.metadata,
+        results: {
+          [websiteOption.id]: {
+            validationResult,
+            websiteOptionLastUpdatedTimestamp: websiteOption.updatedAt,
+          },
+        },
+      });
+    } else {
+      cachedValidation.results[websiteOption.id] = {
+        validationResult,
+        websiteOptionLastUpdatedTimestamp: websiteOption.updatedAt,
+      };
+    }
+  }
 
   /**
    * Validate a submission for all website options.
@@ -42,6 +96,17 @@ export class ValidationService {
   public async validateSubmission(
     submission: Submission,
   ): Promise<ValidationResult[]> {
+    const cachedValidation = this.getCachedValidation(submission.id);
+    if (
+      cachedValidation &&
+      cachedValidation.submissionLastUpdatedTimestamp !==
+        submission.updatedAt &&
+      JSON.stringify(cachedValidation.metadataSnapshot) !==
+        JSON.stringify(submission.metadata)
+    ) {
+      // Worth clearing the cache if the submission metadata was updated
+      this.clearCachedValidation(submission.id);
+    }
     return Promise.all(
       submission.options.map((website) => this.validate(submission, website)),
     );
@@ -59,6 +124,15 @@ export class ValidationService {
     websiteOption: WebsiteOptions,
   ): Promise<ValidationResult> {
     try {
+      const cachedValidation = this.getCachedValidation(submission.id);
+      if (
+        cachedValidation &&
+        cachedValidation.results[websiteOption.id] &&
+        cachedValidation.results[websiteOption.id]
+          .websiteOptionLastUpdatedTimestamp === websiteOption.updatedAt
+      ) {
+        return cachedValidation.results[websiteOption.id].validationResult;
+      }
       const website = websiteOption.isDefault
         ? new DefaultWebsite(new Account(websiteOption.account))
         : this.websiteRegistry.findInstance(websiteOption.account);
@@ -118,6 +192,7 @@ export class ValidationService {
       result.warnings.push(...(instanceResult.warnings ?? []));
       result.errors.push(...(instanceResult.errors ?? []));
 
+      this.setCachedValidation(submission, websiteOption, result);
       return result;
     } catch (error) {
       this.logger.warn(

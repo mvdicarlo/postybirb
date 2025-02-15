@@ -8,6 +8,13 @@
       "when": 1738930112544,
       "tag": "0000_flowery_silvermane",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1739278190297,
+      "tag": "0001_luxuriant_ender_wiggin",
+      "breakpoints": true
     }
   ]
 }

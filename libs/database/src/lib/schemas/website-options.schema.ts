@@ -8,8 +8,6 @@ import { IWebsiteFormFields } from '../../../../types/src/index';
 
 export const WebsiteOptionsSchema = sqliteTable('website-options', {
   ...CommonSchema(),
-  data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),
-  isDefault: integer({ mode: 'boolean' }).notNull(),
   accountId: id()
     .notNull()
     .references(() => AccountSchema.id, {
@@ -20,6 +18,8 @@ export const WebsiteOptionsSchema = sqliteTable('website-options', {
     .references(() => SubmissionSchema.id, {
       onDelete: 'cascade',
     }),
+  data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),
+  isDefault: integer({ mode: 'boolean' }).notNull(),
 });
 
 export const WebsiteOptionsRelations = relations(

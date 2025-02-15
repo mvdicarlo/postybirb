@@ -127,12 +127,12 @@ export abstract class Website<D extends DynamicObject> {
   // -------------- Externally Accessed Methods --------------
   // Methods intended to be executed by consumers of a Website
 
-  public async clearLoginStateAndData() {
+  public async clearLoginStateAndData(forWebsiteDeletion = false) {
     this.logger.info('Clearing login state and data');
     await session
       .fromPartition(getPartitionKey(this.account.id))
       .clearStorageData();
-    await this.websiteDataStore.clearData();
+    await this.websiteDataStore.clearData(!forWebsiteDeletion);
     this.loginState.logout();
   }
 

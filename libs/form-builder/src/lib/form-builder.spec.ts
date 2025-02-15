@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
-import { BooleanField, TagField, TextField } from './decorators';
+import {
+  BooleanField,
+  DescriptionField,
+  TagField,
+  TextField,
+} from './decorators';
 import { formBuilder } from './form-builder';
 
 describe('formBuilder', () => {
@@ -31,11 +36,17 @@ describe('formBuilder', () => {
     class ExtendedType extends BooleanType {
       @TextField({ label: 'description', col: 5 })
       public field2 = 'hello';
+
+      @DescriptionField({ label: 'feature', descriptionType: 'html' })
+      public field3;
     }
 
     class ExtendedAndOverrideType extends ExtendedType {
       @TextField({ label: 'title' })
       public field2 = 'Goodbye';
+
+      @DescriptionField({ label: 'feature', descriptionType: 'markdown' })
+      public field3;
     }
 
     expect(formBuilder(new BooleanType(), {})).toEqual({
@@ -66,6 +77,18 @@ describe('formBuilder', () => {
         row: Number.MAX_SAFE_INTEGER,
         col: 5,
       },
+      field3: {
+        col: 0,
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
+        descriptionType: 'html',
+        formField: 'description',
+        label: 'feature',
+        row: 9007199254740991,
+        type: 'description',
+      },
     });
 
     expect(formBuilder(new ExtendedAndOverrideType(), {})).toEqual({
@@ -84,6 +107,18 @@ describe('formBuilder', () => {
         formField: 'input',
         row: Number.MAX_SAFE_INTEGER,
         col: 5,
+      },
+      field3: {
+        col: 0,
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
+        descriptionType: 'markdown',
+        formField: 'description',
+        label: 'feature',
+        row: 9007199254740991,
+        type: 'description',
       },
     });
   });

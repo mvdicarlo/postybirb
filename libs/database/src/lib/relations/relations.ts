@@ -17,7 +17,7 @@ export const AccountRelations = relations(AccountSchema, ({ one, many }) => ({
   websiteOptions: many(WebsiteOptionsSchema),
   websiteData: one(WebsiteDataSchema, {
     fields: [AccountSchema.id],
-    references: [WebsiteDataSchema.accountId],
+    references: [WebsiteDataSchema.id],
   }),
 }));
 
@@ -100,7 +100,7 @@ export const UserSpecifiedWebsiteOptionsRelations = relations(
 
 export const WebsiteDataRelations = relations(WebsiteDataSchema, ({ one }) => ({
   account: one(AccountSchema, {
-    fields: [WebsiteDataSchema.accountId],
+    fields: [WebsiteDataSchema.id],
     references: [AccountSchema.id],
   }),
 }));
