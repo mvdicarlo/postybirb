@@ -1,14 +1,15 @@
-const inquirer = require('inquirer').default;
-const path = require('path');
-const createWebsite = require('./add-website/create-website');
-const parseAddWebsiteInput = require('./add-website/parse-add-website-input');
+import inquirer from 'inquirer';
+import { resolve } from 'path';
+import { createWebsite } from './add-website/create-website';
+import { parseAddWebsiteInput } from './add-website/parse-add-website-input';
 
+/** @param {string} str */
 const isDashCasedOrLowercase = (str) =>
   /^[a-z]+(-[a-z]+)*$/.test(str) || /^[a-z]+$/.test(str);
 
-const currentPath = path.resolve();
+const currentPath = resolve();
 const baseAppPath = currentPath.includes('postybirb')
-  ? path.resolve(
+  ? resolve(
       'apps',
       'client-server',
       'src',
@@ -16,7 +17,7 @@ const baseAppPath = currentPath.includes('postybirb')
       'websites',
       'implementations',
     )
-  : path.resolve(
+  : resolve(
       '..',
       'apps',
       'client-server',
