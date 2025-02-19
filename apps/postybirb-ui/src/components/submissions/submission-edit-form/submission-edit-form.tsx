@@ -142,7 +142,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   }
 
   return (
-    <Flex>
+    <Flex data-submission-id={submission.id}>
       <Stack gap="xs" flex="11">
         {!isSpecialSubmissionType && submission.type === SubmissionType.FILE ? (
           <SubmissionFileManager

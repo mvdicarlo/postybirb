@@ -12,12 +12,12 @@ export function useValidations(props: FormFieldProps): UseValidationResult {
   const { validation, option, propKey } = props;
   const validationMsgs = useMemo(() => {
     const validations = validation.find((v) => v.id === option.id);
-    const warnings: ValidationMessage[] = (
-      validations?.result.warnings || []
-    ).filter((warning: ValidationMessage) => warning.field === propKey);
-    const errors: ValidationMessage[] = (
-      validations?.result.errors || []
-    ).filter((error: ValidationMessage) => error.field === propKey);
+    const warnings: ValidationMessage[] = (validations?.warnings || []).filter(
+      (warning: ValidationMessage) => warning.field === propKey,
+    );
+    const errors: ValidationMessage[] = (validations?.errors || []).filter(
+      (error: ValidationMessage) => error.field === propKey,
+    );
 
     return {
       warnings,

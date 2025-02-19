@@ -38,6 +38,14 @@ export abstract class Website<D extends DynamicObject> {
   protected readonly websiteDataStore: WebsiteDataManager<D>;
 
   /**
+   * Intended location for storing dynamically retrieved
+   * information for a website instance.
+   *
+   * Commons things that go here would be folders.
+   */
+  protected readonly retrievedWebsiteData: DynamicObject = {};
+
+  /**
    * Tracks the login state of a website.
    */
   protected readonly loginState: LoginState;
@@ -150,7 +158,7 @@ export abstract class Website<D extends DynamicObject> {
         delete data[key];
       });
 
-    return data;
+    return { ...data };
   }
 
   /**
@@ -159,8 +167,10 @@ export abstract class Website<D extends DynamicObject> {
    */
   public getFormProperties(): DynamicObject {
     const longTermData = this.getWebsiteData();
+    const shortTermData = this.retrievedWebsiteData;
     return {
       ...longTermData,
+      ...shortTermData,
     };
   }
 

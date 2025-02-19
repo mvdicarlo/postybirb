@@ -194,13 +194,14 @@ function InnerForm({
                 )
                 .map((entry) => (
                   <Field
+                    submission={submission}
                     propKey={entry.key}
                     defaultOption={defaultOption}
                     field={entry.field as unknown as FieldAggregateType}
                     form={form}
                     key={entry.key}
                     option={option as unknown as WebsiteOptionsDto<never>}
-                    validation={[]}
+                    validation={submission.validations ?? []}
                   />
                 ))}
             </Stack>

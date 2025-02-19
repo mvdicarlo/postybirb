@@ -7,6 +7,7 @@ type TagExtraFields = {
   maxTags?: number;
   maxTagLength?: number;
   minTagLength?: number;
+  spaceReplacer?: string;
 };
 
 export const TagField = createFieldDecorator<TagValue, TagExtraFields>('tag')({
@@ -14,5 +15,7 @@ export const TagField = createFieldDecorator<TagValue, TagExtraFields>('tag')({
     formField: 'tag',
     label: 'tags',
     defaultValue: DefaultTagValue(),
+    minTagLength: 1,
+    spaceReplacer: '_',
   },
 });

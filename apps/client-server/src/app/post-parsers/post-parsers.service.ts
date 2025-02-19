@@ -38,7 +38,6 @@ export class PostParsersService {
       ...websiteOptions.data,
     });
     const tags = await this.tagParser.parse(instance, defaultOpts, websiteOpts);
-
     const title = await this.titleParser.parse(defaultOpts, websiteOpts);
 
     return {

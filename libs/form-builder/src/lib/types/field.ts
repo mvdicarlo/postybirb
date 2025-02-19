@@ -74,4 +74,13 @@ export type FieldType<
    * Whether the field should be hidden.
    */
   hidden?: boolean;
+
+  /**
+   * Allow derivation of a field from derived external data
+   * Selects the key from the provided object and sets the populate field to that value.
+   */
+  derive?: {
+    key: keyof T;
+    populate: string;
+  }[];
 };

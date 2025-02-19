@@ -14,4 +14,8 @@ export const FieldLabelTranslations: {
   feature: msg`Feature`,
   spoiler: msg`Spoiler`,
   useTitle: msg`Use title`,
+  critique: msg`Request critique`,
+  notify: msg`Notify followers`,
+  category: msg`Category`,
+  folder: msg`Folder`,
 };
