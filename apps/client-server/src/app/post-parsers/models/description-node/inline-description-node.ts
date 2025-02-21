@@ -40,7 +40,9 @@ export class DescriptionInlineNode
       .join('')
       .trim();
     const shortcut = this.shortcuts[id];
-    const url = shortcut?.convert?.call(this, this.website) ?? shortcut?.url;
+    const url =
+      shortcut?.convert?.call(this, this.website, this.props.shortcut) ??
+      shortcut?.url;
     return username && url
       ? { url: url.replace('$1', username), username }
       : undefined;
