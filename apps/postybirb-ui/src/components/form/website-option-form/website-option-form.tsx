@@ -163,7 +163,7 @@ function InnerForm({
   });
 
   return (
-    <Box className="postybirb__website-option-form">
+    <Box className="postybirb__website-option-form" option-id={option.id}>
       <UserSpecifiedWebsiteOptionsSaveModal
         opened={userSpecifiedModalVisible}
         onClose={userSpecifiedModalClosed}
@@ -239,7 +239,7 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
 
   if (!formFields) {
     return (
-      <Box>
+      <Box option-id={option.id}>
         <Trans>Unable to display form</Trans>
       </Box>
     );

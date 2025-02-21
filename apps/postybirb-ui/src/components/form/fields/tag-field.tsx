@@ -51,7 +51,6 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   const { state: tagGroups } = useStore(TagGroupStore);
   const defaultOption = useDefaultOption<TagValue>(props);
   const validations = useValidations(props);
-  console.log(validations, props);
   const { state: tagConverters } = useStore(TagConverterStore);
   const { accounts } = useWebsites();
   const account = accounts.find((acc) => acc.id === option.accountId);

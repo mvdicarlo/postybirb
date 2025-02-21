@@ -19,10 +19,11 @@ export class DescriptionBlockNode
   content: Array<DescriptionInlineNode | DescriptionTextNode>;
 
   constructor(
+    website: string,
     node: IDescriptionBlockNode,
     shortcuts: Record<string, UsernameShortcut>,
   ) {
-    super(node, shortcuts);
+    super(website, node, shortcuts);
     this.id = node.id;
     this.content =
       node.content?.map((child) => {
@@ -30,11 +31,13 @@ export class DescriptionBlockNode
           throw new Error('Block nodes cannot contain other block nodes');
         } else if (child.type === 'text') {
           return new DescriptionTextNode(
+            website,
             child as IDescriptionTextNode,
             shortcuts,
           );
         } else if (InlineTypes.includes(child.type)) {
           return new DescriptionInlineNode(
+            website,
             child as IDescriptionInlineNode,
             shortcuts,
           );

@@ -301,7 +301,6 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     if (remove?.length) {
       const items = submission.options;
       const removableIds = [];
-      // eslint-disable-next-line no-restricted-syntax
       for (const id of remove) {
         const option = items.find((opt) => opt.id === id);
         if (option) {

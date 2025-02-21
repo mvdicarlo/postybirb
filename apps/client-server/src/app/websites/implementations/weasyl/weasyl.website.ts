@@ -39,6 +39,7 @@ import { WeasylMessageSubmission } from './models/weasyl-message-submission';
     'swf',
     'text/markdown',
     'text/plain',
+    'text/pdf',
   ],
   acceptedFileSizes: {
     [FileType.IMAGE]: FileSize.mbToBytes(50),
@@ -61,13 +62,9 @@ export default class Weasyl
   protected BASE_URL = 'https://weasyl.com';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<WeasylAccountData> =
-    {};
-
-  protected readonly retrievedWebsiteData: {
-    folders: SelectOption[];
-  } = {
-    folders: [],
-  };
+    {
+      folders: true,
+    };
 
   public async onLogin(): Promise<ILoginState> {
     const res = await Http.get<{ login: string }>(
@@ -124,6 +121,10 @@ export default class Weasyl
     });
 
     this.retrievedWebsiteData.folders = folders;
+    this.websiteDataStore.setData({
+      ...this.websiteDataStore.getData(),
+      folders,
+    });
   }
 
   createFileModel(): WeasylFileSubmission {

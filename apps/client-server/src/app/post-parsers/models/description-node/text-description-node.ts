@@ -15,10 +15,11 @@ export class DescriptionTextNode
   styles: Styles;
 
   constructor(
+    website: string,
     node: IDescriptionTextNode,
     shortcuts: Record<string, UsernameShortcut>,
   ) {
-    super(node, shortcuts);
+    super(website, node, shortcuts);
     this.text = node.text ?? '';
     this.styles = node.styles ?? {};
   }

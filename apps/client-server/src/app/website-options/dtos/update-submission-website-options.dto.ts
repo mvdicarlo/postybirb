@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  EntityId,
   ICreateWebsiteOptionsDto,
   IUpdateSubmissionWebsiteOptionsDto,
 } from '@postybirb/types';
@@ -11,10 +12,10 @@ export class UpdateSubmissionWebsiteOptionsDto
   @ApiProperty()
   @IsOptional()
   @IsArray()
-  remove?: string[];
+  remove?: EntityId[];
 
   @ApiProperty()
   @IsOptional()
   @IsArray()
-  add?: Omit<ICreateWebsiteOptionsDto, 'id'>[];
+  add?: ICreateWebsiteOptionsDto[];
 }

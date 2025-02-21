@@ -1,4 +1,8 @@
-import { Block } from '@blocknote/core';
+import {
+  Block,
+  DefaultBlockSchema,
+  DefaultInlineContentSchema,
+} from '@blocknote/core';
 
 /**
  * An object representing a description value.
@@ -32,7 +36,28 @@ export type DescriptionValue = {
   description: Description;
 };
 
-export type Description = Block[];
+type CustomInlineContentSchema = DefaultInlineContentSchema & {
+  username: {
+    type: 'username';
+    propSchema: {
+      id: {
+        default: string;
+      };
+      shortcut: {
+        default: string;
+      };
+      only: {
+        default: string;
+      };
+    };
+    content: 'styled';
+  };
+};
+
+export type Description = Block<
+  DefaultBlockSchema,
+  CustomInlineContentSchema
+>[];
 
 export const DefaultDescription = (): Description => [];
 

@@ -46,8 +46,6 @@ export const schema = BlockNoteSchema.create({
   },
 });
 
-console.log(schema.blockSpecs);
-
 export const altFileSchema = BlockNoteSchema.create({
   blockSpecs: {
     ...getModifiedBlockSpecsForAltText(),

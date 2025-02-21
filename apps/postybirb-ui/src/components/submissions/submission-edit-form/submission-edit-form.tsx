@@ -16,7 +16,6 @@ import {
   FileSubmissionMetadata,
   IAccountDto,
   ISubmissionScheduleInfo,
-  IWebsiteFormFields,
   NullAccount,
   SubmissionType,
   WebsiteOptionsDto,
@@ -30,7 +29,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteOptionGroupSection } from '../../form/website-option-form/website-option-group-section';
-import { WebsiteSelect } from '../../form/website-select/website-select';
+import { ImplementedWebsiteSelect } from '../../form/website-select/implemented-website-select';
 import { SubmissionScheduler } from '../submission-scheduler/submission-scheduler';
 import { SubmissionFileManager } from './submission-file-manager/submission-file-manager';
 
@@ -159,40 +158,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             />
           </Input.Wrapper>
         ) : null}
-        <WebsiteSelect
-          submission={submission}
-          onSelect={(selectedAccounts) => {
-            const existingOptions = submission.options.filter(
-              (o) => !o.isDefault,
-            );
-            const removedOptions: WebsiteOptionsDto[] = [];
-            const newAccounts: AccountId[] = [];
-            selectedAccounts.forEach((account) => {
-              const exists = existingOptions.find(
-                (o) => o.accountId === account.id,
-              );
-              if (!exists) {
-                newAccounts.push(account.id);
-              }
-            });
-            existingOptions.forEach((option) => {
-              const exists = selectedAccounts.find(
-                (a) => a.id === option.accountId,
-              );
-              if (!exists) {
-                removedOptions.push(option);
-              }
-            });
-            websiteOptionsApi.modifySubmission(submission.id, {
-              remove: removedOptions.map((o) => o.id),
-              add: newAccounts.map((accountId) => ({
-                accountId,
-                submissionId: submission.id,
-                data: {} as IWebsiteFormFields,
-              })),
-            });
-          }}
-        />
+        <ImplementedWebsiteSelect submission={submission} />
         <WebsiteOptionGroupSection
           options={[defaultOption]}
           submission={submission}

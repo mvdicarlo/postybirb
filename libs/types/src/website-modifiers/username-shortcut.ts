@@ -12,4 +12,11 @@ export type UsernameShortcut = {
    * @type {string}
    */
   url: string;
+
+  /**
+   * Optional function that can be used to modify the username string before insertion.
+   * @param {string} websiteName
+   * @returns {string | undefined}
+   */
+  convert?: (websiteName: string) => string | undefined;
 };

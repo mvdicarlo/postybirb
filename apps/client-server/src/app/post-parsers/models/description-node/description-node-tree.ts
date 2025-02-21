@@ -18,6 +18,8 @@ export type InsertionOptions = {
 export type CustomDescriptionParser = (node: DescriptionNode) => string;
 
 export class DescriptionNodeTree {
+  private readonly website: string;
+
   private readonly nodes: Array<DescriptionBlockNode>;
 
   private readonly insertionOptions: InsertionOptions;
@@ -56,16 +58,18 @@ export class DescriptionNodeTree {
   ];
 
   constructor(
+    website: string,
     nodes: Array<IDescriptionBlockNode>,
     insertionOptions: InsertionOptions,
     shortcuts: Record<string, UsernameShortcut>,
     fieldShortcuts: ShortcutEnabledFields,
   ) {
+    this.website = website;
     this.insertionOptions = insertionOptions;
     this.nodes =
       nodes.map((node) => {
         if (BlockTypes.includes(node.type)) {
-          return new DescriptionBlockNode(node, shortcuts ?? {});
+          return new DescriptionBlockNode(website, node, shortcuts ?? {});
         }
         throw new Error('Root nodes must be block nodes');
       }) ?? [];
@@ -122,6 +126,7 @@ export class DescriptionNodeTree {
     if (insertTitle) {
       nodes.unshift(
         new DescriptionBlockNode(
+          this.website,
           {
             id: 'title',
             type: 'heading',
@@ -143,6 +148,7 @@ export class DescriptionNodeTree {
     if (insertTags) {
       nodes.push(
         new DescriptionBlockNode(
+          this.website,
           {
             id: 'tags',
             type: 'paragraph',
@@ -166,6 +172,7 @@ export class DescriptionNodeTree {
         ...this.ad.map(
           (node) =>
             new DescriptionBlockNode(
+              this.website,
               node as unknown as IDescriptionBlockNode,
               {},
             ),
