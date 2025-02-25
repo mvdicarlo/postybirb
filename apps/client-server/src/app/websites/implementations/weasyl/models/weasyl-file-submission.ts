@@ -1,7 +1,6 @@
 import { BooleanField, SelectField, TagField } from '@postybirb/form-builder';
 import { TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
-import Weasyl from '../weasyl.website';
 import { WeasylCategories } from './weasyl-categories';
 
 export class WeasylFileSubmission extends BaseWebsiteOptions {
@@ -21,7 +20,7 @@ export class WeasylFileSubmission extends BaseWebsiteOptions {
   })
   category: string;
 
-  @SelectField<Weasyl['retrievedWebsiteData']>({
+  @SelectField({
     col: 1,
     label: 'folder',
     derive: [

@@ -13,6 +13,7 @@ import {
   PostData,
   PostRecordResumeMode,
   PostRecordState,
+  PostResponse,
   ScheduleType,
   SubmissionId,
   SubmissionType,
@@ -218,15 +219,18 @@ export class PostManagerService {
       this.logger
         .withError(error)
         .error(`Error posting to website: ${instance.id}`);
-      await this.handleFailureResult(websitePostRecord, {
-        instanceId: instance.id,
-        exception: error,
-        additionalInfo: null,
-        message: `An unexpected error occurred while posting to ${
-          instance.decoratedProps.metadata.displayName ||
-          instance.decoratedProps.metadata.name
-        }`,
-      });
+      const errorResponse =
+        error instanceof PostResponse
+          ? error
+          : PostResponse.fromWebsite(instance)
+              .withException(error)
+              .withMessage(
+                `An unexpected error occurred while posting to ${
+                  instance.decoratedProps.metadata.displayName ||
+                  instance.decoratedProps.metadata.name
+                }`,
+              );
+      await this.handleFailureResult(websitePostRecord, errorResponse);
     }
   }
 
@@ -440,14 +444,16 @@ export class PostManagerService {
 
       if (result.exception) {
         await this.handleFailureResult(websitePostRecord, result, fileIds);
-      } else {
-        await this.handleSuccessResult(websitePostRecord, result, fileIds);
-        await this.markFilesAsPosted(websitePostRecord, submission, batch);
-        websitePostRecord.postResponse.push(result);
-        this.logger
-          .withMetadata(result)
-          .info(`File batch posted to ${instance.id}`);
+        // Behavior is to stop posting if a batch fails.
+        return;
       }
+
+      await this.handleSuccessResult(websitePostRecord, result, fileIds);
+      await this.markFilesAsPosted(websitePostRecord, submission, batch);
+      websitePostRecord.postResponse.push(result);
+      this.logger
+        .withMetadata(result)
+        .info(`File batch posted to ${instance.id}`);
     }
   }
 

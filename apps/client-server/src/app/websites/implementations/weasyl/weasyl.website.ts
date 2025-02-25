@@ -1,16 +1,20 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
+  DynamicObject,
   FileType,
   ILoginState,
   ImageResizeProps,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
+import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import HtmlParserUtil from '../../../utils/html-parser.util';
+import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -52,6 +56,12 @@ import { WeasylMessageSubmission } from './models/weasyl-message-submission';
 @SupportsUsernameShortcut({
   id: 'weasyl',
   url: 'https://weasyl.com/~$1',
+  convert: (websiteName, shortcut) => {
+    if (websiteName === 'weasyl' && shortcut === 'weasyl') {
+      return '<!~$1>';
+    }
+    return undefined;
+  },
 })
 export default class Weasyl
   extends Website<WeasylAccountData>
@@ -120,7 +130,6 @@ export default class Weasyl
       }
     });
 
-    this.retrievedWebsiteData.folders = folders;
     this.websiteDataStore.setData({
       ...this.websiteDataStore.getData(),
       folders,
@@ -135,6 +144,42 @@ export default class Weasyl
     return undefined;
   }
 
+  private modifyDescription(html: string) {
+    return html
+      .replace(/<p/gm, '<div')
+      .replace(/<\/p>/gm, '</div>')
+      .replace(/style="text-align:center"/g, 'class="align-center"')
+      .replace(/style="text-align:right"/g, 'class="align-right"')
+      .replace(/<\/div>\n<br>/g, '</div><br>')
+      .replace(/<\/div><br>/g, '</div><div><br></div>');
+  }
+
+  private convertRating(rating: SubmissionRating) {
+    switch (rating) {
+      case SubmissionRating.MATURE:
+        return 30;
+      case SubmissionRating.ADULT:
+      case SubmissionRating.EXTREME:
+        return 40;
+      case SubmissionRating.GENERAL:
+      default:
+        return 10;
+    }
+  }
+
+  private getContentType(type: FileType) {
+    switch (type) {
+      case FileType.TEXT:
+        return 'literary';
+      case FileType.AUDIO:
+      case FileType.VIDEO:
+        return 'multimedia';
+      case FileType.IMAGE:
+      default:
+        return 'visual';
+    }
+  }
+
   async onPostFileSubmission(
     postData: PostData<WeasylFileSubmission>,
     files: PostingFile[],
@@ -142,23 +187,113 @@ export default class Weasyl
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
+    const fileType = getFileTypeFromMimeType(files[0].mimeType);
+    const contentType = this.getContentType(fileType);
+    const url = `${this.BASE_URL}/submit/${contentType}`;
+
+    const submissionPage = await Http.get<string>(url, {
+      partition: this.accountId,
+    });
+
+    PostResponse.validateBody(this, submissionPage);
+
+    const {
+      description,
+      title,
+      rating,
+      tags,
+      notify,
+      critique,
+      folder,
+      category,
+    } = postData.options;
+    const formData: DynamicObject = {
+      title,
+      rating: this.convertRating(rating),
+      content: this.modifyDescription(description),
+      tags: tags.join(' '),
+      submitfile: files[0].toPostFormat(),
+      thumbfile: files[0].thumbnailToPostFormat(),
+      redirect: url,
+      nonotification: notify ? 'off' : 'on',
+      critique: critique ? 'on ' : 'off',
+      folderid: folder || '',
+      subtype: category || '',
     };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
+    if (
+      fileType === FileType.TEXT ||
+      fileType === FileType.VIDEO ||
+      fileType === FileType.AUDIO
+    ) {
+      formData.coverfile = formData.thumbfile ? formData.thumbfile : '';
+    }
+
+    cancellationToken.throwIfCancelled();
+    let result = await Http.post<string>(url, {
       partition: this.accountId,
       data: formData,
       type: 'multipart',
+      headers: {
+        Referer: url,
+        Origin: 'https://www.weasyl.com',
+        Host: 'www.weasyl.com',
+      },
     });
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    if (result.body.includes('manage_thumbnail')) {
+      result = await Http.post<string>(`${this.BASE_URL}/manage/thumbnail`, {
+        partition: this.accountId,
+        type: 'multipart',
+        data: {
+          x1: '0',
+          x2: '0',
+          y1: '0',
+          y2: '0',
+          thumbfile: '',
+          submitid: HtmlParserUtil.getInputValue(result.body, 'submitid'),
+        },
+        headers: {
+          Referer: url,
+          Origin: 'https://www.weasyl.com',
+          Host: 'www.weasyl.com',
+        },
+      });
+    }
+
+    const { body } = result;
+
+    if (
+      body.includes(
+        'You have already made a submission with this submission file',
+      )
+    ) {
+      return PostResponse.fromWebsite(this).withMessage(
+        'You have already made a submission with this submission file',
+      );
+    }
+
+    if (
+      body.includes('Submission Information') ||
+      // If they set a rating of adult and didn't set nsfw when they logged in
+      body.includes(
+        'This page contains content that you cannot view according to your current allowed ratings',
+      )
+    ) {
+      // Standard return
+      return PostResponse.fromWebsite(this).withSourceUrl(result.responseUrl);
+    }
+
+    if (body.includes('Weasyl experienced a technical issue')) {
+      // Unknown issue so do a second check
+      const recheck = await Http.get<string>(result.responseUrl, {
+        partition: this.accountId,
+      });
+      if (recheck.body.includes('Submission Information')) {
+        return PostResponse.fromWebsite(this).withSourceUrl(
+          recheck.responseUrl,
+        );
+      }
     }
 
     return PostResponse.fromWebsite(this)
@@ -166,17 +301,10 @@ export default class Weasyl
         body: result.body,
         statusCode: result.statusCode,
       })
-      .withException(new Error('Failed to post'));
+      .withException(new Error('Unknown response from Weasyl'));
   }
 
-  async onValidateFileSubmission(
-    postData: PostData<WeasylFileSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
+  onValidateFileSubmission = validatorPassthru;
 
   createMessageModel(): WeasylMessageSubmission {
     return new WeasylMessageSubmission();
@@ -187,37 +315,38 @@ export default class Weasyl
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
+    const url = `${this.BASE_URL}/submit/journal`;
+    const submissionPage = await Http.get<string>(url, {
+      partition: this.accountId,
+    });
+    PostResponse.validateBody(this, submissionPage);
+    const { description, title, rating, tags } = postData.options;
     const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
+      title,
+      rating: this.convertRating(rating),
+      content: this.modifyDescription(description),
+      tags: tags.join(' '),
     };
 
+    cancellationToken.throwIfCancelled();
     const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
       partition: this.accountId,
       data: formData,
       type: 'multipart',
+      headers: {
+        Referer: url,
+        Origin: 'https://www.weasyl.com',
+        Host: 'www.weasyl.com',
+      },
     });
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
-    }
+    PostResponse.validateBody(this, result);
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    return PostResponse.fromWebsite(this).withAdditionalInfo({
+      body: result.body,
+      statusCode: result.statusCode,
+    });
   }
 
-  async onValidateMessageSubmission(
-    postData: PostData<WeasylMessageSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
+  onValidateMessageSubmission = validatorPassthru;
 }
