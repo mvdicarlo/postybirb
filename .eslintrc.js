@@ -80,6 +80,8 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'no-restricted-syntax': 'off',
     '@typescript-eslint/ban-types': 'warn',
+    '@typescript-eslint/no-unused-vars': 'off',
+    'import/extension': 'off',
     'import/no-extraneous-dependencies': [
       'warn',
       {

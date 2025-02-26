@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "target": "ES2024",
+    "lib": ["ES2024"],
+    "noEmit": true,
+    "noImplicitAny": true,
+    "strict": true
+  },
+  "include": ["**/*.js"]
+}

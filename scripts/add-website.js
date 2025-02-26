@@ -1,8 +1,9 @@
-const inquirer = require('inquirer').default;
-const path = require('path');
-const createWebsite = require('./add-website/create-website');
-const parseAddWebsiteInput = require('./add-website/parse-add-website-input');
+import inquirer from 'inquirer';
+import path from 'path';
+import { createWebsite } from './add-website/create-website';
+import { parseAddWebsiteInput } from './add-website/parse-add-website-input';
 
+/** @param {string} str */
 const isDashCasedOrLowercase = (str) =>
   /^[a-z]+(-[a-z]+)*$/.test(str) || /^[a-z]+$/.test(str);
 

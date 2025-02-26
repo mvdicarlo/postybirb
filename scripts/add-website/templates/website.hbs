@@ -48,7 +48,9 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   protected BASE_URL = '{{websiteUrl}}';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{pascalWebsiteName}}AccountData> =
-    {};
+    {
+      folders: true
+    };
 
   public async onLogin(): Promise<ILoginState> {
     if (this.account.name === 'test') {
