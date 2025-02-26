@@ -1,5 +1,5 @@
 import inquirer from 'inquirer';
-import { resolve } from 'path';
+import path from 'path';
 import { createWebsite } from './add-website/create-website';
 import { parseAddWebsiteInput } from './add-website/parse-add-website-input';
 
@@ -7,9 +7,9 @@ import { parseAddWebsiteInput } from './add-website/parse-add-website-input';
 const isDashCasedOrLowercase = (str) =>
   /^[a-z]+(-[a-z]+)*$/.test(str) || /^[a-z]+$/.test(str);
 
-const currentPath = resolve();
+const currentPath = path.resolve();
 const baseAppPath = currentPath.includes('postybirb')
-  ? resolve(
+  ? path.resolve(
       'apps',
       'client-server',
       'src',
@@ -17,7 +17,7 @@ const baseAppPath = currentPath.includes('postybirb')
       'websites',
       'implementations',
     )
-  : resolve(
+  : path.resolve(
       '..',
       'apps',
       'client-server',

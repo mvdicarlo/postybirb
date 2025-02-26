@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import * as fs from 'fs';
+import path from 'path';
 import { createFromTemplate } from './create-file-from-template';
 
 /**
@@ -8,12 +8,12 @@ import { createFromTemplate } from './create-file-from-template';
  */
 export function createWebsite(data, baseAppPath) {
   let { website, pascalWebsiteName, hasFile, hasMessage } = data;
-  const websiteFolder = join(baseAppPath, website);
-  const websiteModelsFolder = join(baseAppPath, website, 'models');
+  const websiteFolder = path.join(baseAppPath, website);
+  const websiteModelsFolder = path.join(baseAppPath, website, 'models');
 
   try {
-    mkdirSync(websiteFolder, { recursive: true });
-    mkdirSync(websiteModelsFolder, { recursive: true });
+    fs.mkdirSync(websiteFolder, { recursive: true });
+    fs.mkdirSync(websiteModelsFolder, { recursive: true });
     const websiteFileName = createFromTemplate(
       data,
       'website.hbs',
@@ -47,16 +47,16 @@ export function createWebsite(data, baseAppPath) {
 
     console.log('File(s) created successfully!');
 
-    const indexFilePath = join(baseAppPath, 'index.ts');
-    let indexFileContent = readFileSync(indexFilePath, 'utf8').trim();
+    const indexFilePath = path.join(baseAppPath, 'index.ts');
+    let indexFileContent = fs.readFileSync(indexFilePath, 'utf8').trim();
     indexFileContent += `\nexport { default as ${pascalWebsiteName} } from './${website}/${websiteFileName.replace('.ts', '')}';`;
-    writeFileSync(indexFilePath, indexFileContent);
+    fs.writeFileSync(indexFilePath, indexFileContent);
 
     console.log('Index file updated successfully!');
   } catch (err) {
     console.error('Error creating file(s):', err);
     // Rollback: delete created files and directories
-    rmSync(websiteModelsFolder, { force: true, recursive: true });
-    rmSync(websiteFolder, { force: true, recursive: true });
+    fs.rmSync(websiteModelsFolder, { force: true, recursive: true });
+    fs.rmSync(websiteFolder, { force: true, recursive: true });
   }
 }
