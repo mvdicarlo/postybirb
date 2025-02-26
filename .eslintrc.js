@@ -63,16 +63,12 @@ module.exports = {
     {
       files: ['*.ts', '*.tsx'],
       extends: ['plugin:@nrwl/nx/typescript'],
-      rules: {
-        '@typescript-eslint/no-unused-vars': 'off',
-      },
+      rules: {},
     },
     {
       files: ['*.js', '*.jsx'],
       extends: ['plugin:@nrwl/nx/javascript'],
-      rules: {
-        '@typescript-eslint/no-unused-vars': 'off',
-      },
+      rules: {},
     },
   ],
   rules: {
