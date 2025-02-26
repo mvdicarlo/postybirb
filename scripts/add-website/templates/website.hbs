@@ -49,8 +49,7 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<{{pascalWebsiteName}}AccountData> =
     {
-      username: true,
-      apiToken: false
+      folders: true
     };
 
   public async onLogin(): Promise<ILoginState> {
