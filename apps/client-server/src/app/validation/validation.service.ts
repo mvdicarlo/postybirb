@@ -3,13 +3,12 @@ import { Logger } from '@postybirb/logger';
 import {
   EntityId,
   ISubmission,
-  ISubmissionMetadata,
   IWebsiteOptions,
   PostData,
   SimpleValidationResult,
   SubmissionId,
   SubmissionType,
-  ValidationResult,
+  ValidationResult
 } from '@postybirb/types';
 import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';
@@ -25,9 +24,8 @@ import { Validator, ValidatorParams } from './validators/validator.type';
 
 type ValidationCacheRecord = {
   submissionLastUpdatedTimestamp: string;
-  metadataSnapshot: ISubmissionMetadata;
   results: Record<
-    EntityId,
+    EntityId, // WebsiteOptionId
     {
       validationResult: ValidationResult;
       websiteOptionLastUpdatedTimestamp: string;
@@ -71,7 +69,6 @@ export class ValidationService {
     if (!cachedValidation) {
       this.validationCache.set(submission.id, {
         submissionLastUpdatedTimestamp: submission.updatedAt,
-        metadataSnapshot: submission.metadata,
         results: {
           [websiteOption.id]: {
             validationResult,
@@ -96,19 +93,37 @@ export class ValidationService {
   public async validateSubmission(
     submission: Submission,
   ): Promise<ValidationResult[]> {
-    const cachedValidation = this.getCachedValidation(submission.id);
-    if (
-      cachedValidation &&
-      cachedValidation.submissionLastUpdatedTimestamp !==
-        submission.updatedAt &&
-      JSON.stringify(cachedValidation.metadataSnapshot) !==
-        JSON.stringify(submission.metadata)
-    ) {
-      // Worth clearing the cache if the submission metadata was updated
+    if (this.isStale(submission)) {
       this.clearCachedValidation(submission.id);
     }
     return Promise.all(
       submission.options.map((website) => this.validate(submission, website)),
+    );
+  }
+
+  /**
+   * Check if a submission is stale by comparing the last updated timestamps of
+   * the submission and the website options.
+   *
+   * @param {Submission} submission
+   * @return {*}  {boolean}
+   */
+  private isStale(submission: Submission): boolean {
+    const cachedValidation = this.getCachedValidation(submission.id);
+    if (!cachedValidation) {
+      return false;
+    }
+    if (
+      cachedValidation.submissionLastUpdatedTimestamp !== submission.updatedAt
+    ) {
+      return true;
+    }
+
+    return submission.options.some(
+      (website) =>
+        cachedValidation.results[website.id] &&
+        cachedValidation.results[website.id]
+          .websiteOptionLastUpdatedTimestamp !== website.updatedAt,
     );
   }
 

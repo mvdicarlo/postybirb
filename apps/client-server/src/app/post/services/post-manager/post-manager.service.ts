@@ -13,6 +13,7 @@ import {
   PostData,
   PostRecordResumeMode,
   PostRecordState,
+  PostResponse,
   ScheduleType,
   SubmissionId,
   SubmissionType,
@@ -32,6 +33,7 @@ import { FileConverterService } from '../../../file-converter/file-converter.ser
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { ValidationService } from '../../../validation/validation.service';
+import { getSupportedFileSize } from '../../../websites/decorators/supports-files.decorator';
 import {
   ImplementedFileWebsite,
   isFileWebsite,
@@ -217,15 +219,18 @@ export class PostManagerService {
       this.logger
         .withError(error)
         .error(`Error posting to website: ${instance.id}`);
-      await this.handleFailureResult(websitePostRecord, {
-        instanceId: instance.id,
-        exception: error,
-        additionalInfo: null,
-        message: `An unexpected error occurred while posting to ${
-          instance.decoratedProps.metadata.displayName ||
-          instance.decoratedProps.metadata.name
-        }`,
-      });
+      const errorResponse =
+        error instanceof PostResponse
+          ? error
+          : PostResponse.fromWebsite(instance)
+              .withException(error)
+              .withMessage(
+                `An unexpected error occurred while posting to ${
+                  instance.decoratedProps.metadata.displayName ||
+                  instance.decoratedProps.metadata.name
+                }`,
+              );
+      await this.handleFailureResult(websitePostRecord, errorResponse);
     }
   }
 
@@ -565,28 +570,44 @@ export class PostManagerService {
     instance: ImplementedFileWebsite,
     file: SubmissionFile,
   ) {
-    const params = instance.calculateImageResize(file);
-
+    let resizeParams = instance.calculateImageResize(file);
     const fileParams: ModifiedFileDimension =
       submission.metadata[file.id]?.dimensions;
     if (fileParams) {
       if (fileParams.width) {
-        params.width = Math.min(
+        if (!resizeParams) {
+          resizeParams = {};
+        }
+        resizeParams.width = Math.min(
           file.width,
           fileParams.width,
-          params.width ?? Infinity,
+          resizeParams.width ?? Infinity,
         );
       }
       if (fileParams.height) {
-        params.height = Math.min(
+        if (!resizeParams) {
+          resizeParams = {};
+        }
+        resizeParams.height = Math.min(
           file.height,
           fileParams.height,
-          params.height ?? Infinity,
+          resizeParams.height ?? Infinity,
         );
       }
     }
 
-    return params;
+    if (!resizeParams?.maxBytes) {
+      // Fall back to defined max bytes
+      const supportedFileSize = getSupportedFileSize(instance, file);
+      if (supportedFileSize && file.size > supportedFileSize) {
+        if (!resizeParams) {
+          resizeParams = {};
+        }
+        resizeParams.maxBytes = supportedFileSize;
+      }
+    }
+
+    return resizeParams;
   }
 
   /**

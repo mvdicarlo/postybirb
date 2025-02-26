@@ -5,13 +5,10 @@ import {
   ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-
-export type SubmissionValidationResult = {
-  id: string;
-  result: ValidationResult;
-};
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
 
 export type FormFieldProps<T = FieldAggregateType> = {
+  submission: SubmissionDto;
   defaultOption: WebsiteOptionsDto<IWebsiteFormFields>;
   field: T;
   form: UseFormReturnType<
@@ -20,5 +17,5 @@ export type FormFieldProps<T = FieldAggregateType> = {
   >;
   option: WebsiteOptionsDto<never>;
   propKey: string;
-  validation: SubmissionValidationResult[];
+  validation: ValidationResult[];
 };

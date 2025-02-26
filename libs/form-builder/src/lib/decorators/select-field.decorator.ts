@@ -1,14 +1,26 @@
 import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';
 
-type SelectOption = {
-  label: string;
-  value: string;
-  options?: SelectOption[];
+export type SelectOptionWithDiscriminator = {
+  options: Record<string, SelectOption[]>;
+  discriminator: 'overallFileType';
 };
 
+export type SelectOption =
+  | {
+      group: string;
+      items: Array<{
+        label: string;
+        value: string;
+      }>;
+    }
+  | {
+      label: string;
+      value: string;
+    };
+
 type ExtraOptions = {
-  options: SelectOption[];
+  options: SelectOption[] | SelectOptionWithDiscriminator;
   allowMultiple: boolean;
 };
 

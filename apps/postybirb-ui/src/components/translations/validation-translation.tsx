@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro';
+import { Text } from '@mantine/core';
 import {
   FileType,
   ValidationMessage,
@@ -120,9 +121,10 @@ export const TranslationMessages: Partial<TranslationsMap> = {
     return (
       <>
         <Trans>Requires at least {minLength} tags</Trans>
-        <span>
+        <Text inherit span>
+          {' '}
           ({currentLength} / {minLength})
-        </span>
+        </Text>
       </>
     );
   },

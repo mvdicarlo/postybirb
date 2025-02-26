@@ -167,7 +167,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
    */
   @Cron(CronExpression.EVERY_SECOND)
   public async run() {
-    if (!(this.initTime + 60_000 <= Date.now())) {
+    if (!(this.initTime + 15_000 <= Date.now())) {
       // Only run after 1 minute to allow the application to start up.
       return;
     }

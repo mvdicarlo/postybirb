@@ -70,7 +70,11 @@ export class SubmissionService
             account: true,
           },
         },
-        posts: true,
+        posts: {
+          with: {
+            children: true,
+          },
+        },
         postQueueRecord: true,
         files: true,
       }),

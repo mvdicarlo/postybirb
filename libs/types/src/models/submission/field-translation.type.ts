@@ -8,6 +8,10 @@ export interface FieldTranslations {
   species: true;
   spoiler: true;
   useTitle: true;
+  category: true;
+  folder: true;
+  critique: true;
+  notify: true;
 }
 
 export type FieldTranslationId = keyof FieldTranslations;

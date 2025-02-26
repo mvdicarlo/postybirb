@@ -26,6 +26,13 @@ class WebsiteOptionsApi extends BaseApi<
     return this.client.get<ValidationResult[]>(`validate/${submissionId}`);
   }
 
+  updateSubmissionOptions(
+    id: SubmissionId,
+    dto: IUpdateSubmissionWebsiteOptionsDto,
+  ) {
+    return this.client.patch<WebsiteOptionsDto>(`submission/${id}`, dto);
+  }
+
   modifySubmission(
     submissionId: SubmissionId,
     dto: IUpdateSubmissionWebsiteOptionsDto,

@@ -163,7 +163,7 @@ function InnerForm({
   });
 
   return (
-    <Box className="postybirb__website-option-form">
+    <Box className="postybirb__website-option-form" option-id={option.id}>
       <UserSpecifiedWebsiteOptionsSaveModal
         opened={userSpecifiedModalVisible}
         onClose={userSpecifiedModalClosed}
@@ -194,13 +194,14 @@ function InnerForm({
                 )
                 .map((entry) => (
                   <Field
+                    submission={submission}
                     propKey={entry.key}
                     defaultOption={defaultOption}
                     field={entry.field as unknown as FieldAggregateType}
                     form={form}
                     key={entry.key}
                     option={option as unknown as WebsiteOptionsDto<never>}
-                    validation={[]}
+                    validation={submission.validations ?? []}
                   />
                 ))}
             </Stack>
@@ -238,7 +239,7 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
 
   if (!formFields) {
     return (
-      <Box>
+      <Box option-id={option.id}>
         <Trans>Unable to display form</Trans>
       </Box>
     );

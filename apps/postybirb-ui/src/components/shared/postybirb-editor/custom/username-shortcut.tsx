@@ -155,7 +155,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             radius="xs"
             tt="uppercase"
           >
-            {props.inlineContent.props.shortcut} ({website})
+            {props.inlineContent.props.shortcut}
           </Badge>
           <Shortcut item={props.contentRef} onStale={onStale} />
         </span>

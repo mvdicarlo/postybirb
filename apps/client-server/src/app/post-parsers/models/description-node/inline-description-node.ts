@@ -15,15 +15,17 @@ export class DescriptionInlineNode
   href?: string;
 
   constructor(
+    website: string,
     node: IDescriptionInlineNode,
     shortcuts: Record<string, UsernameShortcut>,
   ) {
-    super(node, shortcuts);
+    super(website, node, shortcuts);
     this.href = node.href;
     this.content =
       node?.content?.map((child) => {
         if (child.type === 'text') {
           return new DescriptionTextNode(
+            website,
             child as IDescriptionTextNode,
             shortcuts,
           );
@@ -37,7 +39,10 @@ export class DescriptionInlineNode
       .map((child) => child.text)
       .join('')
       .trim();
-    const url = this.shortcuts[id]?.url;
+    const shortcut = this.shortcuts[id];
+    const url =
+      shortcut?.convert?.call(this, this.website, this.props.shortcut) ??
+      shortcut?.url;
     return username && url
       ? { url: url.replace('$1', username), username }
       : undefined;
@@ -49,6 +54,12 @@ export class DescriptionInlineNode
         this.href ?? this.props.href
       }`;
     }
+
+    if (this.type === 'username') {
+      const sc = this.getUsernameShortcutLink(this.props.shortcut);
+      return sc ? sc.url : '';
+    }
+
     return this.content.map((child) => child.toString()).join('');
   }
 
@@ -66,6 +77,7 @@ export class DescriptionInlineNode
       if (!this.content.length) return '';
       const sc = this.getUsernameShortcutLink(this.props.shortcut);
       if (!sc) return '';
+      if (!sc.url.startsWith('http')) return `<span>${sc.url}</span>`;
       return `<a target="_blank" href="${sc.url}">${sc.username}</a>`;
     }
 
