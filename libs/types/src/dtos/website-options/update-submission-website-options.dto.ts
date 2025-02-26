@@ -3,5 +3,5 @@ import { ICreateWebsiteOptionsDto } from './create-website-options.dto';
 
 export type IUpdateSubmissionWebsiteOptionsDto = {
   remove?: EntityId[];
-  add?: Omit<ICreateWebsiteOptionsDto, 'id'>[];
+  add?: ICreateWebsiteOptionsDto[];
 };

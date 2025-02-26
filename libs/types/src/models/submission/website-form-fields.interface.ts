@@ -30,4 +30,10 @@ export interface IWebsiteFormFields {
    * @type {SubmissionRating}
    */
   rating: SubmissionRating;
+
+  /**
+   * Optional spoiler/content warning text
+   * @type {string}
+   */
+  contentWarning?: string;
 }

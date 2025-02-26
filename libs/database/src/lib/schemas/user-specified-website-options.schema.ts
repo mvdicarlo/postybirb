@@ -7,14 +7,13 @@ export const UserSpecifiedWebsiteOptionsSchema = sqliteTable(
   'user-specified-website-options',
   {
     ...CommonSchema(),
-    ...submissionType(),
-    options: text({ mode: 'json' }).notNull(),
-    ...submissionType(),
     accountId: id()
       .notNull()
       .references(() => AccountSchema.id, {
         onDelete: 'cascade',
       }),
+    options: text({ mode: 'json' }).notNull(),
+    ...submissionType(),
   },
 );
 

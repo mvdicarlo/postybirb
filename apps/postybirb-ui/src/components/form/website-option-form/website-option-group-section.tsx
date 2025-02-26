@@ -62,7 +62,7 @@ export function WebsiteOptionGroupSection(
   );
 
   return (
-    <Box className="postybirb__group-section">
+    <Box className="postybirb__group-section" group-id={account.id}>
       <Paper pos="sticky" top={top ?? 0} style={{ zIndex: 99 }}>
         <Title p="4" order={4}>
           {accountName}

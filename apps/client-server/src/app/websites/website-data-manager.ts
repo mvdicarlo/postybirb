@@ -30,7 +30,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
     if (!entity) {
       entity = await this.repository.insert({
-        accountId: this.account.id,
+        id: this.account.id,
       });
     }
 
@@ -62,12 +62,14 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   /**
    * Deletes the internal WebsiteData entity and creates a new one.
    */
-  public async clearData() {
+  public async clearData(recreateEntity = true) {
     this.logger.info('Clearing website data');
     await this.repository.deleteById([this.entity.id]);
 
-    // Do a reload to recreate an object that hasn't been saved.
-    await this.createOrLoadWebsiteData();
+    if (recreateEntity) {
+      // Do a reload to recreate an object that hasn't been saved.
+      await this.createOrLoadWebsiteData();
+    }
   }
 
   /**

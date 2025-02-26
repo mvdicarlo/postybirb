@@ -1,5 +1,9 @@
-import { WebsiteFileOptions } from '@postybirb/types';
-import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
+import { ISubmissionFile, WebsiteFileOptions } from '@postybirb/types';
+import {
+  getFileType,
+  getFileTypeFromMimeType,
+} from '@postybirb/utils/file-type';
+import { parse } from 'path';
 import { Class } from 'type-fest';
 import { UnknownWebsite } from '../website';
 import { injectWebsiteDecoratorProps } from './website-decorator-props';
@@ -42,4 +46,24 @@ export function SupportsFiles(
       fileOptions: websiteFileOptions,
     });
   };
+}
+
+export function getSupportedFileSize(
+  instance: UnknownWebsite,
+  file: ISubmissionFile,
+) {
+  const acceptedFileSizes =
+    instance.decoratedProps.fileOptions?.acceptedFileSizes;
+  if (!acceptedFileSizes) {
+    return undefined;
+  }
+
+  return (
+    acceptedFileSizes[file.mimeType] ??
+    acceptedFileSizes[`${file.mimeType.split('/')[0]}/*`] ??
+    acceptedFileSizes[parse(file.fileName).ext] ??
+    acceptedFileSizes[getFileType(file.fileName)] ??
+    acceptedFileSizes['*'] ??
+    Number.MAX_SAFE_INTEGER
+  );
 }

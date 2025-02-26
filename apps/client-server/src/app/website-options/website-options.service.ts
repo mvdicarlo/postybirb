@@ -195,17 +195,21 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       ),
     };
 
-    return this.repository.insert({
+    const record = await this.repository.insert({
       submissionId: submission.id,
       data: websiteData,
       accountId: account.id,
       isDefault: account.id === NULL_ACCOUNT_ID,
     });
+    this.submissionService.emit();
+    return record;
   }
 
-  update(id: EntityId, update: UpdateWebsiteOptionsDto) {
+  async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
-    return this.repository.update(id, update);
+    const result = await this.repository.update(id, update);
+    this.submissionService.emit();
+    return result;
   }
 
   /**
@@ -299,7 +303,6 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     if (remove?.length) {
       const items = submission.options;
       const removableIds = [];
-      // eslint-disable-next-line no-restricted-syntax
       for (const id of remove) {
         const option = items.find((opt) => opt.id === id);
         if (option) {

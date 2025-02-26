@@ -15,7 +15,7 @@ import { WebSocketEvents } from '../../web-socket/web-socket.events';
  */
 @Injectable()
 export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
-  protected readonly logger = Logger();
+  protected readonly logger = Logger(this.constructor.name);
 
   protected readonly repository: PostyBirbDatabase<TSchemaKey>;
 

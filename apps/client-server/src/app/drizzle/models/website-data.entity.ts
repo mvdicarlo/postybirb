@@ -1,5 +1,4 @@
 import {
-  AccountId,
   DynamicObject,
   IWebsiteData,
   IWebsiteDataDto
@@ -13,8 +12,6 @@ export class WebsiteData<T extends DynamicObject = any>
   extends DatabaseEntity
   implements IWebsiteData<T>
 {
-  accountId: AccountId;
-
   data: T = {} as T;
 
   @Type(() => Account)

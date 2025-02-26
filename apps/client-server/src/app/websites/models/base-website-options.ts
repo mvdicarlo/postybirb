@@ -124,8 +124,13 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
             .map((tag) => additionalProcessor?.(tag) ?? Promise.resolve(tag)), // Mostly for tag converter insert
         )
       )
+        .map((tag) =>
+          tagsField.spaceReplacer
+            ? tag.replaceAll(' ', tagsField.spaceReplacer)
+            : tag,
+        )
         .map(this.processTag)
-        .filter((tag) => tag.length >= (tagsField.minTagLength ?? 0))
+        .filter((tag) => tag.length >= (tagsField.minTagLength ?? 1))
         .filter(
           (tag) =>
             tag.length <= (tagsField.maxTagLength ?? Number.MAX_SAFE_INTEGER),

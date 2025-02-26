@@ -13,20 +13,20 @@ import { PostRecordSchema } from './post-record.schema';
 
 export const WebsitePostRecordSchema = sqliteTable('website-post-record', {
   ...CommonSchema(),
-  postRecordId: id()
-    .notNull()
-    .references(() => PostRecordSchema.id, {
-      onDelete: 'cascade',
-    }),
   accountId: id()
     .notNull()
     .references(() => AccountSchema.id, {
       onDelete: 'set null',
     }),
+  postRecordId: id()
+    .notNull()
+    .references(() => PostRecordSchema.id, {
+      onDelete: 'cascade',
+    }),
   completedAt: text(),
   errors: text({ mode: 'json' }).notNull().$type<IWebsiteError[]>(),
-  postData: text({ mode: 'json' }).notNull().$type<WebsitePostRecordData>(),
   metadata: text({ mode: 'json' }).notNull().$type<IPostRecordMetadata>(),
+  postData: text({ mode: 'json' }).notNull().$type<WebsitePostRecordData>(),
   postResponse: text({ mode: 'json' }).$type<IPostResponse[]>(),
 });
 

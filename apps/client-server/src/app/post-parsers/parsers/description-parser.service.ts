@@ -62,6 +62,7 @@ export class DescriptionParserService {
     };
 
     const tree = new DescriptionNodeTree(
+      instance.decoratedProps.metadata.name,
       descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
       insertionOptions,
       this.websiteShortcuts,

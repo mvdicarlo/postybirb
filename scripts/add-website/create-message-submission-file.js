@@ -11,7 +11,7 @@ const template = hbs.compile(
 
 function create(data, folder) {
   const { website } = data;
-  const fileName = `${website}-file-submission.ts`;
+  const fileName = `${website}-message-submission.ts`;
   const filePath = path.join(folder, fileName);
   console.log('Creating file:', filePath);
   const content = template(data);

@@ -7,6 +7,7 @@ import {
   Loader,
   Paper,
   Stack,
+  Text,
   Tree,
   TreeNodeData,
   useTree,
@@ -16,12 +17,15 @@ import {
   FileSubmissionMetadata,
   IAccountDto,
   ISubmissionScheduleInfo,
-  IWebsiteFormFields,
   NullAccount,
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { IconChevronDown } from '@tabler/icons-react';
+import {
+  IconAlertTriangle,
+  IconChevronDown,
+  IconExclamationCircle,
+} from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import submissionApi from '../../../api/submission.api';
@@ -30,7 +34,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../stores/account.store';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteOptionGroupSection } from '../../form/website-option-form/website-option-group-section';
-import { WebsiteSelect } from '../../form/website-select/website-select';
+import { ImplementedWebsiteSelect } from '../../form/website-select/implemented-website-select';
 import { SubmissionScheduler } from '../submission-scheduler/submission-scheduler';
 import { SubmissionFileManager } from './submission-file-manager/submission-file-manager';
 
@@ -96,14 +100,35 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           label: account.websiteInfo.websiteDisplayName ?? (
             <Trans>Unknown</Trans>
           ),
-          children: group.options.map((o) => ({
-            label: account.name,
-            value: o.id,
-          })),
+          children: group.options.map((o) => {
+            const validation = submission.validations.find(
+              (v) => v.id === o.id,
+            );
+            const hasErrors = !!validation?.errors?.length;
+            const hasWarnings = !!validation?.warnings?.length;
+            return {
+              label: (
+                <Box display="flex">
+                  {hasErrors && (
+                    <Text flex="1" size="lg" c="red">
+                      <IconExclamationCircle size="1rem" />
+                    </Text>
+                  )}
+                  {hasWarnings && (
+                    <Text flex="1" size="lg" c="orange">
+                      <IconAlertTriangle size="1rem" />
+                    </Text>
+                  )}
+                  <Text ml={4}>{account.name}</Text>
+                </Box>
+              ),
+              value: o.id,
+            };
+          }),
         };
       }),
     ],
-    [defaultOption.id, optionsGroupedByWebsiteId],
+    [defaultOption.id, optionsGroupedByWebsiteId, submission.validations],
   );
 
   const tree = useTree({
@@ -142,7 +167,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   }
 
   return (
-    <Flex>
+    <Flex data-submission-id={submission.id}>
       <Stack gap="xs" flex="11">
         {!isSpecialSubmissionType && submission.type === SubmissionType.FILE ? (
           <SubmissionFileManager
@@ -159,40 +184,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             />
           </Input.Wrapper>
         ) : null}
-        <WebsiteSelect
-          submission={submission}
-          onSelect={(selectedAccounts) => {
-            const existingOptions = submission.options.filter(
-              (o) => !o.isDefault,
-            );
-            const removedOptions: WebsiteOptionsDto[] = [];
-            const newAccounts: AccountId[] = [];
-            selectedAccounts.forEach((account) => {
-              const exists = existingOptions.find(
-                (o) => o.accountId === account.id,
-              );
-              if (!exists) {
-                newAccounts.push(account.id);
-              }
-            });
-            existingOptions.forEach((option) => {
-              const exists = selectedAccounts.find(
-                (a) => a.id === option.accountId,
-              );
-              if (!exists) {
-                removedOptions.push(option);
-              }
-            });
-            websiteOptionsApi.modifySubmission(submission.id, {
-              remove: removedOptions.map((o) => o.id),
-              add: newAccounts.map((accountId) => ({
-                accountId,
-                submissionId: submission.id,
-                data: {} as IWebsiteFormFields,
-              })),
-            });
-          }}
-        />
+        <ImplementedWebsiteSelect submission={submission} />
         <WebsiteOptionGroupSection
           options={[defaultOption]}
           submission={submission}

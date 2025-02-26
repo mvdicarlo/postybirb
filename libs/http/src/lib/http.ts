@@ -113,19 +113,19 @@ export class Http {
       Object.entries(DEFAULT_HEADERS).forEach(([key, value]) => {
         req.setHeader(key, value);
       });
+    }
 
-      if (options.headers) {
-        Object.entries(([headerKey, headerValue]) => {
-          if (RESTRICTED_HEADERS.includes(headerKey)) {
-            Http.logger.error(
-              `Not allowed to set header: ${headerKey} [https://www.electronjs.org/docs/api/client-request#instance-methods]`,
-            );
-            throw new Error(`Not allowed to set header: ${headerKey}`);
-          }
+    if (options.headers) {
+      Object.entries(options.headers).forEach(([headerKey, headerValue]) => {
+        if (RESTRICTED_HEADERS.includes(headerKey)) {
+          Http.logger.error(
+            `Not allowed to set header: ${headerKey} [https://www.electronjs.org/docs/api/client-request#instance-methods]`,
+          );
+          throw new Error(`Not allowed to set header: ${headerKey}`);
+        }
 
-          req.setHeader(headerKey, headerValue);
-        });
-      }
+        req.setHeader(headerKey, headerValue);
+      });
     }
 
     return req;
@@ -161,7 +161,7 @@ export class Http {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.entries(data).forEach(([key, value]: [string, any]) => {
           if (value === undefined || value === null) {
-            form.append(key, '');
+            // form.append(key, '');
             return;
           }
 

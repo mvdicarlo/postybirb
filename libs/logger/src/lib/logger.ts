@@ -49,13 +49,16 @@ function initializeTestLogger() {
   initializeLogger(instance, false);
 }
 
-export function Logger() {
+export function Logger(prefix?: string): PostyBirbLogger {
   if (process.env.NODE_ENV === 'test' && !log) {
     initializeTestLogger();
   }
 
   if (!log) {
     throw new Error('Logger not initialized');
+  }
+  if (prefix) {
+    return log.withPrefix(`[${prefix}]`);
   }
   return log.child();
 }

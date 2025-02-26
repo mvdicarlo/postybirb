@@ -8,6 +8,7 @@ import {
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { parse } from 'path';
+import { getSupportedFileSize } from '../../websites/decorators/supports-files.decorator';
 import DefaultWebsite from '../../websites/implementations/default/default.website';
 import {
   ImplementedFileWebsite,
@@ -220,19 +221,12 @@ export async function validateFileSize({
     return;
   }
 
-  const acceptedFileSizes =
-    websiteInstance.decoratedProps.fileOptions?.acceptedFileSizes ?? {};
-
   submission.files.forEach((file) => {
     if (isFileFiltered(file, submission, websiteInstance)) {
       return;
     }
-    const maxFileSize =
-      acceptedFileSizes[file.mimeType] ??
-      acceptedFileSizes[parse(file.fileName).ext] ??
-      acceptedFileSizes[`${getFileType(file.fileName).toLowerCase()}/*`] ??
-      acceptedFileSizes['*'];
 
+    const maxFileSize = getSupportedFileSize(websiteInstance, file);
     if (maxFileSize && file.size > maxFileSize) {
       const issue: ValidationMessage = {
         id: 'validation.file.file-size',

@@ -11,7 +11,6 @@ import {
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
-import { SupportsDescription } from '../../decorators/supports-description.decorator';
 {{#if hasFile}}
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 {{/if}}
@@ -37,7 +36,6 @@ import { {{pascalWebsiteName}}MessageSubmission } from './models/{{website}}-mes
   displayName: '{{website}}',
 })
 @UserLoginFlow('{{websiteUrl}}')
-@SupportsDescription(DescriptionType.HTML)
 @SupportsFiles(['image/png', 'image/jpeg'])
 export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}AccountData> implements
   {{#if hasFile}}
@@ -92,15 +90,15 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     });
 
     if (result.statusCode === 200) {
-      return { additionalInfo: null };
+      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
     }
-    return {
-      additionalInfo: {
+
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
-      },
-      exception: new Error('Failed to post'),
-    };
+      })
+      .withException(new Error('Failed to post'));
   }
 
   async onValidateFileSubmission(
@@ -137,15 +135,15 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
     });
 
     if (result.statusCode === 200) {
-      return { additionalInfo: null };
+      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
     }
-    return {
-      additionalInfo: {
+
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
-      },
-      exception: new Error('Failed to post'),
-    };
+      })
+      .withException(new Error('Failed to post'));
   }
 
   async onValidateMessageSubmission(

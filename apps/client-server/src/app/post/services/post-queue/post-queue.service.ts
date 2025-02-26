@@ -167,7 +167,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
    */
   @Cron(CronExpression.EVERY_SECOND)
   public async run() {
-    if (!(this.initTime + 60_000 <= Date.now())) {
+    if (!(this.initTime + 15_000 <= Date.now())) {
       // Only run after 1 minute to allow the application to start up.
       return;
     }
@@ -212,7 +212,6 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
         }
 
         if (isPaused) {
-          this.logger.info('Queue is paused');
           return;
         }
         const insertedRecord = await this.postRecordRepository.insert({
@@ -253,11 +252,13 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
         record.state === PostRecordState.FAILED
       ) {
         // Post is in a terminal state, remove from queue
+        this.logger
+          .withMetadata({ record })
+          .info('Post is in a terminal state, removing from queue');
         await this.dequeue([submissionId]);
       } else if (!this.postManager.isPosting()) {
         // Post is not in a terminal state, but the post manager is not posting, so restart it.
         if (isPaused) {
-          this.logger.info('Queue is paused');
           return;
         }
         this.logger

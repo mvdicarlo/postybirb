@@ -1,3 +1,5 @@
+import { HttpResponse } from '@postybirb/http';
+
 export type IPostResponse = {
   /**
    * The exception associated with the post.
@@ -35,7 +37,7 @@ export type IPostResponse = {
    * The instance id of the post.
    * @type {string}
    */
-  instanceId?: string;
+  instanceId: string;
 };
 
 export class PostResponse implements IPostResponse {
@@ -49,12 +51,28 @@ export class PostResponse implements IPostResponse {
 
   additionalInfo?: unknown;
 
-  instanceId?: string;
+  instanceId: string;
 
   static fromWebsite(website: { id: string }) {
     const response = new PostResponse();
     response.instanceId = website.id;
     return response;
+  }
+
+  static validateBody(
+    website: { id: string },
+    res: HttpResponse<unknown>,
+  ): void {
+    if (res.statusCode > 303) {
+      // eslint-disable-next-line @typescript-eslint/no-throw-literal
+      throw PostResponse.fromWebsite(website)
+        .withException(
+          new Error(
+            `Unexpected status code from ${res.responseUrl}: ${res.statusCode}`,
+          ),
+        )
+        .withAdditionalInfo(res.body);
+    }
   }
 
   withException(exception: Error) {

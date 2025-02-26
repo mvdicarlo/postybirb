@@ -10,13 +10,17 @@ export abstract class DescriptionNode<Type = string>
 
   shortcuts: Record<string, UsernameShortcut>;
 
+  website: string;
+
   constructor(
+    convertingForWebsite: string,
     node: IDescriptionNode<Type>,
     shortcuts: Record<string, UsernameShortcut>,
   ) {
     this.type = node.type;
     this.props = node.props ?? {};
     this.shortcuts = shortcuts;
+    this.website = convertingForWebsite;
   }
 
   abstract toHtmlString(): string;
