@@ -69,7 +69,7 @@ export default class Weasyl
     FileWebsite<WeasylFileSubmission>,
     MessageWebsite<WeasylMessageSubmission>
 {
-  protected BASE_URL = 'https://weasyl.com';
+  protected BASE_URL = 'https://www.weasyl.com';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<WeasylAccountData> =
     {
@@ -148,8 +148,8 @@ export default class Weasyl
     return html
       .replace(/<p/gm, '<div')
       .replace(/<\/p>/gm, '</div>')
-      .replace(/style="text-align:center"/g, 'class="align-center"')
-      .replace(/style="text-align:right"/g, 'class="align-right"')
+      .replace(/style="text-align: center"/g, 'class="align-center"')
+      .replace(/style="text-align: right"/g, 'class="align-right"')
       .replace(/<\/div>\n<br>/g, '</div><br>')
       .replace(/<\/div><br>/g, '</div><div><br></div>');
   }
@@ -191,12 +191,6 @@ export default class Weasyl
     const contentType = this.getContentType(fileType);
     const url = `${this.BASE_URL}/submit/${contentType}`;
 
-    const submissionPage = await Http.get<string>(url, {
-      partition: this.accountId,
-    });
-
-    PostResponse.validateBody(this, submissionPage);
-
     const {
       description,
       title,
@@ -214,9 +208,8 @@ export default class Weasyl
       tags: tags.join(' '),
       submitfile: files[0].toPostFormat(),
       thumbfile: files[0].thumbnailToPostFormat(),
-      redirect: url,
-      nonotification: notify ? 'off' : 'on',
-      critique: critique ? 'on ' : 'off',
+      nonotification: notify ? undefined : 'on',
+      critique: critique ? 'on ' : undefined,
       folderid: folder || '',
       subtype: category || '',
     };
@@ -237,7 +230,6 @@ export default class Weasyl
       headers: {
         Referer: url,
         Origin: 'https://www.weasyl.com',
-        Host: 'www.weasyl.com',
       },
     });
 
@@ -256,7 +248,7 @@ export default class Weasyl
         headers: {
           Referer: url,
           Origin: 'https://www.weasyl.com',
-          Host: 'www.weasyl.com',
+          // Host: 'www.weasyl.com',
         },
       });
     }

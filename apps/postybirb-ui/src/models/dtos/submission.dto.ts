@@ -134,6 +134,6 @@ export class SubmissionDto<
   }
 
   public isQueued(): boolean {
-    return this.posts.some((p) => p.completedAt === undefined);
+    return this.postQueueRecord !== undefined;
   }
 }

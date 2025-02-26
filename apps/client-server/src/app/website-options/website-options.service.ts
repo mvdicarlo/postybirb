@@ -205,9 +205,11 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     return record;
   }
 
-  update(id: EntityId, update: UpdateWebsiteOptionsDto) {
+  async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
-    return this.repository.update(id, update);
+    const result = await this.repository.update(id, update);
+    this.submissionService.emit();
+    return result;
   }
 
   /**

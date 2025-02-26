@@ -7,6 +7,7 @@ import {
   Loader,
   Paper,
   Stack,
+  Text,
   Tree,
   TreeNodeData,
   useTree,
@@ -20,7 +21,11 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { IconChevronDown } from '@tabler/icons-react';
+import {
+  IconAlertTriangle,
+  IconChevronDown,
+  IconExclamationCircle,
+} from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import submissionApi from '../../../api/submission.api';
@@ -95,14 +100,35 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           label: account.websiteInfo.websiteDisplayName ?? (
             <Trans>Unknown</Trans>
           ),
-          children: group.options.map((o) => ({
-            label: account.name,
-            value: o.id,
-          })),
+          children: group.options.map((o) => {
+            const validation = submission.validations.find(
+              (v) => v.id === o.id,
+            );
+            const hasErrors = !!validation?.errors?.length;
+            const hasWarnings = !!validation?.warnings?.length;
+            return {
+              label: (
+                <Box display="flex">
+                  {hasErrors && (
+                    <Text flex="1" size="lg" c="red">
+                      <IconExclamationCircle size="1rem" />
+                    </Text>
+                  )}
+                  {hasWarnings && (
+                    <Text flex="1" size="lg" c="orange">
+                      <IconAlertTriangle size="1rem" />
+                    </Text>
+                  )}
+                  <Text ml={4}>{account.name}</Text>
+                </Box>
+              ),
+              value: o.id,
+            };
+          }),
         };
       }),
     ],
-    [defaultOption.id, optionsGroupedByWebsiteId],
+    [defaultOption.id, optionsGroupedByWebsiteId, submission.validations],
   );
 
   const tree = useTree({
