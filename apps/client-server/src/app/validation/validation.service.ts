@@ -8,7 +8,7 @@ import {
   SimpleValidationResult,
   SubmissionId,
   SubmissionType,
-  ValidationResult
+  ValidationResult,
 } from '@postybirb/types';
 import { Account, Submission, WebsiteOptions } from '../drizzle/models';
 import { FileConverterService } from '../file-converter/file-converter.service';

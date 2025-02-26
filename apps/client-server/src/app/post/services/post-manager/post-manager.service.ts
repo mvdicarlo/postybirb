@@ -444,14 +444,16 @@ export class PostManagerService {
 
       if (result.exception) {
         await this.handleFailureResult(websitePostRecord, result, fileIds);
-      } else {
-        await this.handleSuccessResult(websitePostRecord, result, fileIds);
-        await this.markFilesAsPosted(websitePostRecord, submission, batch);
-        websitePostRecord.postResponse.push(result);
-        this.logger
-          .withMetadata(result)
-          .info(`File batch posted to ${instance.id}`);
+        // Behavior is to stop posting if a batch fails.
+        return;
       }
+
+      await this.handleSuccessResult(websitePostRecord, result, fileIds);
+      await this.markFilesAsPosted(websitePostRecord, submission, batch);
+      websitePostRecord.postResponse.push(result);
+      this.logger
+        .withMetadata(result)
+        .info(`File batch posted to ${instance.id}`);
     }
   }
 
