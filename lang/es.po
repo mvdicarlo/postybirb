@@ -1,5 +1,5 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-01-23 16:01+0000\nLast-Translator: Zanito <bugcontrol4the64@duck.com>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.10-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-03-11 19:29+0000\nLast-Translator: guth <guthfaust@gmail.com>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.10.3-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:93
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -111,7 +111,7 @@ msgstr "Advertencia de contenido"
 
 #: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:109
 msgid "Converted:"
-msgstr ""
+msgstr "Convertido:"
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
 msgid "Copied"
@@ -173,7 +173,6 @@ msgid "Default"
 msgstr "Por defecto"
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:77
-#, fuzzy
 msgctxt "default-options-saved"
 msgid "Defaults saved"
 msgstr "Guardados por defecto"
@@ -284,7 +283,7 @@ msgstr "No se pudo validar el envío: {message}"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-text-alt.tsx:68
 msgid "Fallback Text"
-msgstr "Texto alternativo"
+msgstr "Texto de respaldo"
 
 #: apps/postybirb-ui/src/components/translations/field-translations.ts:14
 msgid "Feature"
