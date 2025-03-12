@@ -1,9 +1,9 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-03-11 19:29+0000\nLast-Translator: guth <guthfaust@gmail.com>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.10.3-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-03-13 08:03+0000\nLast-Translator: guth <guthfaust@gmail.com>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.10.3-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:93
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
-msgstr "({fileSizeString}) es demasiado grande (máx. {maxFileSizeString}) y se intentará reducir el tamaño al publicarlo"
+msgstr "({fileSizeString}) es demasiado grande (max. {maxFileSizeString}) y se intentará reducir el tamaño al publicarlo"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
@@ -24,7 +24,7 @@ msgstr "Añadir observador de carpeta"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:62
 msgid "All files are marked ignored."
-msgstr ""
+msgstr "Todos los archivos están marcados como ignorados."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:31
 msgid "Allow PostyBirb to insert an Ad into the description"
@@ -375,7 +375,7 @@ msgstr "Tipo de archivo no válido"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:129
 msgid "Is a forum"
-msgstr ""
+msgstr "Es un foro"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:174
 msgid "Logged In As"
@@ -576,11 +576,11 @@ msgstr "Enviar mensajes"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:115
 msgid "Server Level"
-msgstr ""
+msgstr "Nivel del Server"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:121
 msgid "Server level perks"
-msgstr ""
+msgstr "Beneficios por nivel del servidor"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:155
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:105
@@ -602,7 +602,7 @@ msgstr "Especies"
 
 #: apps/postybirb-ui/src/components/translations/field-translations.ts:15
 msgid "Spoiler"
-msgstr ""
+msgstr "Spoiler"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:177
 msgid "Spoiler Text"
@@ -804,7 +804,7 @@ msgstr "Utilizar una descripción personalizada"
 
 #: apps/postybirb-ui/src/components/translations/field-translations.ts:16
 msgid "Use title"
-msgstr ""
+msgstr "Usar título"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:73
 msgid "Video"
