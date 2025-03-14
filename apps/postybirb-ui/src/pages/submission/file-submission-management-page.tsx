@@ -1,11 +1,12 @@
 import { Trans } from '@lingui/macro';
 import { Box, Loader, Space, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { IconFile, IconTemplate } from '@tabler/icons-react';
+import { IconFile, IconLogs, IconTemplate } from '@tabler/icons-react';
 import { useState } from 'react';
 import { PageHeader } from '../../components/page-header/page-header';
 import { SubmissionTemplateView } from '../../components/submission-templates/submission-template-view/submission-template-view';
 import DirectoryWatchersView from '../../components/submissions/directory-watchers-view/directory-watchers-view';
+import { SubmissionHistoryView } from '../../components/submissions/submission-history-view/submission-history-view';
 import { SubmissionUploader } from '../../components/submissions/submission-uploader/submission-uploader';
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
@@ -36,6 +37,8 @@ export function FileSubmissionManagementPage() {
     display = <SubmissionTemplateView type={TYPE} />;
   } else if (activeTab === 'file-watcher') {
     display = <DirectoryWatchersView />;
+  } else if (activeTab === 'history') {
+    display = <SubmissionHistoryView type={TYPE} />;
   }
 
   return (
@@ -58,6 +61,12 @@ export function FileSubmissionManagementPage() {
             label: <Trans>Auto Importers (File Watcher)</Trans>,
             key: 'file-watcher',
             icon: <IconTemplate />,
+          },
+          {
+            label: <Trans>History</Trans>,
+            key: 'history',
+            icon: <IconLogs />,
+            disabled: fileSubmissions.length === 0,
           },
         ]}
         onTabChange={setActiveTab}

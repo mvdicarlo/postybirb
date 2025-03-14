@@ -4,7 +4,7 @@ import {
   PostRecordDto,
   PostRecordResumeMode,
   PostRecordState,
-  SubmissionId
+  SubmissionId,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';
@@ -44,6 +44,11 @@ export class PostRecord extends DatabaseEntity implements IPostRecord {
   }
 
   toDTO(): PostRecordDto {
-    return this.toObject() as unknown as PostRecordDto;
+    const dto: PostRecordDto = {
+      ...this.toObject(),
+      children: this.children?.map((child) => child.toDTO()),
+      postQueueRecord: this.postQueueRecord?.toDTO(),
+    };
+    return dto;
   }
 }

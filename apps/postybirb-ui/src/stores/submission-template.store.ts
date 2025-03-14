@@ -5,7 +5,7 @@ import { SubmissionDto } from '../models/dtos/submission.dto';
 import StoreManager from './store-manager';
 
 const filter = (submission: SubmissionDto | ISubmissionDto) =>
-  submission.metadata.template !== undefined;
+  submission.isTemplate;
 
 export const SubmissionTemplateStore: StoreManager<SubmissionDto> =
   new StoreManager<SubmissionDto>(
