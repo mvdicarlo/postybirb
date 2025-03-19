@@ -46,6 +46,40 @@ import { PostingFile } from '../../models/posting-file';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
 @Injectable()
+/**
+ * PostManagerService orchestrates the submission posting workflow across various websites.
+ * 
+ * Posting flow:
+ * 1. A submission is selected to be posted via `startPost()`
+ * 2. Website post records are created or updated for each target website
+ * 3. Websites are ordered into batches:
+ *    - Standard websites are posted to first
+ *    - Websites that accept external sources are posted to last (to utilize URLs from previous posts)
+ * 
+ * 4. For each website in the batch:
+ *    - Post data is prepared (descriptions parsed, tags formatted, etc.)
+ *    - Validation is performed on the submission
+ *    - Depending on submission type:
+ *      a. For file submissions:
+ *         - Files are ordered based on user preference
+ *         - Files are split into batches based on website capabilities
+ *         - Each file may be resized/modified to meet website requirements
+ *         - Files are posted in batches with tracking of successfully posted files
+ *      b. For message submissions:
+ *         - Message is posted to the website directly
+ * 
+ * 5. After all websites are processed, the post is marked as completed
+ * 
+ * Error handling:
+ * - If a post is canceled externally, the cancelToken is used to stop ongoing processes
+ * - Individual website posting failures are tracked but don't stop the entire process
+ * - File batch failures for a website will halt further posting attempts to that website
+ * 
+ * Resume modes:
+ * - CONTINUE: Picks up where it left off, posting only files that weren't previously posted
+ * - CONTINUE_RETRY: Retries failed websites but remembers successfully posted files
+ * - RESTART: Completely starts over, ignoring any previous posting progress
+ */
 export class PostManagerService {
   private readonly logger = Logger(this.constructor.name);
 
