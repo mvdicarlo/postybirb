@@ -32,7 +32,9 @@ export function SubmissionView(props: SubmissionViewProps) {
   >([]);
   const [nameFilter, setNameFilter] = useState<string>('');
 
-  const submissionsToView = filterSubmissions(submissions, nameFilter);
+  const submissionsToView = filterSubmissions(submissions, nameFilter).filter(
+    (s) => !s.isArchived,
+  );
   return (
     <Box>
       <Stack gap="sm">

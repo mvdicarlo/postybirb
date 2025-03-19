@@ -276,6 +276,7 @@ export class PostManagerService {
   private async handleSuccessResult(
     websitePostRecord: WebsitePostRecord,
     res: IPostResponse,
+    completed = true,
     fileIds?: EntityId[],
   ): Promise<void> {
     if (fileIds?.length) {
@@ -287,7 +288,9 @@ export class PostManagerService {
       // Only really applies to message submissions
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
-    websitePostRecord.completedAt = new Date().toISOString();
+    websitePostRecord.completedAt = completed
+      ? new Date().toISOString()
+      : undefined;
     await this.websitePostRecordRepository.update(websitePostRecord.id, {
       completedAt: websitePostRecord.completedAt,
       metadata: websitePostRecord.metadata,
@@ -448,13 +451,16 @@ export class PostManagerService {
         return;
       }
 
-      await this.handleSuccessResult(websitePostRecord, result, fileIds);
+      await this.handleSuccessResult(websitePostRecord, result, false, fileIds);
       await this.markFilesAsPosted(websitePostRecord, submission, batch);
       websitePostRecord.postResponse.push(result);
       this.logger
         .withMetadata(result)
         .info(`File batch posted to ${instance.id}`);
     }
+    await this.websitePostRecordRepository.update(websitePostRecord.id, {
+      completedAt: new Date().toISOString(),
+    });
   }
 
   private verifyPostingFiles(
