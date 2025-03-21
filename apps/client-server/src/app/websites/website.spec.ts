@@ -49,7 +49,7 @@ describe('Website', () => {
     website.onAfterLogin();
     const entity = (
       await repository.select(
-        eq(repository.schemaEntity.accountId, website.accountId),
+        eq(repository.schemaEntity.id, website.accountId),
       )
     )[0];
     expect(entity.data).toEqual({ test: 'test-mode' });

@@ -1,32 +1,33 @@
 import { clearDatabase } from '@postybirb/database';
 import {
-    FileSubmissionMetadata,
-    FileType,
-    ILoginState,
-    IPostResponse,
-    NullAccount,
-    PostData,
-    PostRecordResumeMode,
-    PostRecordState,
-    SubmissionRating,
-    SubmissionType,
+  FileSubmissionMetadata,
+  FileType,
+  ILoginState,
+  IPostResponse,
+  NullAccount,
+  PostData,
+  PostRecordResumeMode,
+  PostRecordState,
+  SubmissionRating,
+  SubmissionType,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import 'reflect-metadata';
 
 import {
-    Account,
-    FileBuffer,
-    PostRecord,
-    Submission,
-    SubmissionFile,
-    WebsiteOptions,
-    WebsitePostRecord,
+  Account,
+  FileBuffer,
+  PostRecord,
+  Submission,
+  SubmissionFile,
+  WebsiteOptions,
+  WebsitePostRecord,
 } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
+import { SubmissionService } from '../../../submission/services/submission.service';
 import { ValidationService } from '../../../validation/validation.service';
 import { defaultWebsiteDecoratorProps } from '../../../websites/decorators/website-decorator-props';
 import { BaseWebsiteOptions } from '../../../websites/models/base-website-options';
@@ -79,6 +80,9 @@ describe('PostManagerServiceMocks', () => {
       validateSubmission: jest.fn(),
     } as unknown as jest.Mocked<ValidationService>;
     fileConverterService = new FileConverterService();
+    const submissionService = {
+      update: jest.fn(),
+    } as unknown as jest.Mocked<SubmissionService>;
 
     service = new PostManagerService(
       postRepositoryMock,
@@ -88,6 +92,7 @@ describe('PostManagerServiceMocks', () => {
       postParserServiceMock,
       validationServiceMock,
       fileConverterService,
+      submissionService,
     );
   });
 
@@ -364,6 +369,7 @@ describe('PostManagerServiceMocks', () => {
       mockFileSubmissionPost();
 
     const response: IPostResponse = {
+      instanceId: websiteInstance.id,
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -404,6 +410,7 @@ describe('PostManagerServiceMocks', () => {
     const { postRecord, websiteInstance } = mockFileSubmissionPost();
 
     const response: IPostResponse = {
+      instanceId: websiteInstance.id,
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -439,6 +446,7 @@ describe('PostManagerServiceMocks', () => {
     const { postRecord, websiteInstance } = mockMessageSubmissionPost();
 
     const response: IPostResponse = {
+      instanceId: websiteInstance.id,
       exception: undefined,
       sourceUrl: 'https://test.postybirb.com',
     };
@@ -466,6 +474,7 @@ describe('PostManagerServiceMocks', () => {
     const { postRecord, websiteInstance } = mockMessageSubmissionPost();
 
     const response: IPostResponse = {
+      instanceId: websiteInstance.id,
       exception: new Error('Test Error'),
     };
     (websiteInstance as unknown as MessageWebsite).onPostMessageSubmission =
