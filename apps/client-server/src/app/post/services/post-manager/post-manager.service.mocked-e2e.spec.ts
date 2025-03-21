@@ -140,7 +140,7 @@ describe('PostManagerServiceMocks', () => {
 
     // 600 x 600 image (png)
     const testFile = readFileSync(
-      join(__dirname, '../../../test-files/png_no_alpha.png'),
+      join(__dirname, '../../../../test-files/png_no_alpha.png'),
     );
     const file: SubmissionFile = new SubmissionFile({
       id: 'test-file',
