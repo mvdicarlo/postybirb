@@ -3,6 +3,7 @@ import { i18n } from '@lingui/core';
 import { I18nProvider as LinguiI18nProvider } from '@lingui/react';
 import { Group, Loader } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
+import moment from 'moment/min/moment-with-locales';
 import { useCallback, useEffect, useState } from 'react';
 import { use18n } from '../hooks/use-i18n';
 
@@ -20,7 +21,7 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
       // files into plain json during production build
       // and vite converts dynamic import into the path map
       //
-      // We dont need to cache these imported messages
+      // We don't need to cache these imported messages
       // because browser's import call does it automatically
       // eslint-disable-next-line no-param-reassign
       lang = lang ?? 'en';
@@ -33,6 +34,7 @@ export function AppI18nProvider({ children }: AppI18nProviderProps) {
 
   useEffect(() => {
     setLocale(locale);
+    moment.locale(locale);
   }, [locale, setLocale]);
 
   const [tooLongLoading, setTooLongLoading] = useState(false);
