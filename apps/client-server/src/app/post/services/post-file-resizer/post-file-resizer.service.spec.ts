@@ -58,7 +58,7 @@ describe('PostFileResizerService', () => {
 
   beforeAll(() => {
     testFile = readFileSync(
-      join(__dirname, '../../../test-files/small_image.jpg'),
+      join(__dirname, '../../../../test-files/small_image.jpg'),
     );
     file = createFile('test.jpg', 'image/jpeg', 202, 138, testFile);
   });
@@ -113,7 +113,7 @@ describe('PostFileResizerService', () => {
 
   it('should convert png thumbnail without alpha to jpeg', async () => {
     const noAlphaFile = readFileSync(
-      join(__dirname, '../../../test-files/png_no_alpha.png'),
+      join(__dirname, '../../../../test-files/png_no_alpha.png'),
     );
     const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
     const resized = await service.resize({
@@ -129,7 +129,7 @@ describe('PostFileResizerService', () => {
 
   it('should not convert png thumbnail with alpha to jpeg', async () => {
     const noAlphaFile = readFileSync(
-      join(__dirname, '../../../test-files/png_with_alpha.png'),
+      join(__dirname, '../../../../test-files/png_with_alpha.png'),
     );
     const tf = createFile('test.png', 'image/png', 600, 600, noAlphaFile);
     const resized = await service.resize({

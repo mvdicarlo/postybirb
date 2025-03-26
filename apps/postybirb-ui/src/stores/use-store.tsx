@@ -4,6 +4,7 @@ import StoreManager from './store-manager';
 export function useStore<S>(store: StoreManager<S>) {
   const [isLoading, setIsLoading] = useState<boolean>(!store.initLoadCompleted);
   const [state, setState] = useState<S[]>(store.getData());
+  const map = store.getMap();
 
   const onUpdate = useCallback((data: S[]) => {
     setState(data);
@@ -23,5 +24,5 @@ export function useStore<S>(store: StoreManager<S>) {
     }
   }, [isLoading, setIsLoading, store]);
 
-  return { isLoading, state, reload };
+  return { isLoading, state, map, reload };
 }

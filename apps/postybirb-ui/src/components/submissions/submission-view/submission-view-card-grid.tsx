@@ -10,10 +10,11 @@ type SubmissionViewCardGridProps = {
   submissions: SubmissionDto[];
   onSelect(submission: SubmissionDto): void;
   selectedSubmissions: SubmissionDto[];
+  view: 'grid' | 'list';
 };
 
 export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
-  const { submissions, onSelect, selectedSubmissions } = props;
+  const { submissions, onSelect, selectedSubmissions, view } = props;
   const [orderedSubmissions, setOrderedSubmissions] = useState(
     submissions.sort((a, b) => a.order - b.order),
   );
@@ -62,11 +63,16 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
     };
   }, [orderedSubmissions]);
 
+  let span = view === 'grid' ? 6 : 12;
+  if (submissions.length === 1) {
+    span = 12;
+  }
+
   return (
     <Grid id="submission-grid">
       {orderedSubmissions.map((submission) => (
         <Grid.Col
-          span={submissions.length > 1 ? 6 : 12}
+          span={span}
           key={`card-${submission.id}`}
           className="submission-grid-col"
         >

@@ -56,6 +56,10 @@ export class WebsitePostRecord
   }
 
   toDTO(): WebsitePostRecordDto {
-    return this.toObject() as unknown as WebsitePostRecordDto;
+    const dto: WebsitePostRecordDto = {
+      ...this.toObject(),
+      account: this.account?.toDTO(),
+    };
+    return dto;
   }
 }

@@ -1,4 +1,10 @@
 import { IWebsitePostRecord } from '../../models';
+import { IAccountDto } from '../account/account.dto';
 import { IEntityDto } from '../database/entity.dto';
 
-export type WebsitePostRecordDto = IEntityDto<IWebsitePostRecord>;
+export type WebsitePostRecordDto = Omit<
+  IEntityDto<IWebsitePostRecord>,
+  'account'
+> & {
+  account: IAccountDto;
+};

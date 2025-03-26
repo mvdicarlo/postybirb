@@ -46,6 +46,40 @@ import { PostingFile } from '../../models/posting-file';
 import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.service';
 
 @Injectable()
+/**
+ * PostManagerService orchestrates the submission posting workflow across various websites.
+ *
+ * Posting flow:
+ * 1. A submission is selected to be posted via `startPost()`
+ * 2. Website post records are created or updated for each target website
+ * 3. Websites are ordered into batches:
+ *    - Standard websites are posted to first
+ *    - Websites that accept external sources are posted to last (to utilize URLs from previous posts)
+ *
+ * 4. For each website in the batch:
+ *    - Post data is prepared (descriptions parsed, tags formatted, etc.)
+ *    - Validation is performed on the submission
+ *    - Depending on submission type:
+ *      a. For file submissions:
+ *         - Files are ordered based on user preference
+ *         - Files are split into batches based on website capabilities
+ *         - Each file may be resized/modified to meet website requirements
+ *         - Files are posted in batches with tracking of successfully posted files
+ *      b. For message submissions:
+ *         - Message is posted to the website directly
+ *
+ * 5. After all websites are processed, the post is marked as completed
+ *
+ * Error handling:
+ * - If a post is canceled externally, the cancelToken is used to stop ongoing processes
+ * - Individual website posting failures are tracked but don't stop the entire process
+ * - File batch failures for a website will halt further posting attempts to that website
+ *
+ * Resume modes:
+ * - CONTINUE: Picks up where it left off, posting only files that weren't previously posted
+ * - CONTINUE_RETRY: Retries failed websites but remembers successfully posted files
+ * - RESTART: Completely starts over, ignoring any previous posting progress
+ */
 export class PostManagerService {
   private readonly logger = Logger(this.constructor.name);
 
@@ -146,19 +180,14 @@ export class PostManagerService {
     this.currentPost = null;
     this.cancelToken = null;
 
-    const allCompleted = entity.children.every((c) => !!c.completedAt);
     const entityInDb = await this.postRepository.findById(entity.id);
-    if (!entityInDb && !allCompleted) {
+    if (!entityInDb) {
       this.logger.error(
         `Entity ${entity.id} not found in database. It may have been deleted while posting.`,
       );
       return;
     }
-    if (!entityInDb) {
-      this.logger.warn(
-        `Entity ${entity.id} not found in database. It may have been deleted while posting. Updating anyways due to all websites being completed.`,
-      );
-    }
+    const allCompleted = entity.children.every((c) => !!c.completedAt);
     await this.postRepository.update(entity.id, {
       completedAt: new Date().toISOString(),
       state: allCompleted ? PostRecordState.DONE : PostRecordState.FAILED,
@@ -276,6 +305,7 @@ export class PostManagerService {
   private async handleSuccessResult(
     websitePostRecord: WebsitePostRecord,
     res: IPostResponse,
+    completed = true,
     fileIds?: EntityId[],
   ): Promise<void> {
     if (fileIds?.length) {
@@ -287,7 +317,10 @@ export class PostManagerService {
       // Only really applies to message submissions
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
     }
-    websitePostRecord.completedAt = new Date().toISOString();
+    websitePostRecord.completedAt = completed
+      ? new Date().toISOString()
+      : undefined;
+    websitePostRecord.postResponse.push(res);
     await this.websitePostRecordRepository.update(websitePostRecord.id, {
       completedAt: websitePostRecord.completedAt,
       metadata: websitePostRecord.metadata,
@@ -320,6 +353,7 @@ export class PostManagerService {
     }
 
     this.logger.withMetadata(res).error(`Failed to post to ${res.instanceId}`);
+    websitePostRecord.postResponse.push(res);
     await this.websitePostRecordRepository.update(websitePostRecord.id, {
       errors: websitePostRecord.errors,
       metadata: websitePostRecord.metadata,
@@ -448,13 +482,16 @@ export class PostManagerService {
         return;
       }
 
-      await this.handleSuccessResult(websitePostRecord, result, fileIds);
+      await this.handleSuccessResult(websitePostRecord, result, false, fileIds);
       await this.markFilesAsPosted(websitePostRecord, submission, batch);
-      websitePostRecord.postResponse.push(result);
       this.logger
         .withMetadata(result)
         .info(`File batch posted to ${instance.id}`);
     }
+    websitePostRecord.completedAt = new Date().toISOString();
+    await this.websitePostRecordRepository.update(websitePostRecord.id, {
+      completedAt: websitePostRecord.completedAt,
+    });
   }
 
   private verifyPostingFiles(

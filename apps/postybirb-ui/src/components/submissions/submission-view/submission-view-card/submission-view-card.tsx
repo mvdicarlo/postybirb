@@ -10,6 +10,7 @@ import {
   Loader,
   ScrollArea,
   Stack,
+  Text,
 } from '@mantine/core';
 import {
   AccountId,
@@ -28,6 +29,7 @@ import {
   IconSquareFilled,
 } from '@tabler/icons-react';
 import { debounce } from 'lodash';
+import moment from 'moment/min/moment-with-locales';
 import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
@@ -125,6 +127,10 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
     { id: '', errors: [], warnings: [], account: {} as IEntityDto<IAccount> },
   );
 
+  const lastEdited = submission.options.sort((a, b) =>
+    a.updatedAt > b.updatedAt ? -1 : 1,
+  )[0];
+
   return (
     <Card
       shadow="xs"
@@ -179,7 +185,15 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     </List>
                   </Alert>
                 ) : null}
-
+                <Text
+                  size="xs"
+                  fs="italic"
+                  c="dimmed"
+                  title={new Date(lastEdited.updatedAt).toLocaleString()}
+                >
+                  <Trans>Last modified:</Trans>{' '}
+                  {moment(lastEdited.updatedAt).fromNow()}
+                </Text>
                 {fileValidationIssues.warnings?.length ? (
                   <Alert
                     variant="outline"
@@ -203,11 +217,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     </List>
                   </Alert>
                 ) : null}
-                <Input.Wrapper
-                  label={
-                    <Trans id="submission.card.schedule.select">Schedule</Trans>
-                  }
-                >
+                <Input.Wrapper label={<Trans>Schedule</Trans>}>
                   <SubmissionScheduler
                     schedule={submission.schedule}
                     onChange={(schedule) => {

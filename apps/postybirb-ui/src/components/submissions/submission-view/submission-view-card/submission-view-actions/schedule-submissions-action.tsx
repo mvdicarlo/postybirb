@@ -21,7 +21,7 @@ export function ScheduleSubmissionsActions({
         leftSection={<IconCalendar />}
         onClick={() => setMultiScheduleVisible(true)}
       >
-        <Trans>Schedule Many</Trans>
+        <Trans>Schedule</Trans>
       </Button>
       {multiScheduleVisible ? (
         <SubmissionViewMultiSchedulerModal

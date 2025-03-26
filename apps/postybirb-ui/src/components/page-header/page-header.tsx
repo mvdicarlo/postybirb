@@ -5,6 +5,7 @@ import {
   Group,
   Space,
   Tabs,
+  Text,
   Title,
 } from '@mantine/core';
 import { useCallback, useMemo } from 'react';
@@ -18,6 +19,7 @@ type PageHeaderProps = {
     label: JSX.Element;
     key: string;
     icon: JSX.Element;
+    disabled?: boolean;
   }[];
   onTabChange?: (tab: string) => void;
   breadcrumbs?: {
@@ -92,7 +94,17 @@ export function PageHeader(props: PageHeaderProps) {
                 key={tab.key}
                 value={tab.key}
                 onClick={() => onTabChange && onTabChange(tab.key)}
+                disabled={tab.disabled}
               >
+                {tab.icon ? (
+                  <Text
+                    inherit
+                    span
+                    className="postybirb__page-header__tabs__icon"
+                  >
+                    {tab.icon}
+                  </Text>
+                ) : null}
                 {tab.label}
               </Tabs.Tab>
             ))}

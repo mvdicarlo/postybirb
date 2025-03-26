@@ -1,6 +1,11 @@
 import { Observable, Subject } from 'rxjs';
 import { Constructor } from 'type-fest';
+import { EntityId } from '@postybirb/types';
 import AppSocket from '../transports/websocket';
+
+type IdBasedRecord = {
+  id: EntityId;
+};
 
 /**
  * Manages keeping data in sync with backend database.
@@ -8,7 +13,7 @@ import AppSocket from '../transports/websocket';
  * @class StoreManager
  * @template T
  */
-export default class StoreManager<T> {
+export default class StoreManager<T extends IdBasedRecord> {
   private data: T[];
 
   private readonly subject: Subject<T[]>;
@@ -16,6 +21,8 @@ export default class StoreManager<T> {
   public readonly updates: Observable<T[]>;
 
   public initLoadCompleted = false;
+
+  public map = new Map<EntityId, T>();
 
   constructor(
     websocketDomain: string,
@@ -42,6 +49,15 @@ export default class StoreManager<T> {
       m = m.filter(this.filterFn);
     }
     this.data = m;
+    this.map.clear();
+    m.forEach((d) => {
+      const { ModelConstructor } = this;
+      if (ModelConstructor) {
+        this.map.set(d.id, new ModelConstructor(d));
+      } else {
+        this.map.set(d.id, d);
+      }
+    });
     this.subject.next(this.getData());
   }
 
@@ -49,6 +65,10 @@ export default class StoreManager<T> {
     return this.refreshDataFn().then((messages: T[]) =>
       this.handleMessages(messages),
     );
+  }
+
+  public getMap(): Map<EntityId, T> {
+    return this.map;
   }
 
   public getData(): T[] {

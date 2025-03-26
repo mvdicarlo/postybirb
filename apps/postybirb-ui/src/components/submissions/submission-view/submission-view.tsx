@@ -30,13 +30,18 @@ export function SubmissionView(props: SubmissionViewProps) {
   const [selectedSubmissions, setSelectedSubmissions] = useState<
     SubmissionDto[]
   >([]);
+  const [view, setView] = useState<'grid' | 'list'>('grid');
   const [nameFilter, setNameFilter] = useState<string>('');
 
-  const submissionsToView = filterSubmissions(submissions, nameFilter);
+  const submissionsToView = filterSubmissions(submissions, nameFilter).filter(
+    (s) => !s.isArchived,
+  );
   return (
     <Box>
       <Stack gap="sm">
         <SubmissionViewActions
+          view={view}
+          setView={setView}
           submissions={submissions}
           type={type}
           selectedSubmissions={selectedSubmissions}
@@ -45,6 +50,7 @@ export function SubmissionView(props: SubmissionViewProps) {
           setNameFilter={setNameFilter}
         />
         <SubmissionViewCardGrid
+          view={view}
           submissions={submissionsToView}
           selectedSubmissions={selectedSubmissions}
           onSelect={(submission) => {

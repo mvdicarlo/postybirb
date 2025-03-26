@@ -45,7 +45,7 @@ describe('SubmissionService', () => {
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
     testFile = readFileSync(
-      join(__dirname, '../../test-files/small_image.jpg'),
+      join(__dirname, '../../../test-files/small_image.jpg'),
     );
   });
 
