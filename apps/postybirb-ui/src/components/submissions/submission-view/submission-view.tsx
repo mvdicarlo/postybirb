@@ -33,6 +33,7 @@ export function SubmissionView(props: SubmissionViewProps) {
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [nameFilter, setNameFilter] = useState<string>('');
 
+  // TODO - Figure out how to block editing of a submission that is actively posting
   const submissionsToView = filterSubmissions(submissions, nameFilter).filter(
     (s) => !s.isArchived,
   );

@@ -315,7 +315,7 @@ export class SubmissionService
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
-
+    submission.isArchived = update.isArchived ?? submission.isArchived;
     submission.isScheduled = update.isScheduled ?? submission.isScheduled;
     submission.schedule = {
       scheduledFor: update.scheduledFor ?? submission.schedule.scheduledFor,

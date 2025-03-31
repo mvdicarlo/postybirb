@@ -11,7 +11,7 @@ import { PostSelectedSubmissionsActions } from './post-selected-submissions-acti
 import { ScheduleSubmissionsActions } from './schedule-submissions-action';
 import { SelectSubmissionsAction } from './select-submissions-action';
 import { SubmissionViewActionProps } from './submission-view-actions.props';
-import { SubmissionViewLayoutAction } from './SubmissionViewLayoutAction';
+import { SubmissionViewLayoutAction } from './submission-view-layout-action';
 
 type SubmissionViewActionsProps = {
   submissions: SubmissionDto[];

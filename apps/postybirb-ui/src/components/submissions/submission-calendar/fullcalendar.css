@@ -1,0 +1,118 @@
+/* FullCalendar Mantine Dark Theme */
+.fc-dark-theme {
+  /* General styles */
+  --fc-border-color: #373A40;
+  --fc-page-bg-color: #1A1B1E;
+  --fc-neutral-bg-color: #25262b;
+  --fc-neutral-text-color: #c1c2c5;
+  --fc-button-text-color: #ffffff;
+  --fc-button-bg-color: #339af0;
+  --fc-button-border-color: #339af0;
+  --fc-button-hover-bg-color: #228be6;
+  --fc-button-hover-border-color: #228be6;
+  --fc-button-active-bg-color: #1c7ed6;
+  --fc-button-active-border-color: #1c7ed6;
+  
+  /* Month/week view */
+  --fc-today-bg-color: rgba(51, 154, 240, 0.1);
+  --fc-highlight-color: rgba(51, 154, 240, 0.3);
+  --fc-event-text-color: #ffffff;
+  --fc-event-border-color: #339af0;
+  --fc-event-bg-color: #339af0;
+  
+  /* List view */
+  --fc-list-event-hover-bg-color: #25262b;
+  --fc-theme-standard-list-day-cushion-background: #25262b;
+}
+
+/* Text colors */
+.fc-dark-theme .fc-col-header-cell-cushion,
+.fc-dark-theme .fc-daygrid-day-number,
+.fc-dark-theme .fc-list-day-text,
+.fc-dark-theme .fc-list-event-title,
+.fc-dark-theme .fc-list-day-side-text {
+  color: #c1c2c5;
+}
+
+/* Fix other elements */
+.fc-dark-theme th,
+.fc-dark-theme td,
+.fc-dark-theme .fc-timegrid-slot,
+.fc-dark-theme .fc-timegrid-slot-label,
+.fc-dark-theme .fc-timegrid-axis-cushion,
+.fc-dark-theme .fc-timegrid-axis,
+.fc-dark-theme .fc-col-header-cell {
+  color: #c1c2c5;
+  border-color: #373A40;
+}
+
+/* Submission card styles */
+.submission-card-container {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submission-card-container:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Draggable element styles */
+.calendar-draggable {
+  cursor: grab;
+  width: 100%;
+  border-radius: 4px;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.calendar-draggable:hover {
+  background-color: rgba(51, 154, 240, 0.05);
+}
+
+.calendar-draggable:active {
+  cursor: grabbing;
+}
+
+/* For when they're being dragged */
+.calendar-draggable.fc-event-dragging {
+  opacity: 0.8;
+  background-color: var(--mantine-color-blue-1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Make sure FullCalendar events look good */
+.fc-h-event {
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+}
+
+.fc-daygrid-event {
+  border-radius: 4px;
+  padding: 2px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Event hover effect */
+.fc-event {
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.fc-event:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 5 !important;
+}
+
+/* Popover container */
+.calendar-popover-container {
+  pointer-events: none; /* Allow clicks to pass through to the container */
+}
+
+/* But allow interactions with the actual popover */
+.calendar-popover-container .mantine-Popover-dropdown {
+  pointer-events: auto;
+}

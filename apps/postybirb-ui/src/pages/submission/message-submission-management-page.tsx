@@ -9,11 +9,19 @@ import {
   TextInput,
 } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { IconMessage, IconPlus, IconTemplate } from '@tabler/icons-react';
+import {
+  IconCalendar,
+  IconLogs,
+  IconMessage,
+  IconPlus,
+  IconTemplate,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import submissionsApi from '../../api/submission.api';
 import { PageHeader } from '../../components/page-header/page-header';
 import { SubmissionTemplateView } from '../../components/submission-templates/submission-template-view/submission-template-view';
+import { SubmissionHistoryView } from '../../components/submissions/submission-history-view/submission-history-view';
+import { SubmissionScheduleView } from '../../components/submissions/submission-schedule-view/submission-schedule-view';
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
 import { useStore } from '../../stores/use-store';
@@ -85,6 +93,10 @@ export default function MessageSubmissionManagementPage() {
     );
   } else if (activeTab === 'templates') {
     display = <SubmissionTemplateView type={TYPE} />;
+  } else if (activeTab === 'history') {
+    display = <SubmissionHistoryView type={TYPE} />;
+  } else if (activeTab === 'schedule') {
+    display = <SubmissionScheduleView type={TYPE} />;
   }
 
   return (
@@ -99,9 +111,20 @@ export default function MessageSubmissionManagementPage() {
             icon: <IconMessage />,
           },
           {
+            label: <Trans>Schedule</Trans>,
+            key: 'schedule',
+            icon: <IconCalendar />,
+          },
+          {
             label: <Trans>Templates</Trans>,
             key: 'templates',
             icon: <IconTemplate />,
+          },
+          {
+            label: <Trans>History</Trans>,
+            key: 'history',
+            icon: <IconLogs />,
+            disabled: fileSubmissions.length === 0,
           },
         ]}
         onTabChange={setActiveTab}

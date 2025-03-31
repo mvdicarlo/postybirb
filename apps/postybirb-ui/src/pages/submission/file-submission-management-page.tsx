@@ -1,12 +1,18 @@
 import { Trans } from '@lingui/macro';
 import { Box, Loader, Space, Stack } from '@mantine/core';
 import { SubmissionType } from '@postybirb/types';
-import { IconFile, IconLogs, IconTemplate } from '@tabler/icons-react';
+import {
+  IconCalendar,
+  IconFile,
+  IconLogs,
+  IconTemplate,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import { PageHeader } from '../../components/page-header/page-header';
 import { SubmissionTemplateView } from '../../components/submission-templates/submission-template-view/submission-template-view';
 import DirectoryWatchersView from '../../components/submissions/directory-watchers-view/directory-watchers-view';
 import { SubmissionHistoryView } from '../../components/submissions/submission-history-view/submission-history-view';
+import { SubmissionScheduleView } from '../../components/submissions/submission-schedule-view/submission-schedule-view';
 import { SubmissionUploader } from '../../components/submissions/submission-uploader/submission-uploader';
 import { SubmissionView } from '../../components/submissions/submission-view/submission-view';
 import { SubmissionStore } from '../../stores/submission.store';
@@ -39,6 +45,8 @@ export function FileSubmissionManagementPage() {
     display = <DirectoryWatchersView />;
   } else if (activeTab === 'history') {
     display = <SubmissionHistoryView type={TYPE} />;
+  } else if (activeTab === 'schedule') {
+    display = <SubmissionScheduleView type={TYPE} />;
   }
 
   return (
@@ -51,6 +59,11 @@ export function FileSubmissionManagementPage() {
             label: <Trans>Submissions</Trans>,
             key: 'submissions',
             icon: <IconFile />,
+          },
+          {
+            label: <Trans>Schedule</Trans>,
+            key: 'schedule',
+            icon: <IconCalendar />,
           },
           {
             label: <Trans>Templates</Trans>,

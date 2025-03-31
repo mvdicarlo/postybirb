@@ -108,13 +108,14 @@ export default class PostyBirb {
     PostyBirb.mainWindow.setMenu(null);
     PostyBirb.mainWindow.center();
 
+    PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {
       PostyBirb.mainWindow.show();
 
-      if (PostyBirb.isDevelopmentMode()) {
+      // if (PostyBirb.isDevelopmentMode()) {
         PostyBirb.mainWindow.webContents.openDevTools();
-      }
+      // }
     });
 
     // Emitted when the window is closed.

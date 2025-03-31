@@ -10,3 +10,12 @@ export const languages = [
   [msg`Russian`, 'ru'],
   [msg`Spanish`, 'es'],
 ] as const;
+
+export const calendarLanguageMap: Record<string, string> = {
+  'pt-BR': 'pt-br',
+  en: 'en-US',
+  de: 'de-DE',
+  lt: 'lt-LT',
+  ru: 'ru-RU',
+  es: 'pt-BR',
+};
