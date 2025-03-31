@@ -18,4 +18,10 @@ export const FieldLabelTranslations: {
   notify: msg`Notify followers`,
   category: msg`Category`,
   folder: msg`Folder`,
+  allowCommunityTags: msg`Allow other users to edit tags`,
+  originalWork: msg`Original work`,
+  hasSexualContent: msg`Has sexual content`,
+  aIGenerated: msg`AI generated`,
+  matureContent: msg`Mature content`,
+  containsContent: msg`Contains content`,
 };
