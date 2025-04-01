@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import path from 'path';
-import { createFromTemplate } from './create-file-from-template';
+import { createFromTemplate } from './create-file-from-template.js';
 
 /**
  * @param {import('./parse-add-website-input.js').AddWebsiteContext} data
@@ -49,7 +49,7 @@ export function createWebsite(data, baseAppPath) {
 
     const indexFilePath = path.join(baseAppPath, 'index.ts');
     let indexFileContent = fs.readFileSync(indexFilePath, 'utf8').trim();
-    indexFileContent += `\nexport { default as ${pascalWebsiteName} } from './${website}/${websiteFileName.replace('.ts', '')}';`;
+    indexFileContent += `\r\nexport { default as ${pascalWebsiteName} } from './${website}/${websiteFileName.replace('.ts', '')}';\r\n`;
     fs.writeFileSync(indexFilePath, indexFileContent);
 
     console.log('Index file updated successfully!');
