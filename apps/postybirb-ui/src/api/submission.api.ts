@@ -49,6 +49,10 @@ class SubmissionsApi extends BaseApi<
   applyToMultipleSubmissions(dto: IApplyMultiSubmissionDto) {
     return this.client.patch('apply/multi', dto);
   }
+
+  unarchive(id: SubmissionId) {
+    return this.client.post(`unarchive/${id}`);
+  }
 }
 
 export default new SubmissionsApi();

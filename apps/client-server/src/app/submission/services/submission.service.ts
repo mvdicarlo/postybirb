@@ -72,7 +72,11 @@ export class SubmissionService
         },
         posts: {
           with: {
-            children: true,
+            children: {
+              with: {
+                account: true,
+              },
+            },
           },
         },
         postQueueRecord: true,
@@ -311,7 +315,7 @@ export class SubmissionService
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
-
+    submission.isArchived = update.isArchived ?? submission.isArchived;
     submission.isScheduled = update.isScheduled ?? submission.isScheduled;
     submission.schedule = {
       scheduledFor: update.scheduledFor ?? submission.schedule.scheduledFor,
@@ -634,6 +638,17 @@ export class SubmissionService
         this.repository.update(s.id, { order: s.order }),
       ),
     );
+    this.emit();
+  }
+
+  async unarchive(id: SubmissionId) {
+    const submission = await this.findById(id, { failOnMissing: true });
+    if (!submission.isArchived) {
+      throw new BadRequestException(`Submission '${id}' is not archived`);
+    }
+    await this.repository.update(id, {
+      isArchived: false,
+    });
     this.emit();
   }
 }

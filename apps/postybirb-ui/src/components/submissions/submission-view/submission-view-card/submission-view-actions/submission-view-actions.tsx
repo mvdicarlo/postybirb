@@ -11,17 +11,19 @@ import { PostSelectedSubmissionsActions } from './post-selected-submissions-acti
 import { ScheduleSubmissionsActions } from './schedule-submissions-action';
 import { SelectSubmissionsAction } from './select-submissions-action';
 import { SubmissionViewActionProps } from './submission-view-actions.props';
+import { SubmissionViewLayoutAction } from './submission-view-layout-action';
 
 type SubmissionViewActionsProps = {
   submissions: SubmissionDto[];
   type: SubmissionType;
   selectedSubmissions: SubmissionDto[];
+  view: 'grid' | 'list';
   onSelect(submissions: SubmissionDto[]): void;
   nameFilter: string;
   setNameFilter(filter: string): void;
+  setView(view: 'grid' | 'list'): void;
 };
 
-// TODO - Schedule Selected action button
 export function SubmissionViewActions(props: SubmissionViewActionsProps) {
   const {
     submissions,
@@ -30,6 +32,8 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
     selectedSubmissions,
     nameFilter,
     setNameFilter,
+    view,
+    setView,
   } = props;
   const { _ } = useLingui();
 
@@ -37,7 +41,9 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
     submissions,
     selected: selectedSubmissions,
     type,
+    view,
     onSelect,
+    setView,
   };
 
   return (
@@ -45,6 +51,7 @@ export function SubmissionViewActions(props: SubmissionViewActionsProps) {
       <Paper shadow="xs" p="xs">
         <Flex align="center">
           <Group pr="sm" gap="xs">
+            <SubmissionViewLayoutAction {...actionProps} />
             <SelectSubmissionsAction {...actionProps} />
             <DeleteSubmissionsAction {...actionProps} />
             <PostSelectedSubmissionsActions {...actionProps} />

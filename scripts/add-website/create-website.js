@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { createFromTemplate } from './create-file-from-template.js';
 

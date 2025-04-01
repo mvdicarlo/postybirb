@@ -85,6 +85,13 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
     this.service.duplicate(id);
   }
 
+  @Post('unarchive/:id')
+  @ApiOkResponse({ description: 'Submission unarchived.' })
+  @ApiNotFoundResponse({ description: 'Submission Id not found.' })
+  async unarchive(@Param('id') id: SubmissionId) {
+    return this.service.unarchive(id);
+  }
+
   @Patch(':id')
   @ApiOkResponse({ description: 'Submission updated.' })
   @ApiNotFoundResponse({ description: 'Submission Id not found.' })

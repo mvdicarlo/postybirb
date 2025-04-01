@@ -2,12 +2,11 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-  DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionType,
   NullAccount,
   SubmissionRating,
-  SubmissionType,
+  SubmissionType
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -124,6 +123,8 @@ describe('FormGeneratorService', () => {
         label: 'tags',
         row: 1,
         type: 'tag',
+        minTagLength: 1,
+        spaceReplacer: '_',
       },
       title: {
         col: 1,
@@ -150,7 +151,10 @@ describe('FormGeneratorService', () => {
       },
       description: {
         col: 1,
-        defaultValue: DefaultDescriptionValue(),
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
         formField: 'description',
         label: 'description',
         row: 3,
@@ -192,6 +196,8 @@ describe('FormGeneratorService', () => {
         label: 'tags',
         row: 1,
         type: 'tag',
+        minTagLength: 1,
+        spaceReplacer: '_',
       },
       title: {
         col: 1,
@@ -216,7 +222,10 @@ describe('FormGeneratorService', () => {
       },
       description: {
         col: 1,
-        defaultValue: DefaultDescriptionValue(),
+        defaultValue: {
+          description: [],
+          overrideDefault: false,
+        },
         formField: 'description',
         label: 'description',
         row: 3,
@@ -258,6 +267,8 @@ describe('FormGeneratorService', () => {
         label: 'tags',
         row: 1,
         type: 'tag',
+        minTagLength: 1,
+        spaceReplacer: '_',
       },
       title: {
         col: 1,
