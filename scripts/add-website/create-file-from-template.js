@@ -1,28 +1,31 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { handlebars } from 'hbs';
-import { join } from 'path';
+import fs from 'fs';
+import hbs from 'hbs';
+import path from 'path';
+import url from 'url';
 
 /**
- * @param {import('./parse-add-website-input.js').AddWebsiteContext} data 
+ * @param {import('./parse-add-website-input.js').AddWebsiteContext} data
  * @param {string} templateFileName
- * @param {string} folder 
- * @param {string} fileName 
+ * @param {string} folder
+ * @param {string} fileName
  */
 export function createFromTemplate(data, templateFileName, folder, fileName) {
-  const template = handlebars.compile(
-    readFileSync(join(__dirname, 'templates', templateFileName), 'utf8'),
+  const dirname = path.dirname(url.fileURLToPath(import.meta.url));
+  const templatePath = path.join(dirname, 'templates', templateFileName);
+  const template = hbs.handlebars.compile(
+    fs.readFileSync(templatePath, 'utf8'),
   );
 
-  const filePath = join(folder, fileName);
+  const filePath = path.join(folder, fileName);
   console.log('Creating file:', filePath);
 
   const content = template(data);
-  if (existsSync(filePath)) {
+  if (fs.existsSync(filePath)) {
     console.error('File already exists:', filePath);
-    return fileName
+    return fileName;
   }
-  
-  writeFileSync(filePath, content);
+
+  fs.writeFileSync(filePath, content);
   console.log('File created:', filePath);
   return fileName;
 }

@@ -9,13 +9,7 @@
  * }} answers
  */
 export function parseAddWebsiteInput(answers) {
-  const {
-    websiteName,
-    submissionTypes,
-    websiteUrl,
-    fileFeatures,
-    supportsTags,
-  } = answers;
+  const { websiteName, submissionTypes, websiteUrl, supportsTags } = answers;
 
   const website = websiteName.toLowerCase().trim();
   return {

@@ -1,7 +1,7 @@
 import inquirer from 'inquirer';
 import path from 'path';
-import { createWebsite } from './add-website/create-website';
-import { parseAddWebsiteInput } from './add-website/parse-add-website-input';
+import { createWebsite } from './add-website/create-website.js';
+import { parseAddWebsiteInput } from './add-website/parse-add-website-input.js';
 
 /** @param {string} str */
 const isDashCasedOrLowercase = (str) =>
