@@ -11,12 +11,8 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:94
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:93
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:208
-msgid "Account"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
@@ -36,7 +32,7 @@ msgstr "Действия"
 msgid "Add folder watcher"
 msgstr "Добавить мониторинг папки"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:63
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:62
 msgid "All files are marked ignored."
 msgstr ""
 
@@ -82,34 +78,21 @@ msgstr "Вы уверены, что хотите удалить? Это дейс
 msgid "Are you sure you want to post all selected submissions?"
 msgstr "Вы уверены, что хотите опубликовать все выбранные посты?"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:347
-msgid "Are you sure you want to unschedule this submission?"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:80
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:79
 msgid "Audio"
 msgstr ""
 
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:74
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:58
 msgid "Auto Importers (File Watcher)"
 msgstr "Авто-импортеры (При изменении папки)"
 
-#: apps/postybirb-ui/src/app/languages.tsx:6
-msgid "Brazil"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:260
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:353
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx:43
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:173
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:282
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:157
 msgid "Cancel"
 msgstr "Отмена"
-
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:19
-msgid "Category"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:36
 msgid "Choose Fields"
@@ -132,10 +115,6 @@ msgstr "Выберите сайты"
 msgid "Clear"
 msgstr "Очистить"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:342
-msgid "Confirm Unschedule"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/translations/field-translations.ts:13
 msgid "Content warning"
 msgstr "Предупреждение (CW)"
@@ -145,7 +124,6 @@ msgid "Converted:"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:261
 msgid "Copied"
 msgstr "Скопированно"
 
@@ -153,11 +131,7 @@ msgstr "Скопированно"
 msgid "Copy"
 msgstr "Копировать"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:263
-msgid "Copy to clipboard"
-msgstr ""
-
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:52
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:44
 msgid "Create Message Submission"
 msgstr "Создать текстовый пост"
 
@@ -176,10 +150,6 @@ msgstr "Создать новую группу тэгов"
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:78
 msgid "Create Submission Template"
 msgstr "Создать шаблон поста"
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:469
-msgid "Created"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:85
 msgid "CRON Format"
@@ -208,7 +178,7 @@ msgstr "Дни"
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:61
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:63
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:154
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:94
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:90
 msgid "Default"
 msgstr "По умолчанию"
 
@@ -225,29 +195,21 @@ msgstr "Опции по умолчанию сохранены"
 msgid "Delete"
 msgstr "Удалить"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:415
-msgid "Delete failed"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/translations/field-translations.ts:8
 msgid "Description"
 msgstr "Описание"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:24
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:23
 msgid "Description is greater than {maxLength} characters long"
 msgstr "Описание больше, чем {maxLength} символов длиной"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:30
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:29
 msgid "Description is less than {minLength} characters long"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:25
 msgid "Description Settings"
 msgstr "Настройки описания"
-
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:327
-msgid "Disable"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:155
 msgid "Don't post to"
@@ -260,11 +222,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:110
 msgid "Drag or use arrow keys to change order."
 msgstr "Перетащите или используйте стрелки для изменения порядка."
-
-#: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx:94
-#: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx:100
-msgid "Drag to schedule"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:62
 msgid "Duplicate"
@@ -283,15 +240,11 @@ msgstr ""
 msgid "Edit Multiple"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:329
-msgid "Enable"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/languages.tsx:7
+#: apps/postybirb-ui/src/app/languages.tsx:6
 msgid "English"
 msgstr "Английский"
 
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:53
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:45
 msgid "Enter a name for the new message submission"
 msgstr "Введите имя нового поста"
 
@@ -302,14 +255,6 @@ msgstr "Введите имя шаблона"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:145
 msgid "Enter name to add new account"
 msgstr "Введите имя для добавления нового аккаунта"
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:167
-msgid "Error"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:144
-msgid "Failed"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:63
 msgid "Failed to create template"
@@ -337,20 +282,12 @@ msgstr ""
 msgid "Failed to schedule submission"
 msgstr "Не удалось отложить пост"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:190
-msgid "Failed to Unschedule"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:85
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:92
 msgid "Failed to update"
 msgstr "Не удалось обновить"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:226
-msgid "Failed to Update"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:18
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:17
 msgid "Failed to validate submission: {message}"
 msgstr ""
 
@@ -362,16 +299,12 @@ msgstr ""
 msgid "Feature"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:195
-msgid "File saved"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
 msgstr "Посты с файлами"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:227
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:56
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:45
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:174
 msgid "File Submissions"
 msgstr "Посты с файлами"
@@ -380,12 +313,11 @@ msgstr "Посты с файлами"
 msgid "File types do not match. Please upload a file of the same type."
 msgstr "Типы файлов не совпадают. Пожалуйста, загрузите файл того же типа."
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:102
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:101
 msgid "File will be modified to support website requirements"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:20
 msgid "Folder"
 msgstr "Папка"
 
@@ -393,10 +325,6 @@ msgstr "Папка"
 msgctxt "directory-watcher.description"
 msgid "Folder watchers allow you to automatically upload files from a folder to PostyBirb."
 msgstr "Позволяет вам автоматически добавлять файлы из папки в PostyBirb."
-
-#: apps/postybirb-ui/src/app/languages.tsx:8
-msgid "German"
-msgstr ""
 
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:15
 msgid "Go back"
@@ -410,11 +338,6 @@ msgstr "Имя группы"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:104
 msgid "Height"
 msgstr "Высота"
-
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:79
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:124
-msgid "History"
-msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:64
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:35
@@ -440,7 +363,7 @@ msgctxt "override-default"
 msgid "Ignore default tags"
 msgstr "Игнорировать теги по умолчанию"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:71
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:70
 msgid "Image"
 msgstr ""
 
@@ -464,14 +387,6 @@ msgstr "Неверный тип файла"
 msgid "Is a forum"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:194
-msgid "Last modified:"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/languages.tsx:9
-msgid "Lithuanian"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:174
 msgid "Logged In As"
 msgstr "Выполнен вход как"
@@ -489,7 +404,7 @@ msgid "Message submissions"
 msgstr "Текстовые посты"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:229
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:106
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:94
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx:176
 msgid "Message Submissions"
 msgstr "Посты с текстом"
@@ -510,10 +425,6 @@ msgstr "Имя"
 msgid "Navigation"
 msgstr "Навигация"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:523
-msgid "No history available"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/translations/component-translations.tsx:4
 msgid "No items"
 msgstr "Нечего отобразить"
@@ -525,14 +436,6 @@ msgstr "Не найдено компонента входа."
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:99
 msgid "No results"
 msgstr "Нет результатов"
-
-#: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx:116
-msgid "No unscheduled submissions"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:230
-msgid "No website posts available"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:136
 msgctxt "Template picker checkbox"
@@ -548,10 +451,6 @@ msgstr "Никакой"
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:95
 msgid "Not logged in"
 msgstr "Нет входа"
-
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:18
-msgid "Notify followers"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:21
 msgctxt "internalSchedule.single"
@@ -578,7 +477,6 @@ msgstr ""
 msgid "Page not found"
 msgstr "Страница не найдена"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:331
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:159
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:193
 msgid "Post"
@@ -595,10 +493,6 @@ msgstr "Опубликовать текст"
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:72
 msgid "Post Files"
 msgstr "Файлы"
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:245
-msgid "Post Record"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx:46
 msgid "Post Selected"
@@ -628,11 +522,7 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Заменить заголовок"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:17
-msgid "Request critique"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:123
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:122
 msgid "Requires at least {minLength} tags"
 msgstr ""
 
@@ -640,15 +530,7 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:440
-msgid "Restore"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:393
-msgid "Restore failed"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/languages.tsx:10
+#: apps/postybirb-ui/src/app/languages.tsx:7
 msgid "Russian"
 msgstr "Русский"
 
@@ -673,21 +555,10 @@ msgstr "Сохранить по умолчанию"
 msgid "Save folder upload changes"
 msgstr "Сохранить изменения загрузки папки"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:274
-msgid "Save to file"
-msgstr ""
-
-#. js-lingui-explicit-id
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:222
-msgid "submission.card.schedule.select"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:178
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx:24
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:153
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:207
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:64
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:114
 msgid "Schedule"
 msgstr "Отложить"
 
@@ -696,15 +567,14 @@ msgctxt "schedule.modal-header"
 msgid "Schedule"
 msgstr "Отложить"
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx:24
+msgid "Schedule Many"
+msgstr "Отложить несколько"
+
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:148
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:550
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx:64
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx:57
 msgid "Search"
 msgstr "Поиск"
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:185
-msgid "Select a post to view details"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:69
 msgid "Select folder"
@@ -732,7 +602,7 @@ msgctxt "submission.file-size"
 msgid "Size"
 msgstr "Размер"
 
-#: apps/postybirb-ui/src/app/languages.tsx:11
+#: apps/postybirb-ui/src/app/languages.tsx:8
 msgid "Spanish"
 msgstr "Испанский"
 
@@ -752,14 +622,6 @@ msgstr "Спойлер"
 msgid "Startup Settings"
 msgstr "Настройки запуска"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:211
-msgid "Status"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:408
-msgid "Submission deleted"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:49
 msgid "Submission duplicated"
 msgstr "Пост дублирован"
@@ -769,49 +631,25 @@ msgstr "Пост дублирован"
 msgid "Submission queued"
 msgstr "Пост в очереди"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:386
-msgid "Submission restored"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx:157
-msgid "Submission Schedule"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:117
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:79
 msgid "Submission scheduled"
 msgstr "Пост отложен"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:215
-msgid "Submission Scheduling Disabled"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:217
-msgid "Submission Scheduling Enabled"
-msgstr ""
-
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:85
 msgid "Submission templates"
 msgstr "Шаблоны постов"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:182
-msgid "Submission Unscheduled"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:36
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:35
 msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} files each."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:114
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx:67
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:59
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:109
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:48
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:97
 msgid "Submissions"
 msgstr "Посты"
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:140
-msgid "Success"
-msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:138
 msgid "Tag"
@@ -835,7 +673,7 @@ msgstr "Группа тегов обновлена"
 msgid "Tag Groups"
 msgstr "Группы тегов"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:113
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:112
 msgid "Tag limit reached ({currentLength} / {maxLength})"
 msgstr ""
 
@@ -845,7 +683,7 @@ msgstr ""
 msgid "Tags"
 msgstr "Теги"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:136
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:134
 msgid "Tags longer than {maxLength} characters will be skipped"
 msgstr ""
 
@@ -874,12 +712,12 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:110
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:219
-#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:69
-#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:119
+#: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:53
+#: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:102
 msgid "Templates"
 msgstr "Шаблоны"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:77
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:76
 msgid "Text"
 msgstr ""
 
@@ -899,30 +737,28 @@ msgstr "Набросок (Маленькая картинка)"
 msgid "Title"
 msgstr "Название"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:145
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:143
 msgid "Title is too long and will be truncated"
 msgstr "Название слишком длинное и будет сокращено"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:159
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:157
 msgid "Title is too short"
 msgstr "Название слишком короткое"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:177
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:175
 msgid "Translation {id} not found"
 msgstr "Перевод {id} не найден"
 
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:243
+#: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:242
 msgid "Unable to display form"
 msgstr "Не удалось показать форму"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:145
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:101
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:346
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:97
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx:55
-#: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx:37
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:83
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:82
 msgid "Unknown"
 msgstr "Неизвестно"
 
@@ -930,26 +766,20 @@ msgstr "Неизвестно"
 msgid "Unknown submission"
 msgstr "Неизвестный пост"
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:310
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:356
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:93
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:50
 msgid "Unschedule"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx:127
-msgid "Unscheduled Submissions"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:46
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:45
 msgid "Unsupported file type {fileExtension}. Please provide fallback text."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:56
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:55
 msgid "Unsupported file type {mimeType}"
 msgstr "Неподдерживаемый тип файла {mimeType}"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:86
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:85
 msgid "Unsupported submission type: {fileTypeString}"
 msgstr ""
 
@@ -978,10 +808,6 @@ msgstr "Загрузить"
 msgid "Upload new thumbnail"
 msgstr "Загрузить новую миниатюру"
 
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:214
-msgid "URL"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
 msgstr "Кастомное описание"
@@ -990,7 +816,7 @@ msgstr "Кастомное описание"
 msgid "Use title"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:74
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:73
 msgid "Video"
 msgstr ""
 

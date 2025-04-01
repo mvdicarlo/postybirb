@@ -217,11 +217,7 @@ export function SubmissionViewCard(props: SubmissionViewCardProps) {
                     </List>
                   </Alert>
                 ) : null}
-                <Input.Wrapper
-                  label={
-                    <Trans id="submission.card.schedule.select">Schedule</Trans>
-                  }
-                >
+                <Input.Wrapper label={<Trans>Schedule</Trans>}>
                   <SubmissionScheduler
                     schedule={submission.schedule}
                     onChange={(schedule) => {
