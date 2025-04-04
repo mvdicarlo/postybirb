@@ -14,7 +14,7 @@ import {
   WebsiteOptionsDto,
 } from '@postybirb/types';
 import { debounce } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
 import websiteOptionsApi from '../../../api/website-options.api';
@@ -38,6 +38,14 @@ type InnerFormProps = {
   defaultOption: WebsiteOptionsDto;
   userSpecifiedModalVisible: boolean;
   userSpecifiedModalClosed: () => void;
+};
+
+type SubInnerFormProps = {
+  account: AccountId;
+  submission: SubmissionDto;
+  formFields: FormBuilderMetadata;
+  option: WebsiteOptionsDto;
+  defaultOption: WebsiteOptionsDto;
 };
 
 type FieldEntry = {
@@ -88,22 +96,8 @@ function ValidationMessages(props: {
   );
 }
 
-function InnerForm({
-  formFields,
-  option,
-  defaultOption,
-  account,
-  submission,
-  userSpecifiedModalVisible,
-  userSpecifiedModalClosed,
-}: InnerFormProps) {
-  const validations = submission.validations.find(
-    (v) => v.id === option.id,
-  ) ?? {
-    id: option.id,
-    errors: [],
-    warnings: [],
-  };
+function SubInnerForm(props: SubInnerFormProps) {
+  const { formFields, option, defaultOption, account, submission } = props;
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const save = useCallback(
@@ -123,10 +117,7 @@ function InnerForm({
       ...Object.entries(formFields).reduce(
         (acc, [key, field]) => ({
           ...acc,
-          [key]:
-            option.data[key as keyof IWebsiteFormFields] === undefined
-              ? field.defaultValue
-              : option.data[key as keyof IWebsiteFormFields],
+          [key]: field.value === undefined ? field.defaultValue : field.value,
         }),
         {},
       ),
@@ -135,19 +126,6 @@ function InnerForm({
       save(values);
     },
   });
-
-  const validationAlerts = [
-    <ValidationMessages
-      key="errors"
-      messages={validations.errors ?? []}
-      type="errors"
-    />,
-    <ValidationMessages
-      key="warnings"
-      messages={validations.warnings ?? []}
-      type="warnings"
-    />,
-  ];
 
   // split form into cols
   const cols: Record<string, FieldEntry[]> = {};
@@ -163,6 +141,74 @@ function InnerForm({
   });
 
   return (
+    <Flex gap="xs">
+      {Object.entries(cols).map(([col, fields]) => {
+        const grow = shouldGrow(fields);
+        return (
+          <Stack
+            gap="xs"
+            key={col}
+            style={{
+              flexGrow: grow ? '1' : '0',
+              flex: grow ? '1' : undefined,
+            }}
+          >
+            {fields
+              .sort((a, b) =>
+                typeof a.field.row === 'number' &&
+                typeof b.field.row === 'number'
+                  ? a.field.row - b.field.row
+                  : 0,
+              )
+              .map((entry) => (
+                <Field
+                  submission={submission}
+                  propKey={entry.key}
+                  defaultOption={defaultOption}
+                  field={entry.field as unknown as FieldAggregateType}
+                  form={form}
+                  key={entry.key}
+                  option={option as unknown as WebsiteOptionsDto<never>}
+                  validation={submission.validations ?? []}
+                />
+              ))}
+          </Stack>
+        );
+      })}
+    </Flex>
+  );
+}
+
+function InnerForm({
+  formFields,
+  option,
+  defaultOption,
+  account,
+  submission,
+  userSpecifiedModalVisible,
+  userSpecifiedModalClosed,
+}: InnerFormProps) {
+  const validations = submission.validations.find(
+    (v) => v.id === option.id,
+  ) ?? {
+    id: option.id,
+    errors: [],
+    warnings: [],
+  };
+
+  const validationAlerts = [
+    <ValidationMessages
+      key="errors"
+      messages={validations.errors ?? []}
+      type="errors"
+    />,
+    <ValidationMessages
+      key="warnings"
+      messages={validations.warnings ?? []}
+      type="warnings"
+    />,
+  ];
+  return (
     <Box className="postybirb__website-option-form" option-id={option.id}>
       <UserSpecifiedWebsiteOptionsSaveModal
         opened={userSpecifiedModalVisible}
@@ -170,44 +216,16 @@ function InnerForm({
         accountId={account}
         form={formFields}
         type={submission.type}
-        values={form.getValues()}
+        values={option.data as unknown as Record<string, unknown>}
       />
       {validationAlerts}
-      <Flex gap="xs">
-        {Object.entries(cols).map(([col, fields]) => {
-          const grow = shouldGrow(fields);
-          return (
-            <Stack
-              gap="xs"
-              key={col}
-              style={{
-                flexGrow: grow ? '1' : '0',
-                flex: grow ? '1' : undefined,
-              }}
-            >
-              {fields
-                .sort((a, b) =>
-                  typeof a.field.row === 'number' &&
-                  typeof b.field.row === 'number'
-                    ? a.field.row - b.field.row
-                    : 0,
-                )
-                .map((entry) => (
-                  <Field
-                    submission={submission}
-                    propKey={entry.key}
-                    defaultOption={defaultOption}
-                    field={entry.field as unknown as FieldAggregateType}
-                    form={form}
-                    key={entry.key}
-                    option={option as unknown as WebsiteOptionsDto<never>}
-                    validation={submission.validations ?? []}
-                  />
-                ))}
-            </Stack>
-          );
-        })}
-      </Flex>
+      <SubInnerForm
+        formFields={formFields}
+        option={option}
+        defaultOption={defaultOption}
+        account={account}
+        submission={submission}
+      />
     </Box>
   );
 }
@@ -220,17 +238,26 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     userSpecifiedModalVisible,
   } = props;
   const { accountId } = option;
-  const { isLoading: isLoadingFormFields, data: formFields } = useQuery(
-    `website-option-${option.id}`,
-    () =>
-      formGeneratorApi
-        .getForm({
-          accountId,
-          type: submission.type,
-          isMultiSubmission: submission.isMultiSubmission,
-        })
-        .then((res) => res.body),
+  const {
+    isLoading: isLoadingFormFields,
+    data: formFields,
+    refetch,
+  } = useQuery(`website-option-${option.id}`, () =>
+    formGeneratorApi
+      .getForm({
+        accountId,
+        optionId: option.id,
+        type: submission.type,
+        isMultiSubmission: submission.isMultiSubmission,
+      })
+      .then((res) => res.body),
   );
+
+  useEffect(() => {
+    refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [option.updatedAt]);
+
   const defaultOption = submission.getDefaultOptions();
 
   if (isLoadingFormFields) {
@@ -247,6 +274,7 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
 
   return (
     <InnerForm
+      key={option.id}
       formFields={formFields}
       option={option}
       defaultOption={defaultOption}

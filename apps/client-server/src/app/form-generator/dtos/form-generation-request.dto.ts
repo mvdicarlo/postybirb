@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AccountId,
+  EntityId,
   IFormGenerationRequestDto,
   SubmissionType,
 } from '@postybirb/types';
@@ -10,6 +11,10 @@ export class FormGenerationRequestDto implements IFormGenerationRequestDto {
   @ApiProperty()
   @IsString()
   accountId: AccountId;
+
+  @ApiProperty()
+  @IsString()
+  optionId: EntityId;
 
   @ApiProperty({ enum: SubmissionType })
   @IsEnum(SubmissionType)

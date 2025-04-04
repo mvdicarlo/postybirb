@@ -68,11 +68,14 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: 'furry', label: 'Furry' },
       { value: 'lo', label: 'Lo' },
     ],
-    multiple: true,
-    showWhen: (values: DynamicObject) =>
-      values.rating === SubmissionRating.MATURE ||
-      values.rating === SubmissionRating.ADULT ||
-      values.rating === SubmissionRating.EXTREME,
+    allowMultiple: true,
+    showWhen(record: PixivFileSubmission) {
+      return (
+        record.rating === SubmissionRating.MATURE ||
+        record.rating === SubmissionRating.ADULT ||
+        record.rating === SubmissionRating.EXTREME
+      );
+    },
   })
   matureContent: string[];
 
@@ -85,7 +88,7 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: 'antisocial', label: 'Depictions of criminal activity' },
       { value: 'religion', label: 'Religion' },
     ],
-    multiple: true,
+    allowMultiple: true,
   })
   containsContent: string[];
 }

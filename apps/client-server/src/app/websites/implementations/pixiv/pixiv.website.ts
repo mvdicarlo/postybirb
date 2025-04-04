@@ -157,6 +157,14 @@ export default class Pixiv
     }
   }
 
+  private postSpecial(
+    form: any,
+    headers: Record<string, string>,
+    files: string[],
+  ) {
+    return null;
+  }
+
   private getContentRating(rating: SubmissionRating) {
     switch (rating) {
       case SubmissionRating.ADULT:
