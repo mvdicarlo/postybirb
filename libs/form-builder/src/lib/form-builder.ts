@@ -32,20 +32,9 @@ export function formBuilder(
     });
   }
 
-  if (existingFormFields) {
-    Object.entries(existingFormFields).forEach(([k, value]) => {
-      if (value !== undefined) {
-        const field = metadata[k];
-        if (field) {
-          field.value = value;
-        }
-      }
-    });
-  }
-
   for (const value of Object.values(metadata)) {
-    if (value.showWhen) {
-      value.shouldShow = value.showWhen(existingFormFields, data);
+    if (value.shouldShow) {
+      value.hidden = !value.shouldShow(existingFormFields, data);
     }
   }
 

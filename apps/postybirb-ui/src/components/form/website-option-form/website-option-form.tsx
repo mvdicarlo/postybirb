@@ -1,27 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Trans } from '@lingui/macro';
-import { Alert, Box, Flex, Loader, Stack } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import type {
+import { Alert, Box, Flex, Stack } from '@mantine/core';
+import {
   FieldAggregateType,
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
 import {
   AccountId,
-  IWebsiteFormFields,
   ValidationMessage,
   ValidationResult,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { debounce } from 'lodash';
-import { useCallback, useEffect } from 'react';
-import { useQuery } from 'react-query';
-import formGeneratorApi from '../../../api/form-generator.api';
-import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { ValidationTranslation } from '../../translations/validation-translation';
 import { Field } from '../fields/field';
 import { UserSpecifiedWebsiteOptionsSaveModal } from '../user-specified-website-options-modal/user-specified-website-options-modal';
+import { FormFieldsProvider, useFormFields } from './use-form-fields';
 
 type WebsiteOptionFormProps = {
   option: WebsiteOptionsDto;
@@ -41,9 +34,7 @@ type InnerFormProps = {
 };
 
 type SubInnerFormProps = {
-  account: AccountId;
   submission: SubmissionDto;
-  formFields: FormBuilderMetadata;
   option: WebsiteOptionsDto;
   defaultOption: WebsiteOptionsDto;
 };
@@ -97,35 +88,8 @@ function ValidationMessages(props: {
 }
 
 function SubInnerForm(props: SubInnerFormProps) {
-  const { formFields, option, defaultOption, account, submission } = props;
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const save = useCallback(
-    debounce(
-      (values) =>
-        websiteOptionsApi.update(option.id, {
-          data: values as IWebsiteFormFields,
-        }),
-      800,
-    ),
-    [],
-  );
-
-  const form = useForm({
-    mode: 'uncontrolled',
-    initialValues: {
-      ...Object.entries(formFields).reduce(
-        (acc, [key, field]) => ({
-          ...acc,
-          [key]: field.value === undefined ? field.defaultValue : field.value,
-        }),
-        {},
-      ),
-    },
-    onValuesChange(values) {
-      save(values);
-    },
-  });
+  const { option, defaultOption, submission } = props;
+  const { formFields } = useFormFields();
 
   // split form into cols
   const cols: Record<string, FieldEntry[]> = {};
@@ -166,9 +130,8 @@ function SubInnerForm(props: SubInnerFormProps) {
                   propKey={entry.key}
                   defaultOption={defaultOption}
                   field={entry.field as unknown as FieldAggregateType}
-                  form={form}
                   key={entry.key}
-                  option={option as unknown as WebsiteOptionsDto<never>}
+                  option={option}
                   validation={submission.validations ?? []}
                 />
               ))}
@@ -220,10 +183,9 @@ function InnerForm({
       />
       {validationAlerts}
       <SubInnerForm
-        formFields={formFields}
+        key={option.id}
         option={option}
         defaultOption={defaultOption}
-        account={account}
         submission={submission}
       />
     </Box>
@@ -237,51 +199,21 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     onUserSpecifiedModalClosed,
     userSpecifiedModalVisible,
   } = props;
-  const { accountId } = option;
-  const {
-    isLoading: isLoadingFormFields,
-    data: formFields,
-    refetch,
-  } = useQuery(`website-option-${option.id}`, () =>
-    formGeneratorApi
-      .getForm({
-        accountId,
-        optionId: option.id,
-        type: submission.type,
-        isMultiSubmission: submission.isMultiSubmission,
-      })
-      .then((res) => res.body),
-  );
-
-  useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [option.updatedAt]);
 
   const defaultOption = submission.getDefaultOptions();
 
-  if (isLoadingFormFields) {
-    return <Loader />;
-  }
-
-  if (!formFields) {
-    return (
-      <Box option-id={option.id}>
-        <Trans>Unable to display form</Trans>
-      </Box>
-    );
-  }
-
   return (
-    <InnerForm
-      key={option.id}
-      formFields={formFields}
-      option={option}
-      defaultOption={defaultOption}
-      account={accountId}
-      submission={submission}
-      userSpecifiedModalVisible={userSpecifiedModalVisible}
-      userSpecifiedModalClosed={onUserSpecifiedModalClosed}
-    />
+    <FormFieldsProvider option={option} submission={submission}>
+      <InnerForm
+        key={option.id}
+        formFields={{}} // Form fields are now managed internally by the provider
+        option={option}
+        defaultOption={defaultOption}
+        account={option.accountId}
+        submission={submission}
+        userSpecifiedModalVisible={userSpecifiedModalVisible}
+        userSpecifiedModalClosed={onUserSpecifiedModalClosed}
+      />
+    </FormFieldsProvider>
   );
 }

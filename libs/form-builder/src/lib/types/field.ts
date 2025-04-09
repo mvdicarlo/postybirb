@@ -30,11 +30,6 @@ export type FieldType<
   defaultValue?: V;
 
   /**
-   * The value of the field.
-   */
-  value?: V;
-
-  /**
    * The field will be enabled when all listed props are defined.
    */
   enableWhenDefined?: Array<keyof T>;
@@ -44,9 +39,7 @@ export type FieldType<
    */
   enableWhenUndefined?: Array<keyof T>;
 
-  showWhen?(record: Partial<IWebsiteFormFields>, data: T): boolean;
-
-  shouldShow?: boolean;
+  shouldShow?(record: Partial<IWebsiteFormFields>, data: T): boolean;
 
   /**
    * Metadata for determining what type of field to generate.

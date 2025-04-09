@@ -3,6 +3,10 @@ import { ActionIcon, CopyButton, Tooltip, rem } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 
 export function FieldCopyButton({ value }: { value: string | undefined }) {
+  if (!value || typeof value !== 'string') {
+    // If the value is not a string, we don't want to show the copy button
+    return null;
+  }
   return (
     <CopyButton value={value?.trim() || ''} timeout={2000}>
       {({ copied, copy }) => (

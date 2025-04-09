@@ -48,7 +48,7 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'hasSexualContent',
     defaultValue: false,
-    showWhen: (values: DynamicObject) =>
+    shouldShow: (values: DynamicObject) =>
       values.rating === SubmissionRating.GENERAL,
   })
   sexual: boolean;
@@ -69,7 +69,7 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: 'lo', label: 'Lo' },
     ],
     allowMultiple: true,
-    showWhen(record: PixivFileSubmission) {
+    shouldShow(record: PixivFileSubmission) {
       return (
         record.rating === SubmissionRating.MATURE ||
         record.rating === SubmissionRating.ADULT ||

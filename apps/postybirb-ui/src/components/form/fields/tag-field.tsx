@@ -9,7 +9,13 @@ import {
   Text,
 } from '@mantine/core';
 import { TagFieldType } from '@postybirb/form-builder';
-import { Tag, TagConverterDto, TagGroupDto, TagValue } from '@postybirb/types';
+import {
+  DefaultTagValue,
+  Tag,
+  TagConverterDto,
+  TagGroupDto,
+  TagValue,
+} from '@postybirb/types';
 import { IconArrowRight } from '@tabler/icons-react';
 import { flatten, uniq } from 'lodash';
 import { useWebsites } from '../../../hooks/account/use-websites';
@@ -18,6 +24,7 @@ import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
+import { useFormFields } from '../website-option-form/use-form-fields';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
 
@@ -47,17 +54,22 @@ function getTagConversion(
 }
 
 export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
-  const { field, form, propKey, option } = props;
+  const { field, propKey, option } = props;
+  const { values, setFieldValue } = useFormFields();
   const { state: tagGroups } = useStore(TagGroupStore);
   const defaultOption = useDefaultOption<TagValue>(props);
   const validations = useValidations(props);
   const { state: tagConverters } = useStore(TagConverterStore);
   const { accounts } = useWebsites();
   const account = accounts.find((acc) => acc.id === option.accountId);
-  const overrideProps = form.getInputProps(`${propKey}.overrideDefault`);
-  const tagsProps = form.getInputProps(`${propKey}.tags`);
-  const tagValue = tagsProps.defaultValue as Tag[];
+
+  // Get field values from context
+  const fieldValue =
+    (values[propKey] as TagValue) || field.defaultValue || DefaultTagValue();
+  const overrideDefault = fieldValue.overrideDefault || false;
+  const tagValue = fieldValue.tags || [];
   const allTags = [...tagValue, ...(defaultOption?.tags || [])];
+
   const convertedTags = (
     account
       ? allTags.map((tag) => [
@@ -74,21 +86,21 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
   }));
 
   const updateTags = (tags: Tag[]) => {
-    if (defaultOption && !overrideProps.value) {
+    if (defaultOption && !overrideDefault) {
       const defaultTags = defaultOption.tags || [];
-
-      form.setFieldValue(
-        `${propKey}.tags`,
-        uniq(tags.filter((tag) => !defaultTags.includes(tag))),
-      );
+      setFieldValue(propKey, {
+        ...fieldValue,
+        tags: uniq(tags.filter((tag) => !defaultTags.includes(tag))),
+      });
     } else {
-      form.setFieldValue(`${propKey}.tags`, uniq(tags));
+      setFieldValue(propKey, {
+        ...fieldValue,
+        tags: uniq(tags),
+      });
     }
   };
 
-  const totalTags: number = overrideProps.defaultValue
-    ? tagValue.length
-    : allTags.length;
+  const totalTags: number = overrideDefault ? tagValue.length : allTags.length;
 
   return (
     <Box>
@@ -96,8 +108,13 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
         {option.isDefault ? null : (
           <Checkbox
             mb="4"
-            {...overrideProps}
-            defaultChecked={overrideProps.defaultValue || false}
+            checked={overrideDefault}
+            onChange={(e) => {
+              setFieldValue(propKey, {
+                ...fieldValue,
+                overrideDefault: e.target.checked,
+              });
+            }}
             label={
               <Trans context="override-default">Ignore default tags</Trans>
             }
@@ -128,7 +145,12 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           required={field.required}
           value={tagValue}
           data={[...tagGroupsOptions]}
-          onClear={() => form.setFieldValue(`${propKey}.tags`, [])}
+          onClear={() => {
+            setFieldValue(propKey, {
+              ...fieldValue,
+              tags: [],
+            });
+          }}
           description={
             field.maxTags ? `${totalTags ?? 0} / ${field.maxTags}` : undefined
           }
