@@ -65,7 +65,6 @@ export function PostybirbSpotlight() {
     const title =
       s.getDefaultOptions()?.data.title || _(msg`Unknown submission`);
 
-    // eslint-disable-next-line no-nested-ternary
     const leftSection = isFileType ? (
       src ? (
         <Avatar src={src} size={40} radius="sm" />

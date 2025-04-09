@@ -28,7 +28,6 @@ import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
 function DescriptionSettings() {
-  const { _ } = useLingui();
   const { settingsId, settings, reloadSettings } = useSettings();
 
   return (
@@ -178,7 +177,6 @@ function AppSettings() {
 }
 
 export function SettingsDrawer() {
-  const { _ } = useLingui();
   const [visible, toggle] = useDrawerToggle('settingsDrawerVisible');
   const [activeTab, setActiveTab] = useState<string | null>('app');
 
