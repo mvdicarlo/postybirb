@@ -1,7 +1,68 @@
-.mantine-Spotlight-actionsGroup {
-  margin-left: -8px;
+.spotlight-actions-group {
+  padding: 8px 0;
 }
 
+.spotlight-actions-group button {
+  border-radius: 6px;
+  padding: 4px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.spotlight-action {
+  margin: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease-in-out;
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Custom styling for the action content */
+.spotlight-action > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.spotlight-action .mantine-Badge-root {
+  margin-left: auto;
+}
+
+.spotlight-action .mantine-Text-root {
+  display: block;
+}
+
+.spotlight-action .mantine-Text-root + .mantine-Text-root {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--mantine-color-dimmed);
+}
+
+.mantine-Spotlight-searchInput {
+  font-size: 1rem;
+  padding: 12px;
+  border-bottom: 1px solid var(--mantine-color-gray-3);
+}
+
+.mantine-Spotlight-content {
+  padding: 8px;
+}
+
+/* Fix for items falling out of frame */
 .mantine-Spotlight-action {
-  margin-left: 2em;
+  margin-left: 0;
+}
+
+/* Ensure proper padding inside action groups */
+.mantine-Spotlight-actionsGroup {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.mantine-Spotlight-actionsList {
+  border-top: none;
 }
