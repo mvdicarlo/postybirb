@@ -15,6 +15,7 @@ import {
   WebsiteOptions,
   WebsitePostRecord,
 } from '../models';
+import { Notification } from '../models/notification.entity';
 
 export type DatabaseSchemaEntityMap = {
   AccountSchema: InstanceType<typeof Account>;
@@ -33,6 +34,7 @@ export type DatabaseSchemaEntityMap = {
   WebsiteDataSchema: InstanceType<typeof WebsiteData>;
   WebsiteOptionsSchema: InstanceType<typeof WebsiteOptions>;
   WebsitePostRecordSchema: InstanceType<typeof WebsitePostRecord>;
+  NotificationSchema: InstanceType<typeof Notification>;
 };
 
 export const DatabaseSchemaEntityMapConst: Record<
@@ -54,4 +56,5 @@ export const DatabaseSchemaEntityMapConst: Record<
   WebsiteDataSchema: WebsiteData,
   WebsiteOptionsSchema: WebsiteOptions,
   WebsitePostRecordSchema: WebsitePostRecord,
+  NotificationSchema: Notification,
 };

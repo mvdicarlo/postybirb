@@ -1,4 +1,5 @@
 export * from './events/account.events';
+export * from './events/notification.events';
 export * from './events/settings.events';
 export * from './events/submission-template.events';
 export * from './events/submission.events';
