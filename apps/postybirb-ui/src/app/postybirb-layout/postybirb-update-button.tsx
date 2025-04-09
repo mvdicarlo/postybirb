@@ -21,7 +21,7 @@ export function PostyBirbUpdateButton() {
   return (
     <>
       {update.updateProgress ? (
-        <Text color="teal" size="s">
+        <Text c="teal" size="s">
           {update.updateProgress}%
         </Text>
       ) : null}

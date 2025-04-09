@@ -94,9 +94,7 @@ export function LanguagePicker() {
                   isActive ? <IconCheck size={16} /> : <IconWorld size={16} />
                 }
                 rightSection={
-                  <Text className="postybirb-language-code">
-                    {value}
-                  </Text>
+                  <Text className="postybirb-language-code">{value}</Text>
                 }
                 onClick={() => {
                   setLocale(value);
