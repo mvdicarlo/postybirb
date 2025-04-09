@@ -11,7 +11,6 @@ import {
   Drawer,
   Fieldset,
   Group,
-  HoverCard,
   Loader,
   Paper,
   ScrollArea,
@@ -69,20 +68,11 @@ function WebsiteConverterInputs({
   disabled?: boolean;
 }) {
   const { _ } = useLingui();
-  const [expandedSites, setExpandedSites] = useState<Record<string, boolean>>(
-    {},
-  );
-  const [viewMode, setViewMode] = useState<'compact' | 'expanded' | 'table'>(
-    'table',
-  );
+  const [viewMode, setViewMode] = useState<'compact' | 'table'>('table');
   const sitesWithValues = useMemo(
     () => websites.filter((site) => value[site.id]?.trim().length > 0),
     [websites, value],
   );
-
-  const toggleSite = (siteId: string) => {
-    setExpandedSites((prev) => ({ ...prev, [siteId]: !prev[siteId] }));
-  };
 
   const handleChange = (siteId: string, newValue: string) => {
     onChange({
@@ -96,18 +86,6 @@ function WebsiteConverterInputs({
       ...value,
       [siteId]: newValue.trim(),
     });
-  };
-
-  const expandAll = () => {
-    const allExpanded = {} as Record<string, boolean>;
-    websites.forEach((site) => {
-      allExpanded[site.id] = true;
-    });
-    setExpandedSites(allExpanded);
-  };
-
-  const collapseAll = () => {
-    setExpandedSites({});
   };
 
   return (
@@ -150,24 +128,7 @@ function WebsiteConverterInputs({
             >
               <Trans>Compact</Trans>
             </Button>
-            <Button
-              variant={viewMode === 'expanded' ? 'filled' : 'default'}
-              size="compact-xs"
-              onClick={() => setViewMode('expanded')}
-            >
-              <Trans>Expanded</Trans>
-            </Button>
           </Button.Group>
-          {viewMode === 'expanded' && (
-            <Button.Group>
-              <Button size="compact-xs" onClick={expandAll}>
-                <Trans>Expand All</Trans>
-              </Button>
-              <Button size="compact-xs" onClick={collapseAll}>
-                <Trans>Collapse All</Trans>
-              </Button>
-            </Button.Group>
-          )}
         </Group>
       </Group>
 
@@ -254,7 +215,7 @@ function WebsiteConverterInputs({
                 <TextInput
                   size="xs"
                   label={
-                    <Group spacing={5}>
+                    <Group>
                       <Text size="sm">{website.displayName}</Text>
                       {value[website.id]?.trim().length > 0 && (
                         <Badge size="xs" variant="light" color="green">
@@ -277,80 +238,6 @@ function WebsiteConverterInputs({
             ))}
           </Group>
         </Box>
-      )}
-
-      {viewMode === 'expanded' && (
-        <ScrollArea h="calc(100vh - 440px)" offsetScrollbars>
-          <Stack gap="xs">
-            {websites.map((website) => (
-              <Paper
-                key={website.id}
-                p="xs"
-                withBorder
-                shadow={expandedSites[website.id] ? 'xs' : undefined}
-                radius="md"
-              >
-                <Group
-                  justify="space-between"
-                  mb={expandedSites[website.id] ? 'xs' : 0}
-                >
-                  <Group>
-                    <Text fw={500}>{website.displayName}</Text>
-                    {value[website.id]?.trim().length > 0 && (
-                      <HoverCard
-                        shadow="md"
-                        position="right"
-                        withArrow
-                        openDelay={300}
-                        closeDelay={200}
-                      >
-                        <HoverCard.Target>
-                          <Badge size="xs" variant="light" color="green">
-                            <Trans>Set</Trans>
-                          </Badge>
-                        </HoverCard.Target>
-                        <HoverCard.Dropdown>
-                          <Text size="sm">
-                            <Trans>Converts to:</Trans>{' '}
-                            <Text span fw={500}>
-                              {value[website.id]}
-                            </Text>
-                          </Text>
-                        </HoverCard.Dropdown>
-                      </HoverCard>
-                    )}
-                  </Group>
-                  <ActionIcon
-                    variant="subtle"
-                    onClick={() => toggleSite(website.id)}
-                    disabled={disabled}
-                  >
-                    {expandedSites[website.id] ? (
-                      <IconChevronUp size={16} />
-                    ) : (
-                      <IconChevronDown size={16} />
-                    )}
-                  </ActionIcon>
-                </Group>
-                <Collapse in={expandedSites[website.id]}>
-                  <TextInput
-                    value={value[website.id] ?? ''}
-                    placeholder={_(
-                      msg`Enter conversion for ${website.displayName}`,
-                    )}
-                    onChange={(event) =>
-                      handleChange(website.id, event.currentTarget.value)
-                    }
-                    onBlur={(event) =>
-                      handleBlur(website.id, event.currentTarget.value)
-                    }
-                    disabled={disabled}
-                  />
-                </Collapse>
-              </Paper>
-            ))}
-          </Stack>
-        </ScrollArea>
       )}
     </Box>
   );
