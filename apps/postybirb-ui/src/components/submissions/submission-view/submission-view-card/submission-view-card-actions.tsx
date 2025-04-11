@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { Trans } from '@lingui/macro';
 import { Button, Group } from '@mantine/core';
 import { notifications } from '@mantine/notifications';

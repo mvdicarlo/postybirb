@@ -1,4 +1,6 @@
-import { UnstyledButton, useMantineColorScheme } from '@mantine/core';
+import { msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
+import { ActionIcon, Tooltip, useMantineColorScheme } from '@mantine/core';
 import {
   IconMoon,
   IconMoonFilled,
@@ -6,31 +8,39 @@ import {
   IconSunFilled,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import './theme-picker.css';
 
 export function ThemePicker() {
   const { colorScheme, setColorScheme } = useMantineColorScheme();
   const [hovered, setHovered] = useState(false);
+  const { _ } = useLingui();
 
-  const icon =
-    colorScheme === 'dark' ? <IconMoon height={30} /> : <IconSun height={30} />;
-  const hoverIcon =
-    colorScheme === 'dark' ? (
-      <IconMoonFilled height={30} />
-    ) : (
-      <IconSunFilled height={30} />
-    );
-  const swapTheme = () =>
-    setColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
+  const isDark = colorScheme === 'dark';
+  const icon = isDark ? <IconMoon size={22} /> : <IconSun size={22} />;
+  const hoverIcon = isDark ? <IconMoonFilled size={22} /> : <IconSunFilled size={22} />;
+  const tooltipLabel = isDark 
+    ? _(msg`Switch to light mode`) 
+    : _(msg`Switch to dark mode`);
+  
+  const swapTheme = () => setColorScheme(isDark ? 'light' : 'dark');
 
   return (
-    <div>
-      <UnstyledButton
+    <Tooltip label={tooltipLabel} position="right" withArrow>
+      <ActionIcon
         onClick={swapTheme}
         onMouseOver={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        variant="transparent"
+        radius="md"
+        className="theme-picker-button"
+        size="lg"
+        aria-label={tooltipLabel}
+        c="inherit"
       >
-        {hovered ? hoverIcon : icon}
-      </UnstyledButton>
-    </div>
+        <div className="theme-icon-container">
+          {hovered ? hoverIcon : icon}
+        </div>
+      </ActionIcon>
+    </Tooltip>
   );
 }
