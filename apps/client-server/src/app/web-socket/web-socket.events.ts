@@ -1,4 +1,5 @@
 import { AccountEventTypes } from '../account/account.events';
+import { NotificationEventTypes } from '../notifications/notification.events';
 import { SettingsEventTypes } from '../settings/settings.events';
 import { SubmissionEventTypes } from '../submission/submission.events';
 import { TagConverterEventTypes } from '../tag-converters/tag-converter.events';
@@ -11,4 +12,5 @@ export type WebSocketEvents =
   | SubmissionEventTypes
   | TagGroupEventTypes
   | TagConverterEventTypes
-  | WebsiteEventTypes;
+  | WebsiteEventTypes
+  | NotificationEventTypes;

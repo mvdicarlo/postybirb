@@ -10,6 +10,7 @@ import { DirectoryWatchersModule } from './directory-watchers/directory-watchers
 import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
 import { SettingsModule } from './settings/settings.module';
@@ -47,6 +48,7 @@ import { WebsitesModule } from './websites/websites.module';
     PostParsersModule,
     ValidationModule,
     FileConverterModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

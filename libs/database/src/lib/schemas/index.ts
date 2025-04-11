@@ -1,6 +1,7 @@
 export * from './account.schema';
 export * from './directory-watcher.schema';
 export * from './file-buffer.schema';
+export * from './notification.schema';
 export * from './post-queue-record.schema';
 export * from './post-record.schema';
 export * from './settings.schema';
