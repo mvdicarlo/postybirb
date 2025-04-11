@@ -13,6 +13,7 @@ import { spotlight } from '@mantine/spotlight';
 import {
   IconArrowBarLeft,
   IconArrowBarRight,
+  IconBell,
   IconFile,
   IconHome,
   IconMessage,
@@ -33,11 +34,13 @@ import {
   FileSubmissionsKeybinding,
   HomeKeybinding,
   MessageSubmissionsKeybinding,
+  NotificationsKeybinding,
   SettingsKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
+import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
@@ -110,6 +113,14 @@ const navigationTargets: (SideNavLinkProps & {
     label: <Trans>Tag Converters</Trans>,
     globalStateKey: 'tagConvertersDrawerVisible',
     kbd: TagConvertersKeybinding,
+  },
+  {
+    type: 'drawer',
+    key: 'notifications',
+    globalStateKey: 'notificationsDrawerVisible',
+    icon: <IconBell />,
+    label: <Trans>Notifications</Trans>,
+    kbd: NotificationsKeybinding,
   },
   {
     type: 'drawer',
@@ -206,6 +217,7 @@ export function PostyBirbLayout() {
           <SettingsDrawer />
           <TagGroupDrawer />
           <TagConverterDrawer />
+          <NotificationsDrawer />
           <Box
             className={`postybirb__content ${classes.contentContainer}`}
             px="md"

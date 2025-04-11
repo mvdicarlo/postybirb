@@ -1,6 +1,6 @@
+import { EntityId } from '@postybirb/types';
 import { Observable, Subject } from 'rxjs';
 import { Constructor } from 'type-fest';
-import { EntityId } from '@postybirb/types';
 import AppSocket from '../transports/websocket';
 
 type IdBasedRecord = {
@@ -25,7 +25,7 @@ export default class StoreManager<T extends IdBasedRecord> {
   public map = new Map<EntityId, T>();
 
   constructor(
-    websocketDomain: string,
+    private readonly websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>,
     private readonly ModelConstructor?: Constructor<T>,
     private readonly filterFn?: (data: T) => boolean,

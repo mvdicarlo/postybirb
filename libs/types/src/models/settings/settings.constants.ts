@@ -8,5 +8,12 @@ export class SettingsConstants {
     language: 'en',
     allowAd: true,
     queuePaused: false,
+    desktopNotifications: {
+      enabled: true,
+      showOnPostSuccess: true,
+      showOnPostError: true,
+      showOnFileWatcherError: true,
+      showOnFileWatcherSuccess: true,
+    },
   };
 }
