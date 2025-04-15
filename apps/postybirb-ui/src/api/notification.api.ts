@@ -11,7 +11,7 @@ class NotificationApi extends BaseApi<
   IUpdateNotificationDto
 > {
   constructor() {
-    super('notification');
+    super('notifications');
   }
 }
 

@@ -14,61 +14,76 @@ import {
   Group,
   Input,
   Loader,
-  Menu,
   Popover,
   ScrollArea,
   SegmentedControl,
   Stack,
   Text,
+  Tooltip,
 } from '@mantine/core';
 import { INotification } from '@postybirb/types';
 import {
+  IconAlertTriangle,
   IconBell,
   IconBellOff,
   IconCheck,
-  IconDotsVertical,
+  IconCircleCheck,
+  IconExclamationCircle,
   IconSearch,
   IconTrash,
-  IconX,
 } from '@tabler/icons-react';
+import moment from 'moment/min/moment-with-locales';
 import { useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
-import { DeleteActionPopover } from '../../../components/shared/delete-action-popover/delete-action-popover';
 import { NotificationStore } from '../../../stores/notification.store';
 import { useStore } from '../../../stores/use-store';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
+const getNotificationColor = (type: string): string => {
+  switch (type) {
+    case 'info':
+      return 'blue';
+    case 'success':
+      return 'green';
+    case 'warning':
+      return 'yellow';
+    case 'error':
+      return 'red';
+    default:
+      return 'gray';
+  }
+};
+
+const getNotificationIcon = (type: string) => {
+  switch (type) {
+    case 'success':
+      return <IconCircleCheck size={16} />;
+    case 'error':
+      return <IconExclamationCircle size={16} />;
+    case 'warning':
+      return <IconAlertTriangle size={16} />;
+    case 'info':
+    default:
+      return <IconBell size={16} />;
+  }
+};
+
+const getNotificationType = (type: string) => {
+  switch (type) {
+    case 'success':
+      return <Trans>Success</Trans>;
+    case 'error':
+      return <Trans>Error</Trans>;
+    case 'warning':
+      return <Trans>Warning</Trans>;
+    case 'info':
+    default:
+      return <Trans>Info</Trans>;
+  }
+};
+
 function NotificationCard({ notification }: { notification: INotification }) {
-  const getNotificationColor = (type: string): string => {
-    switch (type) {
-      case 'info':
-        return 'blue';
-      case 'success':
-        return 'green';
-      case 'warning':
-        return 'yellow';
-      case 'error':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case 'success':
-        return <IconCheck size={16} />;
-      case 'error':
-        return <IconX size={16} />;
-      case 'warning':
-        return <IconBell size={16} />;
-      case 'info':
-      default:
-        return <IconBell size={16} />;
-    }
-  };
-
   const toggleReadStatus = () => {
     notificationApi
       .update(notification.id, {
@@ -86,19 +101,13 @@ function NotificationCard({ notification }: { notification: INotification }) {
     });
   };
 
-  const formattedDate = new Date(notification.createdAt).toLocaleString();
+  const formattedDate = moment(notification.createdAt).fromNow();
   const color = getNotificationColor(notification.type);
 
   // Generate styles for card coloring
   const cardStyles = {
     root: {
-      borderLeft: `4px solid var(--mantine-color-${color}-6)`,
-      backgroundColor: `var(--mantine-color-${color}-0)`,
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      '&:hover': {
-        transform: 'translateY(-2px)',
-        boxShadow: 'var(--mantine-shadow-md)',
-      },
+      borderLeft: `4px solid var(--mantine-color-${color}-8)`,
     },
   };
 
@@ -111,11 +120,10 @@ function NotificationCard({ notification }: { notification: INotification }) {
               color={color}
               leftSection={getNotificationIcon(notification.type)}
             >
-              {notification.type.charAt(0).toUpperCase() +
-                notification.type.slice(1)}
+              {getNotificationType(notification.type)}
             </Badge>
             {!notification.isRead && (
-              <Badge variant="dot" color={color}>
+              <Badge variant="dot" color="blue">
                 <Trans>New</Trans>
               </Badge>
             )}
@@ -123,34 +131,48 @@ function NotificationCard({ notification }: { notification: INotification }) {
           <Text fw={500} mb="xs">
             {notification.title}
           </Text>
-          <Text size="sm" c="dimmed" lineClamp={3}>
+          <Text size="sm" lineClamp={3}>
             {notification.message}
           </Text>
-          <Text size="xs" c="dimmed" mt="xs">
+          <Text
+            size="xs"
+            c="dimmed"
+            mt="xs"
+            title={new Date(notification.createdAt).toLocaleString()}
+          >
             {formattedDate}
           </Text>
         </Box>
-        <Menu position="bottom-end" shadow="md" withinPortal>
-          <Menu.Target>
-            <ActionIcon variant="subtle">
-              <IconDotsVertical size={16} />
-            </ActionIcon>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <Menu.Item
-              onClick={toggleReadStatus}
-              leftSection={<IconCheck size={16} />}
-            >
-              {notification.isRead ? (
+        <Group gap="xs">
+          <Tooltip
+            label={
+              notification.isRead ? (
                 <Trans>Mark as Unread</Trans>
               ) : (
                 <Trans>Mark as Read</Trans>
-              )}
-            </Menu.Item>
-            <Menu.Divider />
-            <DeleteActionPopover onDelete={deleteNotification} />
-          </Menu.Dropdown>
-        </Menu>
+              )
+            }
+            position="top"
+            withArrow
+          >
+            <ActionIcon
+              color={notification.isRead ? 'blue' : 'green'}
+              variant="light"
+              onClick={toggleReadStatus}
+            >
+              <IconCheck size={16} />
+            </ActionIcon>
+          </Tooltip>
+          <Tooltip label={<Trans>Delete</Trans>} position="top" withArrow>
+            <ActionIcon
+              color="red"
+              variant="light"
+              onClick={deleteNotification}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
       </Flex>
     </Card>
   );

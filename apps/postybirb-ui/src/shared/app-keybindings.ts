@@ -9,3 +9,4 @@ export const NotificationsKeybinding = 'Alt+N';
 export const FileSubmissionsKeybinding = 'Alt+F';
 export const UndoKeybinding = 'Control+Z';
 export const RedoKeybinding = 'Control+Y';
+export const SpotlightKeybinding = 'Control+K';

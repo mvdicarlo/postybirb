@@ -5,6 +5,7 @@ import {
   Box,
   Divider,
   Group,
+  Indicator,
   ScrollArea,
   useMantineColorScheme,
 } from '@mantine/core';
@@ -34,11 +35,13 @@ import {
   FileSubmissionsKeybinding,
   HomeKeybinding,
   MessageSubmissionsKeybinding,
-  NotificationsKeybinding,
   SettingsKeybinding,
+  SpotlightKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
+import { NotificationStore } from '../../stores/notification.store';
+import { useStore } from '../../stores/use-store';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
@@ -116,14 +119,6 @@ const navigationTargets: (SideNavLinkProps & {
   },
   {
     type: 'drawer',
-    key: 'notifications',
-    globalStateKey: 'notificationsDrawerVisible',
-    icon: <IconBell />,
-    label: <Trans>Notifications</Trans>,
-    kbd: NotificationsKeybinding,
-  },
-  {
-    type: 'drawer',
     key: 'settings',
     globalStateKey: 'settingsDrawerVisible',
     icon: <IconSettings />,
@@ -135,6 +130,7 @@ const navigationTargets: (SideNavLinkProps & {
 export function PostyBirbLayout() {
   const [sideNavToggled, { toggle: toggleSideNav }] = useDisclosure(true);
   const { colorScheme } = useMantineColorScheme();
+  const { state: notifications } = useStore(NotificationStore);
   const isDark = colorScheme === 'dark';
 
   return (
@@ -170,7 +166,28 @@ export function PostyBirbLayout() {
               type="custom"
               onClick={() => spotlight.toggle()}
               icon={<IconSearch />}
-              kbd="Ctrl+K"
+              kbd={SpotlightKeybinding}
+              collapsed={sideNavToggled}
+            />
+            <SideNavLink
+              key="notifications"
+              label={<Trans>Notifications</Trans>}
+              type="drawer"
+              globalStateKey="notificationsDrawerVisible"
+              icon={
+                <>
+                  <IconBell />
+                  {notifications.filter((n) => !n.isRead).length ? (
+                    <Indicator
+                      inline
+                      color="red"
+                      size={6}
+                      style={{ marginBottom: '1rem' }}
+                    />
+                  ) : null}
+                </>
+              }
+              kbd="Alt+N"
               collapsed={sideNavToggled}
             />
             {navigationTargets.map((target) => {

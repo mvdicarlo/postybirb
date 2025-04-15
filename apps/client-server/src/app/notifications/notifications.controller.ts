@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -26,7 +35,7 @@ export class NotificationsController {
   }
 
   @Patch(':id')
-  @ApiOkResponse({ description: 'Notification updated.', type: Boolean })
+  @ApiOkResponse({ description: 'Notification updated.' })
   @ApiNotFoundResponse({ description: 'Notification not found.' })
   update(@Param('id') id: EntityId, @Body() updateDto: UpdateNotificationDto) {
     return this.service.update(id, updateDto).then((entity) => entity.toDTO());
@@ -38,5 +47,16 @@ export class NotificationsController {
     return this.service
       .findAll()
       .then((records) => records.map((record) => record.toDTO()));
+  }
+
+  @Delete()
+  @ApiOkResponse({ description: 'Notification deleted.' })
+  @ApiNotFoundResponse({ description: 'Notification not found.' })
+  async remove(@Query('ids') ids: EntityId | EntityId[]) {
+    return Promise.all(
+      (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id)),
+    ).then(() => ({
+      success: true,
+    }));
   }
 }
