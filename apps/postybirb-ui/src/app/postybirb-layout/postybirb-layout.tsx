@@ -5,6 +5,7 @@ import {
   Box,
   Divider,
   Group,
+  Indicator,
   ScrollArea,
   useMantineColorScheme,
 } from '@mantine/core';
@@ -13,6 +14,7 @@ import { spotlight } from '@mantine/spotlight';
 import {
   IconArrowBarLeft,
   IconArrowBarRight,
+  IconBell,
   IconFile,
   IconHome,
   IconMessage,
@@ -34,10 +36,14 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
+  SpotlightKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
+import { NotificationStore } from '../../stores/notification.store';
+import { useStore } from '../../stores/use-store';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
+import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
@@ -124,6 +130,7 @@ const navigationTargets: (SideNavLinkProps & {
 export function PostyBirbLayout() {
   const [sideNavToggled, { toggle: toggleSideNav }] = useDisclosure(true);
   const { colorScheme } = useMantineColorScheme();
+  const { state: notifications } = useStore(NotificationStore);
   const isDark = colorScheme === 'dark';
 
   return (
@@ -159,7 +166,28 @@ export function PostyBirbLayout() {
               type="custom"
               onClick={() => spotlight.toggle()}
               icon={<IconSearch />}
-              kbd="Ctrl+K"
+              kbd={SpotlightKeybinding}
+              collapsed={sideNavToggled}
+            />
+            <SideNavLink
+              key="notifications"
+              label={<Trans>Notifications</Trans>}
+              type="drawer"
+              globalStateKey="notificationsDrawerVisible"
+              icon={
+                <>
+                  <IconBell />
+                  {notifications.filter((n) => !n.isRead).length ? (
+                    <Indicator
+                      inline
+                      color="red"
+                      size={6}
+                      style={{ marginBottom: '1rem' }}
+                    />
+                  ) : null}
+                </>
+              }
+              kbd="Alt+N"
               collapsed={sideNavToggled}
             />
             {navigationTargets.map((target) => {
@@ -206,6 +234,7 @@ export function PostyBirbLayout() {
           <SettingsDrawer />
           <TagGroupDrawer />
           <TagConverterDrawer />
+          <NotificationsDrawer />
           <Box
             className={`postybirb__content ${classes.contentContainer}`}
             px="md"

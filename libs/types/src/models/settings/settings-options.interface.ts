@@ -27,4 +27,18 @@ export interface ISettingsOptions {
    * @type {boolean}
    */
   queuePaused: boolean;
+
+  /**
+   * Desktop notification settings.
+   * @type {DesktopNotificationSettings}
+   */
+  desktopNotifications: DesktopNotificationSettings;
 }
+
+export type DesktopNotificationSettings = {
+  enabled: boolean;
+  showOnPostSuccess: boolean;
+  showOnPostError: boolean;
+  showOnFileWatcherError: boolean;
+  showOnFileWatcherSuccess: boolean;
+};

@@ -15,6 +15,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import {
+  IconBell,
   IconDeviceDesktop,
   IconFileDescription,
   IconFolder,
@@ -27,8 +28,105 @@ import { useSettings } from '../../../stores/use-settings';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
 
+function NotificationsSettings() {
+  const { settingsId, settings } = useSettings();
+
+  const updateDesktopNotifications = (key: string, value: boolean) => {
+    const updatedDesktopNotifications = {
+      ...settings?.desktopNotifications,
+      [key]: value,
+    };
+
+    settingsApi.update(settingsId, {
+      settings: {
+        ...settings,
+        desktopNotifications: updatedDesktopNotifications,
+      },
+    });
+  };
+
+  return (
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Card.Section withBorder inheritPadding py="xs">
+        <Group>
+          <IconBell size={20} />
+          <Text fw={500} size="lg">
+            <Trans>Desktop Notifications</Trans>
+          </Text>
+        </Group>
+      </Card.Section>
+
+      <Stack mt="md" gap="md">
+        <Switch
+          label={<Trans>Enable desktop notifications</Trans>}
+          checked={settings?.desktopNotifications?.enabled ?? false}
+          onChange={(event) => {
+            updateDesktopNotifications('enabled', event.currentTarget.checked);
+          }}
+        />
+
+        {settings?.desktopNotifications?.enabled && (
+          <>
+            <Switch
+              ml="md"
+              label={<Trans>Show notification on post success</Trans>}
+              checked={
+                settings?.desktopNotifications?.showOnPostSuccess ?? false
+              }
+              onChange={(event) => {
+                updateDesktopNotifications(
+                  'showOnPostSuccess',
+                  event.currentTarget.checked,
+                );
+              }}
+            />
+            <Switch
+              ml="md"
+              label={<Trans>Show notification on post error</Trans>}
+              checked={settings?.desktopNotifications?.showOnPostError ?? true}
+              onChange={(event) => {
+                updateDesktopNotifications(
+                  'showOnPostError',
+                  event.currentTarget.checked,
+                );
+              }}
+            />
+            <Switch
+              ml="md"
+              label={<Trans>Show notification on file watcher success</Trans>}
+              checked={
+                settings?.desktopNotifications?.showOnFileWatcherSuccess ??
+                false
+              }
+              onChange={(event) => {
+                updateDesktopNotifications(
+                  'showOnFileWatcherSuccess',
+                  event.currentTarget.checked,
+                );
+              }}
+            />
+            <Switch
+              ml="md"
+              label={<Trans>Show notification on file watcher error</Trans>}
+              checked={
+                settings?.desktopNotifications?.showOnFileWatcherError ?? true
+              }
+              onChange={(event) => {
+                updateDesktopNotifications(
+                  'showOnFileWatcherError',
+                  event.currentTarget.checked,
+                );
+              }}
+            />
+          </>
+        )}
+      </Stack>
+    </Card>
+  );
+}
+
 function DescriptionSettings() {
-  const { settingsId, settings, reloadSettings } = useSettings();
+  const { settingsId, settings } = useSettings();
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -54,14 +152,12 @@ function DescriptionSettings() {
           }
           checked={settings?.allowAd ?? true}
           onChange={(event) => {
-            settingsApi
-              .update(settingsId, {
-                settings: {
-                  ...settings,
-                  allowAd: event.currentTarget.checked,
-                },
-              })
-              .finally(reloadSettings);
+            settingsApi.update(settingsId, {
+              settings: {
+                ...settings,
+                allowAd: event.currentTarget.checked,
+              },
+            });
           }}
         />
       </Stack>
@@ -240,12 +336,20 @@ export function SettingsDrawer() {
               >
                 <Trans>Description</Trans>
               </Tabs.Tab>
+              <Tabs.Tab
+                value="notifications"
+                leftSection={<IconBell size={16} />}
+                fw={activeTab === 'notifications' ? 'bold' : 'normal'}
+              >
+                <Trans>Notifications</Trans>
+              </Tabs.Tab>
             </Tabs.List>
 
             <ScrollArea h="100%" offsetScrollbars>
               <Box>
                 {activeTab === 'app' && <AppSettings />}
                 {activeTab === 'description' && <DescriptionSettings />}
+                {activeTab === 'notifications' && <NotificationsSettings />}
               </Box>
             </ScrollArea>
           </Group>
