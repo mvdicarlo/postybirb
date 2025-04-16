@@ -1,6 +1,6 @@
+import { EntityId } from '@postybirb/types';
 import { Observable, Subject } from 'rxjs';
 import { Constructor } from 'type-fest';
-import { EntityId } from '@postybirb/types';
 import AppSocket from '../transports/websocket';
 
 type IdBasedRecord = {
@@ -25,10 +25,11 @@ export default class StoreManager<T extends IdBasedRecord> {
   public map = new Map<EntityId, T>();
 
   constructor(
-    websocketDomain: string,
+    private readonly websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>,
     private readonly ModelConstructor?: Constructor<T>,
     private readonly filterFn?: (data: T) => boolean,
+    private readonly onEachMessageFn?: (data: T) => void,
   ) {
     this.data = [];
     this.subject = new Subject<T[]>();
@@ -47,6 +48,9 @@ export default class StoreManager<T extends IdBasedRecord> {
     let m = messages ?? [];
     if (this.filterFn) {
       m = m.filter(this.filterFn);
+    }
+    if (this.onEachMessageFn) {
+      m.forEach(this.onEachMessageFn);
     }
     this.data = m;
     this.map.clear();

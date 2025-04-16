@@ -12,3 +12,172 @@
   min-height: 100vh;
   overflow-y: auto;
 }
+
+.navbar {
+  border-right: 1px solid var(--mantine-color-gray-3);
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  /* Force hardware acceleration to prevent jitter */
+  transform: translateZ(0);
+  will-change: width;
+}
+
+.darkAppShell .navbar {
+  border-right-color: var(--mantine-color-dark-4);
+}
+
+.navbarHeader {
+  padding: 12px 8px;
+}
+
+.navbarScroll {
+  flex: 1;
+  margin-top: 10px;
+  /* Prevent scroll jank */
+  overflow-anchor: none;
+}
+
+.navbarFooter {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid var(--mantine-color-gray-2);
+}
+
+.darkAppShell .navbarFooter {
+  border-top-color: var(--mantine-color-dark-4);
+}
+
+.logoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+.logoImage {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.logoImage:hover {
+  transform: scale(1.1);
+}
+
+.logoText {
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.logoWrapper {
+  text-align: center;
+  padding: 5px 0;
+}
+
+.burgerButton {
+  margin: 0 auto;
+}
+
+.postybirb__sidenav a {
+  margin: 4px 0;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  /* Remove any properties that might cause layout shift */
+  padding: 8px;
+}
+
+.postybirb__sidenav a:hover {
+  /* Don't modify layout properties on hover */
+  background-color: var(--mantine-color-gray-1);
+}
+
+.darkAppShell .postybirb__sidenav a:hover {
+  background-color: var(--mantine-color-dark-6);
+}
+
+.contentContainer {
+  animation: fadeIn 0.3s ease;
+  padding-top: 8px;
+}
+
+.toggleButtonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  width: 100%;
+}
+
+.toggleIcon {
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  padding: 2px;
+  width: 24px;
+  height: 24px;
+}
+
+.toggleIcon:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.utilityFooter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+  width: 100%;
+}
+
+.utilitiesGroupExpanded {
+  display: none;
+}
+
+.mainContent {
+  background-color: var(--mantine-color-gray-0);
+  transition: background-color 0.3s ease;
+}
+
+.darkAppShell .mainContent {
+  background-color: var(--mantine-color-dark-8);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbarHeader {
+    padding: 8px 4px;
+  }
+
+  .utilityFooter {
+    display: flex;
+  }
+
+  .utilitiesGroup {
+    display: none;
+  }
+}
+
+.toggleButtonContainer:hover,
+.logoContainer:hover,
+.navbar *:hover {
+  /* Force hardware acceleration */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

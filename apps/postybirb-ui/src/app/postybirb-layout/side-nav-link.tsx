@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { tinykeys } from 'tinykeys';
 import { DrawerGlobalState } from './drawers/drawer-global-state';
 import { useDrawerToggle } from './drawers/use-drawer-toggle';
+import './side-nav-link.css';
 
 interface SideNavLinkType {
   icon: JSX.Element;
@@ -73,7 +74,7 @@ function BaseNavLink(
   );
 
   const kbdEl = kbd ? (
-    <Kbd style={{ verticalAlign: 'middle' }} ml="sm" size="xs">
+    <Kbd className="nav-link-kbd" size="xs">
       {kbd}
     </Kbd>
   ) : null;
@@ -84,9 +85,9 @@ function BaseNavLink(
       position="right"
       disabled={!collapsed}
       label={
-        <span>
+        <span className="nav-link-tooltip">
           {label}
-          {kbdEl}
+          {kbdEl && <span className="nav-link-tooltip-kbd">{kbd}</span>}
         </span>
       }
     >
@@ -96,15 +97,16 @@ function BaseNavLink(
         leftSection={collapsed ? null : icon}
         label={
           collapsed ? (
-            icon
+            <span className="nav-link-icon-only">{icon}</span>
           ) : (
-            <span>
-              {label}
+            <span className="nav-link-content">
+              <span className="nav-link-label">{label}</span>
               {kbdEl}
             </span>
           )
         }
         onClick={onClickCapture}
+        className={`postybirb-nav-link ${active ? 'active' : ''} ${collapsed ? 'collapsed' : ''}`}
       />
     </Tooltip>
   );

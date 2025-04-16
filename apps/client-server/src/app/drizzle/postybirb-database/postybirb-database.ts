@@ -54,6 +54,7 @@ export class PostyBirbDatabase<
     WebsiteDataSchema: [],
     WebsiteOptionsSchema: [],
     WebsitePostRecordSchema: [],
+    NotificationSchema: [],
   };
 
   constructor(

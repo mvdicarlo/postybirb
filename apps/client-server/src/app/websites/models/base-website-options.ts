@@ -126,7 +126,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
       )
         .map((tag) =>
           tagsField.spaceReplacer
-            ? tag.replaceAll(' ', tagsField.spaceReplacer)
+            ? tag.replace(/\s/g, tagsField.spaceReplacer)
             : tag,
         )
         .map(this.processTag)

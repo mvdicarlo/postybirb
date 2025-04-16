@@ -1,9 +1,20 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/macro';
-import { AppShell, Box, Burger, Divider, ScrollArea } from '@mantine/core';
+import {
+  AppShell,
+  Box,
+  Divider,
+  Group,
+  Indicator,
+  ScrollArea,
+  useMantineColorScheme,
+} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { spotlight } from '@mantine/spotlight';
 import {
+  IconArrowBarLeft,
+  IconArrowBarRight,
+  IconBell,
   IconFile,
   IconHome,
   IconMessage,
@@ -25,10 +36,14 @@ import {
   HomeKeybinding,
   MessageSubmissionsKeybinding,
   SettingsKeybinding,
+  SpotlightKeybinding,
   TagConvertersKeybinding,
   TagGroupsKeybinding,
 } from '../../shared/app-keybindings';
+import { NotificationStore } from '../../stores/notification.store';
+import { useStore } from '../../stores/use-store';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
+import { NotificationsDrawer } from './drawers/notifications-drawer';
 import { SettingsDrawer } from './drawers/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
@@ -41,8 +56,13 @@ import { ThemePicker } from './theme-picker';
 
 function AppImage() {
   return (
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    <img src="/app-icon.png" alt="postybirb icon" width="30" height="30" />
+    <div className={classes.logoContainer}>
+      <img
+        src="/app-icon.png"
+        alt="postybirb icon"
+        className={classes.logoImage}
+      />
+    </div>
   );
 }
 
@@ -109,6 +129,9 @@ const navigationTargets: (SideNavLinkProps & {
 
 export function PostyBirbLayout() {
   const [sideNavToggled, { toggle: toggleSideNav }] = useDisclosure(true);
+  const { colorScheme } = useMantineColorScheme();
+  const { state: notifications } = useStore(NotificationStore);
+  const isDark = colorScheme === 'dark';
 
   return (
     <AppShell
@@ -116,29 +139,23 @@ export function PostyBirbLayout() {
         width: sideNavToggled ? 60 : 240,
         breakpoint: 'sm',
       }}
+      className={isDark ? classes.darkAppShell : ''}
     >
-      <AppShell.Navbar id="postybirb__navbar" zIndex={1000}>
-        <AppShell.Section>
-          <Box ta="center" p="5">
+      <AppShell.Navbar id="postybirb__navbar" className={classes.navbar}>
+        <AppShell.Section className={classes.navbarHeader}>
+          <Box className={classes.logoWrapper}>
             <AppImage />
-            <Divider size="md" />
           </Box>
-          <Box ta="center">
-            <Burger
-              opened={!sideNavToggled}
-              onClick={toggleSideNav}
-              size="md"
-            />
-          </Box>
-          <Box ta="center">
-            <PostyBirbUpdateButton />
-            <ThemePicker />
-            <LanguagePicker />
-          </Box>
+          <Divider size="md" />
         </AppShell.Section>
-        <AppShell.Section grow component={ScrollArea} scrollbars="y">
+
+        <AppShell.Section
+          grow
+          component={ScrollArea}
+          scrollbars="y"
+          className={classes.navbarScroll}
+        >
           <Box
-            ta="center"
             className={`${classes.postybirb__sidenav} ${
               sideNavToggled ? classes.collapsed : ''
             }`}
@@ -149,7 +166,28 @@ export function PostyBirbLayout() {
               type="custom"
               onClick={() => spotlight.toggle()}
               icon={<IconSearch />}
-              kbd="Ctrl+K"
+              kbd={SpotlightKeybinding}
+              collapsed={sideNavToggled}
+            />
+            <SideNavLink
+              key="notifications"
+              label={<Trans>Notifications</Trans>}
+              type="drawer"
+              globalStateKey="notificationsDrawerVisible"
+              icon={
+                <>
+                  <IconBell />
+                  {notifications.filter((n) => !n.isRead).length ? (
+                    <Indicator
+                      inline
+                      color="red"
+                      size={6}
+                      style={{ marginBottom: '1rem' }}
+                    />
+                  ) : null}
+                </>
+              }
+              kbd="Alt+N"
               collapsed={sideNavToggled}
             />
             {navigationTargets.map((target) => {
@@ -160,15 +198,48 @@ export function PostyBirbLayout() {
             })}
           </Box>
         </AppShell.Section>
+
+        <AppShell.Section className={classes.navbarFooter}>
+          <Box className={classes.toggleButtonContainer}>
+            {sideNavToggled ? (
+              <IconArrowBarRight
+                className={classes.toggleIcon}
+                onClick={toggleSideNav}
+              />
+            ) : (
+              <IconArrowBarLeft
+                className={classes.toggleIcon}
+                onClick={toggleSideNav}
+              />
+            )}
+          </Box>
+          <Group
+            gap="xs"
+            className={
+              sideNavToggled
+                ? classes.utilityFooter
+                : classes.utilityFooterExpanded
+            }
+          >
+            <ThemePicker />
+            <LanguagePicker />
+            <PostyBirbUpdateButton />
+          </Group>
+        </AppShell.Section>
       </AppShell.Navbar>
-      <AppShell.Main>
+      <AppShell.Main className={classes.mainContent}>
         <Box id="postybirb__main" className={classes.postybirb__layout}>
           <PostybirbSpotlight />
           <AccountDrawer />
           <SettingsDrawer />
           <TagGroupDrawer />
           <TagConverterDrawer />
-          <Box className="postybirb__content" px="md" pb="sm">
+          <NotificationsDrawer />
+          <Box
+            className={`postybirb__content ${classes.contentContainer}`}
+            px="md"
+            pb="sm"
+          >
             <Outlet />
           </Box>
         </Box>

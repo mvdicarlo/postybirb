@@ -1,0 +1,37 @@
+.postybirb-language-icon {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.postybirb-language-icon:hover {
+  transform: scale(1.1);
+  color: var(--mantine-color-blue-5);
+}
+
+.postybirb-language-menu-item {
+  border-radius: var(--mantine-radius-sm);
+  padding: 8px 12px;
+}
+
+.postybirb-language-selected-item {
+  background-color: var(--mantine-color-blue-0);
+}
+
+/* Apply when dark theme is active */
+:root[data-mantine-color-scheme="dark"] .postybirb-language-selected-item {
+  background-color: rgba(37, 38, 43, 0.2);
+}
+
+.postybirb-language-badge {
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.postybirb-language-code {
+  opacity: 0.65;
+  font-weight: 600;
+  font-size: var(--mantine-font-size-xs);
+}
+
+.postybirb-language-header {
+  justify-content: space-between;
+}

@@ -29,14 +29,70 @@ export class SettingsService
 
   /**
    * Initializes default settings if required.
+   * Also updates existing settings with any new default fields that might be missing.
    */
   async onModuleInit() {
-    if (
-      !(await this.repository.count(
-        eq(this.schema.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
-      ))
-    ) {
+    const defaultSettingsCount = await this.repository.count(
+      eq(this.schema.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+    );
+
+    if (!defaultSettingsCount) {
       this.createDefaultSettings();
+    } else {
+      // Get existing default settings
+      const existingSettings = await this.getDefaultSettings();
+      if (existingSettings) {
+        // Check if there are any missing fields compared to the current default settings
+        const currentDefaults = SettingsConstants.DEFAULT_SETTINGS;
+        let hasChanges = false;
+        const updatedSettings = { ...existingSettings.settings };
+
+        // Recursively merge missing fields
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mergeObjects = (target: any, source: any, path = ''): boolean => {
+          let changed = false;
+
+          Object.keys(source).forEach((key) => {
+            const fullPath = path ? `${path}.${key}` : key;
+
+            // If key doesn't exist in target, add it
+            if (!(key in target)) {
+              // eslint-disable-next-line no-param-reassign
+              target[key] = source[key];
+              this.logger.debug(`Added missing setting: ${fullPath}`);
+              changed = true;
+            }
+            // If both are objects, recursively merge
+            else if (
+              typeof source[key] === 'object' &&
+              source[key] !== null &&
+              typeof target[key] === 'object' &&
+              target[key] !== null &&
+              !Array.isArray(source[key]) &&
+              !Array.isArray(target[key])
+            ) {
+              const nestedChanged = mergeObjects(
+                target[key],
+                source[key],
+                fullPath,
+              );
+              if (nestedChanged) changed = true;
+            }
+          });
+
+          return changed;
+        };
+
+        hasChanges = mergeObjects(updatedSettings, currentDefaults);
+
+        // Update database if there were changes
+        if (hasChanges) {
+          this.logger.debug('Updating default settings with missing fields');
+          await this.repository.update(existingSettings.id, {
+            settings: updatedSettings,
+          });
+        }
+      }
     }
   }
 
@@ -69,7 +125,7 @@ export class SettingsService
   async emit() {
     super.emit({
       event: SETTINGS_UPDATES,
-      data: await this.findAll(),
+      data: (await this.findAll()).map((entity) => entity.toDTO()),
     });
   }
 

@@ -5,6 +5,8 @@ export * from './database/entity.dto';
 export * from './directory-watcher/create-directory-watcher.dto';
 export * from './directory-watcher/directory-watcher.dto';
 export * from './directory-watcher/update-directory-watcher.dto';
+export * from './notification/create-notification.dto';
+export * from './notification/update-notification.dto';
 export * from './post/post-queue-action.dto';
 export * from './post/post-queue-record.dto';
 export * from './post/post-record.dto';

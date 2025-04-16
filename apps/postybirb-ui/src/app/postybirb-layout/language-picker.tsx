@@ -1,37 +1,116 @@
+import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { Menu, Text, UnstyledButton } from '@mantine/core';
-import { IconLanguageHiragana } from '@tabler/icons-react';
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Group,
+  Menu,
+  Text,
+  Tooltip,
+} from '@mantine/core';
+import { useDisclosure, useHover } from '@mantine/hooks';
+import {
+  IconCheck,
+  IconLanguageHiragana,
+  IconWorld,
+} from '@tabler/icons-react';
+import { useState } from 'react';
 import { use18n } from '../../hooks/use-i18n';
 import { languages } from '../languages';
+import './language-picker.css';
 
 export function LanguagePicker() {
   const { _ } = useLingui();
   const [locale, setLocale] = use18n();
+  const [opened, { toggle, close }] = useDisclosure(false);
+  const { hovered, ref } = useHover();
+  const [hoveredLang, setHoveredLang] = useState<string | null>(null);
 
   return (
-    <div>
+    <Box>
       <Menu
+        opened={opened}
+        onOpen={toggle}
+        onClose={close}
+        width={220}
+        position="right-end"
         withArrow
         shadow="md"
-        width="200"
-        position="right"
-        trigger="hover"
-        closeDelay={200}
+        offset={8}
       >
         <Menu.Target>
-          <UnstyledButton>
-            <IconLanguageHiragana height={30} />
-          </UnstyledButton>
+          <Tooltip
+            label={_(msg`Change language`)}
+            position="right"
+            withArrow
+            openDelay={500}
+          >
+            <ActionIcon
+              ref={ref}
+              variant={hovered || opened ? 'light' : 'subtle'}
+              radius="md"
+              size="lg"
+              aria-label={_(msg`Change language`)}
+              c="inherit"
+            >
+              <IconLanguageHiragana
+                className="postybirb-language-icon"
+                size={28}
+                stroke={1.5}
+              />
+            </ActionIcon>
+          </Tooltip>
         </Menu.Target>
 
         <Menu.Dropdown>
-          {languages.map(([label, value]) => (
-            <Menu.Item key={value} onClick={() => setLocale(value)}>
-              <Text c={value === locale ? 'blue' : undefined}>{_(label)}</Text>
-            </Menu.Item>
-          ))}
+          <Menu.Label>
+            <Group className="postybirb-language-header">
+              <Text size="sm" fw={500}>
+                <Trans>Select language</Trans>
+              </Text>
+              <Badge
+                size="xs"
+                variant="filled"
+                color="blue"
+                className="postybirb-language-badge"
+              >
+                {locale}
+              </Badge>
+            </Group>
+          </Menu.Label>
+
+          {languages.map(([label, value]) => {
+            const isActive = value === locale;
+            const isHovered = value === hoveredLang;
+
+            return (
+              <Menu.Item
+                key={value}
+                className={`postybirb-language-menu-item ${
+                  isActive ? 'postybirb-language-selected-item' : ''
+                }`}
+                leftSection={
+                  isActive ? <IconCheck size={16} /> : <IconWorld size={16} />
+                }
+                rightSection={
+                  <Text className="postybirb-language-code">{value}</Text>
+                }
+                onClick={() => {
+                  setLocale(value);
+                  close();
+                }}
+                onMouseEnter={() => setHoveredLang(value)}
+                onMouseLeave={() => setHoveredLang(null)}
+                color={isActive || isHovered ? 'blue' : undefined}
+                fw={isActive ? 500 : undefined}
+              >
+                {_(label)}
+              </Menu.Item>
+            );
+          })}
         </Menu.Dropdown>
       </Menu>
-    </div>
+    </Box>
   );
 }

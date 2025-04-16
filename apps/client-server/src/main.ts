@@ -70,6 +70,7 @@ async function bootstrap() {
     .addTag('file')
     .addTag('file-submission')
     .addTag('form-generator')
+    .addTag('notifications')
     .addTag('post')
     .addTag('post-queue')
     .addTag('submissions')
