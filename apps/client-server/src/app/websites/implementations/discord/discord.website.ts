@@ -115,12 +115,12 @@ export default class Discord
     files.forEach((file, i) => {
       const postableFile = file.toPostFormat();
       if (isSpoiler) {
-        postableFile.options.filename = `SPOILER_${postableFile.options.filename}`;
+        postableFile.setFileName(`SPOILER_${postableFile.fileName}`);
       }
       formData[`files[${i}]`] = postableFile;
       payload.attachments.push({
         id: i,
-        filename: postableFile.options.filename,
+        filename: postableFile.fileName,
         description: file.metadata.altText,
       });
     });

@@ -4,12 +4,12 @@ import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { IWebsiteFormFields, WebsiteOptionsDto } from '@postybirb/types';
 import { debounce } from 'lodash';
 import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
 } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../api/form-generator.api';
@@ -20,8 +20,6 @@ type FormFieldsContextType = {
   values: Record<string, unknown>;
   formFields: FormBuilderMetadata;
   setFieldValue: (key: string, value: unknown) => void;
-  resetFields: (initialValues: Record<string, unknown>) => void;
-  isLoading: boolean;
 };
 
 const FormFieldsContext = createContext<FormFieldsContextType | undefined>(
@@ -38,22 +36,26 @@ export function FormFieldsProvider({
   children: React.ReactNode;
 }) {
   const { accountId } = option;
-  const {
-    isLoading,
-    data: formFields,
-    refetch,
-  } = useQuery(`website-option-${option.id}`, () =>
-    formGeneratorApi
-      .getForm({
-        accountId,
-        optionId: option.id,
-        type: submission.type,
-        isMultiSubmission: submission.isMultiSubmission,
-      })
-      .then((res) => res.body),
+  const { isLoading, data: formFields } = useQuery(
+    `website-option-${option.id}`,
+    () =>
+      formGeneratorApi
+        .getForm({
+          accountId,
+          type: submission.type,
+          isMultiSubmission: submission.isMultiSubmission,
+        })
+        .then((res) => res.body),
   );
 
-  const [values, setValues] = useState<Record<string, unknown>>({});
+  const [values, setValues] = useState<Record<string, unknown>>({
+    ...option.data,
+  });
+
+  // Update values when option.data changes
+  useEffect(() => {
+    setValues({ ...option.data });
+  }, [option.id, option.data]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const saveDelayed = useCallback(
@@ -72,7 +74,8 @@ export function FormFieldsProvider({
       websiteOptionsApi.update(option.id, {
         data: updatedValues as unknown as IWebsiteFormFields,
       }),
-    [option.id],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
   );
 
   const setFieldValue = useCallback(
@@ -93,37 +96,13 @@ export function FormFieldsProvider({
     [values, save, saveDelayed],
   );
 
-  const resetFields = useCallback(
-    (newInitialValues: Record<string, unknown>) => {
-      setValues(newInitialValues);
-    },
-    [],
-  );
-
-  // Automatically reset fields when formFields change
-  useEffect(() => {
-    if (option.data) {
-      const initialValues = {
-        ...option.data,
-      };
-      resetFields(initialValues);
-    }
-  }, [option, resetFields]);
-
-  useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [option.updatedAt]);
-
   const contextValue = useMemo(
     () => ({
       formFields: formFields ?? {},
       values,
       setFieldValue,
-      resetFields,
-      isLoading,
     }),
-    [formFields, values, setFieldValue, resetFields, isLoading],
+    [formFields, values, setFieldValue],
   );
 
   if (isLoading) {

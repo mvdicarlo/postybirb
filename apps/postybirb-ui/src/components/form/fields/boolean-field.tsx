@@ -11,11 +11,13 @@ export function BooleanField(props: FormFieldProps<BooleanFieldType>) {
   const { _ } = useLingui();
   const { values, setFieldValue } = useFormFields();
   const validations = useValidations(props);
-  // Get value from field with appropriate fallbacks
-  const value: boolean =
+
+  // Ensure value is explicitly cast to boolean
+  const value = Boolean(
     values[propKey] !== undefined
-      ? (values[propKey] as boolean)
-      : field.defaultValue || false;
+      ? values[propKey]
+      : field.defaultValue || false,
+  );
 
   const labelLessField = {
     ...field,

@@ -30,7 +30,7 @@ import {
 } from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import moment from 'moment/min/moment-with-locales';
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import submissionApi from '../../../../api/submission.api';
 import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
@@ -49,7 +49,7 @@ type SubmissionViewCardProps = {
   isSelected: boolean;
 };
 
-function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
+export function SubmissionViewCard(props: SubmissionViewCardProps) {
   const { isLoading, state: accounts } = useStore(AccountStore);
   const { submission, onSelect, isSelected } = props;
   const { type } = submission;
@@ -258,40 +258,3 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
     </Card>
   );
 }
-
-// Memoize the card component to prevent unnecessary re-renders by comparing updatedOn properties
-export const SubmissionViewCard = React.memo(
-  SubmissionViewCardComponent,
-  (prevProps, nextProps) => {
-    // Return true if we should NOT re-render
-    // Different selection state always causes re-render
-    if (prevProps.isSelected !== nextProps.isSelected) {
-      return false;
-    }
-
-    // Check if the submission ID is different
-    if (prevProps.submission.id !== nextProps.submission.id) {
-      return false;
-    }
-
-    // Compare the submission's updatedAt
-    if (prevProps.submission.updatedAt !== nextProps.submission.updatedAt) {
-      return false;
-    }
-
-    // Compare the updatedAt of all options to see if any have changed
-    const prevOptionsUpdateTimes = new Map(
-      prevProps.submission.options.map((opt) => [opt.id, opt.updatedAt]),
-    );
-
-    for (const option of nextProps.submission.options) {
-      const prevTime = prevOptionsUpdateTimes.get(option.id);
-      if (!prevTime || prevTime !== option.updatedAt) {
-        return false;
-      }
-    }
-
-    // If we got here, nothing important changed, don't re-render
-    return true;
-  },
-);

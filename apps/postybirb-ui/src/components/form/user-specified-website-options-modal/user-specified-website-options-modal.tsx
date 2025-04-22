@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
-import { Button, Checkbox, Modal, Stack, Title } from '@mantine/core';
+import { Button, Checkbox, Modal, Stack } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { FormBuilderMetadata } from '@postybirb/form-builder';
 import { AccountId, DynamicObject, SubmissionType } from '@postybirb/types';
@@ -31,11 +31,7 @@ export function UserSpecifiedWebsiteOptionsSaveModal(
     <Modal
       opened={opened}
       onClose={onClose}
-      title={
-        <Title order={4}>
-          <Trans>Choose Fields</Trans>
-        </Title>
-      }
+      title={<Trans>Choose Fields</Trans>}
     >
       <Stack>
         {Object.entries(form)

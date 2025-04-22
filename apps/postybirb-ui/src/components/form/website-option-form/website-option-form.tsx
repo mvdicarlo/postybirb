@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Alert, Box, Flex, Stack } from '@mantine/core';
 import {
-  FieldAggregateType,
-  FormBuilderMetadata,
+  FieldAggregateType
 } from '@postybirb/form-builder';
 import {
   AccountId,
@@ -26,7 +25,6 @@ type WebsiteOptionFormProps = {
 type InnerFormProps = {
   account: AccountId;
   submission: SubmissionDto;
-  formFields: FormBuilderMetadata;
   option: WebsiteOptionsDto;
   defaultOption: WebsiteOptionsDto;
   userSpecifiedModalVisible: boolean;
@@ -143,7 +141,6 @@ function SubInnerForm(props: SubInnerFormProps) {
 }
 
 function InnerForm({
-  formFields,
   option,
   defaultOption,
   account,
@@ -151,6 +148,7 @@ function InnerForm({
   userSpecifiedModalVisible,
   userSpecifiedModalClosed,
 }: InnerFormProps) {
+  const { formFields } = useFormFields();
   const validations = submission.validations.find(
     (v) => v.id === option.id,
   ) ?? {
@@ -171,6 +169,7 @@ function InnerForm({
       type="warnings"
     />,
   ];
+
   return (
     <Box className="postybirb__website-option-form" option-id={option.id}>
       <UserSpecifiedWebsiteOptionsSaveModal
@@ -206,7 +205,6 @@ export function WebsiteOptionForm(props: WebsiteOptionFormProps) {
     <FormFieldsProvider option={option} submission={submission}>
       <InnerForm
         key={option.id}
-        formFields={{}} // Form fields are now managed internally by the provider
         option={option}
         defaultOption={defaultOption}
         account={option.accountId}

@@ -2,11 +2,7 @@
 // to make jump-to definitions and to simplify DX
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import {
-  FieldTranslationId,
-  FieldTranslations,
-  IWebsiteFormFields,
-} from '@postybirb/types';
+import { FieldTranslationId, FieldTranslations } from '@postybirb/types';
 import { PrimitiveRecord } from './primitive-record';
 
 type Translations =
@@ -38,8 +34,6 @@ export type FieldType<
    * The field will be enabled when all the listed props are undefined.
    */
   enableWhenUndefined?: Array<keyof T>;
-
-  shouldShow?(record: Partial<IWebsiteFormFields>, data: T): boolean;
 
   /**
    * Metadata for determining what type of field to generate.
@@ -89,4 +83,7 @@ export type FieldType<
     key: keyof T;
     populate: string;
   }[];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showWhen?: Array<[keyof T, any[]]>;
 };

@@ -43,7 +43,6 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     private readonly submissionService: SubmissionService,
     private readonly accountService: AccountService,
     private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
-    @Inject(forwardRef(() => FormGeneratorService))
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
   ) {
@@ -110,7 +109,6 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       : await this.formGeneratorService.generateForm({
           accountId: account.id,
           type: submission.type,
-          optionId: null,
         });
 
     // Populate with the form fields to get the default values
@@ -181,7 +179,6 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         ? await this.formGeneratorService.getDefaultForm(submission.type)
         : await this.formGeneratorService.generateForm({
             accountId: account.id,
-            optionId: null,
             type: submission.type,
           });
     // Populate with the form fields to get the default values

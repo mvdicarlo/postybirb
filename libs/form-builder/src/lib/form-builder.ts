@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { IWebsiteFormFields } from '@postybirb/types';
 import 'reflect-metadata';
 import { FormBuilderMetadata } from './types/form-builder-metadata';
 import { PrimitiveRecord } from './types/primitive-record';
@@ -8,7 +7,6 @@ import { getMetadataKey, getParentMetadataKeys } from './utils/assign-metadata';
 export function formBuilder(
   target: object,
   data: PrimitiveRecord,
-  existingFormFields?: Partial<IWebsiteFormFields>,
 ): FormBuilderMetadata {
   const key = getMetadataKey(target.constructor.name);
   let sym: symbol = (target as any)[key];
@@ -30,12 +28,6 @@ export function formBuilder(
     value.derive?.forEach((d) => {
       value[d.populate] = data[d.key];
     });
-  }
-
-  for (const value of Object.values(metadata)) {
-    if (value.shouldShow) {
-      value.hidden = !value.shouldShow(existingFormFields, data);
-    }
   }
 
   return metadata;

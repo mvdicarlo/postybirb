@@ -15,7 +15,27 @@ import { SelectField } from './select-field';
 import { TagField } from './tag-field';
 
 export function Field(props: FormFieldProps): JSX.Element | null {
-  const { field } = props;
+  const { field, option, defaultOption } = props;
+
+  if (field.showWhen) {
+    const evaluations: boolean[] = [];
+
+    for (const showWhen of field.showWhen) {
+      const [k, expects] = showWhen;
+      let currentValue = option.data[k];
+      if (option !== defaultOption) {
+        if (k === 'rating' && !currentValue) {
+          currentValue = defaultOption.data[k];
+        }
+      }
+      evaluations.push(expects.includes(currentValue));
+    }
+
+    const shouldHide = !evaluations.every((v) => v === true);
+    if (shouldHide) {
+      return null;
+    }
+  }
 
   let formField: JSX.Element | null = null;
   switch (field.formField) {

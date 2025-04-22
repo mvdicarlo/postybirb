@@ -2,7 +2,6 @@ import { msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import { Radio, SegmentedControl } from '@mantine/core';
 import { RadioFieldType, RatingFieldType } from '@postybirb/form-builder';
-import { useMemo } from 'react';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
 import { useFormFields } from '../website-option-form/use-form-fields';
@@ -23,13 +22,10 @@ function RatingFieldControl(
   const { propKey, field, defaultValue, option } = props;
   const { values, setFieldValue } = useFormFields();
   const { _ } = useLingui();
-  const options = useMemo(
-    () =>
-      field.formField === 'rating' && !option.isDefault
-        ? [{ label: _(msg`Default`), value: undefined }, ...field.options]
-        : field.options,
-    [_, field.formField, field.options, option.isDefault],
-  );
+  const options =
+    field.formField === 'rating' && !option.isDefault
+      ? [{ label: _(msg`Default`), value: '' }, ...field.options]
+      : field.options;
   const value: string = (values[propKey] as string) || field.defaultValue || '';
 
   return (

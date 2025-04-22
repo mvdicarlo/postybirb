@@ -1,5 +1,6 @@
 import { Http } from '@postybirb/http';
 import {
+  FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -23,11 +24,16 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
 
 @WebsiteMetadata({
   name: 'pixiv',
-  displayName: 'pixiv',
+  displayName: 'Pixiv',
   minimumPostWaitInterval: 60000 * 5, // 5 minutes between posts
 })
 @UserLoginFlow('https://www.pixiv.net')
-@SupportsFiles(['image/png', 'image/jpeg', 'image/jpg', 'image/gif'])
+@SupportsFiles({
+  acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
+  acceptedFileSizes: {
+    [FileType.IMAGE]: FileSize.mbToBytes(32), // Image limit is 32MB
+  },
+})
 export default class Pixiv
   extends Website<PixivAccountData>
   implements FileWebsite<PixivFileSubmission>
@@ -55,7 +61,13 @@ export default class Pixiv
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return { maxBytes: FileSize.mbToBytes(32) };
+    return file.size >
+      this.decoratedProps.fileOptions.acceptedFileSizes[FileType.IMAGE]
+      ? {
+          maxBytes:
+            this.decoratedProps.fileOptions.acceptedFileSizes[FileType.IMAGE],
+        }
+      : undefined;
   }
 
   async onPostFileSubmission(
@@ -83,7 +95,9 @@ export default class Pixiv
     ).api;
 
     const { options } = postData;
-    const form = {
+    const postFiles = files.map((file) => file.toPostFormat());
+
+    const form: Record<string, unknown> = {
       title: options.title.substring(0, 32),
       caption: options.description,
       'tags[]': options.tags.slice(0, 10),
@@ -108,7 +122,13 @@ export default class Pixiv
       allowComment: 'true',
       'titleTranslations[en]': '',
       'captionTranslations[en]': '',
+      'files[]': postFiles,
     };
+
+    postFiles.forEach((_, index) => {
+      form[`imageOrder[${index}][type]`] = 'newFile';
+      form[`imageOrder[${index}][fileKey]`] = `${index}`;
+    });
 
     const sexualType = form.xRestrict;
     if (sexualType !== 'general') {
@@ -127,42 +147,35 @@ export default class Pixiv
     }
 
     cancellationToken.throwIfCancelled();
-
-    // Convert PostingFile objects to the format needed by postSpecial
-    const postFiles = files.map((file) => file.toPostFormat());
-
-    const post = await this.postSpecial(
-      form,
-      { 'x-csrf-token': token },
-      postFiles,
-    );
-
     try {
-      const json = JSON.parse(post);
-      if (!json.error) {
+      const post = await Http.post<{ error: string }>(
+        `${this.BASE_URL}/ajax/work/create/illustration`,
+        {
+          partition: this.accountId,
+          type: 'multipart',
+          data: form,
+          headers: {
+            'x-csrf-token': token,
+          },
+        },
+      );
+
+      if (!post.body.error) {
         return PostResponse.fromWebsite(this);
       }
 
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(post)
         .withException(
-          new Error(json.error ? JSON.stringify(json.error) : 'Unknown error'),
+          new Error(
+            post.body.error ? JSON.stringify(post.body.error) : 'Unknown error',
+          ),
         );
     } catch (error) {
-      return PostResponse.fromWebsite(this)
-        .withAdditionalInfo(post)
-        .withException(
-          error instanceof Error ? error : new Error(JSON.stringify(error)),
-        );
+      return PostResponse.fromWebsite(this).withException(
+        error instanceof Error ? error : new Error(JSON.stringify(error)),
+      );
     }
-  }
-
-  private postSpecial(
-    form: any,
-    headers: Record<string, string>,
-    files: string[],
-  ) {
-    return null;
   }
 
   private getContentRating(rating: SubmissionRating) {

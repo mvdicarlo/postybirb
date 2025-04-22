@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-classes-per-file */
-import { IWebsiteFormFields } from '@postybirb/types';
 import {
   BooleanField,
   DescriptionField,
@@ -183,38 +182,6 @@ describe('formBuilder', () => {
         defaultFrom: 'testBoolean',
         defaultValue: test.testBoolean,
         type: 'boolean',
-        formField: 'checkbox',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
-      },
-    });
-  });
-
-  it('should support showWhen', () => {
-    class BooleanType {
-      @BooleanField({
-        label: 'description',
-        defaultValue: false,
-      })
-      public field: boolean;
-    }
-
-    const existingOptions = {
-      field: true,
-    };
-
-    expect(
-      formBuilder(
-        new BooleanType(),
-        {},
-        existingOptions as unknown as IWebsiteFormFields,
-      ),
-    ).toEqual({
-      field: {
-        label: 'description',
-        defaultValue: false,
-        type: 'boolean',
-        value: true,
         formField: 'checkbox',
         row: Number.MAX_SAFE_INTEGER,
         col: 0,

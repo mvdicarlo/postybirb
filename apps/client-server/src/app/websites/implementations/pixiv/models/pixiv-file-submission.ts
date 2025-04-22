@@ -1,16 +1,11 @@
 import {
-    BooleanField,
-    RatingField,
-    SelectField,
-    TagField,
-    TitleField,
+  BooleanField,
+  RatingField,
+  SelectField,
+  TagField,
+  TitleField,
 } from '@postybirb/form-builder';
-import {
-    DefaultTagValue,
-    DynamicObject,
-    SubmissionRating,
-    TagValue,
-} from '@postybirb/types';
+import { DefaultTagValue, SubmissionRating, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class PixivFileSubmission extends BaseWebsiteOptions {
@@ -33,33 +28,6 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
   })
   rating: SubmissionRating;
 
-  @BooleanField({
-    label: 'allowCommunityTags',
-    defaultValue: true,
-  })
-  communityTags: boolean;
-
-  @BooleanField({
-    label: 'originalWork',
-    defaultValue: true,
-  })
-  original: boolean;
-
-  @BooleanField({
-    label: 'hasSexualContent',
-    defaultValue: false,
-    shouldShow: (values: DynamicObject) =>
-      values.rating === SubmissionRating.GENERAL,
-  })
-  sexual: boolean;
-
-  @BooleanField({
-    label: 'aIGenerated',
-    required: true,
-    defaultValue: false,
-  })
-  aiGenerated: boolean;
-
   @SelectField({
     label: 'matureContent',
     options: [
@@ -69,13 +37,17 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: 'lo', label: 'Lo' },
     ],
     allowMultiple: true,
-    shouldShow(record: PixivFileSubmission) {
-      return (
-        record.rating === SubmissionRating.MATURE ||
-        record.rating === SubmissionRating.ADULT ||
-        record.rating === SubmissionRating.EXTREME
-      );
-    },
+    showWhen: [
+      [
+        'rating',
+        [
+          SubmissionRating.MATURE,
+          SubmissionRating.ADULT,
+          SubmissionRating.EXTREME,
+        ],
+      ],
+    ],
+    col: 1,
   })
   matureContent: string[];
 
@@ -89,6 +61,37 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
       { value: 'religion', label: 'Religion' },
     ],
     allowMultiple: true,
+    col: 1,
   })
   containsContent: string[];
+
+  @BooleanField({
+    label: 'allowCommunityTags',
+    defaultValue: true,
+    col: 1,
+  })
+  communityTags: boolean;
+
+  @BooleanField({
+    label: 'originalWork',
+    defaultValue: true,
+    col: 1,
+  })
+  original: boolean;
+
+  @BooleanField({
+    label: 'hasSexualContent',
+    defaultValue: false,
+    showWhen: [['rating', [SubmissionRating.GENERAL]]],
+    col: 1,
+  })
+  sexual: boolean;
+
+  @BooleanField({
+    label: 'aIGenerated',
+    required: true,
+    defaultValue: false,
+    col: 1,
+  })
+  aiGenerated: boolean;
 }

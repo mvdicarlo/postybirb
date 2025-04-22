@@ -1,11 +1,9 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { formBuilder, FormBuilderMetadata } from '@postybirb/form-builder';
+import { FormBuilderMetadata, formBuilder } from '@postybirb/form-builder';
 import {
   AccountId,
   IWebsiteFormFields,
@@ -14,7 +12,6 @@ import {
 } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
 import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
-import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
@@ -27,8 +24,6 @@ export class FormGeneratorService {
     private readonly websiteRegistryService: WebsiteRegistryService,
     private readonly userSpecifiedWebsiteOptionsService: UserSpecifiedWebsiteOptionsService,
     private readonly accountService: AccountService,
-    @Inject(forwardRef(() => WebsiteOptionsService))
-    private readonly websiteOptionsService: WebsiteOptionsService,
   ) {}
 
   /**
@@ -70,11 +65,7 @@ export class FormGeneratorService {
       );
     }
 
-    const websiteOptions = request.optionId
-      ? await this.websiteOptionsService.findById(request.optionId)
-      : undefined;
-
-    const form = formBuilder(formModel, data, websiteOptions?.data ?? {});
+    const form = formBuilder(formModel, data);
     const formWithPopulatedDefaults = await this.populateUserDefaults(
       form,
       request.accountId,
@@ -94,7 +85,7 @@ export class FormGeneratorService {
    */
   async getDefaultForm(type: SubmissionType, isMultiSubmission = false) {
     const form = await this.populateUserDefaults(
-      formBuilder(new DefaultWebsiteOptions(), {}, {}),
+      formBuilder(new DefaultWebsiteOptions(), {}),
       new NullAccount().id,
       type,
     );

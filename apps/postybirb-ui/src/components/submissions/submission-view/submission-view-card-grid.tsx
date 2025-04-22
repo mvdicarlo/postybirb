@@ -1,5 +1,5 @@
 import { Grid } from '@mantine/core';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../api/submission.api';
 import { draggableIndexesAreDefined } from '../../../helpers/sortable.helper';
@@ -15,31 +15,13 @@ type SubmissionViewCardGridProps = {
 
 export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   const { submissions, onSelect, selectedSubmissions, view } = props;
-
-  // Create a dependency array that includes the submission IDs and their update timestamps
-  const submissionDeps = useMemo(
-    () =>
-      submissions.map((sub) => ({
-        id: sub.id,
-        updatedAt: sub.updatedAt,
-        order: sub.order,
-      })),
-    [submissions],
+  const [orderedSubmissions, setOrderedSubmissions] = useState(
+    submissions.sort((a, b) => a.order - b.order),
   );
-
-  // Memoize the sorted submissions using the dependency array
-  const sortedSubmissions = useMemo(
-    () => [...submissions].sort((a, b) => a.order - b.order),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [submissionDeps], // Only resort when IDs, update times, or order changes
-  );
-
-  const [orderedSubmissions, setOrderedSubmissions] =
-    useState(sortedSubmissions);
 
   useEffect(() => {
-    setOrderedSubmissions(sortedSubmissions);
-  }, [sortedSubmissions]);
+    setOrderedSubmissions(submissions.sort((a, b) => a.order - b.order));
+  }, [submissions]);
 
   useEffect(() => {
     const el = document.getElementsByClassName(
