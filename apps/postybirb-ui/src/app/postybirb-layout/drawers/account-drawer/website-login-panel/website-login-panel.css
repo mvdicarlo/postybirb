@@ -7,10 +7,20 @@
   background-color: var(--mantine-color-body);
   border-left: 1px solid var(--mantine-color-gray-filled);
   margin-top: 0px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .postybirb__website-login-panel__header {
   position: sticky;
   top: 0;
   background-color: var(--mantine-color-body);
+  z-index: 10;
+  margin-bottom: 1rem;
+}
+
+.postybirb__website-login-webview {
+  border-radius: 8px;
+  border: 1px solid var(--mantine-color-gray-3);
+  overflow: hidden;
 }

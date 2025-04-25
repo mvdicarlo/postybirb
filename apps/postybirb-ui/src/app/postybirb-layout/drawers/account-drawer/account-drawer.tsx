@@ -1,7 +1,20 @@
-import { Trans } from '@lingui/macro';
-import { Drawer, Loader, Space, Stack, Text } from '@mantine/core';
+import { Trans, msg } from '@lingui/macro';
+import { useLingui } from '@lingui/react';
+import {
+  Box,
+  Divider,
+  Drawer,
+  Group,
+  Input,
+  Loader,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+} from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
-import { useState } from 'react';
+import { IconSearch } from '@tabler/icons-react';
+import { useMemo, useState } from 'react';
 import { useWebsites } from '../../../../hooks/account/use-websites';
 import {
   getOverlayOffset,
@@ -20,6 +33,40 @@ export function AccountDrawer() {
     account: IAccountDto;
     website: IWebsiteInfoDto;
   } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<'all' | 'logged-in' | 'not-logged-in'>(
+    'all',
+  );
+  const { _ } = useLingui();
+
+  const filteredAndSearchedWebsites = useMemo(() => {
+    if (!searchQuery && filter === 'all') return filteredWebsites;
+
+    return filteredWebsites.filter((website) => {
+      // Filter by search query
+      const matchesSearch =
+        !searchQuery ||
+        website.displayName.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Filter by login status
+      let matchesFilter = true;
+      if (filter === 'logged-in') {
+        const websiteAccounts = accounts.filter(
+          (acc) => acc.website === website.id,
+        );
+        matchesFilter = websiteAccounts.some((acc) => acc.state.isLoggedIn);
+      } else if (filter === 'not-logged-in') {
+        const websiteAccounts = accounts.filter(
+          (acc) => acc.website === website.id,
+        );
+        matchesFilter =
+          websiteAccounts.length === 0 ||
+          websiteAccounts.some((acc) => !acc.state.isLoggedIn);
+      }
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [accounts, filter, filteredWebsites, searchQuery]);
 
   if (isLoading) {
     return <Loader />;
@@ -50,27 +97,88 @@ export function AccountDrawer() {
             <Trans>Accounts</Trans>
           </Text>
         }
+        styles={{
+          body: {
+            height: 'calc(100% - 60px)',
+            display: 'flex',
+            flexDirection: 'column',
+          },
+        }}
       >
-        <WebsiteVisibilityPicker />
-        <Space h="md" />
-        <Stack gap="md">
-          {filteredWebsites.map((website) => (
-            <WebsiteCard
-              key={website.id}
-              website={website}
-              accounts={accounts.filter(
-                (account) => account.website === website.id,
-              )}
-              onLogin={(
-                login: {
-                  account: IAccountDto;
-                  website: IWebsiteInfoDto;
-                } | null,
-              ) => setLoginAccount(login)}
-            />
-          ))}
-        </Stack>
+        <Box mb="md">
+          <WebsiteVisibilityPicker />
+        </Box>
+
+        <Divider mb="md" />
+
+        <Group mb="md">
+          <Input
+            leftSection={<IconSearch size={16} />}
+            placeholder={_(msg`Search websites...`)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            style={{ flex: 1 }}
+            rightSectionWidth={70}
+            rightSection={
+              searchQuery ? (
+                <Text
+                  size="xs"
+                  color="dimmed"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setSearchQuery('')}
+                >
+                  <Trans>Clear</Trans>
+                </Text>
+              ) : null
+            }
+          />
+        </Group>
+
+        <SegmentedControl
+          fullWidth
+          mb="md"
+          value={filter}
+          onChange={(value) => setFilter(value as typeof filter)}
+          data={[
+            { value: 'all', label: _(msg`All`) },
+            { value: 'logged-in', label: _(msg`Logged In`) },
+            { value: 'not-logged-in', label: _(msg`Not Logged In`) },
+          ]}
+        />
+
+        <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+          <Stack gap="md">
+            {filteredAndSearchedWebsites.length > 0 ? (
+              filteredAndSearchedWebsites.map((website) => (
+                <WebsiteCard
+                  key={website.id}
+                  website={website}
+                  accounts={accounts.filter(
+                    (account) => account.website === website.id,
+                  )}
+                  onLogin={(
+                    login: {
+                      account: IAccountDto;
+                      website: IWebsiteInfoDto;
+                    } | null,
+                  ) => setLoginAccount(login)}
+                />
+              ))
+            ) : (
+              <Box py="xl" ta="center">
+                <Text c="dimmed">
+                  {searchQuery ? (
+                    <Trans>No websites match your search criteria</Trans>
+                  ) : (
+                    <Trans>No websites available or visible</Trans>
+                  )}
+                </Text>
+              </Box>
+            )}
+          </Stack>
+        </ScrollArea>
       </Drawer>
+
       {loginAccount && visible ? (
         <WebsiteLoginPanel
           key={loginAccount.account.id}
