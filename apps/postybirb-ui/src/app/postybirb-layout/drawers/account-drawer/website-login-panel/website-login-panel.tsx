@@ -1,6 +1,15 @@
 import { Trans } from '@lingui/macro';
-import { Box, CloseButton, Flex, Title } from '@mantine/core';
+import {
+  Box,
+  CloseButton,
+  Flex,
+  Group,
+  Paper,
+  Text,
+  Title,
+} from '@mantine/core';
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
+import { IconWorld } from '@tabler/icons-react';
 import { useEffect } from 'react';
 import accountApi from '../../../../../api/account.api';
 import { AccountLoginWebview } from '../../../../../components/account/account-login-webview/account-login-webview';
@@ -76,6 +85,7 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
   const totalOffset = offset - 1;
   const widthOffset =
     offset + getOverlayOffset() + getVerticalScrollbarOffset();
+
   return (
     <Box
       p="sm"
@@ -85,22 +95,28 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
         width: `calc(100vw - ${widthOffset}px)`,
       }}
     >
-      <div className="postybirb__website-login-panel__header">
-        <Flex>
-          <Title order={3} flex="12">
-            {website.displayName} - {account.name}
-          </Title>
-          <div>
-            <CloseButton
-              variant="transparent"
-              onClick={() => {
-                onClose();
-              }}
-            />
-          </div>
+      <Paper
+        className="postybirb__website-login-panel__header"
+        shadow="sm"
+        p="md"
+        withBorder
+      >
+        <Flex align="center" justify="space-between">
+          <Group>
+            <IconWorld size={24} />
+            <Box>
+              <Title order={3}>{website.displayName}</Title>
+              <Text size="sm">{account.name}</Text>
+            </Box>
+          </Group>
+          <CloseButton
+            size="lg"
+            onClick={() => {
+              onClose();
+            }}
+          />
         </Flex>
-        <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />
-      </div>
+      </Paper>
       <LoginPanel {...props} />
     </Box>
   );
