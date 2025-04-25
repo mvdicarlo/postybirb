@@ -200,7 +200,17 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
       }
 
       const isPaused = await this.isPaused();
-      const { postRecord: record, submissionId } = top;
+      const { postRecord: record, submissionId, submission } = top;
+
+      if (submission.isArchived) {
+        // Submission is archived, remove from queue
+        this.logger
+          .withMetadata({ submissionId })
+          .info('Submission is archived, removing from queue');
+        await this.dequeue([submissionId]);
+        return;
+      }
+
       if (!record) {
         // No record present, create one and start the post manager (if not paused)
         if (this.postManager.isPosting()) {
@@ -261,6 +271,7 @@ export class PostQueueService extends PostyBirbService<'PostQueueRecordSchema'> 
         if (isPaused) {
           return;
         }
+
         this.logger
           .withMetadata({ record })
           .info(

@@ -1,11 +1,19 @@
 import {
   BooleanField,
+  DescriptionField,
   RatingField,
   SelectField,
   TagField,
   TitleField,
 } from '@postybirb/form-builder';
-import { DefaultTagValue, SubmissionRating, TagValue } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  SubmissionRating,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class PixivFileSubmission extends BaseWebsiteOptions {
@@ -13,6 +21,11 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
     maxLength: 32,
   })
   title: string;
+
+  @DescriptionField({
+    descriptionType: DescriptionType.PLAINTEXT,
+  })
+  description: DescriptionValue = DefaultDescriptionValue();
 
   @TagField({
     maxTags: 10,

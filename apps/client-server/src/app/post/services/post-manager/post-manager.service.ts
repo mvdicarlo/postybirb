@@ -313,26 +313,21 @@ export class PostManagerService {
     completed = true,
     fileIds?: EntityId[],
   ): Promise<void> {
-    if (fileIds?.length) {
-      fileIds.forEach((id) => {
-        websitePostRecord.metadata.sourceMap[id] = res.sourceUrl ?? null;
-        websitePostRecord.metadata.postedFiles.push(id);
-      });
-    } else {
-      // Only really applies to message submissions
-      websitePostRecord.metadata.source = res.sourceUrl ?? null;
-    }
-
     websitePostRecord.completedAt = completed
       ? new Date().toISOString()
       : undefined;
 
     websitePostRecord.postResponse.push(res);
 
-    if (fileIds.length) {
+    if (fileIds?.length) {
+      fileIds.forEach((id) => {
+        websitePostRecord.metadata.sourceMap[id] = res.sourceUrl ?? null;
+        websitePostRecord.metadata.postedFiles.push(id);
+      });
       this.lastTimeFilePostedToWebsite[websitePostRecord.accountId] =
         new Date();
     } else {
+      websitePostRecord.metadata.source = res.sourceUrl ?? null;
       this.lastTimeMessagePostedToWebsite[websitePostRecord.accountId] =
         new Date();
     }

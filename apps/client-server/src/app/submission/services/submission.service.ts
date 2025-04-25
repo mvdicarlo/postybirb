@@ -315,33 +315,37 @@ export class SubmissionService
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
     const submission = await this.findById(id, { failOnMissing: true });
-    submission.isArchived = update.isArchived ?? submission.isArchived;
-    submission.isScheduled = update.isScheduled ?? submission.isScheduled;
-    submission.schedule = {
-      scheduledFor: update.scheduledFor ?? submission.schedule.scheduledFor,
-      scheduleType: update.scheduleType ?? submission.schedule.scheduleType,
-      cron: update.cron ?? submission.schedule.cron,
-    };
 
-    if (submission.schedule.scheduleType === ScheduleType.NONE) {
-      submission.schedule.scheduledFor = undefined;
-      submission.schedule.cron = undefined;
-      submission.isScheduled = false;
-    }
-
-    // Ensure ISO format
-    if (
-      submission.schedule.scheduleType === ScheduleType.SINGLE &&
-      submission.schedule.scheduledFor
-    ) {
-      submission.schedule.scheduledFor = new Date(
-        submission.schedule.scheduledFor,
-      ).toISOString();
-    }
-
-    submission.metadata = {
-      ...submission.metadata,
-      ...update.metadata,
+    const scheduleType =
+      update.scheduleType ?? submission.schedule.scheduleType;
+    const updates: Pick<
+      SubmissionEntity,
+      'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
+    > = {
+      metadata: {
+        ...submission.metadata,
+        ...(update.metadata ?? {}),
+      },
+      isArchived: update.isArchived ?? submission.isArchived,
+      isScheduled:
+        scheduleType === ScheduleType.NONE
+          ? false
+          : (update.isScheduled ?? submission.isScheduled),
+      schedule:
+        scheduleType === ScheduleType.NONE
+          ? {
+              scheduleType: ScheduleType.NONE,
+              scheduledFor: undefined,
+              cron: undefined,
+            }
+          : {
+              scheduledFor: new Date(
+                update.scheduledFor ?? submission.schedule.scheduledFor,
+              ).toISOString(),
+              scheduleType:
+                update.scheduleType ?? submission.schedule.scheduleType,
+              cron: update.cron ?? submission.schedule.cron,
+            },
     };
 
     const optionChanges: Promise<unknown>[] = [];
@@ -377,11 +381,8 @@ export class SubmissionService
     await Promise.allSettled(optionChanges);
 
     try {
-      await this.repository.update(id, {
-        metadata: submission.metadata,
-        isScheduled: submission.isScheduled,
-        schedule: submission.schedule,
-      });
+      // Update Here
+      await this.repository.update(id, updates);
       this.emit();
       return await this.findById(id);
     } catch (err) {
