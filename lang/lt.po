@@ -1,13 +1,15 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2024-11-30 20:05+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\nX-Generator: Weblate 5.9-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2025-04-24 05:59+0000\nLast-Translator: Vaclovas Intas <Gateway_31@protonmail.com>\nLanguage-Team: Lithuanian <https://hosted.weblate.org/projects/postybirb/postybirb/lt/>\nLanguage: lt\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2);\nX-Generator: Weblate 5.11.1-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:53
-msgid "{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
-msgstr "{fileName} ({fileSizeString}) yra per didelis (didžiausias {maxFileSizeString}) ir siunčiant bus bandoma sumažinti dydį"
+msgid ""
+"{fileName} ({fileSizeString}) is too large (max {maxFileSizeString}) and an "
+"attempt will be made to reduce size when posting"
+msgstr "„{fileName}“ ({fileSizeString}) yra per didelis (daugiausiai {maxFileSizeString}) ir siunčiant bus bandoma sumažinti dydį."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:63
 msgid "{fileName} will be modified to support website requirements"
-msgstr "{fileName} bus modifikuotas, kad atitiktų svetainės reikalavimus"
+msgstr "„{fileName}“ bus modifikuotas, kad atitiktų svetainės reikalavimus."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
@@ -24,11 +26,11 @@ msgstr "Veiksmai"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:183
 msgid "Add folder watcher"
-msgstr "Pridėti aplanko stebėtoją"
+msgstr "Įtraukti aplanko stebėtoją"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:31
 msgid "Allow PostyBirb to insert an Ad into the description"
-msgstr "Leisti „PostyBirb“ įterpti reklamą į aprašymą"
+msgstr "Leisti „PostyBirb“ įterpti reklamą į aprašą"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:15
 msgid "Allow resizing image"
@@ -40,7 +42,7 @@ msgstr "Alternatyvusis tekstas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
 msgid "App Folder"
-msgstr "Programų aplankas"
+msgstr "Programos aplankas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:81
 msgid "App Server Port"
@@ -64,7 +66,7 @@ msgstr "Ar tikrai norite tai ištrinti? Šio veiksmo negalima anuliuoti."
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx:36
 msgid "Are you sure you want to post all selected submissions?"
-msgstr "Ar tikrai norite paskelbti visas pasirinktas pateikimus?"
+msgstr "Ar tikrai norite paskelbti visus pasirinktus pateikimus?"
 
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:58
 msgid "Auto Importers (File Watcher)"
@@ -172,19 +174,19 @@ msgstr "Ištrinti"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:8
 msgid "Description"
-msgstr "Aprašymas"
+msgstr "Aprašas"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:19
 msgid "Description is greater than {maxLength} characters long"
-msgstr "Aprašymas yra ilgesnis nei {maxLength} simbolių"
+msgstr "Aprašas yra ilgesnis nei {maxLength} simbolių."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:25
 msgid "Description is less than {minLength} characters long"
-msgstr "Aprašymas yra trumpesnis nei {minLength} simbolių"
+msgstr "Aprašas yra trumpesnis nei {minLength} simbolių."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:25
 msgid "Description Settings"
-msgstr "Aprašymo nustatymai"
+msgstr "Aprašo nustatymai"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:152
 msgid "Don't post to"
@@ -196,7 +198,8 @@ msgstr "Nutempkite čia vaizdus arba spustelėkite, kad pasirinktumėte failus"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:105
 msgid "Drag or use arrow keys to change order."
-msgstr "Nutempkite arba naudokite rodyklių klavišus, kad pakeistumėte eiliškumą."
+msgstr ""
+"Nutempkite arba naudokite rodyklių klavišus, kad pakeistumėte eiliškumą."
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:62
 msgid "Duplicate"
@@ -221,7 +224,7 @@ msgstr "Įveskite šablono pavadinimą"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:145
 msgid "Enter name to add new account"
-msgstr "Įveskite pavadinimą, kad pridėtumėte naują paskyrą"
+msgstr "Įveskite pavadinimą, kad įtrauktumėte naują paskyrą"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:63
 msgid "Failed to create template"
@@ -234,7 +237,7 @@ msgstr "Nepavyko dubliuoti."
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:152
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:186
 msgid "Failed to queue submission"
-msgstr "Nepavyko įtraukti į eilę pateikimą"
+msgstr "Nepavyko įtraukti į eilę pateikimą."
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:86
 msgid "Failed to save defaults"
@@ -256,7 +259,7 @@ msgstr "Nepavyko patvirtinti pateikimo: {message}."
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:16
 msgid "Feature"
-msgstr "Rekomenduoti"
+msgstr "Rodyti"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:63
 msgid "File submissions"
@@ -277,8 +280,12 @@ msgstr "Aplankas"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:164
 msgctxt "directory-watcher.description"
-msgid "Folder watchers allow you to automatically upload files from a folder to PostyBirb."
-msgstr "Aplankų stebėtojai leidžia automatiškai įkelti failus iš aplanko į „PostyBirb“."
+msgid ""
+"Folder watchers allow you to automatically upload files from a folder to "
+"PostyBirb."
+msgstr ""
+"Aplankų stebėtojai leidžia automatiškai įkelti failus iš aplanko į "
+"„PostyBirb“."
 
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:15
 msgid "Go back"
@@ -315,7 +322,7 @@ msgstr "Kaip sukurti saityno gaudyklę"
 #: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:62
 msgctxt "override-default"
 msgid "Ignore default tags"
-msgstr "Ignoruoti numatytąsias žymes"
+msgstr "Nepaisyti numatytąsias žymes"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:42
 msgid "Insert tags at end"
@@ -343,22 +350,22 @@ msgstr "Prisijungti"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:64
 msgid "Message submissions"
-msgstr ""
+msgstr "Žinutės pateikimai"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:229
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:94
 msgid "Message Submissions"
-msgstr ""
+msgstr "Žinutės pateikimai"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:242
 msgid "Minutes"
-msgstr ""
+msgstr "Minutės (-čių)"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:102
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:171
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:36
 msgid "Name"
-msgstr ""
+msgstr "Pavadinimas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:33
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:40
@@ -372,7 +379,7 @@ msgstr "Nėra elementų"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-login-panel/website-login-panel.tsx:19
 msgid "No login component found."
-msgstr "Nerastas joks prisijungimo komponentas."
+msgstr "Nėra prisijungimo komponentas rastas."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:99
 msgid "No results"
@@ -386,50 +393,50 @@ msgstr "Nieko"
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:17
 msgctxt "internalSchedule.none"
 msgid "None"
-msgstr ""
+msgstr "Nieko"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:118
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:95
 msgid "Not logged in"
-msgstr ""
+msgstr "Neprisijungta"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:21
 msgctxt "internalSchedule.single"
 msgid "Once"
-msgstr ""
+msgstr "Vieną kartą"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:265
 msgid "Only set scheduled date"
-msgstr ""
+msgstr "Nustatyti tik suplanuotą datą"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:72
 msgid "Open PostyBirb on computer startup"
-msgstr ""
+msgstr "Atverti „PostyBirb“ kompiuterio paleidimo metu"
 
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:10
 msgid "Page not found"
-msgstr ""
+msgstr "Puslapis nerastas"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:159
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:193
 msgid "Post"
-msgstr ""
+msgstr "Skelbti"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:42
 msgid "Post a file"
-msgstr ""
+msgstr "Skelbti failą"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:49
 msgid "Post a message"
-msgstr ""
+msgstr "Skelbti žinutę"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:72
 msgid "Post Files"
-msgstr ""
+msgstr "Skelbti failus"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/post-selected-submissions-action.tsx:46
 msgid "Post Selected"
-msgstr ""
+msgstr "Įrašas pasirinktas"
 
 #. Main file data
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:145
@@ -448,7 +455,7 @@ msgstr "Kartojantis"
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:193
 msgctxt "import.override-description"
 msgid "Replace description"
-msgstr "Pakeisti aprašymą"
+msgstr "Pakeisti aprašą"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:184
 msgctxt "import.override-title"
@@ -457,61 +464,61 @@ msgstr "Pakeisti pavadinimą"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:80
 msgid "Requires at least {minLength} tags"
-msgstr ""
+msgstr "Privaloma bent {minLength} žymių"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:48
 msgid "Reset"
-msgstr ""
+msgstr "Atkurti"
 
 #: apps/postybirb-ui/src/app/languages.tsx:7
 msgid "Russian"
-msgstr ""
+msgstr "rusų"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:190
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:171
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:96
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:106
 msgid "Save"
-msgstr ""
+msgstr "Išsaugoti"
 
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:49
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:109
 msgid "Save current form values as the default values for future submissions"
-msgstr ""
+msgstr "Išsaugoti dabartines formos reikšmes kaip numatytąsias reikšmes būsimiems pateikimams"
 
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:56
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:124
 msgid "Save defaults"
-msgstr ""
+msgstr "Išsaugoti numatytuosius"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:120
 msgid "Save folder upload changes"
-msgstr ""
+msgstr "Išsaugoti aplanko įkėlimo pakeitimus"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:146
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:129
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:144
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:91
 msgid "Schedule"
-msgstr ""
+msgstr "Planuoti"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx:201
 msgctxt "schedule.modal-header"
 msgid "Schedule"
-msgstr ""
+msgstr "Planavimas"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx:24
 msgid "Schedule Many"
-msgstr ""
+msgstr "Planuoti daug"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:148
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx:56
 msgid "Search"
-msgstr ""
+msgstr "Ieškoti"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:69
 msgid "Select folder"
-msgstr ""
+msgstr "Pasirinkti aplanką"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:80
 msgid "Send Messages"
@@ -537,33 +544,35 @@ msgstr "Rūšys"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:174
 msgid "Spoiler Text"
-msgstr ""
+msgstr "Atskleidžiamas tekstas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:66
 msgid "Startup Settings"
-msgstr ""
+msgstr "Paleidimo nustatymai"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:49
 msgid "Submission duplicated"
-msgstr ""
+msgstr "Pateikimas sudubliuotas"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:146
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:180
 msgid "Submission queued"
-msgstr ""
+msgstr "Pateikimas įtrauktas į eilę"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:117
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:79
 msgid "Submission scheduled"
-msgstr ""
+msgstr "Pateikimas suplanuotas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:85
 msgid "Submission templates"
-msgstr ""
+msgstr "Pateikimo šablonai"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:31
-msgid "Submission will be split into {expectedBatchesToCreate} different submissions with {maxBatchSize} files each."
-msgstr ""
+msgid ""
+"Submission will be split into {expectedBatchesToCreate} different "
+"submissions with {maxBatchSize} files each."
+msgstr "Pateikimas bus padalytas į {expectedBatchesToCreate} skirtingus pateikimus su {maxBatchSize} failais kiekviename."
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:114
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:48
@@ -573,53 +582,53 @@ msgstr "Pateikimai"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:138
 msgid "Tag"
-msgstr ""
+msgstr "Žymė"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:78
 msgid "Tag converter updated"
-msgstr ""
+msgstr "Žymių konverteris atnaujintas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:223
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:96
 msgid "Tag Converters"
-msgstr ""
+msgstr "Žymių konverteriai"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:85
 msgid "Tag group updated"
-msgstr ""
+msgstr "Žymių grupė atnaujinta"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:203
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:88
 msgid "Tag Groups"
-msgstr ""
+msgstr "Žymių grupės"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:70
 msgid "Tag limit reached ({currentLength} / {maxLength})"
-msgstr ""
+msgstr "Žymių riba pasiekta ({currentLength} / {maxLength})."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:58
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:150
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:9
 msgid "Tags"
-msgstr ""
+msgstr "Žymės"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:92
 msgid "Tags longer than {maxLength} characters will be skipped"
-msgstr ""
+msgstr "Žymės ilgesnės nei {maxLength} simbolių bus praleistos."
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:98
 #: apps/postybirb-ui/src/models/dtos/submission.dto.ts:126
 msgid "Template"
-msgstr ""
+msgstr "Šablonas"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/apply-submission-template-action.tsx:48
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:118
 msgid "Template applied"
-msgstr ""
+msgstr "Šablonas pritaikytas"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:57
 msgid "Template created"
-msgstr ""
+msgstr "Šablonas sukurtas"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:103
 msgid "Template Name"
@@ -627,7 +636,7 @@ msgstr "Šablono pavadinimas"
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:116
 msgid "Template name has been updated"
-msgstr "Atnaujintas šablono pavadinimas"
+msgstr "Šablono pavadinimas atnaujintas"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:110
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:219
@@ -637,12 +646,16 @@ msgid "Templates"
 msgstr "Šablonai"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:105
-msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
-msgstr ""
+msgid ""
+"This is the folder where the app will store its data. You must restart the "
+"app for this to take effect."
+msgstr "Tai – aplankas, kuriame bus saugomi programos duomenys. Kad tai įsigaliotų, turite iš naujo paleisti programą."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:56
-msgid "This will clear all data associated with this account. You will need to log in again."
-msgstr ""
+msgid ""
+"This will clear all data associated with this account. You will need to log "
+"in again."
+msgstr "Tai ištrins visus su šia paskyra susijusius duomenis. Turėsite prisijungti iš naujo."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:195
 msgid "Thumbnail"
@@ -658,26 +671,26 @@ msgstr "Pavadinimas per ilgas."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:102
 msgid "Title is too long and will be truncated"
-msgstr ""
+msgstr "Pavadinimas per ilgas ir bus sutrumpintas."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:118
 msgid "Title is too short"
-msgstr ""
+msgstr "Pavadinimas per trumpas."
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:136
 msgid "Translation {id} not found"
-msgstr ""
+msgstr "Vertimas {id} nerastas."
 
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-form.tsx:231
 msgid "Unable to display form"
-msgstr ""
+msgstr "Nepavyksta rodyti formos."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:116
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:104
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:145
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:90
 msgid "Unknown"
-msgstr ""
+msgstr "Nežinomas"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:66
 msgid "Unknown submission"
@@ -690,7 +703,7 @@ msgstr "Naikinti planavimą"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:42
 msgid "Unsupported file type {mimeType}"
-msgstr "Nepalaikomas failo tipas {mimeType}"
+msgstr "Nepalaikomas failo tipas {mimeType}."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:91
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:98
@@ -715,7 +728,7 @@ msgstr "Įkelti naują miniatiūrą"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:29
 msgid "Use custom description"
-msgstr "Naudoti pasirinktinį aprašymą"
+msgstr "Naudoti pasirinktinį aprašą"
 
 #: apps/postybirb-ui/src/components/form/fields/field-translations.ts:14
 msgid "Use thumbnail"
@@ -723,24 +736,24 @@ msgstr "Naudoti miniatiūrą"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:86
 msgid "Webhook is required"
-msgstr ""
+msgstr "Saityno gaudyklė privaloma."
 
 #: apps/postybirb-ui/src/website-components/discord/discord-validation.tsx:16
 msgid "Webhook name {name} is invalid"
-msgstr ""
+msgstr "Saityno gaudyklės pavadinimas „{name}“ netinkamas."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx:19
 #: apps/postybirb-ui/src/components/form/website-select/website-select.tsx:51
 msgid "Websites"
-msgstr ""
+msgstr "Svetainės"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:122
 msgid "Width"
-msgstr ""
+msgstr "Plotis"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:39
 msgid "Your browser does not support the audio tag."
-msgstr ""
+msgstr "Jūsų naršyklė nepalaiko garso įrašo žymės."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:50
 msgid "Your browser does not support the video tag."
