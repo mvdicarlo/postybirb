@@ -36,7 +36,12 @@ export function useWebsites() {
   const { settingsId, settings } = useSettings();
   const currentSettings = settings;
   const filteredAccounts = useMemo(
-    () => filterWebsites(websites, currentSettings.hiddenWebsites, filterState),
+    () =>
+      filterWebsites(
+        websites,
+        currentSettings.hiddenWebsites || [],
+        filterState,
+      ),
     [currentSettings.hiddenWebsites, filterState, websites],
   );
 

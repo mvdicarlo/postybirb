@@ -3,6 +3,7 @@ import { SelectFieldType, SelectOption } from '@postybirb/form-builder';
 import { getFileType } from '@postybirb/utils/file-type';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { useValidations } from '../hooks/use-validations';
+import { useFormFields } from '../website-option-form/use-form-fields';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
 
@@ -46,26 +47,31 @@ function ensureStringOption(options: SelectOption[]): void {
 }
 
 export function SelectField(props: FormFieldProps<SelectFieldType>) {
-  const { field, form, propKey, submission } = props;
+  const { field, propKey, submission } = props;
+  const { values, setFieldValue } = useFormFields();
   const validations = useValidations(props);
-  const valueProps = form.getInputProps(propKey);
 
+  // Get the value from context
+  const value = values[propKey] || field.defaultValue || '';
   const options = getSelectOptions(field.options, submission);
   ensureStringOption(options);
+
   return (
     <FieldLabel {...props} validationState={validations}>
       {field.allowMultiple ? (
         <MultiSelect
+          value={Array.isArray(value) ? value : []}
+          onChange={(newValue) => setFieldValue(propKey, newValue)}
           clearable
           required={field.required}
-          {...valueProps}
           data={options}
         />
       ) : (
         <Select
+          value={value as string}
+          onChange={(newValue) => setFieldValue(propKey, newValue)}
           clearable
           required={field.required}
-          {...valueProps}
           data={options}
         />
       )}

@@ -15,4 +15,11 @@ export interface IWebsiteMetadata {
    * How often in milliseconds login should be re-checked.
    */
   refreshInterval?: number;
+
+  /**
+   * Minimum wait time before a post can be made after a post has been made.
+   * This is used to prevent the website from being spammed with posts or to avoid
+   * spam detection measures.
+   */
+  minimumPostWaitInterval?: number;
 }

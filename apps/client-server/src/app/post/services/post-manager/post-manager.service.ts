@@ -2,6 +2,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
+  AccountId,
   EntityId,
   FileMetadataFields,
   FileSubmission,
@@ -82,6 +83,10 @@ import { PostFileResizerService } from '../post-file-resizer/post-file-resizer.s
  */
 export class PostManagerService {
   private readonly logger = Logger(this.constructor.name);
+
+  private readonly lastTimeFilePostedToWebsite: Record<AccountId, Date> = {};
+
+  private readonly lastTimeMessagePostedToWebsite: Record<AccountId, Date> = {};
 
   /**
    * The current post being processed.
@@ -308,19 +313,25 @@ export class PostManagerService {
     completed = true,
     fileIds?: EntityId[],
   ): Promise<void> {
+    websitePostRecord.completedAt = completed
+      ? new Date().toISOString()
+      : undefined;
+
+    websitePostRecord.postResponse.push(res);
+
     if (fileIds?.length) {
       fileIds.forEach((id) => {
         websitePostRecord.metadata.sourceMap[id] = res.sourceUrl ?? null;
         websitePostRecord.metadata.postedFiles.push(id);
       });
+      this.lastTimeFilePostedToWebsite[websitePostRecord.accountId] =
+        new Date();
     } else {
-      // Only really applies to message submissions
       websitePostRecord.metadata.source = res.sourceUrl ?? null;
+      this.lastTimeMessagePostedToWebsite[websitePostRecord.accountId] =
+        new Date();
     }
-    websitePostRecord.completedAt = completed
-      ? new Date().toISOString()
-      : undefined;
-    websitePostRecord.postResponse.push(res);
+
     await this.websitePostRecordRepository.update(websitePostRecord.id, {
       completedAt: websitePostRecord.completedAt,
       metadata: websitePostRecord.metadata,
@@ -469,6 +480,8 @@ export class PostManagerService {
           fileIds,
         })
         .info(`Posting file batch to ${instance.id}`);
+      await this.waitForPostingWaitInterval(websitePostRecord);
+      this.cancelToken.throwIfCancelled();
       const result = await instance.onPostFileSubmission(
         data,
         processedFiles,
@@ -647,6 +660,32 @@ export class PostManagerService {
     }
 
     return resizeParams;
+  }
+
+  private async waitForPostingWaitInterval(
+    websitePostRecord: WebsitePostRecord,
+  ) {
+    const websiteInstance = this.websiteRegistry.findInstance(
+      websitePostRecord.account,
+    );
+    const lastTimePosted =
+      this.lastTimeFilePostedToWebsite[websitePostRecord.accountId] ||
+      this.lastTimeMessagePostedToWebsite[websitePostRecord.accountId] ||
+      new Date(0);
+    const waitInterval =
+      websiteInstance.decoratedProps.metadata.minimumPostWaitInterval ?? 0;
+    if (lastTimePosted && waitInterval) {
+      const now = new Date();
+      const timeSinceLastPost = now.getTime() - lastTimePosted.getTime();
+      if (timeSinceLastPost < waitInterval) {
+        this.logger.info(
+          `Waiting for ${waitInterval}ms before posting to ${websiteInstance.id}`,
+        );
+        await new Promise((resolve) => {
+          setTimeout(resolve, waitInterval - timeSinceLastPost);
+        });
+      }
+    }
   }
 
   /**

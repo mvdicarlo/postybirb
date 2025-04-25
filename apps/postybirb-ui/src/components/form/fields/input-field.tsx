@@ -2,6 +2,7 @@ import { TextInput, Textarea } from '@mantine/core';
 import { TextFieldType } from '@postybirb/form-builder';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
+import { useFormFields } from '../website-option-form/use-form-fields';
 import { FieldCopyButton } from './field-copy-button';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
@@ -11,12 +12,13 @@ type CommonFieldProps = {
 };
 
 function TextField(props: FormFieldProps<TextFieldType> & CommonFieldProps) {
-  const { propKey, form, field, defaultValue } = props;
-  const inputProps = form.getInputProps(propKey);
-  const value = inputProps.defaultValue || '';
+  const { propKey, field, defaultValue } = props;
+  const { values, setFieldValue } = useFormFields();
+  const value: string =
+    (values[propKey] as string) ?? (field.defaultValue || '');
   return (
     <TextInput
-      {...inputProps}
+      value={value}
       required={field.required}
       placeholder={defaultValue}
       w="100%"
@@ -27,6 +29,9 @@ function TextField(props: FormFieldProps<TextFieldType> & CommonFieldProps) {
           : undefined
       }
       rightSection={<FieldCopyButton value={value} />}
+      onChange={(e) => {
+        setFieldValue(propKey, e.currentTarget.value);
+      }}
     />
   );
 }
@@ -34,13 +39,13 @@ function TextField(props: FormFieldProps<TextFieldType> & CommonFieldProps) {
 function TextAreaField(
   props: FormFieldProps<TextFieldType> & CommonFieldProps,
 ) {
-  const { propKey, form, field, defaultValue } = props;
-  const inputProps = form.getInputProps(propKey);
-  const value = inputProps.defaultValue || '';
-
+  const { propKey, field, defaultValue } = props;
+  const { values, setFieldValue } = useFormFields();
+  const value: string =
+    (values[propKey] as string) ?? (field.defaultValue || '');
   return (
     <Textarea
-      {...inputProps}
+      value={value}
       required={field.required}
       placeholder={defaultValue}
       w="100%"
@@ -51,6 +56,9 @@ function TextAreaField(
           : undefined
       }
       rightSection={<FieldCopyButton value={value} />}
+      onChange={(e) => {
+        setFieldValue(propKey, e.currentTarget.value);
+      }}
     />
   );
 }

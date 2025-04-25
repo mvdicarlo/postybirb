@@ -34,7 +34,7 @@ export function FieldLabel(
   const { errors, warnings } = validationState;
   const { _ } = useLingui();
 
-  const label = getTranslatedLabel(field, _);
+  const label = field.label ? getTranslatedLabel(field, _) : undefined;
 
   return (
     <Input.Wrapper required={field.required} label={label}>

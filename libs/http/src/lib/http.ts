@@ -8,6 +8,7 @@ import {
 import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
+import { FormFile } from './form-file';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods
 const RESTRICTED_HEADERS: string[] = [
@@ -165,10 +166,17 @@ export class Http {
             return;
           }
 
-          if (value.options && value.value) {
-            form.append(key, value.value, value.options);
+          if (value instanceof FormFile) {
+            form.append(key, value.buffer, value.fileOptions);
           } else if (Array.isArray(value)) {
-            form.append(key, JSON.stringify(value));
+            value.forEach((v) => {
+              // handle file objects
+              if (v instanceof FormFile) {
+                form.append(key, v.buffer, v.fileOptions);
+              } else {
+                form.append(key, v);
+              }
+            });
           } else {
             form.append(key, value);
           }

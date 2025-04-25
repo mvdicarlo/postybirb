@@ -83,4 +83,7 @@ export type FieldType<
     key: keyof T;
     populate: string;
   }[];
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  showWhen?: Array<[keyof T, any[]]>;
 };

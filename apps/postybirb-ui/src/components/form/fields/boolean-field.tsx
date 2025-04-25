@@ -1,18 +1,38 @@
 import { useLingui } from '@lingui/react';
 import { Checkbox } from '@mantine/core';
-import { BooleanFieldType } from '@postybirb/form-builder';
-import { getTranslatedLabel } from './field-label';
+import { BooleanFieldType, FieldType } from '@postybirb/form-builder';
+import { useValidations } from '../hooks/use-validations';
+import { useFormFields } from '../website-option-form/use-form-fields';
+import { FieldLabel, getTranslatedLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
 
 export function BooleanField(props: FormFieldProps<BooleanFieldType>) {
-  const { propKey, field, form } = props;
+  const { field, propKey } = props;
   const { _ } = useLingui();
-  const valueProps = form.getInputProps(propKey);
+  const { values, setFieldValue } = useFormFields();
+  const validations = useValidations(props);
+
+  // Ensure value is explicitly cast to boolean
+  const value = Boolean(
+    values[propKey] !== undefined
+      ? values[propKey]
+      : field.defaultValue || false,
+  );
+
+  const labelLessField = {
+    ...field,
+    label: undefined,
+  } as unknown as FieldType<boolean, string>;
+
   return (
-    <Checkbox
-      {...valueProps}
-      defaultChecked={valueProps.defaultValue || false}
-      label={getTranslatedLabel(field, _)}
-    />
+    <FieldLabel {...props} field={labelLessField} validationState={validations}>
+      <Checkbox
+        checked={value}
+        onChange={(event) =>
+          setFieldValue(propKey, event.currentTarget.checked)
+        }
+        label={getTranslatedLabel(field, _)}
+      />
+    </FieldLabel>
   );
 }

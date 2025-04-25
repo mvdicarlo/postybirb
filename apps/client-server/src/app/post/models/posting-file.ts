@@ -1,3 +1,4 @@
+import { FormFile } from '@postybirb/http';
 import {
   FileMetadataFields,
   FileType,
@@ -64,27 +65,21 @@ export class PostingFile {
     return this;
   }
 
-  public toPostFormat(): FormDataFileFormat {
-    return {
-      value: this.buffer,
-      options: {
-        contentType: this.mimeType,
-        filename: this.fileName,
-      },
-    };
+  public toPostFormat(): FormFile {
+    return new FormFile(this.buffer, {
+      contentType: this.mimeType,
+      filename: this.fileName,
+    });
   }
 
-  public thumbnailToPostFormat(): FormDataFileFormat | undefined {
+  public thumbnailToPostFormat(): FormFile | undefined {
     if (!this.thumbnail) {
       return undefined;
     }
 
-    return {
-      value: this.thumbnail.buffer,
-      options: {
-        contentType: this.thumbnail.mimeType,
-        filename: this.thumbnail.fileName,
-      },
-    };
+    return new FormFile(this.thumbnail.buffer, {
+      contentType: this.thumbnail.mimeType,
+      filename: this.thumbnail.fileName,
+    });
   }
 }
