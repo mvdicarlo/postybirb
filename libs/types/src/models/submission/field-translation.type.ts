@@ -18,6 +18,7 @@ export interface FieldTranslations {
   aIGenerated: true;
   matureContent: true;
   containsContent: true;
+  channel: true;
 }
 
 export type FieldTranslationId = keyof FieldTranslations;

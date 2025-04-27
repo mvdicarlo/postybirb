@@ -1,4 +1,5 @@
 export * from './account/account.interface';
+export * from './account/custom-routes.type';
 export * from './common/dynamic-object';
 export * from './database/entity-primitive.type';
 export * from './database/entity.interface';

@@ -1,5 +1,6 @@
 import { CustomLoginComponentProvider } from '../models/custom-login-component-provider';
 import DiscordLoginView from './discord/discord-login-view';
+import TelegramLoginView from './telegram/telegram-login-view';
 
 const CustomLoginComponents: Record<
   string,
@@ -7,6 +8,7 @@ const CustomLoginComponents: Record<
   CustomLoginComponentProvider<any>
 > = Object.freeze({
   Discord: DiscordLoginView,
+  Telegram: TelegramLoginView,
 });
 
 export function getCustomLoginComponent(

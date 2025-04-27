@@ -8,5 +8,8 @@
     "target": "es2021"
   },
   "exclude": ["**/*.spec.ts", "**/*.test.ts", "jest.config.ts"],
-  "include": ["**/*.ts"]
+  "include": [
+    "**/*.ts",
+    "../../libs/types/src/website-public/telegram-account-data.ts"
+  ]
 }

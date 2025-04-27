@@ -1,5 +1,7 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
+  CustomRouteHandlers,
+  CustomRoutes,
   DynamicObject,
   ILoginState,
   LoginState,
@@ -42,8 +44,10 @@ export abstract class Website<D extends DynamicObject> {
    * information for a website instance.
    *
    * Commons things that go here would be folders.
+   *
+   * This is not persisted across app restarts.
    */
-  protected readonly retrievedWebsiteData: DynamicObject = {};
+  protected readonly sessionData: DynamicObject = {};
 
   /**
    * Tracks the login state of a website.
@@ -167,7 +171,7 @@ export abstract class Website<D extends DynamicObject> {
    */
   public getFormProperties(): DynamicObject {
     const longTermData = this.getWebsiteData();
-    const shortTermData = this.retrievedWebsiteData;
+    const shortTermData = this.sessionData;
     return {
       ...longTermData,
       ...shortTermData,
@@ -237,6 +241,11 @@ export abstract class Website<D extends DynamicObject> {
    * Method that runs whenever a user closes the login page or on a scheduled interval.
    */
   public abstract onLogin(): Promise<ILoginState>;
+
+  /**
+   * Methods that can be called using accountApi.customRoute
+   */
+  public onCustomRoute: CustomRouteHandlers<CustomRoutes> = {};
 
   // -------------- End Event Methods --------------
 }

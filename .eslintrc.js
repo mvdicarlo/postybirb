@@ -32,14 +32,8 @@ module.exports = {
       rules: {
         ...(prettierExtension
           ? {}
-          : {
-              'prettier/prettier': [
-                'error',
-                {
-                  endOfLine: 'crlf',
-                },
-              ],
-            }),
+          : { 'prettier/prettier': ['error', { endOfLine: 'crlf' }] }),
+
         '@nrwl/nx/enforce-module-boundaries': [
           'error',
           {
@@ -48,13 +42,14 @@ module.exports = {
             // We allow it because we need to use import from
             // postybirb-ui to make jump-to definition in the
             // FieldType.label
-            allow: ['@postybirb/form-builder'],
+            allow: [
+              '@postybirb/form-builder',
+              '@postybirb/ui',
+              '@postybirb/types',
+            ],
 
             depConstraints: [
-              {
-                sourceTag: '*',
-                onlyDependOnLibsWithTags: ['*'],
-              },
+              { sourceTag: '*', onlyDependOnLibsWithTags: ['*'] },
             ],
           },
         ],
@@ -63,25 +58,38 @@ module.exports = {
     {
       files: ['*.ts', '*.tsx'],
       extends: ['plugin:@nrwl/nx/typescript'],
-      rules: {},
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+        'no-continue': 'off',
+      },
     },
     {
       files: ['*.js', '*.jsx'],
       extends: ['plugin:@nrwl/nx/javascript'],
-      rules: {},
+      rules: {
+        '@typescript-eslint/no-unused-vars': 'off',
+      },
     },
   ],
   rules: {
     'no-nested-ternary': 'off',
-    'class-methods-use-this': 'off',
+    'no-continue': 'off',
     'no-await-in-loop': 'off',
+    'no-restricted-syntax': 'off',
+    'class-methods-use-this': 'off',
+    'no-plusplus': 'off',
+
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
+
     'react/jsx-props-no-spreading': 'off',
     'react/react-in-jsx-scope': 'off',
-    'no-restricted-syntax': 'off',
+    'react/no-unescaped-entities': 'off',
+
     '@typescript-eslint/ban-types': 'warn',
     '@typescript-eslint/no-unused-vars': 'off',
+    '@typescript-eslint/no-use-before-define': 'off',
+
     'import/extension': 'off',
     'import/no-extraneous-dependencies': [
       'warn',

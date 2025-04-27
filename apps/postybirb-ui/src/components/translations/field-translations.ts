@@ -1,6 +1,7 @@
 import { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/macro';
-import { FieldTranslations } from '@postybirb/types';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import type { FieldTranslations } from '@postybirb/types';
 
 export const FieldLabelTranslations: {
   [K in keyof FieldTranslations]: MessageDescriptor;
@@ -24,4 +25,5 @@ export const FieldLabelTranslations: {
   aIGenerated: msg`AI generated`,
   matureContent: msg`Mature content`,
   containsContent: msg`Contains content`,
+  channel: msg`Channel`,
 };

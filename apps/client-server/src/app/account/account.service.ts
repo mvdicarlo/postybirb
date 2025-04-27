@@ -21,6 +21,7 @@ import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { CustomWebsiteRouteDto } from './dtos/custom-website-route.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
@@ -272,6 +273,17 @@ export class AccountService
     );
     const instance = this.websiteRegistry.findInstance(account);
     await instance.setWebsiteData(setWebsiteDataRequestDto.data);
+  }
+
+  async customRoute(customRouteDto: CustomWebsiteRouteDto) {
+    this.logger.info(`Custom website route for '${customRouteDto.id}'`);
+
+    const account = await this.findById(customRouteDto.id, {
+      failOnMissing: true,
+    });
+    const instance = this.websiteRegistry.findInstance(account);
+
+    return instance.onCustomRoute[customRouteDto.route](customRouteDto.data);
   }
 
   private injectWebsiteInstance(account?: Account): Account | null {

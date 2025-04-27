@@ -9,6 +9,7 @@ import { AccountId } from '@postybirb/types';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
+import { CustomWebsiteRouteDto } from './dtos/custom-website-route.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
 import { UpdateAccountDto } from './dtos/update-account.dto';
 
@@ -62,5 +63,11 @@ export class AccountController extends PostyBirbController<'AccountSchema'> {
   @ApiOkResponse({ description: 'Account data set.' })
   setWebsiteData(@Body() oauthRequestDto: SetWebsiteDataRequestDto) {
     return this.service.setAccountData(oauthRequestDto);
+  }
+
+  @Post('/custom-route')
+  @ApiOkResponse({ description: 'Custom route called.' })
+  customWebsiteRoute(@Body() customRouteDto: CustomWebsiteRouteDto) {
+    return this.service.customRoute(customRouteDto);
   }
 }

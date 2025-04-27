@@ -2,7 +2,8 @@
 // to make jump-to definitions and to simplify DX
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { FieldTranslationId, FieldTranslations } from '@postybirb/types';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import type { FieldTranslationId, FieldTranslations } from '@postybirb/types';
 import { PrimitiveRecord } from './primitive-record';
 
 type Translations =
@@ -41,7 +42,7 @@ export type FieldType<
   formField?: F;
 
   /**
-   * The translation id of the label to display. All possible values can be found here: {@link Translations.fieldLabelTranslations|fieldLabelTranslations} and here: {@link FieldTranslations}.
+   * The translation id of the label to display. All possible values can be found here: {@link Translations} and here: {@link FieldTranslations}.
    */
   label: FieldTranslationId;
 
