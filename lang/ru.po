@@ -23,13 +23,17 @@ msgstr ""
 msgid "{0} tags imported from clipboard"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:155
+msgid "2FA enabled, password required. We won't store it."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:208
 msgid "Account"
-msgstr ""
+msgstr "Аккаунт"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:282
 msgid "Account Name"
-msgstr ""
+msgstr "Названия аккаунта"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:97
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:77
@@ -46,30 +50,30 @@ msgstr "Действия"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:223
 msgid "Add"
-msgstr ""
+msgstr "Добавить"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:179
 msgid "Add Account"
-msgstr ""
+msgstr "Добавить аккаунт"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:183
 msgid "Add folder watcher"
 msgstr "Добавить мониторинг папки"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:24
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:25
 msgid "AI generated"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:143
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx:318
 msgid "All"
-msgstr ""
+msgstr "Все"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:63
 msgid "All files are marked ignored."
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:21
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:22
 msgid "Allow other users to edit tags"
 msgstr ""
 
@@ -79,7 +83,7 @@ msgstr "Вставлять рекламу PostyBirb в описания пост
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:166
 msgid "Alt Text"
-msgstr "Alt текст"
+msgstr "Замещающий текст"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:330
 msgid "App"
@@ -127,6 +131,10 @@ msgstr ""
 msgid "Audio"
 msgstr "Аудио"
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:232
+msgid "Authenticate"
+msgstr ""
+
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:74
 msgid "Auto Importers (File Watcher)"
 msgstr "Авто-импортеры (При изменении папки)"
@@ -151,13 +159,21 @@ msgstr ""
 msgid "Cancel"
 msgstr "Отмена"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:19
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:20
 msgid "Category"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx:44
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx:54
 msgid "Change language"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:28
+msgid "Channel"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:116
+msgid "Check your telegram messages"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx:34
@@ -200,6 +216,22 @@ msgstr ""
 msgid "Click to select folder"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:148
+msgid "Cloud Password"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:130
+msgid "Code"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:136
+msgid "Code invalid, ensure it matches the code sent from telegram"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:115
+msgid "Code sent"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:129
 msgid "Compact"
 msgstr ""
@@ -208,11 +240,11 @@ msgstr ""
 msgid "Confirm Unschedule"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:26
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:27
 msgid "Contains content"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:13
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:14
 msgid "Content warning"
 msgstr "Предупреждение (CW)"
 
@@ -348,7 +380,7 @@ msgid "Delete item"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:337
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:8
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:9
 msgid "Description"
 msgstr "Описание"
 
@@ -460,8 +492,16 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:222
+msgid "Error while authenticating Telegram"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:144
 msgid "Failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:213
+msgid "Failed to authenticate Telegram."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx:63
@@ -495,6 +535,10 @@ msgstr "Не удалось сохранить метаданные файлов
 msgid "Failed to schedule submission"
 msgstr "Не удалось отложить пост"
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:109
+msgid "Failed to send code to begin authentication."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx:190
 msgid "Failed to Unschedule"
 msgstr ""
@@ -516,7 +560,7 @@ msgstr "Не удалось проверить пост: {message}"
 msgid "Fallback Text"
 msgstr "Резервный текст"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:14
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:15
 msgid "Feature"
 msgstr "Избранное (Featured)"
 
@@ -547,7 +591,7 @@ msgid "File will be modified to support website requirements"
 msgstr "Файл будет изменен для поддержки требований сайта"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:65
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:20
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:21
 msgid "Folder"
 msgstr "Папка"
 
@@ -573,7 +617,7 @@ msgstr ""
 msgid "Group Name"
 msgstr "Имя группы"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:23
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:24
 msgid "Has sexual content"
 msgstr ""
 
@@ -598,7 +642,7 @@ msgstr ""
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx:79
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx:124
 msgid "History"
-msgstr ""
+msgstr "История"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:84
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:36
@@ -651,11 +695,11 @@ msgstr "Неверный тип файла"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:129
 msgid "Is a forum"
-msgstr ""
+msgstr "Форум"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx:194
 msgid "Last modified:"
-msgstr ""
+msgstr "Изменено:"
 
 #: apps/postybirb-ui/src/app/languages.tsx:9
 msgid "Lithuanian"
@@ -663,7 +707,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:144
 msgid "Logged In"
-msgstr ""
+msgstr "Вход выполнен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:106
 msgid "Login"
@@ -681,7 +725,7 @@ msgstr ""
 msgid "Mark as Unread"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:25
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:26
 msgid "Mature content"
 msgstr ""
 
@@ -728,11 +772,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:317
 msgid "No accounts added yet"
-msgstr ""
+msgstr "Нет добавленных аккаунтов"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:523
 msgid "No history available"
-msgstr ""
+msgstr "Нет доступной истории"
 
 #: apps/postybirb-ui/src/components/translations/component-translations.tsx:4
 msgid "No items"
@@ -794,24 +838,24 @@ msgstr "Нет"
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:17
 msgctxt "internalSchedule.none"
 msgid "None"
-msgstr "Никакой"
+msgstr "Нет"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:99
 #: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:95
 msgid "Not logged in"
-msgstr "Нет входа"
+msgstr "Вход не выполнен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:145
 msgid "Not Logged In"
-msgstr ""
+msgstr "Вход не выполнен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx:291
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:344
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:174
 msgid "Notifications"
-msgstr ""
+msgstr "Уведомления"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:18
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:19
 msgid "Notify followers"
 msgstr ""
 
@@ -832,7 +876,7 @@ msgstr "Использовать только указанные для сайт
 msgid "Open PostyBirb on computer startup"
 msgstr "Открыть PostyBirb при запуске компьютера"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:22
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:23
 msgid "Original work"
 msgstr ""
 
@@ -843,6 +887,10 @@ msgstr "Только перезаписать. Сохранит все опци�
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx:10
 msgid "Page not found"
 msgstr "Страница не найдена"
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:151
+msgid "Password is invalid"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:569
 msgid "Paste"
@@ -858,6 +906,15 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:416
 msgid "Paste tags from clipboard"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:79
+msgid "Phone Number (International Format)"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:84
+msgctxt "telegram.phone-number-help"
+msgid "Phone number must be in international format <0/>"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:331
@@ -876,7 +933,7 @@ msgstr "Опубликовать текст"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:92
 msgid "Post Files"
-msgstr "Файлы"
+msgstr "Посты"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:245
 msgid "Post Record"
@@ -891,7 +948,7 @@ msgstr "Опубликовать выбранные"
 msgid "Primary"
 msgstr "Основные значения"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:11
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:12
 msgid "Rating"
 msgstr "Рейтинг"
 
@@ -910,8 +967,12 @@ msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Заменить заголовок"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:17
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:18
 msgid "Request critique"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:159
+msgid "Required if 2FA is enabled."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx:123
@@ -1014,6 +1075,10 @@ msgstr ""
 msgid "Select which notifications to delete:"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:122
+msgid "Send code"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:100
 msgid "Send Messages"
 msgstr "Сообщения"
@@ -1038,7 +1103,7 @@ msgstr "Настройки"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx:116
 msgid "Show All"
-msgstr ""
+msgstr "Показать все"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:110
 msgid "Show notification on file watcher error"
@@ -1058,7 +1123,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx:295
 msgid "sites"
-msgstr ""
+msgstr "сайты"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:46
 msgctxt "submission.file-size"
@@ -1079,13 +1144,13 @@ msgstr ""
 msgid "Spanish"
 msgstr "Испанский"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:12
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:13
 msgid "Species"
 msgstr "Виды"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:15
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:16
 msgid "Spoiler"
-msgstr ""
+msgstr "Спойлер"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:177
 msgid "Spoiler Text"
@@ -1098,11 +1163,11 @@ msgstr "Настройки запуска"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx:287
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:211
 msgid "Status"
-msgstr ""
+msgstr "Статус"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:408
 msgid "Submission deleted"
-msgstr ""
+msgstr "Пост удален"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:48
 msgid "Submission duplicated"
@@ -1157,6 +1222,10 @@ msgstr "Посты"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx:357
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx:140
 msgid "Success"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:191
+msgid "Success!"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/theme-picker.tsx:23
@@ -1226,7 +1295,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:184
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:409
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:9
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:10
 msgid "Tags"
 msgstr "Теги"
 
@@ -1240,6 +1309,10 @@ msgstr "Тэги длиннее чем {maxLength} будут пропущены
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx:307
 msgid "Tags Pasted"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:190
+msgid "Telegram authenticated."
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:110
@@ -1289,7 +1362,7 @@ msgstr "Это действие очистит все данные, связан
 msgid "Thumbnail"
 msgstr "Набросок (Маленькая картинка)"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:10
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:11
 msgid "Title"
 msgstr "Название"
 
@@ -1386,13 +1459,13 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx:41
 msgid "Use custom description"
-msgstr "Кастомное описание"
+msgstr "Перезаписать описание"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx:107
 msgid "Use this template for a new submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:16
+#: apps/postybirb-ui/src/components/translations/field-translations.ts:17
 msgid "Use title"
 msgstr ""
 
@@ -1432,6 +1505,11 @@ msgstr "Сайты"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx:125
 msgid "Width"
 msgstr "Ширина"
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx:59
+msgctxt "telegram.app-id-help"
+msgid "You must create your own app configuration <0/>"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx:39
 msgid "Your browser does not support the audio tag."

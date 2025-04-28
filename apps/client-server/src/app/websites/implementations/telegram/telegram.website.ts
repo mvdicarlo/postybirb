@@ -51,9 +51,12 @@ export default class Telegram
 
   private clients = new Map<number, TelegramClient>();
 
-  private async getClient(account: TelegramAccountData) {
+  private async getTelegramClient(account: TelegramAccountData) {
     let client = this.clients.get(account.appId);
     if (!client) {
+      this.logger.info(
+        `Creating client for ${account.appId} with session present ${!!account.session}`,
+      );
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
         account.appId,
@@ -75,9 +78,9 @@ export default class Telegram
         ...request,
         session: undefined,
       };
-      const client = await this.getClient(account);
+      const telegram = await this.getTelegramClient(account);
       await this.setWebsiteData(account);
-      await client.sendCode(
+      await telegram.sendCode(
         { apiId: request.appId, apiHash: request.appHash },
         request.phoneNumber,
       );
@@ -92,10 +95,10 @@ export default class Telegram
         ...request,
         session: undefined,
       };
-      const client = await this.getClient(account);
+      const telegram = await this.getTelegramClient(account);
 
       try {
-        await client.start({
+        await telegram.start({
           phoneNumber: request.phoneNumber,
           password: async () => request.password,
           phoneCode: async () => request.code,
@@ -121,45 +124,55 @@ export default class Telegram
     },
   };
 
-  private async loadChannels(client: TelegramClient) {
+  private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders');
     const channels: SelectOptionSingle[] = [];
     let total = 0;
 
-    for await (const dialog of client.iterDialogs({ ignoreMigrated: true })) {
+    for await (const dialog of telegram.iterDialogs()) {
       total++;
       if (!this.canSendMediaInChat(dialog)) continue;
       if (!dialog.id) continue;
-
-      const id = dialog.id.toString();
-      if (channels.some((e) => e.value === id)) continue;
 
       channels.push({
         label: dialog.title ?? dialog.name,
         value: dialog.id.toString(),
       });
-      this.setWebsiteData({ ...this.getWebsiteData(), channels });
+      this.setWebsiteData({ ...this.websiteDataStore.getData(), channels });
     }
 
+    console.log(channels.map((e) => e.label));
+
     this.logger.info(
-      `Loaded folders ${total} total and ${channels.length} filtered`,
+      `Loaded folders ${total} total and ${channels.length} filtered.`,
     );
   }
 
   private canSendMediaInChat(chat: Dialog) {
     if (chat.archived) return false;
-    if (chat.isUser) return false;
 
-    return true;
+    if (chat.entity.className !== 'Channel' && chat.entity.className !== 'Chat')
+      return false;
+    if (chat.entity.left) return false;
+
+    if (
+      chat.entity.creator ||
+      chat.entity.adminRights?.postMessages ||
+      // Right is not banned -> user can send media
+      chat.entity.defaultBannedRights?.sendMedia === false
+    )
+      return true;
+
+    return false;
   }
 
   public async onLogin(): Promise<ILoginState> {
-    const account = this.getWebsiteData();
+    const account = this.websiteDataStore.getData();
     if (!account.appHash || !account.appId || !account.phoneNumber) {
       return this.loginState.setLogin(false, null);
     }
 
-    const client = await this.getClient(account);
+    const client = await this.getTelegramClient(account);
     if (await client.isUserAuthorized()) {
       const me = await client.getMe();
       const session = (client.session as StringSession).save();

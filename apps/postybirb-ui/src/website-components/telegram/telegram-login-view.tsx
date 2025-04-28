@@ -191,20 +191,23 @@ export default function TelegramLoginView(
                           message: <Trans>Success!</Trans>,
                           color: 'green',
                         });
+                        setPassword('');
                         setIsAuthenticating(false);
                       } else {
                         if (res.passwordRequired) {
                           setPasswordRequired(true);
+
                           // Send new code without closing dialog
-                          submit();
+                          // Don't do it without immediate because isAuthenticated will be overriden by Promise.finally
+                          setImmediate(submit);
                         }
-                        if (res.passwordInvalid) {
-                          setPasswordInvalid(true);
-                        }
-                        if (res.codeInvalid) {
-                          setCode('');
+
+                        if (res.passwordInvalid) setPasswordInvalid(true);
+
+                        // For some reason if password is required it replies with both errors
+                        if (res.codeInvalid && !res.passwordInvalid)
                           setCodeInvalid(true);
-                        }
+
                         notifications.show({
                           title: (
                             <Trans>Failed to authenticate Telegram.</Trans>
