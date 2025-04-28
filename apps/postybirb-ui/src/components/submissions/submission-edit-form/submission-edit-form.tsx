@@ -58,8 +58,9 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           .filter((o) => !o.isDefault)
           .reduce(
             (acc, option) => {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const account = accounts.find((a) => a.id === option.accountId)!;
+              const account = accounts.find((a) => a.id === option.accountId);
+              if (!account) return acc;
+
               const websiteId = account.website;
               if (!acc[websiteId]) {
                 acc[websiteId] = {
