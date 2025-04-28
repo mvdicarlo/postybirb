@@ -38,7 +38,11 @@ export class AccountController extends PostyBirbController<'AccountSchema'> {
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   async clear(@Param('id') id: AccountId) {
     await this.service.clearAccountData(id);
-    return this.service.manuallyExecuteOnLogin(id);
+    try {
+      this.service.manuallyExecuteOnLogin(id);
+    } catch {
+      // For some reason throws error that crashes app when deleting account
+    }
   }
 
   @Get('/refresh/:id')
