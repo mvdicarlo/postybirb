@@ -34,7 +34,12 @@ export class DescriptionInlineNode
       }) ?? [];
   }
 
-  private getUsernameShortcutLink(id: string) {
+  private getUsernameShortcutLink(id: string):
+    | undefined
+    | {
+        url: string;
+        username: string;
+      } {
     const username = this.content
       .map((child) => child.text)
       .join('')
@@ -84,5 +89,24 @@ export class DescriptionInlineNode
     return `<span>${this.content
       .map((child) => child.toHtmlString())
       .join('')}</span>`;
+  }
+
+  toBBCodeString(): string {
+    if (!this.content.length) return '';
+    if (this.type === 'link') {
+      return `[url=${this.href ?? this.props.href}]${this.content
+        .map((child) => child.toBBCodeString())
+        .join('')}[/url]`;
+    }
+
+    if (this.type === 'username') {
+      const sc = this.getUsernameShortcutLink(this.props.shortcut);
+      if (sc?.url.startsWith('http')) {
+        return `[url=${sc.url}]${sc.username}[/url]`;
+      }
+      return sc ? `${sc.username}` : '';
+    }
+
+    return this.content.map((child) => child.toBBCodeString()).join('');
   }
 }

@@ -72,6 +72,7 @@ module.exports = {
     },
   ],
   rules: {
+    'no-plusplus': 'off',
     'no-nested-ternary': 'off',
     'class-methods-use-this': 'off',
     'no-await-in-loop': 'off',

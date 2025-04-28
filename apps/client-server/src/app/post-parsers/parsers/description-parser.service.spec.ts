@@ -13,6 +13,7 @@ import { SettingsService } from '../../settings/settings.service';
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { UnknownWebsite } from '../../websites/website';
+import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
 import { DescriptionParserService } from './description-parser.service';
 
 describe('DescriptionParserService', () => {
@@ -270,6 +271,115 @@ describe('DescriptionParserService', () => {
     expect(description).toEqual(
       '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div>',
     );
+  });
+
+  it('should merge similar description blocks', async () => {
+    const unmerged = [
+      {
+        id: '5ab98087-8624-43fc-987f-80f0bdcf84d9',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'Test\nIn the same block!',
+            styles: {},
+          },
+        ],
+        children: [],
+      },
+      {
+        id: '6930a7e1-e6d2-4480-9ecb-34e1089580a2',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'New block',
+            styles: {},
+          },
+        ],
+        children: [],
+      },
+      {
+        id: '8573e2d6-9294-4a89-b08a-c751f8847913',
+        type: 'paragraph',
+        props: {
+          textColor: 'yellow',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'block',
+            styles: {},
+          },
+        ],
+        children: [],
+      },
+    ];
+
+    const expected = [
+      {
+        id: '5ab98087-8624-43fc-987f-80f0bdcf84d9',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'Test\nIn the same block!',
+            styles: {},
+          },
+          {
+            type: 'text',
+            text: '\n',
+            styles: {},
+            props: {},
+          },
+          {
+            type: 'text',
+            text: 'New block',
+            styles: {},
+          },
+        ],
+        children: [],
+      },
+      {
+        id: '8573e2d6-9294-4a89-b08a-c751f8847913',
+        type: 'paragraph',
+        props: {
+          textColor: 'yellow',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: 'block',
+            styles: {},
+          },
+        ],
+        children: [],
+      },
+    ];
+
+    const merged = service.mergeBlocks(
+      unmerged as unknown as Array<IDescriptionBlockNode>,
+    );
+    expect(merged).toEqual(expected);
   });
 
   // TODO: Add test for description type CUSTOM
