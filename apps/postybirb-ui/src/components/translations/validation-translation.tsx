@@ -160,6 +160,10 @@ export const TranslationMessages: Partial<TranslationsMap> = {
       </>
     );
   },
+
+  'validation.file.itaku.must-share-feed': () => (
+    <Trans>Share on Feed is required to support posting multiple files.</Trans>
+  ),
 };
 
 export function ValidationTranslation(

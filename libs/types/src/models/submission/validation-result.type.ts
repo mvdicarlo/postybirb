@@ -137,4 +137,7 @@ export interface ValidationMessages {
     currentLength: number;
     minLength: number;
   };
+
+  // ----------- Website specific validation messages --------------
+  'validation.file.itaku.must-share-feed': object;
 }

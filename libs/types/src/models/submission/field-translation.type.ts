@@ -18,6 +18,8 @@ export interface FieldTranslations {
   aIGenerated: true;
   matureContent: true;
   containsContent: true;
+  shareOnFeed: true;
+  visibility: true;
 }
 
 export type FieldTranslationId = keyof FieldTranslations;

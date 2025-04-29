@@ -24,4 +24,6 @@ export const FieldLabelTranslations: {
   aIGenerated: msg`AI generated`,
   matureContent: msg`Mature content`,
   containsContent: msg`Contains content`,
+  shareOnFeed: msg`Share on feed`,
+  visibility: msg`Visibility`,
 };
