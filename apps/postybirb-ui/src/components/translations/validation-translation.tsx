@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Plural, Trans } from '@lingui/macro';
 import { Text } from '@mantine/core';
 import {
   FileType,
@@ -35,7 +35,8 @@ export const TranslationMessages: TranslationsMap = {
     return (
       <Trans>
         Submission will be split into {expectedBatchesToCreate} different
-        submissions with {maxBatchSize} files each.
+        submissions with {maxBatchSize}{' '}
+        <Plural value={maxBatchSize} one="file each" other="files each" />.
       </Trans>
     );
   },
@@ -120,7 +121,10 @@ export const TranslationMessages: TranslationsMap = {
     const { minLength, currentLength } = props;
     return (
       <>
-        <Trans>Requires at least {minLength} tags</Trans>
+        <Trans>
+          Requires at least {minLength}{' '}
+          <Plural value={minLength} one="tag" other="tags" />
+        </Trans>
         <Text inherit span>
           {' '}
           ({currentLength} / {minLength})
@@ -158,6 +162,22 @@ export const TranslationMessages: TranslationsMap = {
       <>
         <Trans>Title is too short</Trans> ({currentLength} / {minLength})
       </>
+    );
+  },
+
+  'validation.select-field.min-selected': (props) => {
+    const { currentSelected, minSelected } = props;
+
+    return (
+      <Trans>
+        Requires at least {minSelected}{' '}
+        <Plural
+          value={minSelected}
+          one="option selected"
+          other="options selected"
+        />{' '}
+        ({currentSelected} / {minSelected})
+      </Trans>
     );
   },
 };

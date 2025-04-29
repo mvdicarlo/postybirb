@@ -137,4 +137,9 @@ export interface ValidationMessages {
     currentLength: number;
     minLength: number;
   };
+
+  'validation.select-field.min-selected': {
+    minSelected: number;
+    currentSelected: number;
+  };
 }

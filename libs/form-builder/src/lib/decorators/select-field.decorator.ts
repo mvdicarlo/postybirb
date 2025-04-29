@@ -21,6 +21,7 @@ export type SelectOption = SelectOptionGrouped | SelectOptionSingle;
 type ExtraOptions = {
   options: SelectOption[] | SelectOptionWithDiscriminator;
   allowMultiple: boolean;
+  minSelected?: number;
 };
 
 export const SelectField = createFieldDecorator<unknown, ExtraOptions>(
