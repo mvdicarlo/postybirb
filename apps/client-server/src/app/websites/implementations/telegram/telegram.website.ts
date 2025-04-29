@@ -1,6 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
 import { SelectOptionSingle } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
 import {
   CustomRouteHandlers,
   ILoginState,
@@ -66,7 +65,9 @@ export default class Telegram
 
   private clients = new Map<number, TelegramClient>();
 
-  private async getTelegramClient(account: TelegramAccountData) {
+  private async getTelegramClient(
+    account: TelegramAccountData = this.websiteDataStore.getData(),
+  ) {
     let client = this.clients.get(account.appId);
     if (!client) {
       this.logger.info(
@@ -214,6 +215,13 @@ export default class Telegram
         : undefined;
   }
 
+  htmlToDescriptionEntities(html: string) {
+    return HTMLToTelegram.parse(
+      // Add newlines. All blocknote lines are wrapped using <div> without \n between them.
+      html.replaceAll('</div><div>', '</div>\n<div>'),
+    );
+  }
+
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
@@ -221,8 +229,7 @@ export default class Telegram
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const account = this.getWebsiteData();
-    const telegram = await this.getTelegramClient(account);
+    const telegram = await this.getTelegramClient();
 
     const medias: (
       | Api.InputMediaUploadedPhoto
@@ -258,9 +265,8 @@ export default class Telegram
       medias.push(media);
     }
 
-    const [description, entities] = HTMLToTelegram.parse(
-      // Add newlines. All blocknote lines are wrapped using <div> without \n between them.
-      postData.options.description.replaceAll('</div><div>', '</div>\n<div>'),
+    const [description, entities] = this.htmlToDescriptionEntities(
+      postData.options.description,
     );
 
     let mediaDescription = '';
@@ -394,29 +400,29 @@ export default class Telegram
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
+    let response: Api.TypeUpdates | undefined;
+    const [description, entities] = this.htmlToDescriptionEntities(
+      postData.options.description,
+    );
+    const telegram = await this.getTelegramClient();
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    for (const channel of postData.options.channels) {
+      cancellationToken.throwIfCancelled();
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+      response = await telegram.invoke(
+        new Api.messages.SendMessage({
+          message: description,
+          entities,
+          silent: postData.options.isSilent,
+          peer: this.getPeer(channel.value),
+        }),
+      );
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    const postResponse = PostResponse.fromWebsite(this);
+    const sourceUrl = this.getSourceFromResponse(response);
+    if (sourceUrl) postResponse.withSourceUrl(sourceUrl);
+    return postResponse;
   }
 
   async onValidateMessageSubmission(

@@ -78,7 +78,6 @@ module.exports = {
     'no-await-in-loop': 'off',
     'no-restricted-syntax': 'off',
     'class-methods-use-this': 'off',
-    'no-plusplus': 'off',
 
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
