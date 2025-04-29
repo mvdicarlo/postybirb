@@ -18,6 +18,7 @@ import { Api, TelegramClient } from 'telegram';
 import { CustomFile } from 'telegram/client/uploads';
 import { Entity } from 'telegram/define';
 import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
+import { LogLevel } from 'telegram/extensions/Logger';
 import { StringSession } from 'telegram/sessions';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -37,7 +38,13 @@ import { TelegramMessageSubmission } from './models/telegram-message-submission'
   displayName: 'Telegram',
 })
 @CustomLoginFlow()
-@SupportsFiles({ acceptedMimeTypes: ['image/png', 'image/jpg'] })
+@SupportsFiles([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'video/mp4',
+  'audio/mp3',
+])
 export default class Telegram
   extends Website<TelegramAccountData>
   implements
@@ -71,6 +78,7 @@ export default class Telegram
         account.appHash,
         {},
       );
+      client.setLogLevel(LogLevel.ERROR);
       this.clients.set(account.appId, client);
     }
 
@@ -130,7 +138,7 @@ export default class Telegram
   };
 
   private async loadChannels(telegram: TelegramClient) {
-    this.logger.info('Loading folders');
+    this.logger.info('Loading folders...');
     const channels: SelectOptionSingle[] = [];
     let total = 0;
 
@@ -153,7 +161,7 @@ export default class Telegram
     }
 
     this.logger.info(
-      `Loaded folders ${total} total and ${channels.length} filtered.`,
+      `Loaded total ${total} folders, can send media in ${channels.length} folders.`,
     );
   }
 
