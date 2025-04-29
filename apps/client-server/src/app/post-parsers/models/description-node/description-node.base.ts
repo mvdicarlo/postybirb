@@ -25,5 +25,7 @@ export abstract class DescriptionNode<Type = string>
 
   abstract toHtmlString(): string;
 
+  abstract toBBCodeString(): string;
+
   abstract toString(): string;
 }

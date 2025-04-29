@@ -32,6 +32,15 @@ export class DescriptionTextNode
     const segments: string[] = [];
     const styles: string[] = [];
 
+    if (this.text === undefined || this.text === null || this.text === '') {
+      return '';
+    }
+
+    // This is to handle a merged block node
+    if (this.text === '\n' || this.text === '\r\n') {
+      return '<br>';
+    }
+
     if (this.styles.bold) {
       segments.push('b');
     }
@@ -63,12 +72,55 @@ export class DescriptionTextNode
       return this.text;
     }
 
+    const text = this.text.replace(/\n/g, '<br />');
     const stylesString = styles.join(';');
     return `<span${
       stylesString.length ? ` styles="${stylesString}"` : ''
-    }>${segments.map((s) => `<${s}>`).join('')}${this.text}${segments
+    }>${segments.map((s) => `<${s}>`).join('')}${text}${segments
       .reverse()
       .map((s) => `</${s}>`)
       .join('')}</span>`;
+  }
+
+  toBBCodeString(): string {
+    const segments: string[] = [];
+
+    if (this.text === undefined || this.text === null || this.text === '') {
+      return '';
+    }
+
+    // This is to handle a merged block node
+    if (this.text === '\n' || this.text === '\r\n') {
+      return '[br]';
+    }
+
+    if (this.styles.bold) {
+      segments.push('b');
+    }
+
+    if (this.styles.italic) {
+      segments.push('i');
+    }
+
+    if (this.styles.underline) {
+      segments.push('u');
+    }
+
+    if (this.styles.strike) {
+      segments.push('s');
+    }
+
+    if (!segments.length) {
+      return this.text;
+    }
+
+    const text = this.text.replace(/\n/g, '[br]');
+    let segmentedText = `[${segments.join('')}][/${segments.reverse().join('')}][${text}]`;
+
+    if (this.styles.textColor && this.styles.textColor !== 'default') {
+      segmentedText = `[color=${this.styles.textColor}]${segmentedText}[/color]`;
+    }
+
+    return segmentedText;
   }
 }

@@ -76,6 +76,18 @@ export class DescriptionNodeTree {
   }
 
   /**
+   * Converts the description tree to a string.
+   *
+   * @return {*}  {string}
+   */
+  toBBCode(): string {
+    return this.withInsertions()
+      .map((node) => node.toBBCodeString())
+      .join('\n')
+      .trim();
+  }
+
+  /**
    * Converts the description tree to plain text.
    *
    * @return {*}  {string}
