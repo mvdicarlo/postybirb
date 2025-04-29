@@ -1,7 +1,8 @@
 export enum DescriptionType {
-  NONE = 'none',
-  PLAINTEXT = 'plaintext',
+  BBCODE = 'bbcode',
+  CUSTOM = 'custom',
   HTML = 'html',
   MARKDOWN = 'markdown',
-  CUSTOM = 'custom',
+  NONE = 'none',
+  PLAINTEXT = 'plaintext',
 }

@@ -51,7 +51,7 @@ describe('DescriptionNode', () => {
     );
 
     expect(tree.toPlainText()).toBe('Hello, https://test.postybirb.com/User');
-    expect(tree.toHtml()).toBe(
+    expect(tree.toHTML()).toBe(
       '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/User">User</a></div>',
     );
   });
@@ -110,7 +110,7 @@ describe('DescriptionNode', () => {
     );
 
     expect(tree.toPlainText()).toBe('Hello, <!~User>');
-    expect(tree.toHtml()).toBe(
+    expect(tree.toHTML()).toBe(
       '<div><span><b>Hello, </b></span><span><!~User></span></div>',
     );
   });

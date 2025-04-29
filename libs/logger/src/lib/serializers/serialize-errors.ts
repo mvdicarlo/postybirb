@@ -1,10 +1,8 @@
 // SOURCE: https://github.com/sindresorhus/serialize-error
 
 /* eslint-disable no-underscore-dangle */
-/* eslint-disable no-plusplus */
 /* eslint-disable no-empty */
 /* eslint-disable no-continue */
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-use-before-define */
@@ -198,3 +196,4 @@ export function isErrorLike(value) {
 }
 
 export { default as errorConstructors } from '../error-constructors';
+

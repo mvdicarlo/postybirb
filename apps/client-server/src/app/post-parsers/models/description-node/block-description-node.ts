@@ -51,8 +51,6 @@ export class DescriptionBlockNode
   }
 
   toHtmlString(): string {
-    if (!this.content.length) return '';
-
     let block = null;
     if (this.type === 'paragraph') block = 'div';
     if (this.type === 'heading') block = `h${this.props.level}`;
@@ -81,5 +79,22 @@ export class DescriptionBlockNode
     return `<${block}${
       stylesString.length ? ` styles="${stylesString}"` : ''
     }>${this.content.map((child) => child.toHtmlString()).join('')}</${block}>`;
+  }
+
+  toBBCodeString(): string {
+    let block = null;
+    if (this.type === 'paragraph') block = null;
+    if (this.type === 'heading') block = `h${this.props.level}`;
+    if (this.type === 'hr') return '[hr]';
+    if (block === null) throw new Error(`Unsupported block type: ${this.type}`);
+
+    // No block type for a base paragraph
+    if (block === null) {
+      return this.content.map((child) => child.toBBCodeString()).join('\n');
+    }
+
+    return `[${block}]${this.content
+      .map((child) => child.toBBCodeString())
+      .join('')}[/${block}]`;
   }
 }

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DescriptionType, UsernameShortcut } from '@postybirb/types';
+import isEqual from 'lodash/isEqual';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { SettingsService } from '../../settings/settings.service';
@@ -61,9 +62,20 @@ export class DescriptionParserService {
       insertAd: allowAd,
     };
 
+    /*
+     * We choose to merge blocks here to avoid confusing user expectations.
+     * Most editors want you to use Shift + Enter to insert a new line. But in
+     * most cases this is not something the user cares about. They just want to
+     * see the description on a line-by-line basis. So we choose to merge similar
+     * blocks together to avoid confusion.
+     */
+    const mergedDescriptionBlocks = this.mergeBlocks(
+      descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
+    );
+
     const tree = new DescriptionNodeTree(
       instance.decoratedProps.metadata.name,
-      descriptionValue.description as unknown as Array<IDescriptionBlockNode>,
+      mergedDescriptionBlocks,
       insertionOptions,
       this.websiteShortcuts,
       {
@@ -79,6 +91,8 @@ export class DescriptionParserService {
         return tree.toHtml();
       case DescriptionType.PLAINTEXT:
         return tree.toPlainText();
+      case DescriptionType.BBCODE:
+        return tree.toBBCode();
       case DescriptionType.CUSTOM:
         if (isWithCustomDescriptionParser(instance)) {
           const initialDescription = tree.parseCustom(
@@ -92,5 +106,50 @@ export class DescriptionParserService {
       default:
         throw new Error(`Unsupported description type: ${descriptionType}`);
     }
+  }
+
+  /**
+   * Merges block into the same type if they are adjacent and have the same type.
+   * Merge occurs on block level if all the props in the block are the same.
+   *
+   * @param {Array<IDescriptionBlockNode>} blocks
+   * @return {*}  {Array<IDescriptionBlockNode>}
+   */
+  public mergeBlocks(
+    blocks: Array<IDescriptionBlockNode>,
+  ): Array<IDescriptionBlockNode> {
+    const mergedBlocks: Array<IDescriptionBlockNode> = [];
+
+    const blockCopy: Array<IDescriptionBlockNode> = JSON.parse(
+      JSON.stringify(blocks),
+    );
+    for (let i = 0; i < blockCopy.length; i++) {
+      const currentBlock = blockCopy[i];
+      const previousBlock = mergedBlocks[mergedBlocks.length - 1];
+      if (!previousBlock) {
+        mergedBlocks.push(currentBlock);
+      } else if (
+        // Check if the current block is of the same type as the previous block
+        // Filter out content length of 0 because those are assumed to be padding blocks.
+        currentBlock.type === previousBlock.type &&
+        currentBlock.content.length !== 0 &&
+        previousBlock.content.length !== 0 &&
+        isEqual(currentBlock.props, previousBlock.props)
+      ) {
+        // Insert a \n content then merge together the content of the two blocks
+        previousBlock.content.push({
+          type: 'text',
+          text: '\n',
+          styles: {},
+          props: {},
+        });
+        previousBlock.content.push(...currentBlock.content);
+      } else {
+        // Insert if no action
+        mergedBlocks.push(currentBlock);
+      }
+    }
+
+    return mergedBlocks;
   }
 }

@@ -448,7 +448,6 @@ export class Http {
     const checkInterval = 1000; // 1 second
 
     let isShown = false;
-    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < 60; i++) {
       await Http.awaitCheckInterval(checkInterval);
       const html = await window.webContents.executeJavaScript(
