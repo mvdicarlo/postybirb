@@ -1,7 +1,8 @@
 import {
+  BooleanField,
   DescriptionField,
   SelectField,
-  SelectOption,
+  SelectOptionSingle,
   TagField,
 } from '@postybirb/form-builder';
 import {
@@ -15,17 +16,28 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class TelegramFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML,
+    maxDescriptionLength: 4096,
   })
   description: DescriptionValue;
 
-  @TagField({ hidden: true })
+  @TagField({})
   tags: TagValue;
 
   @SelectField<TelegramAccountData>({
     label: 'channel',
     derive: [{ key: 'channels', populate: 'options' }],
     options: [],
+    allowMultiple: true,
+    minSelected: 1,
     required: true,
   })
-  channel: SelectOption;
+  channels: SelectOptionSingle[];
+
+  @BooleanField({
+    label: 'silent',
+  })
+  isSilent = false;
+
+  @BooleanField({ label: 'spoiler' })
+  isSpoiler = false;
 }

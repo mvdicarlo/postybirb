@@ -1,13 +1,14 @@
-import { DescriptionField, TagField  } from '@postybirb/form-builder';
+import { DescriptionField, TagField } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class TelegramMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML
+    descriptionType: DescriptionType.HTML,
+    maxDescriptionLength: 4096,
   })
   description: DescriptionValue;
 
-  @TagField({ hidden: true })
+  @TagField({})
   tags: TagValue;
 }
