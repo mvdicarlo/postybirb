@@ -1,13 +1,8 @@
-// eslint-typescript doesn't counts @link as a var use. We use it
-// to make jump-to definitions and to simplify DX
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import type { FieldTranslationId, FieldTranslations } from '@postybirb/types';
+import type {
+  FieldLabelTranslations,
+  FieldLabelTranslationsId,
+} from '@postybirb/translations';
 import { PrimitiveRecord } from './primitive-record';
-
-type Translations =
-  typeof import('apps/postybirb-ui/src/components/translations/field-translations');
 
 export type FieldType<
   V,
@@ -42,9 +37,9 @@ export type FieldType<
   formField?: F;
 
   /**
-   * The translation id of the label to display. All possible values can be found here: {@link Translations} and here: {@link FieldTranslations}.
+   * The translation id of the label to display. All possible values can be found here: {@link FieldLabelTranslations}.
    */
-  label: FieldTranslationId;
+  label: FieldLabelTranslationsId;
 
   /**
    * Whether the field is considered required.

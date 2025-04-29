@@ -44,7 +44,7 @@ module.exports = {
             // FieldType.label
             allow: [
               '@postybirb/form-builder',
-              '@postybirb/ui',
+              '@postybirb/translations',
               '@postybirb/types',
             ],
 
