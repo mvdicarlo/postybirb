@@ -6,6 +6,7 @@ import {
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { ItakuAccountData } from './itaku-account-data';
 
 export class ItakuMessageSubmission extends BaseWebsiteOptions {
   @TagField({
@@ -38,12 +39,12 @@ export class ItakuMessageSubmission extends BaseWebsiteOptions {
   })
   visibility: string;
 
-  @SelectField({
+  @SelectField<ItakuAccountData>({
     col: 1,
     label: 'folder',
     derive: [
       {
-        key: 'folders',
+        key: 'notificationFolders',
         populate: 'options',
       },
     ],

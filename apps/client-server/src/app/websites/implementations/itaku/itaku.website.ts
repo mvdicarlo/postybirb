@@ -1,14 +1,16 @@
+import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
   FileSubmissionMetadata,
   FileType,
   ILoginState,
   ImageResizeProps,
-  ISubmissionFile,
   PostData,
   PostResponse,
   SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
+import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -24,6 +26,7 @@ import { Website } from '../../website';
 import { ItakuAccountData } from './models/itaku-account-data';
 import { ItakuFileSubmission } from './models/itaku-file-submission';
 import { ItakuMessageSubmission } from './models/itaku-message-submission';
+import { ItakuUserInfo } from './models/itaku-user-info';
 
 @WebsiteMetadata({
   name: 'itaku',
@@ -60,23 +63,154 @@ export default class Itaku
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<ItakuAccountData> =
     {
-      folders: true,
+      galleryFolders: true,
+      notificationFolders: true,
     };
 
   public async onLogin(): Promise<ILoginState> {
-    if (this.account.name === 'test') {
+    const localStorage = await BrowserWindowUtils.getLocalStorage<{
+      token: string;
+    }>(this.accountId, this.BASE_URL);
+
+    if (localStorage.token) {
+      this.retrievedWebsiteData.token = localStorage.token.replace(/"/g, '');
+      const user = await Http.get<ItakuUserInfo>(
+        `${this.BASE_URL}/api/auth/user/`,
+        {
+          partition: this.accountId,
+          headers: {
+            Authorization: `Token ${this.retrievedWebsiteData.token}`,
+          },
+        },
+      );
+
+      this.loginState.setLogin(true, user.body.profile.displayname);
+      this.retrievedWebsiteData.profile = user.body.profile;
+      await this.retrieveFolders();
+    } else {
       this.loginState.logout();
     }
 
-    return this.loginState.setLogin(true, 'TestUser');
+    return this.loginState;
+  }
+
+  private async retrieveFolders(): Promise<void> {
+    try {
+      const notificationFolderRes = await Http.get<
+        { id: string; num_images: number; title: string }[]
+      >(
+        `${this.BASE_URL}/api/post_folders/?owner=${this.retrievedWebsiteData.profile.owner}`,
+        {
+          partition: this.accountId,
+          headers: {
+            Authorization: `Token ${this.retrievedWebsiteData.token}`,
+          },
+        },
+      );
+
+      const notificationFolders: SelectOption[] =
+        notificationFolderRes.body.map((f) => ({
+          value: f.title,
+          label: f.title,
+        }));
+
+      const galleryFolderRes = await Http.get<
+        { id: string; num_images: number; title: string }[]
+      >(
+        `${this.BASE_URL}/api/galleries/?owner=${this.retrievedWebsiteData.profile.owner}&page_size=300`,
+        {
+          partition: this.accountId,
+          headers: {
+            Authorization: `Token ${this.retrievedWebsiteData.token}`,
+          },
+        },
+      );
+
+      const galleryFolders: SelectOption[] = galleryFolderRes.body.map((f) => ({
+        value: f.title,
+        label: f.title,
+      }));
+
+      await this.setWebsiteData({
+        notificationFolders,
+        galleryFolders,
+      });
+    } catch (error) {
+      this.logger.error('Failed to retrieve folders', error);
+    }
+  }
+
+  private convertRating(rating: SubmissionRating): string {
+    switch (rating) {
+      case SubmissionRating.MATURE:
+        return 'Questionable';
+      case SubmissionRating.ADULT:
+      case SubmissionRating.EXTREME:
+        return 'NSFW';
+      case SubmissionRating.GENERAL:
+      default:
+        return 'SFW';
+    }
   }
 
   createFileModel(): ItakuFileSubmission {
     return new ItakuFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps {
     return undefined;
+  }
+
+  private async uploadFile(
+    postData: PostData<ItakuFileSubmission>,
+    file: PostingFile,
+    isBatch: boolean,
+  ): Promise<unknown> {
+    const fileData: Record<string, unknown> = {
+      title: postData.options.title,
+      description: postData.options.description,
+      sections: JSON.stringify(postData.options.folders),
+      tags: JSON.stringify(
+        postData.options.tags.map((tag) => ({ name: tag.substring(0, 59) })),
+      ),
+      maturity_rating: this.convertRating(postData.options.rating),
+      visibility: postData.options.visibility,
+    };
+
+    if (isBatch || postData.options.shareOnFeed) {
+      fileData.share_on_feed = 'true';
+    }
+
+    const spoilerText =
+      postData.options.contentWarning ?? file.metadata.spoilerText;
+    if (spoilerText) {
+      fileData.content_warning = spoilerText;
+    }
+
+    if (file.fileType === FileType.IMAGE) {
+      fileData.image = file.toPostFormat();
+    } else if (file.fileType === FileType.VIDEO) {
+      fileData.video = file.toPostFormat();
+    } else {
+      throw new Error('Unsupported file type');
+    }
+
+    const upload = await Http.post<{ id?: number }>(
+      `${this.BASE_URL}/api/galleries/${
+        file.fileType === FileType.IMAGE ? 'images' : 'videos'
+      }/`,
+      {
+        partition: this.accountId,
+        data: fileData,
+        type: 'multipart',
+        headers: {
+          Authorization: `Token ${this.retrievedWebsiteData.token}`,
+        },
+      },
+    );
+
+    PostResponse.validateBody({ id: this.id }, upload);
+    return upload.body;
   }
 
   async onPostFileSubmission(
@@ -86,6 +220,12 @@ export default class Itaku
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
+    const isBatch = files.length > 1;
+
+    const uploadedFiles = await Promise.all(
+      files.map((file) => this.uploadFile(postData, file, isBatch)),
+    );
+
     const formData = {
       file: files[0].toPostFormat(),
       thumb: files[0].thumbnailToPostFormat(),

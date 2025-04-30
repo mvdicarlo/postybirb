@@ -13,6 +13,7 @@ import {
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { ItakuAccountData } from './itaku-account-data';
 
 export class ItakuFileSubmission extends BaseWebsiteOptions {
   @RatingField({
@@ -54,12 +55,12 @@ export class ItakuFileSubmission extends BaseWebsiteOptions {
   })
   visibility: string;
 
-  @SelectField({
+  @SelectField<ItakuAccountData>({
     col: 1,
     label: 'folder',
     derive: [
       {
-        key: 'folders',
+        key: 'galleryFolders',
         populate: 'options',
       },
     ],

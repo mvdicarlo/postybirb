@@ -1,5 +1,6 @@
-import { SelectOption } from '@postybirb/form-builder'; 
+import { SelectOption } from '@postybirb/form-builder';
 
-export type ItakuAccountData = { 
-  folders: SelectOption[];
-}
+export type ItakuAccountData = {
+  notificationFolders: SelectOption[];
+  galleryFolders: SelectOption[];
+};
