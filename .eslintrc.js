@@ -59,6 +59,7 @@ module.exports = {
       files: ['*.ts', '*.tsx'],
       extends: ['plugin:@nrwl/nx/typescript'],
       rules: {
+        // some nx rules for specific files override globally disabled rules
         '@typescript-eslint/no-unused-vars': 'off',
         'no-continue': 'off',
       },
