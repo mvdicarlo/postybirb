@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro';
 import { Box, Button, NumberInput, Stack, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import '@mantine/notifications/styles.layer.css';
 import { TelegramAccountData, TelegramCustomRoutes } from '@postybirb/types';
 import { IconLink } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -153,7 +152,7 @@ export default function TelegramLoginView(
             description={
               passwordRequired ? (
                 <Trans>
-                  2FA enabled, password required. We won't store it.
+                  2FA enabled, password required. It won't be stored.
                 </Trans>
               ) : (
                 <Trans>Required if 2FA is enabled.</Trans>
