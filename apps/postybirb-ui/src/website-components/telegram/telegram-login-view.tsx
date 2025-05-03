@@ -201,11 +201,14 @@ export default function TelegramLoginView(
                           setImmediate(submit);
                         }
 
-                        if (res.passwordInvalid) setPasswordInvalid(true);
+                        if (res.passwordInvalid) {
+                          setPasswordInvalid(true);
+                        }
 
                         // For some reason if password is required it replies with both errors
-                        if (res.codeInvalid && !res.passwordInvalid)
+                        if (res.codeInvalid && !res.passwordInvalid) {
                           setCodeInvalid(true);
+                        }
 
                         notifications.show({
                           title: (
