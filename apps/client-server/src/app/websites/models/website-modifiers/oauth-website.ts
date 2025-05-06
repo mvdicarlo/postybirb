@@ -7,7 +7,7 @@ import { OAuthRouteHandlers, OAuthRoutes } from '@postybirb/types';
  */
 export interface OAuthWebsite<T extends OAuthRoutes> {
   /**
-   * Methods that can be called using accountApi.customRoute
+   * Methods that can be called using websiteApi.performOAuthStep
    */
   onAuthRoute: OAuthRouteHandlers<T>;
 }

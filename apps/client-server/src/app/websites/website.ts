@@ -3,8 +3,6 @@ import {
   DynamicObject,
   ILoginState,
   LoginState,
-  OAuthRouteHandlers,
-  OAuthRoutes,
   SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
@@ -241,11 +239,6 @@ export abstract class Website<D extends DynamicObject> {
    * Method that runs whenever a user closes the login page or on a scheduled interval.
    */
   public abstract onLogin(): Promise<ILoginState>;
-
-  /**
-   * Methods that can be called using accountApi.customRoute
-   */
-  public onAuthRoute: OAuthRouteHandlers<OAuthRoutes> = {};
 
   // -------------- End Event Methods --------------
 }

@@ -13,17 +13,18 @@ class WebsitesApi {
     return this.client.get<IWebsiteInfoDto[]>('info');
   }
 
-  async performOAuthStep<
-    T extends OAuthRoutes,
-    Route extends keyof T = keyof T,
-  >(id: WebsiteId, route: Route, data: T[Route]['request']) {
+  async performOAuthStep<T extends OAuthRoutes, R extends keyof T = keyof T>(
+    id: WebsiteId,
+    route: R,
+    data: T[R]['request'],
+  ) {
     const response = await this.client.post(`oauth`, {
       route: route as string,
       id,
       data,
-    } satisfies IOAuthWebsiteRequestDto<T[Route]['request']>);
+    } satisfies IOAuthWebsiteRequestDto<T[R]['request']>);
 
-    return response.body as T[Route]['response'];
+    return response.body as T[R]['response'];
   }
 }
 
