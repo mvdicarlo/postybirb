@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { SelectOptionSingle } from '@postybirb/form-builder';
+import { SelectOptionItem } from '@postybirb/form-builder';
 import {
   CustomRouteHandlers,
   ILoginState,
@@ -140,7 +140,7 @@ export default class Telegram
 
   private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders...');
-    const channels: SelectOptionSingle[] = [];
+    const channels: SelectOptionItem[] = [];
     let total = 0;
 
     for await (const dialog of telegram.iterDialogs()) {

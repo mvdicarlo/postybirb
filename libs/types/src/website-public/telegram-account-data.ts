@@ -1,8 +1,8 @@
-import { SelectOptionSingle } from '@postybirb/form-builder';
+import { SelectOptionItem } from '@postybirb/form-builder';
 
 export interface TelegramAccountData extends TelegramAccountDataPublic {
   session?: string;
-  channels: SelectOptionSingle[];
+  channels: SelectOptionItem[];
 }
 
 export interface TelegramAccountDataPublic {

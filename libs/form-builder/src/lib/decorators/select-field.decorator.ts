@@ -8,15 +8,15 @@ export type SelectOptionWithDiscriminator = {
 
 export interface SelectOptionGroup {
   group: string;
-  items: SelectOptionSingle[];
+  items: SelectOptionItem[];
 }
 
-export interface SelectOptionSingle {
+export interface SelectOptionItem {
   label: string;
   value: string;
 }
 
-export type SelectOption = SelectOptionGroup | SelectOptionSingle;
+export type SelectOption = SelectOptionGroup | SelectOptionItem;
 
 type ExtraOptions = {
   options: SelectOption[] | SelectOptionWithDiscriminator;
