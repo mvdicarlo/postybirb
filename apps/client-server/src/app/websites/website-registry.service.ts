@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  NotFoundException,
   Optional,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
@@ -231,6 +232,8 @@ export class WebsiteRegistryService {
       failOnMissing: true,
     });
     const instance = this.findInstance(account);
+
+    if (!instance) throw new NotFoundException('Website instance not found.');
 
     if ('onAuthRoute' in (instance as unknown as OAuthWebsite<OAuthRoutes>)) {
       const routes = (instance as unknown as OAuthWebsite<OAuthRoutes>)
