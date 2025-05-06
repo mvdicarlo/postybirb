@@ -9,10 +9,6 @@
   background-color: var(--mantine-color-body);
 }
 
-.postybirb__page-header > *:first-child {
-  padding: 0 6px;
-}
-
 .postybirb__page-header__tabs__icon svg {
   height: 1.1rem;
   vertical-align: text-bottom;
