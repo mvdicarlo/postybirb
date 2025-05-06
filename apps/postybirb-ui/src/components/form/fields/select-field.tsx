@@ -11,6 +11,10 @@ function getSelectOptions(
   options: SelectFieldType['options'],
   submission: SubmissionDto,
 ): SelectOption[] {
+  if (!options) {
+    return [];
+  }
+
   if (Array.isArray(options)) {
     return options;
   }
