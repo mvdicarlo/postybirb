@@ -18,7 +18,7 @@ export function createWebsite(data, baseAppPath) {
       data,
       'website.hbs',
       websiteFolder,
-      'website.ts',
+      `${website}.website.ts`,
     );
 
     createFromTemplate(
