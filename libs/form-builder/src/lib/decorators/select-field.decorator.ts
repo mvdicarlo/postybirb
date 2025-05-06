@@ -6,7 +6,7 @@ export type SelectOptionWithDiscriminator = {
   discriminator: 'overallFileType';
 };
 
-export interface SelectOptionGrouped {
+export interface SelectOptionGroup {
   group: string;
   items: SelectOptionSingle[];
 }
@@ -16,7 +16,7 @@ export interface SelectOptionSingle {
   value: string;
 }
 
-export type SelectOption = SelectOptionGrouped | SelectOptionSingle;
+export type SelectOption = SelectOptionGroup | SelectOptionSingle;
 
 type ExtraOptions = {
   options: SelectOption[] | SelectOptionWithDiscriminator;
