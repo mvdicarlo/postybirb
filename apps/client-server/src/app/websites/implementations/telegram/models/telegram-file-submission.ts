@@ -36,8 +36,8 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'silent',
   })
-  isSilent = false;
+  silent = false;
 
   @BooleanField({ label: 'spoiler' })
-  isSpoiler = false;
+  spoiler = false;
 }

@@ -37,13 +37,17 @@ import { TelegramMessageSubmission } from './models/telegram-message-submission'
   displayName: 'Telegram',
 })
 @CustomLoginFlow()
-@SupportsFiles([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'video/mp4',
-  'audio/mp3',
-])
+@SupportsFiles({
+  acceptedMimeTypes: [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'video/mp4',
+    'audio/mp3',
+  ],
+  fileBatchSize: 10,
+  acceptedFileSizes: { '*': FileSize.mbToBytes(30) },
+})
 export default class Telegram
   extends Website<TelegramAccountData>
   implements
@@ -51,8 +55,6 @@ export default class Telegram
     MessageWebsite<TelegramMessageSubmission>
 {
   protected BASE_URL = 'https://t.me/';
-
-  protected readonly MAX_MB = 30;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<TelegramAccountData> =
     {
@@ -210,8 +212,8 @@ export default class Telegram
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     return file.width > 2560 || file.height > 2560
       ? { width: 2560, height: 2560 }
-      : file.size > FileSize.mbToBytes(this.MAX_MB)
-        ? { maxBytes: FileSize.mbToBytes(this.MAX_MB) }
+      : file.size > this.decoratedProps.fileOptions.acceptedFileSizes['*']
+        ? { maxBytes: this.decoratedProps.fileOptions.acceptedFileSizes['*'] }
         : undefined;
   }
 
@@ -225,7 +227,7 @@ export default class Telegram
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
-    _batchIndex: number,
+    batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
@@ -255,7 +257,7 @@ export default class Telegram
         : Api.InputMediaUploadedDocument;
 
       const media = new UploadedMedia({
-        spoiler: postData.options.isSpoiler,
+        spoiler: postData.options.spoiler,
         file: uploadedFile,
         mimeType: file.mimeType,
         attributes: [],
@@ -265,6 +267,13 @@ export default class Telegram
       medias.push(media);
     }
 
+    // Hack to not add another argument to the onPostFileSubmission like totalBatches
+    // This will not work when there is 20 files for example
+    // Note: maybe make it either property of the post data or BatchInfo interface?
+    const lastBatch =
+      batchIndex !== 0 &&
+      this.decoratedProps.fileOptions.fileBatchSize < files.length;
+
     const [description, entities] = this.htmlToDescriptionEntities(
       postData.options.description,
     );
@@ -272,11 +281,13 @@ export default class Telegram
     let mediaDescription = '';
     let mediaEntities = [];
     let messageDescription = '';
+
     if (description.length < 1024) {
       // Description fit image/album limit, no separate message
       mediaDescription = description;
       mediaEntities = entities;
-    } else {
+    } else if (messageDescription && lastBatch) {
+      // Send separate message with description
       messageDescription = description;
     }
 
@@ -284,21 +295,24 @@ export default class Telegram
 
     for (const channel of postData.options.channels) {
       cancellationToken.throwIfCancelled();
+
+      // Only add description to the media in first batch
+      const firstInBatch = batchIndex === 0;
       const peer = this.getPeer(channel.value);
 
       if (medias.length === 1) {
         telegram.invoke(
           new Api.messages.SendMedia({
             media: medias[0],
-            message: mediaDescription,
-            entities: mediaEntities,
-            silent: postData.options.isSilent,
+            message: firstInBatch ? mediaDescription : '',
+            entities: firstInBatch ? mediaEntities : [],
+            silent: postData.options.silent,
             peer,
           }),
         );
       } else {
-        const singleMedias: Api.InputSingleMedia[] = [];
-        for (const [i, media] of medias.entries()) {
+        const multiMedia: Api.InputSingleMedia[] = [];
+        for (const [mediaIndex, media] of medias.entries()) {
           const messageMedia = await telegram.invoke(
             new Api.messages.UploadMedia({ media, peer }),
           );
@@ -313,35 +327,31 @@ export default class Telegram
             throw new Error(`Unknwon media type: ${messageMedia.className}`);
           }
 
-          singleMedias.push(
+          // Only add description to the first media in first batch
+          const useDescription = mediaIndex === 0 && firstInBatch;
+
+          multiMedia.push(
             new Api.InputSingleMedia({
               media,
-              message: i === 0 ? mediaDescription : '',
-              entities: i === 0 ? mediaEntities : [],
+              message: useDescription ? mediaDescription : '',
+              entities: useDescription ? mediaEntities : [],
             }),
           );
         }
 
-        const mediasPerBatch = 10;
-        const batches = 1 + (singleMedias.length - 1) / mediasPerBatch;
-        for (let i = 0; i < batches; i++) {
-          response = await telegram.invoke(
-            new Api.messages.SendMultiMedia({
-              multiMedia: singleMedias.slice(
-                i * mediasPerBatch,
-                (i + 1) * mediasPerBatch,
-              ),
-              silent: postData.options.isSilent,
-              peer,
-            }),
-          );
-        }
+        response = await telegram.invoke(
+          new Api.messages.SendMultiMedia({
+            silent: postData.options.silent,
+            multiMedia,
+            peer,
+          }),
+        );
       }
 
       if (messageDescription) {
         await telegram.sendMessage(peer, {
           message: messageDescription,
-          silent: postData.options.isSilent,
+          silent: postData.options.silent,
           formattingEntities: entities,
         });
       }
@@ -413,7 +423,7 @@ export default class Telegram
         new Api.messages.SendMessage({
           message: description,
           entities,
-          silent: postData.options.isSilent,
+          silent: postData.options.silent,
           peer: this.getPeer(channel.value),
         }),
       );
