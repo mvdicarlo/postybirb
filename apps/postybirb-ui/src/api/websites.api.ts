@@ -1,4 +1,9 @@
-import { IOAuthWebsiteRequestDto, IWebsiteInfoDto } from '@postybirb/types';
+import {
+  IOAuthWebsiteRequestDto,
+  IWebsiteInfoDto,
+  OAuthRoutes,
+  WebsiteId,
+} from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 class WebsitesApi {
@@ -8,8 +13,17 @@ class WebsitesApi {
     return this.client.get<IWebsiteInfoDto[]>('info');
   }
 
-  performOAuthStep(dto: IOAuthWebsiteRequestDto<never>) {
-    return this.client.post('oauth', dto);
+  async performOAuthStep<
+    T extends OAuthRoutes,
+    Route extends keyof T = keyof T,
+  >(id: WebsiteId, route: Route, data: T[Route]['request']) {
+    const response = await this.client.post(`oauth`, {
+      route: route as string,
+      id,
+      data,
+    } satisfies IOAuthWebsiteRequestDto<T[Route]['request']>);
+
+    return response.body as T[Route]['response'];
   }
 }
 

@@ -9,10 +9,6 @@ export class OAuthWebsiteRequestDto<T extends DynamicObject>
   @IsString()
   id: string;
 
-  @ApiProperty()
-  @IsString()
-  website: string;
-
   @ApiProperty({
     type: Object,
   })
@@ -21,5 +17,5 @@ export class OAuthWebsiteRequestDto<T extends DynamicObject>
 
   @ApiProperty()
   @IsString()
-  state: string;
+  route: string;
 }

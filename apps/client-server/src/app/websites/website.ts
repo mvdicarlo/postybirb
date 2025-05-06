@@ -1,10 +1,10 @@
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
-  CustomRouteHandlers,
-  CustomRoutes,
   DynamicObject,
   ILoginState,
   LoginState,
+  OAuthRouteHandlers,
+  OAuthRoutes,
   SubmissionType,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
@@ -245,7 +245,7 @@ export abstract class Website<D extends DynamicObject> {
   /**
    * Methods that can be called using accountApi.customRoute
    */
-  public onCustomRoute: CustomRouteHandlers<CustomRoutes> = {};
+  public onAuthRoute: OAuthRouteHandlers<OAuthRoutes> = {};
 
   // -------------- End Event Methods --------------
 }

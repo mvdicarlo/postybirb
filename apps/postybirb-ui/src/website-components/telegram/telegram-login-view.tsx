@@ -1,10 +1,10 @@
 import { Trans } from '@lingui/macro';
 import { Box, Button, NumberInput, Stack, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { TelegramAccountData, TelegramCustomRoutes } from '@postybirb/types';
+import { TelegramAccountData, TelegramOAuthRoutes } from '@postybirb/types';
 import { IconLink } from '@tabler/icons-react';
 import { useState } from 'react';
-import accountApi from '../../api/account.api';
+import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
@@ -56,7 +56,7 @@ export default function TelegramLoginView(
           description={
             <ExternalLink href="https://core.telegram.org/myapp">
               <Trans context="telegram.app-id-help">
-                You must create your own app configuration <IconLink />
+                Create telegram app to retrieve api_id and api_hash <IconLink />
               </Trans>
             </ExternalLink>
           }
@@ -97,12 +97,16 @@ export default function TelegramLoginView(
               event.preventDefault();
               setIsSendingCode(true);
 
-              accountApi
-                .customRoute<TelegramCustomRoutes>(id, 'startAuthentication', {
-                  appId,
-                  phoneNumber,
-                  appHash,
-                })
+              websitesApi
+                .performOAuthStep<TelegramOAuthRoutes>(
+                  id,
+                  'startAuthentication',
+                  {
+                    appId,
+                    phoneNumber,
+                    appHash,
+                  },
+                )
                 .catch(
                   createErrorHandler(
                     <Trans>Failed to send code to begin authentication.</Trans>,
@@ -173,8 +177,8 @@ export default function TelegramLoginView(
 
                 function submit() {
                   setIsAuthenticating(true);
-                  accountApi
-                    .customRoute<TelegramCustomRoutes>(id, 'authenticate', {
+                  websitesApi
+                    .performOAuthStep<TelegramOAuthRoutes>(id, 'authenticate', {
                       appHash,
                       appId,
                       phoneNumber,

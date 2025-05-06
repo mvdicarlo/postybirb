@@ -1,15 +1,15 @@
 // eslint-disable-next-line max-classes-per-file
 import { SelectOptionItem } from '@postybirb/form-builder';
 import {
-  CustomRouteHandlers,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  OAuthRouteHandlers,
   PostData,
   PostResponse,
   SimpleValidationResult,
   TelegramAccountData,
-  TelegramCustomRoutes,
+  TelegramOAuthRoutes,
 } from '@postybirb/types';
 import { supportsImage } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'telegram';
@@ -28,6 +28,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import { TelegramFileSubmission } from './models/telegram-file-submission';
 import { TelegramMessageSubmission } from './models/telegram-message-submission';
@@ -52,7 +53,8 @@ export default class Telegram
   extends Website<TelegramAccountData>
   implements
     FileWebsite<TelegramFileSubmission>,
-    MessageWebsite<TelegramMessageSubmission>
+    MessageWebsite<TelegramMessageSubmission>,
+    OAuthWebsite<TelegramOAuthRoutes>
 {
   protected BASE_URL = 'https://t.me/';
 
@@ -89,7 +91,7 @@ export default class Telegram
     return client;
   }
 
-  public onCustomRoute: CustomRouteHandlers<TelegramCustomRoutes> = {
+  public onAuthRoute: OAuthRouteHandlers<TelegramOAuthRoutes> = {
     startAuthentication: async (request) => {
       this.logger.info('Starting Authentication');
       const account: TelegramAccountData = {

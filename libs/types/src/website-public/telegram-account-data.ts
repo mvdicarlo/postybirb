@@ -1,23 +1,23 @@
 import { SelectOptionItem } from '@postybirb/form-builder';
 
-export interface TelegramAccountData extends TelegramAccountDataPublic {
-  session?: string;
-  channels: SelectOptionItem[];
-}
-
-export interface TelegramAccountDataPublic {
+export interface TelegramAccountLoginData {
   appId: number;
   appHash: string;
   phoneNumber: string;
 }
 
-export type TelegramCustomRoutes = {
+export interface TelegramAccountData extends TelegramAccountLoginData {
+  session?: string;
+  channels: SelectOptionItem[];
+}
+
+export type TelegramOAuthRoutes = {
   startAuthentication: {
-    request: TelegramAccountDataPublic;
+    request: TelegramAccountLoginData;
     response: undefined;
   };
   authenticate: {
-    request: TelegramAccountDataPublic & {
+    request: TelegramAccountLoginData & {
       password: string;
       code: string;
     };

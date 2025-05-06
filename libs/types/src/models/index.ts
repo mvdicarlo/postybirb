@@ -1,5 +1,4 @@
 export * from './account/account.interface';
-export * from './account/custom-routes.type';
 export * from './common/dynamic-object';
 export * from './database/entity-primitive.type';
 export * from './database/entity.interface';
@@ -49,3 +48,4 @@ export * from './website/website-data.interface';
 export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
+
