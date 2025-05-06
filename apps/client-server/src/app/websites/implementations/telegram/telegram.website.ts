@@ -12,12 +12,12 @@ import {
   TelegramCustomRoutes,
 } from '@postybirb/types';
 import { supportsImage } from '@postybirb/utils/file-type';
-import bigInt from 'big-integer';
 import { Api, TelegramClient } from 'telegram';
 import { CustomFile } from 'telegram/client/uploads';
 import { Entity } from 'telegram/define';
 import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
 import { LogLevel } from 'telegram/extensions/Logger';
+import { returnBigInt } from 'telegram/Helpers';
 import { StringSession } from 'telegram/sessions';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -371,11 +371,11 @@ export default class Telegram
 
   private getPeer(channel: string) {
     const [idRaw, accessHash] = channel.split('|');
-    const id = BigInt(idRaw) as unknown as bigInt.BigInteger;
+    const id = returnBigInt(idRaw);
     const peer = accessHash
       ? new Api.InputPeerChannel({
           channelId: id,
-          accessHash: BigInt(accessHash) as unknown as bigInt.BigInteger,
+          accessHash: returnBigInt(accessHash),
         })
       : new Api.InputPeerChat({ chatId: id });
 
