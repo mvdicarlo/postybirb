@@ -387,14 +387,10 @@ export class PostManagerService {
     data: PostData,
   ): Promise<void> {
     this.logger.info(`Posting message to ${instance.id}`);
-    let result: IPostResponse;
-    try {
-      result = await (
-        instance as unknown as MessageWebsite
-      ).onPostMessageSubmission(data, this.cancelToken);
-    } catch (error) {
-      result = PostResponse.fromWebsite(instance).withException(error);
-    }
+    const result = await (
+      instance as unknown as MessageWebsite
+    ).onPostMessageSubmission(data, this.cancelToken);
+
     websitePostRecord.postResponse.push(result);
     if (result.exception) {
       await this.handleFailureResult(websitePostRecord, result);
@@ -487,17 +483,12 @@ export class PostManagerService {
         .info(`Posting file batch to ${instance.id}`);
       await this.waitForPostingWaitInterval(websitePostRecord);
       this.cancelToken.throwIfCancelled();
-      let result: IPostResponse;
-      try {
-        result = await instance.onPostFileSubmission(
-          data,
-          processedFiles,
-          batchIndex,
-          this.cancelToken,
-        );
-      } catch (error) {
-        result = PostResponse.fromWebsite(instance).withException(error);
-      }
+      const result = await instance.onPostFileSubmission(
+        data,
+        processedFiles,
+        batchIndex,
+        this.cancelToken,
+      );
 
       if (result.exception) {
         await this.handleFailureResult(websitePostRecord, result, fileIds);
