@@ -5,6 +5,8 @@ import {
   ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteMetadata,
+  OAuthRouteHandlers,
+  OAuthRoutes,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -34,7 +36,7 @@ export default class TestWebsite
   implements
     FileWebsite<TestFileSubmission>,
     MessageWebsite<TestMessageSubmission>,
-    OAuthWebsite
+    OAuthWebsite<OAuthRoutes>
 {
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
     test: true,
@@ -104,14 +106,7 @@ export default class TestWebsite
     return results;
   }
 
-  async onAuthorize(
-    data: Record<string, unknown>,
-    state: string,
-  ): Promise<Record<string, boolean>> {
-    if (state === 'authorize') {
-      return { result: true };
-    }
-
-    return { result: false };
-  }
+  onAuthRoute: OAuthRouteHandlers<OAuthRoutes> = {
+    authorize: (request) => ({ result: true }),
+  };
 }
