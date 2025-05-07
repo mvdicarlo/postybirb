@@ -2,12 +2,11 @@ import {
   ILoginState,
   ImageResizeProps,
   IPostResponse,
-  ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteMetadata,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SimpleValidationResult
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -59,7 +58,7 @@ export default class TestWebsite
     return new TestMessageSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps {
     return undefined;
   }
 
