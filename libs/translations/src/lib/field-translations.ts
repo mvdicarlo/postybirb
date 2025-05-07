@@ -1,10 +1,7 @@
 import { MessageDescriptor } from '@lingui/core';
 import { msg } from '@lingui/macro';
-import { FieldTranslations } from '@postybirb/types';
 
-export const FieldLabelTranslations: {
-  [K in keyof FieldTranslations]: MessageDescriptor;
-} = {
+export const FieldLabelTranslations = {
   description: msg`Description`,
   tags: msg`Tags`,
   title: msg`Title`,
@@ -24,4 +21,8 @@ export const FieldLabelTranslations: {
   aIGenerated: msg`AI generated`,
   matureContent: msg`Mature content`,
   containsContent: msg`Contains content`,
-};
+  channel: msg`Channel`,
+  silent: msg`Silent`,
+} satisfies Record<string, MessageDescriptor>;
+
+export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

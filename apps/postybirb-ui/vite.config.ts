@@ -9,6 +9,11 @@ export default defineConfig({
   server: {
     port: 4200,
     host: 'localhost',
+    fs: {
+      // blocknote loads fonts from node_modules folder which 
+      // is at the ../../ because for vite cwd is postybitb-ui workspace
+      allow: ['../../node_modules/'],
+    },
   },
 
   build: {

@@ -27,7 +27,9 @@ export default function App() {
     <div className="postybirb">
       <MantineProvider theme={mantineTheme} defaultColorScheme="dark">
         <AppI18nProvider>
-          <Notifications />
+          {/* Make notifications visible above modals */}
+          <Notifications zIndex={5000} />
+
           <QueryClientProvider client={queryClient}>
             <PostyBirbLayout />
           </QueryClientProvider>
