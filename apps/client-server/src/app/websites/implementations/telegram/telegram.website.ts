@@ -1,5 +1,4 @@
-// eslint-disable-next-line max-classes-per-file
-import { SelectOptionItem } from '@postybirb/form-builder';
+import { SelectOption } from '@postybirb/form-builder';
 import {
   ILoginState,
   ImageResizeProps,
@@ -144,7 +143,7 @@ export default class Telegram
 
   private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders...');
-    const channels: SelectOptionItem[] = [];
+    const channels: SelectOption[] = [];
     let total = 0;
 
     for await (const dialog of telegram.iterDialogs()) {
@@ -300,7 +299,7 @@ export default class Telegram
 
       // Only add description to the media in first batch
       const firstInBatch = batchIndex === 0;
-      const peer = this.getPeer(channel.value);
+      const peer = this.getPeer(channel);
 
       if (medias.length === 1) {
         telegram.invoke(
@@ -426,7 +425,7 @@ export default class Telegram
           message: description,
           entities,
           silent: postData.options.silent,
-          peer: this.getPeer(channel.value),
+          peer: this.getPeer(channel),
         }),
       );
     }

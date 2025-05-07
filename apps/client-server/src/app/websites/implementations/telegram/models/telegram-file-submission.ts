@@ -2,7 +2,6 @@ import {
   BooleanField,
   DescriptionField,
   SelectField,
-  SelectOptionItem,
   TagField,
 } from '@postybirb/form-builder';
 import {
@@ -31,7 +30,7 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     minSelected: 1,
     required: true,
   })
-  channels: SelectOptionItem[];
+  channels: string[];
 
   @BooleanField({
     label: 'silent',
