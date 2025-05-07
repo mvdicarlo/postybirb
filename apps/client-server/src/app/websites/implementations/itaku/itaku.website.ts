@@ -165,7 +165,8 @@ export default class Itaku
     postData: PostData<ItakuFileSubmission>,
     file: PostingFile,
     isBatch: boolean,
-  ): Promise<unknown> {
+    cancellationToken: CancellableToken,
+  ): Promise<{ id: number }> {
     const fileData: Record<string, unknown> = {
       title: postData.options.title,
       description: postData.options.description,
@@ -195,7 +196,8 @@ export default class Itaku
       throw new Error('Unsupported file type');
     }
 
-    const upload = await Http.post<{ id?: number }>(
+    cancellationToken.throwIfCancelled();
+    const upload = await Http.post<{ id: number }>(
       `${this.BASE_URL}/api/galleries/${
         file.fileType === FileType.IMAGE ? 'images' : 'videos'
       }/`,
@@ -213,6 +215,53 @@ export default class Itaku
     return upload.body;
   }
 
+  async postSubmission(
+    postData: PostData<ItakuFileSubmission | ItakuMessageSubmission>,
+    cancellationToken: CancellableToken,
+    uploadedFiles?: { id: number }[],
+  ): Promise<PostResponse> {
+    const fileData: Record<string, unknown> = {
+      title: postData.options.title,
+      content: postData.options.description,
+      folders: postData.options.folders,
+      tags: postData.options.tags.map((tag) => ({
+        name: tag.substring(0, 59),
+      })),
+      maturity_rating: this.convertRating(postData.options.rating),
+      visibility: postData.options.visibility,
+      gallery_images: uploadedFiles?.map((file) => file.id),
+    };
+
+    const spoilerText = postData.options.contentWarning;
+    if (spoilerText) {
+      fileData.content_warning = spoilerText;
+    }
+
+    cancellationToken.throwIfCancelled();
+    const post = await Http.post<{ id: number }>(
+      `${this.BASE_URL}/api/posts/`,
+      {
+        partition: this.accountId,
+        data: fileData,
+        type: 'json',
+        headers: {
+          Authorization: `Token ${this.retrievedWebsiteData.token}`,
+        },
+      },
+    );
+
+    PostResponse.validateBody({ id: this.id }, post);
+    if (!post.body.id) {
+      return PostResponse.fromWebsite(this)
+        .withMessage('Failed to post')
+        .withAdditionalInfo(post.body);
+    }
+
+    return PostResponse.fromWebsite(this)
+      .withSourceUrl(`${this.BASE_URL}/posts/${post.body.id}`)
+      .withAdditionalInfo(post.body);
+  }
+
   async onPostFileSubmission(
     postData: PostData<ItakuFileSubmission>,
     files: PostingFile[],
@@ -223,34 +272,23 @@ export default class Itaku
     const isBatch = files.length > 1;
 
     const uploadedFiles = await Promise.all(
-      files.map((file) => this.uploadFile(postData, file, isBatch)),
+      files.map((file) =>
+        this.uploadFile(postData, file, isBatch, cancellationToken),
+      ),
     );
 
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
-
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
-
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    if (isBatch) {
+      const postResponse = await this.postSubmission(
+        postData,
+        cancellationToken,
+        uploadedFiles,
+      );
+      return postResponse;
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    return PostResponse.fromWebsite(this).withSourceUrl(
+      `${this.BASE_URL}/images/${uploadedFiles[0].id}`,
+    );
   }
 
   async onValidateFileSubmission(
@@ -290,29 +328,7 @@ export default class Itaku
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
-
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
-
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
-    }
-
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    return this.postSubmission(postData, cancellationToken);
   }
 
   onValidateMessageSubmission = validatorPassthru;
