@@ -30,7 +30,7 @@ function getSelectOptions(
     return allOptions[fileType];
   }
 
-  // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+  // eslint-disable-next-line lingui/no-unlocalized-strings
   console.warn('No discriminator found for select options');
   return [];
 }
@@ -46,28 +46,13 @@ function ensureStringOption(options: SelectOption[]): void {
   });
 }
 
-function stringToSelectOptions(value: string | string[] | null) {
-  if (value === null) return null;
-  return Array.isArray(value) ? value.map((e) => ({ value: e })) : { value };
-}
-
-function selectOptionToString(v: unknown): string | string[] {
-  if (Array.isArray(v)) return v.map(selectOptionToString).flat();
-  if (typeof v === 'string') return v;
-  if (typeof v === 'object' && v && 'value' in v && typeof v.value === 'string')
-    return v.value;
-  return '';
-}
-
 export function SelectField(props: FormFieldProps<SelectFieldType>) {
   const { field, propKey, submission } = props;
   const { values, setFieldValue } = useFormFields();
   const validations = useValidations(props);
 
   // Get the value from context
-  const value = selectOptionToString(
-    values[propKey] || field.defaultValue || '',
-  );
+  const value = values[propKey] || field.defaultValue || '';
   const options = getSelectOptions(field.options, submission);
   ensureStringOption(options);
 
@@ -76,22 +61,16 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
       {field.allowMultiple ? (
         <MultiSelect
           value={Array.isArray(value) ? value : []}
-          onChange={(newValue) =>
-            setFieldValue(propKey, stringToSelectOptions(newValue))
-          }
+          onChange={(newValue) => setFieldValue(propKey, newValue)}
           clearable
-          searchable
           required={field.required}
           data={options}
         />
       ) : (
         <Select
-          value={Array.isArray(value) ? '' : value}
-          onChange={(newValue) =>
-            setFieldValue(propKey, stringToSelectOptions(newValue))
-          }
+          value={value as string}
+          onChange={(newValue) => setFieldValue(propKey, newValue)}
           clearable
-          searchable
           required={field.required}
           data={options}
         />
