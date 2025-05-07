@@ -24,7 +24,7 @@ msgid "{0} tags imported from clipboard"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "2FA enabled, password required. We won't store it."
+msgid "2FA enabled, password required. It won't be stored."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
@@ -295,6 +295,11 @@ msgstr "Создать новую группу тэгов"
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx
 msgid "Create Submission Template"
 msgstr "Создать шаблон поста"
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgctxt "telegram.app-id-help"
+msgid "Create telegram app to retrieve api_id and api_hash <0/>"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Created"
@@ -1005,6 +1010,10 @@ msgstr ""
 msgid "Search websites..."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx
+msgid "Sections"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Select a post to view details"
 msgstr ""
@@ -1430,11 +1439,6 @@ msgstr "Сайты"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
 msgid "Width"
 msgstr "Ширина"
-
-#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgctxt "telegram.app-id-help"
-msgid "You must create your own app configuration <0/>"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Your browser does not support the audio tag."
