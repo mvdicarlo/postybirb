@@ -98,8 +98,10 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
         const { account } = group;
         return {
           value: account.id,
-          label: account.websiteInfo.websiteDisplayName ?? (
-            <Trans>Unknown</Trans>
+          label: (
+            <Text fw={600}>
+              {account.websiteInfo.websiteDisplayName ?? <Trans>Unknown</Trans>}
+            </Text>
           ),
           children: group.options.map((o) => {
             const validation = submission.validations.find(
@@ -109,19 +111,16 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
             const hasWarnings = !!validation?.warnings?.length;
             return {
               label: (
-                <Box display="flex">
-                  {hasErrors && (
-                    <Text flex="1" size="lg" c="red">
-                      <IconExclamationCircle size="1rem" />
-                    </Text>
-                  )}
-                  {hasWarnings && (
-                    <Text flex="1" size="lg" c="orange">
-                      <IconAlertTriangle size="1rem" />
-                    </Text>
-                  )}
-                  <Text ml={4}>{account.name}</Text>
-                </Box>
+                <Group gap="xs" wrap="nowrap">
+                  {hasErrors ? (
+                    <IconExclamationCircle size="1rem" color="red" />
+                  ) : hasWarnings ? (
+                    <IconAlertTriangle size="1rem" color="orange" />
+                  ) : null}
+                  <Text size="sm" truncate>
+                    {account.name}
+                  </Text>
+                </Group>
               ),
               value: o.id,
             };
@@ -203,36 +202,75 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           />
         ))}
       </Stack>
-      <Box pos="sticky" top={top} h="fit-content">
-        <Paper withBorder m="md" p="md">
-          <Tree
-            tree={tree}
-            data={navTree}
-            selectOnClick
-            renderNode={({ node, expanded, hasChildren, elementProps }) => (
-              <Group gap={5} {...elementProps}>
-                {hasChildren && (
-                  <IconChevronDown
-                    size={18}
-                    style={{
-                      transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                    }}
-                  />
-                )}
-
-                <span
-                  onClickCapture={() => {
-                    if (!hasChildren) {
-                      const el = document.getElementById(node.value);
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }
+      <Box pos="sticky" top={top} h="fit-content" style={{ width: '200px' }}>
+        <Paper withBorder m="md" p="md" shadow="sm">
+          <Stack gap="xs">
+            <Text fw={700} ta="center">
+              <Trans>Sections</Trans>
+            </Text>
+            <Tree
+              tree={tree}
+              data={navTree}
+              selectOnClick
+              // style={{ maxHeight: 'calc(100vh - 180px)', overflow: 'auto' }}
+              renderNode={({
+                node,
+                expanded,
+                hasChildren,
+                elementProps,
+                level,
+              }) => (
+                <Group
+                  gap={5}
+                  {...elementProps}
+                  style={{
+                    ...elementProps.style,
+                    // eslint-disable-next-line lingui/no-unlocalized-strings
+                    padding: '6px 8px',
+                    borderRadius: '4px',
+                    marginLeft: level > 1 ? `${level * 6}px` : 0,
+                    '&[data-selected="true"]': {
+                      backgroundColor: 'var(--mantine-color-blue-1)',
+                      fontWeight: 500,
+                    },
                   }}
                 >
-                  {node.label}
-                </span>
-              </Group>
-            )}
-          />
+                  {hasChildren && (
+                    <IconChevronDown
+                      size={18}
+                      style={{
+                        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                        // eslint-disable-next-line lingui/no-unlocalized-strings
+                        transition: 'transform 200ms ease',
+                      }}
+                    />
+                  )}
+
+                  {!hasChildren && level > 0 && (
+                    <Box w={18} /> // Empty space for alignment when no chevron
+                  )}
+
+                  <Box
+                    component="span"
+                    style={{ cursor: hasChildren ? 'default' : 'pointer' }}
+                    onClick={(e) => {
+                      if (!hasChildren) {
+                        e.stopPropagation();
+                        const el = document.getElementById(node.value);
+                        el?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                          inline: 'nearest',
+                        });
+                      }
+                    }}
+                  >
+                    {node.label}
+                  </Box>
+                </Group>
+              )}
+            />
+          </Stack>
         </Paper>
       </Box>
     </Flex>

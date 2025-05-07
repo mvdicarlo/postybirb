@@ -4,7 +4,6 @@ import {
   ILoginState,
   ImageResizeProps,
   IPostResponse,
-  ISubmissionFile,
   PostData,
   PostResponse,
 } from '@postybirb/types';
@@ -19,6 +18,10 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import {
+  DynamicFileSizeLimits,
+  WithDynamicFileSizeLimits,
+} from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
 import { DiscordFileSubmission } from './models/discord-file-submission';
 import { DiscordMessageSubmission } from './models/discord-message-submission';
@@ -29,9 +32,6 @@ import { DiscordMessageSubmission } from './models/discord-message-submission';
 })
 @CustomLoginFlow()
 @SupportsFiles({
-  acceptedFileSizes: {
-    '*': FileSize.mbToBytes(10), // Default is 10MB, but can be overridden by serverLevel
-  },
   acceptedMimeTypes: [],
   fileBatchSize: 10,
 })
@@ -40,7 +40,8 @@ export default class Discord
   extends Website<DiscordAccountData>
   implements
     FileWebsite<DiscordFileSubmission>,
-    MessageWebsite<DiscordMessageSubmission>
+    MessageWebsite<DiscordMessageSubmission>,
+    WithDynamicFileSizeLimits
 {
   protected BASE_URL: string;
 
@@ -81,10 +82,22 @@ export default class Discord
     return new DiscordFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return file.size > this.decoratedProps.fileOptions.acceptedFileSizes['*']
-      ? { maxBytes: this.decoratedProps.fileOptions.acceptedFileSizes['*'] }
-      : undefined;
+  calculateImageResize(): ImageResizeProps {
+    return undefined;
+  }
+
+  getDynamicFileSizeLimits(): DynamicFileSizeLimits {
+    const data = this.websiteDataStore.getData();
+    switch (data.serverLevel) {
+      case 2:
+        return { '*': FileSize.mbToBytes(50) };
+      case 3:
+        return { '*': FileSize.mbToBytes(100) };
+      case 0:
+      case 1:
+      default:
+        return { '*': FileSize.mbToBytes(10) };
+    }
   }
 
   onPostFileSubmission(

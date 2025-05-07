@@ -3,10 +3,9 @@ import {
   FileType,
   ILoginState,
   ImageResizeProps,
-  ISubmissionFile,
   PostData,
   PostResponse,
-  SubmissionRating,
+  SubmissionRating
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -60,14 +59,8 @@ export default class Pixiv
     return new PixivFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return file.size >
-      this.decoratedProps.fileOptions.acceptedFileSizes[FileType.IMAGE]
-      ? {
-          maxBytes:
-            this.decoratedProps.fileOptions.acceptedFileSizes[FileType.IMAGE],
-        }
-      : undefined;
+  calculateImageResize(): ImageResizeProps {
+    return undefined;
   }
 
   async onPostFileSubmission(
