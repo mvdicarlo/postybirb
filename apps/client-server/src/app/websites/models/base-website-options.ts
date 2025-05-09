@@ -6,6 +6,8 @@ import {
   RatingFieldType,
   TagField,
   TagFieldType,
+  TextField,
+  TextFieldType,
   TitleField,
   TitleFieldType,
 } from '@postybirb/form-builder';
@@ -20,6 +22,7 @@ import {
 } from '@postybirb/types';
 import { uniq } from 'lodash';
 import { Class } from 'type-fest';
+import { DefaultWebsiteOptions } from './default-website-options';
 
 export class BaseWebsiteOptions implements IWebsiteFormFields {
   @TitleField({
@@ -34,6 +37,14 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     row: 1,
   })
   tags: TagValue = DefaultTagValue();
+
+  @TextField({
+    label: 'contentWarning',
+    col: 1,
+    row: 2,
+    hidden: true, // Keep hidden unless overridden
+  })
+  contentWarning = '';
 
   @DescriptionField({
     col: 1,
@@ -58,7 +69,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
    * @param options - The options to merge with the default options.
    * @returns A new instance of the current class with the merged options.
    */
-  public mergeDefaults(options: BaseWebsiteOptions): this {
+  public mergeDefaults(options: DefaultWebsiteOptions): this {
     const isNullOrWhiteSpace = (value: string) => !value || !value.trim();
     const mergedFormFields: IWebsiteFormFields = {
       rating: this.rating || options.rating,
@@ -80,6 +91,10 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
             insertTitle: options.description.insertTitle,
             insertTags: options.description.insertTags,
           },
+      contentWarning: (!isNullOrWhiteSpace(this.contentWarning)
+        ? this.contentWarning
+        : (options.contentWarning ?? '')
+      ).trim(),
     };
     const newInstance = Object.assign(new (this.constructor as Class<this>)(), {
       ...options,
@@ -98,6 +113,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
   public getFormFieldFor(key: 'description'): DescriptionFieldType;
   public getFormFieldFor(key: 'title'): TitleFieldType;
   public getFormFieldFor(key: 'rating'): RatingFieldType;
+  public getFormFieldFor(key: 'contentWarning'): TextFieldType;
   public getFormFieldFor(key: keyof IWebsiteFormFields) {
     return this.getFormFields()[key];
   }

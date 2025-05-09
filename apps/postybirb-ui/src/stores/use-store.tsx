@@ -1,12 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
-import StoreManager from './store-manager';
+import { useCallback, useEffect, useState } from 'react';
+import StoreManager, {
+  IdBasedRecord,
+  StoreManagerDataResult,
+} from './store-manager';
 
-export function useStore<S>(store: StoreManager<S>) {
+export function useStore<S extends IdBasedRecord>(store: StoreManager<S>) {
   const [isLoading, setIsLoading] = useState<boolean>(!store.initLoadCompleted);
-  const [state, setState] = useState<S[]>(store.getData());
-  const map = store.getMap();
+  const [state, setState] = useState<StoreManagerDataResult<S>>(
+    store.getData(),
+  );
 
-  const onUpdate = useCallback((data: S[]) => {
+  const onUpdate = useCallback((data: StoreManagerDataResult<S>) => {
     setState(data);
     setIsLoading(false);
   }, []);
@@ -24,5 +28,5 @@ export function useStore<S>(store: StoreManager<S>) {
     }
   }, [isLoading, setIsLoading, store]);
 
-  return { isLoading, state, map, reload };
+  return { isLoading, state: state.data, map: state.map, reload };
 }

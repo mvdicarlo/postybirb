@@ -142,4 +142,7 @@ export interface ValidationMessages {
     minSelected: number;
     currentSelected: number;
   };
+
+  // ----------- Website specific validation messages --------------
+  'validation.file.itaku.must-share-feed': object;
 }

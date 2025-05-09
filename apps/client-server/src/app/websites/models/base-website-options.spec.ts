@@ -1,13 +1,14 @@
 // eslint-disable-next-line max-classes-per-file
 import { TagField, TextField } from '@postybirb/form-builder';
 import {
-    DefaultDescriptionValue,
-    DefaultTagValue,
-    Description,
-    SubmissionRating,
-    TagValue,
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  Description,
+  SubmissionRating,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from './base-website-options';
+import { DefaultWebsiteOptions } from './default-website-options';
 
 describe('BaseWebsiteOptions', () => {
   const defaultDescriptionValue: Description = [
@@ -86,7 +87,7 @@ describe('BaseWebsiteOptions', () => {
   });
 
   it('should merge defaults correctly', () => {
-    const defaultOptions = new BaseWebsiteOptions({
+    const defaultOptions = new DefaultWebsiteOptions({
       title: 'Default Title',
       tags: { overrideDefault: false, tags: ['defaultTag'] },
       description: {

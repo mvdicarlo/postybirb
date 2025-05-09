@@ -283,11 +283,30 @@ export const SubmissionViewCard = React.memo(
       return false;
     }
 
+    // Check if any options have been added or removed
+    const prevOptionIds = new Set(
+      prevProps.submission.options.map((opt) => opt.id),
+    );
+    const nextOptionIds = new Set(
+      nextProps.submission.options.map((opt) => opt.id),
+    );
+
+    // If the sets of IDs are not equal, re-render
+    if (prevOptionIds.size !== nextOptionIds.size) {
+      return false;
+    }
+
+    // Check if every ID in nextOptionIds exists in prevOptionIds
+    for (const id of nextOptionIds) {
+      if (!prevOptionIds.has(id)) {
+        return false;
+      }
+    }
+
     // Compare the updatedAt of all options to see if any have changed
     const prevOptionsUpdateTimes = new Map(
       prevProps.submission.options.map((opt) => [opt.id, opt.updatedAt]),
     );
-
     for (const option of nextProps.submission.options) {
       const prevTime = prevOptionsUpdateTimes.get(option.id);
       if (!prevTime || prevTime !== option.updatedAt) {
