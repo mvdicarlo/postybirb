@@ -1,11 +1,13 @@
 import { Trans } from '@lingui/macro';
 import {
+  Accordion,
   Anchor,
   Badge,
   Box,
   Group,
   Paper,
   Radio,
+  SegmentedControl,
   Stack,
   Text,
   TextInput,
@@ -16,6 +18,7 @@ import { ISubmissionScheduleInfo, ScheduleType } from '@postybirb/types';
 import {
   IconCalendar,
   IconClockHour4,
+  IconCode,
   IconLink,
   IconRepeat,
   IconX,
@@ -25,6 +28,7 @@ import cronstrue from 'cronstrue';
 import moment from 'moment';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalStorage } from 'react-use';
+import { CronBuilder } from './cron-builder';
 
 const DEFAULT_CRON = '0 0 * * FRI';
 
@@ -55,6 +59,7 @@ type SubmissionSchedulerProps = {
 };
 
 export const ScheduleGlobalKey = 'last-used-schedule';
+export const SCHEDULE_ACCORDION_KEY = 'schedule-accordion-expanded';
 
 export function SubmissionScheduler(props: SubmissionSchedulerProps) {
   const { schedule, onChange } = props;
@@ -76,6 +81,20 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
     },
     serializer: (value) => value?.toISOString() ?? new Date().toISOString(),
   });
+  const [cronInputMode, setCronInputMode] = useState<'builder' | 'manual'>(
+    'builder',
+  );
+  const [isAccordionExpanded, setIsAccordionExpanded] =
+    useLocalStorage<boolean>(
+      SCHEDULE_ACCORDION_KEY,
+      true, // Default to expanded
+      {
+        raw: false,
+        deserializer: (value) => value === 'true',
+        serializer: (value) => value.toString(),
+      },
+    );
+
   const onUpdate = useCallback(
     (newSchedule: ISubmissionScheduleInfo) => {
       setInternalSchedule(newSchedule);
@@ -129,54 +148,130 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
         return (
           <Paper p="md" withBorder>
             <Stack gap="md">
-              <TextInput
-                label={
-                  <Group gap="xs">
-                    <Text size="sm">
-                      <Trans>CRON Expression</Trans>
-                    </Text>
-                    <Tooltip label={<Trans>Open CRON helper website</Trans>}>
-                      <Anchor
-                        href="https://crontab.cronhub.io/"
-                        target="_blank"
-                      >
-                        <IconLink size={12} />
-                      </Anchor>
-                    </Tooltip>
-                  </Group>
-                }
-                placeholder="0 0 * * FRI"
-                description={cronHelp}
-                value={internalSchedule.cron}
-                error={
-                  internalSchedule.cron && !isValidCron ? (
-                    <Trans>Invalid CRON format</Trans>
-                  ) : null
-                }
-                onChange={(event) => {
-                  let scheduledFor;
-                  try {
-                    scheduledFor = Cron(event.target.value)
-                      ?.nextRun()
-                      ?.toISOString();
-                  } catch (e) {
-                    // Do nothing
+              <Group p="apart" align="center">
+                <Text size="sm" fw={500}>
+                  <Trans>Recurring Schedule</Trans>
+                </Text>
+                <SegmentedControl
+                  w="100%"
+                  value={cronInputMode}
+                  onChange={(value: string) =>
+                    setCronInputMode(value as 'builder' | 'manual')
                   }
-                  onUpdate({
-                    ...schedule,
-                    cron: event.target.value,
-                    scheduledFor,
-                  });
-                }}
-              />
-              <Text size="xs" color="dimmed">
-                <Trans>
-                  Example: "0 9 * * MON" runs every Monday at 9:00 AM
-                </Trans>
-              </Text>
+                  data={[
+                    {
+                      value: 'builder',
+                      label: (
+                        <Group gap={5}>
+                          <IconRepeat size={14} />
+                          <Text size="xs">
+                            <Trans>Builder</Trans>
+                          </Text>
+                        </Group>
+                      ),
+                    },
+                    {
+                      value: 'manual',
+                      label: (
+                        <Group gap={5}>
+                          <IconCode size={14} />
+                          <Text size="xs">
+                            <Trans>Manual</Trans>
+                          </Text>
+                        </Group>
+                      ),
+                    },
+                  ]}
+                  size="sm"
+                  radius="md"
+                  transitionDuration={200}
+                  transitionTimingFunction="ease"
+                />
+              </Group>
+
+              {cronInputMode === 'manual' ? (
+                <TextInput
+                  label={
+                    <Group gap="xs">
+                      <Text size="sm">
+                        <Trans>CRON Expression</Trans>
+                      </Text>
+                      <Tooltip label={<Trans>Open CRON helper website</Trans>}>
+                        <Anchor
+                          href="https://crontab.cronhub.io/"
+                          target="_blank"
+                        >
+                          <IconLink size={12} />
+                        </Anchor>
+                      </Tooltip>
+                    </Group>
+                  }
+                  placeholder="0 0 * * FRI"
+                  description={cronHelp}
+                  value={internalSchedule.cron}
+                  error={
+                    internalSchedule.cron && !isValidCron ? (
+                      <Trans>Invalid CRON format</Trans>
+                    ) : null
+                  }
+                  onChange={(event) => {
+                    let scheduledFor;
+                    try {
+                      scheduledFor = Cron(event.target.value)
+                        ?.nextRun()
+                        ?.toISOString();
+                    } catch (e) {
+                      // Do nothing
+                    }
+                    onUpdate({
+                      ...schedule,
+                      cron: event.target.value,
+                      scheduledFor,
+                    });
+                  }}
+                />
+              ) : (
+                <Box>
+                  <CronBuilder
+                    value={internalSchedule.cron || '0 0 * * *'}
+                    onChange={(cronExpression) => {
+                      let scheduledFor;
+                      try {
+                        scheduledFor = Cron(cronExpression)
+                          ?.nextRun()
+                          ?.toISOString();
+                      } catch (e) {
+                        // Do nothing
+                      }
+                      onUpdate({
+                        ...schedule,
+                        cron: cronExpression,
+                        scheduledFor,
+                      });
+                    }}
+                  />
+                </Box>
+              )}
+
+              {cronInputMode === 'manual' && (
+                <Text size="xs" c="dimmed">
+                  <Trans>
+                    Example: "0 9 * * MON" runs every Monday at 9:00 AM
+                  </Trans>
+                </Text>
+              )}
+
+              {isValidCron && (
+                <Box p="xs" style={{ borderRadius: '4px' }}>
+                  <Text size="sm" fw={500}>
+                    {cronstrue.toString(internalSchedule.cron || '')}
+                  </Text>
+                </Box>
+              )}
             </Stack>
           </Paper>
         );
+
       case ScheduleType.SINGLE:
       default: {
         const date = internalSchedule.scheduledFor
@@ -234,11 +329,12 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
     onUpdate,
     schedule,
     setLastUsedSchedule,
+    cronInputMode,
   ]);
 
   return (
     <Box className="postybirb__submission-scheduler">
-      <Stack gap="lg">
+      <Stack gap="sm">
         <Paper p="md" withBorder>
           <Radio.Group
             description={
@@ -310,7 +406,69 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
           </Radio.Group>
         </Paper>
 
-        {datePicker && <Box>{datePicker}</Box>}
+        {datePicker && (
+          <Accordion
+            variant="filled"
+            radius="md"
+            value={isAccordionExpanded ? 'details' : null}
+            onChange={(value) => setIsAccordionExpanded(value === 'details')}
+          >
+            <Accordion.Item value="details">
+              <Accordion.Control>
+                <Group gap="xs" justify="space-between" wrap="nowrap">
+                  <Group gap="xs" wrap="nowrap">
+                    {internalSchedule.scheduleType ===
+                    ScheduleType.RECURRING ? (
+                      <>
+                        <IconRepeat size={16} />
+                        <Text fw={500} size="sm" truncate>
+                          <Trans>Recurring Schedule Settings</Trans>
+                        </Text>
+                      </>
+                    ) : internalSchedule.scheduleType ===
+                      ScheduleType.SINGLE ? (
+                      <>
+                        <IconCalendar size={16} />
+                        <Text fw={500} size="sm" truncate>
+                          <Trans>Date and Time Settings</Trans>
+                        </Text>
+                      </>
+                    ) : (
+                      <Text fw={500} size="sm" truncate>
+                        <Trans>Schedule Settings</Trans>
+                      </Text>
+                    )}
+                  </Group>
+
+                  {internalSchedule.scheduledFor && (
+                    <Group gap="xs" wrap="nowrap">
+                      <IconClockHour4 size={14} />
+                      <Text size="xs" c="dimmed" truncate>
+                        {internalSchedule.scheduleType ===
+                        ScheduleType.RECURRING ? (
+                          <>
+                            <Trans>Next:</Trans>{' '}
+                            {moment(internalSchedule.scheduledFor).format(
+                              'lll',
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <Trans>Scheduled for:</Trans>{' '}
+                            {moment(internalSchedule.scheduledFor).format(
+                              'lll',
+                            )}
+                          </>
+                        )}
+                      </Text>
+                    </Group>
+                  )}
+                </Group>
+              </Accordion.Control>
+              <Accordion.Panel>{datePicker}</Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
+        )}
       </Stack>
     </Box>
   );
