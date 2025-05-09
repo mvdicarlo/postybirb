@@ -1,5 +1,16 @@
-import { Box, ScrollArea, Space, Stack } from '@mantine/core';
+import { Trans } from '@lingui/macro';
+import {
+  Box,
+  Center,
+  Group,
+  Paper,
+  ScrollArea,
+  Space,
+  Stack,
+  Text,
+} from '@mantine/core';
 import { FileSubmissionMetadata, ISubmissionFileDto } from '@postybirb/types';
+import { IconArrowsSort, IconFilePlus } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../../api/submission.api';
@@ -87,25 +98,60 @@ function FileView({ submission }: SubmissionEditFormFileManagerProps) {
   }, [orderedFiles, ref, submission]);
 
   return (
-    <ScrollArea
-      flex="7"
-      h={submission.files.length === 1 ? undefined : 300}
-      bg="var(--mantine-color-dark-filled)"
-      p="md"
-      style={{ borderRadius: 'var(--mantine-radius-md)' }}
-    >
-      <Stack id="submission-file-view" ref={ref}>
-        {orderedFiles.map((file) => (
-          <SubmissionFileCard
-            key={`${file.id}:${file.hash}`}
-            file={file}
-            draggable={orderedFiles.length > 1}
-            submission={submission}
-            totalFiles={orderedFiles.length}
-          />
-        ))}
-      </Stack>
-    </ScrollArea>
+    <Paper withBorder p={0} radius="md">
+      <Box
+        p="xs"
+        bg="dark.6"
+        style={{ borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}
+      >
+        <Group p="apart">
+          <Text size="sm" fw={600} c="dimmed">
+            <Trans>Submission Files</Trans> ({orderedFiles.length})
+          </Text>
+          {orderedFiles.length > 1 && (
+            <Group gap="xs">
+              <IconArrowsSort size={14} />
+              <Text size="xs" c="dimmed">
+                <Trans>Drag to reorder</Trans>
+              </Text>
+            </Group>
+          )}
+        </Group>
+      </Box>
+
+      <ScrollArea
+        h={submission.files.length === 1 ? 'auto' : 350}
+        p="md"
+        offsetScrollbars
+        scrollbarSize={6}
+        type="auto"
+      >
+        {orderedFiles.length > 0 ? (
+          <Stack id="submission-file-view" ref={ref} gap="md">
+            {orderedFiles.map((file) => (
+              <SubmissionFileCard
+                key={`${file.id}:${file.hash}`}
+                file={file}
+                draggable={orderedFiles.length > 1}
+                submission={submission}
+                totalFiles={orderedFiles.length}
+              />
+            ))}
+          </Stack>
+        ) : (
+          <Center p="xl">
+            <Stack align="center" gap="xs">
+              <IconFilePlus size={48} opacity={0.5} />
+              <Text c="dimmed" size="sm">
+                <Trans>
+                  Add files to your submission using the uploader below
+                </Trans>
+              </Text>
+            </Stack>
+          </Center>
+        )}
+      </ScrollArea>
+    </Paper>
   );
 }
 

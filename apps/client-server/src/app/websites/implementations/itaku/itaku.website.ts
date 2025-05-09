@@ -73,19 +73,19 @@ export default class Itaku
     }>(this.accountId, this.BASE_URL);
 
     if (localStorage.token) {
-      this.retrievedWebsiteData.token = localStorage.token.replace(/"/g, '');
+      this.sessionData.token = localStorage.token.replace(/"/g, '');
       const user = await Http.get<ItakuUserInfo>(
         `${this.BASE_URL}/api/auth/user/`,
         {
           partition: this.accountId,
           headers: {
-            Authorization: `Token ${this.retrievedWebsiteData.token}`,
+            Authorization: `Token ${this.sessionData.token}`,
           },
         },
       );
 
       this.loginState.setLogin(true, user.body.profile.displayname);
-      this.retrievedWebsiteData.profile = user.body.profile;
+      this.sessionData.profile = user.body.profile;
       await this.retrieveFolders();
     } else {
       this.loginState.logout();
@@ -99,11 +99,11 @@ export default class Itaku
       const notificationFolderRes = await Http.get<
         { id: string; num_images: number; title: string }[]
       >(
-        `${this.BASE_URL}/api/post_folders/?owner=${this.retrievedWebsiteData.profile.owner}`,
+        `${this.BASE_URL}/api/post_folders/?owner=${this.sessionData.profile.owner}`,
         {
           partition: this.accountId,
           headers: {
-            Authorization: `Token ${this.retrievedWebsiteData.token}`,
+            Authorization: `Token ${this.sessionData.token}`,
           },
         },
       );
@@ -124,11 +124,11 @@ export default class Itaku
           title: string;
         }[];
       }>(
-        `${this.BASE_URL}/api/galleries/?owner=${this.retrievedWebsiteData.profile.owner}&page_size=300`,
+        `${this.BASE_URL}/api/galleries/?owner=${this.sessionData.profile.owner}&page_size=300`,
         {
           partition: this.accountId,
           headers: {
-            Authorization: `Token ${this.retrievedWebsiteData.token}`,
+            Authorization: `Token ${this.sessionData.token}`,
           },
         },
       );
@@ -215,7 +215,7 @@ export default class Itaku
         data: fileData,
         type: 'multipart',
         headers: {
-          Authorization: `Token ${this.retrievedWebsiteData.token}`,
+          Authorization: `Token ${this.sessionData.token}`,
         },
       },
     );
@@ -254,7 +254,7 @@ export default class Itaku
         data: fileData,
         type: 'json',
         headers: {
-          Authorization: `Token ${this.retrievedWebsiteData.token}`,
+          Authorization: `Token ${this.sessionData.token}`,
         },
       },
     );
