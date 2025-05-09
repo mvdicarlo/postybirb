@@ -1,4 +1,4 @@
-import { Grid } from '@mantine/core';
+import { Box, Grid, Transition } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import Sortable from 'sortablejs';
 import submissionApi from '../../../api/submission.api';
@@ -18,6 +18,12 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   const [orderedSubmissions, setOrderedSubmissions] = useState(
     submissions.sort((a, b) => a.order - b.order),
   );
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     setOrderedSubmissions(submissions.sort((a, b) => a.order - b.order));
@@ -36,6 +42,9 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
       draggable: '.submission-grid-col',
       handle: '.sort-handle',
       disabled: orderedSubmissions.length === 0,
+      animation: 150,
+      ghostClass: 'submission-drag-ghost',
+      chosenClass: 'submission-drag-chosen',
       onEnd: (event) => {
         if (draggableIndexesAreDefined(event)) {
           const newOrderedSubmissions = [...orderedSubmissions];
@@ -69,21 +78,35 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
   }
 
   return (
-    <Grid id="submission-grid">
-      {orderedSubmissions.map((submission) => (
-        <Grid.Col
-          span={span}
-          key={`card-${submission.id}`}
-          className="submission-grid-col"
-        >
-          <SubmissionViewCard
-            key={submission.id}
-            submission={submission}
-            onSelect={onSelect}
-            isSelected={selectedSubmissions.some((s) => s.id === submission.id)}
-          />
-        </Grid.Col>
-      ))}
-    </Grid>
+    <Box className="submission-grid-container">
+      <Grid id="submission-grid" gutter="md">
+        {orderedSubmissions.map((submission, index) => (
+          <Transition
+            mounted={mounted}
+            transition="fade"
+            duration={300}
+            timingFunction="ease"
+          >
+            {(styles) => (
+              <Grid.Col
+                span={span}
+                key={`card-${submission.id}`}
+                className="submission-grid-col"
+                style={styles}
+              >
+                <SubmissionViewCard
+                  key={submission.id}
+                  submission={submission}
+                  onSelect={onSelect}
+                  isSelected={selectedSubmissions.some(
+                    (s) => s.id === submission.id,
+                  )}
+                />
+              </Grid.Col>
+            )}
+          </Transition>
+        ))}
+      </Grid>
+    </Box>
   );
 }
