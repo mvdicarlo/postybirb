@@ -1,17 +1,26 @@
 import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
+  Badge,
   Box,
+  Divider,
   FileButton,
   Group,
   Image,
+  Stack,
+  Text,
   Tooltip,
 } from '@mantine/core';
 import { FileWithPath } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
 import { FileType, ISubmissionFileDto, SubmissionId } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { IconCrop, IconFileText, IconFileUpload } from '@tabler/icons-react';
+import {
+  IconCrop,
+  IconFileText,
+  IconFileUpload,
+  IconReplace,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import fileSubmissionApi, {
   FileUpdateTarget,
@@ -141,13 +150,36 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
           }}
         />
       ) : null}
-      <Group gap="sm" key="file-previews">
-        <Box ta="center" key="primary">
-          <strong>
-            <Trans comment="Main file data">Primary</Trans>
-          </strong>
-          <CardImageProvider {...file} />
-          <Group justify="center" mt="4">
+      <Stack gap={8} align="center">
+        <Box ta="center" key="primary" w={180}>
+          <Badge
+            variant="filled"
+            color="blue"
+            radius="sm"
+            mb={6}
+            fullWidth
+            style={{ textTransform: 'none' }}
+          >
+            <Trans comment="Main file data">Primary File</Trans>
+          </Badge>
+
+          <Box
+            style={{
+              borderRadius: '8px',
+              overflow: 'hidden',
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              border: '1px solid var(--mantine-color-dark-4)',
+              background: 'var(--mantine-color-dark-7)',
+              height: 140,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <CardImageProvider {...file} />
+          </Box>
+
+          <Group p="center" mt={8} gap={6}>
             <FileButton
               onChange={(payload) => {
                 if (payload) {
@@ -183,43 +215,74 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
               }}
             >
               {(p) => (
-                <Tooltip label={<Trans>Update file</Trans>}>
-                  <ActionIcon {...p} variant="subtle">
-                    <IconFileUpload />
+                <Tooltip label={<Trans>Replace file</Trans>} withArrow>
+                  <ActionIcon {...p} variant="light" color="blue" size="md">
+                    <IconReplace size={16} />
                   </ActionIcon>
                 </Tooltip>
               )}
             </FileButton>
           </Group>
         </Box>
-        <Box ta="center" key="thumbnail">
-          <strong>
+
+        <Divider w="80%" />
+
+        <Box ta="center" key="thumbnail" w={180}>
+          <Badge
+            variant="outline"
+            color="gray"
+            radius="sm"
+            mb={6}
+            fullWidth
+            style={{ textTransform: 'none' }}
+          >
             <Trans>Thumbnail</Trans>
-          </strong>
-          {file.hasThumbnail ? (
-            <Image
-              radius={4}
-              h={100}
-              fit="fill"
-              loading="lazy"
-              alt={file.fileName}
-              src={`${defaultTargetProvider()}/api/file/thumbnail/${
-                file.id
-              }?${Date.now()}`}
-            />
-          ) : null}
-          <Group justify="center" mt="4">
+          </Badge>
+
+          <Box
+            style={{
+              borderRadius: '8px',
+              overflow: 'hidden',
+              // eslint-disable-next-line lingui/no-unlocalized-strings
+              border: '1px solid var(--mantine-color-dark-4)',
+              background: 'var(--mantine-color-dark-7)',
+              height: 100,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {file.hasThumbnail ? (
+              <Image
+                radius={0}
+                height={100}
+                width={180}
+                fit="contain"
+                loading="lazy"
+                alt={file.fileName}
+                src={`${defaultTargetProvider()}/api/file/thumbnail/${
+                  file.id
+                }?${Date.now()}`}
+              />
+            ) : (
+              <Text size="xs" color="dimmed">
+                <Trans>No thumbnail</Trans>
+              </Text>
+            )}
+          </Box>
+
+          <Group p="center" mt={8} gap={6}>
             {fileType === FileType.IMAGE ? (
-              <Tooltip
-                label={<Trans>Crop new thumbnail from original file</Trans>}
-              >
+              <Tooltip label={<Trans>Generate from primary</Trans>} withArrow>
                 <ActionIcon
-                  variant="subtle"
+                  variant="light"
+                  color="teal"
+                  size="md"
                   onClick={() => {
                     setCropFromPrimary(true);
                   }}
                 >
-                  <IconCrop />
+                  <IconCrop size={16} />
                 </ActionIcon>
               </Tooltip>
             ) : null}
@@ -232,16 +295,19 @@ export function FileCardFileActions(props: FileCardFileActionsProps) {
               }}
             >
               {(p) => (
-                <Tooltip label={<Trans>Upload new thumbnail</Trans>}>
-                  <ActionIcon {...p} variant="subtle">
-                    <IconFileUpload />
+                <Tooltip
+                  label={<Trans>Upload custom thumbnail</Trans>}
+                  withArrow
+                >
+                  <ActionIcon {...p} variant="light" color="indigo" size="md">
+                    <IconFileUpload size={16} />
                   </ActionIcon>
                 </Tooltip>
               )}
             </FileButton>
           </Group>
         </Box>
-      </Group>
+      </Stack>
     </>
   );
 }

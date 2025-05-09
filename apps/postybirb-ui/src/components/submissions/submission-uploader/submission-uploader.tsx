@@ -4,15 +4,16 @@ import {
   ActionIcon,
   Box,
   Button,
+  Card,
   Flex,
   Group,
   Image,
-  Paper,
+  Progress,
   ScrollArea,
   Stack,
   Text,
+  ThemeIcon,
   Tooltip,
-  rem,
 } from '@mantine/core';
 import {
   Dropzone,
@@ -21,10 +22,14 @@ import {
   MS_WORD_MIME_TYPE,
   PDF_MIME_TYPE,
 } from '@mantine/dropzone';
+import { notifications } from '@mantine/notifications';
 import { FileType, SubmissionType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
+  IconCheck,
   IconDeviceAudioTape,
+  IconExclamationCircle,
+  IconFileUpload,
   IconPhoto,
   IconPhotoEdit,
   IconTextCaption,
@@ -52,78 +57,6 @@ export const TEXT_MIME_TYPES = [
   'application/msword',
 ];
 
-function Preview({
-  file,
-  onEdit,
-  onDelete,
-}: {
-  file: FileWithPath;
-  onEdit: (file: FileWithPath) => void;
-  onDelete: (file: FileWithPath) => void;
-}) {
-  const height = '40px';
-  const width = '40px';
-
-  const type = getFileType(file.name);
-
-  let view = null;
-
-  if (type === FileType.VIDEO) {
-    view = <IconVideo width={width} height={height} />;
-  } else if (type === FileType.AUDIO) {
-    view = <IconDeviceAudioTape width={width} height={height} />;
-  } else if (type === FileType.TEXT) {
-    view = <IconTextCaption width={width} height={height} />;
-  } else if (type === FileType.IMAGE) {
-    const imageUrl = URL.createObjectURL(file);
-    view = (
-      <Image
-        src={imageUrl}
-        onLoad={() => URL.revokeObjectURL(imageUrl)}
-        alt={file.name}
-        height={height}
-        width={width}
-        fit="contain"
-      />
-    );
-  }
-
-  return (
-    <Paper shadow="md">
-      <Flex>
-        <Tooltip label={file.name} position="top" withArrow>
-          <Box>{view}</Box>
-        </Tooltip>
-        <Text
-          ml="xl"
-          c="dimmed"
-          flex="10"
-          style={{
-            alignSelf: 'center',
-          }}
-          size="lg"
-        >
-          <em>{file.name}</em>
-        </Text>
-        <Group mx="xl">
-          {type === FileType.IMAGE && !file.type.includes('gif') && (
-            <Tooltip label={<Trans>Crop</Trans>} position="top" withArrow>
-              <ActionIcon variant="subtle" onClick={() => onEdit(file)}>
-                <IconPhotoEdit />
-              </ActionIcon>
-            </Tooltip>
-          )}
-          <Tooltip label={<Trans>Delete</Trans>} position="top" withArrow>
-            <ActionIcon variant="subtle" c="red" onClick={() => onDelete(file)}>
-              <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
-      </Flex>
-    </Paper>
-  );
-}
-
 export const VIDEO_MIME_TYPES = ['video/mp4', 'video/x-m4v', 'video/*'];
 
 async function uploadFiles({
@@ -146,6 +79,98 @@ async function uploadFiles({
   onComplete();
 }
 
+function Preview({
+  file,
+  onEdit,
+  onDelete,
+}: {
+  file: FileWithPath;
+  onEdit: (file: FileWithPath) => void;
+  onDelete: (file: FileWithPath) => void;
+}) {
+  const type = getFileType(file.name);
+  let icon;
+  let color;
+
+  switch (type) {
+    case FileType.VIDEO:
+      icon = <IconVideo size={24} />;
+      color = 'violet';
+      break;
+    case FileType.AUDIO:
+      icon = <IconDeviceAudioTape size={24} />;
+      color = 'orange';
+      break;
+    case FileType.TEXT:
+      icon = <IconTextCaption size={24} />;
+      color = 'teal';
+      break;
+    case FileType.IMAGE:
+    default:
+      icon = <IconPhoto size={24} />;
+      color = 'blue';
+  }
+
+  let preview = (
+    <ThemeIcon size={40} radius="md" variant="light" color={color}>
+      {icon}
+    </ThemeIcon>
+  );
+
+  if (type === FileType.IMAGE) {
+    const imageUrl = URL.createObjectURL(file);
+    preview = (
+      <Image
+        src={imageUrl}
+        onLoad={() => URL.revokeObjectURL(imageUrl)}
+        alt={file.name}
+        height={40}
+        width={40}
+        radius="md"
+        fit="cover"
+      />
+    );
+  }
+
+  return (
+    <Card withBorder p="xs" radius="md">
+      <Flex align="center" gap="md">
+        {preview}
+        <Box style={{ flex: 1, minWidth: 0 }}>
+          <Text size="sm" lineClamp={1} fw={500}>
+            {file.name}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {(file.size / 1024 / 1024).toFixed(2)} MB • {type}
+          </Text>
+        </Box>
+        <Group gap="xs">
+          {type === FileType.IMAGE && !file.type.includes('gif') && (
+            <Tooltip label={<Trans>Edit image</Trans>} withArrow position="top">
+              <ActionIcon
+                variant="light"
+                color="blue"
+                onClick={() => onEdit(file)}
+              >
+                <IconPhotoEdit size={16} />
+              </ActionIcon>
+            </Tooltip>
+          )}
+          <Tooltip label={<Trans>Remove</Trans>} withArrow position="top">
+            <ActionIcon
+              variant="light"
+              color="red"
+              onClick={() => onDelete(file)}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+      </Flex>
+    </Card>
+  );
+}
+
 function UploadButton({
   files,
   onComplete,
@@ -155,29 +180,80 @@ function UploadButton({
   onComplete: () => void;
 } & SubmissionUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  return (
-    <Button
-      loading={isUploading}
-      onClick={() => {
-        setIsUploading(true);
-        uploadFiles({
-          files: files as File[],
-          onComplete: () => {
+  const handleUpload = async () => {
+    setIsUploading(true);
+    setProgress(0);
+
+    try {
+      const interval = setInterval(() => {
+        setProgress((current) => {
+          const next = current + 10;
+          if (next >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return next;
+        });
+      }, 300);
+
+      await uploadFiles({
+        files: files as File[],
+        onComplete: () => {
+          clearInterval(interval);
+          setProgress(100);
+          setTimeout(() => {
             setIsUploading(false);
             onComplete();
-          },
-          appendToSubmission,
-        }).finally(() => {
-          setIsUploading(false);
-        });
-      }}
-      variant="outline"
-      leftSection={<IconUpload />}
-      disabled={!files.length}
-    >
-      <Trans>Upload</Trans>
-    </Button>
+          }, 500);
+        },
+        appendToSubmission,
+      });
+
+      notifications.show({
+        title: <Trans>Upload complete</Trans>,
+        message: <Trans>Files have been uploaded successfully</Trans>,
+        color: 'green',
+        icon: <IconCheck size={16} />,
+      });
+    } catch (error) {
+      notifications.show({
+        title: <Trans>Upload failed</Trans>,
+        message: (error as Error).message || (
+          <Trans>An error occurred during upload</Trans>
+        ),
+        color: 'red',
+        icon: <IconExclamationCircle size={16} />,
+      });
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <Box>
+      {isUploading && (
+        <Progress value={progress} mb="xs" size="sm" radius="xl" />
+      )}
+      <Button
+        loading={isUploading}
+        onClick={handleUpload}
+        variant={isUploading ? 'light' : 'filled'}
+        leftSection={<IconFileUpload size={16} />}
+        disabled={!files.length}
+        fullWidth
+        radius="md"
+        size="md"
+      >
+        {isUploading ? (
+          <Trans>Uploading...</Trans>
+        ) : files.length > 0 ? (
+          <Trans>Upload {files.length} files</Trans>
+        ) : (
+          <Trans>Upload</Trans>
+        )}
+      </Button>
+    </Box>
   );
 }
 
@@ -216,103 +292,141 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
 
   return (
     <>
-      <Stack>
-        <Flex gap="md">
-          <Dropzone
-            flex="5"
-            onDrop={(newFiles) => setFiles([...files, ...newFiles])}
-            maxSize={100 * 1024 ** 2}
-            accept={[
-              ...IMAGE_MIME_TYPE,
-              ...MS_WORD_MIME_TYPE,
-              ...PDF_MIME_TYPE,
-              ...TEXT_MIME_TYPES,
-              ...VIDEO_MIME_TYPES,
-            ]}
-          >
-            <Group
-              justify="center"
-              gap="xl"
-              mih={200}
-              style={{ pointerEvents: 'none' }}
+      <Card withBorder shadow="sm" radius="md" p="md">
+        <Stack gap="md">
+          {files.length === 0 ? (
+            <Dropzone
+              onDrop={(newFiles) => setFiles([...files, ...newFiles])}
+              maxSize={100 * 1024 ** 2}
+              accept={[
+                ...IMAGE_MIME_TYPE,
+                ...MS_WORD_MIME_TYPE,
+                ...PDF_MIME_TYPE,
+                ...TEXT_MIME_TYPES,
+                ...VIDEO_MIME_TYPES,
+              ]}
+              multiple
+              p="xl"
+              radius="md"
+              bg="var(--mantine-color-dark-6)"
             >
-              <Dropzone.Accept>
-                <IconUpload
-                  style={{
-                    width: rem(52),
-                    height: rem(52),
-                    color: 'var(--mantine-color-blue-6)',
-                  }}
-                  stroke={1.5}
-                />
-              </Dropzone.Accept>
-              <Dropzone.Reject>
-                <IconX
-                  style={{
-                    width: rem(52),
-                    height: rem(52),
-                    color: 'var(--mantine-color-red-6)',
-                  }}
-                  stroke={1.5}
-                />
-              </Dropzone.Reject>
-              <Dropzone.Idle>
-                <IconPhoto
-                  style={{
-                    width: rem(52),
-                    height: rem(52),
-                    color: 'var(--mantine-color-dimmed)',
-                  }}
-                  stroke={1.5}
-                />
-              </Dropzone.Idle>
+              <Stack
+                align="center"
+                justify="center"
+                gap="xs"
+                style={{ pointerEvents: 'none' }}
+              >
+                <Dropzone.Accept>
+                  <ThemeIcon size={80} radius="xl" color="blue">
+                    <IconUpload size={36} />
+                  </ThemeIcon>
+                </Dropzone.Accept>
+                <Dropzone.Reject>
+                  <ThemeIcon size={80} radius="xl" color="red">
+                    <IconX size={36} />
+                  </ThemeIcon>
+                </Dropzone.Reject>
+                <Dropzone.Idle>
+                  <ThemeIcon size={80} radius="xl" variant="light" color="gray">
+                    <IconFileUpload size={36} />
+                  </ThemeIcon>
+                </Dropzone.Idle>
 
-              <div>
-                <Text size="xl" inline>
-                  <Trans>Drag files here or click to select files</Trans>
-                  <Text
-                    size="sm"
-                    c="dimmed"
-                    inline
-                    mt={7}
-                    lineClamp={2}
-                    component="span"
-                  >
-                    {files.length ? files.map((f) => f.name).join(', ') : null}
-                  </Text>
+                <Text size="xl" fw={600} ta="center">
+                  <Trans>Drop files here or click to browse</Trans>
                 </Text>
-              </div>
-            </Group>
-          </Dropzone>
-
-          {files.length ? (
-            <ScrollArea
-              flex="7"
-              h={250}
-              bg="var(--mantine-color-dark-filled)"
-              p="md"
-              style={{ borderRadius: 'var(--mantine-radius-md)' }}
-            >
-              <Stack>
-                {files.map((file) => (
-                  <Preview
-                    file={file}
-                    key={file.name}
-                    onEdit={setCropFile}
-                    onDelete={onDelete}
-                  />
-                ))}
+                <Text size="sm" c="dimmed" ta="center" maw={500} mx="auto">
+                  <Trans>
+                    Supports images, videos, audio, and text files up to 100MB
+                  </Trans>
+                </Text>
               </Stack>
-            </ScrollArea>
-          ) : null}
-        </Flex>
-        <UploadButton
-          appendToSubmission={appendToSubmission}
-          files={files}
-          onComplete={() => setFiles([])}
-        />
-      </Stack>
-      {cropFile ? <EditImageModal file={cropFile} onClose={onEdit} /> : null}
+            </Dropzone>
+          ) : (
+            <Box>
+              <Flex justify="space-between" align="center" mb="md">
+                <Text fw={600} size="md">
+                  <Trans>Files to upload ({files.length})</Trans>
+                </Text>
+                <Button
+                  variant="outline"
+                  color="red"
+                  leftSection={<IconTrash size={16} />}
+                  size="xs"
+                  onClick={() => setFiles([])}
+                >
+                  <Trans>Clear all</Trans>
+                </Button>
+              </Flex>
+
+              <ScrollArea
+                h={Math.min(250, Math.max(70, files.length * 60))}
+                mb="md"
+                offsetScrollbars
+              >
+                <Stack gap="xs">
+                  {files.map((file) => (
+                    <Preview
+                      file={file}
+                      key={file.name}
+                      onEdit={setCropFile}
+                      onDelete={onDelete}
+                    />
+                  ))}
+                </Stack>
+              </ScrollArea>
+
+              <Dropzone
+                onDrop={(newFiles) => setFiles([...files, ...newFiles])}
+                maxSize={100 * 1024 ** 2}
+                accept={[
+                  ...IMAGE_MIME_TYPE,
+                  ...MS_WORD_MIME_TYPE,
+                  ...PDF_MIME_TYPE,
+                  ...TEXT_MIME_TYPES,
+                  ...VIDEO_MIME_TYPES,
+                ]}
+                multiple
+                p="sm"
+                mb="md"
+                radius="md"
+                style={{
+                  borderStyle: 'dashed',
+                  borderColor: 'var(--mantine-color-dark-4)',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                }}
+              >
+                <Flex
+                  align="center"
+                  justify="center"
+                  gap="sm"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  <ThemeIcon
+                    size="md"
+                    radius="xl"
+                    variant="light"
+                    color="gray"
+                  >
+                    <IconFileUpload size={16} />
+                  </ThemeIcon>
+                  <Text size="sm" c="dimmed">
+                    <Trans>Drop files here or click to add more</Trans>
+                  </Text>
+                </Flex>
+              </Dropzone>
+
+              <UploadButton
+                appendToSubmission={appendToSubmission}
+                files={files}
+                onComplete={() => setFiles([])}
+              />
+            </Box>
+          )}
+        </Stack>
+      </Card>
+
+      {cropFile && <EditImageModal file={cropFile} onClose={onEdit} />}
     </>
   );
 }

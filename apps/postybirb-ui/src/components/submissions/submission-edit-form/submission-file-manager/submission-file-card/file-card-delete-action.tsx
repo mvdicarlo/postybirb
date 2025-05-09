@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro';
-import { ActionIcon, Box, Button, Popover, Text } from '@mantine/core';
-import { IconTrash } from '@tabler/icons-react';
+import { ActionIcon, Button, Group, Popover, Text } from '@mantine/core';
+import { IconTrash, IconX } from '@tabler/icons-react';
 import fileSubmissionApi from '../../../../../api/file-submission.api';
 
 type FileCardDeleteActionProps = {
@@ -15,37 +15,48 @@ export function FileCardDeleteAction({
   totalFiles,
 }: FileCardDeleteActionProps) {
   return (
-    <Popover withArrow>
+    <Popover withArrow width={250} position="left">
       <Popover.Target>
         <ActionIcon
           disabled={totalFiles === 1}
           variant="subtle"
-          style={{ verticalAlign: 'center' }}
-          h="100%"
-          c="red"
+          color="red"
+          radius="xl"
+          size="lg"
+          style={{ opacity: totalFiles === 1 ? 0.5 : 1 }}
         >
-          <IconTrash />
+          <IconTrash size={18} />
         </ActionIcon>
       </Popover.Target>
       <Popover.Dropdown>
-        <Text c="orange" size="lg">
-          <Trans>
-            Are you sure you want to delete this? This action cannot be undone.
-          </Trans>
+        <Text fw={600} size="sm" c="orange">
+          <Trans>Delete this file?</Trans>
         </Text>
-        <Box ta="center" mt="sm">
+        <Text size="xs" c="dimmed" mt={4} mb={12}>
+          <Trans>This action cannot be undone.</Trans>
+        </Text>
+        <Group p="apart">
+          <Button
+            variant="subtle"
+            color="gray"
+            size="xs"
+            leftSection={<IconX size={14} />}
+          >
+            <Trans>Cancel</Trans>
+          </Button>
           <Button
             disabled={totalFiles === 1}
-            variant="light"
+            variant="filled"
             color="red"
-            leftSection={<IconTrash />}
+            size="xs"
+            leftSection={<IconTrash size={14} />}
             onClick={() => {
               fileSubmissionApi.removeFile(submissionId, file.id, 'file');
             }}
           >
             <Trans>Delete</Trans>
           </Button>
-        </Box>
+        </Group>
       </Popover.Dropdown>
     </Popover>
   );

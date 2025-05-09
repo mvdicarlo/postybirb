@@ -1,4 +1,4 @@
-import { SelectOptionItem } from '@postybirb/form-builder';
+import { SelectOption } from '@postybirb/form-builder';
 
 export interface TelegramAccountLoginData {
   appId: number;
@@ -8,7 +8,7 @@ export interface TelegramAccountLoginData {
 
 export interface TelegramAccountData extends TelegramAccountLoginData {
   session?: string;
-  channels: SelectOptionItem[];
+  channels: SelectOption[];
 }
 
 export type TelegramOAuthRoutes = {
