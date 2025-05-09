@@ -5,6 +5,7 @@ import {
 } from '@postybirb/utils/file-type';
 import { parse } from 'path';
 import { Class } from 'type-fest';
+import { getDynamicFileSizeLimits } from '../models/website-modifiers/with-dynamic-file-size-limits';
 import { UnknownWebsite } from '../website';
 import { injectWebsiteDecoratorProps } from './website-decorator-props';
 
@@ -54,16 +55,21 @@ export function getSupportedFileSize(
 ) {
   const acceptedFileSizes =
     instance.decoratedProps.fileOptions?.acceptedFileSizes;
-  if (!acceptedFileSizes) {
+
+  const dynamicFileSizeLimits = getDynamicFileSizeLimits(instance);
+
+  if (!acceptedFileSizes && !dynamicFileSizeLimits) {
     return undefined;
   }
 
+  const limits = { ...acceptedFileSizes, ...dynamicFileSizeLimits };
+
   return (
-    acceptedFileSizes[file.mimeType] ??
-    acceptedFileSizes[`${file.mimeType.split('/')[0]}/*`] ??
-    acceptedFileSizes[parse(file.fileName).ext] ??
-    acceptedFileSizes[getFileType(file.fileName)] ??
-    acceptedFileSizes['*'] ??
+    limits[file.mimeType] ??
+    limits[`${file.mimeType.split('/')[0]}/*`] ??
+    limits[parse(file.fileName).ext] ??
+    limits[getFileType(file.fileName)] ??
+    limits['*'] ??
     Number.MAX_SAFE_INTEGER
   );
 }

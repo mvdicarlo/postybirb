@@ -2,11 +2,17 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  NotFoundException,
   Optional,
 } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import { WEBSITE_UPDATES } from '@postybirb/socket-events';
-import { DynamicObject, IAccount, IWebsiteInfoDto } from '@postybirb/types';
+import {
+  DynamicObject,
+  IAccount,
+  IWebsiteInfoDto,
+  OAuthRoutes,
+} from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
@@ -225,15 +231,23 @@ export class WebsiteRegistryService {
    * Runs an authorization step for a website.
    * @param {OAuthWebsiteRequestDto<unknown>} oauthRequestDto
    */
-  public performOAuthStep(
+  public async performOAuthStep(
     oauthRequestDto: OAuthWebsiteRequestDto<DynamicObject>,
   ) {
-    const instance = this.findInstance(oauthRequestDto as unknown as IAccount);
-    if (Object.prototype.hasOwnProperty.call(oauthRequestDto, 'onAuthorize')) {
-      return (instance as unknown as OAuthWebsite).onAuthorize(
-        oauthRequestDto.data,
-        oauthRequestDto.state,
-      );
+    this.logger.info(`OAuth website route for '${oauthRequestDto.id}'`);
+
+    const account = await this.accountRepository.findById(oauthRequestDto.id, {
+      failOnMissing: true,
+    });
+    const instance = this.findInstance(account);
+
+    if (!instance) throw new NotFoundException('Website instance not found.');
+
+    if ('onAuthRoute' in (instance as unknown as OAuthWebsite<OAuthRoutes>)) {
+      const routes = (instance as unknown as OAuthWebsite<OAuthRoutes>)
+        .onAuthRoute;
+
+      return routes[oauthRequestDto.route](oauthRequestDto.data);
     }
 
     throw new BadRequestException('Website does not support OAuth operations.');

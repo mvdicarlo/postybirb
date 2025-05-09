@@ -1,11 +1,10 @@
 import { Http } from '@postybirb/http';
 import {
-    ILoginState,
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    PostData,
-    SimpleValidationResult
+  ILoginState,
+  ImageResizeProps,
+  IPostResponse,
+  PostData,
+  SimpleValidationResult
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -73,7 +72,7 @@ export default class FurAffinity
     return new FurAffinityFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps {
     return undefined;
   }
 

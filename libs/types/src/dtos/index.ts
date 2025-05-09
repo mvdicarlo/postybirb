@@ -36,6 +36,7 @@ export * from './website-options/update-website-options.dto';
 export * from './website-options/user-specified-website-options.dto';
 export * from './website-options/validate-website-options.dto';
 export * from './website-options/website-options.dto';
+export * from './website/custom-website-route.dto';
 export * from './website/form-generation-request.dto';
 export * from './website/oauth-website-request.dto';
 export * from './website/set-website-data-request.dto';

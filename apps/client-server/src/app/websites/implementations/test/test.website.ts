@@ -2,12 +2,13 @@ import {
   ILoginState,
   ImageResizeProps,
   IPostResponse,
-  ISubmissionFile,
   IWebsiteFormFields,
   IWebsiteMetadata,
+  OAuthRouteHandlers,
+  OAuthRoutes,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SimpleValidationResult
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -34,7 +35,7 @@ export default class TestWebsite
   implements
     FileWebsite<TestFileSubmission>,
     MessageWebsite<TestMessageSubmission>,
-    OAuthWebsite
+    OAuthWebsite<OAuthRoutes>
 {
   public externallyAccessibleWebsiteDataProperties: { test: boolean } = {
     test: true,
@@ -59,7 +60,7 @@ export default class TestWebsite
     return new TestMessageSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps {
     return undefined;
   }
 
@@ -104,14 +105,7 @@ export default class TestWebsite
     return results;
   }
 
-  async onAuthorize(
-    data: Record<string, unknown>,
-    state: string,
-  ): Promise<Record<string, boolean>> {
-    if (state === 'authorize') {
-      return { result: true };
-    }
-
-    return { result: false };
-  }
+  onAuthRoute: OAuthRouteHandlers<OAuthRoutes> = {
+    authorize: (request) => ({ result: true }),
+  };
 }

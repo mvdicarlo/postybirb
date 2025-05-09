@@ -1,12 +1,14 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/macro';
 import {
+  ActionIcon,
   AppShell,
   Box,
   Divider,
   Group,
   Indicator,
   ScrollArea,
+  Transition,
   useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -14,6 +16,7 @@ import { spotlight } from '@mantine/spotlight';
 import {
   IconArrowBarLeft,
   IconArrowBarRight,
+  IconArrowUp,
   IconBell,
   IconFile,
   IconHome,
@@ -24,6 +27,7 @@ import {
   IconTransform,
   IconUser,
 } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router';
 import {
   FileSubmissionPath,
@@ -127,6 +131,94 @@ const navigationTargets: (SideNavLinkProps & {
   },
 ];
 
+function ScrollToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Find the main scrollable container
+    const mainContent = document.querySelector('#postybirb__main');
+
+    const handleScroll = () => {
+      if (mainContent) {
+        const scrollTop = mainContent.scrollTop || 0;
+        setVisible(scrollTop > 200);
+      }
+    };
+
+    // Add event listener to the container
+    if (mainContent) {
+      mainContent.addEventListener('scroll', handleScroll);
+    }
+
+    // Cleanup
+    return () => {
+      if (mainContent) {
+        mainContent.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    const mainContent = document.querySelector('#postybirb__main');
+    if (mainContent) {
+      mainContent.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  return (
+    <Transition transition="slide-up" mounted={visible}>
+      {(transitionStyles) => (
+        <ActionIcon
+          size="lg"
+          style={{
+            ...transitionStyles,
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 99,
+          }}
+          onClick={scrollToTop}
+          variant="filled"
+          radius="xl"
+          aria-label="Scroll to top"
+        >
+          <IconArrowUp size={16} />
+        </ActionIcon>
+      )}
+    </Transition>
+  );
+}
+
+function View() {
+  return (
+    <Box
+      className={`postybirb__content ${classes.contentContainer}`}
+      px="md"
+      pb="sm"
+    >
+      <Outlet />
+    </Box>
+  );
+}
+
+function Layout() {
+  return (
+    <Box id="postybirb__main" className={classes.postybirb__layout}>
+      <PostybirbSpotlight />
+      <AccountDrawer />
+      <SettingsDrawer />
+      <TagGroupDrawer />
+      <TagConverterDrawer />
+      <NotificationsDrawer />
+      <ScrollToTop />
+      <View />
+    </Box>
+  );
+}
+
 export function PostyBirbLayout() {
   const [sideNavToggled, { toggle: toggleSideNav }] = useDisclosure(true);
   const { colorScheme } = useMantineColorScheme();
@@ -228,21 +320,7 @@ export function PostyBirbLayout() {
         </AppShell.Section>
       </AppShell.Navbar>
       <AppShell.Main className={classes.mainContent}>
-        <Box id="postybirb__main" className={classes.postybirb__layout}>
-          <PostybirbSpotlight />
-          <AccountDrawer />
-          <SettingsDrawer />
-          <TagGroupDrawer />
-          <TagConverterDrawer />
-          <NotificationsDrawer />
-          <Box
-            className={`postybirb__content ${classes.contentContainer}`}
-            px="md"
-            pb="sm"
-          >
-            <Outlet />
-          </Box>
-        </Box>
+        <Layout />
       </AppShell.Main>
     </AppShell>
   );

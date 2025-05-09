@@ -22,6 +22,7 @@ export type SelectOption =
 type ExtraOptions = {
   options: SelectOption[] | SelectOptionWithDiscriminator;
   allowMultiple: boolean;
+  minSelected?: number;
 };
 
 export const SelectField = createFieldDecorator<unknown, ExtraOptions>(

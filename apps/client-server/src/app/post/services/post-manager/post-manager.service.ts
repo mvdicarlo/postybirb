@@ -390,6 +390,7 @@ export class PostManagerService {
     const result = await (
       instance as unknown as MessageWebsite
     ).onPostMessageSubmission(data, this.cancelToken);
+
     websitePostRecord.postResponse.push(result);
     if (result.exception) {
       await this.handleFailureResult(websitePostRecord, result);

@@ -32,7 +32,7 @@ export type PartialOnly<T, V extends string | number | symbol> = Omit<T, V> &
 /**
  * Field decorator creator superfunction
  *
- * @param type - Type of the decorator to create. Will be set to the {@link FieldType.type} field.
+ * @param type - Type of the decorator to create. Will be set to the {@link FieldType['type']} field.
  * @returns Creator function
  */
 export function createFieldDecorator<

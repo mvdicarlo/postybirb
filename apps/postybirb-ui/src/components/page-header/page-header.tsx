@@ -44,7 +44,7 @@ export function PageHeader(props: PageHeaderProps) {
   const titleField = useMemo(
     () => (
       <>
-        <Group>
+        <Group pl="xs">
           {icon}
           <Title order={1}>{title}</Title>
         </Group>
@@ -57,7 +57,7 @@ export function PageHeader(props: PageHeaderProps) {
   const breadcrumb = useMemo(
     () =>
       breadcrumbs && (
-        <Breadcrumbs>
+        <Breadcrumbs pl="xs">
           {breadcrumbs.map((bc, index) => (
             <Anchor
               c={index === breadcrumbs.length - 1 ? undefined : 'blue'}
@@ -67,7 +67,7 @@ export function PageHeader(props: PageHeaderProps) {
                 onBreadcrumbClick(e, bc.target);
               }}
             >
-              {bc.text}
+              <em>{bc.text}</em>
             </Anchor>
           ))}
         </Breadcrumbs>
@@ -76,7 +76,12 @@ export function PageHeader(props: PageHeaderProps) {
   );
 
   const actionField = useMemo(
-    () => actions && <Group my="4">{actions}</Group>,
+    () =>
+      actions && (
+        <Group my="4" pl="xs">
+          {actions}
+        </Group>
+      ),
     [actions],
   );
 

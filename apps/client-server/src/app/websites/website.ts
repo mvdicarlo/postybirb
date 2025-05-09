@@ -42,8 +42,10 @@ export abstract class Website<D extends DynamicObject> {
    * information for a website instance.
    *
    * Commons things that go here would be folders.
+   *
+   * This is not persisted across app restarts.
    */
-  protected readonly retrievedWebsiteData: DynamicObject = {};
+  protected readonly sessionData: DynamicObject = {};
 
   /**
    * Tracks the login state of a website.
@@ -167,7 +169,7 @@ export abstract class Website<D extends DynamicObject> {
    */
   public getFormProperties(): DynamicObject {
     const longTermData = this.getWebsiteData();
-    const shortTermData = this.retrievedWebsiteData;
+    const shortTermData = this.sessionData;
     return {
       ...longTermData,
       ...shortTermData,

@@ -138,6 +138,11 @@ export interface ValidationMessages {
     minLength: number;
   };
 
+  'validation.select-field.min-selected': {
+    minSelected: number;
+    currentSelected: number;
+  };
+
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
 }
