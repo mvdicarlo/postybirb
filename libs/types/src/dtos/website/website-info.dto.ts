@@ -13,4 +13,6 @@ export interface IWebsiteInfoDto {
   metadata: IWebsiteMetadata;
   accounts: IAccountDto[];
   fileOptions?: WebsiteFileOptions;
+  supportsFile: boolean;
+  supportsMessage: boolean;
 }

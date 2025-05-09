@@ -114,9 +114,16 @@ export default class Itaku
           label: f.title,
         }));
 
-      const galleryFolderRes = await Http.get<
-        { id: string; num_images: number; title: string }[]
-      >(
+      const galleryFolderRes = await Http.get<{
+        count: number;
+        links: object;
+        results: {
+          group: string;
+          id: number;
+          num_images: number;
+          title: string;
+        }[];
+      }>(
         `${this.BASE_URL}/api/galleries/?owner=${this.retrievedWebsiteData.profile.owner}&page_size=300`,
         {
           partition: this.accountId,
@@ -126,10 +133,12 @@ export default class Itaku
         },
       );
 
-      const galleryFolders: SelectOption[] = galleryFolderRes.body.map((f) => ({
-        value: f.title,
-        label: f.title,
-      }));
+      const galleryFolders: SelectOption[] = galleryFolderRes.body.results.map(
+        (f) => ({
+          value: f.title,
+          label: f.title,
+        }),
+      );
 
       await this.setWebsiteData({
         notificationFolders,
@@ -183,7 +192,7 @@ export default class Itaku
     }
 
     const spoilerText =
-      postData.options.contentWarning ?? file.metadata.spoilerText;
+      postData.options.contentWarning || file.metadata.spoilerText;
     if (spoilerText) {
       fileData.content_warning = spoilerText;
     }

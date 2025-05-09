@@ -37,7 +37,7 @@ export class ItakuMessageSubmission extends BaseWebsiteOptions {
     ],
     col: 1,
   })
-  visibility: string;
+  visibility = 'PUBLIC';
 
   @SelectField<ItakuAccountData>({
     col: 1,

@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro';
 import { ComboboxItemGroup, Group, MultiSelect } from '@mantine/core';
-import { IAccountDto, NULL_ACCOUNT_ID } from '@postybirb/types';
+import { IAccountDto, NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import { IconCheck } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
@@ -19,14 +19,24 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
 
   const options: ComboboxItemGroup[] = useMemo(
     () =>
-      filteredAccounts.map((website) => ({
-        group: website.displayName,
-        items: website.accounts.map((account) => ({
-          label: `[${website.displayName}] ${account.name}`,
-          value: account.id,
+      filteredAccounts
+        .filter((website) => {
+          if (submission.type === SubmissionType.MESSAGE) {
+            return website.supportsMessage;
+          }
+          if (submission.type === SubmissionType.FILE) {
+            return website.supportsFile;
+          }
+          return false;
+        })
+        .map((website) => ({
+          group: website.displayName,
+          items: website.accounts.map((account) => ({
+            label: `[${website.displayName}] ${account.name}`,
+            value: account.id,
+          })),
         })),
-      })),
-    [filteredAccounts],
+    [filteredAccounts, submission.type],
   );
 
   const onCommitChanges = (selected: IAccountDto[], force?: boolean) => {
