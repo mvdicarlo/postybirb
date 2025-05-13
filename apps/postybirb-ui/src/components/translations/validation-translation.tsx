@@ -184,6 +184,8 @@ export const TranslationMessages: TranslationsMap = {
       </Trans>
     );
   },
+
+  'validation.field.required': () => <Trans>Required</Trans>,
 };
 
 export function ValidationTranslation({
