@@ -49,7 +49,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const defaultOption = submission.getDefaultOptions();
   const isSpecialSubmissionType =
     submission.isMultiSubmission || submission.isTemplate;
-  const top = 109;
+  const top = 128;
 
   const optionsGroupedByWebsiteId = useMemo(
     () =>
@@ -154,6 +154,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
         isScheduled: isSpecialSubmissionType ? false : submission.isScheduled,
         scheduledFor: schedule.scheduledFor,
         scheduleType: schedule.scheduleType,
+        cron: schedule.cron,
         deletedWebsiteOptions: [],
         newOrUpdatedOptions: [],
         metadata: submission.metadata,
