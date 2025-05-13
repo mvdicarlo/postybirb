@@ -220,7 +220,7 @@ export default class Itaku
       },
     );
 
-    PostResponse.validateBody({ id: this.id }, upload);
+    PostResponse.validateBody(this, upload);
     return upload.body;
   }
 
@@ -259,7 +259,7 @@ export default class Itaku
       },
     );
 
-    PostResponse.validateBody({ id: this.id }, post);
+    PostResponse.validateBody(this, post);
     if (!post.body.id) {
       return PostResponse.fromWebsite(this)
         .withMessage('Failed to post')

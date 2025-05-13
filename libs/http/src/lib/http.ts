@@ -262,6 +262,10 @@ export class Http {
     });
   }
 
+  static getUserAgent(appVersion: string): string {
+    return `PostyBirb/${appVersion}`;
+  }
+
   /**
    * Creates a GET method request.
    *
