@@ -4,4 +4,4 @@ export { default as Itaku } from './itaku/itaku.website';
 export { default as Pixiv } from './pixiv/pixiv.website';
 export { default as Telegram } from './telegram/telegram.website';
 export { default as Weasyl } from './weasyl/weasyl.website';
-
+export { default as DeviantArt } from './deviant-art/deviant-art.website';

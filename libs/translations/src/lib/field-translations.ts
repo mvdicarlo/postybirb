@@ -25,6 +25,14 @@ export const FieldLabelTranslations = {
   visibility: msg`Visibility`,
   channel: msg`Channel`,
   silent: msg`Silent`,
+  allowModifications: msg`Allow modifications of your work`,
+  isCreativeCommons: msg`Creative Commons license`,
+  disableComments: msg`Disable comments`,
+  allowFreeDownload: msg`Allow free download`,
+  scraps: msg`Send to scraps`,
+  displayResolution: msg`Display resolution`,
+  noAI: msg`No AI`,
+  allowCommercialUse: msg`Allow commercial use`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;
