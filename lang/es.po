@@ -31,6 +31,10 @@ msgstr ""
 msgid "Account"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Account data updated"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Account Name"
 msgstr ""
@@ -56,9 +60,21 @@ msgstr ""
 msgid "Add Account"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-manager.tsx
+msgid "Add files to your submission using the uploader below"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Add folder watcher"
 msgstr "Añadir observador de carpeta"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Add website options"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
+msgid "Adjust dimensions while maintaining aspect ratio"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
@@ -76,6 +92,18 @@ msgstr "Permitir a PostyBirb insertar un anuncio en la descripción"
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
 msgid "Alt Text"
 msgstr "Texto alternativo"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "An error occurred during upload"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "API Key"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "API Key is required"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx
 msgid "App"
@@ -105,8 +133,11 @@ msgstr "Aplicar plantilla"
 msgid "Apply to Submissions"
 msgstr "Aplicar a las publicaciones"
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Are you sure you want to delete this submission? This action cannot be undone."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/delete-submissions-action.tsx
 msgid "Are you sure you want to delete this? This action cannot be undone."
 msgstr "¿Está seguro de que desea eliminar esto? Esta acción no se puede deshacer."
@@ -139,17 +170,26 @@ msgstr ""
 msgid "Browse"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Builder"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 msgid "Cancel"
 msgstr "Cancelar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Cancel post"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx
@@ -173,6 +213,10 @@ msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
 msgstr "Elegir plantilla"
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Choose when to post this submission"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
@@ -182,6 +226,10 @@ msgstr "Limpiar"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Clear Account"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Clear all"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
@@ -214,6 +262,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Code sent"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Common Schedules"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
@@ -263,6 +315,10 @@ msgstr ""
 msgid "Copy to clipboard"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Could not validate API Key"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Create a new file submission"
 msgstr ""
@@ -306,22 +362,45 @@ msgid "Created"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgid "CRON Format"
-msgstr "Formato CRON"
+msgid "CRON Expression"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Crop"
 msgstr "Recortar"
 
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
-msgid "Crop new thumbnail from original file"
-msgstr "Recortar nueva miniatura del archivo original"
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Daily at 9 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Daily at midnight"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Date"
 msgstr "Fecha"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Date and Time Settings"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Date cannot be in the past"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Day (1-31)"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Day of Month"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Day of Week"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Days"
@@ -346,8 +425,9 @@ msgstr "Guardados por defecto"
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/delete-submissions-action.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Delete"
 msgstr "Borrar"
 
@@ -358,6 +438,14 @@ msgstr ""
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 msgid "Delete item"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Delete Submission"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
+msgid "Delete this file?"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx
@@ -380,6 +468,10 @@ msgstr "Ajustes de la descripción"
 msgid "Desktop Notifications"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
+msgid "Dimensions"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Disable"
 msgstr ""
@@ -392,17 +484,25 @@ msgstr "No publicar en"
 msgid "Done"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
-msgid "Drag files here or click to select files"
-msgstr "Arrastre los archivos aquí o haga clic para seleccionar los archivos"
-
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Drag or use arrow keys to change order."
 msgstr "Arrastre o utilice las teclas de flecha para cambiar el orden."
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-manager.tsx
+msgid "Drag to reorder"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 msgid "Drag to schedule"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Drop files here or click to add more"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Drop files here or click to browse"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
@@ -418,6 +518,10 @@ msgstr "Editar"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Edit file submission"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Edit image"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/multi-edit-submissions-action.tsx
@@ -476,6 +580,18 @@ msgstr ""
 msgid "Error while authenticating Telegram"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Every day"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Every month"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Example: \"0 9 * * MON\" runs every Monday at 9:00 AM"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Failed"
 msgstr ""
@@ -487,6 +603,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submission-templates/submission-template-view/submission-template-view.tsx
 msgid "Failed to create template"
 msgstr "No se pudo crear la plantilla"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Failed to delete"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Failed to duplicate"
@@ -544,6 +664,10 @@ msgstr "Texto de respaldo"
 msgid "File"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
+msgid "File Name"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "File saved"
 msgstr ""
@@ -566,6 +690,18 @@ msgstr "Los tipos de archivo no coinciden. Por favor, cargue un archivo del mism
 msgid "File will be modified to support website requirements"
 msgstr "El archivo se modificará para cumplir los requisitos de la página web"
 
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Files have been uploaded successfully"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Files to upload ({0})"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Fix validation issues"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Folder"
 msgstr "Carpeta"
@@ -574,6 +710,10 @@ msgstr "Carpeta"
 msgctxt "directory-watcher.description"
 msgid "Folder watchers allow you to automatically upload files from a folder to PostyBirb."
 msgstr "Los observadores de carpetas le permiten cargar automáticamente archivos desde una carpeta a PostyBirb."
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
+msgid "Generate from primary"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "German"
@@ -625,6 +765,14 @@ msgstr "Página principal"
 msgid "Home Page"
 msgstr "Página de inicio"
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Hour (0-23)"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Hour of the day"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Hours"
 msgstr "Horas"
@@ -656,6 +804,15 @@ msgstr "Insertar etiquetas al final"
 msgid "Insert title at start"
 msgstr "Insertar título al inicio"
 
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Invalid"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Invalid CRON format"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Invalid CRON string"
 msgstr "String CRON inválido"
@@ -683,6 +840,10 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Login"
 msgstr "Conectarse"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Manual"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Mark All as Read"
@@ -714,16 +875,31 @@ msgstr "Envíos de mensajes"
 msgid "Message Submissions"
 msgstr "Publicaciones de mensajes"
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Minute (0-59)"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Minute of the hour"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Minutes"
 msgstr "Minutos"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Month"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Monthly (1st of month)"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "more"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
 msgid "Name"
 msgstr "Usuario"
 
@@ -735,6 +911,14 @@ msgstr "Navegar"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "New"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Next run:"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Next:"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
@@ -757,6 +941,18 @@ msgstr ""
 msgid "No results found"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "No scheduling"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view.tsx
+msgid "No submissions available. Upload some files to get started!"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view.tsx
+msgid "No submissions match your search criteria"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "No tag converters created yet"
 msgstr ""
@@ -773,12 +969,20 @@ msgstr ""
 msgid "No tag groups match your search or filters"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
+msgid "No thumbnail"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 msgid "No unscheduled submissions"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "No website posts available"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
+msgid "No websites"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
@@ -831,6 +1035,10 @@ msgstr "Solo establecer fecha programada"
 msgid "Only use website options specified and delete website options missing from multi-update form."
 msgstr "Utilice únicamente las opciones de sitio web especificadas y elimine las opciones de la página web que faltan en el formulario de actualización múltiple."
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Open CRON helper website"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx
 msgid "Open PostyBirb on computer startup"
 msgstr "Abrir PostyBirb al iniciar el ordenador"
@@ -874,6 +1082,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 msgid "Post"
 msgstr "Publicar"
@@ -898,25 +1107,57 @@ msgstr ""
 msgid "Post Selected"
 msgstr "Post seleccionado"
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
+msgid "Posting Options"
+msgstr ""
+
 #. Main file data
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
-msgid "Primary"
-msgstr "Primario"
+msgid "Primary File"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
+msgid "Queued"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Quick selection of common scheduling patterns"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgctxt "internalSchedule.recurring"
 msgid "Recurring"
 msgstr "Recurrente"
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Recurring Schedule"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Recurring Schedule Settings"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Remove"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgctxt "import.override-description"
 msgid "Replace description"
 msgstr "Reemplazar descripción"
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
+msgid "Replace file"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgctxt "import.override-title"
 msgid "Replace title"
 msgstr "Reemplazar Título"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+msgid "Required"
+msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Required if 2FA is enabled."
@@ -942,6 +1183,30 @@ msgstr ""
 msgid "Restore failed"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Runs every day at 12:00 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Runs every day at 9:00 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Runs every Monday at 12:00 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Runs Monday through Friday at 9:00 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Runs on the 1st day of every month at 12:00 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Runs Saturday and Sunday at 12:00 PM"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "Russian"
 msgstr "Ruso"
@@ -950,6 +1215,7 @@ msgstr "Ruso"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Save"
 msgstr "Guardar"
 
@@ -985,6 +1251,30 @@ msgstr "Programar"
 msgctxt "schedule.modal-header"
 msgid "Schedule"
 msgstr "Programar"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Schedule Date and Time"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Schedule for a specific date and time"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Schedule Settings"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Schedule to repeat regularly"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
+msgid "Scheduled"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Scheduled for:"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
@@ -1026,8 +1316,24 @@ msgstr "Seleccionar carpeta"
 msgid "Select language"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Select specific day of month or every day"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Select specific months or all"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Select the days when this should run"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Select which notifications to delete:"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Selected"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
@@ -1055,6 +1361,10 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Settings"
 msgstr "Ajustes"
+
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+msgid "Share on Feed is required to support posting multiple files."
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 msgid "Show All"
@@ -1099,6 +1409,10 @@ msgstr ""
 msgid "Spanish"
 msgstr "Español"
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Specific day"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
 msgid "Spoiler Text"
 msgstr "Texto del spoiler"
@@ -1113,12 +1427,17 @@ msgid "Status"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Submission deleted"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Submission duplicated"
 msgstr "Envío duplicado"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-manager.tsx
+msgid "Submission Files"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
@@ -1173,6 +1492,14 @@ msgstr ""
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Success!"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Successfully saved Furtastic login information"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Supports images, videos, audio, and text files up to 100MB"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/theme-picker.tsx
@@ -1296,9 +1623,17 @@ msgstr "Plantillas"
 msgid "Text"
 msgstr "Texto"
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
+msgid "This action cannot be undone."
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx
 msgid "This is the folder where the app will store its data. You must restart the app for this to take effect."
 msgstr "Esta es la carpeta donde la aplicación guarda sus datos. Debe de reiniciar la aplicación para que esto tome efecto."
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "This submission will be posted at the specified time."
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "This will clear all data associated with this account. You will need to log in again."
@@ -1324,6 +1659,10 @@ msgstr ""
 msgid "Translation {id} not found"
 msgstr "Traducción {id} no encontrada"
 
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
+msgid "Type"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/form/website-option-form/use-form-fields.tsx
 msgid "Unable to display form"
 msgstr "No se puede mostrar el formulario"
@@ -1335,6 +1674,7 @@ msgstr "No se puede mostrar el formulario"
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Unknown"
 msgstr "Desconocido"
@@ -1370,14 +1710,14 @@ msgstr "Archivo no compatible {mimeType}"
 msgid "Unsupported submission type: {fileTypeString}"
 msgstr "Tipo de envío no soportado : {fileTypeString}"
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Untitled submission"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "Update"
 msgstr "Actualizar"
-
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
-msgid "Update file"
-msgstr "Actualizar archivo"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-update-button.tsx
 msgid "Update PostyBirb"
@@ -1391,9 +1731,25 @@ msgstr "Actualizaciones aplicadas"
 msgid "Upload"
 msgstr "Cargar"
 
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Upload {0} files"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Upload complete"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
-msgid "Upload new thumbnail"
-msgstr "Cargar nueva miniatura"
+msgid "Upload custom thumbnail"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Upload failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Uploading..."
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "URL"
@@ -1407,6 +1763,14 @@ msgstr "Utilizar una descripción personalizada"
 msgid "Use this template for a new submission"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Username (email address)"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Username is required"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Video"
 msgstr "Vídeo"
@@ -1416,9 +1780,17 @@ msgstr "Vídeo"
 msgid "Warning"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Warning: This date is in the past and may not behave as expected."
+msgstr ""
+
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Webhook is required"
 msgstr "Se requiere webhook"
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
+msgid "website"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Website"
@@ -1432,13 +1804,34 @@ msgstr ""
 msgid "Website Visibility"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
+msgid "websites"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/form/website-select/website-select.tsx
 msgid "Websites"
 msgstr "Páginas web"
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Weekdays at 9 AM"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Weekend at noon"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Weekly on Monday"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
 msgid "Width"
 msgstr "Ancho"
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgctxt "furtastic.api-key-help"
+msgid "You must first get an API Key from your account settings [Manage API Access] <0/>"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Your browser does not support the audio tag."
