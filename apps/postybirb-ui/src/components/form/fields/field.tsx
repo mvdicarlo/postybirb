@@ -1,3 +1,4 @@
+import { Box } from '@mantine/core';
 import type {
   BooleanFieldType,
   DescriptionFieldType,
@@ -6,8 +7,10 @@ import type {
   TagFieldType,
   TextFieldType,
 } from '@postybirb/form-builder';
+import { useValidations } from '../hooks/use-validations';
 import { BooleanField } from './boolean-field';
 import { DescriptionField } from './description-field';
+import './field.css';
 import { FormFieldProps } from './form-field.type';
 import { InputField } from './input-field';
 import { RadioField } from './radio-field';
@@ -16,6 +19,7 @@ import { TagField } from './tag-field';
 
 export function Field(props: FormFieldProps): JSX.Element | null {
   const { field, option, defaultOption } = props;
+  const validations = useValidations(props);
 
   if (field.showWhen) {
     const evaluations: boolean[] = [];
@@ -48,7 +52,6 @@ export function Field(props: FormFieldProps): JSX.Element | null {
       break;
     case 'input':
     case 'textarea':
-    case 'title':
       formField = <InputField {...(props as FormFieldProps<TextFieldType>)} />;
       break;
     case 'radio':
@@ -69,9 +72,19 @@ export function Field(props: FormFieldProps): JSX.Element | null {
       );
       break;
     default:
+      // @ts-expect-error Unknown type for ts
       // eslint-disable-next-line lingui/no-unlocalized-strings
       formField = <div>Unknown field type: {field.formField}</div>;
   }
 
-  return formField;
+  const hasErrors = validations.errors?.length;
+  return (
+    <Box
+      {...(hasErrors
+        ? { pr: 6, pb: 3, pl: 6, className: 'postybirb-field-error' }
+        : {})}
+    >
+      {formField}
+    </Box>
+  );
 }
