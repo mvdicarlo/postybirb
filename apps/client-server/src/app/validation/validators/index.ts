@@ -1,6 +1,6 @@
 import * as descriptionValidators from './description-validators';
 import * as fileValidators from './file-submission-validators';
-import * as selectFieldValidators from './select-field-validatiors';
+import * as selectFieldValidators from './select-field-validators';
 import * as tagValidators from './tag-validators';
 import * as titleValidators from './title-validators';
 import { Validator } from './validator.type';

@@ -143,6 +143,10 @@ export interface ValidationMessages {
     currentSelected: number;
   };
 
+  'validation.select-field.invalid-option': {
+    invalidOptions: string[];
+  };
+
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
 }

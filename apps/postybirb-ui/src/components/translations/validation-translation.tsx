@@ -184,6 +184,15 @@ export const TranslationMessages: TranslationsMap = {
       </Trans>
     );
   },
+
+  'validation.select-field.invalid-option': (props) => {
+    const { invalidOptions } = props;
+    return (
+      <span>
+        <Trans>Unknown choice</Trans>: {invalidOptions.join(', ')}
+      </span>
+    );
+  },
 };
 
 export function ValidationTranslation({

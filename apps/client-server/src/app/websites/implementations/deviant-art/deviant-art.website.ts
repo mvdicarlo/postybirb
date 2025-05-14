@@ -1,15 +1,18 @@
 import { SelectOptionSingle } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
+  FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
   PostData,
   PostResponse,
   SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import FileSize from '../../../utils/filesize.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -18,6 +21,7 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { Website } from '../../website';
+import { DeviantArtDescriptionConverter } from './deviant-art-description-converter';
 import { DeviantArtAccountData } from './models/deviant-art-account-data';
 import { DeviantArtFileSubmission } from './models/deviant-art-file-submission';
 import { DeviantArtMessageSubmission } from './models/deviant-art-message-submission';
@@ -41,6 +45,12 @@ interface DeviantArtFolder {
   url: 'https://deviantart.com/$1',
 })
 @SupportsFiles({
+  acceptedFileSizes: {
+    [FileType.VIDEO]: FileSize.mbToBytes(200),
+    [FileType.IMAGE]: FileSize.mbToBytes(30),
+    [FileType.TEXT]: FileSize.mbToBytes(30),
+    [FileType.AUDIO]: FileSize.mbToBytes(30),
+  },
   acceptedMimeTypes: [
     'image/jpeg',
     'image/jpg',
@@ -53,7 +63,6 @@ interface DeviantArtFolder {
     'application/x-shockwave-flash',
     'image/tiff',
     'image/gif',
-    'gif',
   ],
 })
 export default class DeviantArt
@@ -63,6 +72,8 @@ export default class DeviantArt
     MessageWebsite<DeviantArtMessageSubmission>
 {
   protected BASE_URL = 'https://www.deviantart.com';
+
+  private readonly DA_API_VERSION: number = 20230710;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<DeviantArtAccountData> =
     {
@@ -86,9 +97,9 @@ export default class DeviantArt
     return this.loginState.setLogin(false, null);
   }
 
-  private async getCSRF() {
+  private async getCSRF(accountId = this.accountId) {
     const url = await Http.get<string>(this.BASE_URL, {
-      partition: this.accountId,
+      partition: accountId,
     });
     return url.body.match(/window.__CSRF_TOKEN__ = '(.*)'/)?.[1];
   }
@@ -139,31 +150,130 @@ export default class DeviantArt
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
+    // File upload step
+    const fileUpload = await Http.post<{
+      deviationId: number;
+      status: string;
+      stashId: number;
+      privateId: number;
+      size: number;
+      cursor: string;
+      title: string;
+    }>(`${this.BASE_URL}/_puppy/dashared/deviation/submit/upload/deviation`, {
       partition: this.accountId,
-      data: formData,
       type: 'multipart',
+      data: {
+        upload_file: files[0].toPostFormat(),
+        use_defaults: 'true',
+        folder_name: 'Saved Submissions',
+        da_minor_version: this.DA_API_VERSION,
+        csrf_token: await this.getCSRF(),
+      },
     });
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    if (fileUpload.body.status !== 'success') {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(fileUpload.body)
+        .withException(new Error('Failed to upload file.'));
     }
 
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+    cancellationToken.throwIfCancelled();
+
+    // Determine if submission is mature
+    const mature =
+      postData.options.isMature ||
+      postData.options.rating === SubmissionRating.ADULT ||
+      postData.options.rating === SubmissionRating.MATURE ||
+      postData.options.rating === SubmissionRating.EXTREME;
+
+    // Prepare update data
+    const updateBody: Record<string, unknown> = {
+      allow_comments: !postData.options.disableComments,
+      allow_free_download: postData.options.allowFreeDownload,
+      deviationid: fileUpload.body.deviationId,
+      da_minor_version: this.DA_API_VERSION,
+      display_resolution: 0,
+      editorRaw: DeviantArtDescriptionConverter.convert(
+        postData.options.description,
+      ),
+      editor_v3: '',
+      galleryids: postData.options.folders,
+      is_ai_generated: postData.options.isAIGenerated ?? false,
+      is_scrap: postData.options.scraps,
+      license_options: {
+        creative_commons: postData.options.isCreativeCommons ?? false,
+        commercial: postData.options.isCommercialUse ?? false,
+        modify: postData.options.allowModifications || 'no',
+      },
+      location_tag: null,
+      noai: postData.options.noAI ?? true,
+      subject_tag_types: '_empty',
+      subject_tags: '_empty',
+      tags: postData.options.tags,
+      tierids: '_empty',
+      title: this.stripInvalidCharacters(postData.options.title),
+      csrf_token: await this.getCSRF(),
+    };
+
+    if (postData.options.allowFreeDownload) {
+      updateBody.pcp_price_points = 0;
+    }
+
+    if (mature) {
+      updateBody.is_mature = true;
+    }
+
+    // Set default folder if none specified
+    if (postData.options.folders.length === 0) {
+      const folders = this.getWebsiteData().folders as SelectOptionSingle[];
+      const featured = folders.find((f) => f.label === 'Featured');
+      if (featured) {
+        updateBody.galleryids = [`${featured.value}`];
+      }
+    }
+
+    // Update submission details
+    const update = await Http.post<{
+      status: string;
+      url: string;
+      deviationId: number;
+    }>(`${this.BASE_URL}/_napi/shared_api/deviation/update`, {
+      partition: this.accountId,
+      type: 'json',
+      data: updateBody,
+    });
+
+    cancellationToken.throwIfCancelled();
+
+    if (update.body.status !== 'success') {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(update.body)
+        .withException(new Error('Failed to upload file.'));
+    }
+
+    // Publish the submission
+    const publish = await Http.post<{
+      status: string;
+      url: string;
+      deviationId: number;
+    }>(`${this.BASE_URL}/_puppy/dashared/deviation/publish`, {
+      partition: this.accountId,
+      type: 'json',
+      data: {
+        stashid: update.body.deviationId,
+        da_minor_version: this.DA_API_VERSION,
+        csrf_token: await this.getCSRF(),
+      },
+    });
+
+    if (publish.body.status !== 'success') {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(publish.body)
+        .withException(new Error('Failed to upload file.'));
+    }
+
+    return PostResponse.fromWebsite(this).withSourceUrl(publish.body.url);
   }
 
   async onValidateFileSubmission(
@@ -184,29 +294,69 @@ export default class DeviantArt
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
+    const commonFormData = {
+      csrf_token: await this.getCSRF(),
+      da_minor_version: this.DA_API_VERSION,
     };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
+    const form: Record<string, unknown> = {
+      ...commonFormData,
+      editorRaw: DeviantArtDescriptionConverter.convert(
+        postData.options.description,
+      ),
+      title: this.stripInvalidCharacters(postData.options.title),
+    };
+
+    const create = await Http.post<{
+      deviation: {
+        deviationId: number;
+        url: string;
+      };
+    }>(`${this.BASE_URL}/_napi/shared_api/journal/create`, {
       partition: this.accountId,
-      data: formData,
-      type: 'multipart',
+      type: 'json',
+      data: form,
     });
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    if (!create.body.deviation?.deviationId) {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo({
+          body: create.body,
+          statusCode: create.statusCode,
+        })
+        .withException(new Error('Failed to create post'));
+    }
+
+    const publish = await Http.post<{
+      deviation: {
+        deviationId: number;
+        url: string;
+      };
+    }>(`${this.BASE_URL}/_puppy/dashared/journal/publish`, {
+      partition: this.accountId,
+      type: 'json',
+      data: {
+        ...commonFormData,
+        deviationid: create.body.deviation.deviationId,
+        featured: true,
+      },
+    });
+
+    if (!publish.body.deviation?.deviationId) {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo({
+          body: publish.body,
+          statusCode: publish.statusCode,
+        })
+        .withException(new Error('Failed to publish post'));
     }
 
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
+        body: publish.body,
+        statusCode: publish.statusCode,
       })
-      .withException(new Error('Failed to post'));
+      .withSourceUrl(publish.body.deviation.url);
   }
 
   async onValidateMessageSubmission(
@@ -216,5 +366,18 @@ export default class DeviantArt
       warnings: [],
       errors: [],
     };
+  }
+
+  private stripInvalidCharacters(title: string) {
+    const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]*$/g;
+    if (!title) return '';
+    let sanitized = '';
+    for (let i = 0; i < title.length; i++) {
+      const char = title[i];
+      if (validRegex.test(char)) {
+        sanitized += char;
+      }
+    }
+    return sanitized;
   }
 }
