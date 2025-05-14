@@ -57,6 +57,10 @@ export async function validateRequiredSelectField({
     // Only check select fields
     if (field.formField !== 'select') continue;
 
+    // Skip fields with min selected, they gets handled by selectFieldValidator
+    if ('minSelected' in field && typeof field.minSelected === 'number')
+      continue;
+
     const value = data.options[fieldName];
     const isEmpty = Array.isArray(value) ? value.length === 0 : !value;
 
@@ -170,7 +174,7 @@ export async function validateRequiredTagField({
 
   for (const [fieldName, field] of Object.entries(fields)) {
     // Skip if field is not required or hidden
-    if (!field.required || field.hidden) continue;
+    if (!field.required || field.hidden || fieldName === 'tags') continue;
 
     // Only check tag fields
     if (field.formField !== 'tag') continue;
