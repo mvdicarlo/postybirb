@@ -1,6 +1,15 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Trans } from '@lingui/macro';
-import { Grid, Group, NumberInput, TextInput } from '@mantine/core';
+import {
+  Badge,
+  Box,
+  Grid,
+  Group,
+  NumberInput,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   FileMetadataFields,
@@ -10,6 +19,7 @@ import {
   SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { filesize } from 'filesize';
 import { useState } from 'react';
 import submissionApi from '../../../../../api/submission.api';
@@ -33,22 +43,54 @@ type FileDetailProps = {
 function FileDetails(props: FileDetailProps) {
   const { file } = props;
   return (
-    <Group>
-      <Group gap="sm">
-        <strong>
-          <Trans>Name</Trans>
-        </strong>
-        <span>{file.fileName}</span>
-      </Group>
+    <Group gap="lg">
+      <Box>
+        <Text size="xs" fw={500} color="dimmed">
+          <Trans>File Name</Trans>
+        </Text>
+        <Text size="sm" fw={600}>
+          {file.fileName}
+        </Text>
+      </Box>
 
-      <Group gap="sm">
-        <strong>
+      <Box>
+        <Text size="xs" fw={500} color="dimmed">
           <Trans context="submission.file-size">Size</Trans>
-        </strong>
-        <span>{filesize(file.size, { base: 2 }) as string}</span>
-      </Group>
+        </Text>
+        <Text size="sm" fw={600}>
+          {filesize(file.size, { base: 2 }) as string}
+        </Text>
+      </Box>
+
+      <Box>
+        <Text size="xs" fw={500} color="dimmed">
+          <Trans>Type</Trans>
+        </Text>
+        <Badge
+          variant="outline"
+          c="dimmed"
+          color={getFileTypeColor(getFileType(file.fileName))}
+        >
+          {getFileType(file.fileName)}
+        </Badge>
+      </Box>
     </Group>
   );
+}
+
+function getFileTypeColor(fileType: FileType): string {
+  switch (fileType) {
+    case FileType.IMAGE:
+      return 'blue';
+    case FileType.TEXT:
+      return 'green';
+    case FileType.VIDEO:
+      return 'purple';
+    case FileType.AUDIO:
+      return 'orange';
+    default:
+      return 'gray';
+  }
 }
 
 function updateFileDimensions(
@@ -98,50 +140,69 @@ function FileDimensions(props: FileDetailProps) {
   const [width, setWidth] = useState<number>(providedWidth || 1);
 
   return (
-    <Grid>
-      <Grid.Col span={6}>
-        <NumberInput
-          label={<Trans>Height</Trans>}
-          defaultValue={height}
-          max={file.height}
-          min={1}
-          size="xs"
-          onBlur={(event) => {
-            const { width: aspectW, height: aspectH } = calculateAspectRatio(
-              Math.min(Number(event.target.value), file.height),
-              width,
-              file.width / file.height,
-              'h',
-            );
-            setHeight(aspectH);
-            setWidth(aspectW);
-            updateFileDimensions(metadata, file, aspectH, aspectW);
-            save();
-          }}
-        />
-      </Grid.Col>
-      <Grid.Col span={6}>
-        <NumberInput
-          label={<Trans>Width</Trans>}
-          defaultValue={width}
-          max={file.width}
-          min={1}
-          size="xs"
-          onBlur={(event) => {
-            const { width: aspectW, height: aspectH } = calculateAspectRatio(
-              height,
-              Math.min(Number(event.target.value), file.width),
-              file.height / file.width,
-              'w',
-            );
-            setHeight(aspectH);
-            setWidth(aspectW);
-            updateFileDimensions(metadata, file, aspectH, aspectW);
-            save();
-          }}
-        />
-      </Grid.Col>
-    </Grid>
+    <Box>
+      <Group gap="xs" mb={5}>
+        <Text size="sm" fw={600}>
+          <Trans>Dimensions</Trans>
+        </Text>
+        <Tooltip
+          label={
+            <Trans>Adjust dimensions while maintaining aspect ratio</Trans>
+          }
+          withArrow
+        >
+          <IconInfoCircle size={14} style={{ opacity: 0.7 }} />
+        </Tooltip>
+      </Group>
+      <Grid>
+        <Grid.Col span={6}>
+          <NumberInput
+            label={<Trans>Height</Trans>}
+            value={height}
+            max={file.height}
+            min={1}
+            size="xs"
+            step={10}
+            onBlur={(event) => {
+              const { width: aspectW, height: aspectH } = calculateAspectRatio(
+                Math.min(Number(event.target.value), file.height),
+                width,
+                file.width / file.height,
+                'h',
+              );
+              setHeight(aspectH);
+              setWidth(aspectW);
+              updateFileDimensions(metadata, file, aspectH, aspectW);
+              save();
+            }}
+            onChange={(value) => setHeight(Number(value) || 1)}
+          />
+        </Grid.Col>
+        <Grid.Col span={6}>
+          <NumberInput
+            label={<Trans>Width</Trans>}
+            value={width}
+            max={file.width}
+            min={1}
+            size="xs"
+            step={10}
+            onBlur={(event) => {
+              const { width: aspectW, height: aspectH } = calculateAspectRatio(
+                height,
+                Math.min(Number(event.target.value), file.width),
+                file.height / file.width,
+                'w',
+              );
+              setHeight(aspectH);
+              setWidth(aspectW);
+              updateFileDimensions(metadata, file, aspectH, aspectW);
+              save();
+            }}
+            onChange={(value) => setWidth(Number(value) || 1)}
+          />
+        </Grid.Col>
+      </Grid>
+    </Box>
   );
 }
 
@@ -149,41 +210,46 @@ function FileMetadata(props: FileDetailProps) {
   const { metadata, save } = props;
 
   return (
-    <Grid gutter="xs">
-      <Grid.Col span={12}>
-        <BasicWebsiteSelect
-          label={<Trans>Don't post to</Trans>}
-          size="xs"
-          selected={metadata.ignoredWebsites ?? []}
-          onSelect={(accounts) => {
-            metadata.ignoredWebsites = accounts.map((account) => account.id);
-            save();
-          }}
-        />
-      </Grid.Col>
-      <Grid.Col span={6}>
-        <TextInput
-          label={<Trans>Alt Text</Trans>}
-          defaultValue={metadata.altText}
-          size="xs"
-          onBlur={(event) => {
-            metadata.altText = event.target.value.trim();
-            save();
-          }}
-        />
-      </Grid.Col>
-      <Grid.Col span={6}>
-        <TextInput
-          label={<Trans>Spoiler Text</Trans>}
-          defaultValue={metadata.spoilerText}
-          size="xs"
-          onBlur={(event) => {
-            metadata.spoilerText = event.target.value.trim();
-            save();
-          }}
-        />
-      </Grid.Col>
-    </Grid>
+    <Box mt="md">
+      <Text size="sm" fw={600} mb={8}>
+        <Trans>Posting Options</Trans>
+      </Text>
+      <Grid gutter="xs">
+        <Grid.Col span={12}>
+          <BasicWebsiteSelect
+            label={<Trans>Don't post to</Trans>}
+            size="xs"
+            selected={metadata.ignoredWebsites ?? []}
+            onSelect={(accounts) => {
+              metadata.ignoredWebsites = accounts.map((account) => account.id);
+              save();
+            }}
+          />
+        </Grid.Col>
+        <Grid.Col span={6}>
+          <TextInput
+            label={<Trans>Alt Text</Trans>}
+            defaultValue={metadata.altText}
+            size="xs"
+            onBlur={(event) => {
+              metadata.altText = event.target.value.trim();
+              save();
+            }}
+          />
+        </Grid.Col>
+        <Grid.Col span={6}>
+          <TextInput
+            label={<Trans>Spoiler Text</Trans>}
+            defaultValue={metadata.spoilerText}
+            size="xs"
+            onBlur={(event) => {
+              metadata.spoilerText = event.target.value.trim();
+              save();
+            }}
+          />
+        </Grid.Col>
+      </Grid>
+    </Box>
   );
 }
 

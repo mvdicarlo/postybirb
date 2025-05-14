@@ -165,6 +165,10 @@ export const TranslationMessages: TranslationsMap = {
     );
   },
 
+  'validation.file.itaku.must-share-feed': () => (
+    <Trans>Share on Feed is required to support posting multiple files.</Trans>
+  ),
+
   'validation.select-field.min-selected': (props) => {
     const { currentSelected, minSelected } = props;
 
@@ -180,6 +184,8 @@ export const TranslationMessages: TranslationsMap = {
       </Trans>
     );
   },
+
+  'validation.field.required': () => <Trans>Required</Trans>,
 };
 
 export function ValidationTranslation({

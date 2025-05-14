@@ -2,15 +2,18 @@ import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
   Alert,
+  Badge,
   Box,
   Card,
   Flex,
+  Group,
   Input,
   List,
   Loader,
   ScrollArea,
   Stack,
   Text,
+  Title,
 } from '@mantine/core';
 import {
   AccountId,
@@ -24,6 +27,7 @@ import {
 } from '@postybirb/types';
 import {
   IconArrowsMove,
+  IconCalendarEvent,
   IconExclamationCircle,
   IconSquare,
   IconSquareFilled,
@@ -55,6 +59,7 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
   const { type } = submission;
   const { files } = submission;
   const defaultOption = submission.getDefaultOptions();
+  const title = defaultOption.data.title || <Trans>Unknown</Trans>;
 
   const optionsGroupedByWebsiteId = submission.options
     .filter((o) => !o.isDefault)
@@ -101,6 +106,7 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
         isScheduled: submission.isScheduled,
         scheduledFor: schedule.scheduledFor,
         scheduleType: schedule.scheduleType,
+        cron: schedule.cron,
         deletedWebsiteOptions: [],
         newOrUpdatedOptions: [],
         metadata: submission.metadata,
@@ -131,128 +137,208 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
     a.updatedAt > b.updatedAt ? -1 : 1,
   )[0];
 
+  const isScheduled =
+    submission.isScheduled && submission.schedule.scheduleType !== 'NONE';
+  const isQueued = submission.isQueued();
+  const hasWebsiteOptions =
+    submission.options.filter((o) => !o.isDefault).length > 0;
+
   return (
     <Card
-      shadow="xs"
+      shadow="sm"
       withBorder={isSelected}
-      style={{ contentVisibility: 'auto' }}
+      style={{
+        contentVisibility: 'auto',
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        transition: 'all 0.2s ease',
+        transform: isSelected ? 'translateY(-2px)' : 'none',
+        borderColor: isSelected ? 'var(--mantine-color-blue-5)' : undefined,
+        borderWidth: isSelected ? '2px' : '1px',
+      }}
+      className={
+        isQueued
+          ? 'submission-card-queued'
+          : isScheduled
+            ? 'submission-card-scheduled'
+            : ''
+      }
     >
-      <Card.Section ta="center" bg="rgba(0,0,0,0.1)">
+      <Card.Section
+        bg={
+          isQueued
+            ? 'rgba(0,128,128,0.1)'
+            : isScheduled
+              ? 'rgba(0,100,200,0.05)'
+              : 'rgba(0,0,0,0.05)'
+        }
+        py="xs"
+        style={{
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          borderBottom: '1px solid rgba(0,0,0,0.1)',
+        }}
+      >
+        <Flex align="center" justify="space-between">
+          <Group ml={8}>
+            <IconArrowsMove
+              className="sort-handle"
+              style={{ cursor: 'move' }}
+              size={16}
+              opacity={0.5}
+            />
+            <ActionIcon
+              c="var(--mantine-color-text)"
+              variant="transparent"
+              onClick={() => onSelect(submission)}
+            >
+              {isSelected ? (
+                <IconSquareFilled size={18} />
+              ) : (
+                <IconSquare size={18} />
+              )}
+            </ActionIcon>
+          </Group>
+
+          <Group gap="xs" mr={8}>
+            {isQueued && (
+              <Badge color="teal" size="sm" variant="filled">
+                <Trans>Queued</Trans>
+              </Badge>
+            )}
+            {isScheduled && (
+              <Badge
+                color="blue"
+                size="sm"
+                variant="outline"
+                leftSection={<IconCalendarEvent size={12} />}
+              >
+                <Trans>Scheduled</Trans>
+              </Badge>
+            )}
+            {!hasWebsiteOptions && (
+              <Badge color="orange" size="sm">
+                <Trans>No websites</Trans>
+              </Badge>
+            )}
+          </Group>
+        </Flex>
+      </Card.Section>
+
+      <Card.Section p="sm">
         <Flex>
-          <IconArrowsMove
-            className="sort-handle"
-            style={{ cursor: 'move', margin: 'auto', marginLeft: 4 }}
-          />
-          <ActionIcon
-            flex="6"
-            c="var(--mantine-color-text)"
-            variant="transparent"
-            onClick={() => onSelect(submission)}
-          >
-            {isSelected ? <IconSquareFilled /> : <IconSquare />}
-          </ActionIcon>
+          {type === SubmissionType.FILE && files.length ? (
+            <Box mr="sm">
+              <SubmissionFilePreview file={files[0]} height={75} width={75} />
+            </Box>
+          ) : null}
+          <Box style={{ flex: 1, minWidth: 0 }}>
+            <Title order={4} lineClamp={1} mb={4}>
+              {title}
+            </Title>
+            <Group p="apart" mb={4}>
+              <Text
+                size="xs"
+                fs="italic"
+                c="dimmed"
+                title={new Date(lastEdited.updatedAt).toLocaleString()}
+              >
+                <Trans>Last modified:</Trans>{' '}
+                {moment(lastEdited.updatedAt).fromNow()}
+              </Text>
+
+              <Text size="xs">
+                {Object.keys(optionsGroupedByWebsiteId).length}{' '}
+                {Object.keys(optionsGroupedByWebsiteId).length !== 1 ? (
+                  <Trans>websites</Trans>
+                ) : (
+                  <Trans>website</Trans>
+                )}
+              </Text>
+            </Group>
+          </Box>
+
           <SubmissionViewCardActions submission={submission} />
         </Flex>
       </Card.Section>
-      <Card.Section py="4">
-        <ScrollArea.Autosize mah={400}>
-          <Flex>
-            {type === SubmissionType.FILE && files.length ? (
-              <SubmissionFilePreview file={files[0]} height={75} width={75} />
-            ) : null}
-            <Box mx="xs" flex="10">
-              <Stack gap="xs">
-                {fileValidationIssues.errors?.length ? (
-                  <Alert
-                    variant="outline"
-                    color="red"
-                    icon={<IconExclamationCircle />}
-                  >
-                    <List
-                      withPadding
-                      listStyleType="disc"
-                      spacing="xs"
-                      size="sm"
-                    >
-                      {fileValidationIssues.errors.map((error) => (
-                        <List.Item key={error.id}>
-                          <ValidationTranslation
-                            id={error.id}
-                            values={error.values}
-                          />
-                        </List.Item>
-                      ))}
-                    </List>
-                  </Alert>
-                ) : null}
-                <Text
-                  size="xs"
-                  fs="italic"
-                  c="dimmed"
-                  title={new Date(lastEdited.updatedAt).toLocaleString()}
-                >
-                  <Trans>Last modified:</Trans>{' '}
-                  {moment(lastEdited.updatedAt).fromNow()}
-                </Text>
-                {fileValidationIssues.warnings?.length ? (
-                  <Alert
-                    variant="outline"
-                    color="orange"
-                    icon={<IconExclamationCircle />}
-                  >
-                    <List
-                      withPadding
-                      listStyleType="disc"
-                      spacing="xs"
-                      size="sm"
-                    >
-                      {fileValidationIssues.warnings.map((warning) => (
-                        <List.Item key={warning.id}>
-                          <ValidationTranslation
-                            id={warning.id}
-                            values={warning.values}
-                          />
-                        </List.Item>
-                      ))}
-                    </List>
-                  </Alert>
-                ) : null}
-                <Input.Wrapper label={<Trans>Schedule</Trans>}>
-                  <SubmissionScheduler
-                    schedule={submission.schedule}
-                    onChange={(schedule) => {
-                      debouncedUpdate(schedule);
-                    }}
-                  />
-                </Input.Wrapper>
-                <ImplementedWebsiteSelect submission={submission} />
-                <WebsiteOptionGroupSection
-                  options={[defaultOption]}
-                  submission={submission}
-                  account={new NullAccount() as unknown as IAccountDto}
-                />
-                {Object.entries(optionsGroupedByWebsiteId)
-                  .sort((a, b) => {
-                    const aAccount = a[1].account;
-                    const bAccount = b[1].account;
-                    return (
-                      aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
-                    ).localeCompare(
-                      bAccount.websiteInfo.websiteDisplayName ?? bAccount.name,
-                    );
-                  })
-                  .map(([accountId, group]) => (
-                    <WebsiteOptionGroupSection
-                      key={accountId}
-                      options={group.options}
-                      submission={submission}
-                      account={group.account}
-                      onRemoveAccount={removeAccount}
-                    />
+
+      <Card.Section px="sm" pb="sm">
+        <ScrollArea.Autosize mah={400} px={0}>
+          <Stack gap="xs">
+            {fileValidationIssues.errors?.length ? (
+              <Alert
+                variant="outline"
+                color="red"
+                icon={<IconExclamationCircle />}
+                radius="md"
+                p="xs"
+              >
+                <List withPadding listStyleType="disc" spacing="xs" size="sm">
+                  {fileValidationIssues.errors.map((error) => (
+                    <List.Item key={error.id}>
+                      <ValidationTranslation
+                        id={error.id}
+                        values={error.values}
+                      />
+                    </List.Item>
                   ))}
-              </Stack>
-            </Box>
-          </Flex>
+                </List>
+              </Alert>
+            ) : null}
+
+            {fileValidationIssues.warnings?.length ? (
+              <Alert
+                variant="outline"
+                color="orange"
+                icon={<IconExclamationCircle />}
+                radius="md"
+                p="xs"
+              >
+                <List withPadding listStyleType="disc" spacing="xs" size="sm">
+                  {fileValidationIssues.warnings.map((warning) => (
+                    <List.Item key={warning.id}>
+                      <ValidationTranslation
+                        id={warning.id}
+                        values={warning.values}
+                      />
+                    </List.Item>
+                  ))}
+                </List>
+              </Alert>
+            ) : null}
+
+            <Input.Wrapper label={<Trans>Schedule</Trans>}>
+              <SubmissionScheduler
+                schedule={submission.schedule}
+                onChange={(schedule) => {
+                  debouncedUpdate(schedule);
+                }}
+              />
+            </Input.Wrapper>
+            <ImplementedWebsiteSelect submission={submission} />
+            <WebsiteOptionGroupSection
+              options={[defaultOption]}
+              submission={submission}
+              account={new NullAccount() as unknown as IAccountDto}
+            />
+            {Object.entries(optionsGroupedByWebsiteId)
+              .sort((a, b) => {
+                const aAccount = a[1].account;
+                const bAccount = b[1].account;
+                return (
+                  aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
+                ).localeCompare(
+                  bAccount.websiteInfo.websiteDisplayName ?? bAccount.name,
+                );
+              })
+              .map(([accountId, group]) => (
+                <WebsiteOptionGroupSection
+                  key={accountId}
+                  options={group.options}
+                  submission={submission}
+                  account={group.account}
+                  onRemoveAccount={removeAccount}
+                />
+              ))}
+          </Stack>
         </ScrollArea.Autosize>
       </Card.Section>
     </Card>
@@ -283,11 +369,30 @@ export const SubmissionViewCard = React.memo(
       return false;
     }
 
+    // Check if any options have been added or removed
+    const prevOptionIds = new Set(
+      prevProps.submission.options.map((opt) => opt.id),
+    );
+    const nextOptionIds = new Set(
+      nextProps.submission.options.map((opt) => opt.id),
+    );
+
+    // If the sets of IDs are not equal, re-render
+    if (prevOptionIds.size !== nextOptionIds.size) {
+      return false;
+    }
+
+    // Check if every ID in nextOptionIds exists in prevOptionIds
+    for (const id of nextOptionIds) {
+      if (!prevOptionIds.has(id)) {
+        return false;
+      }
+    }
+
     // Compare the updatedAt of all options to see if any have changed
     const prevOptionsUpdateTimes = new Map(
       prevProps.submission.options.map((opt) => [opt.id, opt.updatedAt]),
     );
-
     for (const option of nextProps.submission.options) {
       const prevTime = prevOptionsUpdateTimes.get(option.id);
       if (!prevTime || prevTime !== option.updatedAt) {

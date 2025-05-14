@@ -21,6 +21,12 @@ import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-datab
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { validateWebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
+import {
+  FileWebsiteKey
+} from './models/website-modifiers/file-website';
+import {
+  MessageWebsiteKey
+} from './models/website-modifiers/message-website';
 import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
 
@@ -198,6 +204,8 @@ export class WebsiteRegistryService {
           const instance = this.findInstance(account);
           return account.withWebsiteInstance(instance).toDTO();
         }),
+        supportsFile: FileWebsiteKey in website.prototype,
+        supportsMessage: MessageWebsiteKey in website.prototype,
       });
     }
 

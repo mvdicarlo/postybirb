@@ -7,6 +7,7 @@ import {
 } from '@postybirb/types';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { UnknownWebsite } from '../websites/website';
+import { ContentWarningParser } from './parsers/content-warning-parser';
 import { DescriptionParserService } from './parsers/description-parser.service';
 import { RatingParser } from './parsers/rating-parser';
 import { TagParserService } from './parsers/tag-parser.service';
@@ -17,6 +18,9 @@ export class PostParsersService {
   private readonly ratingParser: RatingParser = new RatingParser();
 
   private readonly titleParser: TitleParser = new TitleParser();
+
+  private readonly contentWarningParser: ContentWarningParser =
+    new ContentWarningParser();
 
   constructor(
     private readonly tagParser: TagParserService,
@@ -39,6 +43,10 @@ export class PostParsersService {
     });
     const tags = await this.tagParser.parse(instance, defaultOpts, websiteOpts);
     const title = await this.titleParser.parse(defaultOpts, websiteOpts);
+    const contentWarning = await this.contentWarningParser.parse(
+      defaultOpts,
+      websiteOpts,
+    );
 
     return {
       submission,
@@ -54,6 +62,7 @@ export class PostParsersService {
           title,
         ),
         title,
+        contentWarning,
         rating: this.ratingParser.parse(defaultOpts, websiteOpts),
       },
     };

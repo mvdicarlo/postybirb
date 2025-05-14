@@ -3,8 +3,13 @@ import { Observable, Subject } from 'rxjs';
 import { Constructor } from 'type-fest';
 import AppSocket from '../transports/websocket';
 
-type IdBasedRecord = {
+export type IdBasedRecord = {
   id: EntityId;
+};
+
+export type StoreManagerDataResult<T> = {
+  data: T[];
+  map: Map<EntityId, T>;
 };
 
 /**
@@ -16,13 +21,11 @@ type IdBasedRecord = {
 export default class StoreManager<T extends IdBasedRecord> {
   private data: T[];
 
-  private readonly subject: Subject<T[]>;
+  private readonly subject: Subject<StoreManagerDataResult<T>>;
 
-  public readonly updates: Observable<T[]>;
+  public readonly updates: Observable<StoreManagerDataResult<T>>;
 
   public initLoadCompleted = false;
-
-  public map = new Map<EntityId, T>();
 
   constructor(
     private readonly websocketDomain: string,
@@ -32,7 +35,7 @@ export default class StoreManager<T extends IdBasedRecord> {
     private readonly onEachMessageFn?: (data: T) => void,
   ) {
     this.data = [];
-    this.subject = new Subject<T[]>();
+    this.subject = new Subject<StoreManagerDataResult<T>>();
     this.updates = this.subject.asObservable();
     AppSocket.on(websocketDomain, (messages: T[]) =>
       this.handleMessages(messages),
@@ -53,15 +56,6 @@ export default class StoreManager<T extends IdBasedRecord> {
       m.forEach(this.onEachMessageFn);
     }
     this.data = m;
-    this.map.clear();
-    m.forEach((d) => {
-      const { ModelConstructor } = this;
-      if (ModelConstructor) {
-        this.map.set(d.id, new ModelConstructor(d));
-      } else {
-        this.map.set(d.id, d);
-      }
-    });
     this.subject.next(this.getData());
   }
 
@@ -71,15 +65,18 @@ export default class StoreManager<T extends IdBasedRecord> {
     );
   }
 
-  public getMap(): Map<EntityId, T> {
-    return this.map;
-  }
-
-  public getData(): T[] {
+  public getData(): StoreManagerDataResult<T> {
     const data = JSON.parse(JSON.stringify(this.data ?? []));
     const { ModelConstructor } = this;
-    return ModelConstructor
+    const records = ModelConstructor
       ? data.map((d: unknown) => new ModelConstructor(d))
       : data;
+
+    const map = new Map<EntityId, T>();
+    records.forEach((record: T) => {
+      map.set(record.id, record);
+    });
+
+    return { data: records, map };
   }
 }

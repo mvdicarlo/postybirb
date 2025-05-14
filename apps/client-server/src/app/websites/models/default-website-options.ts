@@ -7,6 +7,7 @@ export class DefaultWebsiteOptions extends BaseWebsiteOptions {
     label: 'contentWarning',
     col: 1,
     row: 2,
+    hidden: false,
   })
   contentWarning = '';
 
