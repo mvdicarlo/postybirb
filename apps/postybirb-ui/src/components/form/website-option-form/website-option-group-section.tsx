@@ -64,7 +64,7 @@ export function WebsiteOptionGroupSection(
   return (
     <Box className="postybirb__group-section" group-id={account.id}>
       <Paper pos="sticky" top={top ?? 0} style={{ zIndex: 99 }}>
-        <Title p="4" order={4}>
+        <Title p="4" pl="6" order={4}>
           {accountName}
         </Title>
       </Paper>
@@ -77,7 +77,7 @@ export function WebsiteOptionGroupSection(
             style={{
               marginLeft: isDefaultAccount
                 ? 0
-                : account.websiteInfo.websiteDisplayName.length * 7 + 24,
+                : account.websiteInfo.websiteDisplayName.length * 7 + 35,
             }}
           >
             {!isDefaultAccount ? (
