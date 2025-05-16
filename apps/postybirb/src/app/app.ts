@@ -10,10 +10,12 @@ import {
 import {
   BrowserWindow,
   Menu,
+  NativeImage,
   Tray,
   app,
   globalShortcut,
   nativeImage,
+  nativeTheme,
   screen,
 } from 'electron';
 import { join } from 'path';
@@ -34,6 +36,8 @@ export default class PostyBirb {
   static appTray: Tray;
 
   static nestApp: INestApplication;
+
+  static appImage: NativeImage;
 
   public static isDevelopmentMode() {
     return !environment.production;
@@ -91,10 +95,12 @@ export default class PostyBirb {
 
     // Create the browser window.
     PostyBirb.mainWindow = new BrowserWindow({
+      title: 'PostyBirb',
+      darkTheme: nativeTheme.shouldUseDarkColors,
       width,
       height,
       show: false,
-      icon: appIcon,
+      icon: PostyBirb.appImage,
       autoHideMenuBar: true,
       webPreferences: {
         contextIsolation: true,
@@ -114,7 +120,7 @@ export default class PostyBirb {
       PostyBirb.mainWindow.show();
 
       // if (PostyBirb.isDevelopmentMode()) {
-        PostyBirb.mainWindow.webContents.openDevTools();
+      PostyBirb.mainWindow.webContents.openDevTools();
       // }
     });
 
@@ -170,7 +176,7 @@ export default class PostyBirb {
         },
       ];
 
-      let image = nativeImage.createFromPath(appIcon);
+      let image = PostyBirb.appImage;
       if (isOSX()) {
         image = image.resize({
           width: 16,
@@ -210,6 +216,7 @@ export default class PostyBirb {
   static main(electronApp: Electron.App, browserWindow: typeof BrowserWindow) {
     PostyBirb.BrowserWindow = browserWindow;
     PostyBirb.application = electronApp;
+    PostyBirb.appImage = nativeImage.createFromPath(appIcon);
 
     PostyBirb.application.on('browser-window-focus', () => {
       globalShortcut.registerAll(['f5', 'CommandOrControl+R'], () => {
