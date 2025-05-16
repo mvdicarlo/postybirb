@@ -246,6 +246,7 @@ export function PostyBirbLayout() {
           component={ScrollArea}
           scrollbars="y"
           className={classes.navbarScroll}
+          type="always"
         >
           <Box
             className={`${classes.postybirb__sidenav} ${

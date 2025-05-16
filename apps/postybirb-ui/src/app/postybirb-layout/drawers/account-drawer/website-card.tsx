@@ -65,7 +65,7 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
       align="center"
       py="xs"
       // eslint-disable-next-line lingui/no-unlocalized-strings
-      style={{ borderBottom: '1px solid var(--mantine-color-gray-7)' }}
+      style={{ borderBottom: '1px solid var(--mantine-color-dark-2)' }}
     >
       <Grid.Col span={5}>
         <Input

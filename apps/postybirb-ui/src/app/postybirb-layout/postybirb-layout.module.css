@@ -28,13 +28,12 @@
 }
 
 .navbarHeader {
-  padding: 12px 8px;
+  padding: 6px 8px 0px 8px;
 }
 
 .navbarScroll {
   flex: 1;
   margin-top: 10px;
-  /* Prevent scroll jank */
   overflow-anchor: none;
 }
 
