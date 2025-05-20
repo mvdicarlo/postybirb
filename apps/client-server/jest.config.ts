@@ -15,4 +15,5 @@ export default {
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/apps/client-server',
   runner: '@kayahr/jest-electron-runner/main',
+  prettierPath: require.resolve('prettier-2'),
 };

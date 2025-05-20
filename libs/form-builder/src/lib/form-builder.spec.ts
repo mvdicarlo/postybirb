@@ -38,7 +38,7 @@ describe('formBuilder', () => {
       public field2 = 'hello';
 
       @DescriptionField({ label: 'feature', descriptionType: 'html' })
-      public field3;
+      public field3: string;
     }
 
     class ExtendedAndOverrideType extends ExtendedType {
@@ -46,7 +46,7 @@ describe('formBuilder', () => {
       public field2 = 'Goodbye';
 
       @DescriptionField({ label: 'feature', descriptionType: 'markdown' })
-      public field3;
+      public field3: string;
     }
 
     expect(formBuilder(new BooleanType(), {})).toEqual({

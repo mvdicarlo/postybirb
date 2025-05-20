@@ -2,8 +2,6 @@ import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-  DefaultTagValue,
-  DescriptionType,
   NullAccount,
   SubmissionRating,
   SubmissionType,
@@ -36,7 +34,7 @@ describe('FormGeneratorService', () => {
     service = module.get<FormGeneratorService>(FormGeneratorService);
     accountService = module.get<AccountService>(AccountService);
     userSpecifiedService = module.get<UserSpecifiedWebsiteOptionsService>(
-      UserSpecifiedWebsiteOptionsService,
+      UserSpecifiedWebsiteOptionsService
     );
 
     await accountService.onModuleInit();
@@ -52,7 +50,7 @@ describe('FormGeneratorService', () => {
 
   it('should fail on missing account', async () => {
     await expect(
-      service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE }),
+      service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE })
     ).rejects.toThrow(NotFoundException);
   });
 
@@ -64,221 +62,236 @@ describe('FormGeneratorService', () => {
     await userSpecifiedService.create(userSpecifiedDto);
 
     const messageForm = await service.getDefaultForm(SubmissionType.MESSAGE);
-    expect(messageForm).toEqual({
-      contentWarning: {
-        col: 1,
-        defaultValue: '',
-        formField: 'input',
-        label: 'contentWarning',
-        row: 2,
-        type: 'text',
-      },
-      description: {
-        col: 1,
-        defaultValue: {
-          description: [],
-          overrideDefault: false,
+    expect(messageForm).toMatchInlineSnapshot(`
+      {
+        "contentWarning": {
+          "col": 1,
+          "defaultValue": "",
+          "formField": "input",
+          "hidden": false,
+          "label": "contentWarning",
+          "row": 2,
+          "type": "text",
         },
-        formField: 'description',
-        label: 'description',
-        row: 3,
-        type: 'description',
-        descriptionType: DescriptionType.HTML,
-      },
-      rating: {
-        col: 0,
-        defaultValue: 'ADULT',
-        formField: 'rating',
-        label: 'rating',
-        layout: 'vertical',
-        options: [
-          {
-            label: 'General',
-            value: 'GENERAL',
+        "description": {
+          "col": 1,
+          "defaultValue": {
+            "description": [],
+            "overrideDefault": false,
           },
-          {
-            label: 'Mature',
-            value: 'MATURE',
-          },
-          {
-            label: 'Adult',
-            value: 'ADULT',
-          },
-          {
-            label: 'Extreme',
-            value: 'EXTREME',
-          },
-        ],
-        required: true,
-        row: 0,
-        type: 'rating',
-      },
-      tags: {
-        col: 1,
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "row": 3,
+          "type": "description",
         },
-        formField: 'tag',
-        label: 'tags',
-        row: 1,
-        type: 'tag',
-        minTagLength: 1,
-        spaceReplacer: '_',
-      },
-      title: {
-        col: 1,
-        defaultValue: '',
-        formField: 'input',
-        label: 'title',
-        required: true,
-        row: 0,
-        type: 'title',
-      },
-    });
+        "rating": {
+          "col": 0,
+          "defaultValue": "ADULT",
+          "formField": "rating",
+          "label": "rating",
+          "layout": "vertical",
+          "options": [
+            {
+              "label": "General",
+              "value": "GENERAL",
+            },
+            {
+              "label": "Mature",
+              "value": "MATURE",
+            },
+            {
+              "label": "Adult",
+              "value": "ADULT",
+            },
+            {
+              "label": "Extreme",
+              "value": "EXTREME",
+            },
+          ],
+          "required": true,
+          "row": 0,
+          "type": "rating",
+        },
+        "tags": {
+          "col": 1,
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
+          },
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "row": 1,
+          "spaceReplacer": "_",
+          "type": "tag",
+        },
+        "title": {
+          "col": 1,
+          "defaultValue": "",
+          "formField": "input",
+          "label": "title",
+          "required": true,
+          "row": 0,
+          "type": "title",
+        },
+      }
+    `);
   });
 
   it('should return standard form', async () => {
     const messageForm = await service.getDefaultForm(SubmissionType.MESSAGE);
-    expect(messageForm).toEqual({
-      contentWarning: {
-        col: 1,
-        defaultValue: '',
-        formField: 'input',
-        label: 'contentWarning',
-        row: 2,
-        type: 'text',
-      },
-      description: {
-        col: 1,
-        defaultValue: {
-          description: [],
-          overrideDefault: false,
+    expect(messageForm).toMatchInlineSnapshot(`
+      {
+        "contentWarning": {
+          "col": 1,
+          "defaultValue": "",
+          "formField": "input",
+          "hidden": false,
+          "label": "contentWarning",
+          "row": 2,
+          "type": "text",
         },
-        formField: 'description',
-        label: 'description',
-        row: 3,
-        type: 'description',
-        descriptionType: DescriptionType.HTML,
-      },
-      rating: {
-        col: 0,
-        defaultValue: 'GENERAL',
-        formField: 'rating',
-        label: 'rating',
-        layout: 'vertical',
-        options: [
-          {
-            label: 'General',
-            value: 'GENERAL',
+        "description": {
+          "col": 1,
+          "defaultValue": {
+            "description": [],
+            "overrideDefault": false,
           },
-          {
-            label: 'Mature',
-            value: 'MATURE',
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "row": 3,
+          "type": "description",
+        },
+        "rating": {
+          "col": 0,
+          "defaultValue": "GENERAL",
+          "formField": "rating",
+          "label": "rating",
+          "layout": "vertical",
+          "options": [
+            {
+              "label": "General",
+              "value": "GENERAL",
+            },
+            {
+              "label": "Mature",
+              "value": "MATURE",
+            },
+            {
+              "label": "Adult",
+              "value": "ADULT",
+            },
+            {
+              "label": "Extreme",
+              "value": "EXTREME",
+            },
+          ],
+          "required": true,
+          "row": 0,
+          "type": "rating",
+        },
+        "tags": {
+          "col": 1,
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
           },
-          {
-            label: 'Adult',
-            value: 'ADULT',
-          },
-          {
-            label: 'Extreme',
-            value: 'EXTREME',
-          },
-        ],
-        required: true,
-        row: 0,
-        type: 'rating',
-      },
-      tags: {
-        col: 1,
-        defaultValue: DefaultTagValue(),
-        formField: 'tag',
-        label: 'tags',
-        row: 1,
-        type: 'tag',
-        minTagLength: 1,
-        spaceReplacer: '_',
-      },
-      title: {
-        col: 1,
-        defaultValue: '',
-        formField: 'input',
-        label: 'title',
-        required: true,
-        row: 0,
-        type: 'title',
-      },
-    });
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "row": 1,
+          "spaceReplacer": "_",
+          "type": "tag",
+        },
+        "title": {
+          "col": 1,
+          "defaultValue": "",
+          "formField": "input",
+          "label": "title",
+          "required": true,
+          "row": 0,
+          "type": "title",
+        },
+      }
+    `);
 
     const fileForm = await service.getDefaultForm(SubmissionType.FILE);
-    expect(fileForm).toEqual({
-      contentWarning: {
-        col: 1,
-        defaultValue: '',
-        formField: 'input',
-        label: 'contentWarning',
-        row: 2,
-        type: 'text',
-      },
-      description: {
-        col: 1,
-        defaultValue: {
-          description: [],
-          overrideDefault: false,
+    expect(fileForm).toMatchInlineSnapshot(`
+      {
+        "contentWarning": {
+          "col": 1,
+          "defaultValue": "",
+          "formField": "input",
+          "hidden": false,
+          "label": "contentWarning",
+          "row": 2,
+          "type": "text",
         },
-        formField: 'description',
-        label: 'description',
-        row: 3,
-        type: 'description',
-        descriptionType: DescriptionType.HTML,
-      },
-      rating: {
-        col: 0,
-        defaultValue: 'GENERAL',
-        formField: 'rating',
-        label: 'rating',
-        layout: 'vertical',
-        options: [
-          {
-            label: 'General',
-            value: 'GENERAL',
+        "description": {
+          "col": 1,
+          "defaultValue": {
+            "description": [],
+            "overrideDefault": false,
           },
-          {
-            label: 'Mature',
-            value: 'MATURE',
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "row": 3,
+          "type": "description",
+        },
+        "rating": {
+          "col": 0,
+          "defaultValue": "GENERAL",
+          "formField": "rating",
+          "label": "rating",
+          "layout": "vertical",
+          "options": [
+            {
+              "label": "General",
+              "value": "GENERAL",
+            },
+            {
+              "label": "Mature",
+              "value": "MATURE",
+            },
+            {
+              "label": "Adult",
+              "value": "ADULT",
+            },
+            {
+              "label": "Extreme",
+              "value": "EXTREME",
+            },
+          ],
+          "required": true,
+          "row": 0,
+          "type": "rating",
+        },
+        "tags": {
+          "col": 1,
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
           },
-          {
-            label: 'Adult',
-            value: 'ADULT',
-          },
-          {
-            label: 'Extreme',
-            value: 'EXTREME',
-          },
-        ],
-        required: true,
-        row: 0,
-        type: 'rating',
-      },
-      tags: {
-        col: 1,
-        defaultValue: DefaultTagValue(),
-        formField: 'tag',
-        label: 'tags',
-        row: 1,
-        type: 'tag',
-        minTagLength: 1,
-        spaceReplacer: '_',
-      },
-      title: {
-        col: 1,
-        defaultValue: '',
-        formField: 'input',
-        label: 'title',
-        required: true,
-        row: 0,
-        type: 'title',
-      },
-    });
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "row": 1,
+          "spaceReplacer": "_",
+          "type": "tag",
+        },
+        "title": {
+          "col": 1,
+          "defaultValue": "",
+          "formField": "input",
+          "label": "title",
+          "required": true,
+          "row": 0,
+          "type": "title",
+        },
+      }
+    `);
   });
 });

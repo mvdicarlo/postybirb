@@ -15,4 +15,5 @@ export default {
   coverageDirectory: '../../coverage/libs/http',
   runner: '@kayahr/jest-electron-runner/main',
   testEnvironment: 'node',
+  prettierPath: require.resolve('prettier-2'),
 };

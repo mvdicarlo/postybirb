@@ -251,15 +251,11 @@ export class Http {
           }
         }
 
-        if (!responseUrl) {
-          return reject(new Error('No response url'));
-        }
-
         return resolve({
           statusCode,
           statusMessage,
           body: body as T,
-          responseUrl,
+          responseUrl: responseUrl as unknown as string,
         });
       });
 

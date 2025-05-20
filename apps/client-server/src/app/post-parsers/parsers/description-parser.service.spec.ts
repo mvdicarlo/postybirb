@@ -127,7 +127,7 @@ describe('DescriptionParserService', () => {
       [],
       '',
     );
-    expect(description).toEqual(
+    expect(description).toMatchInlineSnapshot(
       'Hello, World!\r\nA link: https://postybirb.com',
     );
   });
@@ -151,7 +151,7 @@ describe('DescriptionParserService', () => {
       [],
       '',
     );
-    expect(description).toEqual(
+    expect(description).toMatchInlineSnapshot(
       '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div>',
     );
   });
@@ -180,7 +180,7 @@ describe('DescriptionParserService', () => {
       [],
       '',
     );
-    expect(description).toEqual(
+    expect(description).toMatchInlineSnapshot(
       '**Hello,** World!\n\n[A link](https://postybirb.com)',
     );
   });
@@ -236,7 +236,7 @@ describe('DescriptionParserService', () => {
       '',
     );
 
-    expect(description).toEqual(
+    expect(description).toMatchInlineSnapshot(
       '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>',
     );
   });
@@ -268,7 +268,7 @@ describe('DescriptionParserService', () => {
       '',
     );
 
-    expect(description).toEqual(
+    expect(description).toMatchInlineSnapshot(
       '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div>',
     );
   });

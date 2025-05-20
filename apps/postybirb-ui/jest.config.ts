@@ -8,4 +8,5 @@ export default {
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/apps/postybirb-ui',
+  prettierPath: require.resolve('prettier-2'),
 };
