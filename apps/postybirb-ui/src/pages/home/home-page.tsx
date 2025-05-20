@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/macro';
 import { Box, Grid } from '@mantine/core';
+import { IPostQueueRecord } from '@postybirb/types';
 import { IconClock, IconHome } from '@tabler/icons-react';
 import { useState } from 'react';
 import { DashboardStats } from '../../components/dashboard/dashboard-stats/dashboard-stats';
@@ -16,12 +17,14 @@ export default function HomePage() {
 
   const queueRecords = submissions
     .map((submission) => submission.postQueueRecord)
-    .filter(Boolean);
+    .filter(Boolean) as IPostQueueRecord[];
 
   // Get the currently posting submission
-  const currentlyPostingSubmission = submissions.find(
-    (submission) => submission.getPostingRecord() !== undefined,
-  );
+  const currentlyPostingSubmission = submissions
+    .find((submission) => submission.getPostingRecord() !== undefined)
+    ?.getPostingRecord();
+
+  const postRecords = submissions.flatMap((submission) => submission.posts);
 
   // Calculate stats
   const numSubmissions = submissions.filter((s) => !s.isArchived).length;
@@ -48,7 +51,6 @@ export default function HomePage() {
             submissions={submissions}
             queueRecords={queueRecords}
             currentlyPosting={currentlyPostingSubmission}
-            onRefresh={handleRefresh}
           />
         </Grid.Col>
       </Grid>

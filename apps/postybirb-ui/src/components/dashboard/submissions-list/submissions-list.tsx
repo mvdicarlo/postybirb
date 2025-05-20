@@ -16,13 +16,13 @@ import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IPostQueueRecord, PostRecordDto } from '@postybirb/types';
 import { IconCalendarCancel, IconTrash, IconX } from '@tabler/icons-react';
-import { SubmissionDto } from 'apps/postybirb-ui/src/models/dtos/submission.dto';
-import { defaultTargetProvider } from 'apps/postybirb-ui/src/transports/http-client';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
 import postManagerApi from '../../../api/post-manager.api';
 import postQueueApi from '../../../api/post-queue.api';
 import submissionApi from '../../../api/submission.api';
+import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { defaultTargetProvider } from '../../../transports/http-client';
 import styles from './submissions-list.module.css';
 
 interface SubmissionData {
@@ -166,14 +166,12 @@ export interface SubmissionsListProps {
   submissions: SubmissionDto[];
   queueRecords: IPostQueueRecord[];
   currentlyPosting?: PostRecordDto;
-  onRefresh: () => void;
 }
 
 export function SubmissionsList({
   submissions,
   queueRecords,
   currentlyPosting,
-  onRefresh,
 }: SubmissionsListProps) {
   const submissionData: SubmissionData[] = useMemo(
     () =>
@@ -226,7 +224,6 @@ export function SubmissionsList({
         message: <Trans>The submission has been cancelled</Trans>,
         color: 'green',
       });
-      onRefresh();
     } catch (error) {
       notifications.show({
         title: <Trans>Error</Trans>,
@@ -244,7 +241,6 @@ export function SubmissionsList({
         message: <Trans>The submission has been removed from the queue</Trans>,
         color: 'green',
       });
-      onRefresh();
     } catch (error) {
       notifications.show({
         title: <Trans>Error</Trans>,
@@ -273,7 +269,6 @@ export function SubmissionsList({
           message: <Trans>The submission has been unscheduled</Trans>,
           color: 'green',
         });
-        onRefresh();
       }
     } catch (error) {
       notifications.show({
