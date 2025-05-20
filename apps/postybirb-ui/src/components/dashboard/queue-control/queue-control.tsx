@@ -2,46 +2,25 @@ import { Trans } from '@lingui/macro';
 import { Button, Group, Paper, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
 import settingsApi from '../../../api/settings.api';
-import { SettingsStore } from '../../../stores/settings.store';
+import { useSettings } from '../../../stores/use-settings';
 
 export function QueueControl() {
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Load settings and sync with pause state
-  useEffect(() => {
-    const subscription = SettingsStore.updates.subscribe(({ data }) => {
-      if (data && data.length > 0) {
-        setIsPaused(data[0].settings.queuePaused);
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Ensure UI state matches backend state
-  useEffect(() => {
-    postQueueApi.isPaused().then(({ paused }) => {
-      setIsPaused(paused);
-    });
-  }, []);
+  const { settings, settingsId } = useSettings();
+  const isPaused = settings?.queuePaused ?? false;
 
   const togglePause = async () => {
     try {
       const { paused } = isPaused
         ? await postQueueApi.resume()
         : await postQueueApi.pause();
-        
-      setIsPaused(paused);
       
       // Update settings
-      if (SettingsStore.getData().data.length > 0) {
-        const settings = SettingsStore.getData().data[0];
-        await settingsApi.update(settings.id, {
+      if (settingsId) {
+        await settingsApi.update(settingsId, {
           settings: {
-            ...settings.settings,
+            ...settings,
             queuePaused: paused
           }
         });
