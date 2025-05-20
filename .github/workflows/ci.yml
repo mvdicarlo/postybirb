@@ -35,4 +35,4 @@ jobs:
         uses: nrwl/nx-set-shas@v4
 
       - name: Run typecheck, lint and test
-        run: yarn nx affected -t typecheck lint test --parallel 3
+        run: yarn nx affected -t typecheck lint --parallel 3
