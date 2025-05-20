@@ -28,7 +28,7 @@ module.exports = {
   overrides: [
     {
       files: ['*.ts', '*.tsx', '*.js', '*.jsx'],
-      extends: ['plugin:@nrwl/nx/typescript'],
+      extends: ['plugin:@nrwl/nx/typescript', 'eslint-config-prettier'],
       rules: {
         ...(usePrettierPlugin
           ? { 'prettier/prettier': ['error', { endOfLine: 'crlf' }] }
