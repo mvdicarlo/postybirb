@@ -34,7 +34,7 @@ describe('FormGeneratorService', () => {
     service = module.get<FormGeneratorService>(FormGeneratorService);
     accountService = module.get<AccountService>(AccountService);
     userSpecifiedService = module.get<UserSpecifiedWebsiteOptionsService>(
-      UserSpecifiedWebsiteOptionsService
+      UserSpecifiedWebsiteOptionsService,
     );
 
     await accountService.onModuleInit();
@@ -50,7 +50,7 @@ describe('FormGeneratorService', () => {
 
   it('should fail on missing account', async () => {
     await expect(
-      service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE })
+      service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE }),
     ).rejects.toThrow(NotFoundException);
   });
 

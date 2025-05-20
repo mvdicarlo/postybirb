@@ -106,6 +106,7 @@ describe('WebsiteOptionsService', () => {
 
     const dto = new CreateWebsiteOptionsDto();
     dto.data = {
+      contentWarning: '',
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),

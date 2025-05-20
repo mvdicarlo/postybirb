@@ -7,7 +7,8 @@ export default {
     '^.+\\.[tj]s$': [
       'ts-jest',
       {
-        tsConfig: '<rootDir>/tsconfig.spec.json',
+        tsconfig: '<rootDir>/tsconfig.spec.json',
+        isolatedModules: true, // Speeds up test and disables typescript diagnostics report in test
       },
     ],
   },

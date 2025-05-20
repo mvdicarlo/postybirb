@@ -9,6 +9,7 @@ export default {
       'ts-jest',
       {
         tsconfig: '<rootDir>/tsconfig.spec.json',
+        isolatedModules: true, // Speeds up test and disables typescript diagnostics report in test
       },
     ],
   },
