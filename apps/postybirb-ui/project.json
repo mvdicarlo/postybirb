@@ -76,6 +76,12 @@
           "buildTarget": "postybirb-ui:build:production"
         }
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
+      }
     }
   },
   "tags": []

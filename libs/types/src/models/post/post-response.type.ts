@@ -51,12 +51,10 @@ export class PostResponse implements IPostResponse {
 
   additionalInfo?: unknown;
 
-  instanceId: string;
+  constructor(readonly instanceId: string) {}
 
   static fromWebsite(website: { id: string }) {
-    const response = new PostResponse();
-    response.instanceId = website.id;
-    return response;
+    return new PostResponse(website.id);
   }
 
   static validateBody(

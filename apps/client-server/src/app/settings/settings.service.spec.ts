@@ -37,6 +37,13 @@ describe('SettingsService', () => {
       language: 'en',
       allowAd: true,
       queuePaused: false,
+      desktopNotifications: {
+        enabled: true,
+        showOnFileWatcherError: true,
+        showOnFileWatcherSuccess: true,
+        showOnPostError: true,
+        showOnPostSuccess: true,
+      },
     };
     await service.update(record.id, updateDto);
     const updatedRec = await service.findById(record.id);

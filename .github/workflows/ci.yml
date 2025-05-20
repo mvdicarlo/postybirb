@@ -1,0 +1,35 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# Needed for nx-set-shas when run on the main branch
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    if: github.head_ref != 'weblate-postybirb-postybirb'
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v4
+        with:
+          cache: yarn
+
+        # Note: These flags needed to speed up ci
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --prefer-offline
+
+        # Node: Used to calculate affected
+      - name: Setup shas
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Run lint and test
+        run: npx nx affected -t lint test tsc
