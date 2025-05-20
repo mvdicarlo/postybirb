@@ -87,6 +87,7 @@ describe('WebsiteOptionsService', () => {
       accountService = module.get<AccountService>(AccountService);
       await accountService.onModuleInit();
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error(e);
     }
   });
@@ -185,6 +186,7 @@ describe('WebsiteOptionsService', () => {
     dto.data = {
       title: 'title',
       tags: DefaultTagValue(),
+      contentWarning: '',
       description: DefaultDescriptionValue(),
       rating: SubmissionRating.GENERAL,
     };

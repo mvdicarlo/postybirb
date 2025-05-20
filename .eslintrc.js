@@ -1,16 +1,15 @@
 // @ts-check
 
-// Disable this annoying red lines under unformatted code
-// if there is prettier extensions installed
-let prettierExtension = process.env.VSCODE_CWD;
+// It takes a lot of i time and reports errors like insert <newline> which are useless
+let usePrettierPlugin = false;
 
 module.exports = {
   root: true,
   ignorePatterns: ['**/*'],
   extends: [
-    prettierExtension
-      ? 'eslint-config-prettier'
-      : 'plugin:prettier/recommended',
+    usePrettierPlugin
+      ? 'plugin:prettier/recommended'
+      : 'eslint-config-prettier',
     'airbnb',
     'airbnb/hooks',
     'airbnb-typescript',
@@ -19,7 +18,7 @@ module.exports = {
   ],
   plugins: [
     '@nrwl/nx',
-    prettierExtension ? '' : 'prettier',
+    usePrettierPlugin ? '' : 'prettier',
     'jest',
     'testing-library',
   ].filter(Boolean),
@@ -30,9 +29,9 @@ module.exports = {
     {
       files: ['*.ts', '*.tsx', '*.js', '*.jsx'],
       rules: {
-        ...(prettierExtension
-          ? {}
-          : { 'prettier/prettier': ['error', { endOfLine: 'crlf' }] }),
+        ...(usePrettierPlugin
+          ? { 'prettier/prettier': ['error', { endOfLine: 'crlf' }] }
+          : {}),
 
         '@nrwl/nx/enforce-module-boundaries': [
           'error',
