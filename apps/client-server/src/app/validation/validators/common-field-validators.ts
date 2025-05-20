@@ -161,32 +161,3 @@ export async function validateRequiredDescriptionField({
     }
   }
 }
-
-/**
- * Validates that a required tag field has at least one tag.
- */
-export async function validateRequiredTagField({
-  result,
-  data,
-  mergedWebsiteOptions,
-}: ValidatorParams) {
-  const fields = mergedWebsiteOptions.getFormFields();
-
-  for (const [fieldName, field] of Object.entries(fields)) {
-    // Skip if field is not required or hidden
-    if (!field.required || field.hidden || fieldName === 'tags') continue;
-
-    // Only check tag fields
-    if (field.formField !== 'tag') continue;
-
-    const { tags } = fields.tags as unknown as TagValue;
-
-    if (!tags || tags.length === 0) {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
-    }
-  }
-}
