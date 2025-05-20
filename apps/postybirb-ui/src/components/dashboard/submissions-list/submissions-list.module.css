@@ -1,0 +1,23 @@
+.item {
+  border-radius: var(--mantine-radius-md);
+  margin-bottom: var(--mantine-gap-sm);
+  padding: var(--mantine-gap-sm);
+  background-color: var(--mantine-color-body);
+  border: 1px solid var(--mantine-color-default-border);
+}
+
+.item:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.activePosting {
+  border-left: 4px solid var(--mantine-color-teal-6);
+}
+
+.queuedItem {
+  border-left: 4px solid var(--mantine-color-blue-6);
+}
+
+.scheduledItem {
+  border-left: 4px solid var(--mantine-color-violet-6);
+}

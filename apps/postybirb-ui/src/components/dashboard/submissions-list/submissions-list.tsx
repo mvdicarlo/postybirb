@@ -11,22 +11,19 @@ import {
   Stack,
   Text,
   Title,
-  createStyles,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
-import {
-  IconCalendarCancel,
-  IconPlayerPause,
-  IconTrash,
-  IconX,
-} from '@tabler/icons-react';
-import { useMemo, useState } from 'react';
+import { IPostQueueRecord, PostRecordDto } from '@postybirb/types';
+import { IconCalendarCancel, IconTrash, IconX } from '@tabler/icons-react';
+import { SubmissionDto } from 'apps/postybirb-ui/src/models/dtos/submission.dto';
+import { defaultTargetProvider } from 'apps/postybirb-ui/src/transports/http-client';
+import { format } from 'date-fns';
+import { useMemo } from 'react';
 import postManagerApi from '../../../api/post-manager.api';
 import postQueueApi from '../../../api/post-queue.api';
 import submissionApi from '../../../api/submission.api';
-import { defaultTargetProvider } from '../../../utils/target-provider';
-import { format } from 'date-fns';
+import styles from './submissions-list.module.css';
 
 interface SubmissionData {
   id: string;
@@ -38,30 +35,6 @@ interface SubmissionData {
   thumbnailUrl?: string;
 }
 
-const useStyles = createStyles((theme) => ({
-  item: {
-    borderRadius: theme.radius.md,
-    marginBottom: theme.spacing.sm,
-    padding: theme.spacing.sm,
-    backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
-    border: `1px solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[3]
-    }`,
-    '&:hover': {
-      backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[0],
-    },
-  },
-  activePosting: {
-    borderLeft: `4px solid ${theme.colors.teal[6]}`,
-  },
-  queuedItem: {
-    borderLeft: `4px solid ${theme.colors.blue[6]}`,
-  },
-  scheduledItem: {
-    borderLeft: `4px solid ${theme.colors.violet[6]}`,
-  },
-}));
-
 interface SubmissionItemProps {
   submission: SubmissionData;
   onCancel: () => void;
@@ -69,31 +42,43 @@ interface SubmissionItemProps {
   onUnschedule: () => void;
 }
 
-function SubmissionItem({ 
-  submission, 
+function SubmissionItem({
+  submission,
   onCancel,
   onUnqueue,
-  onUnschedule 
+  onUnschedule,
 }: SubmissionItemProps) {
-  const { classes, cx } = useStyles();
   const [confirmModalOpened, confirmModal] = useDisclosure(false);
-  
+
   let statusBadge = null;
   let itemClass = '';
-  
+
   if (submission.isPosting) {
-    statusBadge = <Badge color="teal"><Trans>Posting</Trans></Badge>;
-    itemClass = classes.activePosting;
+    statusBadge = (
+      <Badge color="teal">
+        <Trans>Posting</Trans>
+      </Badge>
+    );
+    itemClass = styles.activePosting;
   } else if (submission.isQueued) {
-    statusBadge = <Badge color="blue"><Trans>Queued</Trans></Badge>;
-    itemClass = classes.queuedItem;
+    statusBadge = (
+      <Badge color="blue">
+        <Trans>Queued</Trans>
+      </Badge>
+    );
+    itemClass = styles.queuedItem;
   } else if (submission.isScheduled) {
-    statusBadge = <Badge color="violet"><Trans>Scheduled</Trans></Badge>;
-    itemClass = classes.scheduledItem;
+    statusBadge = (
+      <Badge color="violet">
+        <Trans>Scheduled</Trans>
+      </Badge>
+    );
+    itemClass = styles.scheduledItem;
   }
 
-  const scheduledDate = submission.scheduledFor 
-    ? format(new Date(submission.scheduledFor), "PPp")
+  const scheduledDate = submission.scheduledFor
+    ? // eslint-disable-next-line lingui/no-unlocalized-strings
+      format(new Date(submission.scheduledFor), 'PPp')
     : null;
 
   return (
@@ -106,11 +91,11 @@ function SubmissionItem({
         <Stack>
           <Text>
             <Trans>
-              Are you sure you want to cancel this submission? The app is not responsible
-              for any partial post clean-up.
+              Are you sure you want to cancel this submission? The app is not
+              responsible for any partial post clean-up.
             </Trans>
           </Text>
-          <Group position="right">
+          <Group align="right">
             <Button variant="default" onClick={confirmModal.close}>
               <Trans>Cancel</Trans>
             </Button>
@@ -127,19 +112,24 @@ function SubmissionItem({
         </Stack>
       </Modal>
 
-      <Box className={cx(classes.item, itemClass)}>
-        <Group position="apart">
+      <Box className={`${styles.item} ${itemClass}`}>
+        <Group align="apart">
           <Group>
             {submission.thumbnailUrl && (
               <img
                 src={submission.thumbnailUrl}
                 alt={submission.title}
-                style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
+                style={{
+                  width: 50,
+                  height: 50,
+                  objectFit: 'cover',
+                  borderRadius: '4px',
+                }}
               />
             )}
             <Box>
-              <Text weight={500}>{submission.title}</Text>
-              <Group spacing="xs">
+              <Text fw={500}>{submission.title}</Text>
+              <Group gap="xs">
                 {statusBadge}
                 {scheduledDate && (
                   <Text size="sm" color="dimmed">
@@ -149,7 +139,7 @@ function SubmissionItem({
               </Group>
             </Box>
           </Group>
-          <Group spacing="xs">
+          <Group gap="xs">
             {submission.isPosting && (
               <ActionIcon color="red" onClick={confirmModal.open}>
                 <IconX size={16} />
@@ -173,55 +163,59 @@ function SubmissionItem({
 }
 
 export interface SubmissionsListProps {
-  submissions: any[];
-  queueRecords: any[];
-  currentlyPosting?: any;
+  submissions: SubmissionDto[];
+  queueRecords: IPostQueueRecord[];
+  currentlyPosting?: PostRecordDto;
   onRefresh: () => void;
 }
 
-export function SubmissionsList({ 
-  submissions, 
-  queueRecords, 
+export function SubmissionsList({
+  submissions,
+  queueRecords,
   currentlyPosting,
-  onRefresh
+  onRefresh,
 }: SubmissionsListProps) {
-  
-  const submissionData: SubmissionData[] = useMemo(() => {
-    return submissions.map(submission => {
-      // Check if submission is in queue
-      const queueRecord = queueRecords.find(q => q.submissionId === submission.id);
-      const isQueued = !!queueRecord;
-      const isPosting = currentlyPosting?.submissionId === submission.id;
-      
-      // Get title and thumbnail if available
-      const title = submission.getDefaultOptions()?.data?.title || 'Untitled';
-      
-      // Get thumbnail URL if there are files
-      let thumbnailUrl;
-      if (submission.files && submission.files.length > 0) {
-        thumbnailUrl = `${defaultTargetProvider()}/api/file/thumbnail/${submission.files[0].id}`;
-      }
-      
-      return {
-        id: submission.id,
-        title,
-        isQueued,
-        isPosting,
-        isScheduled: submission.isScheduled,
-        scheduledFor: submission.schedule?.scheduledFor,
-        thumbnailUrl
-      };
-    });
-  }, [submissions, queueRecords, currentlyPosting]);
-  
-  const queuedSubmissions = useMemo(() => 
-    submissionData.filter(s => s.isQueued), 
-    [submissionData]
+  const submissionData: SubmissionData[] = useMemo(
+    () =>
+      submissions.map((submission) => {
+        // Check if submission is in queue
+        const queueRecord = queueRecords.find(
+          (q) => q.submissionId === submission.id,
+        );
+        const isQueued = !!queueRecord;
+        const isPosting = currentlyPosting?.submissionId === submission.id;
+
+        // Get title and thumbnail if available
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        const title = submission.getDefaultOptions()?.data?.title || 'Untitled';
+
+        // Get thumbnail URL if there are files
+        let thumbnailUrl;
+        if (submission.files && submission.files.length > 0) {
+          thumbnailUrl = `${defaultTargetProvider()}/api/file/thumbnail/${submission.files[0].id}`;
+        }
+
+        return {
+          id: submission.id,
+          title,
+          isQueued,
+          isPosting,
+          isScheduled: submission.isScheduled,
+          scheduledFor: submission.schedule?.scheduledFor,
+          thumbnailUrl,
+        };
+      }),
+    [submissions, queueRecords, currentlyPosting],
   );
-  
-  const scheduledSubmissions = useMemo(() => 
-    submissionData.filter(s => s.isScheduled && !s.isQueued), 
-    [submissionData]
+
+  const queuedSubmissions = useMemo(
+    () => submissionData.filter((s) => s.isQueued),
+    [submissionData],
+  );
+
+  const scheduledSubmissions = useMemo(
+    () => submissionData.filter((s) => s.isScheduled && !s.isQueued),
+    [submissionData],
   );
 
   const cancelSubmission = async (submissionId: string) => {
@@ -236,7 +230,7 @@ export function SubmissionsList({
     } catch (error) {
       notifications.show({
         title: <Trans>Error</Trans>,
-        message: error.message,
+        message: (error as Error).message,
         color: 'red',
       });
     }
@@ -254,7 +248,7 @@ export function SubmissionsList({
     } catch (error) {
       notifications.show({
         title: <Trans>Error</Trans>,
-        message: error.message,
+        message: (error as Error).message,
         color: 'red',
       });
     }
@@ -262,7 +256,7 @@ export function SubmissionsList({
 
   const unscheduleSubmission = async (submissionId: string) => {
     try {
-      const submission = submissions.find(s => s.id === submissionId);
+      const submission = submissions.find((s) => s.id === submissionId);
       if (submission) {
         await submissionApi.update(submissionId, {
           scheduleType: submission.schedule.scheduleType,
@@ -271,9 +265,9 @@ export function SubmissionsList({
           isScheduled: false,
           metadata: submission.metadata,
           newOrUpdatedOptions: [],
-          deletedWebsiteOptions: []
+          deletedWebsiteOptions: [],
         });
-        
+
         notifications.show({
           title: <Trans>Submission Unscheduled</Trans>,
           message: <Trans>The submission has been unscheduled</Trans>,
@@ -284,7 +278,7 @@ export function SubmissionsList({
     } catch (error) {
       notifications.show({
         title: <Trans>Error</Trans>,
-        message: error.message,
+        message: (error as Error).message,
         color: 'red',
       });
     }
@@ -294,18 +288,20 @@ export function SubmissionsList({
     <Stack>
       {queuedSubmissions.length > 0 && (
         <Paper withBorder p="md" radius="md" shadow="sm">
-          <Stack spacing="xs">
+          <Stack gap="xs">
             <Title order={4}>
-              <Group position="apart">
-                <span><Trans>Queue</Trans></span>
+              <Group align="apart">
+                <span>
+                  <Trans>Queue</Trans>
+                </span>
                 <Badge size="sm">{queuedSubmissions.length}</Badge>
               </Group>
             </Title>
             <ScrollArea style={{ height: 200 }}>
-              <Stack spacing={0}>
-                {queuedSubmissions.map(submission => (
-                  <SubmissionItem 
-                    key={submission.id} 
+              <Stack gap={0}>
+                {queuedSubmissions.map((submission) => (
+                  <SubmissionItem
+                    key={submission.id}
                     submission={submission}
                     onCancel={() => cancelSubmission(submission.id)}
                     onUnqueue={() => unqueueSubmission(submission.id)}
@@ -320,18 +316,20 @@ export function SubmissionsList({
 
       {scheduledSubmissions.length > 0 && (
         <Paper withBorder p="md" radius="md" shadow="sm">
-          <Stack spacing="xs">
+          <Stack gap="xs">
             <Title order={4}>
-              <Group position="apart">
-                <span><Trans>Scheduled</Trans></span>
+              <Group align="apart">
+                <span>
+                  <Trans>Scheduled</Trans>
+                </span>
                 <Badge size="sm">{scheduledSubmissions.length}</Badge>
               </Group>
             </Title>
             <ScrollArea style={{ height: 200 }}>
-              <Stack spacing={0}>
-                {scheduledSubmissions.map(submission => (
-                  <SubmissionItem 
-                    key={submission.id} 
+              <Stack gap={0}>
+                {scheduledSubmissions.map((submission) => (
+                  <SubmissionItem
+                    key={submission.id}
                     submission={submission}
                     onCancel={() => {}}
                     onUnqueue={() => {}}
@@ -346,7 +344,7 @@ export function SubmissionsList({
 
       {queuedSubmissions.length === 0 && scheduledSubmissions.length === 0 && (
         <Paper withBorder p="md" radius="md" shadow="sm">
-          <Text align="center" color="dimmed">
+          <Text ta="center" c="dimmed">
             <Trans>No submissions in queue or scheduled</Trans>
           </Text>
         </Paper>
