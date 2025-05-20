@@ -3,7 +3,7 @@ import {
   DynamicObject,
   IUserSpecifiedWebsiteOptions,
   SubmissionType,
-  UserSpecifiedWebsiteOptionsDto
+  UserSpecifiedWebsiteOptionsDto,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';

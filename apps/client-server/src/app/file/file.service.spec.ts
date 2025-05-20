@@ -85,7 +85,9 @@ describe('FileService', () => {
 
   beforeAll(() => {
     PostyBirbDirectories.initializeDirectories();
-    testFile = readFileSync(join(__dirname, '../../test-files/small_image.jpg'));
+    testFile = readFileSync(
+      join(__dirname, '../../test-files/small_image.jpg'),
+    );
     testFile2 = readFileSync(
       join(__dirname, '../../test-files/png_with_alpha.png'),
     );

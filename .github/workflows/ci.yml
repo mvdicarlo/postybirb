@@ -31,5 +31,5 @@ jobs:
       - name: Setup shas
         uses: nrwl/nx-set-shas@v4
 
-      - name: Run lint and test
-        run: npx nx affected -t lint test tsc
+      - name: Run typecheck, lint and test
+        run: yarn nx affected -t typecheck lint test --parallel 3

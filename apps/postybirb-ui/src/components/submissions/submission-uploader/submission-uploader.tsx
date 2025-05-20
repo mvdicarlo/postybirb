@@ -402,12 +402,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
                   gap="sm"
                   style={{ pointerEvents: 'none' }}
                 >
-                  <ThemeIcon
-                    size="md"
-                    radius="xl"
-                    variant="light"
-                    color="gray"
-                  >
+                  <ThemeIcon size="md" radius="xl" variant="light" color="gray">
                     <IconFileUpload size={16} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">

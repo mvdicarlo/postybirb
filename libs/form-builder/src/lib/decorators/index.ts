@@ -6,4 +6,3 @@ export * from './select-field.decorator';
 export * from './tag-field.decorator';
 export * from './text-field.decorator';
 export * from './title-field.decorator';
-

@@ -1,4 +1,5 @@
 import { EventClickArg, EventDropArg } from '@fullcalendar/core';
+import { EventImpl } from '@fullcalendar/core/internal';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin, { DropArg } from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
@@ -43,13 +44,15 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
   const [lang] = use18n();
   const { type } = props;
   const { state: submissions } = useStore(SubmissionStore);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
   const [
     confirmModalOpened,
     { open: openConfirmModal, close: closeConfirmModal },
   ] = useDisclosure(false);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const calendarRef = useRef<any>(null);
 
   const filteredSubmissions = submissions.filter(

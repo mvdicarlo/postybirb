@@ -45,6 +45,5 @@ export {
   initializeDirectories,
   LOGS_DIRECTORY,
   POSTYBIRB_DIRECTORY,
-  TEMP_DIRECTORY
+  TEMP_DIRECTORY,
 };
-

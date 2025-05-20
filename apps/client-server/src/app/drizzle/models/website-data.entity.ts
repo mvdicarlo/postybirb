@@ -1,8 +1,4 @@
-import {
-  DynamicObject,
-  IWebsiteData,
-  IWebsiteDataDto
-} from '@postybirb/types';
+import { DynamicObject, IWebsiteData, IWebsiteDataDto } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { Account } from './account.entity';
 import { DatabaseEntity } from './database-entity';

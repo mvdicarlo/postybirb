@@ -1,8 +1,8 @@
 import {
-    IPostResponse,
-    IWebsiteFormFields,
-    PostData,
-    SimpleValidationResult,
+  IPostResponse,
+  IWebsiteFormFields,
+  PostData,
+  SimpleValidationResult,
 } from '@postybirb/types';
 
 import { CancellableToken } from '../../../post/models/cancellable-token';

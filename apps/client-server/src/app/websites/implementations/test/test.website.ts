@@ -8,7 +8,7 @@ import {
   OAuthRoutes,
   PostData,
   PostResponse,
-  SimpleValidationResult
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';

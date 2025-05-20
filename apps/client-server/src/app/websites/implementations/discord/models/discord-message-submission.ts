@@ -1,4 +1,8 @@
-import { BooleanField, DescriptionField, TagField } from '@postybirb/form-builder';
+import {
+  BooleanField,
+  DescriptionField,
+  TagField,
+} from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 

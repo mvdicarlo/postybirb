@@ -2,7 +2,7 @@ import {
   EntityId,
   IPostQueueRecord,
   PostQueueRecordDto,
-  SubmissionId
+  SubmissionId,
 } from '@postybirb/types';
 import { instanceToPlain, Type } from 'class-transformer';
 import { DatabaseEntity } from './database-entity';

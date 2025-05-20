@@ -6,7 +6,7 @@ import {
   DescriptionType,
   NullAccount,
   SubmissionRating,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';

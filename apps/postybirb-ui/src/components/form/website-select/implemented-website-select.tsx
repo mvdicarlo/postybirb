@@ -1,7 +1,7 @@
 import {
-    AccountId,
-    IWebsiteFormFields,
-    WebsiteOptionsDto,
+  AccountId,
+  IWebsiteFormFields,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';

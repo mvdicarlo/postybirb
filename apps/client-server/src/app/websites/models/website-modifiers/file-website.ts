@@ -1,10 +1,10 @@
 import {
-    ImageResizeProps,
-    IPostResponse,
-    ISubmissionFile,
-    IWebsiteFormFields,
-    PostData,
-    SimpleValidationResult,
+  ImageResizeProps,
+  IPostResponse,
+  ISubmissionFile,
+  IWebsiteFormFields,
+  PostData,
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';

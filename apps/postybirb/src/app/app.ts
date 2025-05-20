@@ -114,7 +114,7 @@ export default class PostyBirb {
       PostyBirb.mainWindow.show();
 
       // if (PostyBirb.isDevelopmentMode()) {
-        PostyBirb.mainWindow.webContents.openDevTools();
+      PostyBirb.mainWindow.webContents.openDevTools();
       // }
     });
 

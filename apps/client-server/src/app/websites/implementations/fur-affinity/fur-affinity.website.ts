@@ -4,7 +4,7 @@ import {
   ImageResizeProps,
   IPostResponse,
   PostData,
-  SimpleValidationResult
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
