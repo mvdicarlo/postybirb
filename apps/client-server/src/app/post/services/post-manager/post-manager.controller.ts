@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { SubmissionId } from '@postybirb/types';
+import { PostQueueService } from '../post-queue/post-queue.service';
 import { PostManagerService } from './post-manager.service';
 
 class CancelPostDto {
@@ -10,12 +11,17 @@ class CancelPostDto {
 @ApiTags('post-manager')
 @Controller('post-manager')
 export class PostManagerController {
-  constructor(readonly service: PostManagerService) {}
+  constructor(
+    readonly service: PostManagerService,
+    private readonly postQueueService: PostQueueService,
+  ) {}
 
   @Post('cancel')
   @ApiOkResponse({ description: 'Post cancelled if running.' })
   async cancelIfRunning(@Body() request: CancelPostDto) {
-    return this.service.cancelIfRunning(request.submissionId);
+    // Use post-queue's dequeue which ensures all db records are properly handled
+    await this.postQueueService.dequeue([request.submissionId]);
+    return true;
   }
   
   @Get('is-posting')
