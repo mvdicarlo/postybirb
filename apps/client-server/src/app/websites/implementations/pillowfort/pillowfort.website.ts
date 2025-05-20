@@ -1,17 +1,17 @@
-import { BrowserWindowUtils } from '@postybirb/browser-window-utils';
 import { Http } from '@postybirb/http';
 import {
-  FileSize,
-  FileType,
   ILoginState,
   ImageResizeProps,
   PostData,
   PostResponse,
-  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
+import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import FileSize from '../../../utils/filesize.util';
+import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -28,15 +28,15 @@ import { PillowfortMessageSubmission } from './models/pillowfort-message-submiss
   name: 'pillowfort',
   displayName: 'PillowFort',
 })
-@UserLoginFlow('https://www.pillowfort.social')
+@UserLoginFlow('https://www.pillowfort.social/users/sign_in')
 @SupportsUsernameShortcut({
-  id: 'pf',
+  id: 'pillowfort',
   url: 'https://www.pillowfort.social/$1',
 })
 @SupportsFiles({
   acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
   acceptedFileSizes: {
-    [FileType.IMAGE]: FileSize.mbToBytes(10),
+    '*': FileSize.mbToBytes(2),
   },
 })
 export default class Pillowfort
@@ -60,10 +60,13 @@ export default class Pillowfort
 
       if (res.body.includes('/signout')) {
         const html = parse(res.body);
-        const username = html.querySelector('title')?.innerText.split(' | ')?.[1] || null;
+        const username =
+          html
+            .querySelector('option[value="current_user"]')
+            ?.innerText.trim() || 'Unknown';
         return this.loginState.setLogin(true, username);
       }
-      
+
       return this.loginState.logout();
     } catch (e) {
       this.logger.error('Failed to login', e);
@@ -76,7 +79,7 @@ export default class Pillowfort
   }
 
   calculateImageResize(): ImageResizeProps {
-    // PillowFort max file size is 10MB, we'll use default resizing logic
+    // PillowFort max file size is 2MB, we'll use default resizing logic
     return undefined;
   }
 
@@ -94,24 +97,20 @@ export default class Pillowfort
 
       // Extract CSRF token
       const html = parse(page.body);
-      const csrfToken = html
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content');
+      const authToken = html
+        .querySelector('input[name="authenticity_token"]')
+        ?.getAttribute('value');
 
-      if (!csrfToken) {
+      if (!authToken) {
         return PostResponse.fromWebsite(this)
           .withMessage('Failed to extract CSRF token')
-          .withExceptionType('WEBSITE_ERROR');
+          .withAdditionalInfo({ authToken });
       }
 
       // Upload each image first
       const uploadedImages = [];
       for (const file of files) {
-        if (cancellationToken.isCancelled()) {
-          return PostResponse.fromWebsite(this)
-            .withMessage('Post was cancelled')
-            .withExceptionType('CANCELLED');
-        }
+        cancellationToken.throwIfCancelled();
 
         // Upload the image
         const upload = await Http.post<{
@@ -121,33 +120,33 @@ export default class Pillowfort
           partition: this.accountId,
           type: 'multipart',
           data: {
-            file_name: file.options.filename,
-            photo: file,
+            file_name: file.fileName,
+            photo: file.toPostFormat(),
           },
           headers: {
-            'X-CSRF-Token': csrfToken,
+            'X-CSRF-Token': authToken,
           },
         });
 
         if (!upload.body?.full_image) {
           return PostResponse.fromWebsite(this)
             .withMessage('Failed to upload image')
-            .withExceptionType('WEBSITE_ERROR');
+            .withAdditionalInfo(upload.body);
         }
 
         uploadedImages.push(upload.body);
       }
 
       // Prepare form data
-      const form: Record<string, any> = {
-        authenticity_token: csrfToken,
+      const form: Record<string, unknown> = {
+        authenticity_token: authToken,
         utf8: '✓',
         post_to: 'current_user',
         post_type: 'picture',
         title: postData.options.useTitle ? postData.options.title : '',
-        content: postData.options.description.toString(),
+        content: `<p>${postData.options.description}</p>`,
         privacy: postData.options.privacy,
-        tags: (postData.options.tags?.value || []).join(', '),
+        tags: (postData.options.tags || []).join(', '),
         commit: 'Submit',
       };
 
@@ -159,27 +158,23 @@ export default class Pillowfort
         form.commentable = 'on';
       }
 
-      // FormData for the final POST
-      const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        formData.append(key, value);
-      });
-
       // Add the uploaded images to the form
-      uploadedImages.forEach((upload, i) => {
-        formData.append('picture[][pic_url]', upload.full_image);
-        formData.append('picture[][small_image_url]', upload.small_image);
-        formData.append('picture[][b2_lg_url]', '');
-        formData.append('picture[][b2_sm_url]', '');
-        formData.append('picture[][row]', `${i + 1}`);
-        formData.append('picture[][col]', '0');
-      });
+      form['picture[][pic_url]'] = uploadedImages.map(
+        (upload) => upload.full_image,
+      );
+      form['picture[][small_image_url]'] = uploadedImages.map(
+        (upload) => upload.small_image,
+      );
+      form['picture[][b2_lg_url]'] = '';
+      form['picture[][b2_sm_url]'] = '';
+      form['picture[][row]'] = uploadedImages.map((_, i) => `${i + 1}`);
+      form['picture[][col]'] = '0';
 
       // Submit the post
       const post = await Http.post<string>(`${this.BASE_URL}/posts/create`, {
         partition: this.accountId,
         type: 'multipart',
-        data: formData,
+        data: form,
       });
 
       if (post.statusCode === 200) {
@@ -188,7 +183,6 @@ export default class Pillowfort
 
       return PostResponse.fromWebsite(this)
         .withMessage('Failed to post submission')
-        .withExceptionType('WEBSITE_ERROR')
         .withAdditionalInfo(post.body);
     } catch (e) {
       this.logger.error('Failed to post submission', e);
@@ -198,19 +192,7 @@ export default class Pillowfort
     }
   }
 
-  async onValidateFileSubmission(
-    postData: PostData<PillowfortFileSubmission>,
-  ): Promise<SimpleValidationResult> {
-    const warnings: string[] = [];
-    const errors: string[] = [];
-
-    // Title is required
-    if (!postData.options.title) {
-      errors.push('Title is required');
-    }
-
-    return { warnings, errors };
-  }
+  onValidateFileSubmission = validatorPassthru;
 
   createMessageModel(): PillowfortMessageSubmission {
     return new PillowfortMessageSubmission();
@@ -228,39 +210,39 @@ export default class Pillowfort
 
       // Extract CSRF token
       const html = parse(page.body);
-      const csrfToken = html
-        .querySelector('meta[name="csrf-token"]')
-        ?.getAttribute('content');
+      const authToken = html
+        .querySelector('input[name="authenticity_token"]')
+        ?.getAttribute('value');
 
-      if (!csrfToken) {
+      if (!authToken) {
         return PostResponse.fromWebsite(this)
           .withMessage('Failed to extract CSRF token')
-          .withExceptionType('WEBSITE_ERROR');
+          .withAdditionalInfo({ authToken });
       }
 
       // Prepare form data
-      const form = {
-        authenticity_token: csrfToken,
+      const form: Record<string, unknown> = {
+        authenticity_token: authToken,
         utf8: '✓',
         post_to: 'current_user',
         post_type: 'text',
         title: postData.options.useTitle ? postData.options.title : '',
         content: postData.options.description.toString(),
         privacy: postData.options.privacy,
-        tags: (postData.options.tags?.value || []).join(', '),
+        tags: (postData.options.tags || []).join(', '),
         commit: 'Submit',
       };
 
       if (postData.options.allowReblogging) {
-        form['rebloggable'] = 'on';
+        form.rebloggable = 'on';
       }
 
       if (postData.options.allowComments) {
-        form['commentable'] = 'on';
+        form.commentable = 'on';
       }
 
-      if (postData.options.rating !== 'general') {
-        form['nsfw'] = 'on';
+      if (postData.options.rating !== SubmissionRating.GENERAL) {
+        form.nsfw = 'on';
       }
 
       // Submit the post
@@ -276,7 +258,6 @@ export default class Pillowfort
 
       return PostResponse.fromWebsite(this)
         .withMessage('Failed to post submission')
-        .withExceptionType('WEBSITE_ERROR')
         .withAdditionalInfo(post.body);
     } catch (e) {
       this.logger.error('Failed to post submission', e);
@@ -286,17 +267,5 @@ export default class Pillowfort
     }
   }
 
-  async onValidateMessageSubmission(
-    postData: PostData<PillowfortMessageSubmission>,
-  ): Promise<SimpleValidationResult> {
-    const warnings: string[] = [];
-    const errors: string[] = [];
-
-    // Title is required
-    if (!postData.options.title) {
-      errors.push('Title is required');
-    }
-
-    return { warnings, errors };
-  }
+  onValidateMessageSubmission = validatorPassthru;
 }
