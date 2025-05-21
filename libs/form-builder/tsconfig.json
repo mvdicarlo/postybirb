@@ -3,7 +3,9 @@
   "files": [],
   "include": [],
   "compilerOptions": {
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "strict": true,
+    "strictPropertyInitialization": false
   },
   "references": [
     {

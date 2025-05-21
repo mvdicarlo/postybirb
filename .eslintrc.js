@@ -1,78 +1,43 @@
 // @ts-check
-
-// Disable this annoying red lines under unformatted code
-// if there is prettier extensions installed
-let prettierExtension = process.env.VSCODE_CWD;
-
-module.exports = {
+/** @type {import('eslint').ESLint.ConfigData} */
+const config = {
   root: true,
   ignorePatterns: ['**/*'],
   extends: [
-    prettierExtension
-      ? 'eslint-config-prettier'
-      : 'plugin:prettier/recommended',
     'airbnb',
-    'airbnb/hooks',
     'airbnb-typescript',
     'plugin:jest/recommended',
-    'plugin:testing-library/react',
+    'plugin:@nrwl/nx/typescript',
+    'eslint-config-prettier',
   ],
-  plugins: [
-    '@nrwl/nx',
-    prettierExtension ? '' : 'prettier',
-    'jest',
-    'testing-library',
-  ].filter(Boolean),
-  parserOptions: {
-    project: './tsconfig.base.json',
-  },
+  plugins: ['@nrwl/nx', 'jest'],
+  parserOptions: { project: './tsconfig.base.json' },
   overrides: [
     {
-      files: ['*.ts', '*.tsx', '*.js', '*.jsx'],
-      rules: {
-        ...(prettierExtension
-          ? {}
-          : { 'prettier/prettier': ['error', { endOfLine: 'crlf' }] }),
-
-        '@nrwl/nx/enforce-module-boundaries': [
-          'error',
-          {
-            enforceBuildableLibDependency: true,
-
-            // We allow it because we need to use import from
-            // postybirb-ui to make jump-to definition in the
-            // FieldType.label
-            allow: [
-              '@postybirb/form-builder',
-              '@postybirb/translations',
-              '@postybirb/types',
-            ],
-
-            depConstraints: [
-              { sourceTag: '*', onlyDependOnLibsWithTags: ['*'] },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      files: ['*.ts', '*.tsx'],
-      extends: ['plugin:@nrwl/nx/typescript'],
-      rules: {
-        // some nx rules for specific files override globally disabled rules
-        '@typescript-eslint/no-unused-vars': 'off',
-        'no-continue': 'off',
-      },
-    },
-    {
-      files: ['*.js', '*.jsx'],
-      extends: ['plugin:@nrwl/nx/javascript'],
-      rules: {
-        '@typescript-eslint/no-unused-vars': 'off',
-      },
+      files: ['*.tsx'],
+      plugins: ['testing-library'],
+      extends: ['plugin:testing-library/react', 'airbnb/hooks'],
     },
   ],
   rules: {
+    '@nrwl/nx/enforce-module-boundaries': [
+      'error',
+      {
+        enforceBuildableLibDependency: true,
+
+        // We allow it because we need to use import from
+        // postybirb-ui to make jump-to definition in the
+        // FieldType.label
+        allow: [
+          '@postybirb/form-builder',
+          '@postybirb/translations',
+          '@postybirb/types',
+        ],
+
+        depConstraints: [{ sourceTag: '*', onlyDependOnLibsWithTags: ['*'] }],
+      },
+    ],
+
     'no-plusplus': 'off',
     'no-nested-ternary': 'off',
     'no-continue': 'off',
@@ -80,6 +45,7 @@ module.exports = {
     'no-restricted-syntax': 'off',
     'class-methods-use-this': 'off',
 
+    'import/export': 'off',
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
 
@@ -120,3 +86,5 @@ module.exports = {
     ],
   },
 };
+
+module.exports = config;

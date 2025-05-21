@@ -7,7 +7,8 @@ export async function validateSelectFieldMinSelected({
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
   for (const [fieldName, selectField] of Object.entries(fields)) {
-    if (!('minSelected' in selectField) || !selectField.allowMultiple) continue;
+    if (selectField.formField !== 'select') continue;
+    if (!selectField.allowMultiple) continue;
 
     const options = data.options[fieldName];
     const { minSelected } = selectField;
@@ -15,7 +16,7 @@ export async function validateSelectFieldMinSelected({
 
     const selected = options?.length ?? 0;
     if (selected < minSelected) {
-      result.warnings.push({
+      result.errors.push({
         id: 'validation.select-field.min-selected',
         field: fieldName,
         values: {

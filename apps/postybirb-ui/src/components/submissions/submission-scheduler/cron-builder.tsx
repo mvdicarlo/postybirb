@@ -1,17 +1,17 @@
 import { msg, Trans } from '@lingui/macro';
-import { useLingui } from '@lingui/react';
 import {
-    Box,
-    Button,
-    Chip,
-    Group,
-    NativeSelect,
-    NumberInput,
-    Stack,
-    Text,
-    Tooltip,
+  Box,
+  Button,
+  Chip,
+  Group,
+  NativeSelect,
+  NumberInput,
+  Stack,
+  Text,
+  Tooltip,
 } from '@mantine/core';
 import { useEffect, useRef, useState } from 'react';
+import { useTrans } from '../../../hooks/use-trans';
 
 interface CronBuilderProps {
   value: string;
@@ -38,28 +38,28 @@ const DEFAULT_CRON: CronParts = {
 };
 
 const MONTHS = [
-  { value: '1', label: 'January' },
-  { value: '2', label: 'February' },
-  { value: '3', label: 'March' },
-  { value: '4', label: 'April' },
-  { value: '5', label: 'May' },
-  { value: '6', label: 'June' },
-  { value: '7', label: 'July' },
-  { value: '8', label: 'August' },
-  { value: '9', label: 'September' },
-  { value: '10', label: 'October' },
-  { value: '11', label: 'November' },
-  { value: '12', label: 'December' },
+  { value: '1', label: msg`January` },
+  { value: '2', label: msg`February` },
+  { value: '3', label: msg`March` },
+  { value: '4', label: msg`April` },
+  { value: '5', label: msg`May` },
+  { value: '6', label: msg`June` },
+  { value: '7', label: msg`July` },
+  { value: '8', label: msg`August` },
+  { value: '9', label: msg`September` },
+  { value: '10', label: msg`October` },
+  { value: '11', label: msg`November` },
+  { value: '12', label: msg`December` },
 ];
 
 const DAYS_OF_WEEK = [
-  { value: '0', label: 'Sunday' },
-  { value: '1', label: 'Monday' },
-  { value: '2', label: 'Tuesday' },
-  { value: '3', label: 'Wednesday' },
-  { value: '4', label: 'Thursday' },
-  { value: '5', label: 'Friday' },
-  { value: '6', label: 'Saturday' },
+  { value: '0', label: msg`Sunday` },
+  { value: '1', label: msg`Monday` },
+  { value: '2', label: msg`Tuesday` },
+  { value: '3', label: msg`Wednesday` },
+  { value: '4', label: msg`Thursday` },
+  { value: '5', label: msg`Friday` },
+  { value: '6', label: msg`Saturday` },
 ];
 
 const COMMON_SCHEDULES = [
@@ -164,6 +164,7 @@ function DaySelector({
   dayOfWeek: string;
   onPartChange: (part: TimeUnit, value: string) => void;
 }) {
+  const t = useTrans();
   return (
     <Box>
       <Text size="sm" fw={500}>
@@ -185,7 +186,7 @@ function DaySelector({
         <Group>
           {DAYS_OF_WEEK.map((day) => (
             <Chip key={day.value} value={day.value}>
-              {day.label}
+              {t(day.label)}
             </Chip>
           ))}
         </Group>
@@ -202,7 +203,7 @@ function MonthSelector({
   month: string;
   onPartChange: (part: TimeUnit, value: string) => void;
 }) {
-  const { _ } = useLingui();
+  const t = useTrans();
 
   return (
     <Box>
@@ -213,7 +214,10 @@ function MonthSelector({
         <Trans>Select specific months or all</Trans>
       </Text>
       <NativeSelect
-        data={[{ value: '*', label: _(msg`Every month`) }, ...MONTHS]}
+        data={[
+          { value: '*', label: t(msg`Every month`) },
+          ...MONTHS.map((e) => ({ value: e.value, label: t(e.label) })),
+        ]}
         value={month}
         onChange={(e) => onPartChange('month', e.currentTarget.value)}
       />

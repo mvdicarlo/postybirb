@@ -24,7 +24,7 @@ async function testApiKey(
     const data = await response.json();
     return data.status === true;
   } catch (error) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings
+    // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
     console.error('Error testing API key:', error);
     return false;
   }

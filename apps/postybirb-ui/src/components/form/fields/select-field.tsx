@@ -34,7 +34,7 @@ function getSelectOptions(
     return allOptions[fileType];
   }
 
-  // eslint-disable-next-line lingui/no-unlocalized-strings
+  // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
   console.warn('No discriminator found for select options');
   return [];
 }

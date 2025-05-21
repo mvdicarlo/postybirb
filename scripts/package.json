@@ -3,6 +3,5 @@
   "version": "1.0.0",
   "main": "add-website.js",
   "license": "ISC",
-  "description": "",
   "type": "module"
 }
