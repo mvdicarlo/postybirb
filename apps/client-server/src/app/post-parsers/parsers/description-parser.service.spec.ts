@@ -88,7 +88,7 @@ describe('DescriptionParserService', () => {
   });
 
   function createWebsiteOptions(
-    description: Description | undefined
+    description: Description | undefined,
   ): IWebsiteOptions {
     return {
       data: {
@@ -124,8 +124,8 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new PlaintextBaseWebsiteOptions(websiteOptions.data),
-      [],
-      ''
+      '',
+      '',
     );
     expect(description).toMatchInlineSnapshot(`
       "Hello, World!
@@ -149,11 +149,11 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new BaseWebsiteOptions(websiteOptions.data),
-      [],
-      ''
+      '',
+      '',
     );
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`
+      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
     );
   });
 
@@ -178,8 +178,8 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new MarkdownBaseWebsiteOptions(websiteOptions.data),
-      [],
-      ''
+      '',
+      '',
     );
     expect(description).toMatchInlineSnapshot(`
       "**Hello,** World!  
@@ -205,8 +205,8 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new NoneBaseWebsiteOptions(websiteOptions.data),
-      [],
-      ''
+      '',
+      '',
     );
     expect(description).toEqual(undefined);
   });
@@ -234,12 +234,12 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new BaseWebsiteOptions(websiteOptions.data),
-      [],
-      ''
+      '',
+      '',
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div><div></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>"`
+      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div><div></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>"`,
     );
   });
 
@@ -266,12 +266,12 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new BaseWebsiteOptions(websiteOptions.data),
-      [],
-      ''
+      '',
+      '',
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`
+      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
     );
   });
 
@@ -379,7 +379,7 @@ describe('DescriptionParserService', () => {
     ];
 
     const merged = service.mergeBlocks(
-      unmerged as unknown as Array<IDescriptionBlockNode>
+      unmerged as unknown as Array<IDescriptionBlockNode>,
     );
     expect(merged).toEqual(expected);
   });

@@ -28,6 +28,7 @@ export * from './submission/submission-metadata.type';
 export * from './submission/submission-schedule-info.interface';
 export * from './submission/submission.interface';
 export * from './submission/validation-result.type';
+export * from './submission/validator.class';
 export * from './submission/website-form-fields.interface';
 export * from './tag/default-tag-value';
 export * from './tag/tag-converter.interface';
@@ -48,4 +49,3 @@ export * from './website/website-data.interface';
 export * from './website/website-info.interface';
 export * from './website/website-login-type';
 export * from './website/website.type';
-

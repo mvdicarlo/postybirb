@@ -233,7 +233,7 @@ export async function validateFileSize({
         field: 'files',
         values: {
           maxFileSize,
-          fileSize: 0,
+          fileSize: file.size,
           fileName: file.fileName,
           fileId: file.id,
         },

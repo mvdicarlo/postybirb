@@ -1,10 +1,11 @@
+// @ts-check
+// @ts-expect-error No types for this import
 const { transform: _, ...nxPreset } = require('@nx/jest/preset').default;
-
 const { join } = require('path');
-
 const basePath = __dirname.split(/(app|lib)/)[0];
 
-module.exports = {
+/** @type {import('jest').Config} */
+const config = {
   ...nxPreset,
   setupFiles: [join(basePath, 'jest.setup.ts')],
   silent: true,
@@ -16,9 +17,7 @@ module.exports = {
       {
         jsc: {
           // https://github.com/swc-project/swc/discussions/5151#discussioncomment-3149154
-          experimental: {
-            plugins: [['swc_mut_cjs_exports', {}]],
-          },
+          experimental: { plugins: [['swc_mut_cjs_exports', {}]] },
           loose: true,
           target: 'es2020',
           parser: {
@@ -37,3 +36,5 @@ module.exports = {
     ],
   },
 };
+
+module.exports = config;

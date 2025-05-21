@@ -2,8 +2,10 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   DynamicObject,
   ILoginState,
+  IWebsiteFormFields,
   LoginState,
   SubmissionType,
+  SubmissionValidator,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
@@ -125,6 +127,13 @@ export abstract class Website<D extends DynamicObject> {
     }
 
     throw new Error(`Unsupported submission type: ${type}`);
+  }
+
+  /**
+   * Creates new validator to be used in onValidateFileSubmission or onValidateMessageSubmission
+   */
+  protected createValidator<T extends IWebsiteFormFields = never>() {
+    return new SubmissionValidator<T>();
   }
 
   constructor(userAccount: Account) {

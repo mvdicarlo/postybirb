@@ -1,4 +1,5 @@
 import { CustomLoginComponentProvider } from '../models/custom-login-component-provider';
+import BlueskyLoginView from './bluesky/bluesky-login-view';
 import DiscordLoginView from './discord/discord-login-view';
 import TelegramLoginView from './telegram/telegram-login-view';
 
@@ -9,6 +10,7 @@ const CustomLoginComponents: Record<
 > = Object.freeze({
   Discord: DiscordLoginView,
   Telegram: TelegramLoginView,
+  Bluesky: BlueskyLoginView,
 });
 
 export function getCustomLoginComponent(
