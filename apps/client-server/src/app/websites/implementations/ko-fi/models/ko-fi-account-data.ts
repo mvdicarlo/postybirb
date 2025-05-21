@@ -1,9 +1,6 @@
-export interface KoFiAlbum {
-  label: string;
-  value: string;
-}
+import { SelectOption } from '@postybirb/form-builder';
 
 export interface KoFiAccountData {
   id?: string;
-  galleryFolders?: KoFiAlbum[];
+  folders?: SelectOption[];
 }

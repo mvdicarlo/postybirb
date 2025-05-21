@@ -3,28 +3,22 @@ import {
   RatingField,
   SelectField,
 } from '@postybirb/form-builder';
-import {
-  DescriptionValue,
-  SubmissionRating,
-  TagValue,
-} from '@postybirb/types';
+import { SubmissionRating } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { KoFiAccountData } from './ko-fi-account-data';
 
 export class KoFiFileSubmission extends BaseWebsiteOptions {
   @RatingField({
-    options: [
-      { value: SubmissionRating.GENERAL, label: 'General' },
-    ],
+    options: [{ value: SubmissionRating.GENERAL, label: 'General' }],
   })
   rating: SubmissionRating;
 
   @SelectField<KoFiAccountData>({
-    label: 'album',
+    label: 'folder',
     options: [],
     derive: [
       {
-        key: 'galleryFolders',
+        key: 'folders',
         populate: 'options',
       },
     ],
@@ -33,18 +27,19 @@ export class KoFiFileSubmission extends BaseWebsiteOptions {
 
   @SelectField({
     label: 'audience',
-    defaultValue: 'public',
     options: [
       { value: 'public', label: 'Public' },
       { value: 'supporter', label: 'All Supporters (One-off & Monthly)' },
-      { value: 'recurringSupporter', label: 'All Monthly Supporters (Members)' },
+      {
+        value: 'recurringSupporter',
+        label: 'All Monthly Supporters (Members)',
+      },
     ],
   })
-  audience: string = 'public';
+  audience = 'public';
 
   @BooleanField({
     label: 'hiRes',
-    defaultValue: false,
   })
-  hiRes: boolean = false;
+  hiRes = false;
 }
