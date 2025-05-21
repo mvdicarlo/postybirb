@@ -10,7 +10,6 @@ import {
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
-import FileSize from '../../../utils/filesize.util';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -29,9 +28,6 @@ import { KoFiFileSubmission } from './models/ko-fi-file-submission';
 @SupportsFiles({
   fileBatchSize: 10,
   acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
-  acceptedFileSizes: {
-    '*': FileSize.mbToBytes(10),
-  },
 })
 export default class KoFi
   extends Website<KoFiAccountData>
