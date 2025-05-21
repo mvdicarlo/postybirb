@@ -30,7 +30,6 @@ import {
   SubmissionValidator,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
-import FormData from 'form-data';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -81,7 +80,7 @@ export default class Bluesky
     },
   };
 
-  protected BASE_URL = 'https://bsky.com/';
+  protected BASE_URL = 'https://bsky.app/';
 
   readonly MAX_CHARS = 300;
 
@@ -91,28 +90,14 @@ export default class Bluesky
       password: true,
     };
 
-  private makeAgent(): AtpAgent {
-    // HACK: The atproto library makes a half-hearted attempt at supporting Node
-    // by letting you specify a fetch handler, but then uses Headers and
-    // FormData unconditionally anyway, with no way to change that behavior.
-    // Patching them into the global namespace is ugly, but it works.
-    globalThis.FormData =
-      FormData as unknown as (typeof globalThis)['FormData'];
-    globalThis.Headers = Headers as unknown as (typeof globalThis)['Headers'];
-    globalThis.Request = Request as unknown as (typeof globalThis)['Request'];
-    globalThis.Response =
-      Response as unknown as (typeof globalThis)['Response'];
-
-    return new AtpAgent({
-      service: 'https://bsky.social',
-      fetch: fetch as unknown as Window['fetch'],
-    });
+  private createAgent(): AtpAgent {
+    return new AtpAgent({ service: 'https://bsky.social' });
   }
 
   public async onLogin(): Promise<ILoginState> {
     const { username, password } = this.websiteDataStore.getData();
 
-    const agent = this.makeAgent();
+    const agent = this.createAgent();
     return agent
       .login({ identifier: username, password })
       .then((res) => {
@@ -133,8 +118,8 @@ export default class Bluesky
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     return {
       // Yes they are this lame: https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
-      // height: 2000,
-      // width: 2000,
+      height: 2000,
+      width: 2000,
     };
   }
 
@@ -146,7 +131,7 @@ export default class Bluesky
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const agent = this.makeAgent();
+    const agent = this.createAgent();
     const { username, password } = this.websiteDataStore.getData();
 
     await agent.login({ identifier: username, password });
@@ -166,7 +151,7 @@ export default class Bluesky
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const agent = this.makeAgent();
+    const agent = this.createAgent();
     const { username, password } = this.websiteDataStore.getData();
 
     await agent.login({ identifier: username, password });
@@ -217,10 +202,13 @@ export default class Bluesky
     if (postResult && postResult.uri) {
       // Generate a friendly URL
       const { handle } = profile.data;
-      const server = 'bsky.app'; // Can't use the agent sadly, but this might change later: agent.service.hostname;
+
+      // Can't use the agent because it does not allows going to the bsky.social
+      // urls in browser, but this might change later: agent.serviceUrl.hostname;
+      const hostname = 'bsky.app';
       const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
 
-      const friendlyUrl = `https://${server}/profile/${handle}/post/${postId}`;
+      const friendlyUrl = `https://${hostname}/profile/${handle}/post/${postId}`;
 
       // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
       if (postData.options.threadgate) {
@@ -327,7 +315,7 @@ export default class Bluesky
     const { description } = postData.options;
 
     const rt = new RichText({ text: description });
-    const agent = this.makeAgent();
+    const agent = this.createAgent();
     rt.detectFacets(agent);
 
     if (rt.graphemeLength > this.MAX_CHARS) {

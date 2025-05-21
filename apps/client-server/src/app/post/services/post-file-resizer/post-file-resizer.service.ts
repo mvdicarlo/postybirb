@@ -43,6 +43,8 @@ export class PostFileResizerService {
   private async process(request: ResizeRequest): Promise<PostingFile> {
     const { resize } = request;
     const { file } = request;
+    this.logger.withMetadata({ resize }).info('Resizing image...');
+
     if (!file.file) {
       throw new Error('File buffer is missing');
     }
@@ -58,9 +60,7 @@ export class PostFileResizerService {
     file: ISubmissionFile,
     resize?: ImageResizeProps,
   ): Promise<IFileBuffer> {
-    if (!resize) {
-      return file.file;
-    }
+    if (!resize) return file.file;
 
     let sharpInstance = ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
@@ -147,6 +147,7 @@ export class PostFileResizerService {
 
   private async resizeImage(instance: Sharp, width: number, height: number) {
     const metadata = await instance.metadata();
+    this.logger.withMetadata({ width, height, metadata }).info('Resizing');
     if (metadata.width > width || metadata.height > height) {
       return ImageUtil.load(
         await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
@@ -182,19 +183,15 @@ export class PostFileResizerService {
     while (await this.isFileTooLarge(s, maxBytes)) {
       counter += 1;
       const resizePercent = counter * 0.05;
-      if (resizePercent >= 1) {
-        break;
-      }
+      if (resizePercent >= 1) break;
 
       s = await this.resizeImage(
         instance, // scale against original only
-        metadata.width * resizePercent,
-        metadata.height * resizePercent,
+        Math.round(metadata.width * resizePercent),
+        Math.round(metadata.height * resizePercent),
       );
 
-      if (!(await this.isFileTooLarge(s, maxBytes))) {
-        return s;
-      }
+      if (!(await this.isFileTooLarge(s, maxBytes))) return s;
     }
 
     if (await this.isFileTooLarge(s, maxBytes)) {
