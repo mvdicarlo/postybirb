@@ -182,8 +182,8 @@ export class PostFileResizerService {
     let counter = 0;
     while (await this.isFileTooLarge(s, maxBytes)) {
       counter += 1;
-      const resizePercent = counter * 0.05;
-      if (resizePercent >= 1) break;
+      const resizePercent = 1 - counter * 0.05;
+      if (resizePercent <= 0.1) break;
 
       s = await this.resizeImage(
         instance, // scale against original only
