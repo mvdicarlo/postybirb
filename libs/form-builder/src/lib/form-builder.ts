@@ -26,7 +26,7 @@ export function formBuilder(
   for (const value of Object.values(metadata)) {
     if (value.defaultFrom) value.defaultValue = data[value.defaultFrom];
     value.derive?.forEach((d) => {
-      value[d.populate] = data[d.key];
+      (value as PrimitiveRecord)[d.populate] = data[d.key];
     });
   }
 
@@ -35,4 +35,3 @@ export function formBuilder(
 
 export * from './decorators';
 export * from './types';
-

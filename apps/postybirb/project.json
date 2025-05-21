@@ -62,6 +62,12 @@
       "options": {
         "jestConfig": "apps/postybirb/jest.config.ts"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
+      }
     }
   },
   "tags": []

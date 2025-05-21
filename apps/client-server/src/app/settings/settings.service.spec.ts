@@ -33,6 +33,13 @@ describe('SettingsService', () => {
 
     const updateDto = new UpdateSettingsDto();
     updateDto.settings = {
+      desktopNotifications: {
+        enabled: true,
+        showOnFileWatcherError: true,
+        showOnFileWatcherSuccess: true,
+        showOnPostError: true,
+        showOnPostSuccess: true,
+      },
       hiddenWebsites: ['test'],
       language: 'en',
       allowAd: true,

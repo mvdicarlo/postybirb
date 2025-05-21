@@ -30,6 +30,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     isLoading,
     isFetching,
   } = useQuery([], () =>
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fileSubmissionApi.getAltText(file.altFileId!).then((res) => res.body),
   );
   const theme = useMantineColorScheme();
@@ -44,6 +45,7 @@ export function FileTextAlt(props: FileTextFileAltProps) {
     debounce(async () => {
       const blocks = editor.document;
       const html = await editor.blocksToHTMLLossy(blocks);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       fileSubmissionApi.updateAltText(file.altFileId!, html);
     }, 500),
     [editor],
