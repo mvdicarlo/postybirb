@@ -150,7 +150,7 @@ export interface ValidationMessages {
 
   'validation.file.bluesky.unsupported-combination-of-files': object;
 
-  'validation.file.bluesky.gif-convertion': object;
+  'validation.file.bluesky.gif-conversion': object;
 
   'validation.file.bluesky.invalid-reply-url': object;
 

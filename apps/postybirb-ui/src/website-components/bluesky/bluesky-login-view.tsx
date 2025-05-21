@@ -1,9 +1,10 @@
 import { Trans } from '@lingui/macro';
 import { Box, Button, Stack, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { BlueskyAccountData } from '@postybirb/types';
-import { useState } from 'react';
-import accountApi from '../../api/account.api';
+import { BlueskyAccountData, BlueskyOAuthRoutes } from '@postybirb/types';
+import React, { useState } from 'react';
+import websitesApi from '../../api/websites.api';
+import { ExternalLink } from '../../components/external-link/external-link';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
 
@@ -18,23 +19,51 @@ export default function BlueskyLoginView(
   const [password, setPassword] = useState(data?.password ?? '');
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
 
+  const usernameValidationErrors: React.ReactNode[] = [];
+  if (username.startsWith('@')) {
+    usernameValidationErrors.push(
+      <Trans comment="Bluesky login form">
+        You don't need to input the @. Unless your username{' '}
+        <strong>really</strong> contains it
+      </Trans>,
+    );
+  }
+  if (username && !username.includes('.')) {
+    usernameValidationErrors.push(
+      <Trans comment="Bluesky login form">
+        Be sure that the username is in the format handle.bsky.social. Or if you
+        are using custom domain, make sure to include full username, e.g.
+        domain.ext, handle.domain.ext
+      </Trans>,
+    );
+  }
+
   return (
     <form
       id={formId}
       onSubmit={(event) => {
         event.preventDefault();
         setSubmitting(true);
-        accountApi
-          .setWebsiteData<BlueskyAccountData>({
-            id,
-            data: { username, password, folders: [] },
+        websitesApi
+          .performOAuthStep<BlueskyOAuthRoutes>(id, 'login', {
+            username,
+            password,
           })
-          .then(() => {
-            notifications.show({
-              title: 'Account data updated.',
-              message: 'Account data updated.',
-              color: 'success',
-            });
+          .then(({ result }) => {
+            if (result) {
+              notifications.show({
+                title: 'Login success.',
+                message: 'Login success.',
+                color: 'green',
+              });
+              setPassword('');
+            } else {
+              notifications.show({
+                title: 'Login failed.',
+                message: 'Check that handle and password are valid.',
+                color: 'red',
+              });
+            }
           })
           .catch(({ error }: { error: HttpErrorResponse }) => {
             notifications.show({
@@ -63,21 +92,9 @@ export default function BlueskyLoginView(
           minLength={1}
           defaultValue={username}
           error={
-            <>
-              {username.startsWith('@') && (
-                <Trans comment="Bluesky login form">
-                  You don't need to input the @. Unless your username{' '}
-                  <strong>really</strong> contains it
-                </Trans>
-              )}
-              {username && !username.includes('.') && (
-                <Trans comment="Bluesky login form">
-                  Be sure that the username is in the format handle.bsky.social.
-                  Or if you are using custom domain, make sure to include full
-                  username, e.g. domain.ext, handle.domain.ext
-                </Trans>
-              )}
-            </>
+            usernameValidationErrors.length
+              ? usernameValidationErrors
+              : undefined
           }
           onBlur={(event) => {
             setUsername(event.currentTarget.value.trim());
@@ -89,7 +106,11 @@ export default function BlueskyLoginView(
           description={
             <Trans comment="Bluesky login form">
               An <strong>app</strong> password - you can get one of these in
-              Settings
+              <span>
+                <ExternalLink href="https://bsky.app/settings/app-passwords">
+                  Settings
+                </ExternalLink>
+              </span>
             </Trans>
           }
           required

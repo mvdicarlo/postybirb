@@ -1,9 +1,16 @@
 import {
   DescriptionField,
   SelectField,
+  TagField,
   TextField,
 } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue } from '@postybirb/types';
+import {
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  Tag,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class BlueskyFileSubmission extends BaseWebsiteOptions {
@@ -12,6 +19,21 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
     maxDescriptionLength: Infinity, // Custom lenght calculation is handled by validation logic
   })
   description: DescriptionValue;
+
+  @TagField({
+    col: 1,
+    row: 1,
+    spaceReplacer: '_',
+  })
+  tags: TagValue = DefaultTagValue();
+
+  override processTag(tag: string) {
+    return `#${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+  }
+
+  override joinTags(tags: Tag[]): string {
+    return tags.join(' ');
+  }
 
   @SelectField({
     label: 'rating',
@@ -27,6 +49,15 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @TextField({ label: 'replyToUrl' })
   replyToUrl?: string;
 
-  @TextField({ label: 'threadgate' })
-  threadgate?: string;
+  @SelectField({
+    label: 'threadgate',
+    options: [
+      { value: '', label: 'Everybody' },
+      { value: 'nobody', label: 'Nobody' },
+      { value: 'mention', label: 'Mentioned Users' },
+      { value: 'following', label: 'Followed Users' },
+      { value: 'mention,following', label: 'Mentioned & Followed Users' },
+    ],
+  })
+  threadgate?: '' | 'nobody' | 'mention' | 'following' | 'mention,following';
 }

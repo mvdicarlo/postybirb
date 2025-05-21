@@ -17,10 +17,12 @@ import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
   BlueskyAccountData,
+  BlueskyOAuthRoutes,
   FileType,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  OAuthRouteHandlers,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -29,7 +31,6 @@ import {
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import FormData from 'form-data';
-import fetch, { Headers, Request, RequestInit, Response } from 'node-fetch';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -39,17 +40,14 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
-function getRichTextLength(text: string): number {
-  return new RichText({ text }).graphemeLength;
-}
-
 @WebsiteMetadata({
   name: 'bluesky',
-  displayName: 'Bluesky',
+  displayName: 'BlueSky',
 })
 @CustomLoginFlow()
 @SupportsUsernameShortcut({
@@ -72,15 +70,23 @@ export default class Bluesky
   extends Website<BlueskyAccountData>
   implements
     FileWebsite<BlueskyFileSubmission>,
-    MessageWebsite<BlueskyMessageSubmission>
+    MessageWebsite<BlueskyMessageSubmission>,
+    OAuthWebsite<BlueskyOAuthRoutes>
 {
+  onAuthRoute: OAuthRouteHandlers<BlueskyOAuthRoutes> = {
+    login: async (request) => {
+      await this.setWebsiteData(request);
+      const result = await this.onLogin();
+      return { result: result.isLoggedIn };
+    },
+  };
+
   protected BASE_URL = 'https://bsky.com/';
 
   readonly MAX_CHARS = 300;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<BlueskyAccountData> =
     {
-      folders: true,
       username: true,
       password: true,
     };
@@ -110,7 +116,7 @@ export default class Bluesky
     return agent
       .login({ identifier: username, password })
       .then((res) => {
-        if (res.success) return this.loginState.logout();
+        if (!res.success) return this.loginState.logout();
 
         return this.loginState.setLogin(true, res.data.handle);
       })
@@ -127,8 +133,8 @@ export default class Bluesky
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
     return {
       // Yes they are this lame: https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
-      height: 2000,
-      width: 2000,
+      // height: 2000,
+      // width: 2000,
     };
   }
 
@@ -197,7 +203,7 @@ export default class Bluesky
       facets: rt.facets,
       embed,
       labels,
-      reply,
+      ...(reply ? { reply } : {}),
     });
     return postResult;
   }
@@ -267,7 +273,7 @@ export default class Bluesky
     }
 
     if (gifs > 0) {
-      validator.warning('validation.file.bluesky.gif-convertion', {});
+      validator.warning('validation.file.bluesky.gif-conversion', {});
     }
 
     return validator.result;
@@ -427,7 +433,7 @@ export default class Bluesky
   private createThreadgate(
     agent: AtpAgent,
     postUri: string,
-    fromPostThreadGate: string,
+    fromPostThreadGate: NonNullable<BlueskyFileSubmission['threadgate']>,
   ) {
     const allow: (
       | $Typed<AppBskyFeedThreadgate.MentionRule>
