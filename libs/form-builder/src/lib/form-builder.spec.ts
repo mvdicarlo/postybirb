@@ -148,20 +148,22 @@ describe('formBuilder', () => {
     }
 
     expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
-{
-  "field": {
-    "col": 0,
-    "defaultValue": {
-      "overrideDefault": false,
-      "tags": [],
-    },
-    "formField": "tag",
-    "label": "tags",
-    "row": 9007199254740991,
-    "type": "tag",
-  },
-}
-`);
+      {
+        "field": {
+          "col": 0,
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
+          },
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "row": 9007199254740991,
+          "spaceReplacer": "_",
+          "type": "tag",
+        },
+      }
+    `);
   });
 
   it('should support defaultFrom', () => {
