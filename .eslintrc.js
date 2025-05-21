@@ -40,6 +40,7 @@ const config = {
     'no-restricted-syntax': 'off',
     'class-methods-use-this': 'off',
 
+    'import/export': 'off',
     'import/no-cycle': 'off',
     'import/prefer-default-export': 'off',
 
