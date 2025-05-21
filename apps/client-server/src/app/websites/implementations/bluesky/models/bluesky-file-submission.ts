@@ -8,7 +8,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
+    descriptionType: DescriptionType.PLAINTEXT,
   })
   description: DescriptionValue;
 

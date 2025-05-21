@@ -1,5 +1,6 @@
 import {
   $Typed,
+  AppBskyActorGetProfile,
   AppBskyEmbedImages,
   AppBskyEmbedVideo,
   AppBskyFeedThreadgate,
@@ -14,7 +15,6 @@ import {
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
-import { Http } from '@postybirb/http';
 import {
   BlueskyAccountData,
   FileType,
@@ -31,6 +31,7 @@ import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
+import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
@@ -48,6 +49,10 @@ function getRichTextLength(text: string): number {
   displayName: 'Bluesky',
 })
 @CustomLoginFlow()
+@SupportsUsernameShortcut({
+  id: 'bsky',
+  url: 'https://bsly.app/profile/$1',
+})
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/png',
@@ -67,6 +72,8 @@ export default class Bluesky
     MessageWebsite<BlueskyMessageSubmission>
 {
   protected BASE_URL = 'https://bsky.com/';
+
+  readonly MAX_CHARS = 300;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<BlueskyAccountData> =
     {
@@ -98,10 +105,7 @@ export default class Bluesky
 
     const agent = this.makeAgent();
     return agent
-      .login({
-        identifier: username,
-        password,
-      })
+      .login({ identifier: username, password })
       .then((res) => {
         if (res.success) return this.loginState.logout();
 
@@ -118,7 +122,11 @@ export default class Bluesky
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return undefined;
+    return {
+      // Yes they are this lame: https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
+      height: 2000,
+      width: 2000,
+    };
   }
 
   async onPostFileSubmission(
@@ -201,30 +209,88 @@ export default class Bluesky
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
+    const agent = this.makeAgent();
+    const { username, password } = this.websiteDataStore.getData();
 
-    const formData = {
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
+    await agent.login({ identifier: username, password });
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
+    const profile = await agent.getProfile({ actor: agent.session.did });
+    const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
+
+    let labelsRecord: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
+    if (postData.options.label_rating) {
+      labelsRecord = {
+        values: [{ val: postData.options.label_rating }],
+        $type: 'com.atproto.label.defs#selfLabels',
+      };
+    }
+
+    const rt = new RichText({ text: postData.options.description });
+    await rt.detectFacets(agent);
+
+    const postResult = await agent.post({
+      text: rt.text,
+      facets: rt.facets,
+      labels: labelsRecord,
+      ...(reply ? { reply } : {}),
     });
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    if (postResult && postResult.uri) {
+      // Generate a friendly URL
+      const { handle } = profile.data;
+      const server = 'bsky.app'; // Can't use the agent sadly, but this might change later: agent.service.hostname;
+      const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
+
+      const friendlyUrl = `https://${server}/profile/${handle}/post/${postId}`;
+
+      // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
+      if (postData.options.threadgate) {
+        this.createThreadgate(
+          agent,
+          postResult.uri,
+          postData.options.threadgate,
+        );
+      }
+
+      return PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
     }
 
     return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({
-        body: result.body,
-        statusCode: result.statusCode,
-      })
-      .withException(new Error('Failed to post'));
+      .withAdditionalInfo({ postResult })
+      .withException(new Error('Unknown error occured'));
+
+    return this.createPostResponse(postResult);
+  }
+
+  private createPostResponse(
+    postResult: { uri: string },
+    profile: AppBskyActorGetProfile.Response,
+    postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
+    agent: AtpAgent,
+  ) {
+    if (postResult && postResult.uri) {
+      // Generate a friendly URL
+      const { handle } = profile.data;
+      const server = 'bsky.app'; // Can't use the agent sadly, but this might change later: agent.service.hostname;
+      const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
+
+      const friendlyUrl = `https://${server}/profile/${handle}/post/${postId}`;
+
+      // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
+      if (postData.options.threadgate) {
+        this.createThreadgate(
+          agent,
+          postResult.uri,
+          postData.options.threadgate,
+        );
+      }
+
+      return PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
+    }
+
+    return PostResponse.fromWebsite(this)
+      .withAdditionalInfo({ postResult })
+      .withException(new Error('Unknown error occured'));
   }
 
   async onValidateMessageSubmission(
