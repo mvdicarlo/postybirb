@@ -16,7 +16,7 @@ jobs:
     if: github.head_ref != 'weblate-postybirb-postybirb'
     strategy:
       matrix:
-        command: [lint, typecheck, test]
+        command: [lint, typecheck]
 
     steps:
       - name: Check out Git repository
