@@ -47,6 +47,12 @@
       "options": {
         "jestConfig": "apps/client-server/jest.config.ts"
       }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
+      }
     }
   },
   "tags": []

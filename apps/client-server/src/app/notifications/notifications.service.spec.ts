@@ -89,6 +89,7 @@ describe('NotificationsService', () => {
   });
 
   it('should initialize without websocket and not throw error', () => {
+    // @ts-expect-error Test case
     const serviceWithoutWebsocket = new NotificationsService();
     expect(serviceWithoutWebsocket).toBeDefined();
   });
