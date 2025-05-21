@@ -145,15 +145,8 @@ export class PostFileResizerService {
     };
   }
 
-  private async resizeImage(
-    instance: Sharp,
-    rawWidth: number,
-    rawHeight: number,
-  ) {
+  private async resizeImage(instance: Sharp, width: number, height: number) {
     const metadata = await instance.metadata();
-    const width = Math.round(rawWidth);
-    const height = Math.round(rawHeight);
-
     if (metadata.width > width || metadata.height > height) {
       return ImageUtil.load(
         await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
