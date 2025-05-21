@@ -66,7 +66,6 @@
     "@nestjs/websockets": "10.0.2",
     "@tabler/icons-react": "^3.19.0",
     "@tiptap/pm": "^2.7.0",
-    "@tiptap/pm": "^2.7.0",
     "@types/sortablejs": "^1.15.8",
     "async-mutex": "^0.5.0",
     "better-sqlite3": "^11.8.0",
@@ -187,7 +186,6 @@
     "electron": "^32",
     "electron-builder": "^24.13.3",
     "electron-builder-squirrel-windows": "24.13.3",
-    "electron-builder-squirrel-windows": "24.13.3",
     "eslint": "8.48.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.1.0",
@@ -225,10 +223,6 @@
     "webpack": "^5.89.0",
     "webpack-node-externals": "^3.0.0"
   },
-  "resolutions": {
-    "glob": "9"
-  },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
   "resolutions": {
     "glob": "9"
   },
