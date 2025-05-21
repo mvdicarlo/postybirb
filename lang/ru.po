@@ -39,6 +39,10 @@ msgstr ""
 msgid "Account Name"
 msgstr "Названия аккаунта"
 
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Account Options"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 msgid "Accounts"
@@ -969,6 +973,10 @@ msgstr ""
 msgid "No tag groups match your search or filters"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "No templates found"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "No thumbnail"
 msgstr ""
@@ -1042,6 +1050,14 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx
 msgid "Open PostyBirb on computer startup"
 msgstr "Открыть PostyBirb при запуске компьютера"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "options"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Options"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Overwrite overlapping website options only. This will keep any website options that already exist and only overwrite ones specified in the multi-update form."
@@ -1148,6 +1164,14 @@ msgstr "Заменить описание"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Replace file"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Replace the current description with the selected template's description"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Replace the current title with the selected template's title"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -1324,12 +1348,20 @@ msgstr ""
 msgid "Select specific months or all"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Select templates or submissions to import"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Select the days when this should run"
 msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Select which notifications to delete:"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Select which template to use for each account"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
@@ -1613,7 +1645,6 @@ msgid "Template name has been updated"
 msgstr "Название шаблона обновлено"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 msgid "Templates"
@@ -1827,6 +1858,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager.tsx
 msgid "Width"
 msgstr "Ширина"
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "You can select multiple items"
+msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgctxt "furtastic.api-key-help"
