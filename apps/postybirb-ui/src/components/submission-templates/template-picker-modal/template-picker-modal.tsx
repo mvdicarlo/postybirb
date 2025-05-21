@@ -1,17 +1,21 @@
 import { Trans, msg } from '@lingui/macro';
 import { useLingui } from '@lingui/react';
 import {
+  Box,
   Button,
   Checkbox,
   ComboboxItem,
   ComboboxItemGroup,
+  Divider,
   Fieldset,
   Group,
   Modal,
   MultiSelect,
-  ScrollArea,
+  ScrollArea, // Add import for ScrollArea
   Stack,
+  Text,
   Title,
+  Tooltip,
 } from '@mantine/core';
 import {
   AccountId,
@@ -21,6 +25,7 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
+import { IconInfoCircle } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { TransHook } from '../../../hooks/use-trans';
@@ -28,6 +33,7 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../../stores/submission-template.store';
 import { SubmissionStore } from '../../../stores/submission.store';
 import { useStore } from '../../../stores/use-store';
+import './template-picker-modal.css';
 
 type TemplatePickerModalProps = {
   submissionId?: SubmissionId;
@@ -123,6 +129,11 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
 
   const selectedGroups = groupWebsiteOptions(selectedTemplates, accounts, _);
 
+  const clearSelection = () => {
+    setSelected([]);
+    setSelectedWebsiteOptions(undefined);
+  };
+
   const groupedFormRows = selectedWebsiteOptions
     ? Object.values(selectedGroups).map((group) => {
         // Uses group.account.id for null type to keep id uniqueness for radio values
@@ -149,19 +160,29 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
 
         return (
           <Fieldset
+            key={group.account.id}
             legend={
-              group.account.id === NULL_ACCOUNT_ID
-                ? _(msg`Default`)
-                : `${group.account.websiteInfo.websiteDisplayName} - ${group.account.name}`
+              <Group gap="xs" wrap="nowrap" align="center">
+                <Text fw={500} size="sm">
+                  {group.account.id === NULL_ACCOUNT_ID
+                    ? _(msg`Default`)
+                    : `${group.account.websiteInfo.websiteDisplayName} - ${group.account.name}`}
+                </Text>
+                <Text size="xs" c="dimmed" fs="italic">
+                  ({checkboxOptions.length - 1} {_(msg`options`)})
+                </Text>
+              </Group>
             }
+            className="template-picker-fieldset"
           >
             <Checkbox.Group value={[currentSelection?.id ?? nullId]}>
               {checkboxOptions.map((o) => (
                 <Checkbox
-                  mt="4"
+                  mt="xs"
                   key={o.id}
                   value={o.id}
                   label={o.label}
+                  className="template-picker-checkbox"
                   onChange={() => {
                     const { option } = o;
                     setSelectedWebsiteOptions({
@@ -179,26 +200,74 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
 
   const overrideOptions = groupedFormRows ? (
     <>
-      <Checkbox
-        checked={overrideTitle}
-        label={<Trans context="import.override-title">Replace title</Trans>}
-        id="import-template-override-title"
-        onChange={() => {
-          setOverrideTitle(!overrideTitle);
-        }}
-      />
-      <Checkbox
-        checked={overrideDescription}
+      <Divider
         label={
-          <Trans context="import.override-description">
-            Replace description
-          </Trans>
+          <Text fw={500}>
+            <Trans>Options</Trans>
+          </Text>
         }
-        id="import-template-override-description"
-        onChange={() => {
-          setOverrideDescription(!overrideDescription);
-        }}
+        labelPosition="center"
+        mt="sm"
       />
+      <Group mt="xs">
+        <Checkbox
+          checked={overrideTitle}
+          label={
+            <Group gap={4} wrap="nowrap">
+              <Trans context="import.override-title">Replace title</Trans>
+              <Tooltip
+                label={
+                  <Trans>
+                    Replace the current title with the selected template's title
+                  </Trans>
+                }
+                position="top"
+                withArrow
+              >
+                <IconInfoCircle
+                  size="1em"
+                  style={{ opacity: 0.5 }}
+                  stroke={1.5}
+                />
+              </Tooltip>
+            </Group>
+          }
+          id="import-template-override-title"
+          onChange={() => {
+            setOverrideTitle(!overrideTitle);
+          }}
+        />
+        <Checkbox
+          checked={overrideDescription}
+          label={
+            <Group gap={4} wrap="nowrap">
+              <Trans context="import.override-description">
+                Replace description
+              </Trans>
+              <Tooltip
+                label={
+                  <Trans>
+                    Replace the current description with the selected template's
+                    description
+                  </Trans>
+                }
+                position="top"
+                withArrow
+              >
+                <IconInfoCircle
+                  size="1em"
+                  style={{ opacity: 0.5 }}
+                  stroke={1.5}
+                />
+              </Tooltip>
+            </Group>
+          }
+          id="import-template-override-description"
+          onChange={() => {
+            setOverrideDescription(!overrideDescription);
+          }}
+        />
+      </Group>
     </>
   ) : null;
 
@@ -211,13 +280,32 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
           <Trans context="template.picker-modal-header">Choose Templates</Trans>
         </Title>
       }
+      size="lg"
+      padding="md"
+      styles={{
+        body: {
+          display: 'grid',
+          // eslint-disable-next-line lingui/no-unlocalized-strings
+          gridTemplateRows: 'auto 1fr auto',
+          height: 'calc(90vh - 100px)',
+          gap: 'var(--mantine-spacing-md)',
+          paddingBottom: 'var(--mantine-spacing-md)',
+        },
+      }}
+      className="template-picker-modal"
     >
-      <Stack gap="xs">
+      {/* Header Section - Template Selection */}
+      <Box className="template-picker-header">
         <MultiSelect
           clearable
           required
-          label={<Trans>Templates</Trans>}
+          searchable
+          nothingFoundMessage={<Trans>No templates found</Trans>}
+          label={<Trans>Select templates or submissions to import</Trans>}
+          description={<Trans>You can select multiple items</Trans>}
           data={options}
+          style={{ width: '100%' }}
+          value={selected}
           onChange={(newOpts) => {
             setSelected(newOpts);
             // On first option pick
@@ -245,52 +333,75 @@ export default function TemplatePickerModal(props: TemplatePickerModalProps) {
             }
           }}
         />
-        <ScrollArea h={400} style={{ overflowY: 'auto' }}>
+      </Box>
+
+      {/* Middle Section - Scrollable Content */}
+      <Box className="template-picker-content">
+        {selected.length > 0 && (
+          <>
+            <Divider
+              label={
+                <Text fw={500}>
+                  <Trans>Account Options</Trans>
+                </Text>
+              }
+              labelPosition="center"
+              my="sm"
+            />
+            <Text size="sm" c="dimmed" mb="xs">
+              <Trans>Select which template to use for each account</Trans>
+            </Text>
+          </>
+        )}
+
+        <ScrollArea className="template-picker-scroll-area">
           <Stack gap="xs">
-            {overrideOptions}
             {groupedFormRows}
+            {overrideOptions}
           </Stack>
         </ScrollArea>
-        <Group justify="end">
-          <Button
-            variant="subtle"
-            c="var(--mantine-color-text)"
-            onClick={onClose}
-          >
-            <Trans>Cancel</Trans>
-          </Button>
-          <Button
-            disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
-            onClick={() => {
-              if (selectedWebsiteOptions) {
-                onApply(
-                  (
-                    Object.values(selectedWebsiteOptions).filter(
-                      (o) => o !== null,
-                    ) as WebsiteOptionsDto[]
-                  ).map((o: WebsiteOptionsDto) => {
-                    const option = { ...o };
-                    // Remove fields based on override options
-                    // Or remove if the fields are just empty
-                    if (
-                      !overrideDescription ||
-                      option.data.description?.description
-                    ) {
-                      delete option.data.description;
-                    }
-                    if (!overrideTitle || !option.data.title?.trim()) {
-                      delete option.data.title;
-                    }
-                    return option;
-                  }),
-                );
-              }
-            }}
-          >
-            <Trans>Apply</Trans>
-          </Button>
-        </Group>
-      </Stack>
+      </Box>
+
+      {/* Footer Section - Buttons */}
+      <Group justify="end" className="template-picker-footer">
+        <Button
+          variant="subtle"
+          c="var(--mantine-color-text)"
+          onClick={onClose}
+        >
+          <Trans>Cancel</Trans>
+        </Button>
+        <Button
+          disabled={Object.values(selectedWebsiteOptions ?? {}).length === 0}
+          onClick={() => {
+            if (selectedWebsiteOptions) {
+              onApply(
+                (
+                  Object.values(selectedWebsiteOptions).filter(
+                    (o) => o !== null,
+                  ) as WebsiteOptionsDto[]
+                ).map((o: WebsiteOptionsDto) => {
+                  const option = { ...o };
+                  // Remove fields based on override options
+                  // Or remove if the fields are just empty
+                  if (
+                    !overrideDescription ||
+                    option.data.description?.description
+                  ) {
+                    delete option.data.description;
+                  }
+                  if (!overrideTitle || !option.data.title?.trim()) {
+                    delete option.data.title;
+                  }
+                  return option;
+                }),
+              );
+            }
+          }}
+        >
+          <Trans>Apply</Trans>
+        </Button>
+      </Group>
     </Modal>
   );
 }

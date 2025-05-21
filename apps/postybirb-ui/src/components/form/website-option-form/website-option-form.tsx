@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Alert, Box, Flex, Stack } from '@mantine/core';
-import {
-  FieldAggregateType
-} from '@postybirb/form-builder';
+import { FieldAggregateType } from '@postybirb/form-builder';
 import {
   AccountId,
   ValidationMessage,

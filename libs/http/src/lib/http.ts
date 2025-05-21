@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Logger } from '@nestjs/common';
 import {
   BrowserWindow,
@@ -81,9 +82,11 @@ export class Http {
 
   private static createClientRequest(
     options: HttpOptions,
-    crOptions: ClientRequestConstructorOptions,
+    crOptions: ClientRequestConstructorOptions & { url: string },
   ): ClientRequest {
-    const clientRequestOptions: ClientRequestConstructorOptions = {
+    const clientRequestOptions: ClientRequestConstructorOptions & {
+      url: string;
+    } = {
       ...crOptions,
     };
 
@@ -249,11 +252,11 @@ export class Http {
           }
         }
 
-        resolve({
+        return resolve({
           statusCode,
           statusMessage,
           body: body as T,
-          responseUrl,
+          responseUrl: responseUrl as unknown as string,
         });
       });
 
@@ -261,6 +264,10 @@ export class Http {
         chunks.push(chunk);
       });
     });
+  }
+
+  static getUserAgent(appVersion: string): string {
+    return `PostyBirb/${appVersion}`;
   }
 
   /**
@@ -283,14 +290,11 @@ export class Http {
   /**
    * Creates a GET method request.
    *
-   * @static
-   * @param {string} url
-   * @param {HttpOptions} options
-   * @param {ClientRequestConstructorOptions} [crOptions]
-   * @return {*}  {Promise<HttpResponse<T>>}
-   * @memberof Http
+   * @param url
+   * @param options
+   * @param crOptions
    */
-  static get<T>(
+  static async get<T>(
     url: string,
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
@@ -299,7 +303,7 @@ export class Http {
       return Promise.reject(new Error('No internet connection.'));
     }
 
-    return new Promise((resolve, reject) => {
+    const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
       const req = Http.createClientRequest(options, {
         ...(crOptions ?? {}),
         url,
@@ -307,26 +311,22 @@ export class Http {
       Http.handleError(req, reject);
       Http.handleResponse(url, req, resolve, reject);
       req.end();
-    }).then((response: HttpResponse<T>) => {
-      const { body } = response;
-      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
-        console.log('Cloudflare detected. Attempting to bypass...');
-        return Http.performBrowserWindowGetRequest<T>(url, options, crOptions);
-      }
-
-      return response;
     });
+
+    const { body } = response;
+    if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
+      console.log('Cloudflare detected. Attempting to bypass...');
+      return Http.performBrowserWindowGetRequest<T>(url, options, crOptions);
+    }
+    return response;
   }
 
   /**
    * Creates a POST method request.
    *
-   * @static
-   * @param {string} url
-   * @param {PostOptions} options
-   * @param {ClientRequestConstructorOptions} crOptions
-   * @return {*}  {Promise<HttpResponse<T>>}
-   * @memberof Http
+   * @param url
+   * @param options
+   * @param crOptions
    */
   static async post<T>(
     url: string,
@@ -339,12 +339,9 @@ export class Http {
   /**
    * Creates a PATCH method request.
    *
-   * @static
-   * @param {string} url
-   * @param {PostOptions} options
-   * @param {ClientRequestConstructorOptions} crOptions
-   * @return {*}  {Promise<HttpResponse<T>>}
-   * @memberof Http
+   * @param url
+   * @param options
+   * @param crOptions
    */
   static patch<T>(
     url: string,
@@ -354,7 +351,7 @@ export class Http {
     return Http.postLike('patch', url, options, crOptions ?? {});
   }
 
-  private static postLike<T>(
+  private static async postLike<T>(
     method: 'post' | 'patch',
     url: string,
     options: PostOptions | BinaryPostOptions,
@@ -364,7 +361,7 @@ export class Http {
       return Promise.reject(new Error('No internet connection.'));
     }
 
-    return new Promise((resolve, reject) => {
+    const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
       const req = Http.createClientRequest(options, {
         ...(crOptions ?? {}),
         url,
@@ -377,15 +374,14 @@ export class Http {
       req.setHeader('Content-Type', contentType);
       req.write(buffer);
       req.end();
-    }).then((response: HttpResponse<T>) => {
-      const { body } = response;
-      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
-        console.log('Cloudflare detected. Attempting to bypass...');
-        return Http.performBrowserWindowPostRequest<T>(url, options, crOptions);
-      }
-
-      return response;
     });
+
+    const { body } = response;
+    if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
+      console.log('Cloudflare detected. Attempting to bypass...');
+      return Http.performBrowserWindowPostRequest<T>(url, options, crOptions);
+    }
+    return response;
   }
 
   private static async performBrowserWindowGetRequest<T>(
@@ -396,7 +392,9 @@ export class Http {
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
-        partition: getPartitionKey(options.partition),
+        partition: options.partition
+          ? getPartitionKey(options.partition)
+          : undefined,
       },
     });
 
@@ -427,7 +425,9 @@ export class Http {
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
-        partition: getPartitionKey(options.partition),
+        partition: options.partition
+          ? getPartitionKey(options.partition)
+          : undefined,
       },
     });
 

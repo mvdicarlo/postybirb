@@ -24,7 +24,7 @@ export async function validateSelectFieldMinSelected({
 
     const selected = options?.length ?? 0;
     if (selected < minSelected) {
-      result.warnings.push({
+      result.errors.push({
         id: 'validation.select-field.min-selected',
         field: fieldName,
         values: {

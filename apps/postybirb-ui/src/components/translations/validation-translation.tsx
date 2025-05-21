@@ -193,6 +193,8 @@ export const TranslationMessages: TranslationsMap = {
       </span>
     );
   },
+
+  'validation.field.required': () => <Trans>Required</Trans>,
 };
 
 export function ValidationTranslation({
