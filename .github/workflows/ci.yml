@@ -16,7 +16,8 @@ jobs:
     if: github.head_ref != 'weblate-postybirb-postybirb'
     strategy:
       matrix:
-        command: [lint, typecheck]
+        # Skip nx cache is needed because of https://github.com/nrwl/nx/issues/28487
+        command: [lint, typecheck, 'test --skip-nx-cache']
 
     steps:
       - name: Check out Git repository
@@ -50,3 +51,4 @@ jobs:
 
       - name: Run ${{ matrix.command }}
         run: yarn nx affected -t ${{ matrix.command }}
+        timeout-minutes: 30
