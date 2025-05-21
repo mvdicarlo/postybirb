@@ -20,6 +20,6 @@ export const DescriptionField = createFieldDecorator<
     label: 'description',
     formField: 'description',
     defaultValue: DefaultDescriptionValue(),
-    descriptionType: DescriptionType.HTML,
+    descriptionType: DescriptionType.HTML as DescriptionType, // otherwise aggregatefield type will treat it as html only,
   },
 });

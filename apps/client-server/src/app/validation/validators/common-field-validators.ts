@@ -57,6 +57,10 @@ export async function validateRequiredSelectField({
     // Only check select fields
     if (field.formField !== 'select') continue;
 
+    // Skip fields with min selected, they gets handled by selectFieldValidator
+    if ('minSelected' in field && typeof field.minSelected === 'number')
+      continue;
+
     const value = data.options[fieldName];
     const isEmpty = Array.isArray(value) ? value.length === 0 : !value;
 
@@ -149,35 +153,6 @@ export async function validateRequiredDescriptionField({
     const value = fields.description as unknown as DescriptionValue;
 
     if (!value || !value.description || value.description.length === 0) {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
-    }
-  }
-}
-
-/**
- * Validates that a required tag field has at least one tag.
- */
-export async function validateRequiredTagField({
-  result,
-  data,
-  mergedWebsiteOptions,
-}: ValidatorParams) {
-  const fields = mergedWebsiteOptions.getFormFields();
-
-  for (const [fieldName, field] of Object.entries(fields)) {
-    // Skip if field is not required or hidden
-    if (!field.required || field.hidden) continue;
-
-    // Only check tag fields
-    if (field.formField !== 'tag') continue;
-
-    const { tags } = fields.tags as unknown as TagValue;
-
-    if (!tags || tags.length === 0) {
       result.errors.push({
         id: 'validation.field.required',
         field: fieldName,

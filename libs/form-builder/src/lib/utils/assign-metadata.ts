@@ -47,7 +47,7 @@ export function createFieldDecorator<
    * Function used to finalize field decorator options
    */
   return function create<
-    Defaults extends
+    const Defaults extends
       | Partial<FieldType<FieldValue, TypeKey> & ExtraFields>
       | unknown,
   >(field: {
@@ -172,7 +172,7 @@ export function createFieldDecorator<
     }
 
     return decorator as typeof decorator & {
-      field: FieldType<FieldValue, TypeKey> & ExtraFields;
+      field: FieldType<FieldValue, TypeKey> & ExtraFields & Defaults;
     };
   };
 }

@@ -9,6 +9,6 @@ type ExtraOptions = {
 export const TextField = createFieldDecorator<string, ExtraOptions>('text')({
   defaults: {
     defaultValue: '',
-    formField: 'input',
+    formField: 'input' as 'input' | 'textarea', // otherwise aggregate field will treat formField as input only
   },
 });
