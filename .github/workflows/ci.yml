@@ -21,7 +21,7 @@ jobs:
           [
             'yarn nx affected -t lint',
             'yarn nx affected -t typecheck',
-            'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test --skip-nx-cache --verbose --output-style=stream',
+            'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test',
           ]
 
     steps:
