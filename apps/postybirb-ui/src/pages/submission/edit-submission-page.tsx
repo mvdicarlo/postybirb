@@ -143,6 +143,10 @@ function ApplyTemplateAction({ submission }: { submission: SubmissionDto }) {
 }
 
 function PostAction({ submission }: { submission: SubmissionDto }) {
+  if (submission.isTemplate || submission.isMultiSubmission) {
+    return null;
+  }
+
   if (submission.isQueued()) {
     return (
       <Button
