@@ -35,7 +35,7 @@ jobs:
       - name: Use eslint, jest and tsc cache
         uses: actions/cache@v4
         with:
-          # Out tsc needed because we use incremental in typecheck which uses files from tsc output
+          # out-tsc needed because we use incremental in typecheck which uses files from tsc output
           path: |
             .eslint
             .jest

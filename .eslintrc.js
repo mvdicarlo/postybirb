@@ -5,15 +5,20 @@ const config = {
   ignorePatterns: ['**/*'],
   extends: [
     'airbnb',
-    'airbnb/hooks',
     'airbnb-typescript',
     'plugin:jest/recommended',
-    'plugin:testing-library/react',
     'plugin:@nrwl/nx/typescript',
     'eslint-config-prettier',
   ],
-  plugins: ['@nrwl/nx', 'jest', 'testing-library'],
+  plugins: ['@nrwl/nx', 'jest'],
   parserOptions: { project: './tsconfig.base.json' },
+  overrides: [
+    {
+      files: ['*.tsx'],
+      plugins: ['testing-library'],
+      extends: ['plugin:testing-library/react', 'airbnb/hooks'],
+    },
+  ],
   rules: {
     '@nrwl/nx/enforce-module-boundaries': [
       'error',
