@@ -50,7 +50,7 @@ export type ValidationMessage<
   /**
    * Values to fill in the message.
    */
-  values: NoInfer<ValidationMessages[Id]>;
+  values: ValidationMessages[Id];
 };
 
 /**
