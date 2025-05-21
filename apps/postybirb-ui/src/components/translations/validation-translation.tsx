@@ -186,6 +186,25 @@ export const TranslationMessages: TranslationsMap = {
   },
 
   'validation.field.required': () => <Trans>Required</Trans>,
+
+  'validation.file.bluesky.unsupported-combination-of-files': () => (
+    <Trans>
+      Supports either a set of images, a single video, or a single GIF.
+    </Trans>
+  ),
+  'validation.file.bluesky.gif-convertion': () => (
+    <Trans>Bluesky automatically converts GIFs to videos.</Trans>
+  ),
+
+  'validation.file.bluesky.invalid-reply-url': () => (
+    <Trans>Invalid post URL to reply to.</Trans>
+  ),
+
+  'validation.file.bluesky.rating-matches-default': () => (
+    <Trans>
+      Make sure that the default rating matches Bluesky Label Rating.
+    </Trans>
+  ),
 };
 
 export function ValidationTranslation({

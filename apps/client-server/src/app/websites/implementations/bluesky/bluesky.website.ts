@@ -24,7 +24,10 @@ import {
   PostData,
   PostResponse,
   SimpleValidationResult,
+  SubmissionRating,
+  SubmissionValidator,
 } from '@postybirb/types';
+import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import FormData from 'form-data';
 import fetch, { Headers, Request, RequestInit, Response } from 'node-fetch';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -145,63 +148,10 @@ export default class Bluesky
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
-    const embeds = await this.uploadEmbeds(agent, files);
+    const embed = await this.uploadEmbeds(agent, files, cancellationToken);
+    const postResult = await this.post(postData, agent, embed, reply);
 
-    let labelsRecord: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
-    if (postData.options.label_rating) {
-      labelsRecord = {
-        values: [{ val: postData.options.label_rating }],
-        $type: 'com.atproto.label.defs#selfLabels',
-      };
-    }
-
-    const rt = new RichText({ text: postData.options.description });
-    await rt.detectFacets(agent);
-
-    const postResult = await agent.post({
-      text: rt.text,
-      facets: rt.facets,
-      embed: embeds,
-      labels: labelsRecord,
-      ...(reply ? { reply } : {}),
-    });
-
-    if (postResult && postResult.uri) {
-      // Generate a friendly URL
-      const { handle } = profile.data;
-      const server = 'bsky.app'; // Can't use the agent sadly, but this might change later: agent.service.hostname;
-      const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
-
-      const friendlyUrl = `https://${server}/profile/${handle}/post/${postId}`;
-
-      // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
-      if (postData.options.threadgate) {
-        this.createThreadgate(
-          agent,
-          postResult.uri,
-          postData.options.threadgate,
-        );
-      }
-
-      return PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
-    }
-
-    return PostResponse.fromWebsite(this)
-      .withException(new Error('Unknown error occured'))
-      .withAdditionalInfo(postResult);
-  }
-
-  async onValidateFileSubmission(
-    postData: PostData<BlueskyFileSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
-
-  createMessageModel(): BlueskyMessageSubmission {
-    return new BlueskyMessageSubmission();
+    return this.createPostResponse(postResult, profile, postData, agent);
   }
 
   async onPostMessageSubmission(
@@ -209,6 +159,7 @@ export default class Bluesky
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
+
     const agent = this.makeAgent();
     const { username, password } = this.websiteDataStore.getData();
 
@@ -216,10 +167,23 @@ export default class Bluesky
 
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
+    const postResult = await this.post(postData, agent, undefined, reply);
 
-    let labelsRecord: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
+    return this.createPostResponse(postResult, profile, postData, agent);
+  }
+
+  private async post(
+    postData: PostData<BlueskyFileSubmission>,
+    agent: AtpAgent,
+    embed:
+      | undefined
+      | $Typed<AppBskyEmbedImages.Main>
+      | $Typed<AppBskyEmbedVideo.Main>,
+    reply: ReplyRef,
+  ) {
+    let labels: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
     if (postData.options.label_rating) {
-      labelsRecord = {
+      labels = {
         values: [{ val: postData.options.label_rating }],
         $type: 'com.atproto.label.defs#selfLabels',
       };
@@ -231,35 +195,11 @@ export default class Bluesky
     const postResult = await agent.post({
       text: rt.text,
       facets: rt.facets,
-      labels: labelsRecord,
-      ...(reply ? { reply } : {}),
+      embed,
+      labels,
+      reply,
     });
-
-    if (postResult && postResult.uri) {
-      // Generate a friendly URL
-      const { handle } = profile.data;
-      const server = 'bsky.app'; // Can't use the agent sadly, but this might change later: agent.service.hostname;
-      const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
-
-      const friendlyUrl = `https://${server}/profile/${handle}/post/${postId}`;
-
-      // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
-      if (postData.options.threadgate) {
-        this.createThreadgate(
-          agent,
-          postResult.uri,
-          postData.options.threadgate,
-        );
-      }
-
-      return PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
-    }
-
-    return PostResponse.fromWebsite(this)
-      .withAdditionalInfo({ postResult })
-      .withException(new Error('Unknown error occured'));
-
-    return this.createPostResponse(postResult);
+    return postResult;
   }
 
   private createPostResponse(
@@ -293,20 +233,144 @@ export default class Bluesky
       .withException(new Error('Unknown error occured'));
   }
 
+  createMessageModel(): BlueskyMessageSubmission {
+    return new BlueskyMessageSubmission();
+  }
+
+  async onValidateFileSubmission(
+    postData: PostData<BlueskyFileSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<
+      BlueskyMessageSubmission | BlueskyFileSubmission
+    >();
+
+    this.validateRating(postData, validator);
+    this.validateDescription(postData, validator);
+    this.validateReplyToUrl(postData, validator);
+
+    const { images, videos, other, gifs } = this.countFileTypes(
+      postData.submission.files,
+    );
+
+    // first condition also includes the case where there are gifs and videos
+    if (
+      (images !== 0 && videos !== 0) ||
+      (images > 1 && gifs !== 0) ||
+      videos > 1 ||
+      gifs > 1 ||
+      other !== 0
+    ) {
+      validator.error(
+        'validation.file.bluesky.unsupported-combination-of-files',
+        {},
+      );
+    }
+
+    if (gifs > 0) {
+      validator.warning('validation.file.bluesky.gif-convertion', {});
+    }
+
+    return validator.result;
+  }
+
   async onValidateMessageSubmission(
     postData: PostData<BlueskyMessageSubmission>,
   ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
+    const validator = this.createValidator<
+      BlueskyMessageSubmission | BlueskyFileSubmission
+    >();
+
+    this.validateDescription(postData, validator);
+    this.validateReplyToUrl(postData, validator);
+    this.validateRating(postData, validator);
+
+    return validator.result;
+  }
+
+  private validateRating(
+    postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
+    validator: SubmissionValidator<
+      BlueskyMessageSubmission | BlueskyFileSubmission
+    >,
+  ) {
+    // Since bluesky rating is not mapped as other sited do
+    // we should add warning, so users will not post unlabeled images
+    const { rating } = postData.options;
+    if (rating) {
+      // Dont really want to make warning for undefined rating
+      // This is handled by default part validator
+      if (
+        !postData.options.label_rating &&
+        rating !== SubmissionRating.GENERAL
+      ) {
+        validator.warning(
+          'validation.file.bluesky.rating-matches-default',
+          {},
+          'label_rating',
+        );
+      }
+    }
+  }
+
+  private validateDescription(
+    postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
+    validator: SubmissionValidator<
+      BlueskyMessageSubmission | BlueskyFileSubmission
+    >,
+  ): void {
+    const { description } = postData.options;
+
+    const rt = new RichText({ text: description });
+    const agent = this.makeAgent();
+    rt.detectFacets(agent);
+
+    if (rt.graphemeLength > this.MAX_CHARS) {
+      validator.error(
+        'validation.description.max-length',
+        {
+          maxLength: this.MAX_CHARS,
+          currentLength: rt.graphemeLength,
+        },
+        'description',
+      );
+    } else if (
+      postData.options.tags.length &&
+      !description.toLowerCase().includes('{tags}')
+    ) {
+      // this.validateInsertTags(
+      //   validator,
+      //   postData.options.getProcessedTags(),
+      //   description,
+      //   this.MAX_CHARS,
+      //   (text: string) => new RichText({ text }).graphemeLength,
+      // );
+    } else {
+      // warnings.push(`You have not inserted the {tags} shortcut in your description;
+      // tags will not be inserted in your post`);
+    }
+  }
+
+  private validateReplyToUrl(
+    postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
+    validator: SubmissionValidator<
+      BlueskyMessageSubmission | BlueskyFileSubmission
+    >,
+  ): void {
+    const url = postData.options.replyToUrl;
+    if (url.trim() && !this.getPostIdFromUrl(url)) {
+      validator.error(
+        'validation.file.bluesky.invalid-reply-url',
+        {},
+        'replyToUrl',
+      );
+    }
   }
 
   private async getReplyRef(
     agent: AtpAgent,
-    url?: string,
+    url: string,
   ): Promise<ReplyRef | null> {
-    if (!url?.trim()) return null;
+    if (!url.trim()) return null;
 
     const postId = this.getPostIdFromUrl(url);
     if (!postId) throw new Error(`Invalid reply to url '${url}'`);
@@ -334,7 +398,7 @@ export default class Bluesky
     return null;
   }
 
-  private countFileTypes(files: PostingFile[]): {
+  private countFileTypes(files: (PostingFile | ISubmissionFile)[]): {
     images: number;
     videos: number;
     other: number;
@@ -342,14 +406,16 @@ export default class Bluesky
   } {
     const counts = { images: 0, videos: 0, other: 0, gifs: 0 };
     for (const file of files) {
-      if (file.fileType === FileType.VIDEO) {
+      const fileType = getFileTypeFromMimeType(file.mimeType);
+
+      if (fileType === FileType.VIDEO) {
         ++counts.videos;
       } else if (
         file.fileName.endsWith('.gif') ||
         file.mimeType.startsWith('image/gif')
       ) {
         ++counts.gifs;
-      } else if (file.fileType === FileType.IMAGE) {
+      } else if (fileType === FileType.IMAGE) {
         ++counts.images;
       } else {
         ++counts.other;
@@ -393,6 +459,7 @@ export default class Bluesky
   private async uploadEmbeds(
     agent: AtpAgent,
     files: PostingFile[],
+    cancellationToken: CancellableToken,
   ): Promise<$Typed<AppBskyEmbedImages.Main> | $Typed<AppBskyEmbedVideo.Main>> {
     // Bluesky supports either images or a video as an embed
     // GIFs must be treated as video on bsky
@@ -401,6 +468,8 @@ export default class Bluesky
     if (fileCount.videos === 0 && fileCount.gifs === 0) {
       const uploadedImages: AppBskyEmbedImages.Image[] = [];
       for (const file of files) {
+        cancellationToken.throwIfCancelled();
+
         const altText = file.metadata.altText || '';
         const ref = await this.uploadImage(agent, file);
 
@@ -418,6 +487,8 @@ export default class Bluesky
     }
 
     for (const file of files) {
+      cancellationToken.throwIfCancelled();
+
       if (
         file.fileType === FileType.VIDEO ||
         file.fileType === FileType.IMAGE

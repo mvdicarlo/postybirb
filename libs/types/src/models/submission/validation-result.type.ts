@@ -50,7 +50,7 @@ export type ValidationMessage<
   /**
    * Values to fill in the message.
    */
-  values: ValidationMessages[Id];
+  values: NoInfer<ValidationMessages[Id]>;
 };
 
 /**
@@ -147,4 +147,12 @@ export interface ValidationMessages {
 
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
+
+  'validation.file.bluesky.unsupported-combination-of-files': object;
+
+  'validation.file.bluesky.gif-convertion': object;
+
+  'validation.file.bluesky.invalid-reply-url': object;
+
+  'validation.file.bluesky.rating-matches-default': object;
 }
