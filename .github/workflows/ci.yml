@@ -17,7 +17,12 @@ jobs:
     strategy:
       matrix:
         # Skip nx cache is needed because of https://github.com/nrwl/nx/issues/28487
-        command: [lint, typecheck, 'test --skip-nx-cache']
+        command:
+          [
+            lint,
+            typecheck,
+            'test --skip-nx-cache --verbose --output-style=stream',
+          ]
 
     steps:
       - name: Check out Git repository
