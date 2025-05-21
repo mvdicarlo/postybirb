@@ -458,7 +458,7 @@ export function NotificationsDrawer() {
           </Popover>
         </Group>
 
-        <ScrollArea h="calc(100% - 130px)" offsetScrollbars scrollbarSize={8}>
+        <ScrollArea h="calc(100% - 130px)" offsetScrollbars>
           {isLoading ? (
             <Center h="100%">
               <Loader />

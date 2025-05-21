@@ -43,6 +43,7 @@ import fileSubmissionApi from '../../../api/file-submission.api';
 import submissionApi from '../../../api/submission.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { EditImageModal } from './edit-image-modal';
+import './submission-uploader.css';
 
 export const TEXT_MIME_TYPES = [
   'text/plain',
@@ -306,9 +307,9 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
                 ...VIDEO_MIME_TYPES,
               ]}
               multiple
+              className="dropzone-primary"
               p="xl"
               radius="md"
-              bg="var(--mantine-color-dark-6)"
             >
               <Stack
                 align="center"
@@ -387,14 +388,10 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
                   ...VIDEO_MIME_TYPES,
                 ]}
                 multiple
+                className="dropzone-secondary"
                 p="sm"
                 mb="md"
                 radius="md"
-                style={{
-                  borderStyle: 'dashed',
-                  borderColor: 'var(--mantine-color-dark-4)',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                }}
               >
                 <Flex
                   align="center"
@@ -402,12 +399,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
                   gap="sm"
                   style={{ pointerEvents: 'none' }}
                 >
-                  <ThemeIcon
-                    size="md"
-                    radius="xl"
-                    variant="light"
-                    color="gray"
-                  >
+                  <ThemeIcon size="md" radius="xl" variant="light" color="gray">
                     <IconFileUpload size={16} />
                   </ThemeIcon>
                   <Text size="sm" c="dimmed">

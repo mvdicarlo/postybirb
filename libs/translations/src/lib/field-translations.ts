@@ -25,6 +25,8 @@ export const FieldLabelTranslations = {
   visibility: msg`Visibility`,
   channel: msg`Channel`,
   silent: msg`Silent`,
+  allowComments: msg`Allow comments`,
+  allowReblogging: msg`Allow reblogging`,
   replyToUrl: msg`Reply to post URL`,
   threadgate: msg`Who can reply`,
 } satisfies Record<string, MessageDescriptor>;
