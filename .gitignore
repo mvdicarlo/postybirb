@@ -6,6 +6,7 @@
 /out-tsc
 /test
 /.swc
+/.jest
 
 # dependencies
 /node_modules

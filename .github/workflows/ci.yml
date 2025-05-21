@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  main:
+  ci:
     runs-on: ubuntu-latest
     if: github.head_ref != 'weblate-postybirb-postybirb'
     strategy:
@@ -25,7 +25,17 @@ jobs:
           # We need to fetch all branches and commits so that Nx affected has a base to compare against.
           fetch-depth: 0
 
-      - name: Install Node.js, NPM and Yarn
+      - name: Use jest and tsc cache
+        uses: actions/cache@v4
+        with:
+          # Out tsc needed because we use incremental in typecheck which uses files from tsc output
+          path: |
+            .jest
+            dist/out-tsc
+
+          key: ${{ runner.os }}-ci
+
+      - name: Install Node.js and Yarn
         uses: actions/setup-node@v4
         with:
           cache: yarn
@@ -35,8 +45,8 @@ jobs:
         run: yarn install --frozen-lockfile --prefer-offline
 
         # Node: Used to calculate affected
-      - name: Setup shas
+      - name: Setup SHAs
         uses: nrwl/nx-set-shas@v4
 
-      - name: Run typecheck, lint and test
+      - name: Run ${{ matrix.command }}
         run: yarn nx affected -t ${{ matrix.command }}
