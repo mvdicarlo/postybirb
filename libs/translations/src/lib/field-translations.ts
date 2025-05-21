@@ -25,6 +25,8 @@ export const FieldLabelTranslations = {
   visibility: msg`Visibility`,
   channel: msg`Channel`,
   silent: msg`Silent`,
+  allowComments: msg`Allow comments`,
+  allowReblogging: msg`Allow reblogging`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

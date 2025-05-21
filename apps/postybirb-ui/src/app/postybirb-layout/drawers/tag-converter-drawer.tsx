@@ -632,13 +632,7 @@ function TagConverters() {
             </Stack>
           </ScrollArea>
         ) : (
-          <Paper
-            p="lg"
-            withBorder
-            radius="md"
-            bg="var(--mantine-color-gray-0)"
-            ta="center"
-          >
+          <Paper p="lg" withBorder radius="md" ta="center">
             {search ? (
               <Text c="dimmed">
                 <Trans>No tag converters match your search</Trans>
