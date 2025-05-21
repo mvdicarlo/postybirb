@@ -10,6 +10,7 @@ import { WebsitesModule } from '../websites/websites.module';
 import { PostController } from './post.controller';
 import { PostService } from './post.service';
 import { PostFileResizerService } from './services/post-file-resizer/post-file-resizer.service';
+import { PostManagerController } from './services/post-manager/post-manager.controller';
 import { PostManagerService } from './services/post-manager/post-manager.service';
 import { PostQueueController } from './services/post-queue/post-queue.controller';
 import { PostQueueService } from './services/post-queue/post-queue.service';
@@ -24,7 +25,7 @@ import { PostQueueService } from './services/post-queue/post-queue.service';
     SettingsModule,
     SubmissionModule,
   ],
-  controllers: [PostController, PostQueueController],
+  controllers: [PostController, PostQueueController, PostManagerController],
   providers: [
     PostService,
     PostManagerService,

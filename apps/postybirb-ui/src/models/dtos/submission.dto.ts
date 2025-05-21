@@ -12,6 +12,7 @@ import {
   IWebsiteFormFields,
   NULL_ACCOUNT_ID,
   PostRecordDto,
+  PostRecordState,
   ScheduleType,
   SubmissionRating,
   SubmissionType,
@@ -135,5 +136,9 @@ export class SubmissionDto<
 
   public isQueued(): boolean {
     return this.postQueueRecord !== undefined;
+  }
+
+  public getPostingRecord(): PostRecordDto | undefined {
+    return this.posts.find((p) => p.state === PostRecordState.RUNNING);
   }
 }
