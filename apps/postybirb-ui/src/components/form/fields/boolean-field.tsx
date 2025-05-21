@@ -1,6 +1,10 @@
 import { useLingui } from '@lingui/react';
 import { Checkbox } from '@mantine/core';
-import { BooleanFieldType, FieldType } from '@postybirb/form-builder';
+import {
+  BooleanFieldType,
+  FieldAggregateType,
+  FieldType,
+} from '@postybirb/form-builder';
 import { useValidations } from '../hooks/use-validations';
 import { useFormFields } from '../website-option-form/use-form-fields';
 import { FieldLabel, getTranslatedLabel } from './field-label';
@@ -25,7 +29,11 @@ export function BooleanField(props: FormFieldProps<BooleanFieldType>) {
   } as unknown as FieldType<boolean, string>;
 
   return (
-    <FieldLabel {...props} field={labelLessField} validationState={validations}>
+    <FieldLabel
+      {...props}
+      field={labelLessField as FieldAggregateType}
+      validationState={validations}
+    >
       <Checkbox
         checked={value}
         onChange={(event) =>

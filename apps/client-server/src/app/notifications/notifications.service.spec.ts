@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
+import { SettingsService } from '../settings/settings.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
 import { UpdateNotificationDto } from './dtos/update-notification.dto';
@@ -20,6 +21,7 @@ describe('NotificationsService', () => {
     module = await Test.createTestingModule({
       providers: [
         NotificationsService,
+        SettingsService,
         {
           provide: WSGateway,
           useValue: webSocketMock,
@@ -31,7 +33,7 @@ describe('NotificationsService', () => {
   });
 
   afterAll(async () => {
-    await module.close();
+    await module?.close();
   });
 
   it('should be defined', () => {

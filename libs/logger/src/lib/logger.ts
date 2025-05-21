@@ -2,7 +2,6 @@ import { PostyBirbDirectories } from '@postybirb/fs';
 import { LogLayer, LoggerType } from 'loglayer';
 import * as winston from 'winston';
 import { Logger as WinstonLogger } from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
 import { SerializeDevLog } from './serializers/serialize-dev-log';
 import { serializeError } from './serializers/serialize-errors';
 
@@ -33,18 +32,9 @@ export function initializeLogger(
 function initializeTestLogger() {
   PostyBirbDirectories.initializeDirectories();
 
-  const transport = new DailyRotateFile({
-    filename: 'postybirb-%DATE%.log',
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-    dirname: PostyBirbDirectories.LOGS_DIRECTORY,
-  });
-
   const instance = winston.createLogger({
     format: new SerializeDevLog(),
-    transports: [new winston.transports.Console(), transport],
+    transports: [new winston.transports.Console({ level: 'error' })],
   });
   initializeLogger(instance, false);
 }
