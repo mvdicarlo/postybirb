@@ -19,9 +19,9 @@ jobs:
         # Skip nx cache is needed because of https://github.com/nrwl/nx/issues/28487
         command:
           [
-            lint,
-            typecheck,
-            'test --skip-nx-cache --verbose --output-style=stream',
+            'yarn nx affected -t lint',
+            'yarn nx affected -t typecheck',
+            'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test --skip-nx-cache --verbose --output-style=stream',
           ]
 
     steps:
@@ -55,5 +55,5 @@ jobs:
         uses: nrwl/nx-set-shas@v4
 
       - name: Run ${{ matrix.command }}
-        run: yarn nx affected -t ${{ matrix.command }}
+        run: ${{ matrix.command }}
         timeout-minutes: 30
