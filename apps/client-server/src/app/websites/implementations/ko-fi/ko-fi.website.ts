@@ -177,7 +177,7 @@ export default class KoFi
         data: {
           Album: postData.options.album || '',
           Audience: postData.options.audience,
-          Description: postData.options.description.toString(),
+          Description: postData.options.description,
           EnableHiRes: postData.options.hiRes,
           GalleryItemId: '',
           ImageUploadIds: imageUploadIds,
@@ -199,7 +199,7 @@ export default class KoFi
     // Check for success in response
     const success =
       typeof post.body === 'string'
-        ? !(post.body as string).includes(JSON.stringify({ success: true }))
+        ? (post.body as string).includes(JSON.stringify({ success: true }))
         : post.body.success;
 
     if (success) {
@@ -209,8 +209,8 @@ export default class KoFi
         sourceUrl = await BrowserWindowUtils.runScriptOnPage(
           this.accountId,
           `${this.BASE_URL}/${this.sessionData.kofiAccountId}/posts`,
-          `document.querySelector('#postsContainerDiv .feeditem-unit .dropdown-share-list input').value`,
-          1_000,
+          `return document.querySelector('#postsContainerDiv .feeditem-unit .dropdown-share-list input').value`,
+          500,
         );
       } catch (e) {
         this.logger.warn(
