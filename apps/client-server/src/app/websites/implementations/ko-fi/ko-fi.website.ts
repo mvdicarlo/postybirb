@@ -3,10 +3,12 @@ import { Http } from '@postybirb/http';
 import {
   ILoginState,
   ImageResizeProps,
+  IPostResponse,
   ISubmissionFile,
   PostData,
   PostResponse,
 } from '@postybirb/types';
+import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -14,11 +16,14 @@ import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
+import { BaseWebsiteOptions } from '../../models/base-website-options';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
+import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { Website } from '../../website';
 import { KoFiAccountData } from './models/ko-fi-account-data';
 import { KoFiFileSubmission } from './models/ko-fi-file-submission';
+import { KoFiMessageSubmission } from './models/ko-fi-message-submission';
 
 @WebsiteMetadata({
   name: 'ko-fi',
@@ -31,7 +36,9 @@ import { KoFiFileSubmission } from './models/ko-fi-file-submission';
 })
 export default class KoFi
   extends Website<KoFiAccountData>
-  implements FileWebsite<KoFiFileSubmission>
+  implements
+    FileWebsite<KoFiFileSubmission>,
+    MessageWebsite<KoFiMessageSubmission>
 {
   protected BASE_URL = 'https://ko-fi.com';
 
@@ -55,11 +62,10 @@ export default class KoFi
           ?.getAttribute('value');
         // Extract user ID and username
         const kofiAccountId = html
-          .querySelector('input[name="handle"]')
+          .querySelector('input[id="handle"]')
           ?.getAttribute('value');
         this.sessionData.kofiAccountId = kofiAccountId;
-        const kofiPageId = this.extractId(res.body);
-        this.sessionData.pageId = kofiPageId;
+        this.sessionData.pageId = this.extractId(res.body);
 
         if (kofiAccountId) {
           await this.retrieveAlbums(kofiAccountId);
@@ -116,6 +122,10 @@ export default class KoFi
     } catch (error) {
       this.logger.error('Failed to retrieve albums', error);
     }
+  }
+
+  createMessageModel(): BaseWebsiteOptions {
+    return new KoFiMessageSubmission();
   }
 
   createFileModel(): KoFiFileSubmission {
@@ -193,7 +203,24 @@ export default class KoFi
         : post.body.success;
 
     if (success) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(post.body);
+      let sourceUrl: string | undefined;
+      try {
+        // Try to find the source url
+        sourceUrl = await BrowserWindowUtils.runScriptOnPage(
+          this.accountId,
+          `${this.BASE_URL}/${this.sessionData.kofiAccountId}/posts`,
+          `document.querySelector('#postsContainerDiv .feeditem-unit .dropdown-share-list input').value`,
+          1_000,
+        );
+      } catch (e) {
+        this.logger.warn(
+          'Failed to retrieve post page for source url fetch',
+          e,
+        );
+      }
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(post.body)
+        .withSourceUrl(sourceUrl);
     }
 
     return PostResponse.fromWebsite(this)
@@ -202,4 +229,63 @@ export default class KoFi
   }
 
   onValidateFileSubmission = validatorPassthru;
+
+  async onPostMessageSubmission(
+    postData: PostData<KoFiMessageSubmission>,
+    cancellationToken: CancellableToken,
+  ): Promise<IPostResponse> {
+    const data = {
+      type: 'Article',
+      blogPostId: '0',
+      scheduledDate: undefined,
+      scheduled: undefined,
+      scheduledOffset: undefined,
+      attachmentIds: undefined,
+      blogPostTitle: postData.options.title,
+      postBody: postData.options.description,
+      featuredImage: undefined,
+      noFeaturedImage: false,
+      FeaturedImageAltText: undefined,
+      embedUrl: undefined,
+      tags: postData.options.tags.join(','),
+      postAudience: postData.options.audience,
+      submit: 'publish',
+    };
+
+    cancellationToken.throwIfCancelled();
+    const post = await Http.post<string>(`${this.BASE_URL}/Blog/AddBlogPost`, {
+      partition: this.accountId,
+      type: 'multipart',
+      data,
+      headers: {
+        Accept: 'text/html, */*',
+        Pragma: 'no-cache',
+        'Cache-Control': 'no-cache',
+        Referer: 'https://ko-fi.com/',
+        Connection: 'keep-alive',
+      },
+    });
+
+    if (typeof post.body === 'object') {
+      const errBody = post.body as {
+        error: string;
+        friendly_error_message: string;
+        success: boolean;
+      };
+      if (errBody.success === false) {
+        return PostResponse.fromWebsite(this)
+          .withException(
+            new Error(errBody.friendly_error_message || errBody.error),
+          )
+          .withAdditionalInfo(errBody);
+      }
+    }
+
+    PostResponse.validateBody(this, post);
+    return PostResponse.fromWebsite(this)
+      .withSourceUrl(post.responseUrl)
+      .withAdditionalInfo(post.body);
+  }
+
+  onValidateMessageSubmission = validatorPassthru;
 }

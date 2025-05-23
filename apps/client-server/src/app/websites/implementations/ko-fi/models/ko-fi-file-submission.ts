@@ -1,17 +1,34 @@
 import {
   BooleanField,
+  DescriptionField,
   RatingField,
   SelectField,
+  TagField,
 } from '@postybirb/form-builder';
-import { SubmissionRating } from '@postybirb/types';
+import {
+  DescriptionType,
+  DescriptionValue,
+  SubmissionRating,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { KoFiAccountData } from './ko-fi-account-data';
 
 export class KoFiFileSubmission extends BaseWebsiteOptions {
+  @TagField({
+    hidden: true,
+  })
+  tags: TagValue;
+
   @RatingField({
     options: [{ value: SubmissionRating.GENERAL, label: 'General' }],
   })
   rating: SubmissionRating;
+
+  @DescriptionField({
+    descriptionType: DescriptionType.PLAINTEXT,
+  })
+  description: DescriptionValue;
 
   @SelectField<KoFiAccountData>({
     label: 'folder',
