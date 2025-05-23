@@ -1,0 +1,14 @@
+diff --git a/node_modules/jest-snapshot/build/InlineSnapshots.js b/node_modules/jest-snapshot/build/InlineSnapshots.js
+index 3481ad9..fe747f0 100644
+--- a/node_modules/jest-snapshot/build/InlineSnapshots.js
++++ b/node_modules/jest-snapshot/build/InlineSnapshots.js
+@@ -149,7 +149,8 @@ const saveSnapshotsForFile = (snapshots, sourceFilePath, rootDir, prettier) => {
+       filename: sourceFilePath,
+       plugins,
+       presets,
+-      root: rootDir
++      configFile: path.join(process.cwd(),'./babel.config.js'),
++      root: rootDir,
+     });
+   } catch (error) {
+     // attempt to recover from missing jsx plugin

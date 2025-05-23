@@ -6,6 +6,8 @@
 /out-tsc
 /test
 /.swc
+/.jest
+/.eslint
 
 # dependencies
 /node_modules

@@ -182,7 +182,7 @@ export class Http {
               }
             });
           } else {
-            form.append(key, value);
+            form.append(key, value.toString());
           }
         });
 
