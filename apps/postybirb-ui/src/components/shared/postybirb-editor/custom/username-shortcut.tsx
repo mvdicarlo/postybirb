@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable lingui/no-unlocalized-strings */
 /* eslint-disable react-hooks/rules-of-hooks */
 import { BlockNoteEditor } from '@blocknote/core';
@@ -45,21 +47,25 @@ function Shortcut(props: {
 }) {
   const { item, onStale } = props;
   const ref = useRef<HTMLSpanElement>(null);
-  
+
   // Handler for keyboard events to improve navigation
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!ref.current) return;
-    
+
     const ceEl = ref.current.querySelector('.ce') as HTMLSpanElement | null;
     if (!ceEl) return;
-    
+
     // Handle special cases for better editing experience
     if (event.key === 'Backspace') {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
-      
+
       const range = selection.getRangeAt(0);
-      if (range.collapsed && range.startContainer === ceEl && range.startOffset === 0) {
+      if (
+        range.collapsed &&
+        range.startContainer === ceEl &&
+        range.startOffset === 0
+      ) {
         // If backspace at beginning of shortcut, move cursor outside and prevent default
         event.preventDefault();
         selection.modify('move', 'backward', 'character');
@@ -67,19 +73,24 @@ function Shortcut(props: {
     } else if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
-      
+
       const range = selection.getRangeAt(0);
       if (range.collapsed) {
         // Improve arrow key navigation near the shortcut boundaries
         if (event.key === 'ArrowLeft' && range.startOffset === 0) {
-          if (range.startContainer === ceEl || 
-              (ceEl.contains(range.startContainer) && !findTextNode(ceEl).textContent)) {
+          if (
+            range.startContainer === ceEl ||
+            (ceEl.contains(range.startContainer) &&
+              !findTextNode(ceEl)?.textContent)
+          ) {
             event.preventDefault();
             selection.modify('move', 'backward', 'character');
           }
-        } else if (event.key === 'ArrowRight' && 
-                  (range.startContainer.nodeType === Node.TEXT_NODE && 
-                  range.startOffset === (range.startContainer.textContent?.length || 0))) {
+        } else if (
+          event.key === 'ArrowRight' &&
+          range.startContainer.nodeType === Node.TEXT_NODE &&
+          range.startOffset === (range.startContainer.textContent?.length || 0)
+        ) {
           if (ceEl.contains(range.startContainer)) {
             event.preventDefault();
             selection.modify('move', 'forward', 'character');
@@ -93,10 +104,10 @@ function Shortcut(props: {
     const cPerm: HTMLSpanElement | null | undefined =
       ref.current?.querySelector('.ce');
     const cPermParent = cPerm?.parentElement;
-    
+
     // Add keyboard event listener for better navigation
     document.addEventListener('keydown', handleKeyDown, true);
-    
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
@@ -140,7 +151,7 @@ function Shortcut(props: {
         attributes: true,
       });
     }
-    
+
     return () => {
       observer.disconnect();
       document.removeEventListener('keydown', handleKeyDown, true);
@@ -182,41 +193,45 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       const website = websites.find(
         (w) => w.usernameShortcut?.id === props.inlineContent.props.shortcut,
       )?.displayName;
-      
+
       // State for dropdown visibility
       const [showDropdown, setShowDropdown] = useState(false);
-      
+
       // Available website options for the dropdown
-      const websiteOptions = useMemo(() => 
-        websites.map(w => ({ value: w.id, label: w.displayName })), 
-        [websites]
+      const websiteOptions = useMemo(
+        () => websites.map((w) => ({ value: w.id, label: w.displayName })),
+        [websites],
       );
-      
+
       // Handle website selection
-      const handleWebsiteSelect = useCallback((websiteId: string) => {
-        const { inline, block } = getMyInlineNode(
-          editor,
-          props.inlineContent.props.id,
-        );
-        
-        if (inline) {
-          // Update the "only" prop with selected website ID
-          inline.props.only = websiteId;
-          
-          editor.updateBlock(block.id, {
-            content: block.content,
-          });
-          
-          setShowDropdown(false);
-        }
-      }, [editor, props.inlineContent.props.id]);
-      
+      const handleWebsiteSelect = useCallback(
+        (websiteId: string) => {
+          const { inline, block } = getMyInlineNode(
+            editor,
+            props.inlineContent.props.id,
+          );
+
+          if (inline) {
+            // Update the "only" prop with selected website ID
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (inline as Record<string, any>).props.only = websiteId;
+
+            editor.updateBlock(block.id, {
+              content: block.content,
+            });
+
+            setShowDropdown(false);
+          }
+        },
+        [editor, props.inlineContent.props.id],
+      );
+
       // Determine if a website is selected and get its name
       const selectedWebsiteName = useMemo(() => {
         const websiteId = props.inlineContent.props.only;
         if (!websiteId) return null;
-        
-        const selectedWebsite = websites.find(w => w.id === websiteId);
+
+        const selectedWebsite = websites.find((w) => w.id === websiteId);
         return selectedWebsite?.displayName || null;
       }, [props.inlineContent.props.only, websites]);
 
@@ -238,7 +253,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       const handleWebsiteClick = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        setShowDropdown(prev => !prev);
+        setShowDropdown((prev) => !prev);
       };
 
       return (
@@ -263,9 +278,9 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             {selectedWebsiteName || 'All websites'}
           </Badge>
           <Shortcut item={props.contentRef} onStale={onStale} />
-          
+
           {showDropdown && (
-            <div 
+            <div
               style={{
                 position: 'absolute',
                 zIndex: 1000,
@@ -280,33 +295,37 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                 width: '200px',
               }}
             >
-              <div 
-                style={{ 
-                  padding: '8px', 
+              <div
+                style={{
+                  padding: '8px',
                   borderBottom: '1px solid var(--mantine-color-gray-3)',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 }}
               >
                 Select website
               </div>
-              <div 
-                style={{ 
+              <div
+                style={{
                   padding: '8px',
                   cursor: 'pointer',
-                  background: !props.inlineContent.props.only ? 'var(--mantine-color-blue-0)' : undefined
+                  background: !props.inlineContent.props.only
+                    ? 'var(--mantine-color-blue-0)'
+                    : undefined,
                 }}
                 onClick={() => handleWebsiteSelect('')}
               >
                 All websites
               </div>
-              {websiteOptions.map(option => (
-                <div 
-                  key={option.value} 
-                  style={{ 
+              {websiteOptions.map((option) => (
+                <div
+                  key={option.value}
+                  style={{
                     padding: '8px',
                     cursor: 'pointer',
-                    background: props.inlineContent.props.only === option.value ? 
-                      'var(--mantine-color-blue-0)' : undefined
+                    background:
+                      props.inlineContent.props.only === option.value
+                        ? 'var(--mantine-color-blue-0)'
+                        : undefined,
                   }}
                   onClick={() => handleWebsiteSelect(option.value)}
                 >
