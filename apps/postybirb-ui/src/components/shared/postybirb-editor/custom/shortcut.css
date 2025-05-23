@@ -6,3 +6,9 @@
   vertical-align: text-bottom;
   display: inline-block;
 }
+
+/* Improve visibility of the cursor inside the shortcut */
+.ce:focus-within {
+  outline: 1px dotted rgba(128, 128, 128, 0.4);
+  background-color: rgba(128, 128, 128, 0.1);
+}
