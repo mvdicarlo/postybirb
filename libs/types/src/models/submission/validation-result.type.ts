@@ -143,6 +143,10 @@ export interface ValidationMessages {
     currentSelected: number;
   };
 
+  'validation.select-field.invalid-option': {
+    invalidOptions: string[];
+  };
+
   'validation.field.required': object;
 
   // ----------- Website specific validation messages --------------
