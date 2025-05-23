@@ -71,12 +71,13 @@ export class BrowserWindowUtils {
       })()`);
       return page;
     } catch (err) {
-      if (typeof err === 'object' && err && typeof err.message === 'string') {
-        err.message = `Failed to run script on page: ${err.message}\n\nscript:\n${script}\n`;
+      const e = err as Error;
+      if (e.message) {
+        e.message = `Failed to run script on page: ${e.message}\n\nscript:\n${script}\n`;
       }
 
       bw.destroy();
-      throw err;
+      throw e;
     } finally {
       if (!bw.isDestroyed()) {
         bw.destroy();
