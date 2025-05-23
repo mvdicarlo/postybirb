@@ -78,10 +78,11 @@ function Shortcut(props: {
       if (range.collapsed) {
         // Improve arrow key navigation near the shortcut boundaries
         if (event.key === 'ArrowLeft' && range.startOffset === 0) {
+          // Enhanced condition to detect if we're at the start of any text node inside the shortcut
           if (
             range.startContainer === ceEl ||
-            (ceEl.contains(range.startContainer) &&
-              !findTextNode(ceEl)?.textContent)
+            ceEl.contains(range.startContainer) ||
+            !findTextNode(ceEl)?.textContent
           ) {
             event.preventDefault();
             selection.modify('move', 'backward', 'character');
@@ -212,9 +213,34 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
           );
 
           if (inline) {
-            // Update the "only" prop with selected website ID
+            // For handling multiple website selections
+            let newOnlyValue = websiteId;
+            const currentOnly = props.inlineContent.props.only as string;
+
+            // If websiteId is empty, we want to set to "All websites"
+            if (websiteId === '') {
+              // Reset to all websites
+              newOnlyValue = '';
+            } else if (currentOnly) {
+              const websites = currentOnly.split(',');
+
+              // Check if website is already selected
+              if (websites.includes(websiteId)) {
+                // Remove it if already selected
+                newOnlyValue = websites
+                  .filter((id) => id !== websiteId)
+                  .join(',');
+              } else {
+                // Add it to the list
+                newOnlyValue = currentOnly
+                  ? `${currentOnly},${websiteId}`
+                  : websiteId;
+              }
+            }
+
+            // Update the "only" prop with selected website IDs
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (inline as Record<string, any>).props.only = websiteId;
+            (inline as Record<string, any>).props.only = newOnlyValue;
 
             editor.updateBlock(block.id, {
               content: block.content,
@@ -227,12 +253,20 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       );
 
       // Determine if a website is selected and get its name
-      const selectedWebsiteName = useMemo(() => {
-        const websiteId = props.inlineContent.props.only;
-        if (!websiteId) return null;
+      const selectedWebsitesDisplay = useMemo(() => {
+        const websiteIds = props.inlineContent.props.only;
+        if (!websiteIds) return null;
 
-        const selectedWebsite = websites.find((w) => w.id === websiteId);
-        return selectedWebsite?.displayName || null;
+        const ids = websiteIds.split(',');
+        const selectedWebsiteNames = ids
+          .map((id) => {
+            const website = websites.find((w) => w.id === id);
+            return website?.displayName;
+          })
+          .filter(Boolean); // Remove undefined values
+
+        if (selectedWebsiteNames.length === 0) return null;
+        return selectedWebsiteNames.join(', ');
       }, [props.inlineContent.props.only, websites]);
 
       const onStale = useCallback(() => {
@@ -275,7 +309,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             style={{ marginLeft: '2px', cursor: 'pointer' }}
             onClick={handleWebsiteClick}
           >
-            {selectedWebsiteName || 'All websites'}
+            {selectedWebsitesDisplay || 'All websites'}
           </Badge>
           <Shortcut item={props.contentRef} onStale={onStale} />
 
@@ -311,27 +345,42 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                   background: !props.inlineContent.props.only
                     ? 'var(--mantine-color-blue-0)'
                     : undefined,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}
                 onClick={() => handleWebsiteSelect('')}
               >
-                All websites
+                <span>All websites</span>
+                {!props.inlineContent.props.only && <span>✓</span>}
               </div>
-              {websiteOptions.map((option) => (
-                <div
-                  key={option.value}
-                  style={{
-                    padding: '8px',
-                    cursor: 'pointer',
-                    background:
-                      props.inlineContent.props.only === option.value
+              {websiteOptions.map((option) => {
+                // Check if this website is in the selected list
+                const selectedWebsites = props.inlineContent.props.only
+                  ? props.inlineContent.props.only.split(',')
+                  : [];
+                const isSelected = selectedWebsites.includes(option.value);
+
+                return (
+                  <div
+                    key={option.value}
+                    style={{
+                      padding: '8px',
+                      cursor: 'pointer',
+                      background: isSelected
                         ? 'var(--mantine-color-blue-0)'
                         : undefined,
-                  }}
-                  onClick={() => handleWebsiteSelect(option.value)}
-                >
-                  {option.label}
-                </div>
-              ))}
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                    onClick={() => handleWebsiteSelect(option.value)}
+                  >
+                    <span>{option.label}</span>
+                    {isSelected && <span>✓</span>}
+                  </div>
+                );
+              })}
             </div>
           )}
         </span>
