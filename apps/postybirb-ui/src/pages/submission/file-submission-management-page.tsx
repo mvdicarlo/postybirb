@@ -79,7 +79,6 @@ export function FileSubmissionManagementPage() {
             label: <Trans>History</Trans>,
             key: 'history',
             icon: <IconLogs />,
-            disabled: fileSubmissions.length === 0,
           },
         ]}
         onTabChange={setActiveTab}
