@@ -5,7 +5,7 @@ export default class HtmlParserUtil {
     // eslint-disable-next-line no-param-reassign
     index = index || 0;
     const inputs = (html.match(/<input.*?(\/)*>/gim) || [])
-      .filter((input) => input.includes(`name="${name}"`))
+      .filter((input) => input?.includes(`name="${name}"`))
       .map((input) => input.match(/value="(.*?)"/)[1]);
 
     const picked = inputs[index];
