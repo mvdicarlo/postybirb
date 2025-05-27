@@ -78,14 +78,27 @@ function Shortcut(props: {
       if (range.collapsed) {
         // Improve arrow key navigation near the shortcut boundaries
         if (event.key === 'ArrowLeft' && range.startOffset === 0) {
-          // Enhanced condition to detect if we're at the start of any text node inside the shortcut
-          if (
-            range.startContainer === ceEl ||
-            ceEl.contains(range.startContainer) ||
-            !findTextNode(ceEl)?.textContent
-          ) {
+          // Enhanced logic to detect if we're at the start of any content inside the shortcut
+          const isAtStart = 
+            range.startContainer === ceEl || 
+            (ceEl.contains(range.startContainer as Node) && 
+             (!range.startContainer.previousSibling || 
+              range.startContainer.nodeType === Node.TEXT_NODE && 
+              range.startOffset === 0));
+          
+          if (isAtStart) {
             event.preventDefault();
-            selection.modify('move', 'backward', 'character');
+            // Move cursor outside and to the left of the shortcut element
+            const parent = ref.current?.parentNode;
+            if (parent) {
+              const newRange = document.createRange();
+              newRange.setStartBefore(ref.current as Node);
+              newRange.collapse(true);
+              selection.removeAllRanges();
+              selection.addRange(newRange);
+            } else {
+              selection.modify('move', 'backward', 'character');
+            }
           }
         } else if (
           event.key === 'ArrowRight' &&
@@ -245,8 +258,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             editor.updateBlock(block.id, {
               content: block.content,
             });
-
-            setShowDropdown(false);
+            // Keep dropdown open for multiple selections
           }
         },
         [editor, props.inlineContent.props.id],
