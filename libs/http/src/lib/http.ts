@@ -5,6 +5,7 @@ import {
   ClientRequest,
   ClientRequestConstructorOptions,
   net,
+  session,
 } from 'electron';
 import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
@@ -267,6 +268,23 @@ export class Http {
 
   static getUserAgent(appVersion: string): string {
     return `PostyBirb/${appVersion}`;
+  }
+
+  /**
+   * Gets the cookies for a given URL.
+   *
+   * @static
+   * @param {string} partitionId
+   * @param {string} url
+   * @return {*}  {Promise<Electron.Cookie[]>}
+   */
+  static async getWebsiteCookies(
+    partitionId: string,
+    url: string,
+  ): Promise<Electron.Cookie[]> {
+    return session.fromPartition(`persist:${partitionId}`).cookies.get({
+      url: new URL(url).origin,
+    });
   }
 
   /**

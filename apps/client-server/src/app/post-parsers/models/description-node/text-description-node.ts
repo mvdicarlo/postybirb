@@ -3,6 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { UsernameShortcut } from '@postybirb/types';
+import { encode } from 'html-entities';
 import { DescriptionNode } from './description-node.base';
 import { IDescriptionTextNode, Styles } from './description-node.types';
 
@@ -68,11 +69,11 @@ export class DescriptionTextNode
       styles.push(`background-color: ${this.styles.backgroundColor}`);
     }
 
+    const text = encode(this.text, { level: 'html5' }).replace(/\n/g, '<br />');
     if (!segments.length && !styles.length) {
-      return this.text;
+      return text;
     }
 
-    const text = this.text.replace(/\n/g, '<br />');
     const stylesString = styles.join(';');
     return `<span${
       stylesString.length ? ` styles="${stylesString}"` : ''
