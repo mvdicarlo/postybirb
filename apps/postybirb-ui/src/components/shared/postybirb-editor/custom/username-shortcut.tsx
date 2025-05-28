@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable lingui/no-unlocalized-strings */
 /* eslint-disable react-hooks/rules-of-hooks */
 import { BlockNoteEditor } from '@blocknote/core';
 import {
@@ -8,9 +7,33 @@ import {
   createReactInlineContentSpec,
   useBlockNoteEditor,
 } from '@blocknote/react';
-import { Badge } from '@mantine/core';
+import {
+  Badge,
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Group,
+  Paper,
+  Popover,
+  ScrollArea,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
+  UnstyledButton,
+} from '@mantine/core';
+import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
+import {
+  IconChevronDown,
+  IconSearch,
+  IconWorld,
+  IconX,
+} from '@tabler/icons-react';
 import { UsernameShortcut } from '@postybirb/types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Trans } from '@lingui/macro';
 import { useStore } from '../../../../stores/use-store';
 import { WebsiteStore } from '../../../../stores/website.store';
 import { schema } from '../schema';
@@ -70,6 +93,7 @@ function Shortcut(props: {
         event.preventDefault();
         selection.modify('move', 'backward', 'character');
       }
+      // eslint-disable-next-line lingui/no-unlocalized-strings
     } else if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
       const selection = window.getSelection();
       if (!selection || selection.rangeCount === 0) return;
@@ -79,13 +103,13 @@ function Shortcut(props: {
         // Improve arrow key navigation near the shortcut boundaries
         if (event.key === 'ArrowLeft' && range.startOffset === 0) {
           // Enhanced logic to detect if we're at the start of any content inside the shortcut
-          const isAtStart = 
-            range.startContainer === ceEl || 
-            (ceEl.contains(range.startContainer as Node) && 
-             (!range.startContainer.previousSibling || 
-              range.startContainer.nodeType === Node.TEXT_NODE && 
-              range.startOffset === 0));
-          
+          const isAtStart =
+            range.startContainer === ceEl ||
+            (ceEl.contains(range.startContainer as Node) &&
+              (!range.startContainer.previousSibling ||
+                (range.startContainer.nodeType === Node.TEXT_NODE &&
+                  range.startOffset === 0)));
+
           if (isAtStart) {
             event.preventDefault();
             // Move cursor outside and to the left of the shortcut element
@@ -204,82 +228,112 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
     render: (props) => {
       const editor = useBlockNoteEditor();
       const { state: websites } = useStore(WebsiteStore);
-      const website = websites.find(
-        (w) => w.usernameShortcut?.id === props.inlineContent.props.shortcut,
-      )?.displayName;
 
-      // State for dropdown visibility
-      const [showDropdown, setShowDropdown] = useState(false);
+      // Popover state management
+      const [opened, { open, close, toggle }] = useDisclosure(false);
 
-      // Available website options for the dropdown
+      // Search state with debouncing for better performance
+      const [searchTerm, setSearchTerm] = useState('');
+      const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 300);
+
+      // Available website options
       const websiteOptions = useMemo(
-        () => websites.map((w) => ({ value: w.id, label: w.displayName })),
+        () =>
+          websites.map((w) => ({
+            value: w.id,
+            label: w.displayName,
+            avatar: w.logo, // assuming websites have logos
+          })),
         [websites],
       );
 
-      // Handle website selection
-      const handleWebsiteSelect = useCallback(
-        (websiteId: string) => {
+      // Filtered website options
+      const filteredWebsiteOptions = useMemo(() => {
+        if (!debouncedSearchTerm) return websiteOptions;
+        return websiteOptions.filter((option) =>
+          option.label
+            .toLowerCase()
+            .includes(debouncedSearchTerm.toLowerCase()),
+        );
+      }, [websiteOptions, debouncedSearchTerm]);
+
+      // Selected website IDs
+      const selectedWebsiteIds = useMemo(() => {
+        const onlyProp = props.inlineContent.props.only as string;
+        return onlyProp ? onlyProp.split(',').filter(Boolean) : [];
+      }, [props.inlineContent.props.only]);
+
+      // Update selection helper
+      const updateSelection = useCallback(
+        (newOnlyValue: string) => {
           const { inline, block } = getMyInlineNode(
             editor,
             props.inlineContent.props.id,
           );
 
           if (inline) {
-            // For handling multiple website selections
-            let newOnlyValue = websiteId;
-            const currentOnly = props.inlineContent.props.only as string;
-
-            // If websiteId is empty, we want to set to "All websites"
-            if (websiteId === '') {
-              // Reset to all websites
-              newOnlyValue = '';
-            } else if (currentOnly) {
-              const websites = currentOnly.split(',');
-
-              // Check if website is already selected
-              if (websites.includes(websiteId)) {
-                // Remove it if already selected
-                newOnlyValue = websites
-                  .filter((id) => id !== websiteId)
-                  .join(',');
-              } else {
-                // Add it to the list
-                newOnlyValue = currentOnly
-                  ? `${currentOnly},${websiteId}`
-                  : websiteId;
-              }
-            }
-
-            // Update the "only" prop with selected website IDs
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (inline as Record<string, any>).props.only = newOnlyValue;
-
             editor.updateBlock(block.id, {
               content: block.content,
             });
-            // Keep dropdown open for multiple selections
           }
         },
         [editor, props.inlineContent.props.id],
       );
 
-      // Determine if a website is selected and get its name
-      const selectedWebsitesDisplay = useMemo(() => {
-        const websiteIds = props.inlineContent.props.only;
-        if (!websiteIds) return null;
+      // Handle individual website selection
+      const handleWebsiteToggle = useCallback(
+        (websiteId: string) => {
+          const newSelected = selectedWebsiteIds.includes(websiteId)
+            ? selectedWebsiteIds.filter((id) => id !== websiteId)
+            : [...selectedWebsiteIds, websiteId];
 
-        const ids = websiteIds.split(',');
-        const selectedWebsiteNames = ids
-          .map((id) => {
-            const website = websites.find((w) => w.id === id);
-            return website?.displayName;
-          })
-          .filter(Boolean); // Remove undefined values
+          updateSelection(newSelected.join(','));
+        },
+        [selectedWebsiteIds, updateSelection],
+      );
 
-        if (selectedWebsiteNames.length === 0) return null;
-        return selectedWebsiteNames.join(', ');
-      }, [props.inlineContent.props.only, websites]);
+      // Handle select all/none
+      const handleSelectAll = useCallback(() => {
+        const allIds = websiteOptions.map((opt) => opt.value);
+        const isAllSelected = selectedWebsiteIds.length === allIds.length;
+        updateSelection(isAllSelected ? '' : allIds.join(','));
+      }, [websiteOptions, selectedWebsiteIds, updateSelection]);
+
+      // Clear all selections
+      const handleClearAll = useCallback(() => {
+        updateSelection('');
+      }, [updateSelection]);
+
+      // Display text for selected websites
+      const selectedDisplayText = useMemo(() => {
+        if (selectedWebsiteIds.length === 0) {
+          return <Trans>All websites</Trans>;
+        }
+
+        if (selectedWebsiteIds.length === 1) {
+          const website = websites.find((w) => w.id === selectedWebsiteIds[0]);
+          return website?.displayName || <Trans>Unknown</Trans>;
+        }
+
+        const names = selectedWebsiteIds
+          .map((id) => websites.find((w) => w.id === id)?.displayName)
+          .filter(Boolean)
+          .slice(0, 3); // Limit to 3 names for display
+        if (selectedWebsiteIds.length <= 3) {
+          return names.join(', ');
+        }
+
+        return `${names.join(', ')} + ${selectedWebsiteIds.length - 3}`;
+      }, [selectedWebsiteIds, websites]);
+
+      // Color logic for the badge
+      const badgeColor = useMemo(() => {
+        if (selectedWebsiteIds.length === 0) return 'gray';
+        if (selectedWebsiteIds.length === websites.length) return 'green';
+        return 'blue';
+      }, [selectedWebsiteIds.length, websites.length]);
 
       const onStale = useCallback(() => {
         const { inline, block } = getMyInlineNode(
@@ -295,13 +349,6 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
         }
       }, [editor, props.inlineContent.props.id]);
 
-      // Click handler for toggling website dropdown
-      const handleWebsiteClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setShowDropdown((prev) => !prev);
-      };
-
       return (
         <span style={{ verticalAlign: 'text-bottom', position: 'relative' }}>
           <Badge
@@ -309,92 +356,211 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             contentEditable={false}
             radius="xs"
             tt="uppercase"
+            size="sm"
+            color="dark"
           >
             {props.inlineContent.props.shortcut}
           </Badge>
-          <Badge
-            variant="light"
-            size="xs"
-            color="blue"
-            contentEditable={false}
-            radius="xs"
-            style={{ marginLeft: '2px', cursor: 'pointer' }}
-            onClick={handleWebsiteClick}
+
+          <Popover
+            opened={opened}
+            onClose={close}
+            position="bottom-start"
+            width={300}
+            shadow="md"
+            withArrow
+            withinPortal
           >
-            {selectedWebsitesDisplay || 'All websites'}
-          </Badge>
+            <Popover.Target>
+              <Tooltip
+                label={<Trans>Select websites to apply usernames to</Trans>}
+              >
+                <Badge
+                  variant="light"
+                  size="xs"
+                  color={badgeColor}
+                  contentEditable={false}
+                  radius="xs"
+                  onClick={toggle}
+                  style={{
+                    marginLeft: '4px',
+                    cursor: 'pointer',
+                    // eslint-disable-next-line lingui/no-unlocalized-strings
+                    transition: 'all 0.2s ease',
+                  }}
+                  rightSection={
+                    <IconChevronDown
+                      size={10}
+                      style={{
+                        transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
+                        // eslint-disable-next-line lingui/no-unlocalized-strings
+                        transition: 'transform 0.2s ease',
+                      }}
+                    />
+                  }
+                >
+                  {selectedDisplayText}
+                </Badge>
+              </Tooltip>
+            </Popover.Target>
+
+            <Popover.Dropdown p={0}>
+              <Stack spacing={0}>
+                {/* Header */}
+                <Group position="apart" p="sm">
+                  <Group spacing="xs">
+                    <ThemeIcon size="sm" variant="light" color="blue">
+                      <IconWorld size={14} />
+                    </ThemeIcon>
+                    <Text size="sm" fw={600}>
+                      <Trans>Websites</Trans>
+                    </Text>
+                  </Group>
+                  <Badge size="xs" variant="filled" color={badgeColor}>
+                    {selectedWebsiteIds.length === 0 ? (
+                      <Trans>All</Trans>
+                    ) : (
+                      `${selectedWebsiteIds.length}/${websites.length}`
+                    )}
+                  </Badge>
+                </Group>
+
+                <Divider />
+
+                {/* Search */}
+                <Box p="sm">
+                  <TextInput
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    size="xs"
+                    icon={<IconSearch size={14} />}
+                    rightSection={
+                      searchTerm ? (
+                        <UnstyledButton onClick={() => setSearchTerm('')}>
+                          <IconX size={14} />
+                        </UnstyledButton>
+                      ) : null
+                    }
+                  />
+                </Box>
+
+                {/* Action buttons */}
+                <Box px="sm" pb="sm">
+                  <Group spacing="xs">
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="blue"
+                      onClick={handleSelectAll}
+                      style={{ flex: 1 }}
+                    >
+                      {selectedWebsiteIds.length === websites.length ? (
+                        <Trans>Deselect All</Trans>
+                      ) : (
+                        <Trans>Select All</Trans>
+                      )}
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      color="orange"
+                      onClick={handleClearAll}
+                      disabled={selectedWebsiteIds.length === 0}
+                      style={{ flex: 1 }}
+                    >
+                      <Trans>All Websites</Trans>
+                    </Button>
+                  </Group>
+                </Box>
+
+                <Divider />
+
+                {/* Website list */}
+                <ScrollArea style={{ maxHeight: '200px' }}>
+                  {filteredWebsiteOptions.length > 0 ? (
+                    <Stack spacing={0} p="xs">
+                      {filteredWebsiteOptions.map((option) => {
+                        const isSelected = selectedWebsiteIds.includes(
+                          option.value,
+                        );
+                        return (
+                          <UnstyledButton
+                            key={option.value}
+                            onClick={() => handleWebsiteToggle(option.value)}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              borderRadius: 'var(--mantine-radius-sm)',
+                              // eslint-disable-next-line lingui/no-unlocalized-strings
+                              transition: 'background-color 0.15s ease',
+                            }}
+                            sx={(theme) => ({
+                              '&:hover': {
+                                backgroundColor:
+                                  theme.colorScheme === 'dark'
+                                    ? theme.colors.dark[6]
+                                    : theme.colors.gray[0],
+                              },
+                            })}
+                          >
+                            <Group spacing="sm" noWrap>
+                              <Checkbox
+                                checked={isSelected}
+                                onChange={() => {}} // Handled by button click
+                                size="xs"
+                                color="blue"
+                                styles={{
+                                  input: { cursor: 'pointer' },
+                                }}
+                              />
+                              <Text
+                                size="sm"
+                                style={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}
+                                weight={isSelected ? 500 : 400}
+                                color={isSelected ? 'blue' : undefined}
+                              >
+                                {option.label}
+                              </Text>
+                            </Group>
+                          </UnstyledButton>
+                        );
+                      })}
+                    </Stack>
+                  ) : (
+                    <Box p="md">
+                      <Text align="center" color="dimmed" size="sm">
+                        <Trans>No websites found</Trans>
+                      </Text>
+                    </Box>
+                  )}
+                </ScrollArea>
+
+                {/* Footer info */}
+                {selectedWebsiteIds.length > 0 && (
+                  <>
+                    <Divider />
+                    <Box
+                      p="sm"
+                      style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}
+                    >
+                      <Text size="xs" color="blue" weight={500}>
+                        <Trans>
+                          This shortcut will apply to the selected websites.
+                        </Trans>
+                      </Text>
+                    </Box>
+                  </>
+                )}
+              </Stack>
+            </Popover.Dropdown>
+          </Popover>
+
           <Shortcut item={props.contentRef} onStale={onStale} />
-
-          {showDropdown && (
-            <div
-              style={{
-                position: 'absolute',
-                zIndex: 1000,
-                top: '100%',
-                left: 0,
-                backgroundColor: 'var(--mantine-color-body)',
-                border: '1px solid var(--mantine-color-gray-4)',
-                borderRadius: 'var(--mantine-radius-sm)',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-                maxHeight: '200px',
-                overflow: 'auto',
-                width: '200px',
-              }}
-            >
-              <div
-                style={{
-                  padding: '8px',
-                  borderBottom: '1px solid var(--mantine-color-gray-3)',
-                  fontWeight: 'bold',
-                }}
-              >
-                Select website
-              </div>
-              <div
-                style={{
-                  padding: '8px',
-                  cursor: 'pointer',
-                  background: !props.inlineContent.props.only
-                    ? 'var(--mantine-color-blue-0)'
-                    : undefined,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-                onClick={() => handleWebsiteSelect('')}
-              >
-                <span>All websites</span>
-                {!props.inlineContent.props.only && <span>✓</span>}
-              </div>
-              {websiteOptions.map((option) => {
-                // Check if this website is in the selected list
-                const selectedWebsites = props.inlineContent.props.only
-                  ? props.inlineContent.props.only.split(',')
-                  : [];
-                const isSelected = selectedWebsites.includes(option.value);
-
-                return (
-                  <div
-                    key={option.value}
-                    style={{
-                      padding: '8px',
-                      cursor: 'pointer',
-                      background: isSelected
-                        ? 'var(--mantine-color-blue-0)'
-                        : undefined,
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                    onClick={() => handleWebsiteSelect(option.value)}
-                  >
-                    <span>{option.label}</span>
-                    {isSelected && <span>✓</span>}
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </span>
       );
     },
