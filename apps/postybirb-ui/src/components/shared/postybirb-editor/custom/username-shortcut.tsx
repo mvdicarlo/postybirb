@@ -405,9 +405,9 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
             </Popover.Target>
 
             <Popover.Dropdown p={0}>
-              <Stack spacing={0}>
+              <Stack gap="xs">
                 {/* Header */}
-                <Group position="apart" p="sm">
+                <Group position="apart" p="xs">
                   <Group spacing="xs">
                     <ThemeIcon size="sm" variant="light" color="blue">
                       <IconWorld size={14} />
@@ -428,12 +428,12 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                 <Divider />
 
                 {/* Search */}
-                <Box p="sm">
+                <Box p="sm" py={0}>
                   <TextInput
+                    leftSection={<IconSearch size={14} />}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     size="xs"
-                    icon={<IconSearch size={14} />}
                     rightSection={
                       searchTerm ? (
                         <UnstyledButton onClick={() => setSearchTerm('')}>
@@ -445,7 +445,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                 </Box>
 
                 {/* Action buttons */}
-                <Box px="sm" pb="sm">
+                <Box px="sm" pb="0">
                   <Group spacing="xs">
                     <Button
                       size="xs"
@@ -478,7 +478,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                 {/* Website list */}
                 <ScrollArea style={{ maxHeight: '200px' }}>
                   {filteredWebsiteOptions.length > 0 ? (
-                    <Stack spacing={0} p="xs">
+                    <Stack gap={0} p="xs">
                       {filteredWebsiteOptions.map((option) => {
                         const isSelected = selectedWebsiteIds.includes(
                           option.value,
@@ -521,7 +521,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                                   whiteSpace: 'nowrap',
                                   flex: 1,
                                 }}
-                                weight={isSelected ? 500 : 400}
+                                fw={isSelected ? 500 : 400}
                                 color={isSelected ? 'blue' : undefined}
                               >
                                 {option.label}
@@ -546,9 +546,9 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                     <Divider />
                     <Box
                       p="sm"
-                      style={{ backgroundColor: 'var(--mantine-color-blue-0)' }}
+                      style={{ backgroundColor: 'var(--mantine-color-blue-1)' }}
                     >
-                      <Text size="xs" color="blue" weight={500}>
+                      <Text size="xs" color="blue" fw={500}>
                         <Trans>
                           This shortcut will apply to the selected websites.
                         </Trans>
