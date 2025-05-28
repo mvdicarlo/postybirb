@@ -95,9 +95,41 @@ function Shortcut(props: {
         range.collapsed &&
         range.startOffset === 0 &&
         (range.startContainer === ceEl ||
-          (range.startContainer.nodeType === Node.TEXT_NODE &&
+          ((range.startContainer.nodeType === Node.TEXT_NODE ||
+            range.startContainer.nodeType === Node.ELEMENT_NODE) &&
             ceEl.contains(range.startContainer) &&
             range.startContainer.textContent === ''));
+
+      const isRemovingLast =
+        range.collapsed &&
+        range.startOffset === 1 &&
+        (range.startContainer === ceEl ||
+          ((range.startContainer.nodeType === Node.TEXT_NODE ||
+            range.startContainer.nodeType === Node.ELEMENT_NODE) &&
+            ceEl.contains(range.startContainer) &&
+            range.startContainer.textContent !== ''));
+      if (isRemovingLast) {
+        // If we're removing the last character, delete it manually and prevent escape
+        event.preventDefault();
+
+        // Manually remove the character
+        if (range.startContainer.nodeType === Node.TEXT_NODE) {
+          const textNode = range.startContainer as Text;
+          const currentText = textNode.textContent || '';
+          const newText =
+            currentText.slice(0, range.startOffset - 1) +
+            currentText.slice(range.startOffset);
+          textNode.textContent = newText;
+
+          // Keep cursor at the same position (now at the end of remaining text)
+          const newRange = document.createRange();
+          newRange.setStart(textNode, Math.max(0, range.startOffset - 1));
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+        return; // Early return to prevent other logic from running
+      }
 
       if (isAtBeginning) {
         event.preventDefault();
