@@ -1,3 +1,4 @@
+/* Styling for empty shortcut content */
 .ce > span:empty {
   font-style: italic;
   border-bottom: 1px dashed lightsalmon;
@@ -11,4 +12,11 @@
 .ce:focus-within {
   outline: 1px dotted rgba(128, 128, 128, 0.4);
   background-color: rgba(128, 128, 128, 0.1);
+}
+
+/* Ensure proper cursor behavior for contenteditable */
+.ce {
+  position: relative;
+  min-width: 1px;
+  display: inline-block;
 }

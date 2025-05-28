@@ -30,6 +30,7 @@ import {
   IconSearch,
   IconWorld,
   IconX,
+  IconArrowNarrowRight,
 } from '@tabler/icons-react';
 import { UsernameShortcut } from '@postybirb/types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -70,7 +71,6 @@ function Shortcut(props: {
 }) {
   const { item, onStale } = props;
   const ref = useRef<HTMLSpanElement>(null);
-
   // Handler for keyboard events to improve navigation
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!ref.current) return;
@@ -78,62 +78,54 @@ function Shortcut(props: {
     const ceEl = ref.current.querySelector('.ce') as HTMLSpanElement | null;
     if (!ceEl) return;
 
-    // Handle special cases for better editing experience
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+
+    // Check if cursor is inside our shortcut element
+    const isInsideShortcut =
+      ref.current.contains(range.startContainer) ||
+      ref.current.contains(range.endContainer);
+
+    if (!isInsideShortcut) return; // Handle special cases for better editing experience
     if (event.key === 'Backspace') {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      if (
+      // Check if we're at the beginning of the editable content
+      const isAtBeginning =
         range.collapsed &&
-        range.startContainer === ceEl &&
-        range.startOffset === 0
-      ) {
-        // If backspace at beginning of shortcut, move cursor outside and prevent default
+        range.startOffset === 0 &&
+        (range.startContainer === ceEl ||
+          (range.startContainer.nodeType === Node.TEXT_NODE &&
+            ceEl.contains(range.startContainer) &&
+            range.startContainer.textContent === ''));
+
+      if (isAtBeginning) {
         event.preventDefault();
-        selection.modify('move', 'backward', 'character');
+        // Move cursor to before the shortcut element
+        const newRange = document.createRange();
+        newRange.setStartBefore(ref.current);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
       }
-      // eslint-disable-next-line lingui/no-unlocalized-strings
-    } else if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
+    } else if (event.key === 'ArrowLeft') {
+      // Check if we're at the very beginning of the editable content
+      const isAtBeginning =
+        range.collapsed &&
+        range.startOffset === 0 &&
+        (range.startContainer === ceEl ||
+          (range.startContainer.nodeType === Node.TEXT_NODE &&
+            ceEl.contains(range.startContainer) &&
+            !range.startContainer.previousSibling));
 
-      const range = selection.getRangeAt(0);
-      if (range.collapsed) {
-        // Improve arrow key navigation near the shortcut boundaries
-        if (event.key === 'ArrowLeft' && range.startOffset === 0) {
-          // Enhanced logic to detect if we're at the start of any content inside the shortcut
-          const isAtStart =
-            range.startContainer === ceEl ||
-            (ceEl.contains(range.startContainer as Node) &&
-              (!range.startContainer.previousSibling ||
-                (range.startContainer.nodeType === Node.TEXT_NODE &&
-                  range.startOffset === 0)));
-
-          if (isAtStart) {
-            event.preventDefault();
-            // Move cursor outside and to the left of the shortcut element
-            const parent = ref.current?.parentNode;
-            if (parent) {
-              const newRange = document.createRange();
-              newRange.setStartBefore(ref.current as Node);
-              newRange.collapse(true);
-              selection.removeAllRanges();
-              selection.addRange(newRange);
-            } else {
-              selection.modify('move', 'backward', 'character');
-            }
-          }
-        } else if (
-          event.key === 'ArrowRight' &&
-          range.startContainer.nodeType === Node.TEXT_NODE &&
-          range.startOffset === (range.startContainer.textContent?.length || 0)
-        ) {
-          if (ceEl.contains(range.startContainer)) {
-            event.preventDefault();
-            selection.modify('move', 'forward', 'character');
-          }
-        }
+      if (isAtBeginning) {
+        event.preventDefault();
+        // Move cursor to before the shortcut element
+        const newRange = document.createRange();
+        newRange.setStartBefore(ref.current);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
       }
     }
   }, []);
@@ -350,215 +342,227 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       }, [editor, props.inlineContent.props.id]);
 
       return (
-        <span style={{ verticalAlign: 'text-bottom', position: 'relative' }}>
+        <span
+          className="username-shortcut"
+          style={{ verticalAlign: 'text-bottom', position: 'relative' }}
+        >
           <Badge
             variant="outline"
             contentEditable={false}
             radius="xs"
             tt="uppercase"
             size="sm"
-            color="dark"
           >
             {props.inlineContent.props.shortcut}
-          </Badge>
-
-          <Popover
-            opened={opened}
-            onClose={close}
-            position="bottom-start"
-            width={300}
-            shadow="md"
-            withArrow
-            withinPortal
-          >
-            <Popover.Target>
-              <Tooltip
-                label={<Trans>Select websites to apply usernames to</Trans>}
-              >
-                <Badge
-                  variant="light"
-                  size="xs"
-                  color={badgeColor}
-                  contentEditable={false}
-                  radius="xs"
-                  onClick={toggle}
-                  style={{
-                    marginLeft: '4px',
-                    cursor: 'pointer',
-                    // eslint-disable-next-line lingui/no-unlocalized-strings
-                    transition: 'all 0.2s ease',
-                  }}
-                  rightSection={
-                    <IconChevronDown
-                      size={10}
-                      style={{
-                        transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
-                        // eslint-disable-next-line lingui/no-unlocalized-strings
-                        transition: 'transform 0.2s ease',
-                      }}
-                    />
-                  }
+            <span
+              style={{
+                paddingLeft: '6px',
+                fontWeight: 'bold',
+                fontSize: '14px',
+              }}
+            >
+              →
+            </span>
+            <Popover
+              opened={opened}
+              onClose={close}
+              position="bottom-start"
+              width={300}
+              shadow="md"
+              withArrow
+              withinPortal
+            >
+              <Popover.Target>
+                <Tooltip
+                  label={<Trans>Select websites to apply usernames to</Trans>}
                 >
-                  {selectedDisplayText}
-                </Badge>
-              </Tooltip>
-            </Popover.Target>
-
-            <Popover.Dropdown p={0}>
-              <Stack gap="xs">
-                {/* Header */}
-                <Group position="apart" p="xs">
-                  <Group spacing="xs">
-                    <ThemeIcon size="sm" variant="light" color="blue">
-                      <IconWorld size={14} />
-                    </ThemeIcon>
-                    <Text size="sm" fw={600}>
-                      <Trans>Websites</Trans>
-                    </Text>
-                  </Group>
-                  <Badge size="xs" variant="filled" color={badgeColor}>
-                    {selectedWebsiteIds.length === 0 ? (
-                      <Trans>All</Trans>
-                    ) : (
-                      `${selectedWebsiteIds.length}/${websites.length}`
-                    )}
-                  </Badge>
-                </Group>
-
-                <Divider />
-
-                {/* Search */}
-                <Box p="sm" py={0}>
-                  <TextInput
-                    leftSection={<IconSearch size={14} />}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    size="xs"
+                  <Badge
+                    variant="light"
+                    size="sm"
+                    color={badgeColor}
+                    contentEditable={false}
+                    radius="xs"
+                    onClick={toggle}
+                    pr={0}
+                    style={{
+                      cursor: 'pointer',
+                      // eslint-disable-next-line lingui/no-unlocalized-strings
+                      transition: 'all 0.2s ease',
+                    }}
                     rightSection={
-                      searchTerm ? (
-                        <UnstyledButton onClick={() => setSearchTerm('')}>
-                          <IconX size={14} />
-                        </UnstyledButton>
-                      ) : null
+                      <IconChevronDown
+                        size={10}
+                        style={{
+                          transform: opened ? 'rotate(180deg)' : 'rotate(0deg)',
+                          // eslint-disable-next-line lingui/no-unlocalized-strings
+                          transition: 'transform 0.2s ease',
+                        }}
+                      />
                     }
-                  />
-                </Box>
+                  >
+                    {selectedDisplayText}
+                  </Badge>
+                </Tooltip>
+              </Popover.Target>
 
-                {/* Action buttons */}
-                <Box px="sm" pb="0">
-                  <Group spacing="xs">
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="blue"
-                      onClick={handleSelectAll}
-                      style={{ flex: 1 }}
-                    >
-                      {selectedWebsiteIds.length === websites.length ? (
-                        <Trans>Deselect All</Trans>
+              <Popover.Dropdown p={0}>
+                <Stack gap="xs">
+                  {/* Header */}
+                  <Group position="apart" p="xs">
+                    <Group spacing="xs">
+                      <ThemeIcon size="sm" variant="light" color="blue">
+                        <IconWorld size={14} />
+                      </ThemeIcon>
+                      <Text size="sm" fw={600}>
+                        <Trans>Websites</Trans>
+                      </Text>
+                    </Group>
+                    <Badge size="xs" variant="filled" color={badgeColor}>
+                      {selectedWebsiteIds.length === 0 ? (
+                        <Trans>All</Trans>
                       ) : (
-                        <Trans>Select All</Trans>
+                        `${selectedWebsiteIds.length}/${websites.length}`
                       )}
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      color="orange"
-                      onClick={handleClearAll}
-                      disabled={selectedWebsiteIds.length === 0}
-                      style={{ flex: 1 }}
-                    >
-                      <Trans>All Websites</Trans>
-                    </Button>
+                    </Badge>
                   </Group>
-                </Box>
 
-                <Divider />
+                  <Divider />
 
-                {/* Website list */}
-                <ScrollArea style={{ maxHeight: '200px' }}>
-                  {filteredWebsiteOptions.length > 0 ? (
-                    <Stack gap={0} p="xs">
-                      {filteredWebsiteOptions.map((option) => {
-                        const isSelected = selectedWebsiteIds.includes(
-                          option.value,
-                        );
-                        return (
-                          <UnstyledButton
-                            key={option.value}
-                            onClick={() => handleWebsiteToggle(option.value)}
-                            style={{
-                              width: '100%',
-                              padding: '8px',
-                              borderRadius: 'var(--mantine-radius-sm)',
-                              // eslint-disable-next-line lingui/no-unlocalized-strings
-                              transition: 'background-color 0.15s ease',
-                            }}
-                            sx={(theme) => ({
-                              '&:hover': {
-                                backgroundColor:
-                                  theme.colorScheme === 'dark'
-                                    ? theme.colors.dark[6]
-                                    : theme.colors.gray[0],
-                              },
-                            })}
-                          >
-                            <Group spacing="sm" noWrap>
-                              <Checkbox
-                                checked={isSelected}
-                                onChange={() => {}} // Handled by button click
-                                size="xs"
-                                color="blue"
-                                styles={{
-                                  input: { cursor: 'pointer' },
-                                }}
-                              />
-                              <Text
-                                size="sm"
-                                style={{
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  flex: 1,
-                                }}
-                                fw={isSelected ? 500 : 400}
-                                color={isSelected ? 'blue' : undefined}
-                              >
-                                {option.label}
-                              </Text>
-                            </Group>
+                  {/* Search */}
+                  <Box p="sm" py={0}>
+                    <TextInput
+                      leftSection={<IconSearch size={14} />}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      size="xs"
+                      rightSection={
+                        searchTerm ? (
+                          <UnstyledButton onClick={() => setSearchTerm('')}>
+                            <IconX size={14} />
                           </UnstyledButton>
-                        );
-                      })}
-                    </Stack>
-                  ) : (
-                    <Box p="md">
-                      <Text align="center" color="dimmed" size="sm">
-                        <Trans>No websites found</Trans>
-                      </Text>
-                    </Box>
-                  )}
-                </ScrollArea>
+                        ) : null
+                      }
+                    />
+                  </Box>
 
-                {/* Footer info */}
-                {selectedWebsiteIds.length > 0 && (
-                  <>
-                    <Divider />
-                    <Box
-                      p="sm"
-                      style={{ backgroundColor: 'var(--mantine-color-blue-1)' }}
-                    >
-                      <Text size="xs" color="blue" fw={500}>
-                        <Trans>
-                          This shortcut will apply to the selected websites.
-                        </Trans>
-                      </Text>
-                    </Box>
-                  </>
-                )}
-              </Stack>
-            </Popover.Dropdown>
-          </Popover>
+                  {/* Action buttons */}
+                  <Box px="sm" pb="0">
+                    <Group spacing="xs">
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="blue"
+                        onClick={handleSelectAll}
+                        style={{ flex: 1 }}
+                      >
+                        {selectedWebsiteIds.length === websites.length ? (
+                          <Trans>Deselect All</Trans>
+                        ) : (
+                          <Trans>Select All</Trans>
+                        )}
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="orange"
+                        onClick={handleClearAll}
+                        disabled={selectedWebsiteIds.length === 0}
+                        style={{ flex: 1 }}
+                      >
+                        <Trans>All Websites</Trans>
+                      </Button>
+                    </Group>
+                  </Box>
+
+                  <Divider />
+
+                  {/* Website list */}
+                  <ScrollArea style={{ maxHeight: '200px' }}>
+                    {filteredWebsiteOptions.length > 0 ? (
+                      <Stack gap={0} p="xs">
+                        {filteredWebsiteOptions.map((option) => {
+                          const isSelected = selectedWebsiteIds.includes(
+                            option.value,
+                          );
+                          return (
+                            <UnstyledButton
+                              key={option.value}
+                              onClick={() => handleWebsiteToggle(option.value)}
+                              style={{
+                                width: '100%',
+                                padding: '8px',
+                                borderRadius: 'var(--mantine-radius-sm)',
+                                // eslint-disable-next-line lingui/no-unlocalized-strings
+                                transition: 'background-color 0.15s ease',
+                              }}
+                              sx={(theme) => ({
+                                '&:hover': {
+                                  backgroundColor:
+                                    theme.colorScheme === 'dark'
+                                      ? theme.colors.dark[6]
+                                      : theme.colors.gray[0],
+                                },
+                              })}
+                            >
+                              <Group spacing="sm" noWrap>
+                                <Checkbox
+                                  checked={isSelected}
+                                  onChange={() => {}} // Handled by button click
+                                  size="xs"
+                                  color="blue"
+                                  styles={{
+                                    input: { cursor: 'pointer' },
+                                  }}
+                                />
+                                <Text
+                                  size="sm"
+                                  style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    flex: 1,
+                                  }}
+                                  fw={isSelected ? 500 : 400}
+                                  color={isSelected ? 'blue' : undefined}
+                                >
+                                  {option.label}
+                                </Text>
+                              </Group>
+                            </UnstyledButton>
+                          );
+                        })}
+                      </Stack>
+                    ) : (
+                      <Box p="md">
+                        <Text align="center" color="dimmed" size="sm">
+                          <Trans>No websites found</Trans>
+                        </Text>
+                      </Box>
+                    )}
+                  </ScrollArea>
+
+                  {/* Footer info */}
+                  {selectedWebsiteIds.length > 0 && (
+                    <>
+                      <Divider />
+                      <Box
+                        p="sm"
+                        style={{
+                          backgroundColor: 'var(--mantine-color-blue-1)',
+                        }}
+                      >
+                        <Text size="xs" color="blue" fw={500}>
+                          <Trans>
+                            This shortcut will apply to the selected websites.
+                          </Trans>
+                        </Text>
+                      </Box>
+                    </>
+                  )}
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+          </Badge>
 
           <Shortcut item={props.contentRef} onStale={onStale} />
         </span>
