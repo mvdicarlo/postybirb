@@ -92,17 +92,16 @@ export default class Bluesky
       password: true,
     };
 
-  private agent?: AtpAgent;
+  private agent = new AtpAgent({ service: 'https://bsky.social' });
 
-  private getAgent(): AtpAgent {
-    if (!this.agent || !this.agent.hasSession) throw new Error('Not logged in');
+  private getLoggedInAgent(): AtpAgent {
+    if (!this.agent.hasSession) throw new Error('Not logged in');
     return this.agent;
   }
 
   public async onLogin(): Promise<ILoginState> {
     const { username, password } = this.websiteDataStore.getData();
 
-    this.agent = new AtpAgent({ service: 'https://bsky.social' });
     return this.agent
       .login({ identifier: username, password })
       .then((res) => {
@@ -136,7 +135,7 @@ export default class Bluesky
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const agent = this.getAgent();
+    const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
@@ -152,7 +151,7 @@ export default class Bluesky
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const agent = this.getAgent();
+    const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
     const postResult = await this.post(postData, agent, undefined, reply);
@@ -236,7 +235,7 @@ export default class Bluesky
     const validator = this.createValidator<BlueskyFileSubmission>();
 
     this.validateRating(postData, validator);
-    this.validateDescription(postData, validator);
+    await this.validateDescription(postData, validator);
     this.validateReplyToUrl(postData, validator);
 
     const { images, videos, other, gifs } = this.countFileTypes(
@@ -269,7 +268,7 @@ export default class Bluesky
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<BlueskyMessageSubmission>();
 
-    this.validateDescription(postData, validator);
+    await this.validateDescription(postData, validator);
     this.validateReplyToUrl(postData, validator);
     this.validateRating(postData, validator);
 
@@ -301,17 +300,16 @@ export default class Bluesky
     }
   }
 
-  private validateDescription(
+  private async validateDescription(
     postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
     validator: SubmissionValidator<
       BlueskyMessageSubmission | BlueskyFileSubmission
     >,
-  ): void {
+  ): Promise<void> {
     const { description } = postData.options;
 
     const rt = new RichText({ text: description });
-    const agent = this.getAgent();
-    rt.detectFacets(agent);
+    await rt.detectFacets(this.agent);
 
     if (rt.graphemeLength > this.MAX_CHARS) {
       validator.error(
