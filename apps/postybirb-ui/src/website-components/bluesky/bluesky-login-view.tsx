@@ -71,7 +71,9 @@ export default function BlueskyLoginView(
           label={<Trans>Username</Trans>}
           name="username"
           description={
-            <Trans>Your DID or handle - for example yourname.bsky.social</Trans>
+            <Trans>
+              Your handle - for example yourname.bsky.social or username.ext
+            </Trans>
           }
           required
           minLength={1}
