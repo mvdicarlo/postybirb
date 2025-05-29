@@ -32,6 +32,7 @@ import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import { SubmissionValidator } from '../../commons/validator';
+import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -65,6 +66,7 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
   acceptedFileSizes: { '*': 1_000_000 },
   fileBatchSize: 4,
 })
+@DisableAds()
 export default class Bluesky
   extends Website<BlueskyAccountData>
   implements
@@ -90,15 +92,18 @@ export default class Bluesky
       password: true,
     };
 
-  private createAgent(): AtpAgent {
-    return new AtpAgent({ service: 'https://bsky.social' });
+  private agent?: AtpAgent;
+
+  private getAgent(): AtpAgent {
+    if (!this.agent || !this.agent.hasSession) throw new Error('Not logged in');
+    return this.agent;
   }
 
   public async onLogin(): Promise<ILoginState> {
     const { username, password } = this.websiteDataStore.getData();
 
-    const agent = this.createAgent();
-    return agent
+    this.agent = new AtpAgent({ service: 'https://bsky.social' });
+    return this.agent
       .login({ identifier: username, password })
       .then((res) => {
         if (!res.success) return this.loginState.logout();
@@ -131,11 +136,7 @@ export default class Bluesky
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const agent = this.createAgent();
-    const { username, password } = this.websiteDataStore.getData();
-
-    await agent.login({ identifier: username, password });
-
+    const agent = this.getAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
@@ -151,11 +152,7 @@ export default class Bluesky
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
 
-    const agent = this.createAgent();
-    const { username, password } = this.websiteDataStore.getData();
-
-    await agent.login({ identifier: username, password });
-
+    const agent = this.getAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
     const postResult = await this.post(postData, agent, undefined, reply);
@@ -313,7 +310,7 @@ export default class Bluesky
     const { description } = postData.options;
 
     const rt = new RichText({ text: description });
-    const agent = this.createAgent();
+    const agent = this.getAgent();
     rt.detectFacets(agent);
 
     if (rt.graphemeLength > this.MAX_CHARS) {
@@ -325,20 +322,6 @@ export default class Bluesky
         },
         'description',
       );
-    } else if (
-      postData.options.tags.length &&
-      !description.toLowerCase().includes('{tags}')
-    ) {
-      // this.validateInsertTags(
-      //   validator,
-      //   postData.options.getProcessedTags(),
-      //   description,
-      //   this.MAX_CHARS,
-      //   (text: string) => new RichText({ text }).graphemeLength,
-      // );
-    } else {
-      // warnings.push(`You have not inserted the {tags} shortcut in your description;
-      // tags will not be inserted in your post`);
     }
   }
 
