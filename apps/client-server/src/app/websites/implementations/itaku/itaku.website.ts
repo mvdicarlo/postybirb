@@ -303,10 +303,7 @@ export default class Itaku
   async onValidateFileSubmission(
     postData: PostData<ItakuFileSubmission>,
   ): Promise<SimpleValidationResult> {
-    const validations = {
-      warnings: [],
-      errors: [],
-    };
+    const validator = this.createValidator<ItakuFileSubmission>();
 
     const { submission, options } = postData;
     if (!options.shareOnFeed) {
@@ -317,15 +314,15 @@ export default class Itaku
       );
 
       if (filesToPost.length > 1) {
-        validations.errors.push({
-          id: 'validation.file.itaku.must-share-feed',
-          field: 'files',
-          values: {},
-        });
+        validator.error(
+          'validation.file.itaku.must-share-feed',
+          {},
+          'shareOnFeed',
+        );
       }
     }
 
-    return validations;
+    return validator.result;
   }
 
   createMessageModel(): ItakuMessageSubmission {

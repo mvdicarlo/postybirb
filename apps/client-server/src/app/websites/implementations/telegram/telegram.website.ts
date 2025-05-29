@@ -6,7 +6,6 @@ import {
   OAuthRouteHandlers,
   PostData,
   PostResponse,
-  SimpleValidationResult,
   TelegramAccountData,
   TelegramOAuthRoutes,
 } from '@postybirb/types';
@@ -21,6 +20,7 @@ import { StringSession } from 'telegram/sessions';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { validatorPassthru } from '../../commons/validator-passthru';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -393,14 +393,7 @@ export default class Telegram
     return peer;
   }
 
-  async onValidateFileSubmission(
-    postData: PostData<TelegramFileSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
+  onValidateFileSubmission = validatorPassthru;
 
   createMessageModel(): TelegramMessageSubmission {
     return new TelegramMessageSubmission();
@@ -436,12 +429,5 @@ export default class Telegram
     return postResponse;
   }
 
-  async onValidateMessageSubmission(
-    postData: PostData<TelegramMessageSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
+  onValidateMessageSubmission = validatorPassthru;
 }
