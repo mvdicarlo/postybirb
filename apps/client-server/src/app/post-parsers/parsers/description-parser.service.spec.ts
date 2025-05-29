@@ -124,7 +124,7 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new PlaintextBaseWebsiteOptions(websiteOptions.data),
-      '',
+      [],
       '',
     );
     expect(description).toMatchInlineSnapshot(`
@@ -149,7 +149,7 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new BaseWebsiteOptions(websiteOptions.data),
-      '',
+      [],
       '',
     );
     expect(description).toMatchInlineSnapshot(
@@ -178,7 +178,7 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new MarkdownBaseWebsiteOptions(websiteOptions.data),
-      '',
+      [],
       '',
     );
     expect(description).toMatchInlineSnapshot(`
@@ -205,7 +205,7 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new NoneBaseWebsiteOptions(websiteOptions.data),
-      '',
+      [],
       '',
     );
     expect(description).toEqual(undefined);
@@ -234,7 +234,7 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new BaseWebsiteOptions(websiteOptions.data),
-      '',
+      [],
       '',
     );
 
@@ -266,7 +266,7 @@ describe('DescriptionParserService', () => {
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
       new BaseWebsiteOptions(websiteOptions.data),
-      '',
+      [],
       '',
     );
 

@@ -2,13 +2,17 @@ import { Trans } from '@lingui/macro';
 import { Box, Button, Stack, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { BlueskyAccountData, BlueskyOAuthRoutes } from '@postybirb/types';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
 
 const formId = 'bluesky-login-form';
+
+// Source: https://atproto.com/specs/handle
+const usernameRegexp =
+  /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$/;
 
 export default function BlueskyLoginView(
   props: LoginComponentProps<BlueskyAccountData>,
@@ -18,25 +22,6 @@ export default function BlueskyLoginView(
   const [username, setUsername] = useState(data?.username ?? '');
   const [password, setPassword] = useState(data?.password ?? '');
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
-
-  const usernameValidationErrors: React.ReactNode[] = [];
-  if (username.startsWith('@')) {
-    usernameValidationErrors.push(
-      <Trans comment="Bluesky login form">
-        You don't need to input the @. Unless your username{' '}
-        <strong>really</strong> contains it
-      </Trans>,
-    );
-  }
-  if (username && !username.includes('.')) {
-    usernameValidationErrors.push(
-      <Trans comment="Bluesky login form">
-        Be sure that the username is in the format handle.bsky.social. Or if you
-        are using custom domain, make sure to include full username, e.g.
-        domain.ext, handle.domain.ext
-      </Trans>,
-    );
-  }
 
   return (
     <form
@@ -92,12 +77,18 @@ export default function BlueskyLoginView(
           minLength={1}
           defaultValue={username}
           error={
-            usernameValidationErrors.length
-              ? usernameValidationErrors
-              : undefined
+            username &&
+            !usernameRegexp.test(username) && (
+              <Trans comment="Bluesky login form">
+                Be sure that the username is in the format handle.bsky.social.
+                Or if you are using custom domain, make sure to include full
+                username, e.g. domain.ext, handle.domain.ext
+              </Trans>
+            )
           }
           onBlur={(event) => {
-            setUsername(event.currentTarget.value.trim());
+            // Remove spaces and leading @
+            setUsername(event.currentTarget.value.trim().replace(/^@/, ''));
           }}
         />
         <TextInput

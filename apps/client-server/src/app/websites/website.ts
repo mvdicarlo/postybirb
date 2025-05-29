@@ -5,12 +5,12 @@ import {
   IWebsiteFormFields,
   LoginState,
   SubmissionType,
-  SubmissionValidator,
 } from '@postybirb/types';
 import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {

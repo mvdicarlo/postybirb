@@ -29,7 +29,7 @@ export interface IDescriptionTextNode extends IDescriptionNode<'text'> {
 export type ShortcutEnabledFields = {
   defaultDescription?: string;
   title?: string;
-  tags?: string;
+  tags?: string[];
 };
 
 export const BlockTypes = Object.keys(DescriptionSchema.blockSchema);

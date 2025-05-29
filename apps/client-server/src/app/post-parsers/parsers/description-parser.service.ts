@@ -36,7 +36,7 @@ export class DescriptionParserService {
     instance: Website<unknown>,
     defaultOptions: DefaultWebsiteOptions,
     websiteOptions: BaseWebsiteOptions,
-    tags: string,
+    tags: string[],
     title: string,
   ): Promise<string> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);

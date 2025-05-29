@@ -58,7 +58,7 @@ export class PostParsersService {
           instance,
           defaultOpts,
           websiteOpts,
-          websiteOpts.joinTags(tags),
+          tags,
           title,
         ),
         title,

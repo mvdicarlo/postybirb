@@ -27,11 +27,11 @@ import {
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
-  SubmissionValidator,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import { SubmissionValidator } from '../../commons/validator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -173,9 +173,9 @@ export default class Bluesky
     reply: ReplyRef,
   ) {
     let labels: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
-    if (postData.options.label_rating) {
+    if (postData.options.labelRating) {
       labels = {
-        values: [{ val: postData.options.label_rating }],
+        values: [{ val: postData.options.labelRating }],
         $type: 'com.atproto.label.defs#selfLabels',
       };
     }
@@ -188,6 +188,8 @@ export default class Bluesky
       facets: rt.facets,
       embed,
       labels,
+
+      // Bsky throws error if we provide undefined reply unlike labels and embed
       ...(reply ? { reply } : {}),
     });
     return postResult;
@@ -211,11 +213,11 @@ export default class Bluesky
       const friendlyUrl = `https://${hostname}/profile/${handle}/post/${postId}`;
 
       // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
-      if (postData.options.threadgate) {
+      if (postData.options.whoCanReply) {
         this.createThreadgate(
           agent,
           postResult.uri,
-          postData.options.threadgate,
+          postData.options.whoCanReply,
         );
       }
 
@@ -234,9 +236,7 @@ export default class Bluesky
   async onValidateFileSubmission(
     postData: PostData<BlueskyFileSubmission>,
   ): Promise<SimpleValidationResult> {
-    const validator = this.createValidator<
-      BlueskyMessageSubmission | BlueskyFileSubmission
-    >();
+    const validator = this.createValidator<BlueskyFileSubmission>();
 
     this.validateRating(postData, validator);
     this.validateDescription(postData, validator);
@@ -270,9 +270,7 @@ export default class Bluesky
   async onValidateMessageSubmission(
     postData: PostData<BlueskyMessageSubmission>,
   ): Promise<SimpleValidationResult> {
-    const validator = this.createValidator<
-      BlueskyMessageSubmission | BlueskyFileSubmission
-    >();
+    const validator = this.createValidator<BlueskyMessageSubmission>();
 
     this.validateDescription(postData, validator);
     this.validateReplyToUrl(postData, validator);
@@ -294,13 +292,13 @@ export default class Bluesky
       // Dont really want to make warning for undefined rating
       // This is handled by default part validator
       if (
-        !postData.options.label_rating &&
+        !postData.options.labelRating &&
         rating !== SubmissionRating.GENERAL
       ) {
         validator.warning(
           'validation.file.bluesky.rating-matches-default',
           {},
-          'label_rating',
+          'labelRating',
         );
       }
     }
@@ -421,7 +419,7 @@ export default class Bluesky
   private createThreadgate(
     agent: AtpAgent,
     postUri: string,
-    fromPostThreadGate: NonNullable<BlueskyFileSubmission['threadgate']>,
+    whoCanReply: NonNullable<BlueskyFileSubmission['whoCanReply']>,
   ) {
     const allow: (
       | $Typed<AppBskyFeedThreadgate.MentionRule>
@@ -429,7 +427,7 @@ export default class Bluesky
       | $Typed<AppBskyFeedThreadgate.ListRule>
     )[] = [];
 
-    switch (fromPostThreadGate) {
+    switch (whoCanReply) {
       case 'mention':
         allow.push({ $type: 'app.bsky.feed.threadgate#mentionRule' });
         break;

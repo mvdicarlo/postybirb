@@ -8,7 +8,6 @@ import {
   DefaultTagValue,
   DescriptionType,
   DescriptionValue,
-  Tag,
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
@@ -31,10 +30,7 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
     return `#${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
   }
 
-  override joinTags(tags: Tag[]): string {
-    return tags.join(' ');
-  }
-
+  // Note: in v3 it was label_rating
   @SelectField({
     label: 'rating',
     options: [
@@ -44,13 +40,14 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
       { value: 'porn', label: 'Adult: Porn' },
     ],
   })
-  label_rating: '' | 'sexual' | 'nudity' | 'porn';
+  labelRating: '' | 'sexual' | 'nudity' | 'porn';
 
   @TextField({ label: 'replyToUrl' })
   replyToUrl?: string;
 
+  // Note: in v3 it was threadgate
   @SelectField({
-    label: 'threadgate',
+    label: 'whoCanReply',
     options: [
       { value: '', label: 'Everybody' },
       { value: 'nobody', label: 'Nobody' },
@@ -59,5 +56,5 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
       { value: 'mention,following', label: 'Mentioned & Followed Users' },
     ],
   })
-  threadgate?: '' | 'nobody' | 'mention' | 'following' | 'mention,following';
+  whoCanReply?: '' | 'nobody' | 'mention' | 'following' | 'mention,following';
 }

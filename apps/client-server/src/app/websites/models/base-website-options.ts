@@ -156,13 +156,6 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
 
   /**
    * Tag transformation function that can be overridden by subclasses.
-   */
-  public joinTags(tags: Tag[]) {
-    return tags.join(', ');
-  }
-
-  /**
-   * Tag transformation function that can be overridden by subclasses.
    *
    * @protected
    * @param {string} tag

@@ -28,7 +28,7 @@ export const FieldLabelTranslations = {
   allowComments: msg`Allow comments`,
   allowReblogging: msg`Allow reblogging`,
   replyToUrl: msg`Reply to post URL`,
-  threadgate: msg`Who can reply`,
+  whoCanReply: msg`Who can reply`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

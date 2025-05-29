@@ -11,7 +11,7 @@ import {
 
 export type InsertionOptions = {
   insertTitle?: string;
-  insertTags?: string;
+  insertTags?: string[];
   insertAd: boolean;
 };
 
@@ -168,7 +168,7 @@ export class DescriptionNodeTree {
             content: [
               {
                 type: 'text',
-                text: insertTags,
+                text: insertTags.join(' '),
                 styles: {},
                 props: {},
               },

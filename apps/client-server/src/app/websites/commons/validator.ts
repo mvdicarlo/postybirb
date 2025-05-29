@@ -1,9 +1,9 @@
 import {
+  IWebsiteFormFields,
   SimpleValidationResult,
   ValidationMessage,
   ValidationMessages,
-} from './validation-result.type';
-import { IWebsiteFormFields } from './website-form-fields.interface';
+} from '@postybirb/types';
 
 type KeysToOmit =
   | 'mergeDefaults'
