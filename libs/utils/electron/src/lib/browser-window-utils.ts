@@ -47,4 +47,41 @@ export class BrowserWindowUtils {
       }
     }
   }
+
+  public static async runScriptOnPage<T>(
+    partition: string,
+    url: string,
+    script: string,
+    wait = 0,
+  ): Promise<T> {
+    const bw = await createWindow(partition, url);
+    try {
+      if (wait) {
+        await delay(wait);
+      }
+
+      // Using promise to handle errors. See more: https://github.com/electron/electron/pull/11158
+      const page = await bw.webContents.executeJavaScript(`
+      (function() {
+        try {
+          ${script}
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      })()`);
+      return page;
+    } catch (err) {
+      const e = err as Error;
+      if (e.message) {
+        e.message = `Failed to run script on page: ${e.message}\n\nscript:\n${script}\n`;
+      }
+
+      bw.destroy();
+      throw e;
+    } finally {
+      if (!bw.isDestroyed()) {
+        bw.destroy();
+      }
+    }
+  }
 }

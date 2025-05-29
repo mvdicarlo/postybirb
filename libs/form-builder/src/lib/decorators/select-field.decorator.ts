@@ -6,18 +6,17 @@ export type SelectOptionWithDiscriminator = {
   discriminator: 'overallFileType';
 };
 
-export type SelectOption =
-  | {
-      group: string;
-      items: Array<{
-        label: string;
-        value: string;
-      }>;
-    }
-  | {
-      label: string;
-      value: string;
-    };
+export type SelectOptionSingle = {
+  label: string;
+  value: string;
+};
+
+export type SelectOptionGroup = {
+  group: string;
+  items: SelectOptionSingle[];
+};
+
+export type SelectOption = SelectOptionGroup | SelectOptionSingle;
 
 type ExtraOptions = {
   options: SelectOption[] | SelectOptionWithDiscriminator;

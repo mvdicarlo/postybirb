@@ -124,7 +124,7 @@ function WebsitePostRow({
   const isSuccess = post.errors.length === 0 && post.completedAt;
   const sourceUrls = post.metadata.source
     ? [post.metadata.source]
-    : uniq(Object.values(post.metadata.sourceMap));
+    : uniq(Object.values(post.metadata.sourceMap)).filter(Boolean);
   const account = accountsMap.get(post.accountId) || post.account;
 
   return (
@@ -146,7 +146,7 @@ function WebsitePostRow({
         )}
       </Table.Td>
       <Table.Td>
-        {sourceUrls.length && (
+        {sourceUrls.length ? (
           <Group>
             {sourceUrls.map((sourceUrl) => (
               <ExternalLink href={sourceUrl} key={sourceUrl}>
@@ -158,7 +158,7 @@ function WebsitePostRow({
               </ExternalLink>
             ))}
           </Group>
-        )}
+        ) : null}
         {!isSuccess && post.errors.length > 0 && (
           <Badge
             color="red"

@@ -194,6 +194,15 @@ export const TranslationMessages: TranslationsMap = {
     );
   },
 
+  'validation.select-field.invalid-option': (props) => {
+    const { invalidOptions } = props;
+    return (
+      <span>
+        <Trans>Unknown choice</Trans>: {invalidOptions.join(', ')}
+      </span>
+    );
+  },
+
   'validation.field.required': () => <Trans>Required</Trans>,
 
   'validation.file.bluesky.unsupported-combination-of-files': () => (
