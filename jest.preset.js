@@ -9,8 +9,7 @@ module.exports = {
   setupFiles: [join(basePath, 'jest.setup.ts')],
   silent: true,
   prettierPath: require.resolve('prettier-2'),
-  cacheDirectory: join(process.cwd(), '.jest'),
-  transform: {
+  cacheDirectory: join(process.cwd(), '.jest'),  transform: {
     '^.+\\.(ts|tsx|jsx|js|html)$': [
       '@swc/jest',
       {
@@ -32,7 +31,8 @@ module.exports = {
             decoratorMetadata: true,
           },
         },
-        sourceMaps: true,
+        sourceMaps: 'inline',
+        inlineSourcesContent: true,
       },
     ],
   },
