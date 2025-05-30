@@ -8,6 +8,7 @@ import {
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
+import { Trans } from '@lingui/macro';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { IconKeyboard } from '@tabler/icons-react';
@@ -21,6 +22,9 @@ type PostyBirbEditorProps = {
   value: Description;
   onChange: (newValue: Description) => void;
 };
+
+// eslint-disable-next-line lingui/text-restrictions
+const shortcutTrigger = '`'; // Backtick character for shortcuts
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const theme = useMantineColorScheme();
@@ -39,28 +43,34 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
 
   return (
     <div style={{ position: 'relative' }}>
-      <Tooltip 
-        label="Type ` (backtick) to insert username shortcuts" 
+      <Tooltip
+        label={
+          <Trans>Type ${shortcutTrigger} to insert username shortcuts</Trans>
+        }
         position="top-start"
         withArrow
       >
-        <div 
-          style={{ 
-            position: 'absolute', 
-            top: '8px', 
-            right: '8px', 
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
             zIndex: 5,
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
             padding: '4px 8px',
             borderRadius: '4px',
-            backgroundColor: theme.colorScheme === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+            backgroundColor:
+              theme.colorScheme === 'dark'
+                ? 'rgba(0, 0, 0, 0.3)'
+                : 'rgba(255, 255, 255, 0.8)',
             fontSize: '12px',
           }}
         >
-          <IconKeyboard size={16} /> 
-          <code style={{ fontWeight: 'bold' }}>`</code> for shortcuts
+          <IconKeyboard size={16} />
+          <code style={{ fontWeight: 'bold' }}>{shortcutTrigger}</code> for
+          shortcuts
         </div>
       </Tooltip>
       <BlockNoteView
@@ -83,8 +93,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           }
         />
         <SuggestionMenuController
-          // eslint-disable-next-line lingui/text-restrictions
-          triggerCharacter="`"
+          triggerCharacter={shortcutTrigger}
           getItems={async (query) =>
             // Gets the mentions menu items
             filterSuggestionItems(
