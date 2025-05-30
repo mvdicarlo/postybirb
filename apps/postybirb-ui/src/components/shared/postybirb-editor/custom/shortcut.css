@@ -20,3 +20,7 @@
   min-width: 1px;
   display: inline-block;
 }
+
+.only-website-toggle-btn:hover {
+  background-color: rgba(128, 128, 128, 0.1);
+}

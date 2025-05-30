@@ -7,6 +7,7 @@ import {
   createReactInlineContentSpec,
   useBlockNoteEditor,
 } from '@blocknote/react';
+import { Trans } from '@lingui/macro';
 import {
   Badge,
   Box,
@@ -14,7 +15,6 @@ import {
   Checkbox,
   Divider,
   Group,
-  Paper,
   Popover,
   ScrollArea,
   Stack,
@@ -25,16 +25,14 @@ import {
   UnstyledButton,
 } from '@mantine/core';
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks';
+import { UsernameShortcut } from '@postybirb/types';
 import {
   IconChevronDown,
   IconSearch,
   IconWorld,
   IconX,
-  IconArrowNarrowRight,
 } from '@tabler/icons-react';
-import { UsernameShortcut } from '@postybirb/types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Trans } from '@lingui/macro';
 import { useStore } from '../../../../stores/use-store';
 import { WebsiteStore } from '../../../../stores/website.store';
 import { schema } from '../schema';
@@ -266,7 +264,6 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
           websites.map((w) => ({
             value: w.id,
             label: w.displayName,
-            avatar: w.logo, // assuming websites have logos
           })),
         [websites],
       );
@@ -440,25 +437,27 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
               <Popover.Dropdown p={0}>
                 <Stack gap="xs">
                   {/* Header */}
-                  <Group position="apart" p="xs">
-                    <Group spacing="xs">
-                      <ThemeIcon size="sm" variant="light" color="blue">
-                        <IconWorld size={14} />
-                      </ThemeIcon>
-                      <Text size="sm" fw={600}>
-                        <Trans>Websites</Trans>
-                      </Text>
+                  <Box>
+                    <Group align="apart" p="xs">
+                      <Group gap="xs">
+                        <ThemeIcon size="sm" variant="light" color="blue">
+                          <IconWorld size={14} />
+                        </ThemeIcon>
+                        <Text size="sm" fw={600}>
+                          <Trans>Websites</Trans>
+                        </Text>
+                      </Group>
+                      <Badge size="xs" variant="filled" color={badgeColor}>
+                        {selectedWebsiteIds.length === 0 ? (
+                          <Trans>All</Trans>
+                        ) : (
+                          `${selectedWebsiteIds.length}/${websites.length}`
+                        )}
+                      </Badge>
                     </Group>
-                    <Badge size="xs" variant="filled" color={badgeColor}>
-                      {selectedWebsiteIds.length === 0 ? (
-                        <Trans>All</Trans>
-                      ) : (
-                        `${selectedWebsiteIds.length}/${websites.length}`
-                      )}
-                    </Badge>
-                  </Group>
 
-                  <Divider />
+                    <Divider />
+                  </Box>
 
                   {/* Search */}
                   <Box p="sm" py={0}>
@@ -479,7 +478,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
 
                   {/* Action buttons */}
                   <Box px="sm" pb="0">
-                    <Group spacing="xs">
+                    <Group gap="xs">
                       <Button
                         size="xs"
                         variant="light"
@@ -518,6 +517,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                           );
                           return (
                             <UnstyledButton
+                              className="only-website-toggle-btn"
                               key={option.value}
                               onClick={() => handleWebsiteToggle(option.value)}
                               style={{
@@ -527,16 +527,8 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                                 // eslint-disable-next-line lingui/no-unlocalized-strings
                                 transition: 'background-color 0.15s ease',
                               }}
-                              sx={(theme) => ({
-                                '&:hover': {
-                                  backgroundColor:
-                                    theme.colorScheme === 'dark'
-                                      ? theme.colors.dark[6]
-                                      : theme.colors.gray[0],
-                                },
-                              })}
                             >
-                              <Group spacing="sm" noWrap>
+                              <Group gap="sm" wrap="nowrap">
                                 <Checkbox
                                   checked={isSelected}
                                   onChange={() => {}} // Handled by button click
@@ -555,7 +547,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                                     flex: 1,
                                   }}
                                   fw={isSelected ? 500 : 400}
-                                  color={isSelected ? 'blue' : undefined}
+                                  c={isSelected ? 'blue' : undefined}
                                 >
                                   {option.label}
                                 </Text>
@@ -566,7 +558,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
                       </Stack>
                     ) : (
                       <Box p="md">
-                        <Text align="center" color="dimmed" size="sm">
+                        <Text ta="center" color="dimmed" size="sm">
                           <Trans>No websites found</Trans>
                         </Text>
                       </Box>
