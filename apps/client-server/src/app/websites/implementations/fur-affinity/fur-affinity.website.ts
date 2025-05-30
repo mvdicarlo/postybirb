@@ -4,7 +4,7 @@ import {
   ImageResizeProps,
   IPostResponse,
   PostData,
-  SimpleValidationResult
+  SimpleValidationResult,
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -88,10 +88,9 @@ export default class FurAffinity
   async onValidateFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
   ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
+    const validator = this.createValidator<FurAffinityFileSubmission>();
+
+    return validator.result;
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
@@ -108,10 +107,9 @@ export default class FurAffinity
   async onValidateMessageSubmission(
     postData: PostData<FurAffinityMessageSubmission>,
   ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
+    const validator = this.createValidator<FurAffinityMessageSubmission>();
+
+    return validator.result;
   }
 
   onDescriptionParse(): string {

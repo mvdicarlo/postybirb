@@ -39,10 +39,10 @@ export function useWebsites() {
     () =>
       filterWebsites(
         websites,
-        currentSettings.hiddenWebsites || [],
+        currentSettings?.hiddenWebsites || [],
         filterState,
       ),
-    [currentSettings.hiddenWebsites, filterState, websites],
+    [currentSettings?.hiddenWebsites, filterState, websites],
   );
 
   const accounts = useMemo(
@@ -51,7 +51,7 @@ export function useWebsites() {
   );
 
   const filteredWebsites = websites.filter(
-    (website) => !settings.hiddenWebsites.includes(website.id),
+    (website) => !settings?.hiddenWebsites.includes(website.id),
   );
 
   const setHiddenWebsites = useCallback(

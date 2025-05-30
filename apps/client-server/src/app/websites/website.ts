@@ -2,6 +2,7 @@ import { Logger, PostyBirbLogger } from '@postybirb/logger';
 import {
   DynamicObject,
   ILoginState,
+  IWebsiteFormFields,
   LoginState,
   SubmissionType,
 } from '@postybirb/types';
@@ -9,6 +10,7 @@ import { getPartitionKey } from '@postybirb/utils/electron';
 import { session } from 'electron';
 import { Account } from '../drizzle/models';
 import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { SubmissionValidator } from './commons/validator';
 import { WebsiteDecoratorProps } from './decorators/website-decorator-props';
 import { DataPropertyAccessibility } from './models/data-property-accessibility';
 import {
@@ -125,6 +127,13 @@ export abstract class Website<D extends DynamicObject> {
     }
 
     throw new Error(`Unsupported submission type: ${type}`);
+  }
+
+  /**
+   * Creates new validator to be used in onValidateFileSubmission or onValidateMessageSubmission
+   */
+  protected createValidator<T extends IWebsiteFormFields = never>() {
+    return new SubmissionValidator<T>();
   }
 
   constructor(userAccount: Account) {

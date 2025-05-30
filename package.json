@@ -37,6 +37,7 @@
     "generate-migration": "drizzle-kit generate"
   },
   "dependencies": {
+    "@atproto/api": "^0.15.7",
     "@blocknote/core": "^0.15.11",
     "@blocknote/mantine": "^0.15.11",
     "@blocknote/react": "^0.15.11",
@@ -235,7 +236,7 @@
     "swagger-ui-express": "^4.1.6",
     "swc_mut_cjs_exports": "^10.7.0",
     "tailwindcss": "3.2.4",
-    "typescript": "5.3.3",
+    "typescript": "^5.8.3",
     "vite": "^5.4.8",
     "vitest": "^1",
     "webpack": "^5.89.0",

@@ -7,12 +7,12 @@ import {
   ISubmissionFile,
   PostData,
   PostResponse,
-  SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -276,14 +276,7 @@ export default class DeviantArt
     return PostResponse.fromWebsite(this).withSourceUrl(publish.body.url);
   }
 
-  async onValidateFileSubmission(
-    postData: PostData<DeviantArtFileSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
+  onValidateFileSubmission = validatorPassthru;
 
   createMessageModel(): DeviantArtMessageSubmission {
     return new DeviantArtMessageSubmission();
@@ -359,14 +352,7 @@ export default class DeviantArt
       .withSourceUrl(publish.body.deviation.url);
   }
 
-  async onValidateMessageSubmission(
-    postData: PostData<DeviantArtMessageSubmission>,
-  ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
-  }
+  onValidateMessageSubmission = validatorPassthru;
 
   private stripInvalidCharacters(title: string) {
     const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]*$/g;

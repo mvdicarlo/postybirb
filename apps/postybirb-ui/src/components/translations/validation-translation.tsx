@@ -20,14 +20,23 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.description.max-length': (props) => {
     const maxLength = props?.maxLength ?? 0;
+    const currentLength = props?.currentLength ?? 0;
     return (
-      <Trans>Description is greater than {maxLength} characters long</Trans>
+      <Trans>
+        Description length is greater then maximum ({currentLength} /{' '}
+        {maxLength})
+      </Trans>
     );
   },
 
   'validation.description.min-length': (props) => {
     const minLength = props?.minLength ?? 0;
-    return <Trans>Description is less than {minLength} characters long</Trans>;
+    const currentLength = props?.currentLength ?? 0;
+    return (
+      <Trans>
+        Description length is lower then minimum ({currentLength} / {minLength})
+      </Trans>
+    );
   },
 
   'validation.file.file-batch-size': (props) => {
@@ -195,6 +204,25 @@ export const TranslationMessages: TranslationsMap = {
   },
 
   'validation.field.required': () => <Trans>Required</Trans>,
+
+  'validation.file.bluesky.unsupported-combination-of-files': () => (
+    <Trans>
+      Supports either a set of images, a single video, or a single GIF.
+    </Trans>
+  ),
+  'validation.file.bluesky.gif-conversion': () => (
+    <Trans>Bluesky automatically converts GIFs to videos.</Trans>
+  ),
+
+  'validation.file.bluesky.invalid-reply-url': () => (
+    <Trans>Invalid post URL to reply to.</Trans>
+  ),
+
+  'validation.file.bluesky.rating-matches-default': () => (
+    <Trans>
+      Make sure that the default rating matches Bluesky Label Rating.
+    </Trans>
+  ),
 };
 
 export function ValidationTranslation({

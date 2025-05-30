@@ -105,10 +105,9 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   async onValidateFileSubmission(
     postData: PostData<{{pascalWebsiteName}}FileSubmission>,
   ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
+    const validator = this.createValidator<{{pascalWebsiteName}}FileSubmission>();
+
+    return validator.result;
   }
   {{/if}}
 
@@ -150,10 +149,9 @@ export default class {{pascalWebsiteName}} extends Website<{{pascalWebsiteName}}
   async onValidateMessageSubmission(
     postData: PostData<{{pascalWebsiteName}}MessageSubmission>,
   ): Promise<SimpleValidationResult> {
-    return {
-      warnings: [],
-      errors: [],
-    };
+    const validator = this.createValidator<{{pascalWebsiteName}}MessageSubmission>();
+
+    return validator.result;
   }
   {{/if}}
 }

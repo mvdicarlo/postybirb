@@ -35,6 +35,8 @@ export const FieldLabelTranslations = {
   title: msg`Title`,
   useTitle: msg`Use title`,
   visibility: msg`Visibility`,
+  replyToUrl: msg`Reply to post URL`,
+  whoCanReply: msg`Who can reply`,
   audience: msg`Audience`,
   hiRes: msg`Offer hi-res download (gold only)`,
 } satisfies Record<string, MessageDescriptor>;
