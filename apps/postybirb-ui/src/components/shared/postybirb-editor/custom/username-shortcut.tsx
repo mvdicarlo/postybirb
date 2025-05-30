@@ -320,12 +320,27 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
         const allIds = websiteOptions.map((opt) => opt.value);
         const isAllSelected = selectedWebsiteIds.length === allIds.length;
         updateSelection(isAllSelected ? '' : allIds.join(','));
-      }, [websiteOptions, selectedWebsiteIds, updateSelection]);
-
-      // Clear all selections
+      }, [websiteOptions, selectedWebsiteIds, updateSelection]); // Clear all selections
       const handleClearAll = useCallback(() => {
         updateSelection('');
       }, [updateSelection]);
+
+      // Handle escape key to close popover
+      useEffect(() => {
+        const handleEscapeKey = (event: KeyboardEvent) => {
+          if (event.key === 'Escape' && opened) {
+            close();
+          }
+        };
+
+        if (opened) {
+          document.addEventListener('keydown', handleEscapeKey);
+        }
+
+        return () => {
+          document.removeEventListener('keydown', handleEscapeKey);
+        };
+      }, [opened, close]);
 
       // Display text for selected websites
       const selectedDisplayText = useMemo(() => {
