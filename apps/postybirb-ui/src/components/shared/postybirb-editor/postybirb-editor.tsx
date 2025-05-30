@@ -8,8 +8,10 @@ import {
   getDefaultReactSlashMenuItems,
   useCreateBlockNote,
 } from '@blocknote/react';
-import { useMantineColorScheme } from '@mantine/core';
+import { Trans } from '@lingui/macro';
+import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
+import { IconKeyboard } from '@tabler/icons-react';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
 import { insertHr } from './custom/hr';
@@ -20,6 +22,9 @@ type PostyBirbEditorProps = {
   value: Description;
   onChange: (newValue: Description) => void;
 };
+
+// eslint-disable-next-line lingui/text-restrictions
+const shortcutTrigger = '`'; // Backtick character for shortcuts
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const theme = useMantineColorScheme();
@@ -37,39 +42,70 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
   return (
-    <BlockNoteView
-      theme={theme.colorScheme === 'light' ? 'light' : 'dark'}
-      editor={editor}
-      tableHandles={false}
-      slashMenu={false}
-      onChange={() => {
-        onChange(editor.document);
-      }}
-    >
-      <SuggestionMenuController
-        triggerCharacter="/"
-        getItems={async (query) =>
-          // Gets all default slash menu items and `insertAlert` item.
-          filterSuggestionItems(
-            [...getDefaultReactSlashMenuItems(editor), insertHr(editor)],
-            query,
-          )
+    <div style={{ position: 'relative' }}>
+      <Tooltip
+        label={
+          <Trans>Type ${shortcutTrigger} to insert username shortcuts</Trans>
         }
-      />
-      <SuggestionMenuController
-        // eslint-disable-next-line lingui/text-restrictions
-        triggerCharacter="`"
-        getItems={async (query) =>
-          // Gets the mentions menu items
-          filterSuggestionItems(
-            getUsernameShortcutsMenuItems(
-              editor as unknown as typeof schema.BlockNoteEditor,
-              shortcuts,
-            ),
-            query,
-          )
-        }
-      />
-    </BlockNoteView>
+        position="top-start"
+        withArrow
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            zIndex: 5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            backgroundColor:
+              theme.colorScheme === 'dark'
+                ? 'rgba(0, 0, 0, 0.3)'
+                : 'rgba(255, 255, 255, 0.8)',
+            fontSize: '12px',
+          }}
+        >
+          <IconKeyboard size={16} />
+          <code style={{ fontWeight: 'bold' }}>{shortcutTrigger}</code> for
+          shortcuts
+        </div>
+      </Tooltip>
+      <BlockNoteView
+        theme={theme.colorScheme === 'light' ? 'light' : 'dark'}
+        editor={editor}
+        tableHandles={false}
+        slashMenu={false}
+        onChange={() => {
+          onChange(editor.document);
+        }}
+      >
+        <SuggestionMenuController
+          triggerCharacter="/"
+          getItems={async (query) =>
+            // Gets all default slash menu items and `insertAlert` item.
+            filterSuggestionItems(
+              [...getDefaultReactSlashMenuItems(editor), insertHr(editor)],
+              query,
+            )
+          }
+        />
+        <SuggestionMenuController
+          triggerCharacter={shortcutTrigger}
+          getItems={async (query) =>
+            // Gets the mentions menu items
+            filterSuggestionItems(
+              getUsernameShortcutsMenuItems(
+                editor as unknown as typeof schema.BlockNoteEditor,
+                shortcuts,
+              ),
+              query,
+            )
+          }
+        />
+      </BlockNoteView>
+    </div>
   );
 }

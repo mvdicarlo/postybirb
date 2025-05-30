@@ -6,6 +6,75 @@
       "type": "node",
       "request": "attach",
       "port": 9229
+    },
+    {
+      "name": "Debug Jest Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "--runInBand",
+        "--no-coverage",
+        "--no-cache",
+        "${relativeFile}"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "windows": {
+        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+      },
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/**/*.js",
+        "!**/node_modules/**"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    {
+      "name": "Debug Current Jest Test",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/jest",
+      "args": [
+        "--runInBand",
+        "--no-coverage",
+        "--no-cache",
+        "--testNamePattern=${input:testNamePattern}",
+        "${relativeFile}"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "disableOptimisticBPs": true,
+      "windows": {
+        "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+      },
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/**/*.js",
+        "!**/node_modules/**"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testNamePattern",
+      "description": "Test name pattern",
+      "default": ".*",
+      "type": "promptString"
     }
   ]
 }

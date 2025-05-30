@@ -28,7 +28,7 @@ import { FurAffinityMessageSubmission } from './models/fur-affinity-message-subm
 })
 @UserLoginFlow('https://furaffinity.net/login')
 @SupportsUsernameShortcut({
-  id: 'fa',
+  id: 'furaffinity',
   url: 'https://furaffinity.net/user/$1',
 })
 @SupportsFiles(['image/png', 'image/jpeg'])
