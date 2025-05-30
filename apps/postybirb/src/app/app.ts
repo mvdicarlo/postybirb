@@ -22,6 +22,9 @@ import { join } from 'path';
 import { environment } from '../environments/environment';
 import { rendererAppPort } from './constants';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const loader = require('./loader/loader');
+
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
 export default class PostyBirb {
@@ -114,13 +117,13 @@ export default class PostyBirb {
     PostyBirb.mainWindow.setMenu(null);
     PostyBirb.mainWindow.center();
 
-    PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {
+      loader.hide();
       PostyBirb.mainWindow.show();
 
       // if (PostyBirb.isDevelopmentMode()) {
-      PostyBirb.mainWindow.webContents.openDevTools();
+      PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
       // }
     });
 
