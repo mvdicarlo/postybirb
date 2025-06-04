@@ -11,11 +11,12 @@ import {
   Stack,
   Text,
   Title,
+  ThemeIcon,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import { IPostQueueRecord, PostRecordDto } from '@postybirb/types';
-import { IconCalendarCancel, IconTrash, IconX } from '@tabler/icons-react';
+import { IconCalendar, IconCalendarCancel, IconClock, IconTrash, IconX } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
 import postManagerApi from '../../../api/post-manager.api';
@@ -55,21 +56,21 @@ function SubmissionItem({
 
   if (submission.isPosting) {
     statusBadge = (
-      <Badge color="teal">
+      <Badge color="teal" variant="filled" radius="xl">
         <Trans>Posting</Trans>
       </Badge>
     );
     itemClass = styles.activePosting;
   } else if (submission.isQueued) {
     statusBadge = (
-      <Badge color="blue">
+      <Badge color="blue" variant="filled" radius="xl">
         <Trans>Queued</Trans>
       </Badge>
     );
     itemClass = styles.queuedItem;
   } else if (submission.isScheduled) {
     statusBadge = (
-      <Badge color="violet">
+      <Badge color="violet" variant="filled" radius="xl">
         <Trans>Scheduled</Trans>
       </Badge>
     );
@@ -87,6 +88,8 @@ function SubmissionItem({
         opened={confirmModalOpened}
         onClose={confirmModal.close}
         title={<Trans>Confirm Cancellation</Trans>}
+        centered
+        radius="lg"
       >
         <Stack>
           <Text>
@@ -95,8 +98,8 @@ function SubmissionItem({
               responsible for any partial post clean-up.
             </Trans>
           </Text>
-          <Group align="right">
-            <Button variant="default" onClick={confirmModal.close}>
+          <Group justify="flex-end">
+            <Button variant="default" onClick={confirmModal.close} radius="xl">
               <Trans>Cancel</Trans>
             </Button>
             <Button
@@ -105,6 +108,7 @@ function SubmissionItem({
                 onCancel();
                 confirmModal.close();
               }}
+              radius="xl"
             >
               <Trans>Yes, Cancel Posting</Trans>
             </Button>
@@ -113,26 +117,30 @@ function SubmissionItem({
       </Modal>
 
       <Box className={`${styles.item} ${itemClass}`}>
-        <Group align="apart">
+        <Group justify="space-between" align="center">
           <Group>
             {submission.thumbnailUrl && (
-              <img
-                src={submission.thumbnailUrl}
-                alt={submission.title}
-                style={{
-                  width: 50,
-                  height: 50,
-                  objectFit: 'cover',
-                  borderRadius: '4px',
-                }}
-              />
+              <Box className={styles.thumbnail}>
+                <img
+                  src={submission.thumbnailUrl}
+                  alt={submission.title}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              </Box>
             )}
             <Box>
-              <Text fw={500}>{submission.title}</Text>
-              <Group gap="xs">
+              <Text fw={600} size="sm" lineClamp={1}>
+                {submission.title}
+              </Text>
+              <Group gap="sm" mt={4}>
                 {statusBadge}
                 {scheduledDate && (
-                  <Text size="sm" color="dimmed">
+                  <Text size="xs" c="dimmed">
                     {scheduledDate}
                   </Text>
                 )}
@@ -141,18 +149,36 @@ function SubmissionItem({
           </Group>
           <Group gap="xs">
             {submission.isPosting && (
-              <ActionIcon color="red" onClick={confirmModal.open}>
-                <IconX size={16} />
+              <ActionIcon 
+                color="red" 
+                variant="light" 
+                radius="xl" 
+                onClick={confirmModal.open}
+                size="lg"
+              >
+                <IconX size={18} />
               </ActionIcon>
             )}
             {submission.isQueued && !submission.isPosting && (
-              <ActionIcon color="orange" onClick={onUnqueue}>
-                <IconTrash size={16} />
+              <ActionIcon 
+                color="orange" 
+                variant="light" 
+                radius="xl" 
+                onClick={onUnqueue}
+                size="lg"
+              >
+                <IconTrash size={18} />
               </ActionIcon>
             )}
             {submission.isScheduled && (
-              <ActionIcon color="violet" onClick={onUnschedule}>
-                <IconCalendarCancel size={16} />
+              <ActionIcon 
+                color="violet" 
+                variant="light" 
+                radius="xl" 
+                onClick={onUnschedule}
+                size="lg"
+              >
+                <IconCalendarCancel size={18} />
               </ActionIcon>
             )}
           </Group>
@@ -280,20 +306,25 @@ export function SubmissionsList({
   };
 
   return (
-    <Stack>
+    <Stack gap="xl">
       {queuedSubmissions.length > 0 && (
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Stack gap="xs">
-            <Title order={4}>
-              <Group align="apart">
-                <span>
+        <Paper withBorder p="xl" radius="xl" shadow="md">
+          <Stack gap="md">
+            <Group justify="space-between" align="center">
+              <Group>
+                <ThemeIcon size="lg" radius="xl" variant="light" color="blue">
+                  <IconClock size={20} />
+                </ThemeIcon>
+                <Title order={4}>
                   <Trans>Queue</Trans>
-                </span>
-                <Badge size="sm">{queuedSubmissions.length}</Badge>
+                </Title>
               </Group>
-            </Title>
-            <ScrollArea style={{ height: 200 }}>
-              <Stack gap={0}>
+              <Badge size="lg" variant="filled" radius="xl" color="blue">
+                {queuedSubmissions.length}
+              </Badge>
+            </Group>
+            <ScrollArea style={{ height: 240 }}>
+              <Stack gap="sm">
                 {queuedSubmissions.map((submission) => (
                   <SubmissionItem
                     key={submission.id}
@@ -310,18 +341,23 @@ export function SubmissionsList({
       )}
 
       {scheduledSubmissions.length > 0 && (
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Stack gap="xs">
-            <Title order={4}>
-              <Group align="apart">
-                <span>
+        <Paper withBorder p="xl" radius="xl" shadow="md">
+          <Stack gap="md">
+            <Group justify="space-between" align="center">
+              <Group>
+                <ThemeIcon size="lg" radius="xl" variant="light" color="violet">
+                  <IconCalendar size={20} />
+                </ThemeIcon>
+                <Title order={4}>
                   <Trans>Scheduled</Trans>
-                </span>
-                <Badge size="sm">{scheduledSubmissions.length}</Badge>
+                </Title>
               </Group>
-            </Title>
-            <ScrollArea style={{ height: 200 }}>
-              <Stack gap={0}>
+              <Badge size="lg" variant="filled" radius="xl" color="violet">
+                {scheduledSubmissions.length}
+              </Badge>
+            </Group>
+            <ScrollArea style={{ height: 240 }}>
+              <Stack gap="sm">
                 {scheduledSubmissions.map((submission) => (
                   <SubmissionItem
                     key={submission.id}
@@ -338,10 +374,20 @@ export function SubmissionsList({
       )}
 
       {queuedSubmissions.length === 0 && scheduledSubmissions.length === 0 && (
-        <Paper withBorder p="md" radius="md" shadow="sm">
-          <Text ta="center" c="dimmed">
-            <Trans>No submissions in queue or scheduled</Trans>
-          </Text>
+        <Paper withBorder p="xl" radius="xl" shadow="md">
+          <Stack align="center" gap="lg">
+            <ThemeIcon size="xl" radius="xl" variant="light" color="gray">
+              <IconClock size={32} />
+            </ThemeIcon>
+            <Box ta="center">
+              <Title order={4} c="dimmed">
+                <Trans>No Active Submissions</Trans>
+              </Title>
+              <Text size="sm" c="dimmed" mt={4}>
+                <Trans>No submissions in queue or scheduled</Trans>
+              </Text>
+            </Box>
+          </Stack>
         </Paper>
       )}
     </Stack>

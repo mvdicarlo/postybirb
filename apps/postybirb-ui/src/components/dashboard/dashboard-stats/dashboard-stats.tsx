@@ -1,27 +1,71 @@
 import { Trans } from '@lingui/macro';
-import { Group, Paper, Stack, Text, Title } from '@mantine/core';
+import { Group, Paper, Stack, Text, Title, ThemeIcon, Box, Transition } from '@mantine/core';
 import { IconCalendar, IconClock, IconFileText } from '@tabler/icons-react';
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 
 interface StatCardProps {
   icon: ReactNode;
   title: ReactNode;
   value: number | string;
+  color: string;
 }
 
-function StatCard({ icon, title, value }: StatCardProps) {
+function StatCard({ icon, title, value, color }: StatCardProps) {
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <Paper withBorder p="md" radius="md" shadow="sm">
-      <Group gap="xs">
-        {icon}
-        <div>
-          <Text size="xs" c="dimmed">
-            {title}
-          </Text>
-          <Title order={4}>{value}</Title>
-        </div>
-      </Group>
-    </Paper>
+    <Transition mounted transition="scale" duration={200}>
+      {(styles) => (
+        <Paper 
+          withBorder 
+          p="lg" 
+          radius="xl" 
+          shadow={hovered ? "lg" : "md"}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            ...styles,
+            cursor: 'default',
+            transform: hovered ? 'translateY(-2px)' : 'translateY(0px)',
+            transition: 'all 0.2s ease',
+            background: hovered 
+              ? `linear-gradient(135deg, var(--mantine-color-${color}-0) 0%, var(--mantine-color-${color}-1) 100%)`
+              : undefined,
+          }}
+        >
+          <Stack gap="md" align="center">
+            <ThemeIcon
+              size="xl"
+              radius="xl"
+              variant={hovered ? "filled" : "light"}
+              color={color}
+              style={{
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {icon}
+            </ThemeIcon>
+            <Box ta="center">
+              <Title 
+                order={2} 
+                style={{
+                  background: `linear-gradient(135deg, var(--mantine-color-${color}-6), var(--mantine-color-${color}-4))`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 700,
+                }}
+              >
+                {value}
+              </Title>
+              <Text size="sm" c="dimmed" fw={500} mt={4}>
+                {title}
+              </Text>
+            </Box>
+          </Stack>
+        </Paper>
+      )}
+    </Transition>
   );
 }
 
@@ -37,22 +81,25 @@ export function DashboardStats({
   numInQueue,
 }: DashboardStatsProps) {
   return (
-    <Stack gap="md">
-      <Group grow>
+    <Stack gap="xl">
+      <Group grow justify="center">
         <StatCard
-          icon={<IconFileText size={20} />}
+          icon={<IconFileText size={24} />}
           title={<Trans>Total Submissions</Trans>}
           value={numSubmissions}
+          color="blue"
         />
         <StatCard
-          icon={<IconCalendar size={20} />}
+          icon={<IconCalendar size={24} />}
           title={<Trans>Scheduled</Trans>}
           value={numScheduled}
+          color="violet"
         />
         <StatCard
-          icon={<IconClock size={20} />}
+          icon={<IconClock size={24} />}
           title={<Trans>In Queue</Trans>}
           value={numInQueue}
+          color="teal"
         />
       </Group>
     </Stack>

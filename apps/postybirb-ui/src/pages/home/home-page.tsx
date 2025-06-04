@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { Box, Grid, Space } from '@mantine/core';
+import { Box, Space, Stack } from '@mantine/core';
 import { IPostQueueRecord } from '@postybirb/types';
 import { IconClock, IconHome } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -33,27 +33,21 @@ export default function HomePage() {
 
   const content =
     activeTab === 'dashboard' ? (
-      <Grid>
-        <Grid.Col span={12}>
-          <DashboardStats
-            numSubmissions={numSubmissions}
-            numScheduled={numScheduled}
-            numInQueue={numInQueue}
-          />
-        </Grid.Col>
+      <Stack gap="xl">
+        <DashboardStats
+          numSubmissions={numSubmissions}
+          numScheduled={numScheduled}
+          numInQueue={numInQueue}
+        />
 
-        <Grid.Col span={12}>
-          <QueueControl />
-        </Grid.Col>
+        <QueueControl />
 
-        <Grid.Col span={12}>
-          <SubmissionsList
-            submissions={submissions}
-            queueRecords={queueRecords}
-            currentlyPosting={currentlyPostingSubmission}
-          />
-        </Grid.Col>
-      </Grid>
+        <SubmissionsList
+          submissions={submissions}
+          queueRecords={queueRecords}
+          currentlyPosting={currentlyPostingSubmission}
+        />
+      </Stack>
     ) : (
       <RecentPosts posts={postRecords} submissions={submissions} />
     );

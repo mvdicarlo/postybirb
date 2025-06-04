@@ -8,8 +8,10 @@ import {
   Stack,
   Text,
   Title,
+  ThemeIcon,
 } from '@mantine/core';
 import { PostRecordDto, PostRecordState } from '@postybirb/types';
+import { IconHistory, IconCheck, IconX } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -73,27 +75,42 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
 
   if (recentPosts.length === 0) {
     return (
-      <Paper withBorder p="md" radius="md" shadow="sm">
-        <Text ta="center" c="dimmed">
-          <Trans>No recent posts</Trans>
-        </Text>
+      <Paper withBorder p="xl" radius="xl" shadow="md">
+        <Stack align="center" gap="lg">
+          <ThemeIcon size="xl" radius="xl" variant="light" color="gray">
+            <IconHistory size={32} />
+          </ThemeIcon>
+          <Box ta="center">
+            <Title order={4} c="dimmed">
+              <Trans>No Recent Posts</Trans>
+            </Title>
+            <Text size="sm" c="dimmed" mt={4}>
+              <Trans>Your recent submission history will appear here</Trans>
+            </Text>
+          </Box>
+        </Stack>
       </Paper>
     );
   }
 
   return (
-    <Paper withBorder p="md" radius="md" shadow="sm">
-      <Stack gap="xs">
-        <Title order={4}>
-          <Group align="apart">
-            <span>
+    <Paper withBorder p="xl" radius="xl" shadow="md">
+      <Stack gap="md">
+        <Group justify="space-between" align="center">
+          <Group>
+            <ThemeIcon size="lg" radius="xl" variant="light" color="blue">
+              <IconHistory size={20} />
+            </ThemeIcon>
+            <Title order={4}>
               <Trans>Recent Posts</Trans>
-            </span>
-            <Badge size="sm">{recentPosts.length}</Badge>
+            </Title>
           </Group>
-        </Title>
-        <ScrollArea style={{ height: 300 }}>
-          <Stack gap={0}>
+          <Badge size="lg" variant="filled" radius="xl" color="blue">
+            {recentPosts.length}
+          </Badge>
+        </Group>
+        <ScrollArea style={{ height: 320 }}>
+          <Stack gap="sm">
             {recentPosts.map((post) => (
               <Box
                 key={post.id}
@@ -101,24 +118,39 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                   post.isSuccess ? 'recent-post-success' : 'recent-post-failed'
                 }`}
               >
-                <Group align="apart">
+                <Group justify="space-between" align="center">
                   <Group>
                     {post.thumbnailUrl && (
-                      <img
-                        src={post.thumbnailUrl}
-                        alt={post.title}
-                        style={{
-                          width: 50,
-                          height: 50,
-                          objectFit: 'cover',
-                          borderRadius: '4px',
-                        }}
-                      />
+                      <Box className="thumbnail">
+                        <img
+                          src={post.thumbnailUrl}
+                          alt={post.title}
+                          style={{
+                            width: 56,
+                            height: 56,
+                            objectFit: 'cover',
+                            display: 'block',
+                          }}
+                        />
+                      </Box>
                     )}
                     <Box>
-                      <Text fw={500}>{post.title}</Text>
-                      <Group gap="xs">
-                        <Badge color={post.isSuccess ? 'green' : 'red'}>
+                      <Text fw={600} size="sm" lineClamp={1}>
+                        {post.title}
+                      </Text>
+                      <Group gap="sm" mt={4}>
+                        <Badge 
+                          color={post.isSuccess ? 'green' : 'red'} 
+                          variant="filled" 
+                          radius="xl"
+                          leftSection={
+                            post.isSuccess ? (
+                              <IconCheck size={12} />
+                            ) : (
+                              <IconX size={12} />
+                            )
+                          }
+                        >
                           {post.isSuccess ? (
                             <Trans>Success</Trans>
                           ) : (
@@ -126,7 +158,7 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                           )}
                         </Badge>
                         {post.completedAt && (
-                          <Text size="sm" color="dimmed">
+                          <Text size="xs" c="dimmed">
                             {post.completedAt}
                           </Text>
                         )}

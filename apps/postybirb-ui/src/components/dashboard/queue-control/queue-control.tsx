@@ -6,11 +6,24 @@ import postQueueApi from '../../../api/post-queue.api';
 import settingsApi from '../../../api/settings.api';
 import { useSettings } from '../../../stores/use-settings';
 
+import { Trans } from '@lingui/macro';
+import { Button, Group, Paper, Title, Text, Stack, ThemeIcon, Box, Transition } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconPlayerPause, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
+import { useState } from 'react';
+import postQueueApi from '../../../api/post-queue.api';
+import settingsApi from '../../../api/settings.api';
+import { useSettings } from '../../../stores/use-settings';
+
 export function QueueControl() {
   const { settings, settingsId } = useSettings();
+  const [isLoading, setIsLoading] = useState(false);
   const isPaused = settings?.queuePaused ?? false;
 
   const togglePause = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
     try {
       const { paused } = isPaused
         ? (await postQueueApi.resume()).body
@@ -45,32 +58,72 @@ export function QueueControl() {
         message: (error as Error).message,
         color: 'red',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Paper withBorder p="md" radius="md" shadow="sm">
-      <Group justify="apart">
-        <Title order={4}>
-          <Trans>Queue Control</Trans>
-        </Title>
-        <Button
-          leftSection={
-            isPaused ? (
-              <IconPlayerPlay size={16} />
-            ) : (
-              <IconPlayerPause size={16} />
-            )
-          }
-          color={isPaused ? 'green' : 'orange'}
-          onClick={togglePause}
-        >
-          {isPaused ? (
-            <Trans>Resume Submissions</Trans>
-          ) : (
-            <Trans>Pause Submissions</Trans>
+    <Paper 
+      withBorder 
+      p="xl" 
+      radius="xl" 
+      shadow="md"
+      style={{
+        background: isPaused 
+          ? 'linear-gradient(135deg, var(--mantine-color-orange-0) 0%, var(--mantine-color-orange-1) 100%)'
+          : 'linear-gradient(135deg, var(--mantine-color-teal-0) 0%, var(--mantine-color-teal-1) 100%)',
+      }}
+    >
+      <Group justify="space-between" align="center">
+        <Group>
+          <ThemeIcon
+            size="lg"
+            radius="xl"
+            variant="light"
+            color={isPaused ? 'orange' : 'teal'}
+          >
+            <IconSettings size={20} />
+          </ThemeIcon>
+          <Box>
+            <Title order={4}>
+              <Trans>Queue Control</Trans>
+            </Title>
+            <Text size="sm" c="dimmed">
+              {isPaused ? (
+                <Trans>Submission processing is paused</Trans>
+              ) : (
+                <Trans>Submission processing is active</Trans>
+              )}
+            </Text>
+          </Box>
+        </Group>
+        <Transition mounted transition="scale" duration={200}>
+          {(styles) => (
+            <Button
+              leftSection={
+                isPaused ? (
+                  <IconPlayerPlay size={18} />
+                ) : (
+                  <IconPlayerPause size={18} />
+                )
+              }
+              color={isPaused ? 'teal' : 'orange'}
+              variant={isPaused ? 'filled' : 'light'}
+              size="md"
+              radius="xl"
+              onClick={togglePause}
+              loading={isLoading}
+              style={styles}
+            >
+              {isPaused ? (
+                <Trans>Resume Submissions</Trans>
+              ) : (
+                <Trans>Pause Submissions</Trans>
+              )}
+            </Button>
           )}
-        </Button>
+        </Transition>
       </Group>
     </Paper>
   );
