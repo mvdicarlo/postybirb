@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro';
-import { Box, Grid } from '@mantine/core';
+import { Box, Grid, Space } from '@mantine/core';
 import { IPostQueueRecord } from '@postybirb/types';
 import { IconClock, IconHome } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -77,6 +77,7 @@ export default function HomePage() {
         ]}
         onTabChange={setActiveTab}
       />
+      <Space h="md" />
       <Box>{content}</Box>
     </>
   );
