@@ -9,7 +9,6 @@ import ElectronEvents from './app/events/electron.events';
 import { environment } from './environments/environment';
 import { startMetrics } from './metrics';
 
-
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
   app.quit();
@@ -95,8 +94,6 @@ async function start() {
     app.quit();
   }
 }
-
-start();
 
 // Suppress SSL error messages
 app.on('ready', () => {
