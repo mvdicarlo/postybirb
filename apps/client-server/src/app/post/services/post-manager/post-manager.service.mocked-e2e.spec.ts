@@ -249,6 +249,7 @@ describe('PostManagerServiceMocks', () => {
           fileBatchSize: 1,
           supportedFileTypes: [FileType.IMAGE],
         },
+        metadata: {},
       },
       getLoginState: jest.fn().mockReturnValue({
         isLoggedIn: true,

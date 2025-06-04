@@ -11,7 +11,11 @@
         "outputPath": "dist/apps/postybirb",
         "main": "apps/postybirb/src/main.ts",
         "tsConfig": "apps/postybirb/tsconfig.app.json",
-        "assets": ["apps/postybirb/src/assets", "apps/postybirb/src/migrations"]
+        "assets": [
+          "apps/postybirb/src/assets", 
+          "apps/postybirb/src/migrations",
+          "apps/postybirb/src/app/loader"
+        ]
       },
       "configurations": {
         "production": {
@@ -61,6 +65,12 @@
       "outputs": ["{workspaceRoot}/coverage/apps/postybirb"],
       "options": {
         "jestConfig": "apps/postybirb/jest.config.ts"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
       }
     }
   },

@@ -61,6 +61,12 @@ export class DescriptionInlineNode
     }
 
     if (this.type === 'username') {
+      const onlyTo = (this.props.only?.split(',') ?? [])
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0);
+      if (onlyTo.length > 0 && !onlyTo.includes(this.website.toLowerCase())) {
+        return '';
+      }
       const sc = this.getUsernameShortcutLink(this.props.shortcut);
       return sc ? sc.url : '';
     }

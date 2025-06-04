@@ -1,4 +1,4 @@
-import { Trans } from '@lingui/macro';
+import { Plural, Trans } from '@lingui/macro';
 import {
   ActionIcon,
   Alert,
@@ -247,11 +247,11 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
 
               <Text size="xs">
                 {Object.keys(optionsGroupedByWebsiteId).length}{' '}
-                {Object.keys(optionsGroupedByWebsiteId).length !== 1 ? (
-                  <Trans>websites</Trans>
-                ) : (
-                  <Trans>website</Trans>
-                )}
+                <Plural
+                  value={Object.keys(optionsGroupedByWebsiteId).length}
+                  one="website"
+                  other="websites"
+                />
               </Text>
             </Group>
           </Box>

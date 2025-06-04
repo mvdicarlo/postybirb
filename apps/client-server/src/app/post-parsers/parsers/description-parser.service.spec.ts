@@ -127,9 +127,10 @@ describe('DescriptionParserService', () => {
       [],
       '',
     );
-    expect(description).toEqual(
-      'Hello, World!\r\nA link: https://postybirb.com',
-    );
+    expect(description).toMatchInlineSnapshot(`
+      "Hello, World!
+      A link: https://postybirb.com"
+    `);
   });
 
   it('should parse html description', async () => {
@@ -151,8 +152,8 @@ describe('DescriptionParserService', () => {
       [],
       '',
     );
-    expect(description).toEqual(
-      '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div>',
+    expect(description).toMatchInlineSnapshot(
+      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
     );
   });
 
@@ -180,9 +181,10 @@ describe('DescriptionParserService', () => {
       [],
       '',
     );
-    expect(description).toEqual(
-      '**Hello,** World!\n\n[A link](https://postybirb.com)',
-    );
+    expect(description).toMatchInlineSnapshot(`
+      "**Hello,** World!  
+      [A link](https://postybirb.com)"
+    `);
   });
 
   it('should return empty for description type NONE', async () => {
@@ -236,8 +238,8 @@ describe('DescriptionParserService', () => {
       '',
     );
 
-    expect(description).toEqual(
-      '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>',
+    expect(description).toMatchInlineSnapshot(
+      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div><div></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>"`,
     );
   });
 
@@ -268,8 +270,8 @@ describe('DescriptionParserService', () => {
       '',
     );
 
-    expect(description).toEqual(
-      '<div><span><b>Hello, </b></span>World!</div><div><a target="_blank" href="https://postybirb.com">A link</a></div>',
+    expect(description).toMatchInlineSnapshot(
+      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
     );
   });
 

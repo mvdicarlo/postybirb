@@ -1,3 +1,7 @@
 # Add files here to ignore them in eslint
 
 node_modules
+*.js
+*.jsx
+*.spec.ts 
+*.spec.tsx

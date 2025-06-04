@@ -9,6 +9,7 @@ import ElectronEvents from './app/events/electron.events';
 import { environment } from './environments/environment';
 import { startMetrics } from './metrics';
 
+
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
   app.quit();
@@ -55,28 +56,6 @@ app.on(
   },
 );
 
-// Suppress SSL error messages
-app.on('ready', () => {
-  session.defaultSession.setCertificateVerifyProc((request, callback) => {
-    if (request.errorCode === 0) {
-      callback(0); // Allow the certificate
-    } else {
-      const { certificate } = request;
-      if (
-        certificate.issuerName === 'postybirb.com' &&
-        certificate.subject.organizations[0] === 'PostyBirb' &&
-        certificate.issuer.country === 'US'
-      ) {
-        callback(0);
-      } else {
-        callback(-2);
-      }
-    }
-  });
-});
-
-contextMenu();
-
 export default class Main {
   static initialize() {
     // Nothing yet
@@ -118,3 +97,32 @@ async function start() {
 }
 
 start();
+
+// Suppress SSL error messages
+app.on('ready', () => {
+  if (!PostyBirbEnvConfig.headless) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const loader = require('./app/loader/loader');
+    loader.show();
+  }
+
+  session.defaultSession.setCertificateVerifyProc((request, callback) => {
+    if (request.errorCode === 0) {
+      callback(0); // Allow the certificate
+    } else {
+      const { certificate } = request;
+      if (
+        certificate.issuerName === 'postybirb.com' &&
+        certificate.subject.organizations[0] === 'PostyBirb' &&
+        certificate.issuer.country === 'US'
+      ) {
+        callback(0);
+      } else {
+        callback(-2);
+      }
+    }
+  });
+
+  contextMenu();
+  start();
+});

@@ -1,3 +1,12 @@
+/* For light mode */
+:root[data-mantine-color-scheme='light'] .mantine-AppShell-main {
+  background-color: var(--mantine-color-gray-1);
+}
+
+.mantine-ScrollArea-scrollbar {
+  width: 8px !important;
+}
+
 body {
   overflow: hidden;
 }
@@ -42,7 +51,7 @@ body {
   --scrollbar-thumb-hover-color: rgba(0, 0, 0, 0.3);
 }
 
-:root[data-mantine-color-scheme="dark"] {
+:root[data-mantine-color-scheme='dark'] {
   --scrollbar-thumb-color: rgba(255, 255, 255, 0.15);
   --scrollbar-thumb-hover-color: rgba(255, 255, 255, 0.25);
 }

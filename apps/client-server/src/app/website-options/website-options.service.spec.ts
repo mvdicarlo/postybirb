@@ -4,7 +4,7 @@ import {
   DefaultDescriptionValue,
   DefaultTagValue,
   SubmissionRating,
-  SubmissionType
+  SubmissionType,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -105,6 +105,7 @@ describe('WebsiteOptionsService', () => {
 
     const dto = new CreateWebsiteOptionsDto();
     dto.data = {
+      contentWarning: '',
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),
@@ -183,6 +184,7 @@ describe('WebsiteOptionsService', () => {
 
     const dto = new CreateWebsiteOptionsDto();
     dto.data = {
+      contentWarning: '',
       title: 'title',
       tags: DefaultTagValue(),
       description: DefaultDescriptionValue(),

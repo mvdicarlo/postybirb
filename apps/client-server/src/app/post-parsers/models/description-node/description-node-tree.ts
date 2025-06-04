@@ -168,7 +168,7 @@ export class DescriptionNodeTree {
             content: [
               {
                 type: 'text',
-                text: insertTags.join(', '),
+                text: insertTags.join(' '),
                 styles: {},
                 props: {},
               },

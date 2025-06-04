@@ -10,15 +10,20 @@ import {
 import {
   BrowserWindow,
   Menu,
+  NativeImage,
   Tray,
   app,
   globalShortcut,
   nativeImage,
+  nativeTheme,
   screen,
 } from 'electron';
 import { join } from 'path';
 import { environment } from '../environments/environment';
 import { rendererAppPort } from './constants';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const loader = require('./loader/loader');
 
 const appIcon = join(__dirname, 'assets/app-icon.png');
 
@@ -34,6 +39,8 @@ export default class PostyBirb {
   static appTray: Tray;
 
   static nestApp: INestApplication;
+
+  static appImage: NativeImage;
 
   public static isDevelopmentMode() {
     return !environment.production;
@@ -91,10 +98,12 @@ export default class PostyBirb {
 
     // Create the browser window.
     PostyBirb.mainWindow = new BrowserWindow({
+      title: 'PostyBirb',
+      darkTheme: nativeTheme.shouldUseDarkColors,
       width,
       height,
       show: false,
-      icon: appIcon,
+      icon: PostyBirb.appImage,
       autoHideMenuBar: true,
       webPreferences: {
         contextIsolation: true,
@@ -108,13 +117,13 @@ export default class PostyBirb {
     PostyBirb.mainWindow.setMenu(null);
     PostyBirb.mainWindow.center();
 
-    PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
     // if main window is ready to show, close the splash window and show the main window
     PostyBirb.mainWindow.once('ready-to-show', () => {
+      loader.hide();
       PostyBirb.mainWindow.show();
 
       // if (PostyBirb.isDevelopmentMode()) {
-        PostyBirb.mainWindow.webContents.openDevTools();
+      PostyBirb.mainWindow.webContents.openDevTools({ mode: 'detach' });
       // }
     });
 
@@ -170,7 +179,7 @@ export default class PostyBirb {
         },
       ];
 
-      let image = nativeImage.createFromPath(appIcon);
+      let image = PostyBirb.appImage;
       if (isOSX()) {
         image = image.resize({
           width: 16,
@@ -210,6 +219,7 @@ export default class PostyBirb {
   static main(electronApp: Electron.App, browserWindow: typeof BrowserWindow) {
     PostyBirb.BrowserWindow = browserWindow;
     PostyBirb.application = electronApp;
+    PostyBirb.appImage = nativeImage.createFromPath(appIcon);
 
     PostyBirb.application.on('browser-window-focus', () => {
       globalShortcut.registerAll(['f5', 'CommandOrControl+R'], () => {

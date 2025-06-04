@@ -55,9 +55,10 @@ export abstract class PostyBirbService<TSchemaKey extends SchemaKey> {
   protected async throwIfExists(where: SQL) {
     const exists = await this.repository.select(where);
     if (exists.length) {
-      const err = new BadRequestException(`A duplicate entity already exists`);
-      this.logger.withError(err).error();
-      throw err;
+      this.logger
+        .withMetadata(exists)
+        .error(`A duplicate entity already exists`);
+      throw new BadRequestException(`A duplicate entity already exists`);
     }
   }
 

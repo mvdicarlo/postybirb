@@ -339,9 +339,10 @@ export class SubmissionService
               cron: undefined,
             }
           : {
-              scheduledFor: new Date(
-                update.scheduledFor ?? submission.schedule.scheduledFor,
-              ).toISOString(),
+              scheduledFor:
+                scheduleType === ScheduleType.SINGLE && update.scheduledFor
+                  ? new Date(update.scheduledFor).toISOString()
+                  : (update.scheduledFor ?? submission.schedule.scheduledFor),
               scheduleType:
                 update.scheduleType ?? submission.schedule.scheduleType,
               cron: update.cron ?? submission.schedule.cron,

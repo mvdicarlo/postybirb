@@ -143,8 +143,20 @@ export interface ValidationMessages {
     currentSelected: number;
   };
 
+  'validation.select-field.invalid-option': {
+    invalidOptions: string[];
+  };
+
   'validation.field.required': object;
 
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
+
+  'validation.file.bluesky.unsupported-combination-of-files': object;
+
+  'validation.file.bluesky.gif-conversion': object;
+
+  'validation.file.bluesky.invalid-reply-url': object;
+
+  'validation.file.bluesky.rating-matches-default': object;
 }
