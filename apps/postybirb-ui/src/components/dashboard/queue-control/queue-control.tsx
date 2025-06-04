@@ -2,27 +2,29 @@ import { Trans } from '@lingui/macro';
 import { Button, Group, Paper, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
-import { useEffect } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
-import { useQueueState } from '../../../stores/queue-state.store';
+import settingsApi from '../../../api/settings.api';
+import { useSettings } from '../../../stores/use-settings';
 
 export function QueueControl() {
-  const { isPaused, setIsPaused } = useQueueState();
-
-  // Load initial pause state
-  useEffect(() => {
-    postQueueApi.isPaused().then(({ paused }) => {
-      setIsPaused(paused);
-    });
-  }, [setIsPaused]);
+  const { settings, settingsId } = useSettings();
+  const isPaused = settings?.queuePaused ?? false;
 
   const togglePause = async () => {
     try {
       const { paused } = isPaused
         ? await postQueueApi.resume()
         : await postQueueApi.pause();
-        
-      setIsPaused(paused);
+      
+      // Update settings
+      if (settingsId) {
+        await settingsApi.update(settingsId, {
+          settings: {
+            ...settings,
+            queuePaused: paused
+          }
+        });
+      }
       
       notifications.show({
         title: paused ? 
