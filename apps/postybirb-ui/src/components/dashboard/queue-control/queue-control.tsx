@@ -1,12 +1,4 @@
 import { Trans } from '@lingui/macro';
-import { Button, Group, Paper, Title } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
-import { IconPlayerPause, IconPlayerPlay } from '@tabler/icons-react';
-import postQueueApi from '../../../api/post-queue.api';
-import settingsApi from '../../../api/settings.api';
-import { useSettings } from '../../../stores/use-settings';
-
-import { Trans } from '@lingui/macro';
 import { Button, Group, Paper, Title, Text, Stack, ThemeIcon, Box, Transition } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { IconPlayerPause, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
