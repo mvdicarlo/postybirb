@@ -1,7 +1,20 @@
 import { Trans } from '@lingui/macro';
-import { Button, Group, Paper, Title, Text, Stack, ThemeIcon, Box, Transition } from '@mantine/core';
+import {
+  Box,
+  Button,
+  Group,
+  Paper,
+  Text,
+  ThemeIcon,
+  Title,
+  Transition,
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconPlayerPause, IconPlayerPlay, IconSettings } from '@tabler/icons-react';
+import {
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconSettings,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import postQueueApi from '../../../api/post-queue.api';
 import settingsApi from '../../../api/settings.api';
@@ -14,7 +27,7 @@ export function QueueControl() {
 
   const togglePause = async () => {
     if (isLoading) return;
-    
+
     setIsLoading(true);
     try {
       const { paused } = isPaused
@@ -56,15 +69,15 @@ export function QueueControl() {
   };
 
   return (
-    <Paper 
-      withBorder 
-      p="xl" 
-      radius="xl" 
+    <Paper
+      withBorder
+      p="xl"
+      radius="xl"
       shadow="md"
       style={{
-        background: isPaused 
-          ? 'linear-gradient(135deg, var(--mantine-color-orange-0) 0%, var(--mantine-color-orange-1) 100%)'
-          : 'linear-gradient(135deg, var(--mantine-color-teal-0) 0%, var(--mantine-color-teal-1) 100%)',
+        borderColor: isPaused
+          ? 'var(--mantine-color-orange-4)'
+          : 'var(--mantine-color-teal-4)',
       }}
     >
       <Group justify="space-between" align="center">

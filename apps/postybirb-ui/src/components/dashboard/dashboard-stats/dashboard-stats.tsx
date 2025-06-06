@@ -1,5 +1,14 @@
 import { Trans } from '@lingui/macro';
-import { Group, Paper, Stack, Text, Title, ThemeIcon, Box, Transition } from '@mantine/core';
+import {
+  Box,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title,
+  Transition,
+} from '@mantine/core';
 import { IconCalendar, IconClock, IconFileText } from '@tabler/icons-react';
 import { ReactNode, useState } from 'react';
 
@@ -16,11 +25,11 @@ function StatCard({ icon, title, value, color }: StatCardProps) {
   return (
     <Transition mounted transition="scale" duration={200}>
       {(styles) => (
-        <Paper 
-          withBorder 
-          p="lg" 
-          radius="xl" 
-          shadow={hovered ? "lg" : "md"}
+        <Paper
+          withBorder
+          p="lg"
+          radius="xl"
+          shadow={hovered ? 'lg' : 'md'}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
           style={{
@@ -28,7 +37,7 @@ function StatCard({ icon, title, value, color }: StatCardProps) {
             cursor: 'default',
             transform: hovered ? 'translateY(-2px)' : 'translateY(0px)',
             transition: 'all 0.2s ease',
-            background: hovered 
+            background: hovered
               ? `linear-gradient(135deg, var(--mantine-color-${color}-0) 0%, var(--mantine-color-${color}-1) 100%)`
               : undefined,
           }}
@@ -37,7 +46,7 @@ function StatCard({ icon, title, value, color }: StatCardProps) {
             <ThemeIcon
               size="xl"
               radius="xl"
-              variant={hovered ? "filled" : "light"}
+              variant={hovered ? 'filled' : 'light'}
               color={color}
               style={{
                 transition: 'all 0.2s ease',
@@ -46,8 +55,8 @@ function StatCard({ icon, title, value, color }: StatCardProps) {
               {icon}
             </ThemeIcon>
             <Box ta="center">
-              <Title 
-                order={2} 
+              <Title
+                order={2}
                 style={{
                   background: `linear-gradient(135deg, var(--mantine-color-${color}-6), var(--mantine-color-${color}-4))`,
                   WebkitBackgroundClip: 'text',
