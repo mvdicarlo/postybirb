@@ -42,7 +42,16 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div
+      style={{
+        position: 'relative',
+        borderRadius: '8px',
+        border:
+          theme.colorScheme === 'dark'
+            ? '1.5px solid var(--mantine-color-dark-4)'
+            : '1.5px solid var(--mantine-color-gray-3)',
+      }}
+    >
       <Tooltip
         label={
           <Trans>Type ${shortcutTrigger} to insert username shortcuts</Trans>
