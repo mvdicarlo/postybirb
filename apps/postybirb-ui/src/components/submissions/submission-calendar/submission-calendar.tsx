@@ -17,7 +17,6 @@ import {
   Text,
   ThemeIcon,
   Tooltip,
-  useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
@@ -46,10 +45,9 @@ type SubmissionCalendarProps = {
 const DATE_FORMAT = 'YYYY-MM-DD HH:mm';
 
 export function SubmissionCalendar(props: SubmissionCalendarProps) {
-  const theme = useMantineColorScheme();
   const [lang] = use18n();
   const { type } = props;
-  const { state: submissions } = useStore(SubmissionStore);  const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
+  const { state: submissions } = useStore(SubmissionStore);const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [popoverOpened, setPopoverOpened] = useState(false);
   const [popoverTarget, setPopoverTarget] = useState<HTMLElement | null>(null);
   const [
@@ -224,12 +222,8 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
 
     setPopoverOpened(false);
   };
-
   return (
-    <div
-      style={{ overflow: 'auto', position: 'relative' }}
-      className={theme.colorScheme === 'dark' ? 'fc-dark-theme' : ''}
-    >
+    <div style={{ overflow: 'auto', position: 'relative' }}>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -257,7 +251,8 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
         droppable
         drop={handleExternalDrop}
         // Event click handler
-        eventClick={handleEventClick}      />
+        eventClick={handleEventClick}
+      />
 
       {/* Event details popover */}
       {popoverOpened && popoverTarget && (
