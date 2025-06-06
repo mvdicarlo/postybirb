@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro';
 import { Box, Space, Stack } from '@mantine/core';
-import { IPostQueueRecord } from '@postybirb/types';
+import { IPostQueueRecord, SubmissionType } from '@postybirb/types';
 import { IconClock, IconHome } from '@tabler/icons-react';
 import { useState } from 'react';
 import { DashboardStats } from '../../components/dashboard/dashboard-stats/dashboard-stats';
@@ -23,21 +23,52 @@ export default function HomePage() {
   const currentlyPostingSubmission = submissions
     .find((submission) => submission.getPostingRecord() !== undefined)
     ?.getPostingRecord();
-
   const postRecords = submissions.flatMap((submission) => submission.posts);
-
+  
   // Calculate stats
-  const numSubmissions = submissions.filter((s) => !s.isArchived).length;
-  const numScheduled = submissions.filter((s) => s.isScheduled).length;
+  const activeSubmissions = submissions.filter((s) => !s.isArchived);
+  const scheduledSubmissions = submissions.filter((s) => s.isScheduled);
+  const numSubmissions = activeSubmissions.length;
+  const numScheduled = scheduledSubmissions.length;
   const numInQueue = queueRecords.length;
 
+  // Calculate submission type breakdown for total submissions
+  const fileSubmissions = activeSubmissions.filter((s) => s.type === SubmissionType.FILE).length;
+  const messageSubmissions = activeSubmissions.filter((s) => s.type === SubmissionType.MESSAGE).length;
+  
+  const submissionBreakdown = {
+    files: fileSubmissions,
+    messages: messageSubmissions,
+  };
+
+  // Calculate submission type breakdown for scheduled submissions
+  const scheduledFileSubmissions = scheduledSubmissions.filter((s) => s.type === SubmissionType.FILE).length;
+  const scheduledMessageSubmissions = scheduledSubmissions.filter((s) => s.type === SubmissionType.MESSAGE).length;
+  
+  const scheduledBreakdown = {
+    files: scheduledFileSubmissions,
+    messages: scheduledMessageSubmissions,
+  };
+
+  // Calculate submission type breakdown for queue submissions
+  const queueSubmissions = submissions.filter((s) => queueRecords.some(q => q.submissionId === s.id));
+  const queueFileSubmissions = queueSubmissions.filter((s) => s.type === SubmissionType.FILE).length;
+  const queueMessageSubmissions = queueSubmissions.filter((s) => s.type === SubmissionType.MESSAGE).length;
+  
+  const queueBreakdown = {
+    files: queueFileSubmissions,
+    messages: queueMessageSubmissions,
+  };
   const content =
     activeTab === 'dashboard' ? (
-      <Stack gap="xl">
+      <Stack gap="lg">
         <DashboardStats
           numSubmissions={numSubmissions}
           numScheduled={numScheduled}
           numInQueue={numInQueue}
+          submissionBreakdown={submissionBreakdown}
+          scheduledBreakdown={scheduledBreakdown}
+          queueBreakdown={queueBreakdown}
         />
 
         <QueueControl />
@@ -71,7 +102,7 @@ export default function HomePage() {
         ]}
         onTabChange={setActiveTab}
       />
-      <Space h="md" />
+      <Space h="lg" />
       <Box>{content}</Box>
     </>
   );

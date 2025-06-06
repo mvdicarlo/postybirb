@@ -7,11 +7,11 @@ import {
   ScrollArea,
   Stack,
   Text,
-  Title,
   ThemeIcon,
+  Title,
 } from '@mantine/core';
 import { PostRecordDto, PostRecordState } from '@postybirb/types';
-import { IconHistory, IconCheck, IconX } from '@tabler/icons-react';
+import { IconCheck, IconHistory, IconX } from '@tabler/icons-react';
 import { format } from 'date-fns';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -139,9 +139,9 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
                         {post.title}
                       </Text>
                       <Group gap="sm" mt={4}>
-                        <Badge 
-                          color={post.isSuccess ? 'green' : 'red'} 
-                          variant="filled" 
+                        <Badge
+                          color={post.isSuccess ? 'green' : 'red'}
+                          variant="filled"
                           radius="xl"
                           leftSection={
                             post.isSuccess ? (

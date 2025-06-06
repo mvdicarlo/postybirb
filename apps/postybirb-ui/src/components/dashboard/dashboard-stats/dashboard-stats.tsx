@@ -1,80 +1,86 @@
 import { Trans } from '@lingui/macro';
 import {
+  Badge,
   Box,
+  Grid,
   Group,
   Paper,
   Stack,
   Text,
   ThemeIcon,
   Title,
-  Transition,
 } from '@mantine/core';
-import { IconCalendar, IconClock, IconFileText } from '@tabler/icons-react';
-import { ReactNode, useState } from 'react';
+import {
+  IconCalendar,
+  IconClock,
+  IconFile,
+  IconFileText,
+  IconMessage,
+} from '@tabler/icons-react';
+import { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FileSubmissionPath, MessageSubmissionPath } from '../../../pages/route-paths';
+import classes from './dashboard-stats.module.css';
+
+interface SubmissionBreakdown {
+  files: number;
+  messages: number;
+}
 
 interface StatCardProps {
   icon: ReactNode;
   title: ReactNode;
   value: number | string;
   color: string;
+  children?: ReactNode;
+  highlight?: boolean;
 }
 
-function StatCard({ icon, title, value, color }: StatCardProps) {
-  const [hovered, setHovered] = useState(false);
-
+function StatCard({
+  icon,
+  title,
+  value,
+  color,
+  children,
+  highlight,
+}: StatCardProps) {
+  // Define a gradient for each color
+  const gradients: Record<string, { from: string; to: string; deg: number }> = {
+    blue: { from: 'blue.5', to: 'cyan.5', deg: 135 },
+    violet: { from: 'violet.5', to: 'grape.5', deg: 135 },
+    teal: { from: 'teal.5', to: 'green.5', deg: 135 },
+  };
+  const gradient = gradients[color] || { from: 'blue.5', to: 'cyan.5', deg: 135 };
   return (
-    <Transition mounted transition="scale" duration={200}>
-      {(styles) => (
-        <Paper
-          withBorder
-          p="lg"
+    <Paper
+      className={
+        highlight
+          ? `${classes.statCard} ${classes.statCardHighlight}`
+          : classes.statCard
+      }
+      shadow={highlight ? 'xl' : 'md'}
+      radius="xl"
+      withBorder
+    >
+      <Stack gap={0} align="center" className={classes.statCardContent}>
+        <ThemeIcon
+          size={56}
           radius="xl"
-          shadow={hovered ? 'lg' : 'md'}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          style={{
-            ...styles,
-            cursor: 'default',
-            transform: hovered ? 'translateY(-2px)' : 'translateY(0px)',
-            transition: 'all 0.2s ease',
-            background: hovered
-              ? `linear-gradient(135deg, var(--mantine-color-${color}-0) 0%, var(--mantine-color-${color}-1) 100%)`
-              : undefined,
-          }}
+          variant="gradient"
+          gradient={gradient}
+          className={classes.statIcon}
         >
-          <Stack gap="md" align="center">
-            <ThemeIcon
-              size="xl"
-              radius="xl"
-              variant={hovered ? 'filled' : 'light'}
-              color={color}
-              style={{
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {icon}
-            </ThemeIcon>
-            <Box ta="center">
-              <Title
-                order={2}
-                style={{
-                  background: `linear-gradient(135deg, var(--mantine-color-${color}-6), var(--mantine-color-${color}-4))`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  fontWeight: 700,
-                }}
-              >
-                {value}
-              </Title>
-              <Text size="sm" c="dimmed" fw={500} mt={4}>
-                {title}
-              </Text>
-            </Box>
-          </Stack>
-        </Paper>
-      )}
-    </Transition>
+          {icon}
+        </ThemeIcon>
+        <Title order={2} className={classes.valueText}>
+          {value}
+        </Title>
+        <Text size="md" className={classes.titleText}>
+          {title}
+        </Text>
+        {children}
+      </Stack>
+    </Paper>
   );
 }
 
@@ -82,35 +88,127 @@ export interface DashboardStatsProps {
   numSubmissions: number;
   numScheduled: number;
   numInQueue: number;
+  submissionBreakdown?: SubmissionBreakdown;
+  scheduledBreakdown?: SubmissionBreakdown;
+  queueBreakdown?: SubmissionBreakdown;
 }
 
 export function DashboardStats({
   numSubmissions,
   numScheduled,
   numInQueue,
+  submissionBreakdown,
+  scheduledBreakdown,
+  queueBreakdown,
 }: DashboardStatsProps) {
+  const navigate = useNavigate();
   return (
-    <Stack gap="xl">
-      <Group grow justify="center">
+    <Grid gutter="xl" className={classes.statsGrid}>
+      <Grid.Col span={{ base: 12, md: 4 }}>
         <StatCard
-          icon={<IconFileText size={24} />}
+          icon={<IconFileText size={36} />}
           title={<Trans>Total Submissions</Trans>}
           value={numSubmissions}
           color="blue"
-        />
+        >
+          {submissionBreakdown && (
+            <Group justify="center" gap="xs" className={classes.breakdownRow}>
+              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(FileSubmissionPath)}>
+                <ThemeIcon size={24} radius="xl" color="blue" variant="light">
+                  <IconFile size={16} />
+                </ThemeIcon>
+                <Text size="xs" className={classes.breakdownLabel}>
+                  <Trans>Files</Trans>
+                </Text>
+                <Badge color="blue" variant="light" size="lg" radius="xl" mt={2}>
+                  {submissionBreakdown.files}
+                </Badge>
+              </Box>
+              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(MessageSubmissionPath)}>
+                <ThemeIcon size={24} radius="xl" color="green" variant="light">
+                  <IconMessage size={16} />
+                </ThemeIcon>
+                <Text size="xs" className={classes.breakdownLabel}>
+                  <Trans>Messages</Trans>
+                </Text>
+                <Badge color="green" variant="light" size="lg" radius="xl" mt={2}>
+                  {submissionBreakdown.messages}
+                </Badge>
+              </Box>
+            </Group>
+          )}
+        </StatCard>
+      </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 4 }}>
         <StatCard
-          icon={<IconCalendar size={24} />}
+          icon={<IconCalendar size={36} />}
           title={<Trans>Scheduled</Trans>}
           value={numScheduled}
           color="violet"
-        />
+        >
+          {scheduledBreakdown && (
+            <Group justify="center" gap="xs" className={classes.breakdownRow}>
+              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(FileSubmissionPath)}>
+                <ThemeIcon size={24} radius="xl" color="blue" variant="light">
+                  <IconFile size={16} />
+                </ThemeIcon>
+                <Text size="xs" className={classes.breakdownLabel}>
+                  <Trans>Files</Trans>
+                </Text>
+                <Badge color="blue" variant="light" size="lg" radius="xl" mt={2}>
+                  {scheduledBreakdown.files}
+                </Badge>
+              </Box>
+              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(MessageSubmissionPath)}>
+                <ThemeIcon size={24} radius="xl" color="green" variant="light">
+                  <IconMessage size={16} />
+                </ThemeIcon>
+                <Text size="xs" className={classes.breakdownLabel}>
+                  <Trans>Messages</Trans>
+                </Text>
+                <Badge color="green" variant="light" size="lg" radius="xl" mt={2}>
+                  {scheduledBreakdown.messages}
+                </Badge>
+              </Box>
+            </Group>
+          )}
+        </StatCard>
+      </Grid.Col>
+      <Grid.Col span={{ base: 12, md: 4 }}>
         <StatCard
-          icon={<IconClock size={24} />}
+          icon={<IconClock size={36} />}
           title={<Trans>In Queue</Trans>}
           value={numInQueue}
           color="teal"
-        />
-      </Group>
-    </Stack>
+        >
+          {queueBreakdown && (
+            <Group justify="center" gap="xs" className={classes.breakdownRow}>
+              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(FileSubmissionPath)}>
+                <ThemeIcon size={24} radius="xl" color="blue" variant="light">
+                  <IconFile size={16} />
+                </ThemeIcon>
+                <Text size="xs" className={classes.breakdownLabel}>
+                  <Trans>Files</Trans>
+                </Text>
+                <Badge color="blue" variant="light" size="lg" radius="xl" mt={2}>
+                  {queueBreakdown.files}
+                </Badge>
+              </Box>
+              <Box className={classes.breakdownBox} style={{ cursor: 'pointer' }} onClick={() => navigate(MessageSubmissionPath)}>
+                <ThemeIcon size={24} radius="xl" color="green" variant="light">
+                  <IconMessage size={16} />
+                </ThemeIcon>
+                <Text size="xs" className={classes.breakdownLabel}>
+                  <Trans>Messages</Trans>
+                </Text>
+                <Badge color="green" variant="light" size="lg" radius="xl" mt={2}>
+                  {queueBreakdown.messages}
+                </Badge>
+              </Box>
+            </Group>
+          )}
+        </StatCard>
+      </Grid.Col>
+    </Grid>
   );
 }
