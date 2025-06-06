@@ -27,7 +27,7 @@ import {
   IconTrash,
   IconX,
 } from '@tabler/icons-react';
-import { format } from 'date-fns';
+import moment from 'moment';
 import { useMemo } from 'react';
 import postManagerApi from '../../../api/post-manager.api';
 import postQueueApi from '../../../api/post-queue.api';
@@ -87,15 +87,13 @@ function SubmissionItem({
     );
     itemClass = styles.scheduledItem;
   }
-
   const scheduledDate = submission.scheduledFor
     ? // eslint-disable-next-line lingui/no-unlocalized-strings
-      format(new Date(submission.scheduledFor), 'PPp')
+      moment(submission.scheduledFor).format('lll')
     : null;
 
   return (
     <>
-      {' '}
       <Modal
         opened={confirmModalOpened}
         onClose={confirmModal.close}

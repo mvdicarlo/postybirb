@@ -12,7 +12,7 @@ import {
 } from '@mantine/core';
 import { PostRecordDto, PostRecordState } from '@postybirb/types';
 import { IconCheck, IconHistory, IconX } from '@tabler/icons-react';
-import { format } from 'date-fns';
+import moment from 'moment';
 import { useMemo } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { defaultTargetProvider } from '../../../transports/http-client';
@@ -44,11 +44,9 @@ export function RecentPosts({ posts, submissions }: RecentPostsProps) {
           let thumbnailUrl;
           if (submission?.files && submission.files.length > 0) {
             thumbnailUrl = `${defaultTargetProvider()}/api/file/thumbnail/${submission.files[0].id}`;
-          }
-
-          const completedAt = post.completedAt
+          }          const completedAt = post.completedAt
             ? // eslint-disable-next-line lingui/no-unlocalized-strings
-              format(new Date(post.completedAt), 'PPp')
+              moment(post.completedAt).format('lll')
             : null;
 
           const isSuccess = post.state === PostRecordState.DONE;
