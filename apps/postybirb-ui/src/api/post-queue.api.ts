@@ -17,6 +17,22 @@ class PostQueueApi extends BaseApi<
   dequeue(submissionIds: string[]) {
     return this.client.post('dequeue', { submissionIds });
   }
+  
+  getAll() {
+    return this.client.get<PostQueueRecordDto[]>();
+  }
+
+  isPaused() {
+    return this.client.get<{ paused: boolean }>('is-paused');
+  }
+
+  pause() {
+    return this.client.post<{ paused: boolean }>('pause', {});
+  }
+
+  resume() {
+    return this.client.post<{ paused: boolean }>('resume', {});
+  }
 }
 
 export default new PostQueueApi();

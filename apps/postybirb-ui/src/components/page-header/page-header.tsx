@@ -3,7 +3,6 @@ import {
   Box,
   Breadcrumbs,
   Group,
-  Space,
   Tabs,
   Text,
   Title,
@@ -40,37 +39,44 @@ export function PageHeader(props: PageHeaderProps) {
     },
     [navigateTo],
   );
-
   const titleField = useMemo(
     () => (
-      <>
-        <Group pl="xs">
-          {icon}
-          <Title order={1}>{title}</Title>
+      <Box className="postybirb__page-header__title-section">
+        <Group className="postybirb__page-header__title-group">
+          <Box className="postybirb__page-header__icon-container">{icon}</Box>
+          <Title order={1} className="postybirb__page-header__title">
+            {title}
+          </Title>
         </Group>
-        <Space h="xs" />
-      </>
+      </Box>
     ),
     [icon, title],
   );
-
   const breadcrumb = useMemo(
     () =>
       breadcrumbs && (
-        <Breadcrumbs pl="xs">
-          {breadcrumbs.map((bc, index) => (
-            <Anchor
-              c={index === breadcrumbs.length - 1 ? undefined : 'blue'}
-              key={bc.target}
-              onClick={(e) => {
-                if (index === breadcrumbs.length - 1) return;
-                onBreadcrumbClick(e, bc.target);
-              }}
-            >
-              <em>{bc.text}</em>
-            </Anchor>
-          ))}
-        </Breadcrumbs>
+        <Box className="postybirb__page-header__breadcrumbs">
+          <Breadcrumbs separator="›">
+            {breadcrumbs.map((bc, index) => {
+              const isLast = index === breadcrumbs.length - 1;
+              return (
+                <Anchor
+                  key={bc.target}
+                  className={`postybirb__page-header__breadcrumb ${
+                    isLast ? 'current' : ''
+                  }`}
+                  onClick={(e) => {
+                    if (isLast) return;
+                    onBreadcrumbClick(e, bc.target);
+                  }}
+                  style={{ cursor: isLast ? 'default' : 'pointer' }}
+                >
+                  {bc.text}
+                </Anchor>
+              );
+            })}
+          </Breadcrumbs>
+        </Box>
       ),
     [breadcrumbs, onBreadcrumbClick],
   );
