@@ -6,12 +6,17 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { Trans } from '@lingui/macro';
 import {
+  ActionIcon,
+  Badge,
   Button,
+  Divider,
   Group,
   Modal,
   Popover,
   Stack,
   Text,
+  ThemeIcon,
+  Tooltip,
   useMantineColorScheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
@@ -21,6 +26,7 @@ import {
   IconCalendarOff,
   IconCalendarTime,
   IconCheck,
+  IconClock,
   IconX,
 } from '@tabler/icons-react';
 import Cron from 'croner';
@@ -43,10 +49,9 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
   const theme = useMantineColorScheme();
   const [lang] = use18n();
   const { type } = props;
-  const { state: submissions } = useStore(SubmissionStore);
-  const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
+  const { state: submissions } = useStore(SubmissionStore);  const [selectedEvent, setSelectedEvent] = useState<EventImpl | null>(null);
   const [popoverOpened, setPopoverOpened] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+  const [popoverTarget, setPopoverTarget] = useState<HTMLElement | null>(null);
   const [
     confirmModalOpened,
     { open: openConfirmModal, close: closeConfirmModal },
@@ -137,33 +142,18 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
       isScheduled: false, // Set scheduled flag to true automatically
     });
   }, []);
-
   // Handle event click
   const handleEventClick = useCallback((info: EventClickArg) => {
     // Set the selected event
     setSelectedEvent(info.event);
 
-    // Get click coordinates relative to the page
-    const rect = info.el.getBoundingClientRect();
+    // Set the clicked element as the popover target
+    setPopoverTarget(info.el);
 
-    // Get calendar DOM element for reference
-    const calendarElement = calendarRef.current?.elRef?.current;
-
-    // Calculate position considering scroll
-    if (calendarElement) {
-      const calendarRect = calendarElement.getBoundingClientRect();
-
-      setPopoverPosition({
-        top: rect.bottom - calendarRect.top + calendarElement.scrollTop + 10,
-        left: rect.left - calendarRect.left + calendarElement.scrollLeft,
-      });
-
-      // Show the popover
-      setPopoverOpened(true);
-    }
+    // Show the popover
+    setPopoverOpened(true);
   }, []);
 
-  // Handle unscheduling an event
   const handleUnschedule = () => {
     if (!selectedEvent) return;
     openConfirmModal();
@@ -267,47 +257,99 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
         droppable
         drop={handleExternalDrop}
         // Event click handler
-        eventClick={handleEventClick}
-      />
+        eventClick={handleEventClick}      />
 
-      <div
-        className="calendar-popover-container"
-        style={{
-          position: 'absolute',
-          top: popoverPosition.top,
-          left: popoverPosition.left,
-          display: popoverOpened ? 'block' : 'none',
-          zIndex: 1000,
-        }}
-      >
+      {/* Event details popover */}
+      {popoverOpened && popoverTarget && (
         <Popover
           opened={popoverOpened}
           onClose={() => setPopoverOpened(false)}
-          width={220}
+          width={280}
           position="bottom"
           withArrow
-          withinPortal={false}
-          shadow="md"
+          shadow="lg"
+          radius="md"
+          withinPortal
         >
           <Popover.Target>
-            <div style={{ width: 1, height: 1 }} />
+            <div 
+              style={{ 
+                position: 'fixed',
+                top: popoverTarget.getBoundingClientRect().top,
+                left: popoverTarget.getBoundingClientRect().left,
+                width: popoverTarget.getBoundingClientRect().width,
+                height: popoverTarget.getBoundingClientRect().height,
+                pointerEvents: 'none',
+                zIndex: 1000
+              }} 
+            />
           </Popover.Target>
-          <Popover.Dropdown>
-            <Stack gap="xs">
-              <Text fw={500}>{selectedEvent?.title}</Text>
-              <Text size="sm" c="dimmed">
-                {selectedEvent?.start
-                  ? moment(selectedEvent.start).format('lll')
-                  : ''}
-              </Text>
+          <Popover.Dropdown p="md">
+            <Stack gap="md">
+              {/* Header with title and close button */}
+              <Group justify="space-between" align="flex-start">
+                <div style={{ flex: 1 }}>
+                  <Text fw={600} size="md" lineClamp={2} mb="xs">
+                    {selectedEvent?.title}
+                  </Text>
+                  <Group gap="xs" align="center">
+                    <ThemeIcon size="sm" variant="light" color="blue">
+                      <IconClock size={14} />
+                    </ThemeIcon>                    <Text size="sm" c="dimmed">
+                      {selectedEvent?.start
+                        ? moment(selectedEvent.start).format('lll')
+                        : ''}
+                    </Text>
+                  </Group>
+                  {selectedEvent?.start && (
+                    <Text size="xs" c="dimmed" mt="xs">
+                      {moment(selectedEvent.start).fromNow()}
+                    </Text>
+                  )}
+                </div>
+                <Tooltip label={<Trans>Close</Trans>} position="left">
+                  <ActionIcon
+                    variant="subtle"
+                    color="gray"
+                    size="sm"
+                    onClick={() => setPopoverOpened(false)}
+                  >
+                    <IconX size={16} />
+                  </ActionIcon>
+                </Tooltip>
+              </Group>
 
-              <Group p="apart" mt="xs">
+              {/* Status badges */}
+              <Group gap="xs">
+                {selectedEvent?.extendedProps?.type === 'recurring' && (
+                  <Badge size="sm" variant="light" color="cyan">
+                    <Trans>Recurring</Trans>
+                  </Badge>
+                )}
+                {selectedEvent?.extendedProps?.isScheduled !== undefined && (
+                  <Badge 
+                    size="sm" 
+                    variant="light" 
+                    color={selectedEvent.extendedProps.isScheduled ? 'green' : 'orange'}
+                  >
+                    {selectedEvent.extendedProps.isScheduled ? (
+                      <Trans>Active</Trans>
+                    ) : (
+                      <Trans>Paused</Trans>
+                    )}
+                  </Badge>
+                )}
+              </Group>
+
+              <Divider />              {/* Action buttons */}
+              <Group gap="xs">
                 <Button
-                  variant="outline"
+                  variant="light"
                   color="red"
                   size="xs"
                   leftSection={<IconCalendarOff size={16} />}
                   onClick={handleUnschedule}
+                  flex={1}
                 >
                   <Trans>Unschedule</Trans>
                 </Button>
@@ -315,27 +357,27 @@ export function SubmissionCalendar(props: SubmissionCalendarProps) {
                 <Button
                   variant={
                     selectedEvent?.extendedProps?.isScheduled
-                      ? 'outline'
+                      ? 'light'
                       : 'filled'
                   }
                   color={
-                    selectedEvent?.extendedProps?.isScheduled ? 'gray' : 'blue'
+                    selectedEvent?.extendedProps?.isScheduled ? 'orange' : 'green'
                   }
                   size="xs"
                   leftSection={<IconCalendarTime size={16} />}
                   onClick={toggleScheduledState}
+                  flex={1}
                 >
                   {selectedEvent?.extendedProps?.isScheduled ? (
-                    <Trans>Disable</Trans>
+                    <Trans>Pause</Trans>
                   ) : (
-                    <Trans>Enable</Trans>
+                    <Trans>Activate</Trans>
                   )}
                 </Button>
-              </Group>
-            </Stack>
+              </Group>            </Stack>
           </Popover.Dropdown>
         </Popover>
-      </div>
+      )}
 
       {/* Confirmation Modal */}
       <Modal

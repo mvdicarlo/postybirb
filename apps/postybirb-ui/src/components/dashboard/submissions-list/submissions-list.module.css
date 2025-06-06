@@ -1,75 +1,65 @@
 .item {
-  border-radius: var(--mantine-radius-lg);
-  margin-bottom: var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-md);
+  margin-bottom: var(--mantine-spacing-sm);
   padding: var(--mantine-spacing-md);
   background-color: var(--mantine-color-body);
   border: 1px solid var(--mantine-color-default-border);
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden;
-}
-
-.item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.03) 100%);
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-  opacity: 0;
 }
 
 .item:hover {
   background-color: var(--mantine-color-default-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--mantine-shadow-md);
-}
-
-.item:hover::before {
-  opacity: 1;
+  border-color: var(--mantine-color-primary-4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .activePosting {
   border-left: 4px solid var(--mantine-color-teal-6);
-  background: linear-gradient(135deg, var(--mantine-color-teal-0) 0%, var(--mantine-color-body) 100%);
-  box-shadow: 0 2px 8px rgba(0, 150, 136, 0.1);
+  background-color: var(--mantine-color-teal-0);
+  border-color: var(--mantine-color-teal-3);
 }
 
 .queuedItem {
   border-left: 4px solid var(--mantine-color-blue-6);
-  background: linear-gradient(135deg, var(--mantine-color-blue-0) 0%, var(--mantine-color-body) 100%);
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+  background-color: var(--mantine-color-blue-0);
+  border-color: var(--mantine-color-blue-3);
 }
 
 .scheduledItem {
   border-left: 4px solid var(--mantine-color-violet-6);
-  background: linear-gradient(135deg, var(--mantine-color-violet-0) 0%, var(--mantine-color-body) 100%);
-  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.1);
+  background-color: var(--mantine-color-violet-0);
+  border-color: var(--mantine-color-violet-3);
 }
 
 .thumbnail {
-  border-radius: var(--mantine-radius-md);
+  border-radius: var(--mantine-radius-sm);
   overflow: hidden;
-  box-shadow: var(--mantine-shadow-sm);
-  transition: transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
 }
 
 .item:hover .thumbnail {
-  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Dark theme adjustments */
 [data-mantine-color-scheme="dark"] .activePosting {
-  background: linear-gradient(135deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-teal-9) 100%);
+  background-color: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-teal-7);
 }
 
 [data-mantine-color-scheme="dark"] .queuedItem {
-  background: linear-gradient(135deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-blue-9) 100%);
+  background-color: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-blue-7);
 }
 
 [data-mantine-color-scheme="dark"] .scheduledItem {
-  background: linear-gradient(135deg, var(--mantine-color-dark-7) 0%, var(--mantine-color-violet-9) 100%);
+  background-color: var(--mantine-color-dark-6);
+  border-color: var(--mantine-color-violet-7);
+}
+
+[data-mantine-color-scheme="dark"] .item:hover {
+  background-color: var(--mantine-color-dark-5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
