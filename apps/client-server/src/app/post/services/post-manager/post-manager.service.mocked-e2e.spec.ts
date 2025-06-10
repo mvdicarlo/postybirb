@@ -26,6 +26,7 @@ import {
 } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
+import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -83,6 +84,9 @@ describe('PostManagerServiceMocks', () => {
     const submissionService = {
       update: jest.fn(),
     } as unknown as jest.Mocked<SubmissionService>;
+    const notificationService = {
+      sendDesktopNotification: jest.fn(),
+    } as unknown as jest.Mocked<NotificationsService>;
 
     service = new PostManagerService(
       postRepositoryMock,
@@ -93,6 +97,7 @@ describe('PostManagerServiceMocks', () => {
       validationServiceMock,
       fileConverterService,
       submissionService,
+      notificationService,
     );
   });
 

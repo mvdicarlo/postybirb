@@ -70,4 +70,11 @@ export class Submission<T extends ISubmissionMetadata = ISubmissionMetadata>
 
     return dto;
   }
+
+  getSubmissionName(): string {
+    if (this.options?.length) {
+      return this.options.find((o) => o.isDefault)?.data.title;
+    }
+    return 'Unknown';
+  }
 }

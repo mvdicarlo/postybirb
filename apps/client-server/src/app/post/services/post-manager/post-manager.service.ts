@@ -31,6 +31,7 @@ import {
 } from '../../../drizzle/models';
 import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
+import { NotificationsService } from '../../../notifications/notifications.service';
 import { PostParsersService } from '../../../post-parsers/post-parsers.service';
 import { SubmissionService } from '../../../submission/services/submission.service';
 import { ValidationService } from '../../../validation/validation.service';
@@ -115,6 +116,7 @@ export class PostManagerService {
     private readonly validationService: ValidationService,
     private readonly fileConverterService: FileConverterService,
     private readonly submissionService: SubmissionService,
+    private readonly notificationService: NotificationsService,
   ) {
     this.postRepository =
       postRepository ?? new PostyBirbDatabase('PostRecordSchema');
@@ -203,6 +205,31 @@ export class PostManagerService {
     ) {
       await this.submissionService.update(entity.submissionId, {
         isArchived: true,
+      });
+    }
+    if (allCompleted) {
+      this.logger.withMetadata(entity).info(`Post completed successfully`);
+      this.notificationService.create({
+        type: 'success',
+        title: `Post Completed`,
+        message: `Successfully posted to all websites for submission ${entity.submission.getSubmissionName()}`,
+        tags: ['post'],
+        data: {
+          submissionId: entity.submissionId,
+          type: entity.submission.type,
+        },
+      });
+    } else {
+      this.logger.withMetadata(entity).error(`Post failed`);
+      this.notificationService.create({
+        type: 'error',
+        title: `Post Failed`,
+        message: `Failed to post to some websites for submission ${entity.submission.getSubmissionName()}.\nCheck the post history for more details.`,
+        tags: ['post'],
+        data: {
+          submissionId: entity.submissionId,
+          type: entity.submission.type,
+        },
       });
     }
   }

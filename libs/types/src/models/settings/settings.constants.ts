@@ -12,8 +12,8 @@ export class SettingsConstants {
       enabled: true,
       showOnPostSuccess: true,
       showOnPostError: true,
-      showOnFileWatcherError: true,
-      showOnFileWatcherSuccess: true,
+      showOnDirectoryWatcherError: true,
+      showOnDirectoryWatcherSuccess: true,
     },
   };
 }
