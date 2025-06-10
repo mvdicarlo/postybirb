@@ -86,6 +86,7 @@ describe('PostManagerServiceMocks', () => {
     } as unknown as jest.Mocked<SubmissionService>;
     const notificationService = {
       sendDesktopNotification: jest.fn(),
+      create: jest.fn(),
     } as unknown as jest.Mocked<NotificationsService>;
 
     service = new PostManagerService(
