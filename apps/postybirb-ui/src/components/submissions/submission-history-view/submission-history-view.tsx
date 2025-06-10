@@ -52,6 +52,7 @@ import { DeleteActionPopover } from '../../shared/delete-action-popover/delete-a
 
 type SubmissionViewProps = {
   type: SubmissionType;
+  submissions?: SubmissionDto[];
 };
 
 /**
@@ -488,10 +489,15 @@ function SubmissionHistoryCard({ submission }: { submission: SubmissionDto }) {
 /**
  * Main submission history view component
  */
-export function SubmissionHistoryView({ type }: SubmissionViewProps) {
+export function SubmissionHistoryView({
+  type,
+  submissions: providedSubmissions,
+}: SubmissionViewProps) {
   const { _ } = useLingui();
-  const { state: submissions } = useStore(SubmissionStore);
+  const { state: storeSubmissions } = useStore(SubmissionStore);
   const [nameFilter, setNameFilter] = useState<string>('');
+
+  const submissions = providedSubmissions || storeSubmissions;
 
   const filteredSubmissions = useMemo(() => {
     let results = submissions.filter(

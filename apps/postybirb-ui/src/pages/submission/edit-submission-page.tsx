@@ -7,6 +7,7 @@ import {
   IconCalendarCancel,
   IconCancel,
   IconFile,
+  IconLogs,
   IconMessage,
   IconSend,
   IconTemplate,
@@ -19,6 +20,7 @@ import websiteOptionsApi from '../../api/website-options.api';
 import { PageHeader } from '../../components/page-header/page-header';
 import TemplatePickerModal from '../../components/submission-templates/template-picker-modal/template-picker-modal';
 import { SubmissionEditForm } from '../../components/submissions/submission-edit-form/submission-edit-form';
+import { SubmissionHistoryView } from '../../components/submissions/submission-history-view/submission-history-view';
 import { SubmissionDto } from '../../models/dtos/submission.dto';
 import { SubmissionTemplateStore } from '../../stores/submission-template.store';
 import { SubmissionStore } from '../../stores/submission.store';
@@ -205,6 +207,7 @@ export function EditSubmissionPage() {
   const { state: templates, isLoading: isLoadingTemplates } = useStore(
     SubmissionTemplateStore,
   );
+  const [activeTab, setActiveTab] = useState<string>('submission');
 
   const data = [...submissions, ...templates].find((s) => s.id === id);
   const submission = useMemo(
@@ -223,6 +226,23 @@ export function EditSubmissionPage() {
   return (
     <>
       <PageHeader
+        onTabChange={setActiveTab}
+        tabs={
+          !submission.isTemplate
+            ? [
+                {
+                  label: <Trans>Submission</Trans>,
+                  key: 'submission',
+                  icon: isFile ? <IconFile /> : <IconMessage />,
+                },
+                {
+                  label: <Trans>History</Trans>,
+                  key: 'history',
+                  icon: <IconLogs />,
+                },
+              ]
+            : []
+        }
         icon={isFile ? <IconFile /> : <IconMessage />}
         title={defaultOption.data.title ?? submission.id}
         breadcrumbs={[
@@ -243,9 +263,16 @@ export function EditSubmissionPage() {
         ]}
       />
       <Space h="md" />
-      <Box className="postybirb__submission-edit-page" mx="5%">
-        <SubmissionEditForm submission={submission} />
-      </Box>
+      {activeTab === 'submission' ? (
+        <Box className="postybirb__submission-edit-page" mx="5%">
+          <SubmissionEditForm submission={submission} />
+        </Box>
+      ) : (
+        <SubmissionHistoryView
+          type={submission.type}
+          submissions={[submission]}
+        />
+      )}
     </>
   );
 }
