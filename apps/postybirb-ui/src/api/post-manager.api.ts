@@ -9,9 +9,9 @@ class PostManagerApi {
   }
 
   cancelIfRunning(submissionId: SubmissionId) {
-    return this.client.post<boolean>('cancel', { submissionId });
+    return this.client.post<boolean>(`cancel/${submissionId}`, {});
   }
-  
+
   isPosting() {
     return this.client.get<{ isPosting: boolean }>('is-posting');
   }
