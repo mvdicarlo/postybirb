@@ -1,37 +1,147 @@
 appId: com.mvdicarlo.postybirb
-copyright: Copyright (c) 2023 Michael DiCarlo
+copyright: Copyright (c) 2024 Michael DiCarlo
 productName: PostyBirb
+executableName: PostyBirb
+artifactName: "${productName}-${version}-${os}-${arch}.${ext}"
+
 publish:
   provider: github
   owner: mvdicarlo
   repo: postybirb
+
 directories:
   buildResources: packaging-resources
   output: dist/packages
+
 files: 
   - dist/apps
+  - "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}"
+  - "!.editorconfig"
+  - "!**/._*"
+  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
+  - "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}"
+  - "!**/{appveyor.yml,.travis.yml,circle.yml}"
+  - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+
+compression: maximum
+removePackageScripts: true
 
 mac:
   category: public.app-category.productivity
   icon: icons/icon.icns
   gatekeeperAssess: false
-  target: dmg
+  hardenedRuntime: true
+  entitlements: inherit
+  entitlementsInherit: inherit
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - arm64
+  notarize: false
+
+dmg:
+  sign: false
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
 
 linux:
   category: Network
   icon: icons/icon_256x256x32.png
+  synopsis: "PostyBirb is a desktop application for posting to multiple websites"
+  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
   target:
-    - AppImage
-    - snap
+    - target: AppImage
+      arch:
+        - x64
+        - arm64
+    - target: snap
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+    - target: rpm
+      arch:
+        - x64
+        - arm64
+    - target: tar.gz
+      arch:
+        - x64
+        - arm64
+
+snap:
+  summary: "PostyBirb - Multi-site posting application"
+  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
+  grade: stable
+  confinement: strict
+  plugs:
+    - default
+    - home
+    - network
+    - removable-media
+
+deb:
+  priority: optional
+  depends:
+    - gconf2
+    - gconf-service
+    - libnotify4
+    - libappindicator1
+    - libxtst6
+    - libnss3
+
+rpm:
+  depends:
+    - libnotify
+    - libappindicator
+    - libXtst
+    - nss
 
 nsis:
   deleteAppDataOnUninstall: true
   oneClick: false
   allowToChangeInstallationDirectory: true
+  allowElevation: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: PostyBirb
+  include: build/installer.nsh
+  script: build/installer.nsh
+  installerLanguages:
+    - en_US
+  language: 1033
 
 win:
   publisherName: Michael DiCarlo
   icon: icons/icon.ico
+  requestedExecutionLevel: asInvoker
   target:
-  #   - nsis
-  # - portable
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+        - arm64
+    - target: portable
+      arch:
+        - x64
+        - ia32
+        - arm64
+    - target: zip
+      arch:
+        - x64
+        - ia32
+        - arm64
+
+portable:
+  artifactName: "${productName}-${version}-portable-${arch}.${ext}"

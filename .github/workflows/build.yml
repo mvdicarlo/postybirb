@@ -1,35 +1,141 @@
 name: Build/Release
+
 on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
+
 jobs:
-  release:
+  build:
     runs-on: ${{ matrix.os }}
+    
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - os: macos-latest
+            arch: x64
+          - os: macos-latest  
+            arch: arm64
+          - os: ubuntu-latest
+            arch: x64
+          - os: ubuntu-latest
+            arch: arm64  
+          - os: windows-latest
+            arch: x64
+          - os: windows-latest
+            arch: ia32
+          - os: windows-latest
+            arch: arm64
 
     steps:
-      - name: Check out Git repository
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Install Node.js, NPM and Yarn
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          cache: yarn
-          
-        # Note: These flags needed to speed up build
+          node-version: '18'
+          cache: 'yarn'
+
+      # Install dependencies with proper caching
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --prefer-offline
+        run: yarn install --frozen-lockfile --network-timeout 600000
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+          ELECTRON_CACHE: ~/.cache/electron
+          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+      # Cache Electron binaries
+      - name: Cache Electron binaries
+        uses: actions/cache@v4
         with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+            node_modules/.cache/electron
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-cache-
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+      # Build the application
+      - name: Build application
+        run: yarn build:prod
+        env:
+          NODE_ENV: production
+
+      # Build and release Electron app
+      - name: Build Electron app
+        run: |
+          if [ "${{ matrix.os }}" = "macos-latest" ]; then
+            yarn electron-builder --mac --${{ matrix.arch }} --publish=never
+          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            yarn electron-builder --linux --${{ matrix.arch }} --publish=never
+          else
+            yarn electron-builder --win --${{ matrix.arch }} --publish=never
+          fi
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASS: ${{ secrets.APPLE_ID_PASS }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_IDENTITY_AUTO_DISCOVERY: true
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+
+      # Upload artifacts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            dist/packages/*.exe
+            dist/packages/*.dmg
+            dist/packages/*.zip
+            dist/packages/*.AppImage
+            dist/packages/*.snap
+            dist/packages/*.deb
+            dist/packages/*.rpm
+            dist/packages/*.tar.gz
+          retention-days: 30
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --network-timeout 600000
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Build application
+        run: yarn build:prod
+        env:
+          NODE_ENV: production
+
+      - name: Release to GitHub
+        run: yarn electron-builder --publish=always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
