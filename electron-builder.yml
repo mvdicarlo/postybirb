@@ -36,13 +36,12 @@ mac:
   target:
     - target: dmg
       arch:
-        - x64
-        - arm64
+        - universal
     - target: zip
       arch:
-        - x64
-        - arm64
-  notarize: false
+        - universal
+  notarize: 
+    teamId: ${APPLE_TEAM_ID}
 
 dmg:
   sign: false
@@ -130,18 +129,9 @@ win:
     - target: nsis
       arch:
         - x64
-        - ia32
-        - arm64
     - target: portable
       arch:
         - x64
-        - ia32
-        - arm64
-    - target: zip
-      arch:
-        - x64
-        - ia32
-        - arm64
 
 portable:
   artifactName: "${productName}-${version}-portable-${arch}.${ext}"
