@@ -95,7 +95,7 @@ function NotificationsSettings() {
               ml="md"
               label={<Trans>Show notification on file watcher success</Trans>}
               checked={
-                settings?.desktopNotifications?.showOnFileWatcherSuccess ??
+                settings?.desktopNotifications?.showOnDirectoryWatcherSuccess ??
                 false
               }
               onChange={(event) => {
@@ -109,7 +109,8 @@ function NotificationsSettings() {
               ml="md"
               label={<Trans>Show notification on file watcher error</Trans>}
               checked={
-                settings?.desktopNotifications?.showOnFileWatcherError ?? true
+                settings?.desktopNotifications?.showOnDirectoryWatcherError ??
+                true
               }
               onChange={(event) => {
                 updateDesktopNotifications(
