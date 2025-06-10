@@ -13,6 +13,7 @@ import { AccountService } from '../../../account/account.service';
 import { CreateAccountDto } from '../../../account/dtos/create-account.dto';
 import { FileConverterModule } from '../../../file-converter/file-converter.module';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
+import { NotificationsModule } from '../../../notifications/notifications.module';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { SettingsModule } from '../../../settings/settings.module';
 import { SettingsService } from '../../../settings/settings.service';
@@ -56,6 +57,7 @@ describe('PostQueueService', () => {
           PostModule,
           FileConverterModule,
           SettingsModule,
+          NotificationsModule,
         ],
         providers: [
           PostQueueService,
