@@ -3,7 +3,7 @@ name: Build/Release
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -15,19 +15,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            arch: x64
-          - os: macos-latest  
-            arch: arm64
+            platform: mac
           - os: ubuntu-latest
-            arch: x64
-          - os: ubuntu-latest
-            arch: arm64  
+            platform: linux
           - os: windows-latest
-            arch: x64
-          - os: windows-latest
-            arch: ia32
-          - os: windows-latest
-            arch: arm64
+            platform: win
 
     steps:
       - name: Checkout repository
@@ -41,14 +33,6 @@ jobs:
           node-version: '18'
           cache: 'yarn'
 
-      # Install dependencies with proper caching
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --network-timeout 600000
-        env:
-          CYPRESS_INSTALL_BINARY: 0
-          ELECTRON_CACHE: ~/.cache/electron
-          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
-
       # Cache Electron binaries
       - name: Cache Electron binaries
         uses: actions/cache@v4
@@ -61,23 +45,23 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-electron-cache-
 
+      # Install dependencies with proper caching
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile --network-timeout 600000
+        env:
+          CYPRESS_INSTALL_BINARY: 0
+          ELECTRON_CACHE: ~/.cache/electron
+          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
+
       # Build the application
       - name: Build application
         run: yarn build:prod
         env:
           NODE_ENV: production
 
-      # Build and release Electron app
+      # Build Electron app
       - name: Build Electron app
-        run: |
-          if [ "${{ matrix.os }}" = "macos-latest" ]; then
-            yarn electron-builder --mac --${{ matrix.arch }} --publish=never
-          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            yarn electron-builder --linux --${{ matrix.arch }} --publish=never
-          else
-            yarn electron-builder --win --${{ matrix.arch }} --publish=never
-          fi
-        shell: bash
+        run: yarn electron-builder --${{ matrix.platform }} --publish=never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -92,7 +76,7 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}-${{ matrix.arch }}
+          name: build-${{ matrix.os }}
           path: |
             dist/packages/*.exe
             dist/packages/*.dmg
