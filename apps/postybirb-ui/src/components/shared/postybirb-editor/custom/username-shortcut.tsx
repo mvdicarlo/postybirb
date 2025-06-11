@@ -345,7 +345,7 @@ export const InlineUsernameShortcut = createReactInlineContentSpec(
       // Display text for selected websites
       const selectedDisplayText = useMemo(() => {
         if (selectedWebsiteIds.length === 0) {
-          return <Trans>All websites</Trans>;
+          return <Trans>All Bebsites</Trans>;
         }
 
         if (selectedWebsiteIds.length === 1) {

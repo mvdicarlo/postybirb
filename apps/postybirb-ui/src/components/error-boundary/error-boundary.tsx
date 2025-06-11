@@ -160,7 +160,7 @@ export class ErrorBoundary extends Component<
 
             <div>
               <Title order={2} mb="sm">
-                <Trans>Oops! Something went wrong</Trans>
+                <Trans>Something went wrong</Trans>
               </Title>
               <Text c="dimmed" mb="lg">
                 <Trans>

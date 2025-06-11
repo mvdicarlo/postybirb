@@ -104,12 +104,12 @@ msgstr ""
 msgid "All"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
-msgid "All files are marked ignored."
+#: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
+msgid "All Bebsites"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
-msgid "All websites"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+msgid "All files are marked ignored."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
@@ -1227,13 +1227,12 @@ msgstr ""
 msgid "No websites match your search criteria"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
-msgctxt "Template picker checkbox"
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "None"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgctxt "internalSchedule.none"
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgctxt "Template picker checkbox"
 msgid "None"
 msgstr ""
 
@@ -1269,7 +1268,6 @@ msgid "Offer hi-res download (gold only)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgctxt "internalSchedule.single"
 msgid "Once"
 msgstr ""
 
@@ -1279,10 +1277,6 @@ msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Only use website options specified and delete website options missing from multi-update form."
-msgstr ""
-
-#: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
-msgid "Oops! Something went wrong"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
@@ -1435,12 +1429,8 @@ msgstr ""
 msgid "Recent Posts"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
-msgid "Recurring"
-msgstr ""
-
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgctxt "internalSchedule.recurring"
+#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Recurring"
 msgstr ""
 
@@ -1775,6 +1765,7 @@ msgid "Size"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
+#: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Something went wrong"
 msgstr ""
@@ -2336,7 +2327,7 @@ msgid "Width"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
-msgid "Yes, Cancel Posting"
+msgid "Yes"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx

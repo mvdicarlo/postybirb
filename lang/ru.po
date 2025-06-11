@@ -102,13 +102,13 @@ msgstr "Сгенерировано ИИ"
 msgid "All"
 msgstr "Все"
 
+#: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
+msgid "All Bebsites"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "All files are marked ignored."
 msgstr "Все файлы выбраны как игнорируемые."
-
-#: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
-msgid "All websites"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "All Websites"
@@ -1225,13 +1225,12 @@ msgstr ""
 msgid "No websites match your search criteria"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "None"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgctxt "Template picker checkbox"
-msgid "None"
-msgstr "Нет"
-
-#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgctxt "internalSchedule.none"
 msgid "None"
 msgstr "Нет"
 
@@ -1267,9 +1266,8 @@ msgid "Offer hi-res download (gold only)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgctxt "internalSchedule.single"
 msgid "Once"
-msgstr "Один раз"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Only set scheduled date"
@@ -1278,10 +1276,6 @@ msgstr "Только установленная дата"
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Only use website options specified and delete website options missing from multi-update form."
 msgstr "Использовать только указанные для сайта опции и удалить все не указанные."
-
-#: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
-msgid "Oops! Something went wrong"
-msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Open CRON helper website"
@@ -1433,14 +1427,10 @@ msgstr ""
 msgid "Recent Posts"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Recurring"
 msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
-msgctxt "internalSchedule.recurring"
-msgid "Recurring"
-msgstr "Повторяющееся"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Recurring Schedule"
@@ -1773,6 +1763,7 @@ msgid "Size"
 msgstr "Размер"
 
 #: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
+#: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Something went wrong"
 msgstr ""
@@ -2334,7 +2325,7 @@ msgid "Width"
 msgstr "Ширина"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
-msgid "Yes, Cancel Posting"
+msgid "Yes"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
