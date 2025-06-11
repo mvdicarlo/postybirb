@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { AccountService } from '../account/account.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
@@ -18,7 +19,7 @@ describe('DirectoryWatchersService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
-      imports: [SubmissionModule],
+      imports: [SubmissionModule, NotificationsModule],
       providers: [DirectoryWatchersService],
     }).compile();
 

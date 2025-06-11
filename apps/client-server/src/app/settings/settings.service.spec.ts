@@ -35,8 +35,8 @@ describe('SettingsService', () => {
     updateDto.settings = {
       desktopNotifications: {
         enabled: true,
-        showOnFileWatcherError: true,
-        showOnFileWatcherSuccess: true,
+        showOnDirectoryWatcherError: true,
+        showOnDirectoryWatcherSuccess: true,
         showOnPostError: true,
         showOnPostSuccess: true,
       },

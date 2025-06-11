@@ -12,6 +12,7 @@ import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { DirectoryWatcher } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
+import { NotificationsService } from '../notifications/notifications.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
@@ -34,6 +35,7 @@ type WatcherMetadata = {
 export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
   constructor(
     private readonly submissionService: SubmissionService,
+    private readonly notificationService: NotificationsService,
     @Optional() webSocket?: WSGateway,
   ) {
     super('DirectoryWatcherSchema', webSocket);
@@ -70,16 +72,45 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
 
       await Promise.allSettled(promises);
 
+      this.notificationService.create({
+        title: 'Directory Watcher',
+        message: `Processed ${filesInDirectory.length} files in '${watcher.path}'`,
+        type: 'info',
+        tags: ['directory-watcher'],
+        data: {
+          processedFiles: filesInDirectory,
+          watcherId: watcher.id,
+        },
+      });
+
       // Update metadata after all is processed
       writeFile(metaFileName, JSON.stringify(meta, null, 1)).catch(
         (err: Error) => {
           this.logger
             .withError(err)
             .error(`Failed to update metadata for '${metaFileName}'`);
+          this.notificationService.create({
+            title: 'Directory Watcher Error',
+            message: `Failed to update metadata for '${metaFileName}' which may cause issues with future file processing.`,
+            type: 'error',
+            tags: ['directory-watcher'],
+            data: {
+              error: err.message,
+            },
+          });
         },
       );
     } catch (e) {
       this.logger.error(e, `Failed to read directory ${watcher.path}`);
+      this.notificationService.create({
+        title: 'Directory Watcher Error',
+        message: `Failed to read directory ${watcher.path}`,
+        type: 'error',
+        tags: ['directory-watcher'],
+        data: {
+          error: e.message,
+        },
+      });
     }
   }
 

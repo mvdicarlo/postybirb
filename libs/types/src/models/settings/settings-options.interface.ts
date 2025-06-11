@@ -39,6 +39,6 @@ export type DesktopNotificationSettings = {
   enabled: boolean;
   showOnPostSuccess: boolean;
   showOnPostError: boolean;
-  showOnFileWatcherError: boolean;
-  showOnFileWatcherSuccess: boolean;
+  showOnDirectoryWatcherError: boolean;
+  showOnDirectoryWatcherSuccess: boolean;
 };

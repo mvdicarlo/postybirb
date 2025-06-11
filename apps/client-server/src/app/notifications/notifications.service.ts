@@ -88,8 +88,8 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
     }
 
     if (
-      desktopNotifications.showOnFileWatcherError &&
-      tags.includes('file-watcher') &&
+      desktopNotifications.showOnDirectoryWatcherError &&
+      tags.includes('directory-watcher') &&
       type === 'error'
     ) {
       new ElectronNotification({
@@ -99,8 +99,8 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
     }
 
     if (
-      desktopNotifications.showOnFileWatcherSuccess &&
-      tags.includes('file-watcher') &&
+      desktopNotifications.showOnDirectoryWatcherSuccess &&
+      tags.includes('directory-watcher') &&
       type === 'success'
     ) {
       new ElectronNotification({

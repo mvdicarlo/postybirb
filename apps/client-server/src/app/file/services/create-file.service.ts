@@ -329,10 +329,10 @@ export class CreateFileService {
     tx: PostyBirbTransaction,
     fileEntity: SubmissionFile,
     buf: Buffer,
-    opts: Select<typeof this.fileBufferRepository.schemaEntity> = {},
+    opts: Select<'FileBufferSchema'> = {} as Select<'FileBufferSchema'>,
   ): Promise<FileBuffer> {
     const { mimeType, height, width, fileName } = fileEntity;
-    const data: Insert<typeof this.fileBufferRepository.schemaEntity> = {
+    const data: Insert<'FileBufferSchema'> = {
       id: uuid(),
       buffer: buf,
       submissionFileId: fileEntity.id,

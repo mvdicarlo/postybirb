@@ -19,6 +19,7 @@ import { PostyBirbDatabase } from '../../../drizzle/postybirb-database/postybirb
 import { FileConverterModule } from '../../../file-converter/file-converter.module';
 import { FileConverterService } from '../../../file-converter/file-converter.service';
 import { MulterFileInfo } from '../../../file/models/multer-file-info';
+import { NotificationsModule } from '../../../notifications/notifications.module';
 import { PostParsersModule } from '../../../post-parsers/post-parsers.module';
 import { SettingsService } from '../../../settings/settings.service';
 import { CreateSubmissionDto } from '../../../submission/dtos/create-submission.dto';
@@ -63,6 +64,7 @@ describe('PostManagerService', () => {
           UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FileConverterModule,
+          NotificationsModule,
         ],
         providers: [
           PostManagerService,
