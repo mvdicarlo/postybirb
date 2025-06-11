@@ -102,15 +102,15 @@ export class UpdateService {
           
           // Simulate the update-available event with our parsed data
           autoUpdater.emit('update-available', standardUpdate);
-          return standardUpdate;
+          return { updateInfo: standardUpdate, versionInfo: undefined };
         } else {
           this.logger.warn(`No update found for ${installationType} ${arch}`);
-          return null;
+          return { updateInfo: null, versionInfo: undefined };
         }
       } catch (error) {
         this.logger.withError(error).error('Failed to check for Linux updates');
         autoUpdater.emit('error', error);
-        return null;
+        return { updateInfo: null, versionInfo: undefined };
       }
     };
     
