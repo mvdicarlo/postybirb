@@ -27,8 +27,6 @@ compression: maximum
 removePackageScripts: true
 
 mac:
-  notarize:
-    teamId: "ZRKS9CNUQZ"
   category: public.app-category.productivity
   entitlements: packaging-resources/entitlements.mac.plist
   entitlementsInherit: packaging-resources/entitlements.mac.plist
