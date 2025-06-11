@@ -118,11 +118,15 @@ async function generateLinuxUpdateFiles(context) {
   
   // Find Linux platform - it might be a Platform object, not a string
   let linuxTargets = null;
-  for (const [platform, targets] of platformToTargets) {
-    if (platform.name === 'linux') {
-      linuxTargets = targets;
-      break;
+  if (platformToTargets && typeof platformToTargets[Symbol.iterator] === 'function') {
+    for (const [platform, targets] of platformToTargets) {
+      if (platform.name === 'linux') {
+        linuxTargets = targets;
+        break;
+      }
     }
+  } else {
+    console.log('platformToTargets is not iterable or not available, using file-based detection');
   }
   
   if (!linuxTargets) {
@@ -134,11 +138,30 @@ async function generateLinuxUpdateFiles(context) {
 
   // Find the original latest.yml file (for version/release date)
   const originalLatestPath = path.join(outDir, 'latest.yml');
-  let versionInfo = { version: '1.0.0', releaseDate: new Date().toISOString() };
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
   
+  let versionInfo = { 
+    version: '1.0.0', 
+    releaseDate: new Date().toISOString() 
+  };
+  
+  // Try to get version from package.json first
+  if (fs.existsSync(packageJsonPath)) {
+    try {
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+      versionInfo.version = packageJson.version;
+    } catch (error) {
+      console.warn('Could not parse package.json for version, using defaults');
+    }
+  }
+  
+  // Try to get release date from existing latest.yml if available
   if (fs.existsSync(originalLatestPath)) {
     try {
-      versionInfo = parseOriginalLatest(originalLatestPath);
+      const originalData = parseOriginalLatest(originalLatestPath);
+      if (originalData.releaseDate) {
+        versionInfo.releaseDate = originalData.releaseDate;
+      }
     } catch (error) {
       console.warn('Could not parse original latest.yml, using defaults');
     }
