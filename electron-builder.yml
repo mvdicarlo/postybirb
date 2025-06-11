@@ -35,7 +35,10 @@ mac:
   icon: icons/icon.icns
   gatekeeperAssess: false
   target:
-    - target: default
+    - target: dmg
+      arch:
+        - universal
+    - target: zip
       arch:
         - universal
   notarize: true
@@ -50,21 +53,26 @@ linux:
       arch:
         - x64
         - arm64
+      artifactName: "${productName}-${version}-linux-${arch}.${ext}"
     - target: snap
       arch:
         - x64
+      artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
     - target: deb
       arch:
         - x64
         - arm64
+      artifactName: "${productName}-${version}-linux-deb-${arch}.${ext}"
     - target: rpm
       arch:
         - x64
         - arm64
+      artifactName: "${productName}-${version}-linux-rpm-${arch}.${ext}"
     - target: tar.gz
       arch:
         - x64
         - arm64
+      artifactName: "${productName}-${version}-linux-tar-${arch}.${ext}"
 
 snap:
   summary: "PostyBirb - Multi-site posting application"
@@ -93,6 +101,14 @@ rpm:
     - libappindicator
     - libXtst
     - nss
+
+appImage:
+  systemIntegration: ask
+  desktop:
+    StartupWMClass: PostyBirb
+    
+# Generate separate update files for different Linux formats  
+afterAllArtifactBuild: "scripts/generate-linux-update-files.js"
 
 nsis:
   deleteAppDataOnUninstall: true
