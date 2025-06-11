@@ -35,6 +35,7 @@ import {
 import moment from 'moment/min/moment-with-locales';
 import { useMemo, useState } from 'react';
 import notificationApi from '../../../api/notification.api';
+import { ComponentErrorBoundary } from '../../../components/error-boundary/specialized-error-boundaries';
 import { NotificationStore } from '../../../stores/notification.store';
 import { useStore } from '../../../stores/use-store';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
@@ -269,221 +270,224 @@ export function NotificationsDrawer() {
     }
     setClearPopoverOpened(false);
   };
-
   return (
-    <Drawer
-      withOverlay={false}
-      closeOnClickOutside
-      ml={-marginOffset}
-      size="xl"
-      portalProps={{
-        target: getPortalTarget(),
-      }}
-      overlayProps={{
-        left: getOverlayOffset(),
-        zIndex: 100,
-      }}
-      trapFocus
-      opened={visible}
-      onClose={() => toggle()}
-      title={
-        <Text fw="bold" size="1.2rem">
-          <Trans>Notifications</Trans>
-        </Text>
-      }
-      styles={{
-        body: {
-          padding: '16px',
-          height: 'calc(100% - 60px)',
-        },
-      }}
-    >
-      <Stack gap="md" h="100%">
-        <Input
-          placeholder={_(msg`Search notifications...`)}
-          leftSection={<IconSearch size={16} />}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.currentTarget.value)}
-        />
+    <ComponentErrorBoundary>
+      <Drawer
+        withOverlay={false}
+        closeOnClickOutside
+        ml={-marginOffset}
+        size="xl"
+        portalProps={{
+          target: getPortalTarget(),
+        }}
+        overlayProps={{
+          left: getOverlayOffset(),
+          zIndex: 100,
+        }}
+        trapFocus
+        opened={visible}
+        onClose={() => toggle()}
+        title={
+          <Text fw="bold" size="1.2rem">
+            <Trans>Notifications</Trans>
+          </Text>
+        }
+        styles={{
+          body: {
+            padding: '16px',
+            height: 'calc(100% - 60px)',
+          },
+        }}
+      >
+        <Stack gap="md" h="100%">
+          <Input
+            placeholder={_(msg`Search notifications...`)}
+            leftSection={<IconSearch size={16} />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+          />
 
-        <SegmentedControl
-          value={activeTab}
-          onChange={setActiveTab}
-          fullWidth
-          data={[
-            {
-              label: (
-                <Group gap={4}>
-                  <Text>
-                    <Trans>All</Trans>
-                  </Text>
-                  <Badge size="xs" variant="light">
-                    {notificationCount.all}
-                  </Badge>
-                </Group>
-              ),
-              value: 'all',
-            },
-            {
-              label: (
-                <Group gap={4}>
-                  <Text>
-                    <Trans>Unread</Trans>
-                  </Text>
-                  <Badge size="xs" variant="light">
-                    {notificationCount.unread}
-                  </Badge>
-                </Group>
-              ),
-              value: 'unread',
-            },
-            {
-              label: (
-                <Group gap={4}>
-                  <Text>
-                    <Trans>Info</Trans>
-                  </Text>
-                  <Badge size="xs" variant="light">
-                    {notificationCount.info}
-                  </Badge>
-                </Group>
-              ),
-              value: 'info',
-            },
-            {
-              label: (
-                <Group gap={4}>
-                  <Text>
-                    <Trans>Success</Trans>
-                  </Text>
-                  <Badge size="xs" variant="light">
-                    {notificationCount.success}
-                  </Badge>
-                </Group>
-              ),
-              value: 'success',
-            },
-            {
-              label: (
-                <Group gap={4}>
-                  <Text>
-                    <Trans>Warning</Trans>
-                  </Text>
-                  <Badge size="xs" variant="light">
-                    {notificationCount.warning}
-                  </Badge>
-                </Group>
-              ),
-              value: 'warning',
-            },
-            {
-              label: (
-                <Group gap={4}>
-                  <Text>
-                    <Trans>Error</Trans>
-                  </Text>
-                  <Badge size="xs" variant="light">
-                    {notificationCount.error}
-                  </Badge>
-                </Group>
-              ),
-              value: 'error',
-            },
-          ]}
-        />
+          <SegmentedControl
+            value={activeTab}
+            onChange={setActiveTab}
+            fullWidth
+            data={[
+              {
+                label: (
+                  <Group gap={4}>
+                    <Text>
+                      <Trans>All</Trans>
+                    </Text>
+                    <Badge size="xs" variant="light">
+                      {notificationCount.all}
+                    </Badge>
+                  </Group>
+                ),
+                value: 'all',
+              },
+              {
+                label: (
+                  <Group gap={4}>
+                    <Text>
+                      <Trans>Unread</Trans>
+                    </Text>
+                    <Badge size="xs" variant="light">
+                      {notificationCount.unread}
+                    </Badge>
+                  </Group>
+                ),
+                value: 'unread',
+              },
+              {
+                label: (
+                  <Group gap={4}>
+                    <Text>
+                      <Trans>Info</Trans>
+                    </Text>
+                    <Badge size="xs" variant="light">
+                      {notificationCount.info}
+                    </Badge>
+                  </Group>
+                ),
+                value: 'info',
+              },
+              {
+                label: (
+                  <Group gap={4}>
+                    <Text>
+                      <Trans>Success</Trans>
+                    </Text>
+                    <Badge size="xs" variant="light">
+                      {notificationCount.success}
+                    </Badge>
+                  </Group>
+                ),
+                value: 'success',
+              },
+              {
+                label: (
+                  <Group gap={4}>
+                    <Text>
+                      <Trans>Warning</Trans>
+                    </Text>
+                    <Badge size="xs" variant="light">
+                      {notificationCount.warning}
+                    </Badge>
+                  </Group>
+                ),
+                value: 'warning',
+              },
+              {
+                label: (
+                  <Group gap={4}>
+                    <Text>
+                      <Trans>Error</Trans>
+                    </Text>
+                    <Badge size="xs" variant="light">
+                      {notificationCount.error}
+                    </Badge>
+                  </Group>
+                ),
+                value: 'error',
+              },
+            ]}
+          />
 
-        <Group grow>
-          <Button
-            leftSection={<IconCheck size={16} />}
-            onClick={handleMarkAllAsRead}
-            disabled={notificationCount.unread === 0}
-          >
-            <Trans>Mark All as Read</Trans>
-          </Button>
+          <Group grow>
+            <Button
+              leftSection={<IconCheck size={16} />}
+              onClick={handleMarkAllAsRead}
+              disabled={notificationCount.unread === 0}
+            >
+              <Trans>Mark All as Read</Trans>
+            </Button>
 
-          <Popover
-            position="bottom-end"
-            withArrow
-            trapFocus
-            opened={clearPopoverOpened}
-            onChange={setClearPopoverOpened}
-            width={260}
-          >
-            <Popover.Target>
-              <Button
-                leftSection={<IconTrash size={16} />}
-                color="red"
-                variant="light"
-                onClick={() => setClearPopoverOpened(true)}
-                disabled={notifications.length === 0}
-              >
-                <Trans>Clear</Trans>
-              </Button>
-            </Popover.Target>
-            <Popover.Dropdown>
-              <Stack>
-                <Text c="orange" size="sm">
-                  <Trans>Select which notifications to delete:</Trans>
-                </Text>
-
+            <Popover
+              position="bottom-end"
+              withArrow
+              trapFocus
+              opened={clearPopoverOpened}
+              onChange={setClearPopoverOpened}
+              width={260}
+            >
+              <Popover.Target>
                 <Button
-                  size="compact-sm"
-                  variant="light"
                   leftSection={<IconTrash size={16} />}
-                  onClick={handleClearFiltered}
-                  disabled={filteredNotifications.length === 0}
-                >
-                  <Trans>Clear Filtered ({filteredNotifications.length})</Trans>
-                </Button>
-
-                <Button
-                  size="compact-sm"
                   color="red"
-                  leftSection={<IconTrash size={16} />}
-                  onClick={handleClearAll}
+                  variant="light"
+                  onClick={() => setClearPopoverOpened(true)}
                   disabled={notifications.length === 0}
                 >
-                  <Trans>Clear All ({notifications.length})</Trans>
+                  <Trans>Clear</Trans>
                 </Button>
+              </Popover.Target>
+              <Popover.Dropdown>
+                <Stack>
+                  <Text c="orange" size="sm">
+                    <Trans>Select which notifications to delete:</Trans>
+                  </Text>
 
-                <Button
-                  variant="default"
-                  size="compact-sm"
-                  onClick={() => setClearPopoverOpened(false)}
-                >
-                  <Trans>Cancel</Trans>
-                </Button>
-              </Stack>
-            </Popover.Dropdown>
-          </Popover>
-        </Group>
+                  <Button
+                    size="compact-sm"
+                    variant="light"
+                    leftSection={<IconTrash size={16} />}
+                    onClick={handleClearFiltered}
+                    disabled={filteredNotifications.length === 0}
+                  >
+                    <Trans>
+                      Clear Filtered ({filteredNotifications.length})
+                    </Trans>
+                  </Button>
 
-        <ScrollArea h="calc(100% - 130px)" offsetScrollbars>
-          {isLoading ? (
-            <Center h="100%">
-              <Loader />
-            </Center>
-          ) : filteredNotifications.length === 0 ? (
-            <Center h="100%">
-              <Stack align="center">
-                <IconBellOff size={48} opacity={0.5} />
-                <Text c="dimmed">
-                  <Trans>No notifications found</Trans>
-                </Text>
+                  <Button
+                    size="compact-sm"
+                    color="red"
+                    leftSection={<IconTrash size={16} />}
+                    onClick={handleClearAll}
+                    disabled={notifications.length === 0}
+                  >
+                    <Trans>Clear All ({notifications.length})</Trans>
+                  </Button>
+
+                  <Button
+                    variant="default"
+                    size="compact-sm"
+                    onClick={() => setClearPopoverOpened(false)}
+                  >
+                    <Trans>Cancel</Trans>
+                  </Button>
+                </Stack>
+              </Popover.Dropdown>
+            </Popover>
+          </Group>
+
+          <ScrollArea h="calc(100% - 130px)" offsetScrollbars>
+            {isLoading ? (
+              <Center h="100%">
+                <Loader />
+              </Center>
+            ) : filteredNotifications.length === 0 ? (
+              <Center h="100%">
+                <Stack align="center">
+                  <IconBellOff size={48} opacity={0.5} />
+                  <Text c="dimmed">
+                    <Trans>No notifications found</Trans>
+                  </Text>
+                </Stack>
+              </Center>
+            ) : (
+              <Stack gap="md">
+                {filteredNotifications.map((notification) => (
+                  <NotificationCard
+                    key={notification.id}
+                    notification={notification}
+                  />
+                ))}
               </Stack>
-            </Center>
-          ) : (
-            <Stack gap="md">
-              {filteredNotifications.map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                />
-              ))}
-            </Stack>
-          )}
-        </ScrollArea>
-      </Stack>
-    </Drawer>
+            )}
+          </ScrollArea>
+        </Stack>
+      </Drawer>
+    </ComponentErrorBoundary>
   );
 }

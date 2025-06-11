@@ -79,9 +79,11 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
 
   return (
     <Box className="submission-grid-container">
+      {' '}
       <Grid id="submission-grid" gutter="md">
         {orderedSubmissions.map((submission, index) => (
           <Transition
+            key={submission.id}
             mounted={mounted}
             transition="fade"
             duration={300}
@@ -90,7 +92,6 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
             {(styles) => (
               <Grid.Col
                 span={span}
-                key={`card-${submission.id}`}
                 className="submission-grid-col"
                 style={styles}
               >

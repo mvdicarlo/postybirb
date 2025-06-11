@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
+import { PageErrorBoundary } from '../components/error-boundary/specialized-error-boundaries';
 import HomePage from './home/home-page';
 import NotFound from './not-found/not-found';
 import { SubmissionsPath } from './route-paths';
@@ -16,27 +17,51 @@ export const CreateRouter = (root: JSX.Element) =>
       children: [
         {
           path: '',
-          element: <HomePage />,
+          element: (
+            <PageErrorBoundary>
+              <HomePage />
+            </PageErrorBoundary>
+          ),
         },
         {
           path: SubmissionsPath,
-          element: <SubmissionOutletPage />,
+          element: (
+            <PageErrorBoundary>
+              <SubmissionOutletPage />
+            </PageErrorBoundary>
+          ),
           children: [
             {
               path: 'message',
-              element: <MessageSubmissionManagementPage />,
+              element: (
+                <PageErrorBoundary>
+                  <MessageSubmissionManagementPage />
+                </PageErrorBoundary>
+              ),
             },
             {
               path: 'file',
-              element: <FileSubmissionManagementPage />,
+              element: (
+                <PageErrorBoundary>
+                  <FileSubmissionManagementPage />
+                </PageErrorBoundary>
+              ),
             },
             {
               path: 'edit/:id',
-              element: <EditSubmissionPage />,
+              element: (
+                <PageErrorBoundary>
+                  <EditSubmissionPage />
+                </PageErrorBoundary>
+              ),
             },
             {
               path: 'multi-edit/:type',
-              element: <MultiEditSubmissionPage />,
+              element: (
+                <PageErrorBoundary>
+                  <MultiEditSubmissionPage />
+                </PageErrorBoundary>
+              ),
             },
           ],
         },
@@ -44,6 +69,10 @@ export const CreateRouter = (root: JSX.Element) =>
     },
     {
       path: '*',
-      element: <NotFound />,
+      element: (
+        <PageErrorBoundary>
+          <NotFound />
+        </PageErrorBoundary>
+      ),
     },
   ]);

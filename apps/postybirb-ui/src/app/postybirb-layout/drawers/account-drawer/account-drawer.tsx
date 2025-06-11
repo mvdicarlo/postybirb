@@ -15,6 +15,7 @@ import {
 import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { IconSearch } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
+import { ComponentErrorBoundary } from '../../../../components/error-boundary/specialized-error-boundaries';
 import { useWebsites } from '../../../../hooks/account/use-websites';
 import {
   getOverlayOffset,
@@ -67,127 +68,127 @@ export function AccountDrawer() {
       return matchesSearch && matchesFilter;
     });
   }, [accounts, filter, filteredWebsites, searchQuery]);
-
   if (isLoading) {
     return <Loader />;
   }
 
   return (
-    <>
-      <Drawer
-        className="account-drawer"
-        closeOnClickOutside
-        size="lg"
-        ml={-marginOffset}
-        portalProps={{
-          target: getPortalTarget(),
-        }}
-        overlayProps={{
-          left: getOverlayOffset(),
-          zIndex: 100,
-        }}
-        trapFocus
-        opened={visible}
-        onClose={() => {
-          setLoginAccount(null);
-          toggle();
-        }}
-        title={
-          <Text fw="bold" size="1.2rem">
-            <Trans>Accounts</Trans>
-          </Text>
-        }
-        styles={{
-          body: {
-            height: 'calc(100% - 60px)',
-            display: 'flex',
-            flexDirection: 'column',
-          },
-        }}
-      >
-        <Box mb="md">
-          <WebsiteVisibilityPicker />
-        </Box>
-
-        <Divider mb="md" />
-
-        <Group mb="md">
-          <Input
-            leftSection={<IconSearch size={16} />}
-            placeholder={_(msg`Search websites...`)}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.currentTarget.value)}
-            style={{ flex: 1 }}
-            rightSectionWidth={70}
-            rightSection={
-              searchQuery ? (
-                <Text
-                  size="xs"
-                  color="dimmed"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setSearchQuery('')}
-                >
-                  <Trans>Clear</Trans>
-                </Text>
-              ) : null
-            }
-          />
-        </Group>
-
-        <SegmentedControl
-          fullWidth
-          mb="md"
-          value={filter}
-          onChange={(value) => setFilter(value as typeof filter)}
-          data={[
-            { value: 'all', label: _(msg`All`) },
-            { value: 'logged-in', label: _(msg`Logged In`) },
-            { value: 'not-logged-in', label: _(msg`Not Logged In`) },
-          ]}
-        />
-
-        <ScrollArea style={{ flex: 1 }} offsetScrollbars>
-          <Stack gap="md">
-            {filteredAndSearchedWebsites.length > 0 ? (
-              filteredAndSearchedWebsites.map((website) => (
-                <WebsiteCard
-                  key={website.id}
-                  website={website}
-                  accounts={accounts.filter(
-                    (account) => account.website === website.id,
-                  )}
-                  onLogin={(
-                    login: {
-                      account: IAccountDto;
-                      website: IWebsiteInfoDto;
-                    } | null,
-                  ) => setLoginAccount(login)}
-                />
-              ))
-            ) : (
-              <Box py="xl" ta="center">
-                <Text c="dimmed">
-                  {searchQuery ? (
-                    <Trans>No websites match your search criteria</Trans>
-                  ) : (
-                    <Trans>No websites available or visible</Trans>
-                  )}
-                </Text>
-              </Box>
-            )}
-          </Stack>
-        </ScrollArea>
-      </Drawer>
-
-      {loginAccount && visible ? (
-        <WebsiteLoginPanel
-          key={loginAccount.account.id}
-          {...loginAccount}
+    <ComponentErrorBoundary>
+      <>
+        <Drawer
+          className="account-drawer"
+          closeOnClickOutside
+          size="lg"
+          ml={-marginOffset}
+          portalProps={{
+            target: getPortalTarget(),
+          }}
+          overlayProps={{
+            left: getOverlayOffset(),
+            zIndex: 100,
+          }}
+          trapFocus
+          opened={visible}
           onClose={() => {
             setLoginAccount(null);
+            toggle();
           }}
-        />
-      ) : null}
-    </>
+          title={
+            <Text fw="bold" size="1.2rem">
+              <Trans>Accounts</Trans>
+            </Text>
+          }
+          styles={{
+            body: {
+              height: 'calc(100% - 60px)',
+              display: 'flex',
+              flexDirection: 'column',
+            },
+          }}
+        >
+          <Box mb="md">
+            <WebsiteVisibilityPicker />
+          </Box>
+
+          <Divider mb="md" />
+
+          <Group mb="md">
+            <Input
+              leftSection={<IconSearch size={16} />}
+              placeholder={_(msg`Search websites...`)}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.currentTarget.value)}
+              style={{ flex: 1 }}
+              rightSectionWidth={70}
+              rightSection={
+                searchQuery ? (
+                  <Text
+                    size="xs"
+                    color="dimmed"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <Trans>Clear</Trans>
+                  </Text>
+                ) : null
+              }
+            />
+          </Group>
+
+          <SegmentedControl
+            fullWidth
+            mb="md"
+            value={filter}
+            onChange={(value) => setFilter(value as typeof filter)}
+            data={[
+              { value: 'all', label: _(msg`All`) },
+              { value: 'logged-in', label: _(msg`Logged In`) },
+              { value: 'not-logged-in', label: _(msg`Not Logged In`) },
+            ]}
+          />
+
+          <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+            <Stack gap="md">
+              {filteredAndSearchedWebsites.length > 0 ? (
+                filteredAndSearchedWebsites.map((website) => (
+                  <WebsiteCard
+                    key={website.id}
+                    website={website}
+                    accounts={accounts.filter(
+                      (account) => account.website === website.id,
+                    )}
+                    onLogin={(
+                      login: {
+                        account: IAccountDto;
+                        website: IWebsiteInfoDto;
+                      } | null,
+                    ) => setLoginAccount(login)}
+                  />
+                ))
+              ) : (
+                <Box py="xl" ta="center">
+                  <Text c="dimmed">
+                    {searchQuery ? (
+                      <Trans>No websites match your search criteria</Trans>
+                    ) : (
+                      <Trans>No websites available or visible</Trans>
+                    )}
+                  </Text>
+                </Box>
+              )}
+            </Stack>
+          </ScrollArea>
+        </Drawer>
+        {loginAccount && visible ? (
+          <WebsiteLoginPanel
+            key={loginAccount.account.id}
+            {...loginAccount}
+            onClose={() => {
+              setLoginAccount(null);
+            }}
+          />
+        ) : null}
+      </>
+    </ComponentErrorBoundary>
   );
 }

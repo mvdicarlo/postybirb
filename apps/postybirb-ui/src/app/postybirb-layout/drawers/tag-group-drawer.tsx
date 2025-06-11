@@ -35,6 +35,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import tagGroupsApi from '../../../api/tag-groups.api';
+import { ComponentErrorBoundary } from '../../../components/error-boundary/specialized-error-boundaries';
 import { DeleteActionPopover } from '../../../components/shared/delete-action-popover/delete-action-popover';
 import { TagGroupStore } from '../../../stores/tag-group-store';
 import { useStore } from '../../../stores/use-store';
@@ -494,34 +495,36 @@ function TagGroups() {
 export function TagGroupDrawer() {
   const [visible, toggle] = useDrawerToggle('tagGroupsDrawerVisible');
   return (
-    <Drawer
-      withOverlay={false}
-      closeOnClickOutside
-      ml={-marginOffset}
-      size="lg"
-      portalProps={{
-        target: getPortalTarget(),
-      }}
-      overlayProps={{
-        left: getOverlayOffset(),
-        zIndex: 0,
-      }}
-      trapFocus
-      opened={visible}
-      onClose={() => toggle()}
-      title={
-        <Text fw="bold" size="1.2rem">
-          <Trans>Tag Groups</Trans>
-        </Text>
-      }
-      styles={{
-        body: {
-          padding: '16px',
-          height: 'calc(100% - 60px)',
-        },
-      }}
-    >
-      <TagGroups />
-    </Drawer>
+    <ComponentErrorBoundary>
+      <Drawer
+        withOverlay={false}
+        closeOnClickOutside
+        ml={-marginOffset}
+        size="lg"
+        portalProps={{
+          target: getPortalTarget(),
+        }}
+        overlayProps={{
+          left: getOverlayOffset(),
+          zIndex: 0,
+        }}
+        trapFocus
+        opened={visible}
+        onClose={() => toggle()}
+        title={
+          <Text fw="bold" size="1.2rem">
+            <Trans>Tag Groups</Trans>
+          </Text>
+        }
+        styles={{
+          body: {
+            padding: '16px',
+            height: 'calc(100% - 60px)',
+          },
+        }}
+      >
+        <TagGroups />
+      </Drawer>
+    </ComponentErrorBoundary>
   );
 }
