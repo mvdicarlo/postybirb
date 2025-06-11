@@ -1,40 +1,85 @@
 #!/usr/bin/env node
 
 /**
- * Generate separate latest-*.yml files for different Linux distributions and architectures
- * This enables proper auto-updates for each distribution/architecture combination
+ * Generate a consolidated latest-linux.yml file containing all Linux distributions and architectures
+ * This approach creates a single update file that the client can process to find the appropriate update
  */
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 /**
- * Simple YAML parser for our specific use case
+ * Calculate SHA512 hash of a file
  */
-function parseSimpleYaml(yamlContent) {
-  const lines = yamlContent.split('\n');
+function calculateSHA512(filePath) {
+  const hash = crypto.createHash('sha512');
+  const data = fs.readFileSync(filePath);
+  hash.update(data);
+  return hash.digest('base64');
+}
+
+/**
+ * Simple YAML stringifier for our update file format
+ */
+function stringifyUpdateYaml(data) {
+  let yaml = `version: ${data.version}\n`;
+  yaml += `releaseDate: ${data.releaseDate}\n`;
+  yaml += 'artifacts:\n';
+  
+  for (const artifact of data.artifacts) {
+    yaml += `  ${artifact.target}-${artifact.arch}:\n`;
+    yaml += `    url: ${artifact.url}\n`;
+    yaml += `    sha512: ${artifact.sha512}\n`;
+    yaml += `    size: ${artifact.size}\n`;
+  }
+  
+  return yaml;
+}
+
+/**
+ * Get artifact patterns for target type and architecture
+ */
+function getArtifactPatterns(target, arch) {
+  const patterns = [];
+  
+  switch (target) {
+    case 'AppImage':
+      patterns.push(new RegExp(`PostyBirb-.*-linux-${arch}\\.AppImage$`));
+      break;
+    case 'snap':
+      patterns.push(new RegExp(`PostyBirb-.*-linux-snap-${arch}\\.snap$`));
+      break;
+    case 'deb':
+      patterns.push(new RegExp(`PostyBirb-.*-linux-deb-${arch}\\.deb$`));
+      break;
+    case 'rpm':
+      patterns.push(new RegExp(`PostyBirb-.*-linux-rpm-${arch}\\.rpm$`));
+      break;
+    case 'tar.gz':
+      patterns.push(new RegExp(`PostyBirb-.*-linux-${arch}\\.tar\\.gz$`));
+      break;
+    default:
+      patterns.push(new RegExp(`PostyBirb-.*-${target}-${arch}\\.*`));
+  }
+  
+  return patterns;
+}
+
+/**
+ * Parse the original latest.yml to get version and release date
+ */
+function parseOriginalLatest(filePath) {
+  const content = fs.readFileSync(filePath, 'utf8');
+  const lines = content.split('\n');
   const result = {};
-  let currentKey = '';
   
   for (const line of lines) {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('#')) continue;
-    
     if (trimmed.includes(': ')) {
       const [key, value] = trimmed.split(': ', 2);
-      const cleanKey = key.trim();
-      const cleanValue = value.trim().replace(/^["']|["']$/g, '');
-      
-      if (cleanKey === 'files') {
-        result.files = [];
-        currentKey = 'files';
-      } else if (currentKey === 'files' && cleanKey.startsWith('- ')) {
-        // Handle array items under files
-        const fileKey = cleanKey.substring(2);
-        if (!result.files[0]) result.files[0] = {};
-        result.files[0][fileKey] = cleanValue;
-      } else {
-        result[cleanKey] = cleanValue;
+      if (key === 'version' || key === 'releaseDate') {
+        result[key] = value.replace(/^["']|["']$/g, '');
       }
     }
   }
@@ -43,30 +88,7 @@ function parseSimpleYaml(yamlContent) {
 }
 
 /**
- * Simple YAML stringifier for our specific use case
- */
-function stringifySimpleYaml(obj) {
-  let yaml = '';
-  
-  for (const [key, value] of Object.entries(obj)) {
-    if (key === 'files' && Array.isArray(value)) {
-      yaml += 'files:\n';
-      for (const file of value) {
-        yaml += '  - url: ' + file.url + '\n';
-        yaml += '    sha512: ' + file.sha512 + '\n';
-        yaml += '    size: ' + file.size + '\n';
-      }
-    } else {
-      yaml += key + ': ' + value + '\n';
-    }
-  }
-  
-  return yaml;
-}
-
-/**
- * Generate update files for Linux distributions
- * @param {import('electron-builder').AfterAllArtifactBuildContext} context
+ * Generate consolidated update file for Linux distributions
  */
 async function generateLinuxUpdateFiles(context) {
   const { outDir, platformToTargets } = context;
@@ -78,20 +100,22 @@ async function generateLinuxUpdateFiles(context) {
     return;
   }
 
-  console.log('Generating Linux update files...');
+  console.log('Generating consolidated Linux update file...');
 
-  // Find the original latest.yml file
+  // Find the original latest.yml file (for version/release date)
   const originalLatestPath = path.join(outDir, 'latest.yml');
-  if (!fs.existsSync(originalLatestPath)) {
-    console.log('No latest.yml found, skipping Linux update file generation');
-    return;
-  }
-
-  // Read the original latest.yml
-  const originalLatest = parseSimpleYaml(fs.readFileSync(originalLatestPath, 'utf8'));
+  let versionInfo = { version: '1.0.0', releaseDate: new Date().toISOString() };
   
-  // Generate update files for each target/arch combination
-  const updateFiles = [];
+  if (fs.existsSync(originalLatestPath)) {
+    try {
+      versionInfo = parseOriginalLatest(originalLatestPath);
+    } catch (error) {
+      console.warn('Could not parse original latest.yml, using defaults');
+    }
+  }
+  
+  // Collect all Linux artifacts
+  const artifacts = [];
   
   for (const target of linuxTargets) {
     const targetName = target.name;
@@ -99,69 +123,46 @@ async function generateLinuxUpdateFiles(context) {
     for (const arch of target.archs) {
       const archName = arch.name;
       
-      // Skip snap for non-x64 architectures or other combinations that don't make sense
+      // Skip snap for non-x64 architectures
       if (targetName === 'snap' && archName !== 'x64') {
         continue;
       }
       
-      // Create a specific update file for this target/arch combination
-      const updateFileName = `latest-linux-${targetName}-${archName}.yml`;
-      const updateFilePath = path.join(outDir, updateFileName);
+      // Find artifacts for this target/arch combination
+      const artifactFiles = fs.readdirSync(outDir).filter(file => {
+        const expectedPatterns = getArtifactPatterns(targetName, archName);
+        return expectedPatterns.some(pattern => pattern.test(file));
+      });
       
-      // Find the corresponding artifact
-      const artifactPattern = new RegExp(`PostyBirb-.*-linux-${targetName}-${archName}\\.(${getExtensionForTarget(targetName)})$`);
-      const artifacts = fs.readdirSync(outDir).filter(file => artifactPattern.test(file));
-      
-      if (artifacts.length > 0) {
-        const artifactFile = artifacts[0];
-        const stats = fs.statSync(path.join(outDir, artifactFile));
+      for (const artifactFile of artifactFiles) {
+        const fullPath = path.join(outDir, artifactFile);
+        const stats = fs.statSync(fullPath);
         
-        // Create update metadata for this specific target/arch
-        const updateData = {
-          version: originalLatest.version,
-          files: [{
-            url: artifactFile,
-            sha512: originalLatest.sha512, // This should be recalculated for the specific file
-            size: stats.size
-          }],
-          path: artifactFile,
-          sha512: originalLatest.sha512,
-          releaseDate: originalLatest.releaseDate || new Date().toISOString()
-        };
+        artifacts.push({
+          target: targetName,
+          arch: archName,
+          url: artifactFile,
+          sha512: calculateSHA512(fullPath),
+          size: stats.size
+        });
         
-        // Write the update file
-        fs.writeFileSync(updateFilePath, stringifySimpleYaml(updateData));
-        updateFiles.push(updateFileName);
-        
-        console.log(`Generated ${updateFileName} for ${artifactFile}`);
+        console.log(`Added ${artifactFile} (${targetName} ${archName}) to update catalog`);
       }
     }
   }
   
-  // Also create a generic latest-linux.yml that points to AppImage x64 by default
-  if (updateFiles.some(f => f.includes('AppImage-x64'))) {
-    const appImageUpdate = path.join(outDir, 'latest-linux-AppImage-x64.yml');
-    if (fs.existsSync(appImageUpdate)) {
-      fs.copyFileSync(appImageUpdate, path.join(outDir, 'latest-linux.yml'));
-      console.log('Generated latest-linux.yml (pointing to AppImage x64)');
-    }
-  }
+  // Create consolidated update file
+  const updateData = {
+    version: versionInfo.version,
+    releaseDate: versionInfo.releaseDate,
+    artifacts: artifacts
+  };
   
-  console.log(`Generated ${updateFiles.length} Linux update files`);
-}
-
-/**
- * Get file extension for target type
- */
-function getExtensionForTarget(target) {
-  switch (target) {
-    case 'AppImage': return 'AppImage';
-    case 'snap': return 'snap';
-    case 'deb': return 'deb';
-    case 'rpm': return 'rpm';
-    case 'tar.gz': return 'tar\\.gz';
-    default: return '.*';
-  }
+  // Write the consolidated update file
+  const latestLinuxPath = path.join(outDir, 'latest-linux.yml');
+  fs.writeFileSync(latestLinuxPath, stringifyUpdateYaml(updateData));
+  
+  console.log(`Generated latest-linux.yml with ${artifacts.length} artifacts`);
 }
 
 module.exports = generateLinuxUpdateFiles;

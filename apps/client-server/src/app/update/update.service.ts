@@ -4,6 +4,7 @@ import { Logger } from '@postybirb/logger';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
 import winston from 'winston';
 import * as os from 'os';
+import * as https from 'https';
 
 interface ReleaseNoteInfo {
   /**
@@ -69,23 +70,128 @@ export class UpdateService {
     
     this.logger.debug(`Linux installation detected: ${installationType} ${arch}`);
     
-    if (installationType !== 'AppImage') {
-      // For non-AppImage installations, configure a custom updater
-      // that will look for format-specific update files
-      const updateFileName = `latest-linux-${installationType}-${arch}.yml`;
+    // Use a custom update resolver for Linux that reads the consolidated update file
+    // and extracts the appropriate artifact based on installation type
+    autoUpdater.setFeedURL({
+      provider: 'generic',
+      url: 'https://github.com/mvdicarlo/postybirb/releases/latest/download/',
+      useMultipleRangeRequest: false,
+    });
+    
+    // Override the update info parsing to handle our custom format
+    const originalCheckForUpdates = autoUpdater.checkForUpdates.bind(autoUpdater);
+    autoUpdater.checkForUpdates = async () => {
+      try {
+        // Download and parse our custom latest-linux.yml
+        const yamlContent = await this.downloadLinuxUpdateFile();
+        
+        const updateInfo = this.parseCustomLinuxUpdate(yamlContent, installationType, arch);
+        if (updateInfo) {
+          // Create a standard electron-updater compatible response
+          const standardUpdate = {
+            version: updateInfo.version,
+            releaseDate: updateInfo.releaseDate,
+            files: [{
+              url: updateInfo.url,
+              sha512: updateInfo.sha512,
+              size: updateInfo.size
+            }],
+            path: updateInfo.url,
+            sha512: updateInfo.sha512
+          };
+          
+          // Simulate the update-available event with our parsed data
+          autoUpdater.emit('update-available', standardUpdate);
+          return standardUpdate;
+        } else {
+          this.logger.warn(`No update found for ${installationType} ${arch}`);
+          return null;
+        }
+      } catch (error) {
+        this.logger.withError(error).error('Failed to check for Linux updates');
+        autoUpdater.emit('error', error);
+        return null;
+      }
+    };
+    
+    this.logger.debug('Configured custom Linux update resolver');
+  }
+
+  /**
+   * Download the Linux update file using https
+   */
+  private downloadLinuxUpdateFile(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const url = 'https://github.com/mvdicarlo/postybirb/releases/latest/download/latest-linux.yml';
       
-      this.logger.debug(`Configuring custom update feed for ${updateFileName}`);
-      
-      // Configure autoUpdater to use the generic provider pointing to our specific update file
-      autoUpdater.setFeedURL({
-        provider: 'generic',
-        url: `https://github.com/mvdicarlo/postybirb/releases/latest/download/${updateFileName}`,
-        useMultipleRangeRequest: false,
+      https.get(url, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+          return;
+        }
+        
+        let data = '';
+        response.on('data', (chunk) => {
+          data += chunk;
+        });
+        
+        response.on('end', () => {
+          resolve(data);
+        });
+      }).on('error', (error) => {
+        reject(error);
       });
-    } else {
-      // For AppImage, use default GitHub provider (will use latest-linux.yml)
-      this.logger.debug('Using default GitHub provider for AppImage updates');
+    });
+  }
+
+  /**
+   * Parse our custom Linux update file format
+   */
+  private parseCustomLinuxUpdate(yamlContent: string, targetType: string, arch: string) {
+    const lines = yamlContent.split('\n');
+    let currentSection = '';
+    let version = '';
+    let releaseDate = '';
+    let artifacts: any = {};
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      
+      if (trimmed.startsWith('version:')) {
+        version = trimmed.split(': ')[1]?.trim() || '';
+      } else if (trimmed.startsWith('releaseDate:')) {
+        releaseDate = trimmed.split(': ')[1]?.trim() || '';
+      } else if (trimmed === 'artifacts:') {
+        currentSection = 'artifacts';
+      } else if (currentSection === 'artifacts') {
+        if (trimmed.endsWith(':') && !trimmed.includes(' ')) {
+          // This is a target-arch section like "AppImage-x64:"
+          const sectionName = trimmed.slice(0, -1);
+          artifacts[sectionName] = {};
+          currentSection = sectionName;
+        } else if (currentSection in artifacts && trimmed.includes(': ')) {
+          const [key, value] = trimmed.split(': ', 2);
+          artifacts[currentSection][key] = value.trim();
+        }
+      }
     }
+    
+    // Find the artifact for our target type and architecture
+    const targetKey = `${targetType}-${arch}`;
+    const artifact = artifacts[targetKey];
+    
+    if (artifact && artifact.url) {
+      return {
+        version,
+        releaseDate,
+        url: artifact.url,
+        sha512: artifact.sha512,
+        size: parseInt(artifact.size, 10)
+      };
+    }
+    
+    return null;
   }
 
   /**

@@ -53,26 +53,21 @@ linux:
       arch:
         - x64
         - arm64
-      artifactName: "${productName}-${version}-linux-${arch}.${ext}"
     - target: snap
       arch:
         - x64
-      artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
     - target: deb
       arch:
         - x64
         - arm64
-      artifactName: "${productName}-${version}-linux-deb-${arch}.${ext}"
     - target: rpm
       arch:
         - x64
         - arm64
-      artifactName: "${productName}-${version}-linux-rpm-${arch}.${ext}"
     - target: tar.gz
       arch:
         - x64
         - arm64
-      artifactName: "${productName}-${version}-linux-tar-${arch}.${ext}"
 
 snap:
   summary: "PostyBirb - Multi-site posting application"
@@ -84,6 +79,7 @@ snap:
     - home
     - network
     - removable-media
+  artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
 
 deb:
   priority: optional
@@ -94,6 +90,7 @@ deb:
     - libappindicator1
     - libxtst6
     - libnss3
+  artifactName: "${productName}-${version}-linux-deb-${arch}.${ext}"
 
 rpm:
   depends:
@@ -101,9 +98,10 @@ rpm:
     - libappindicator
     - libXtst
     - nss
+  artifactName: "${productName}-${version}-linux-rpm-${arch}.${ext}"
 
 appImage:
-  systemIntegration: ask
+  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
   desktop:
     StartupWMClass: PostyBirb
     
