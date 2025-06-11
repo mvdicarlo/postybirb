@@ -9,7 +9,7 @@ export type AppEnvConfig = {
 
 function showHelp(): void {
   // Get version from Electron app or fallback to known version
-  const version = app.getVersion() || '4.0.0';
+  const version = app.getVersion() || '4.0.2';
 
   const helpText = `
 PostyBirb v${version}
