@@ -3,6 +3,7 @@ import { Interval } from '@nestjs/schedule';
 import { Logger } from '@postybirb/logger';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
 import winston from 'winston';
+import * as os from 'os';
 
 interface ReleaseNoteInfo {
   /**
@@ -50,8 +51,72 @@ export class UpdateService {
     autoUpdater.fullChangelog = true;
     autoUpdater.allowPrerelease = true;
 
+    this.configureLinuxUpdates();
     this.registerListeners();
     setTimeout(() => this.checkForUpdates(), 5_000);
+  }
+
+  /**
+   * Configure update behavior for Linux based on installation method
+   */
+  private configureLinuxUpdates() {
+    if (os.platform() !== 'linux') {
+      return;
+    }
+
+    const installationType = this.detectLinuxInstallationType();
+    const arch = process.arch === 'x64' ? 'x64' : 'arm64';
+    
+    this.logger.debug(`Linux installation detected: ${installationType} ${arch}`);
+    
+    if (installationType !== 'AppImage') {
+      // For non-AppImage installations, configure a custom updater
+      // that will look for format-specific update files
+      const updateFileName = `latest-linux-${installationType}-${arch}.yml`;
+      
+      this.logger.debug(`Configuring custom update feed for ${updateFileName}`);
+      
+      // Configure autoUpdater to use the generic provider pointing to our specific update file
+      autoUpdater.setFeedURL({
+        provider: 'generic',
+        url: `https://github.com/mvdicarlo/postybirb/releases/latest/download/${updateFileName}`,
+        useMultipleRangeRequest: false,
+      });
+    } else {
+      // For AppImage, use default GitHub provider (will use latest-linux.yml)
+      this.logger.debug('Using default GitHub provider for AppImage updates');
+    }
+  }
+
+  /**
+   * Detect how the application was installed on Linux
+   */
+  private detectLinuxInstallationType(): string {
+    // Check for AppImage
+    if (process.env.APPIMAGE) {
+      return 'AppImage';
+    }
+    
+    // Check for Snap
+    if (process.env.SNAP) {
+      return 'snap';
+    }
+    
+    // Check installation path to determine package type
+    const execPath = process.execPath;
+    
+    // Check for typical deb installation paths
+    if (execPath.includes('/usr/bin/') || execPath.includes('/usr/local/bin/')) {
+      return 'deb';
+    }
+    
+    // Check for /opt installation (common for rpm packages)
+    if (execPath.includes('/opt/')) {
+      return 'rpm';
+    }
+    
+    // Default to tar for portable installations
+    return 'tar';
   }
 
   private registerListeners() {
