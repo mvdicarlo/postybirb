@@ -11,20 +11,44 @@ publish:
 
 directories:
   buildResources: packaging-resources
-  output: dist/packages
-
-files: 
-  - dist/apps
-  - "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}"
-  - "!.editorconfig"
-  - "!**/._*"
-  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
-  - "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}"
-  - "!**/{appveyor.yml,.travis.yml,circle.yml}"
-  - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+  output: release
 
 compression: maximum
 removePackageScripts: true
+
+files:
+  - "dist/**/*"
+  - "node_modules/**/*"
+  - "package.json"
+  - "!node_modules/**/*.{md,txt}"
+  - "!node_modules/**/README*"
+  - "!node_modules/**/CHANGELOG*"
+  - "!node_modules/**/LICENSE*"
+  - "!node_modules/**/*.d.ts"
+  - "!node_modules/**/{test,tests,spec,specs}/**/*"
+  - "!node_modules/**/.{git,github,npm,nyc}/**/*"
+  - "!node_modules/**/.*"
+  - "!node_modules/**/{coverage,docs,doc,example,examples,demo}/**/*"
+  - "!node_modules/**/{@types,typescript,eslint*,prettier,jest,@jest,cypress,nx,@nx}/**/*"
+  - "!node_modules/**/@babel/**/*"
+  - "!node_modules/**/webpack*/**/*"
+  - "!node_modules/**/vite*/**/*"
+  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.eslintrc*,.babelrc*,jest.config.*,*.log}"
+  - "!apps/**/*"
+  - "!libs/**/*"
+  - "!build/**/*"
+  - "!contributing/**/*"
+  - "!scripts/**/*"
+  - "!windows-signing/**/*"
+  - "!patches/**/*"
+  - "!lang/**/*"
+  - "!release/**/*"
+  - "!*.{ts,js,yml,yaml,md}"
+  - "!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}"
+
+asarUnpack:
+  - "node_modules/better-sqlite3/**/*"
+  - "node_modules/sharp/**/*"
 
 mac:
   category: public.app-category.productivity
@@ -35,10 +59,12 @@ mac:
   icon: icons/icon.icns
   gatekeeperAssess: false
   target:
-    - target: default
+    - target: dmg
       arch:
-        - universal
-  notarize: true
+        - x64
+        - arm64
+  notarize:
+    teamId: "ZRKS9CNUQZ"
 
 linux:
   category: Network
