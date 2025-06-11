@@ -6,6 +6,7 @@ import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import '@mantine/spotlight/styles.css';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { PageErrorBoundary } from '../components/error-boundary';
 import { AppI18nProvider } from './app-i18n-provider';
 import './app.css';
 import { PostyBirbLayout } from './postybirb-layout/postybirb-layout';
@@ -96,7 +97,9 @@ export default function App() {
           <Notifications zIndex={5000} />
 
           <QueryClientProvider client={queryClient}>
-            <PostyBirbLayout />
+            <PageErrorBoundary>
+              <PostyBirbLayout />
+            </PageErrorBoundary>
           </QueryClientProvider>
         </AppI18nProvider>
       </MantineProvider>
