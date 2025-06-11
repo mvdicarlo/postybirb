@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bd40c0d4-752c-4025-bbd9-8d1386b82eb0",
+  "id": "02087254-72a4-4fbb-8414-cc4a8785e5f8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -28,6 +28,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "groups": {
+          "name": "groups",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
@@ -37,13 +44,6 @@
         },
         "website": {
           "name": "website",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "groups": {
-          "name": "groups",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -88,8 +88,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "path": {
-          "name": "path",
+        "templateId": {
+          "name": "templateId",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -103,8 +103,8 @@
           "autoincrement": false,
           "default": "'NEW_SUBMISSION'"
         },
-        "templateId": {
-          "name": "templateId",
+        "path": {
+          "name": "path",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -184,6 +184,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "mimeType": {
           "name": "mimeType",
           "type": "text",
@@ -200,13 +207,6 @@
         },
         "width": {
           "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "height": {
-          "name": "height",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -237,6 +237,96 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "notification": {
+      "name": "notification",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "isRead": {
+          "name": "isRead",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "hasEmitted": {
+          "name": "hasEmitted",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "notification_id_unique": {
+          "name": "notification_id_unique",
+          "columns": [
+            "id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -345,22 +435,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "state": {
-          "name": "state",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'PENDING'"
-        },
-        "resumeMode": {
-          "name": "resumeMode",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'CONTINUE'"
-        },
         "submissionId": {
           "name": "submissionId",
           "type": "text",
@@ -374,6 +448,22 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "resumeMode": {
+          "name": "resumeMode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'CONTINUE'"
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'PENDING'"
         }
       },
       "indexes": {
@@ -442,7 +532,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'{\"hiddenWebsites\":[],\"language\":\"en\",\"allowAd\":true,\"queuePaused\":false}'"
+          "default": "'{\"hiddenWebsites\":[],\"language\":\"en\",\"allowAd\":true,\"queuePaused\":false,\"desktopNotifications\":{\"enabled\":true,\"showOnPostSuccess\":true,\"showOnPostError\":true,\"showOnDirectoryWatcherError\":true,\"showOnDirectoryWatcherSuccess\":true}}'"
         }
       },
       "indexes": {
@@ -490,71 +580,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "fileName": {
-          "name": "fileName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "hash": {
-          "name": "hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "size": {
-          "name": "size",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "mimeType": {
-          "name": "mimeType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "hasThumbnail": {
-          "name": "hasThumbnail",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "hasAltFile": {
-          "name": "hasAltFile",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "hasCustomThumbnail": {
-          "name": "hasCustomThumbnail",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
         "submissionId": {
           "name": "submissionId",
           "type": "text",
@@ -581,6 +606,71 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
+          "autoincrement": false
+        },
+        "fileName": {
+          "name": "fileName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hasAltFile": {
+          "name": "hasAltFile",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "hasCustomThumbnail": {
+          "name": "hasCustomThumbnail",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "hasThumbnail": {
+          "name": "hasThumbnail",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hash": {
+          "name": "hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mimeType": {
+          "name": "mimeType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "size": {
+          "name": "size",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -682,6 +772,21 @@
           "notNull": true,
           "autoincrement": false
         },
+        "isArchived": {
+          "name": "isArchived",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        },
+        "isMultiSubmission": {
+          "name": "isMultiSubmission",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "isScheduled": {
           "name": "isScheduled",
           "type": "integer",
@@ -696,28 +801,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "isMultiSubmission": {
-          "name": "isMultiSubmission",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "isArchived": {
-          "name": "isArchived",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": false
-        },
-        "schedule": {
-          "name": "schedule",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "metadata": {
           "name": "metadata",
           "type": "text",
@@ -728,6 +811,13 @@
         "order": {
           "name": "order",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "schedule": {
+          "name": "schedule",
+          "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -771,15 +861,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "tag": {
-          "name": "tag",
+        "convertTo": {
+          "name": "convertTo",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "convertTo": {
-          "name": "convertTo",
+        "tag": {
+          "name": "tag",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -891,8 +981,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "type": {
-          "name": "type",
+        "accountId": {
+          "name": "accountId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -905,8 +995,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "accountId": {
-          "name": "accountId",
+        "type": {
+          "name": "type",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -958,13 +1048,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "data": {
           "name": "data",
           "type": "text",
@@ -973,8 +1056,8 @@
           "autoincrement": false,
           "default": "'{}'"
         },
-        "accountId": {
-          "name": "accountId",
+        "updatedAt": {
+          "name": "updatedAt",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -991,12 +1074,12 @@
         }
       },
       "foreignKeys": {
-        "website-data_accountId_account_id_fk": {
-          "name": "website-data_accountId_account_id_fk",
+        "website-data_id_account_id_fk": {
+          "name": "website-data_id_account_id_fk",
           "tableFrom": "website-data",
           "tableTo": "account",
           "columnsFrom": [
-            "accountId"
+            "id"
           ],
           "columnsTo": [
             "id"
@@ -1033,20 +1116,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "data": {
-          "name": "data",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "isDefault": {
-          "name": "isDefault",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "accountId": {
           "name": "accountId",
           "type": "text",
@@ -1057,6 +1126,20 @@
         "submissionId": {
           "name": "submissionId",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "isDefault": {
+          "name": "isDefault",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -1127,15 +1210,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "postRecordId": {
-          "name": "postRecordId",
+        "accountId": {
+          "name": "accountId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "accountId": {
-          "name": "accountId",
+        "postRecordId": {
+          "name": "postRecordId",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1155,15 +1238,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "postData": {
-          "name": "postData",
+        "metadata": {
+          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "metadata": {
-          "name": "metadata",
+        "postData": {
+          "name": "postData",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1187,19 +1270,6 @@
         }
       },
       "foreignKeys": {
-        "website-post-record_postRecordId_post-record_id_fk": {
-          "name": "website-post-record_postRecordId_post-record_id_fk",
-          "tableFrom": "website-post-record",
-          "tableTo": "post-record",
-          "columnsFrom": [
-            "postRecordId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "website-post-record_accountId_account_id_fk": {
           "name": "website-post-record_accountId_account_id_fk",
           "tableFrom": "website-post-record",
@@ -1211,6 +1281,19 @@
             "id"
           ],
           "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "website-post-record_postRecordId_post-record_id_fk": {
+          "name": "website-post-record_postRecordId_post-record_id_fk",
+          "tableFrom": "website-post-record",
+          "tableTo": "post-record",
+          "columnsFrom": [
+            "postRecordId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

@@ -120,7 +120,7 @@ function SubmissionItem({
               }}
               radius="md"
             >
-              <Trans>Yes, Cancel Posting</Trans>
+              <Trans>Yes</Trans>
             </Button>
           </Group>
         </Stack>

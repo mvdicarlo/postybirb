@@ -35,19 +35,19 @@ const DEFAULT_CRON = '0 0 * * FRI';
 const radios = [
   {
     id: ScheduleType.NONE,
-    label: <Trans context="internalSchedule.none">None</Trans>,
+    label: <Trans>None</Trans>,
     icon: <IconX size={16} />,
     description: <Trans>No scheduling</Trans>,
   },
   {
     id: ScheduleType.SINGLE,
-    label: <Trans context="internalSchedule.single">Once</Trans>,
+    label: <Trans>Once</Trans>,
     icon: <IconCalendar size={16} />,
     description: <Trans>Schedule for a specific date and time</Trans>,
   },
   {
     id: ScheduleType.RECURRING,
-    label: <Trans context="internalSchedule.recurring">Recurring</Trans>,
+    label: <Trans>Recurring</Trans>,
     icon: <IconRepeat size={16} />,
     description: <Trans>Schedule to repeat regularly</Trans>,
   },
