@@ -38,6 +38,7 @@ import {
 } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
 import tagConvertersApi from '../../../api/tag-converters.api';
+import { ComponentErrorBoundary } from '../../../components/error-boundary/specialized-error-boundaries';
 import { DeleteActionPopover } from '../../../components/shared/delete-action-popover/delete-action-popover';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { useStore } from '../../../stores/use-store';
@@ -652,34 +653,36 @@ function TagConverters() {
 export function TagConverterDrawer() {
   const [visible, toggle] = useDrawerToggle('tagConvertersDrawerVisible');
   return (
-    <Drawer
-      withOverlay={false}
-      closeOnClickOutside
-      ml={-marginOffset}
-      size="lg"
-      portalProps={{
-        target: getPortalTarget(),
-      }}
-      overlayProps={{
-        left: getOverlayOffset(),
-        zIndex: 0,
-      }}
-      trapFocus
-      opened={visible}
-      onClose={() => toggle()}
-      title={
-        <Text fw="bold" size="1.2rem">
-          <Trans>Tag Converters</Trans>
-        </Text>
-      }
-      styles={{
-        body: {
-          padding: '16px',
-          height: 'calc(100% - 60px)',
-        },
-      }}
-    >
-      <TagConverters />
-    </Drawer>
+    <ComponentErrorBoundary>
+      <Drawer
+        withOverlay={false}
+        closeOnClickOutside
+        ml={-marginOffset}
+        size="lg"
+        portalProps={{
+          target: getPortalTarget(),
+        }}
+        overlayProps={{
+          left: getOverlayOffset(),
+          zIndex: 0,
+        }}
+        trapFocus
+        opened={visible}
+        onClose={() => toggle()}
+        title={
+          <Text fw="bold" size="1.2rem">
+            <Trans>Tag Converters</Trans>
+          </Text>
+        }
+        styles={{
+          body: {
+            padding: '16px',
+            height: 'calc(100% - 60px)',
+          },
+        }}
+      >
+        <TagConverters />
+      </Drawer>
+    </ComponentErrorBoundary>
   );
 }

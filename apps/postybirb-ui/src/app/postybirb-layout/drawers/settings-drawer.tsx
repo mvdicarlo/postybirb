@@ -24,6 +24,7 @@ import {
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import settingsApi from '../../../api/settings.api';
+import { ComponentErrorBoundary } from '../../../components/error-boundary/specialized-error-boundaries';
 import { useSettings } from '../../../stores/use-settings';
 import { getOverlayOffset, getPortalTarget, marginOffset } from './drawer.util';
 import { useDrawerToggle } from './use-drawer-toggle';
@@ -278,84 +279,86 @@ export function SettingsDrawer() {
   const [activeTab, setActiveTab] = useState<string | null>('app');
 
   return (
-    <Drawer
-      withOverlay={false}
-      closeOnClickOutside
-      ml={-marginOffset}
-      size="lg"
-      portalProps={{
-        target: getPortalTarget(),
-      }}
-      overlayProps={{
-        left: getOverlayOffset(),
-        zIndex: 100,
-      }}
-      trapFocus
-      opened={visible}
-      onClose={() => toggle()}
-      title={
-        <Text fw="bold" size="1.2rem">
-          <Trans>Settings</Trans>
-        </Text>
-      }
-      styles={{
-        body: {
-          padding: '16px',
-          height: 'calc(100% - 60px)',
-        },
-      }}
-    >
-      <Stack gap="md" h="100%">
-        <Tabs
-          value={activeTab}
-          onChange={setActiveTab}
-          variant="outline"
-          orientation="vertical"
-          styles={{
-            list: {
-              flex: '0 0 125px',
-            },
-            panel: {
-              flex: 1,
-              padding: '16px',
-            },
-          }}
-        >
-          <Group h="100%" align="stretch" wrap="nowrap">
-            <Tabs.List>
-              <Tabs.Tab
-                value="app"
-                leftSection={<IconDeviceDesktop size={16} />}
-                fw={activeTab === 'app' ? 'bold' : 'normal'}
-              >
-                <Trans>App</Trans>
-              </Tabs.Tab>
-              <Tabs.Tab
-                value="description"
-                leftSection={<IconFileDescription size={16} />}
-                fw={activeTab === 'description' ? 'bold' : 'normal'}
-              >
-                <Trans>Description</Trans>
-              </Tabs.Tab>
-              <Tabs.Tab
-                value="notifications"
-                leftSection={<IconBell size={16} />}
-                fw={activeTab === 'notifications' ? 'bold' : 'normal'}
-              >
-                <Trans>Notifications</Trans>
-              </Tabs.Tab>
-            </Tabs.List>
+    <ComponentErrorBoundary>
+      <Drawer
+        withOverlay={false}
+        closeOnClickOutside
+        ml={-marginOffset}
+        size="lg"
+        portalProps={{
+          target: getPortalTarget(),
+        }}
+        overlayProps={{
+          left: getOverlayOffset(),
+          zIndex: 100,
+        }}
+        trapFocus
+        opened={visible}
+        onClose={() => toggle()}
+        title={
+          <Text fw="bold" size="1.2rem">
+            <Trans>Settings</Trans>
+          </Text>
+        }
+        styles={{
+          body: {
+            padding: '16px',
+            height: 'calc(100% - 60px)',
+          },
+        }}
+      >
+        <Stack gap="md" h="100%">
+          <Tabs
+            value={activeTab}
+            onChange={setActiveTab}
+            variant="outline"
+            orientation="vertical"
+            styles={{
+              list: {
+                flex: '0 0 125px',
+              },
+              panel: {
+                flex: 1,
+                padding: '16px',
+              },
+            }}
+          >
+            <Group h="100%" align="stretch" wrap="nowrap">
+              <Tabs.List>
+                <Tabs.Tab
+                  value="app"
+                  leftSection={<IconDeviceDesktop size={16} />}
+                  fw={activeTab === 'app' ? 'bold' : 'normal'}
+                >
+                  <Trans>App</Trans>
+                </Tabs.Tab>
+                <Tabs.Tab
+                  value="description"
+                  leftSection={<IconFileDescription size={16} />}
+                  fw={activeTab === 'description' ? 'bold' : 'normal'}
+                >
+                  <Trans>Description</Trans>
+                </Tabs.Tab>
+                <Tabs.Tab
+                  value="notifications"
+                  leftSection={<IconBell size={16} />}
+                  fw={activeTab === 'notifications' ? 'bold' : 'normal'}
+                >
+                  <Trans>Notifications</Trans>
+                </Tabs.Tab>
+              </Tabs.List>
 
-            <ScrollArea h="100%" offsetScrollbars>
-              <Box>
-                {activeTab === 'app' && <AppSettings />}
-                {activeTab === 'description' && <DescriptionSettings />}
-                {activeTab === 'notifications' && <NotificationsSettings />}
-              </Box>
-            </ScrollArea>
-          </Group>
-        </Tabs>
-      </Stack>
-    </Drawer>
+              <ScrollArea h="100%" offsetScrollbars>
+                <Box>
+                  {activeTab === 'app' && <AppSettings />}
+                  {activeTab === 'description' && <DescriptionSettings />}
+                  {activeTab === 'notifications' && <NotificationsSettings />}
+                </Box>
+              </ScrollArea>
+            </Group>
+          </Tabs>
+        </Stack>
+      </Drawer>
+    </ComponentErrorBoundary>
   );
 }

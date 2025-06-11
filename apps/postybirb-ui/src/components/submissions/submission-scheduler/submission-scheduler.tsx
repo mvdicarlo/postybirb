@@ -146,7 +146,7 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
           isValidCron = false;
         }
         return (
-          <Paper p="md" withBorder>
+          <Paper p="md" withBorder className="postybirb__scheduler">
             <Stack gap="md">
               <Group p="apart" align="center">
                 <Text size="sm" fw={500}>
@@ -338,7 +338,7 @@ export function SubmissionScheduler(props: SubmissionSchedulerProps) {
         <Paper p="md" withBorder>
           <Radio.Group
             description={
-              <Text inherit pb="6">
+              <Text inherit pb="6" span display="inline-block">
                 <Trans>Choose when to post this submission</Trans>
               </Text>
             }

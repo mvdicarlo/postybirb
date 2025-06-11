@@ -28,7 +28,8 @@ import {
   IconUser,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
+import { RouteErrorBoundary } from '../../components/error-boundary/specialized-error-boundaries';
 import {
   FileSubmissionPath,
   HomePath,
@@ -193,13 +194,17 @@ function ScrollToTop() {
 }
 
 function View() {
+  const location = useLocation();
+  
   return (
     <Box
       className={`postybirb__content ${classes.contentContainer}`}
       px="md"
       pb="sm"
     >
-      <Outlet />
+      <RouteErrorBoundary routeKey={location.pathname}>
+        <Outlet />
+      </RouteErrorBoundary>
     </Box>
   );
 }
