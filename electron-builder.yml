@@ -108,7 +108,7 @@ appImage:
     StartupWMClass: PostyBirb
     
 # Generate separate update files for different Linux formats  
-afterAllArtifactBuild: "scripts/generate-linux-update-files.js"
+afterAllArtifactBuild: "scripts/generate-linux-update-files.cjs"
 
 nsis:
   deleteAppDataOnUninstall: true
