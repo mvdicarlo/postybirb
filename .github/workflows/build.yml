@@ -1,15 +1,12 @@
 name: Build/Release
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -61,7 +58,7 @@ jobs:
 
       # Build Electron app
       - name: Build Electron app
-        run: yarn electron-builder --${{ matrix.platform }} --publish=never
+        run: yarn electron-builder --${{ matrix.platform }} --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -70,54 +67,3 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_IDENTITY_AUTO_DISCOVERY: true
-
-      # Upload artifacts
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-${{ matrix.os }}
-          path: |
-            dist/packages/*.exe
-            dist/packages/*.dmg
-            dist/packages/*.zip
-            dist/packages/*.AppImage
-            dist/packages/*.snap
-            dist/packages/*.deb
-            dist/packages/*.rpm
-            dist/packages/*.tar.gz
-          if-no-files-found: warn
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --network-timeout 600000
-        env:
-          CYPRESS_INSTALL_BINARY: 0
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Build application
-        run: yarn build:prod
-        env:
-          NODE_ENV: production
-
-      - name: Release to GitHub
-        run: yarn electron-builder --publish=always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
