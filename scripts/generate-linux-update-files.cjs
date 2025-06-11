@@ -93,11 +93,41 @@ function parseOriginalLatest(filePath) {
 async function generateLinuxUpdateFiles(context) {
   const { outDir, platformToTargets } = context;
   
-  // Get Linux platform targets
-  const linuxTargets = platformToTargets.get('linux');
-  if (!linuxTargets) {
-    console.log('No Linux targets found, skipping Linux update file generation');
+  console.log('=== generateLinuxUpdateFiles called ===');
+  
+  // Check if we have any artifacts in the output directory
+  if (!fs.existsSync(outDir)) {
+    console.log('Output directory does not exist, skipping Linux update file generation');
     return;
+  }
+  
+  const allFiles = fs.readdirSync(outDir);
+  const linuxArtifacts = allFiles.filter(file => 
+    file.includes('linux') && 
+    (file.endsWith('.AppImage') || file.endsWith('.deb') || file.endsWith('.rpm') || 
+     file.endsWith('.snap') || file.endsWith('.tar.gz'))
+  );
+  
+  if (linuxArtifacts.length === 0) {
+    console.log('No Linux artifacts found in output directory, skipping Linux update file generation');
+    console.log('Available files:', allFiles);
+    return;
+  }
+  
+  console.log('Found Linux artifacts:', linuxArtifacts);
+  
+  // Find Linux platform - it might be a Platform object, not a string
+  let linuxTargets = null;
+  for (const [platform, targets] of platformToTargets) {
+    if (platform.name === 'linux') {
+      linuxTargets = targets;
+      break;
+    }
+  }
+  
+  if (!linuxTargets) {
+    console.log('No Linux platform found in platformToTargets, but artifacts exist. Proceeding with artifact-based detection.');
+    // We'll detect targets from the actual files instead
   }
 
   console.log('Generating consolidated Linux update file...');
@@ -117,38 +147,85 @@ async function generateLinuxUpdateFiles(context) {
   // Collect all Linux artifacts
   const artifacts = [];
   
-  for (const target of linuxTargets) {
-    const targetName = target.name;
-    
-    for (const arch of target.archs) {
-      const archName = arch.name;
+  if (linuxTargets && linuxTargets.size > 0) {
+    // Use the platform targets approach
+    for (const target of linuxTargets) {
+      const targetName = target.name;
       
-      // Skip snap for non-x64 architectures
-      if (targetName === 'snap' && archName !== 'x64') {
+      for (const arch of target.archs) {
+        const archName = arch.name;
+        
+        // Skip snap for non-x64 architectures
+        if (targetName === 'snap' && archName !== 'x64') {
+          continue;
+        }
+        
+        // Find artifacts for this target/arch combination
+        const artifactFiles = fs.readdirSync(outDir).filter(file => {
+          const expectedPatterns = getArtifactPatterns(targetName, archName);
+          return expectedPatterns.some(pattern => pattern.test(file));
+        });
+        
+        for (const artifactFile of artifactFiles) {
+          const fullPath = path.join(outDir, artifactFile);
+          const stats = fs.statSync(fullPath);
+          
+          artifacts.push({
+            target: targetName,
+            arch: archName,
+            url: artifactFile,
+            sha512: calculateSHA512(fullPath),
+            size: stats.size
+          });
+          
+          console.log(`Added ${artifactFile} (${targetName} ${archName}) to update catalog`);
+        }
+      }
+    }
+  } else {
+    // Fallback: detect from actual artifact files
+    for (const artifactFile of linuxArtifacts) {
+      const fullPath = path.join(outDir, artifactFile);
+      const stats = fs.statSync(fullPath);
+      
+      // Parse target and arch from filename
+      let target, arch;
+      if (artifactFile.endsWith('.AppImage')) {
+        target = 'AppImage';
+        arch = artifactFile.includes('arm64') ? 'arm64' : 'x64';
+      } else if (artifactFile.includes('-snap-')) {
+        target = 'snap';
+        arch = artifactFile.includes('arm64') ? 'arm64' : 'x64';
+      } else if (artifactFile.includes('-deb-')) {
+        target = 'deb';
+        arch = artifactFile.includes('arm64') ? 'arm64' : 'x64';
+      } else if (artifactFile.includes('-rpm-')) {
+        target = 'rpm';
+        arch = artifactFile.includes('arm64') ? 'arm64' : 'x64';
+      } else if (artifactFile.endsWith('.tar.gz')) {
+        target = 'tar.gz';
+        arch = artifactFile.includes('arm64') ? 'arm64' : 'x64';
+      } else {
+        console.warn(`Unknown artifact type for ${artifactFile}, skipping`);
         continue;
       }
       
-      // Find artifacts for this target/arch combination
-      const artifactFiles = fs.readdirSync(outDir).filter(file => {
-        const expectedPatterns = getArtifactPatterns(targetName, archName);
-        return expectedPatterns.some(pattern => pattern.test(file));
+      artifacts.push({
+        target: target,
+        arch: arch,
+        url: artifactFile,
+        sha512: calculateSHA512(fullPath),
+        size: stats.size
       });
       
-      for (const artifactFile of artifactFiles) {
-        const fullPath = path.join(outDir, artifactFile);
-        const stats = fs.statSync(fullPath);
-        
-        artifacts.push({
-          target: targetName,
-          arch: archName,
-          url: artifactFile,
-          sha512: calculateSHA512(fullPath),
-          size: stats.size
-        });
-        
-        console.log(`Added ${artifactFile} (${targetName} ${archName}) to update catalog`);
-      }
+      console.log(`Added ${artifactFile} (${target} ${arch}) to update catalog via file detection`);
     }
+  }
+  
+  // Check if we found any artifacts
+  if (artifacts.length === 0) {
+    console.log('No artifacts were processed, skipping update file generation');
+    return;
   }
   
   // Create consolidated update file
