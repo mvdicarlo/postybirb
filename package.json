@@ -1,5 +1,8 @@
 {
-  "author": "Michael DiCarlo",
+  "author": {
+    "name": "Michael DiCarlo", 
+    "email": "postybirb@mvdicarlo.com"
+  },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
   "name": "postybirb",
   "version": "4.0.2",

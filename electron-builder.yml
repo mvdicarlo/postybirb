@@ -115,7 +115,6 @@ nsis:
   createStartMenuShortcut: true
   shortcutName: PostyBirb
   include: build/installer.nsh
-  script: build/installer.nsh
   installerLanguages:
     - en_US
   language: 1033
