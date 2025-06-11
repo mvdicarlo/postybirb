@@ -27,30 +27,20 @@ compression: maximum
 removePackageScripts: true
 
 mac:
+  notarize:
+    teamId: "ZRKS9CNUQZ"
   category: public.app-category.productivity
-  icon: icons/icon.icns
-  gatekeeperAssess: false
-  hardenedRuntime: true
   entitlements: packaging-resources/entitlements.mac.plist
   entitlementsInherit: packaging-resources/entitlements.mac.plist
+  hardenedRuntime: true
+  type: distribution
+  icon: icons/icon.icns
+  gatekeeperAssess: false
   target:
-    - target: dmg
+    - target: default
       arch:
         - universal
-    - target: zip
-      arch:
-        - universal
-  notarize: false
-
-dmg:
-  sign: false
-  contents:
-    - x: 130
-      y: 220
-    - x: 410
-      y: 220
-      type: link
-      path: /Applications
+  notarize: true
 
 linux:
   category: Network
