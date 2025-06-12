@@ -31,11 +31,10 @@ mac:
   target:
     - target: dmg
       arch:
-        - universal
-    - target: zip
-      arch:
-        - universal
-  notarize: false
+        - x64
+        - arm64
+  notarize:
+    teamId: "ZRKS9CNUQZ"
 
 linux:
   category: Network
