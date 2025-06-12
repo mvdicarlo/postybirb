@@ -110,6 +110,6 @@ jobs:
 
       # Build Electron app
       - name: Build Electron app
-        run: yarn electron-builder --linux --publish=always
+        run: ELECTRON_BUILDER_DEBUG=true yarn electron-builder --linux --publish=always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
