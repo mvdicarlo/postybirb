@@ -16,10 +16,6 @@ directories:
 compression: maximum
 removePackageScripts: true
 
-asarUnpack:
-  - "node_modules/better-sqlite3/**/*"
-  - "node_modules/sharp/**/*"
-
 mac:
   category: public.app-category.productivity
   entitlements: packaging-resources/entitlements.mac.plist
