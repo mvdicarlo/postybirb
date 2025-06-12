@@ -29,12 +29,13 @@ mac:
   icon: icons/icon.icns
   gatekeeperAssess: false
   target:
-    - target: default
+    - target: dmg
       arch:
-        - x64
-        - arm64
-  notarize:
-    teamId: "ZRKS9CNUQZ"
+        - universal
+    - target: zip
+      arch:
+        - universal
+  notarize: false
 
 linux:
   category: Network
@@ -95,8 +96,6 @@ rpm:
 
 appImage:
   artifactName: "${productName}-${version}-linux-${arch}.${ext}"
-  desktop:
-    StartupWMClass: PostyBirb
     
 # Generate separate update files for different Linux formats  
 
