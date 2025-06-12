@@ -53,16 +53,13 @@ linux:
       arch:
         - x64
         - arm64
-    - target: tar.gz
-      arch:
-        - x64
-        - arm64
 
 snap:
   summary: "PostyBirb - Multi-site posting application"
   description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
   grade: stable
   confinement: strict
+  publish: false
   plugs:
     - default
     - home
