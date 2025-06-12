@@ -16,36 +16,6 @@ directories:
 compression: maximum
 removePackageScripts: true
 
-files:
-  - "dist/**/*"
-  - "node_modules/**/*"
-  - "package.json"
-  - "!node_modules/**/*.{md,txt}"
-  - "!node_modules/**/README*"
-  - "!node_modules/**/CHANGELOG*"
-  - "!node_modules/**/LICENSE*"
-  - "!node_modules/**/*.d.ts"
-  - "!node_modules/**/{test,tests,spec,specs}/**/*"
-  - "!node_modules/**/.{git,github,npm,nyc}/**/*"
-  - "!node_modules/**/.*"
-  - "!node_modules/**/{coverage,docs,doc,example,examples,demo}/**/*"
-  - "!node_modules/**/{@types,typescript,eslint*,prettier,jest,@jest,cypress,nx,@nx}/**/*"
-  - "!node_modules/**/@babel/**/*"
-  - "!node_modules/**/webpack*/**/*"
-  - "!node_modules/**/vite*/**/*"
-  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,__pycache__,thumbs.db,.gitignore,.gitkeep,.gitattributes,.npmignore,.eslintrc*,.babelrc*,jest.config.*,*.log}"
-  - "!apps/**/*"
-  - "!libs/**/*"
-  - "!build/**/*"
-  - "!contributing/**/*"
-  - "!scripts/**/*"
-  - "!windows-signing/**/*"
-  - "!patches/**/*"
-  - "!lang/**/*"
-  - "!release/**/*"
-  - "!*.{ts,js,yml,yaml,md}"
-  - "!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}"
-
 asarUnpack:
   - "node_modules/better-sqlite3/**/*"
   - "node_modules/sharp/**/*"
@@ -59,7 +29,7 @@ mac:
   icon: icons/icon.icns
   gatekeeperAssess: false
   target:
-    - target: dmg
+    - target: default
       arch:
         - x64
         - arm64
@@ -129,7 +99,6 @@ appImage:
     StartupWMClass: PostyBirb
     
 # Generate separate update files for different Linux formats  
-afterPack: "scripts/generate-linux-update-files.cjs"
 
 nsis:
   deleteAppDataOnUninstall: true
@@ -157,3 +126,30 @@ win:
 
 portable:
   artifactName: "${productName}-${version}-portable-${arch}.${ext}"
+
+files:
+  - "dist/**/*"
+  - "node_modules/**/*"
+  - "package.json"
+  - "!**/*.log"
+  - "!**/*.md"
+  - "!**/README*"
+  - "!**/CHANGELOG*"
+  - "!**/LICENSE*"
+  - "!**/*.d.ts"
+  - "!**/test/**/*"
+  - "!**/tests/**/*"
+  - "!**/.git/**/*"
+  - "!**/.DS_Store"
+  - "!.nx/**"
+  - "!apps/**/*"
+  - "!libs/**/*"
+  - "!build/**/*"
+  - "!contributing/**/*"
+  - "!scripts/**/*"
+  - "!windows-signing/**/*"
+  - "!patches/**/*"
+  - "!lang/**/*"
+  - "!release/**/*"
+  - "!*.{ts,js,yml,yaml,md}"
+  - "!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}"
