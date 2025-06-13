@@ -11,17 +11,7 @@ publish:
 
 directories:
   buildResources: packaging-resources
-  output: dist/packages
-
-files: 
-  - dist/apps
-  - "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}"
-  - "!.editorconfig"
-  - "!**/._*"
-  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
-  - "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}"
-  - "!**/{appveyor.yml,.travis.yml,circle.yml}"
-  - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+  output: release
 
 compression: maximum
 removePackageScripts: true
@@ -35,10 +25,12 @@ mac:
   icon: icons/icon.icns
   gatekeeperAssess: false
   target:
-    - target: default
+    - target: dmg
       arch:
-        - universal
-  notarize: true
+        - x64
+        - arm64
+  notarize:
+    teamId: "ZRKS9CNUQZ"
 
 linux:
   category: Network
@@ -50,9 +42,9 @@ linux:
       arch:
         - x64
         - arm64
-    - target: snap
-      arch:
-        - x64
+    # - target: snap
+    #   arch:
+    #     - x64
     - target: deb
       arch:
         - x64
@@ -61,21 +53,19 @@ linux:
       arch:
         - x64
         - arm64
-    - target: tar.gz
-      arch:
-        - x64
-        - arm64
 
-snap:
-  summary: "PostyBirb - Multi-site posting application"
-  description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
-  grade: stable
-  confinement: strict
-  plugs:
-    - default
-    - home
-    - network
-    - removable-media
+# snap: # snap causes issues when it cannot publish to the snap store
+#   summary: "PostyBirb - Multi-site posting application"
+#   description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
+#   grade: stable
+#   confinement: strict
+#   publish: false
+#   plugs:
+#     - default
+#     - home
+#     - network
+#     - removable-media
+#   artifactName: "${productName}-${version}-linux-snap-${arch}.${ext}"
 
 deb:
   priority: optional
@@ -86,6 +76,7 @@ deb:
     - libappindicator1
     - libxtst6
     - libnss3
+  artifactName: "${productName}-${version}-linux-deb-${arch}.${ext}"
 
 rpm:
   depends:
@@ -93,6 +84,12 @@ rpm:
     - libappindicator
     - libXtst
     - nss
+  artifactName: "${productName}-${version}-linux-rpm-${arch}.${ext}"
+
+appImage:
+  artifactName: "${productName}-${version}-linux-${arch}.${ext}"
+    
+# Generate separate update files for different Linux formats  
 
 nsis:
   deleteAppDataOnUninstall: true
@@ -120,3 +117,30 @@ win:
 
 portable:
   artifactName: "${productName}-${version}-portable-${arch}.${ext}"
+
+files:
+  - "dist/**/*"
+  - "node_modules/**/*"
+  - "package.json"
+  - "!**/*.log"
+  - "!**/*.md"
+  - "!**/README*"
+  - "!**/CHANGELOG*"
+  - "!**/LICENSE*"
+  - "!**/*.d.ts"
+  - "!**/test/**/*"
+  - "!**/tests/**/*"
+  - "!**/.git/**/*"
+  - "!**/.DS_Store"
+  - "!.nx/**"
+  - "!apps/**/*"
+  - "!libs/**/*"
+  - "!build/**/*"
+  - "!contributing/**/*"
+  - "!scripts/**/*"
+  - "!windows-signing/**/*"
+  - "!patches/**/*"
+  - "!lang/**/*"
+  - "!release/**/*"
+  - "!*.{ts,js,yml,yaml,md}"
+  - "!{babel.config.js,commitlint.config.js,drizzle.config.ts,jest.*,lingui.config.ts,nx.json,tsconfig.*}"
