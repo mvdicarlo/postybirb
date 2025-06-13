@@ -26,7 +26,10 @@ import WebsiteDataManager from './website-data-manager';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type UnknownWebsite = Website<any>;
 
-export abstract class Website<D extends DynamicObject> {
+export abstract class Website<
+  D extends DynamicObject,
+  SessionData extends Record<string, unknown> = Record<string, unknown>,
+> {
   protected readonly logger: PostyBirbLogger;
 
   /**
@@ -47,7 +50,7 @@ export abstract class Website<D extends DynamicObject> {
    *
    * This is not persisted across app restarts.
    */
-  protected readonly sessionData: DynamicObject = {};
+  protected readonly sessionData: SessionData = {} as SessionData;
 
   /**
    * Tracks the login state of a website.

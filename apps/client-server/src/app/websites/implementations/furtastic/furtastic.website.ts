@@ -1,11 +1,11 @@
 import { Http } from '@postybirb/http';
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { app } from 'electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -30,7 +30,7 @@ import { FurtasticFileSubmission } from './models/furtastic-file-submission';
 @SupportsFiles({
   fileBatchSize: 100, // Unknown limit
   acceptedFileSizes: {
-    '*': FileSize.mbToBytes(100),
+    '*': FileSize.megabytes(100),
   },
   acceptedMimeTypes: [
     'image/jpeg',

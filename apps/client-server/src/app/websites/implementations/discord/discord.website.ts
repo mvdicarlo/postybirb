@@ -1,11 +1,11 @@
 import { Http, HttpResponse } from '@postybirb/http';
 import {
-  DiscordAccountData,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  PostData,
-  PostResponse,
+    DiscordAccountData,
+    ILoginState,
+    ImageResizeProps,
+    IPostResponse,
+    PostData,
+    PostResponse,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -19,8 +19,8 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import {
-  DynamicFileSizeLimits,
-  WithDynamicFileSizeLimits,
+    DynamicFileSizeLimits,
+    WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
 import { DiscordFileSubmission } from './models/discord-file-submission';
@@ -63,11 +63,11 @@ export default class Discord
       // avoid having to create additional custom validation logic.
       if (data.serverLevel === 2) {
         this.decoratedProps.fileOptions.acceptedFileSizes['*'] =
-          FileSize.mbToBytes(50);
+          FileSize.megabytes(50);
       }
       if (data.serverLevel === 3) {
         this.decoratedProps.fileOptions.acceptedFileSizes['*'] =
-          FileSize.mbToBytes(100);
+          FileSize.megabytes(100);
       }
     }
 
@@ -90,13 +90,13 @@ export default class Discord
     const data = this.websiteDataStore.getData();
     switch (data.serverLevel) {
       case 2:
-        return { '*': FileSize.mbToBytes(50) };
+        return { '*': FileSize.megabytes(50) };
       case 3:
-        return { '*': FileSize.mbToBytes(100) };
+        return { '*': FileSize.megabytes(100) };
       case 0:
       case 1:
       default:
-        return { '*': FileSize.mbToBytes(10) };
+        return { '*': FileSize.megabytes(10) };
     }
   }
 

@@ -1,13 +1,13 @@
 import { SelectOptionSingle } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -46,10 +46,10 @@ interface DeviantArtFolder {
 })
 @SupportsFiles({
   acceptedFileSizes: {
-    [FileType.VIDEO]: FileSize.mbToBytes(200),
-    [FileType.IMAGE]: FileSize.mbToBytes(30),
-    [FileType.TEXT]: FileSize.mbToBytes(30),
-    [FileType.AUDIO]: FileSize.mbToBytes(30),
+    [FileType.VIDEO]: FileSize.megabytes(200),
+    [FileType.IMAGE]: FileSize.megabytes(30),
+    [FileType.TEXT]: FileSize.megabytes(30),
+    [FileType.AUDIO]: FileSize.megabytes(30),
   },
   acceptedMimeTypes: [
     'image/jpeg',

@@ -1,11 +1,11 @@
 import { Http } from '@postybirb/http';
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SubmissionRating
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    PostData,
+    PostResponse,
+    SubmissionRating
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -30,7 +30,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
 @SupportsFiles({
   acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
   acceptedFileSizes: {
-    [FileType.IMAGE]: FileSize.mbToBytes(32), // Image limit is 32MB
+    [FileType.IMAGE]: FileSize.megabytes(32), // Image limit is 32MB
   },
 })
 export default class Pixiv
