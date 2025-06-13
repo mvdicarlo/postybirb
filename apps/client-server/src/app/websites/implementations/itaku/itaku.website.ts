@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-  FileSubmissionMetadata,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileSubmissionMetadata,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -44,8 +44,8 @@ import { ItakuUserInfo } from './models/itaku-user-info';
     'video/mov',
   ],
   acceptedFileSizes: {
-    [FileType.IMAGE]: FileSize.mbToBytes(10),
-    [FileType.VIDEO]: FileSize.mbToBytes(500),
+    [FileType.IMAGE]: FileSize.megabytes(10),
+    [FileType.VIDEO]: FileSize.megabytes(500),
   },
   fileBatchSize: 100,
 })

@@ -1,13 +1,13 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-  DynamicObject,
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  PostData,
-  PostResponse,
-  SubmissionRating,
+    DynamicObject,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    PostData,
+    PostResponse,
+    SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -46,11 +46,11 @@ import { WeasylMessageSubmission } from './models/weasyl-message-submission';
     'text/pdf',
   ],
   acceptedFileSizes: {
-    [FileType.IMAGE]: FileSize.mbToBytes(50),
-    'application/pdf': FileSize.mbToBytes(10),
-    'text/*': FileSize.mbToBytes(2),
-    swf: FileSize.mbToBytes(50),
-    'audio/mp3': FileSize.mbToBytes(15),
+    [FileType.IMAGE]: FileSize.megabytes(50),
+    'application/pdf': FileSize.megabytes(10),
+    'text/*': FileSize.megabytes(2),
+    swf: FileSize.megabytes(50),
+    'audio/mp3': FileSize.megabytes(15),
   },
 })
 @SupportsUsernameShortcut({

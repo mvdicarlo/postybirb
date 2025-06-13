@@ -36,7 +36,7 @@ import { PillowfortMessageSubmission } from './models/pillowfort-message-submiss
 @SupportsFiles({
   acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
   acceptedFileSizes: {
-    '*': FileSize.mbToBytes(2),
+    '*': FileSize.megabytes(2),
   },
 })
 export default class Pillowfort
