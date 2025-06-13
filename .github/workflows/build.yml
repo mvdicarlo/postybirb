@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-mac-win:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -13,6 +13,8 @@ jobs:
         include:
           - os: macos-latest
             platform: mac
+          - os: ubuntu-latest
+            platform: linux
           - os: windows-latest
             platform: win
 
@@ -65,51 +67,3 @@ jobs:
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_IDENTITY_AUTO_DISCOVERY: true
-
-  build-linux:
-    runs-on: ubuntu-latest
-    container: electronuserland/builder:latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'yarn'
-
-      # Cache Electron binaries
-      - name: Cache Electron binaries
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/electron
-            ~/.cache/electron-builder
-            node_modules/.cache/electron
-          key: ${{ runner.os }}-electron-cache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-electron-cache-
-
-      # Install dependencies with proper caching
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile --network-timeout 600000
-        env:
-          CYPRESS_INSTALL_BINARY: 0
-          ELECTRON_CACHE: ~/.cache/electron
-          ELECTRON_BUILDER_CACHE: ~/.cache/electron-builder
-
-      # Build the application
-      - name: Build application
-        run: yarn build:prod
-        env:
-          NODE_ENV: production
-
-      # Build Electron app
-      - name: Build Electron app
-        run: ELECTRON_BUILDER_DEBUG=true yarn electron-builder --linux --publish=always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
