@@ -20,6 +20,29 @@ ipcMain.handle('get-app-version', () => {
   return environment.version;
 });
 
+ipcMain.handle('get-lan-ip', async () => {
+  const os = await import('os');
+  const networkInterfaces = os.networkInterfaces();
+  const addresses: string[] = [];
+
+  for (const interfaceName in networkInterfaces) {
+    if (
+      Object.prototype.hasOwnProperty.call(networkInterfaces, interfaceName)
+    ) {
+      const networkInterface = networkInterfaces[interfaceName];
+      if (networkInterface) {
+        for (const address of networkInterface) {
+          if (address.family === 'IPv4' && !address.internal) {
+            addresses.push(address.address);
+          }
+        }
+      }
+    }
+  }
+
+  return addresses.length > 0 ? addresses[0] : undefined;
+});
+
 ipcMain.handle('pick-directory', async (): Promise<string | undefined> => {
   const { canceled, filePaths } = await dialog.showOpenDialog({
     properties: ['openDirectory'],

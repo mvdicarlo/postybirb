@@ -1,7 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-globals
-export const defaultTargetProvider = () =>
-  `https://localhost:${window.electron.app_port}`;
+
+export const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
+
+export const defaultTargetProvider = () => {
+  const remoteUrl = localStorage.getItem('remote_url');
+  if (remoteUrl?.trim()) {
+    return `https://${remoteUrl}`;
+  }
+
+  return defaultTargetPath;
+};
+
+export const getRemotePassword = () => {
+  const defaultTarget = defaultTargetProvider();
+  if (defaultTarget !== defaultTargetPath) {
+    const remotePassword = localStorage.getItem('remote_password');
+    if (remotePassword?.trim()) {
+      return remotePassword;
+    }
+  }
+
+  return undefined;
+};
 
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type ErrorResponse<T = string> = {
@@ -87,6 +108,14 @@ export class HttpClient {
           ? 'multipart/form-data'
           : 'application/json',
     };
+
+    if (this.targetProvider() !== defaultTargetPath) {
+      const pw = getRemotePassword();
+      if (pw) {
+        // eslint-disable-next-line lingui/no-unlocalized-strings
+        headers['X-Remote-Password'] = pw;
+      }
+    }
 
     if (bodyOrSearchParams instanceof FormData || !shouldUseBody) {
       // eslint-disable-next-line lingui/no-unlocalized-strings

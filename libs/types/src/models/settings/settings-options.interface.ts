@@ -33,6 +33,12 @@ export interface ISettingsOptions {
    * @type {DesktopNotificationSettings}
    */
   desktopNotifications: DesktopNotificationSettings;
+
+  /**
+   * Remote settings for PostyBirb.
+   * @type {RemoteSettings}
+   */
+  remoteSettings?: RemoteSettings;
 }
 
 export type DesktopNotificationSettings = {
@@ -41,4 +47,11 @@ export type DesktopNotificationSettings = {
   showOnPostError: boolean;
   showOnDirectoryWatcherError: boolean;
   showOnDirectoryWatcherSuccess: boolean;
+};
+
+export type RemoteSettings = {
+  isEnabled: boolean;
+  isHost: boolean;
+  password: string;
+  hostUrl?: string;
 };

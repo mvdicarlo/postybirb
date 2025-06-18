@@ -17,6 +17,5 @@ export const SubmissionStore: StoreManager<SubmissionDto> =
         .then(({ body }) =>
           body.filter(filter).map((d) => new SubmissionDto(d)),
         ),
-    SubmissionDto,
-    filter,
+    { ModelConstructor: SubmissionDto, filter },
   );

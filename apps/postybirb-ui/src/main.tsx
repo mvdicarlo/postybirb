@@ -17,6 +17,7 @@ declare global {
   interface Window {
     electron: {
       getAppVersion(): Promise<string>;
+      getLanIp(): Promise<string | undefined>;
       pickDirectory?(): Promise<string | undefined>;
       openExternalLink(url: string): void;
       platform: string;

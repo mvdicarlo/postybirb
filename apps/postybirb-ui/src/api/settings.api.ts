@@ -1,9 +1,13 @@
 import { EntityId, IUpdateSettingsDto, SettingsDto } from '@postybirb/types';
 import { StartupOptions } from '@postybirb/utils/electron';
-import { HttpClient } from '../transports/http-client';
+import { defaultTargetPath, HttpClient } from '../transports/http-client';
 
 class SettingsApi {
-  private readonly client: HttpClient = new HttpClient('settings');
+  // Settings should only ever update local settings
+  private readonly client: HttpClient = new HttpClient(
+    'settings',
+    () => defaultTargetPath,
+  );
 
   getAll() {
     return this.client.get<SettingsDto[]>();

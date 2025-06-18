@@ -49,7 +49,7 @@ import { NotificationStore } from '../../stores/notification.store';
 import { useStore } from '../../stores/use-store';
 import { AccountDrawer } from './drawers/account-drawer/account-drawer';
 import { NotificationsDrawer } from './drawers/notifications-drawer';
-import { SettingsDrawer } from './drawers/settings-drawer';
+import { SettingsDrawer } from './drawers/settings-drawer/settings-drawer';
 import { TagConverterDrawer } from './drawers/tag-converter-drawer';
 import { TagGroupDrawer } from './drawers/tag-group-drawer';
 import { LanguagePicker } from './language-picker';
@@ -195,7 +195,7 @@ function ScrollToTop() {
 
 function View() {
   const location = useLocation();
-  
+
   return (
     <Box
       className={`postybirb__content ${classes.contentContainer}`}

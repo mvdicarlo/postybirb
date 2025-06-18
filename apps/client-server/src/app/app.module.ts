@@ -13,6 +13,7 @@ import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
+import { RemoteModule } from './remote/remote.module';
 import { SettingsModule } from './settings/settings.module';
 import { SubmissionModule } from './submission/submission.module';
 import { TagConvertersModule } from './tag-converters/tag-converters.module';
@@ -49,6 +50,7 @@ import { WebsitesModule } from './websites/websites.module';
     ValidationModule,
     FileConverterModule,
     NotificationsModule,
+    RemoteModule,
   ],
   controllers: [AppController],
   providers: [AppService],
