@@ -3,7 +3,7 @@
  * between the frontend to the electron backend.
  */
 
-import { app, dialog, ipcMain, shell } from 'electron';
+import { app, dialog, ipcMain, session, shell } from 'electron';
 import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
@@ -18,6 +18,17 @@ ipcMain.handle('get-app-version', () => {
   console.log(`Fetching application version... [v${environment.version}]`);
 
   return environment.version;
+});
+
+// Return cookies for account, bundled as base64
+ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
+  const cookies = await session
+    .fromPartition(`persist:${accountId}`)
+    .cookies.get({});
+  if (cookies.length === 0) {
+    return '';
+  }
+  return Buffer.from(JSON.stringify(cookies)).toString('base64');
 });
 
 ipcMain.handle('get-lan-ip', async () => {

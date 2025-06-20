@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -13,6 +13,7 @@ import { FormGeneratorModule } from './form-generator/form-generator.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
 import { PostModule } from './post/post.module';
+import { RemotePasswordMiddleware } from './remote/remote.middleware';
 import { RemoteModule } from './remote/remote.module';
 import { SettingsModule } from './settings/settings.module';
 import { SubmissionModule } from './submission/submission.module';
@@ -55,4 +56,9 @@ import { WebsitesModule } from './websites/websites.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  // TODO validate
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RemotePasswordMiddleware).forRoutes('remote');
+  }
+}

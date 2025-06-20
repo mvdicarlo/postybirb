@@ -1,4 +1,4 @@
-import { RemoteSettings } from '@postybirb/types';
+import { AccountId, RemoteSettings } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
 class RemoteApi {
@@ -18,6 +18,13 @@ class RemoteApi {
       return Promise.reject(response);
     }
     return response;
+  }
+
+  async setCookies(accountId: AccountId) {
+    return this.client.post(`set-cookies`, {
+      accountId,
+      cookies: await window.electron?.getCookiesForAccount(accountId),
+    });
   }
 }
 

@@ -14,11 +14,12 @@ if (remotePassword) {
   };
 }
 
-// TODO: Provide authentication on HTTP and Socket connections on a host
 const AppSocket = io(defaultTargetProvider(), socketSettings);
 // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
 AppSocket.on('connect', () => console.log('Websocket connected'));
 
+// We have a local socket type for remote connections where we still listen
+// to local setting updates as we only want local user settings.
 export function getLocalSocket() {
   const currentDefaultTarget = defaultTargetProvider();
   if (currentDefaultTarget === defaultTargetPath) {

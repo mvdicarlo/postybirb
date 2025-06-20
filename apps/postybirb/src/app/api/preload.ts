@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.send('open-external-link', url);
   },
   getLanIp: () => ipcRenderer.invoke('get-lan-ip'),
+  getCookiesForAccount: (accountId: string) =>
+    ipcRenderer.invoke('get-cookies-for-account', accountId),
   platform: process.platform,
   app_port: process.env.POSTYBIRB_PORT,
   app_version: process.env.POSTYBIRB_VERSION,

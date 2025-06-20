@@ -7,5 +7,6 @@ import { RemoteService } from './remote.service';
   imports: [SettingsModule],
   controllers: [RemoteController],
   providers: [RemoteService],
+  exports: [RemoteService],
 })
 export class RemoteModule {}

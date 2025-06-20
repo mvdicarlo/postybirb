@@ -20,6 +20,7 @@ declare global {
       getLanIp(): Promise<string | undefined>;
       pickDirectory?(): Promise<string | undefined>;
       openExternalLink(url: string): void;
+      getCookiesForAccount(accountId: string): Promise<string>;
       platform: string;
       app_port: string;
       app_version: string;
