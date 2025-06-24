@@ -15,12 +15,5 @@ export class SettingsConstants {
       showOnDirectoryWatcherError: true,
       showOnDirectoryWatcherSuccess: true,
     },
-    remoteSettings: {
-      isEnabled: false,
-      isHost: false,
-      password: ((Math.random() * Number.MAX_SAFE_INTEGER) / Date.now())
-        .toString(32)
-        .replace('.', ''), // Random password
-    },
   };
 }

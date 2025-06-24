@@ -10,6 +10,7 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { PostyBirbDirectories } from '@postybirb/fs';
 import {
+  ensureRemoteConfigExists,
   IsTestEnvironment,
   PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
@@ -82,8 +83,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  // PostyBirb Initialization
   PostyBirbDirectories.initializeDirectories();
+  ensureRemoteConfigExists();
   sharp.cache({ files: 0 });
 
   const { port } = PostyBirbEnvConfig;

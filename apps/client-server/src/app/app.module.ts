@@ -57,8 +57,7 @@ import { WebsitesModule } from './websites/websites.module';
   providers: [AppService],
 })
 export class AppModule implements NestModule {
-  // TODO validate
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RemotePasswordMiddleware).forRoutes('remote');
+    consumer.apply(RemotePasswordMiddleware).forRoutes('*');
   }
 }

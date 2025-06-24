@@ -3,6 +3,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { getRemoteConfig } from '@postybirb/utils/electron';
 import { Server } from 'socket.io';
 import { WebSocketEvents } from './web-socket.events';
 
@@ -12,14 +13,13 @@ export class WSGateway implements OnGatewayInit {
   private server: Server;
 
   afterInit(server: Server) {
-    server.use(
-      (socket, next) => next(),
-      // if (socket.handshake.headers.authorization === global.AUTH_ID) {
-      //   return next();
-      // }
-
-      // return next(new Error('Authentication Error'));
-    );
+    server.use(async (socket, next) => {
+      const remoteConfig = await getRemoteConfig();
+      if (socket.handshake.headers.authorization === remoteConfig.password) {
+        return next();
+      }
+      return next(new Error('Authentication Error'));
+    });
   }
 
   public emit(socketEvent: WebSocketEvents) {

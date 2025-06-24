@@ -12,6 +12,7 @@ contextBridge.exposeInMainWorld('electron', {
     ipcRenderer.send('open-external-link', url);
   },
   getLanIp: () => ipcRenderer.invoke('get-lan-ip'),
+  getRemoteConfig: () => JSON.parse(process.env.remote || '{}'),
   getCookiesForAccount: (accountId: string) =>
     ipcRenderer.invoke('get-cookies-for-account', accountId),
   platform: process.platform,

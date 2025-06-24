@@ -1,7 +1,7 @@
 import { EntityId } from '@postybirb/types';
 import { Observable, Subject } from 'rxjs';
 import { Constructor } from 'type-fest';
-import AppSocket, { getLocalSocket } from '../transports/websocket';
+import AppSocket from '../transports/websocket';
 
 export type IdBasedRecord = {
   id: EntityId;
@@ -16,7 +16,6 @@ export type StorageManagerOptions<T> = {
   ModelConstructor?: Constructor<T>;
   filter?: (data: T) => boolean;
   onEachMessage?: (data: T) => void;
-  useLocalSocket?: boolean;
 };
 
 /**
@@ -42,16 +41,9 @@ export default class StoreManager<T extends IdBasedRecord> {
     this.data = [];
     this.subject = new Subject<StoreManagerDataResult<T>>();
     this.updates = this.subject.asObservable();
-
-    if (options.useLocalSocket) {
-      getLocalSocket().on(websocketDomain, (messages: T[]) =>
-        this.handleMessages(messages),
-      );
-    } else {
-      AppSocket.on(websocketDomain, (messages: T[]) =>
-        this.handleMessages(messages),
-      );
-    }
+    AppSocket.on(websocketDomain, (messages: T[]) =>
+      this.handleMessages(messages),
+    );
     refreshDataFn()
       .then((messages: T[]) => this.handleMessages(messages))
       .finally(() => {

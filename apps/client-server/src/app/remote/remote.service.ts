@@ -1,55 +1,28 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { getRemoteConfig, RemoteConfig } from '@postybirb/utils/electron';
 import { session } from 'electron';
-import { SettingsService } from '../settings/settings.service';
 import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
 
 @Injectable()
 export class RemoteService {
   protected readonly logger = Logger(this.constructor.name);
 
-  constructor(private readonly settingsService: SettingsService) {}
+  private cachedRemoteSettings: RemoteConfig | null = null;
 
   async validate(password: string): Promise<boolean> {
-    const remoteSettings = await this.getRemoteSettings();
-    if (!remoteSettings.isEnabled) {
-      this.logger.error('Remote access is not enabled');
-      throw new UnauthorizedException('Remote access is not enabled');
-    }
+    const remoteConfig = await this.getRemoteConfig();
+    // if (!remoteConfig.enabled) {
+    //   this.logger.error('Remote access is not enabled');
+    //   throw new UnauthorizedException('Remote access is not enabled');
+    // }
 
-    if (!remoteSettings.isHost) {
-      this.logger.error('Remote access is not set up for this host');
-      throw new UnauthorizedException(
-        'Remote access is not set up for this host',
-      );
-    }
-
-    if (remoteSettings.password !== password) {
-      this.logger.error('Invalid remote access password');
-      throw new UnauthorizedException('Invalid remote access password');
-    }
-
-    if (remoteSettings.password !== password) {
+    if (remoteConfig.password !== password) {
       this.logger.error('Invalid remote access password');
       throw new UnauthorizedException('Invalid remote access password');
     }
 
     return true;
-  }
-
-  private async getRemoteSettings() {
-    const settings = await this.settingsService.getDefaultSettings();
-    if (!settings) {
-      this.logger.error('Remote settings not found');
-      throw new Error('Remote settings not found');
-    }
-
-    const { remoteSettings } = settings.settings;
-    if (!remoteSettings) {
-      throw new UnauthorizedException('Remote access is not set up');
-    }
-
-    return remoteSettings;
   }
 
   /**
@@ -103,5 +76,16 @@ export class RemoteService {
     }
 
     return details;
+  }
+
+  private async getRemoteConfig(): Promise<RemoteConfig> {
+    if (this.cachedRemoteSettings) {
+      return this.cachedRemoteSettings;
+    }
+
+    const remoteSettings = await getRemoteConfig();
+
+    this.cachedRemoteSettings = remoteSettings;
+    return this.cachedRemoteSettings;
   }
 }

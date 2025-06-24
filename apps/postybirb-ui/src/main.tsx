@@ -1,3 +1,4 @@
+import { RemoteConfig } from '@postybirb/utils/electron';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import App from './app/app';
@@ -18,6 +19,7 @@ declare global {
     electron: {
       getAppVersion(): Promise<string>;
       getLanIp(): Promise<string | undefined>;
+      getRemoteConfig(): RemoteConfig;
       pickDirectory?(): Promise<string | undefined>;
       openExternalLink(url: string): void;
       getCookiesForAccount(accountId: string): Promise<string>;
