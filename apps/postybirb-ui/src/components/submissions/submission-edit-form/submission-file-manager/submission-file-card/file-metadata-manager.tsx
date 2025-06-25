@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import { Trans } from '@lingui/macro';
 import {
+  ActionIcon,
   Badge,
   Box,
   Grid,
@@ -19,7 +20,7 @@ import {
   SubmissionId,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
-import { IconInfoCircle } from '@tabler/icons-react';
+import { IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react';
 import { filesize } from 'filesize';
 import { useState } from 'react';
 import submissionApi from '../../../../../api/submission.api';
@@ -253,6 +254,100 @@ function FileMetadata(props: FileDetailProps) {
   );
 }
 
+function FileSourceUrls(props: FileDetailProps) {
+  const { metadata, save } = props;
+  const [urls, setUrls] = useState<string[]>(() => metadata.sourceUrls || []);
+
+  const updateUrls = (newUrls: string[]) => {
+    // Filter out empty URLs
+    const filteredUrls = newUrls.filter((url) => url.trim() !== '');
+    setUrls(newUrls);
+    metadata.sourceUrls = filteredUrls;
+    save();
+  };
+
+  const addUrl = () => {
+    const newUrls = [...urls, ''];
+    setUrls(newUrls);
+  };
+
+  const removeUrl = (index: number) => {
+    const newUrls = urls.filter((_, i) => i !== index);
+    updateUrls(newUrls);
+  };
+
+  const updateUrl = (index: number, value: string) => {
+    const newUrls = [...urls];
+    newUrls[index] = value;
+    setUrls(newUrls);
+  };
+
+  const handleUrlBlur = (index: number) => {
+    updateUrls(urls);
+  };
+
+  // Ensure there's always at least one empty input at the end
+  const displayUrls =
+    urls.length === 0 || urls[urls.length - 1] !== '' ? [...urls, ''] : urls;
+
+  return (
+    <Box mt="md">
+      <Group gap="xs" mb={8}>
+        <Text size="sm" fw={600}>
+          <Trans>Source URLs</Trans>
+        </Text>
+        <Tooltip label={<Trans>Add source URLs for this file</Trans>} withArrow>
+          <IconInfoCircle size={14} style={{ opacity: 0.7 }} />
+        </Tooltip>
+      </Group>
+      <Grid gutter="xs">
+        {displayUrls.map((url, index) => {
+          const isLastEmpty = index === displayUrls.length - 1 && url === '';
+          const key = `url-${index}-${url.length > 0 ? url.substring(0, 10) : 'empty'}`;
+          return (
+            <Grid.Col span={12} key={key}>
+              <Group gap="xs">
+                <TextInput
+                  size="xs"
+                  placeholder="https://example.com/image.jpg"
+                  value={url}
+                  style={{ flex: 1 }}
+                  onChange={(event) => updateUrl(index, event.target.value)}
+                  onBlur={() => handleUrlBlur(index)}
+                />
+                {!isLastEmpty && (
+                  <Tooltip label={<Trans>Remove URL</Trans>}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="red"
+                      size="sm"
+                      onClick={() => removeUrl(index)}
+                    >
+                      <IconTrash size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+                {isLastEmpty && (
+                  <Tooltip label={<Trans>Add URL</Trans>}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="blue"
+                      size="sm"
+                      onClick={addUrl}
+                    >
+                      <IconPlus size={16} />
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </Group>
+            </Grid.Col>
+          );
+        })}
+      </Grid>
+    </Box>
+  );
+}
+
 export function FileMetadataManager(props: FileMetadataManagerProps) {
   const { submissionId, file, metadata } = props;
   const fileType = getFileType(file.fileName);
@@ -272,6 +367,7 @@ export function FileMetadataManager(props: FileMetadataManagerProps) {
       <FileDetails {...detailProps} />
       <FileMetadata {...detailProps} />
       {fileType === FileType.IMAGE ? <FileDimensions {...detailProps} /> : null}
+      {fileType !== FileType.TEXT ? <FileSourceUrls {...detailProps} /> : null}
     </>
   );
 }

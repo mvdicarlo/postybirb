@@ -84,4 +84,28 @@ export class BrowserWindowUtils {
       }
     }
   }
+
+  public static async getFormData(
+    partition: string,
+    url: string,
+    selector: { id?: string; custom?: string },
+  ): Promise<object> {
+    const bw = await createWindow(partition, url);
+    try {
+      return await bw.webContents.executeJavaScript(
+        `JSON.parse(JSON.stringify(Array.from(new FormData(${
+          selector.id
+            ? `document.getElementById('${selector.id}')`
+            : selector.custom
+        })).reduce((obj, [k, v]) => ({...obj, [k]: v}), {})))`,
+      );
+    } catch (err) {
+      bw.destroy();
+      throw err;
+    } finally {
+      if (!bw.isDestroyed()) {
+        bw.destroy();
+      }
+    }
+  }
 }

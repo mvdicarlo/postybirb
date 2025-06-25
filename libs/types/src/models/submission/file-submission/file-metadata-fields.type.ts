@@ -34,4 +34,10 @@ export type FileMetadataFields = {
    * @type {AccountId[]}
    */
   ignoredWebsites: AccountId[];
+
+  /**
+   * The source URLs for the file.
+   * @type {string[]}
+   */
+  sourceUrls: string[];
 };

@@ -97,6 +97,7 @@ export class FileSubmissionService
         },
       },
       ignoredWebsites: [],
+      sourceUrls: [],
     };
 
     // eslint-disable-next-line no-param-reassign

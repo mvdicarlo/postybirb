@@ -482,14 +482,34 @@ export class PostManagerService {
             this.resizeOrModifyFile(submissionFile, submission, instance),
           ),
         )
-      ).map((f) =>
-        f.withMetadata(
+      ).map((f) => {
+        const { parent } = websitePostRecord;
+
+        // Find all source urls that are applicable to this file and
+        // add them to the file metadata with user defined source urls
+        // taking priority.
+        const sourceUrlsForFile = [];
+        parent.children.forEach((postRecord) => {
+          if (postRecord.metadata.sourceMap[f.id]) {
+            sourceUrlsForFile.push(postRecord.metadata.sourceMap[f.id]);
+          }
+        });
+
+        const fileWithMetadata = f.withMetadata(
           metadata[f.id] ?? {
             ignoredWebsites: [],
             dimensions: null,
+            sourceUrls: [],
           },
-        ),
-      );
+        );
+
+        fileWithMetadata.metadata.sourceUrls = [
+          ...(fileWithMetadata.metadata.sourceUrls ?? []),
+          ...sourceUrlsForFile,
+        ];
+
+        return fileWithMetadata;
+      });
 
       // Verify files are supported by the website after all processing
       // and potential conversions are completed.
