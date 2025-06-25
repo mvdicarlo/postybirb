@@ -1,11 +1,11 @@
 import { INestApplication } from '@nestjs/common';
+import { PostyBirbDirectories } from '@postybirb/fs';
 import {
   ensureRemoteConfigExists,
   getRemoteConfig,
   PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
-import { PostyBirbDirectories } from '@postybirb/fs';
 import { bootstrapClientServer } from 'apps/client-server/src/main';
 import { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
