@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
+  FileSubmissionMetadata,
   IWebsiteFormFields,
   ScheduleType,
   SubmissionRating,
@@ -483,7 +484,11 @@ describe('SubmissionService', () => {
   it('should duplicate submission', async () => {
     const account = await createAccount();
     const createDto = createSubmissionDto();
-    const record = await service.create(createDto);
+    createDto.type = SubmissionType.FILE;
+    const path = setup();
+    const fileInfo = createMulterData(path);
+
+    const record = await service.create(createDto, fileInfo);
     await websiteOptionsService.create({
       submissionId: record.id,
       accountId: account.id,
@@ -500,7 +505,32 @@ describe('SubmissionService', () => {
     expect(duplicated).toBeDefined();
     expect(duplicated?.type).toEqual(record.type);
     expect(duplicated?.options).toHaveLength(2);
-    expect(duplicated?.files).toHaveLength(0);
+    expect(duplicated?.files).toHaveLength(1);
     expect(duplicated.order).toEqual(record.order);
+
+    // Check that the metadata references the new file IDs
+    const duplicatedFileId = duplicated?.files[0].id;
+    const duplicatedMetadata = duplicated?.metadata as FileSubmissionMetadata;
+    expect(duplicatedFileId).toBeDefined();
+
+    for (const file of duplicated.files) {
+      expect(record.files.find((f) => f.id === file.id)).toBeUndefined();
+      expect(duplicatedMetadata.order).toContain(file.id);
+      expect(duplicatedMetadata.fileMetadata[file.id]).toBeDefined();
+      expect(
+        duplicatedMetadata.fileMetadata[file.id].dimensions.default.fileId,
+      ).toEqual(file.id);
+    }
+
+    // Check that the original metadata is preserved
+    const originalMetadata = record?.metadata as FileSubmissionMetadata;
+    for (const file of record.files) {
+      expect(duplicated.files.find((f) => f.id === file.id)).toBeUndefined();
+      expect(originalMetadata.order).toContain(file.id);
+      expect(originalMetadata.fileMetadata[file.id]).toBeDefined();
+      expect(
+        originalMetadata.fileMetadata[file.id].dimensions.default.fileId,
+      ).toEqual(file.id);
+    }
   });
 });
