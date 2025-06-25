@@ -459,7 +459,6 @@ export class SubmissionService
    * Duplicates a submission.
    * @param {string} id
    */
-  // ! TODO: duplicated file metadata id is not properly updated
   public async duplicate(id: SubmissionId) {
     this.logger.info(`Duplicating Submission '${id}'`);
     const entityToDuplicate = await this.repository.findOne({
