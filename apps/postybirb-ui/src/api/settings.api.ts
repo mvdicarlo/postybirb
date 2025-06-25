@@ -3,6 +3,7 @@ import { StartupOptions } from '@postybirb/utils/electron';
 import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {
+  // Settings should only ever update local settings
   private readonly client: HttpClient = new HttpClient('settings');
 
   getAll() {

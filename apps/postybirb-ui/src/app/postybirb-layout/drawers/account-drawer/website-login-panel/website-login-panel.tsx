@@ -12,6 +12,7 @@ import { IAccountDto, IWebsiteInfoDto } from '@postybirb/types';
 import { IconWorld } from '@tabler/icons-react';
 import { useEffect } from 'react';
 import accountApi from '../../../../../api/account.api';
+import remoteApi from '../../../../../api/remote.api';
 import { AccountLoginWebview } from '../../../../../components/account/account-login-webview/account-login-webview';
 import { getCustomLoginComponent } from '../../../../../website-components/custom-login-components';
 import {
@@ -72,7 +73,19 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
 
   useEffect(
     () => () => {
-      accountApi.refreshLogin(account.id);
+      if (localStorage.getItem('remote_url')?.length) {
+        remoteApi
+          .setCookies(account.id)
+          .then(() => {
+            accountApi.refreshLogin(account.id);
+          })
+          .catch((error) => {
+            // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+            console.error('Failed to set cookies for remote:', error);
+          });
+      } else {
+        accountApi.refreshLogin(account.id);
+      }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],

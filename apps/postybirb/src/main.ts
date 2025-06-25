@@ -1,8 +1,13 @@
 import { INestApplication } from '@nestjs/common';
-import { PostyBirbEnvConfig } from '@postybirb/utils/electron';
+import { PostyBirbDirectories } from '@postybirb/fs';
+import {
+  ensureRemoteConfigExists,
+  getRemoteConfig,
+  PostyBirbEnvConfig,
+} from '@postybirb/utils/electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
-import { app, BrowserWindow, powerSaveBlocker, session } from 'electron';
+import { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
@@ -31,7 +36,7 @@ process.env.POSTYBIRB_ENV =
 startMetrics();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const psbId = powerSaveBlocker.start('prevent-app-suspension');
+// const psbId = powerSaveBlocker.start('prevent-app-suspension');
 
 app.on(
   'certificate-error',
@@ -56,8 +61,10 @@ app.on(
 );
 
 export default class Main {
-  static initialize() {
-    // Nothing yet
+  static async initialize() {
+    PostyBirbDirectories.initializeDirectories();
+    ensureRemoteConfigExists();
+    process.env.remote = JSON.stringify(await getRemoteConfig());
   }
 
   static bootstrapClientServer(): Promise<INestApplication> {
@@ -77,7 +84,7 @@ export default class Main {
 async function start() {
   try {
     // handle setup events as quickly as possible
-    Main.initialize();
+    await Main.initialize();
 
     // bootstrap app
     const nestApp = await Main.bootstrapClientServer();

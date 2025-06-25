@@ -1,6 +1,6 @@
 import { app } from 'electron';
-import { join } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 export type StartupOptions = {
   startAppOnSystemStartup: boolean;
@@ -27,7 +27,7 @@ function init(): StartupOptions {
   }
 }
 
-let startupOptions: StartupOptions = init();
+let startupOptions: StartupOptions;
 const listeners: Array<(opts: StartupOptions) => void> = [];
 
 function saveStartupOptions(opts: StartupOptions) {
@@ -40,8 +40,16 @@ function saveStartupOptions(opts: StartupOptions) {
   }
 }
 
-export const getStartupOptions = (): StartupOptions => ({ ...startupOptions });
+export const getStartupOptions = (): StartupOptions => {
+  if (!startupOptions) {
+    startupOptions = init();
+  }
+  return { ...startupOptions };
+};
 export function setStartupOptions(opts: Partial<StartupOptions>): void {
+  if (!startupOptions) {
+    startupOptions = init();
+  }
   startupOptions = { ...getStartupOptions(), ...opts };
   saveStartupOptions(startupOptions);
   listeners.forEach((listener) => listener(startupOptions));

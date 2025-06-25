@@ -21,7 +21,11 @@ function getLocalStorage<T>(
 }
 
 function setLocalStorage<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value));
+  if (value === undefined || value === null || value === '') {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
   listeners.get(key)?.forEach((listener) => listener(value));
 }
 

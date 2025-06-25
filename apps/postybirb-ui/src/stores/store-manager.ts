@@ -12,6 +12,12 @@ export type StoreManagerDataResult<T> = {
   map: Map<EntityId, T>;
 };
 
+export type StorageManagerOptions<T> = {
+  ModelConstructor?: Constructor<T>;
+  filter?: (data: T) => boolean;
+  onEachMessage?: (data: T) => void;
+};
+
 /**
  * Manages keeping data in sync with backend database.
  *
@@ -30,9 +36,7 @@ export default class StoreManager<T extends IdBasedRecord> {
   constructor(
     private readonly websocketDomain: string,
     private readonly refreshDataFn: () => Promise<T[]>,
-    private readonly ModelConstructor?: Constructor<T>,
-    private readonly filterFn?: (data: T) => boolean,
-    private readonly onEachMessageFn?: (data: T) => void,
+    private readonly options: StorageManagerOptions<T> = {},
   ) {
     this.data = [];
     this.subject = new Subject<StoreManagerDataResult<T>>();
@@ -49,11 +53,11 @@ export default class StoreManager<T extends IdBasedRecord> {
 
   private handleMessages(messages: T[]): void {
     let m = messages ?? [];
-    if (this.filterFn) {
-      m = m.filter(this.filterFn);
+    if (this.options.filter) {
+      m = m.filter(this.options.filter);
     }
-    if (this.onEachMessageFn) {
-      m.forEach(this.onEachMessageFn);
+    if (this.options.onEachMessage) {
+      m.forEach(this.options.onEachMessage);
     }
     this.data = m;
     this.subject.next(this.getData());
@@ -67,7 +71,7 @@ export default class StoreManager<T extends IdBasedRecord> {
 
   public getData(): StoreManagerDataResult<T> {
     const data = JSON.parse(JSON.stringify(this.data ?? []));
-    const { ModelConstructor } = this;
+    const { ModelConstructor } = this.options;
     const records = ModelConstructor
       ? data.map((d: unknown) => new ModelConstructor(d))
       : data;

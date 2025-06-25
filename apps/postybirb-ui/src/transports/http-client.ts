@@ -1,7 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // eslint-disable-next-line no-restricted-globals
-export const defaultTargetProvider = () =>
-  `https://localhost:${window.electron.app_port}`;
+
+export const REMOTE_PASSWORD_KEY = 'remote_password';
+export const REMOTE_HOST_KEY = 'remote_host';
+export const REMOTE_MODE_KEY = 'remote_mode';
+
+export const defaultTargetPath = `https://localhost:${window.electron.app_port}`;
+
+export const defaultTargetProvider = () => {
+  const remoteUrl = localStorage.getItem(REMOTE_HOST_KEY);
+  if (remoteUrl?.trim()) {
+    return `https://${remoteUrl}`;
+  }
+
+  return defaultTargetPath;
+};
+
+export const getRemotePassword = () => {
+  const remotePassword = localStorage.getItem(REMOTE_PASSWORD_KEY);
+  const electronRemotePassword = window.electron?.getRemoteConfig()?.password;
+  return remotePassword?.trim() || electronRemotePassword?.trim();
+};
 
 type FetchMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type ErrorResponse<T = string> = {
@@ -87,6 +106,12 @@ export class HttpClient {
           ? 'multipart/form-data'
           : 'application/json',
     };
+
+    const pw = getRemotePassword();
+    if (pw) {
+      // eslint-disable-next-line lingui/no-unlocalized-strings
+      headers['X-Remote-Password'] = pw;
+    }
 
     if (bodyOrSearchParams instanceof FormData || !shouldUseBody) {
       // eslint-disable-next-line lingui/no-unlocalized-strings
