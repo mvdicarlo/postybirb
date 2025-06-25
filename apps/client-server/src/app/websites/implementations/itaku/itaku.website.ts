@@ -28,6 +28,11 @@ import { ItakuFileSubmission } from './models/itaku-file-submission';
 import { ItakuMessageSubmission } from './models/itaku-message-submission';
 import { ItakuUserInfo } from './models/itaku-user-info';
 
+type ItakuSessionData = {
+  token: string;
+  profile: ItakuUserInfo['profile'];
+};
+
 @WebsiteMetadata({
   name: 'itaku',
   displayName: 'Itaku',
@@ -44,8 +49,8 @@ import { ItakuUserInfo } from './models/itaku-user-info';
     'video/mov',
   ],
   acceptedFileSizes: {
-    [FileType.IMAGE]: FileSize.mbToBytes(10),
-    [FileType.VIDEO]: FileSize.mbToBytes(500),
+    [FileType.IMAGE]: FileSize.megabytes(10),
+    [FileType.VIDEO]: FileSize.megabytes(500),
   },
   fileBatchSize: 100,
 })
@@ -54,7 +59,7 @@ import { ItakuUserInfo } from './models/itaku-user-info';
   url: 'https://itaku.ee/profile/$1',
 })
 export default class Itaku
-  extends Website<ItakuAccountData>
+  extends Website<ItakuAccountData, ItakuSessionData>
   implements
     FileWebsite<ItakuFileSubmission>,
     MessageWebsite<ItakuMessageSubmission>

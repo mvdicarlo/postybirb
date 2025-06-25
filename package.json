@@ -212,7 +212,7 @@
     "dotenv": "10.0.0",
     "drizzle-kit": "^0.30.4",
     "electron": "^32",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "24.8.1",
     "electron-builder-squirrel-windows": "24.13.3",
     "eslint": "8.48.0",
     "eslint-config-airbnb": "^19.0.4",

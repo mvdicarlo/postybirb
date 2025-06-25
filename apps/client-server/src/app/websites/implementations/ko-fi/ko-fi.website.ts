@@ -25,6 +25,11 @@ import { KoFiAccountData } from './models/ko-fi-account-data';
 import { KoFiFileSubmission } from './models/ko-fi-file-submission';
 import { KoFiMessageSubmission } from './models/ko-fi-message-submission';
 
+type KoFiSessionData = {
+  kofiAccountId?: string;
+  pageId?: string;
+};
+
 @WebsiteMetadata({
   name: 'ko-fi',
   displayName: 'Ko-fi',
@@ -35,7 +40,7 @@ import { KoFiMessageSubmission } from './models/ko-fi-message-submission';
   acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
 })
 export default class KoFi
-  extends Website<KoFiAccountData>
+  extends Website<KoFiAccountData, KoFiSessionData>
   implements
     FileWebsite<KoFiFileSubmission>,
     MessageWebsite<KoFiMessageSubmission>
