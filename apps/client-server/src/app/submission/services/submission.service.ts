@@ -572,12 +572,26 @@ export class SubmissionService
         if (index > -1) {
           metadata.order[index] = newFile.id;
         }
-
         if (metadata.fileMetadata[oldId]) {
-          metadata.fileMetadata[newFile.id] = metadata.fileMetadata[oldId];
+          metadata.fileMetadata[newFile.id] = {
+            ...metadata.fileMetadata[oldId],
+            dimensions: {
+              ...metadata.fileMetadata[oldId].dimensions,
+              default: {
+                ...metadata.fileMetadata[oldId].dimensions.default,
+                fileId: newFile.id,
+              },
+            },
+          };
           delete metadata.fileMetadata[oldId];
         }
       }
+
+      // Save updated metadata
+      await tx
+        .update(SubmissionSchema)
+        .set({ metadata: newSubmission.metadata })
+        .where(eq(SubmissionSchema.id, newSubmission.id));
     });
 
     this.emit();
