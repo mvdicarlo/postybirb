@@ -3,7 +3,7 @@
  * between the frontend to the electron backend.
  */
 
-import { app, dialog, ipcMain, shell } from 'electron';
+import { app, dialog, ipcMain, session, shell } from 'electron';
 import { environment } from '../../environments/environment';
 
 export default class ElectronEvents {
@@ -18,6 +18,40 @@ ipcMain.handle('get-app-version', () => {
   console.log(`Fetching application version... [v${environment.version}]`);
 
   return environment.version;
+});
+
+// Return cookies for account, bundled as base64
+ipcMain.handle('get-cookies-for-account', async (event, accountId: string) => {
+  const cookies = await session
+    .fromPartition(`persist:${accountId}`)
+    .cookies.get({});
+  if (cookies.length === 0) {
+    return '';
+  }
+  return Buffer.from(JSON.stringify(cookies)).toString('base64');
+});
+
+ipcMain.handle('get-lan-ip', async () => {
+  const os = await import('os');
+  const networkInterfaces = os.networkInterfaces();
+  const addresses: string[] = [];
+
+  for (const interfaceName in networkInterfaces) {
+    if (
+      Object.prototype.hasOwnProperty.call(networkInterfaces, interfaceName)
+    ) {
+      const networkInterface = networkInterfaces[interfaceName];
+      if (networkInterface) {
+        for (const address of networkInterface) {
+          if (address.family === 'IPv4' && !address.internal) {
+            addresses.push(address.address);
+          }
+        }
+      }
+    }
+  }
+
+  return addresses.length > 0 ? addresses[0] : undefined;
 });
 
 ipcMain.handle('pick-directory', async (): Promise<string | undefined> => {

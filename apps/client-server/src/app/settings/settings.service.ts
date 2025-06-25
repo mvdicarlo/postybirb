@@ -181,4 +181,95 @@ export class SettingsService
 
     return this.repository.update(id, updateSettingsDto);
   }
+
+  /**
+   * Tests remote connection to a PostyBirb host.
+   *
+   * @param {string} hostUrl
+   * @param {string} password
+   * @return {Promise<{ success: boolean; message: string }>
+   */
+  async testRemoteConnection(
+    hostUrl: string,
+    password: string,
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      if (!hostUrl || !password) {
+        return {
+          success: false,
+          message: 'Host URL and password are required',
+        };
+      }
+
+      // Clean up the URL
+      const cleanUrl = hostUrl.trim().replace(/\/$/, '');
+      const testUrl = `${cleanUrl}/api/remote/ping/${encodeURIComponent(password)}`;
+
+      this.logger.debug(`Testing remote connection to: ${cleanUrl}`);
+
+      const response = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        // Set a reasonable timeout
+        signal: AbortSignal.timeout(10000), // 10 seconds
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result === true) {
+          return {
+            success: true,
+            message: 'Connection successful! Host is reachable and password is correct.',
+          };
+        }
+      }
+
+      // Handle different HTTP status codes
+      switch (response.status) {
+        case 401:
+          return {
+            success: false,
+            message: 'Authentication failed. Please check your password.',
+          };
+        case 404:
+          return {
+            success: false,
+            message: 'Host not found. Please check the URL.',
+          };
+        case 500:
+          return {
+            success: false,
+            message: 'Host server error. The remote host may not be configured properly.',
+          };
+        default:
+          return {
+            success: false,
+            message: `Connection failed with status ${response.status}`,
+          };
+      }
+    } catch (error) {
+      this.logger.withError(error).error('Remote connection test failed');
+
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return {
+          success: false,
+          message: 'Network error. Please check the host URL and ensure the host is running.',
+        };
+      }
+
+      if (error.name === 'AbortError') {
+        return {
+          success: false,
+          message: 'Connection timeout. The host may be unreachable.',
+        };
+      }
+
+      return {
+        success: false,
+        message: `Connection test failed: ${error.message}`,
+      };
+    }
+  }
 }

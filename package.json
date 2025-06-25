@@ -1,6 +1,6 @@
 {
   "author": {
-    "name": "Michael DiCarlo", 
+    "name": "Michael DiCarlo",
     "email": "postybirb@gmail.com"
   },
   "description": "PostyBirb is a desktop application used for posting to multiple websites from one simple form.",
@@ -23,7 +23,7 @@
     "electron-builder": "electron-builder",
     "dist": "yarn build:prod && electron-builder",
     "dist:win": "yarn build:prod && electron-builder --win",
-    "dist:mac": "yarn build:prod && electron-builder --mac", 
+    "dist:mac": "yarn build:prod && electron-builder --mac",
     "dist:linux": "yarn build:prod && electron-builder --linux",
     "test:client-server": "nx test client-server --codeCoverage=true && rimraf test",
     "test": "nx run-many -t test --parallel",
@@ -199,6 +199,7 @@
     "@types/react-dom": "18.2.9",
     "@types/react-router-dom": "^5.3.3",
     "@types/sanitize-html": "2.9.0",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "6.13.2",
     "@typescript-eslint/parser": "6.13.2",
     "@vitejs/plugin-react": "4.2.0",
@@ -211,7 +212,7 @@
     "dotenv": "10.0.0",
     "drizzle-kit": "^0.30.4",
     "electron": "^32",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "24.8.1",
     "electron-builder-squirrel-windows": "24.13.3",
     "eslint": "8.48.0",
     "eslint-config-airbnb": "^19.0.4",
