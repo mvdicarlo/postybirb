@@ -1,13 +1,13 @@
 import { SelectOption } from '@postybirb/form-builder';
 import {
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  TelegramAccountData,
-  TelegramOAuthRoutes,
+    ILoginState,
+    ImageResizeProps,
+    ISubmissionFile,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    TelegramAccountData,
+    TelegramOAuthRoutes,
 } from '@postybirb/types';
 import { supportsImage } from '@postybirb/utils/file-type';
 import { Api, TelegramClient } from 'telegram';
@@ -46,7 +46,7 @@ import { TelegramMessageSubmission } from './models/telegram-message-submission'
     'audio/mp3',
   ],
   fileBatchSize: 10,
-  acceptedFileSizes: { '*': FileSize.mbToBytes(30) },
+  acceptedFileSizes: { '*': FileSize.megabytes(30) },
 })
 export default class Telegram
   extends Website<TelegramAccountData>
