@@ -73,7 +73,7 @@ export default class Piczel
 
     try {
       const match = res.body.match(
-        /<script type="text\/javascript">window\.__PRELOADED_STATE__ = (.*?)<\/script>/ms,
+        /<script type="text\/javascript">window\.__PRELOADED_STATE__ = (.*?)<\/script>/gmi,
       );
 
       if (!match || !match[1]) {

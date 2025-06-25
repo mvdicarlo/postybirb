@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-    FileSubmissionMetadata,
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    PostData,
-    PostResponse,
-    SimpleValidationResult,
-    SubmissionRating,
+  FileSubmissionMetadata,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  PostData,
+  PostResponse,
+  SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
 import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -27,6 +27,11 @@ import { ItakuAccountData } from './models/itaku-account-data';
 import { ItakuFileSubmission } from './models/itaku-file-submission';
 import { ItakuMessageSubmission } from './models/itaku-message-submission';
 import { ItakuUserInfo } from './models/itaku-user-info';
+
+type ItakuSessionData = {
+  token: string;
+  profile: ItakuUserInfo['profile'];
+};
 
 @WebsiteMetadata({
   name: 'itaku',
@@ -54,7 +59,7 @@ import { ItakuUserInfo } from './models/itaku-user-info';
   url: 'https://itaku.ee/profile/$1',
 })
 export default class Itaku
-  extends Website<ItakuAccountData>
+  extends Website<ItakuAccountData, ItakuSessionData>
   implements
     FileWebsite<ItakuFileSubmission>,
     MessageWebsite<ItakuMessageSubmission>
