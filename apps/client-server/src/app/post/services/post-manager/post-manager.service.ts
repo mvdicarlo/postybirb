@@ -471,6 +471,14 @@ export class PostManagerService {
     // Split files into batches based on instance file batch size
     const batches = chunk(orderedFiles, fileBatchSize);
     let batchIndex = 0;
+    const parent = await this.postRepository.findById(
+      websitePostRecord.postRecordId,
+      undefined,
+      {
+        children: true,
+      },
+    );
+
     for (const batch of batches) {
       batchIndex += 1;
       this.cancelToken.throwIfCancelled();
@@ -482,14 +490,33 @@ export class PostManagerService {
             this.resizeOrModifyFile(submissionFile, submission, instance),
           ),
         )
-      ).map((f) =>
-        f.withMetadata(
+      ).map((f) => {
+        // Find all source urls that are applicable to this file and
+        // add them to the file metadata with user defined source urls
+        // taking priority.
+        const sourceUrlsForFile = [];
+        parent.children.forEach((postRecord) => {
+          if (postRecord.id === websitePostRecord.id) return; // Skip self
+          if (postRecord.metadata.sourceMap[f.id]) {
+            sourceUrlsForFile.push(postRecord.metadata.sourceMap[f.id]);
+          }
+        });
+
+        const fileWithMetadata = f.withMetadata(
           metadata[f.id] ?? {
             ignoredWebsites: [],
             dimensions: null,
+            sourceUrls: [],
           },
-        ),
-      );
+        );
+
+        fileWithMetadata.metadata.sourceUrls = [
+          ...(fileWithMetadata.metadata.sourceUrls ?? []),
+          ...sourceUrlsForFile,
+        ].filter((s) => !!s.trim());
+
+        return fileWithMetadata;
+      });
 
       // Verify files are supported by the website after all processing
       // and potential conversions are completed.

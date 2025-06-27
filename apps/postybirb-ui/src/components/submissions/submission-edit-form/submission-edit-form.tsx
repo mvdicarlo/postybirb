@@ -1,17 +1,5 @@
 import { Trans } from '@lingui/macro';
-import {
-  Box,
-  Flex,
-  Group,
-  Input,
-  Loader,
-  Paper,
-  Stack,
-  Text,
-  Tree,
-  TreeNodeData,
-  useTree,
-} from '@mantine/core';
+import { Flex, Input, Loader, Stack } from '@mantine/core';
 import {
   AccountId,
   FileSubmissionMetadata,
@@ -21,11 +9,6 @@ import {
   SubmissionType,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import {
-  IconAlertTriangle,
-  IconChevronDown,
-  IconExclamationCircle,
-} from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { useCallback, useMemo } from 'react';
 import submissionApi from '../../../api/submission.api';
@@ -37,6 +20,7 @@ import { WebsiteOptionGroupSection } from '../../form/website-option-form/websit
 import { ImplementedWebsiteSelect } from '../../form/website-select/implemented-website-select';
 import { SubmissionScheduler } from '../submission-scheduler/submission-scheduler';
 import { SubmissionFileManager } from './submission-file-manager/submission-file-manager';
+import { SubmissionNavigationTree } from './submission-navigation-tree';
 
 type SubmissionEditFormProps = {
   submission: SubmissionDto;
@@ -49,7 +33,10 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const defaultOption = submission.getDefaultOptions();
   const isSpecialSubmissionType =
     submission.isMultiSubmission || submission.isTemplate;
-  const top = 128;
+
+  const top =
+    document.querySelector('.postybirb__page-header')?.getBoundingClientRect()
+      .height ?? 200;
 
   const optionsGroupedByWebsiteId = useMemo(
     () =>
@@ -87,56 +74,6 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
       }),
     [submission.options, accounts],
   );
-
-  const navTree: TreeNodeData[] = useMemo(
-    () => [
-      {
-        value: defaultOption.id,
-        label: <Trans>Default</Trans>,
-      },
-      ...optionsGroupedByWebsiteId.map(([, group]) => {
-        const { account } = group;
-        return {
-          value: account.id,
-          label: (
-            <Text fw={600}>
-              {account.websiteInfo.websiteDisplayName ?? <Trans>Unknown</Trans>}
-            </Text>
-          ),
-          children: group.options.map((o) => {
-            const validation = submission.validations.find(
-              (v) => v.id === o.id,
-            );
-            const hasErrors = !!validation?.errors?.length;
-            const hasWarnings = !!validation?.warnings?.length;
-            return {
-              label: (
-                <Group gap="xs" wrap="nowrap">
-                  {hasErrors ? (
-                    <IconExclamationCircle size="1rem" color="red" />
-                  ) : hasWarnings ? (
-                    <IconAlertTriangle size="1rem" color="orange" />
-                  ) : null}
-                  <Text size="sm" truncate>
-                    {account.name}
-                  </Text>
-                </Group>
-              ),
-              value: o.id,
-            };
-          }),
-        };
-      }),
-    ],
-    [defaultOption.id, optionsGroupedByWebsiteId, submission.validations],
-  );
-
-  const tree = useTree({
-    initialExpandedState: navTree.reduce(
-      (acc, node) => ({ ...acc, [node.value]: true }),
-      {},
-    ),
-  });
 
   const removeAccount = (account: IAccountDto) => {
     const optionToDelete = submission.options
@@ -203,77 +140,12 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
           />
         ))}
       </Stack>
-      <Box pos="sticky" top={top} h="fit-content" style={{ width: '200px' }}>
-        <Paper withBorder m="md" p="md" shadow="sm">
-          <Stack gap="xs">
-            <Text fw={700} ta="center">
-              <Trans>Sections</Trans>
-            </Text>
-            <Tree
-              tree={tree}
-              data={navTree}
-              selectOnClick
-              // style={{ maxHeight: 'calc(100vh - 180px)', overflow: 'auto' }}
-              renderNode={({
-                node,
-                expanded,
-                hasChildren,
-                elementProps,
-                level,
-              }) => (
-                <Group
-                  gap={5}
-                  {...elementProps}
-                  style={{
-                    ...elementProps.style,
-                    // eslint-disable-next-line lingui/no-unlocalized-strings
-                    padding: '6px 8px',
-                    borderRadius: '4px',
-                    marginLeft: level > 1 ? `${level * 6}px` : 0,
-                    '&[data-selected="true"]': {
-                      backgroundColor: 'var(--mantine-color-blue-1)',
-                      fontWeight: 500,
-                    },
-                  }}
-                >
-                  {hasChildren && (
-                    <IconChevronDown
-                      size={18}
-                      style={{
-                        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                        // eslint-disable-next-line lingui/no-unlocalized-strings
-                        transition: 'transform 200ms ease',
-                      }}
-                    />
-                  )}
-
-                  {!hasChildren && level > 0 && (
-                    <Box w={18} /> // Empty space for alignment when no chevron
-                  )}
-
-                  <Box
-                    component="span"
-                    style={{ cursor: hasChildren ? 'default' : 'pointer' }}
-                    onClick={(e) => {
-                      if (!hasChildren) {
-                        e.stopPropagation();
-                        const el = document.getElementById(node.value);
-                        el?.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                          inline: 'nearest',
-                        });
-                      }
-                    }}
-                  >
-                    {node.label}
-                  </Box>
-                </Group>
-              )}
-            />
-          </Stack>
-        </Paper>
-      </Box>
+      <SubmissionNavigationTree
+        submission={submission}
+        defaultOption={defaultOption}
+        optionsGroupedByWebsiteId={optionsGroupedByWebsiteId}
+        top={top}
+      />
     </Flex>
   );
 }

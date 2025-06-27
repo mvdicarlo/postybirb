@@ -12,6 +12,13 @@ export class RemotePasswordMiddleware implements NestMiddleware {
 
   async use(req: Request, res: Response, next: NextFunction) {
     try {
+      if (req.baseUrl.startsWith('/api/file/')) {
+        // Skip authentication for file API routes
+        // This is mostly just to avoid nuisance password injection into query params
+        next();
+        return;
+      }
+
       const remotePassword = req.headers['x-remote-password'] as string;
 
       if (!remotePassword) {

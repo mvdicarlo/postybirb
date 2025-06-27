@@ -225,6 +225,7 @@ describe('SubmissionService', () => {
               },
             },
             ignoredWebsites: [],
+            sourceUrls: [],
           },
         },
         order: [file.id],

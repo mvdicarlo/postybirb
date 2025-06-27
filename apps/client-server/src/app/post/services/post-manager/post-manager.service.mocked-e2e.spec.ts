@@ -180,6 +180,7 @@ describe('PostManagerServiceMocks', () => {
       spoilerText: 'Test Spoiler Text',
       ignoredWebsites: [],
       dimensions: {},
+      sourceUrls: [],
     };
 
     submission.files.push(file);
