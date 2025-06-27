@@ -223,6 +223,11 @@ export function EditSubmissionPage() {
     return <Loader />;
   }
 
+  const title = submission.isTemplate
+    ? // eslint-disable-next-line lingui/no-unlocalized-strings
+      (submission.metadata.template?.name ?? submission.id)
+    : (defaultOption.data.title ?? submission.id);
+
   return (
     <>
       <PageHeader
@@ -244,7 +249,7 @@ export function EditSubmissionPage() {
             : []
         }
         icon={isFile ? <IconFile /> : <IconMessage />}
-        title={defaultOption.data.title ?? submission.id}
+        title={title}
         breadcrumbs={[
           {
             text: isFile ? (

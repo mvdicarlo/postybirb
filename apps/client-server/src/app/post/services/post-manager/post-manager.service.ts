@@ -14,6 +14,7 @@ import {
   PostData,
   PostRecordResumeMode,
   PostRecordState,
+
   PostResponse,
   ScheduleType,
   SubmissionId,
@@ -606,7 +607,6 @@ export class PostManagerService {
 
       // User defined dimensions
       const userDefinedDimensions =
-        // NOTE: Currently the only place dimensions are set are in 'default'.
         // eslint-disable-next-line @typescript-eslint/dot-notation
         fileMetadata?.dimensions['default'] ??
         fileMetadata?.dimensions[instance.accountId];
