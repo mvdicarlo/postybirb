@@ -23,7 +23,7 @@ import {
   PDF_MIME_TYPE,
 } from '@mantine/dropzone';
 import { notifications } from '@mantine/notifications';
-import { FileType, SubmissionType } from '@postybirb/types';
+import { FileType, SubmissionId, SubmissionType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import {
   IconCheck,
@@ -42,6 +42,7 @@ import { useState } from 'react';
 import fileSubmissionApi from '../../../api/file-submission.api';
 import submissionApi from '../../../api/submission.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import TemplatePicker from '../../submission-templates/template-picker/template-picker';
 import { EditImageModal } from './edit-image-modal';
 import './submission-uploader.css';
 
@@ -64,19 +65,37 @@ async function uploadFiles({
   files,
   onComplete,
   appendToSubmission,
+  templateId,
 }: {
   files: File[];
   onComplete: () => void;
+  templateId?: SubmissionId;
 } & SubmissionUploaderProps) {
   const snapshot = [...files];
+  let submissionIds: SubmissionId[] = [];
+  
   if (appendToSubmission && appendToSubmission.type === SubmissionType.FILE) {
     await fileSubmissionApi.appendFiles(
       appendToSubmission.id,
       'file',
       snapshot,
     );
+  } else {
+    // Create file submissions and get their IDs
+    const response = await submissionApi.createFileSubmission(SubmissionType.FILE, snapshot);
+    const createdSubmissions = response.body as SubmissionDto[];
+    submissionIds = createdSubmissions.map((submission: SubmissionDto) => submission.id);
+    
+    // Apply template to each created submission if templateId is provided
+    if (templateId && submissionIds.length > 0) {
+      await Promise.all(
+        submissionIds.map((submissionId) =>
+          submissionApi.applyTemplate(submissionId, templateId)
+        )
+      );
+    }
   }
-  await submissionApi.createFileSubmission(SubmissionType.FILE, snapshot);
+  
   onComplete();
 }
 
@@ -176,9 +195,11 @@ function UploadButton({
   files,
   onComplete,
   appendToSubmission,
+  templateId,
 }: {
   files: FileWithPath[];
   onComplete: () => void;
+  templateId?: SubmissionId;
 } & SubmissionUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -210,6 +231,7 @@ function UploadButton({
           }, 500);
         },
         appendToSubmission,
+        templateId,
       });
 
       notifications.show({
@@ -266,6 +288,7 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
   const { appendToSubmission } = props;
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [cropFile, setCropFile] = useState<FileWithPath | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<SubmissionDto | undefined>();
 
   const onDelete = (file: FileWithPath) => {
     const index = files.findIndex((f) => f.name === file.name);
@@ -408,9 +431,19 @@ export function SubmissionUploader(props: SubmissionUploaderProps) {
                 </Flex>
               </Dropzone>
 
+              <Box mb="md">
+                <TemplatePicker
+                  type={SubmissionType.FILE}
+                  selected={selectedTemplate?.id}
+                  label={<Trans>Apply template to uploaded files (optional)</Trans>}
+                  onChange={setSelectedTemplate}
+                />
+              </Box>
+
               <UploadButton
                 appendToSubmission={appendToSubmission}
                 files={files}
+                templateId={selectedTemplate?.id}
                 onComplete={() => setFiles([])}
               />
             </Box>

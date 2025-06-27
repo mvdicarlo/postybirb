@@ -129,4 +129,16 @@ export class SubmissionController extends PostyBirbController<'SubmissionSchema'
   async applyMulti(@Body() applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
     return this.service.applyMultiSubmission(applyMultiSubmissionDto);
   }
+
+  @Patch('apply/template/:id/:templateId')
+  @ApiOkResponse({ description: 'Template applied to submission.' })
+  @ApiNotFoundResponse({ description: 'Submission Id or Template Id not found.' })
+  async applyTemplate(
+    @Param('id') id: SubmissionId,
+    @Param('templateId') templateId: SubmissionId,
+  ) {
+    return this.service
+      .applyOverridingTemplate(id, templateId)
+      .then((entity) => entity.toDTO());
+  }
 }

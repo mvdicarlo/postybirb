@@ -223,6 +223,11 @@ export function EditSubmissionPage() {
     return <Loader />;
   }
 
+  const title = submission.isTemplate
+    ? // eslint-disable-next-line lingui/no-unlocalized-strings
+      (submission.metadata.template?.name ?? submission.id)
+    : (defaultOption.data.title ?? submission.id);
+
   return (
     <>
       <PageHeader
@@ -241,10 +246,10 @@ export function EditSubmissionPage() {
                   icon: <IconLogs />,
                 },
               ]
-            : []
+            : undefined
         }
         icon={isFile ? <IconFile /> : <IconMessage />}
-        title={defaultOption.data.title ?? submission.id}
+        title={title}
         breadcrumbs={[
           {
             text: isFile ? (
@@ -254,7 +259,7 @@ export function EditSubmissionPage() {
             ),
             target: isFile ? FileSubmissionPath : MessageSubmissionPath,
           },
-          { text: defaultOption.data.title ?? submission.id, target: '#' },
+          { text: title ?? submission.id, target: '#' },
         ]}
         actions={[
           <ScheduleAction submission={submission} key="schedule-action" />,
