@@ -50,6 +50,10 @@ class SubmissionsApi extends BaseApi<
     return this.client.patch('apply/multi', dto);
   }
 
+  applyTemplate(id: SubmissionId, templateId: SubmissionId) {
+    return this.client.patch(`apply/template/${id}/${templateId}`);
+  }
+
   unarchive(id: SubmissionId) {
     return this.client.post(`unarchive/${id}`);
   }
