@@ -5,7 +5,7 @@ const config: LinguiConfig = {
   formatOptions: { lineNumbers: false },
   catalogs: [
     {
-      include: ['apps/postybirb-ui/src', 'libs/translations/src'],
+      include: ['apps/postybirb-ui/src/', 'libs/translations/src/'],
       path: 'lang/{locale}',
     },
   ],
