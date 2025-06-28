@@ -1677,11 +1677,6 @@ msgstr ""
 msgid "Save to file"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
-msgctxt "schedule.modal-header"
-msgid "Schedule"
-msgstr ""
-
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
@@ -1689,6 +1684,11 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/schedule-submissions-action.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx
+msgid "Schedule"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
+msgctxt "schedule.modal-header"
 msgid "Schedule"
 msgstr ""
 
