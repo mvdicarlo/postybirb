@@ -138,7 +138,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/description-settings.tsx
 msgid "Allow PostyBirb to insert an Ad into the description"
-msgstr "Вставлять рекламу PostyBirb в описания постов"
+msgstr "Вставлять рекламу PostyBirb в конце описаний постов"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Allow reblogging"
@@ -155,7 +155,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "An error occurred during upload"
-msgstr ""
+msgstr "Во время загрузки произошла ошибка"
 
 #: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
 msgid "An unexpected error occurred"
@@ -171,7 +171,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
 msgid "App"
-msgstr ""
+msgstr "Приложение"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "App Folder"
@@ -195,7 +195,7 @@ msgstr "Применить шаблон"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Apply template to uploaded files (optional)"
-msgstr ""
+msgstr "Применить шаблон к загружаемым файлам (опционально)"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Apply to Submissions"
@@ -635,7 +635,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/notifications-settings.tsx
 msgid "Desktop Notifications"
-msgstr ""
+msgstr "Уведомления на рабочем столе"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-dimensions.tsx
 msgid "Dimensions"
@@ -711,7 +711,7 @@ msgstr "Редактировать много"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/notifications-settings.tsx
 msgid "Enable desktop notifications"
-msgstr ""
+msgstr "Включить уведомления на рабочем столе"
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "English"
@@ -884,7 +884,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Files to upload ({0})"
-msgstr ""
+msgstr "Файлы для загрузки ({0})"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Fix validation issues"
@@ -960,7 +960,7 @@ msgstr ""
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 msgid "History"
-msgstr ""
+msgstr "История"
 
 #: apps/postybirb-ui/src/pages/home/home-page.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
@@ -1062,7 +1062,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 msgid "Last modified:"
-msgstr ""
+msgstr "Последнее изменение:"
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "Lithuanian"
@@ -1196,7 +1196,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "No history available"
-msgstr ""
+msgstr "Нет истории"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-login-panel/website-login-panel.tsx
 msgid "No login component found."
@@ -1204,7 +1204,7 @@ msgstr "Не найдено компонента входа."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "No notifications found"
-msgstr ""
+msgstr "Уведомлений не найдено"
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "No Recent Posts"
@@ -1220,7 +1220,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view.tsx
 msgid "No submissions available. Upload some files to get started!"
-msgstr ""
+msgstr "Нет постов. Загрузите файлы чтобы начать!"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "No submissions in queue or scheduled"
@@ -1308,7 +1308,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Уведомления"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Notify followers"
@@ -1344,7 +1344,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "Open PostyBirb on computer startup"
-msgstr "Открыть PostyBirb при запуске компьютера"
+msgstr "Открывать PostyBirb при запуске компьютера"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "options"
@@ -1722,7 +1722,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Search notifications..."
-msgstr ""
+msgstr "Искать уведомления..."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Search tag converters..."
@@ -1775,7 +1775,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Select which notifications to delete:"
-msgstr ""
+msgstr "Выберите, какие уведомления удалить:"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "Select which template to use for each account"
@@ -2030,7 +2030,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Supports either a set of images, a single video, or a single GIF."
-msgstr "Поддерживается только пост из нескольких изображений, одного видео или одного GIF"
+msgstr "Поддерживается только пост из нескольких изображений, одного видео или одного GIF."
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Supports images, videos, audio, and text files up to 100MB"
@@ -2339,7 +2339,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Upload complete"
-msgstr ""
+msgstr "Загрузка завершена"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Upload custom thumbnail"
@@ -2347,11 +2347,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Upload failed"
-msgstr ""
+msgstr "Загрузка не удалась"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Uploading..."
-msgstr ""
+msgstr "Загрузка..."
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "URL"
