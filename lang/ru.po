@@ -1,15 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: \n"
-"Language: \n"
-"Language-Team: \n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: \n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-07-04 12:01+0000\nLast-Translator: Leaftail <minec118@outlook.com>\nLanguage-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\nLanguage: ru\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\nX-Generator: Weblate 5.13-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -70,11 +60,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Add"
-msgstr ""
+msgstr "Добавить"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Add Account"
-msgstr ""
+msgstr "Добавить аккаунт"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-manager.tsx
 msgid "Add files to your submission using the uploader below"
@@ -682,11 +672,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Drop files here or click to add more"
-msgstr ""
+msgstr "Перетащите файлы сюда или нажмите чтобы добавить больше"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Drop files here or click to browse"
-msgstr ""
+msgstr "Перетащите файлы сюда или нажмите чтобы просмотреть"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Duplicate"
