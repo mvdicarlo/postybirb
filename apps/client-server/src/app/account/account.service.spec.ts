@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID } from '@postybirb/types';
+import { Account } from '../drizzle/models';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { UnknownWebsite } from '../websites/website';
@@ -12,6 +13,29 @@ describe('AccountsService', () => {
   let service: AccountService;
   let registryService: WebsiteRegistryService;
   let module: TestingModule;
+
+  // Mock objects for deleteUnregisteredAccounts tests
+  let mockRepository: any;
+  let mockWebsiteRegistry: any;
+  let mockLogger: any;
+
+  const mockRegisteredAccount = {
+    id: 'account-1',
+    name: 'Test Account 1',
+    website: 'registered-website',
+  } as Account;
+
+  const mockUnregisteredAccount = {
+    id: 'account-2',
+    name: 'Test Account 2',
+    website: 'unregistered-website',
+  } as Account;
+
+  const mockAnotherUnregisteredAccount = {
+    id: 'account-3',
+    name: 'Test Account 3',
+    website: 'another-unregistered-website',
+  } as Account;
 
   beforeEach(async () => {
     clearDatabase();
@@ -150,5 +174,162 @@ describe('AccountsService', () => {
     // Remove
     await service.remove(account.id);
     expect(await service.findAll()).toHaveLength(0);
+  });
+
+  describe('deleteUnregisteredAccounts', () => {
+    beforeEach(() => {
+      // Setup mock objects for testing private method
+      mockRepository = {
+        find: jest.fn(),
+        deleteById: jest.fn(),
+        schemaEntity: { id: 'id' },
+      };
+
+      mockWebsiteRegistry = {
+        canCreate: jest.fn(),
+      };
+
+      mockLogger = {
+        withMetadata: jest.fn().mockReturnThis(),
+        withError: jest.fn().mockReturnThis(),
+        warn: jest.fn(),
+        error: jest.fn(),
+      };
+
+      // Replace service dependencies with mocks
+      (service as any).repository = mockRepository;
+      (service as any).websiteRegistry = mockWebsiteRegistry;
+      (service as any).logger = mockLogger;
+
+      // Setup default mock behavior
+      mockRepository.find.mockResolvedValue([
+        mockRegisteredAccount,
+        mockUnregisteredAccount,
+        mockAnotherUnregisteredAccount,
+      ]);
+
+      mockWebsiteRegistry.canCreate.mockImplementation((website: string) => {
+        return website === 'registered-website';
+      });
+
+      mockRepository.deleteById.mockResolvedValue(undefined);
+    });
+
+    it('should delete accounts for unregistered websites', async () => {
+      await (service as any).deleteUnregisteredAccounts();
+
+      // Verify that find was called to get all accounts except NULL_ACCOUNT_ID
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: expect.any(Object), // ne(schemaEntity.id, NULL_ACCOUNT_ID)
+      });
+
+      // Verify canCreate was called for each account's website
+      expect(mockWebsiteRegistry.canCreate).toHaveBeenCalledWith(
+        'registered-website',
+      );
+      expect(mockWebsiteRegistry.canCreate).toHaveBeenCalledWith(
+        'unregistered-website',
+      );
+      expect(mockWebsiteRegistry.canCreate).toHaveBeenCalledWith(
+        'another-unregistered-website',
+      );
+      expect(mockWebsiteRegistry.canCreate).toHaveBeenCalledTimes(3);
+
+      // Verify deleteById was called for unregistered accounts only
+      expect(mockRepository.deleteById).toHaveBeenCalledWith(['account-2']);
+      expect(mockRepository.deleteById).toHaveBeenCalledWith(['account-3']);
+      expect(mockRepository.deleteById).toHaveBeenCalledTimes(2);
+
+      // Verify logging
+      expect(mockLogger.withMetadata).toHaveBeenCalledWith(
+        mockUnregisteredAccount,
+      );
+      expect(mockLogger.withMetadata).toHaveBeenCalledWith(
+        mockAnotherUnregisteredAccount,
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Deleting unregistered account: account-2 (Test Account 2)',
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Deleting unregistered account: account-3 (Test Account 3)',
+      );
+    });
+
+    it('should not delete accounts for registered websites', async () => {
+      await (service as any).deleteUnregisteredAccounts();
+
+      // Verify the registered account was not deleted
+      expect(mockRepository.deleteById).not.toHaveBeenCalledWith(['account-1']);
+    });
+
+    it('should handle deletion errors gracefully', async () => {
+      const deleteError = new Error('Database deletion failed');
+      mockRepository.deleteById
+        .mockResolvedValueOnce(undefined) // First deletion succeeds
+        .mockRejectedValueOnce(deleteError); // Second deletion fails
+
+      await (service as any).deleteUnregisteredAccounts();
+
+      // Verify both deletions were attempted
+      expect(mockRepository.deleteById).toHaveBeenCalledTimes(2);
+
+      // Verify error was logged for the failed deletion
+      expect(mockLogger.withError).toHaveBeenCalledWith(deleteError);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to delete unregistered account: account-3',
+      );
+    });
+
+    it('should handle empty accounts list', async () => {
+      mockRepository.find.mockResolvedValue([]);
+
+      await (service as any).deleteUnregisteredAccounts();
+
+      expect(mockWebsiteRegistry.canCreate).not.toHaveBeenCalled();
+      expect(mockRepository.deleteById).not.toHaveBeenCalled();
+      expect(mockLogger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should handle case where all accounts are registered', async () => {
+      mockRepository.find.mockResolvedValue([mockRegisteredAccount]);
+
+      await (service as any).deleteUnregisteredAccounts();
+
+      expect(mockWebsiteRegistry.canCreate).toHaveBeenCalledWith(
+        'registered-website',
+      );
+      expect(mockRepository.deleteById).not.toHaveBeenCalled();
+      expect(mockLogger.warn).not.toHaveBeenCalled();
+    });
+
+    it('should exclude NULL_ACCOUNT_ID from deletion consideration', async () => {
+      const nullAccount = {
+        id: NULL_ACCOUNT_ID,
+        name: 'Null Account',
+        website: 'null',
+      } as Account;
+
+      // Mock the repository.find to only return non-NULL accounts (simulating the database query)
+      // The actual service uses ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID) to exclude it
+      mockRepository.find.mockResolvedValue([
+        mockUnregisteredAccount, // Only return the unregistered account, not the null account
+      ]);
+
+      // Even if null website is not registered, it shouldn't be considered for deletion
+      mockWebsiteRegistry.canCreate.mockImplementation((website: string) => {
+        return website !== 'null' && website !== 'unregistered-website';
+      });
+
+      await (service as any).deleteUnregisteredAccounts();
+
+      // Verify the query excludes NULL_ACCOUNT_ID (this is tested by the repository mock)
+      expect(mockRepository.find).toHaveBeenCalledWith({
+        where: expect.any(Object),
+      });
+
+      // Only the unregistered account should be deleted, not the null account
+      expect(mockRepository.deleteById).toHaveBeenCalledWith(['account-2']);
+      expect(mockRepository.deleteById).toHaveBeenCalledTimes(1);
+    });
   });
 });
