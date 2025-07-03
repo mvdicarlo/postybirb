@@ -44,7 +44,7 @@ interface HttpOptions {
   partition: string | undefined;
 }
 
-interface PostOptions extends HttpOptions {
+export interface PostOptions extends HttpOptions {
   type: 'multipart' | 'json' | 'urlencoded';
   data: Record<string, unknown>;
 }

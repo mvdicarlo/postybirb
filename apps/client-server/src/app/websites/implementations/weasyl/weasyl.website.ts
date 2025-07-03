@@ -1,19 +1,19 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-    DynamicObject,
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
+import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
-import HtmlParserUtil from '../../../utils/html-parser.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -186,7 +186,6 @@ export default class Weasyl
     batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
     const fileType = getFileTypeFromMimeType(files[0].mimeType);
     const contentType = this.getContentType(fileType);
     const url = `${this.BASE_URL}/submit/${contentType}`;
@@ -201,59 +200,55 @@ export default class Weasyl
       folder,
       category,
     } = postData.options;
-    const formData: DynamicObject = {
-      title,
-      rating: this.convertRating(rating),
-      content: this.modifyDescription(description),
-      tags: tags.join(' '),
-      submitfile: files[0].toPostFormat(),
-      thumbfile: files[0].thumbnailToPostFormat(),
-      nonotification: notify ? undefined : 'on',
-      critique: critique ? 'on ' : undefined,
-      folderid: folder || '',
-      subtype: category || '',
-    };
 
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .withHeader('Referer', url)
+      .withHeader('Origin', 'https://www.weasyl.com')
+      .setField('title', title)
+      .setField('rating', this.convertRating(rating))
+      .setField('content', this.modifyDescription(description))
+      .setField('tags', tags.join(' '))
+      .addFile('submitfile', files[0])
+      .setConditional('nonotification', !notify, 'on')
+      .setConditional('critique', critique, 'on')
+      .setField('folderid', folder || '')
+      .setField('subtype', category || '')
+      .addThumbnail('thumbfile', files[0]);
+
+    // For text, video, and audio files, add cover file
     if (
       fileType === FileType.TEXT ||
       fileType === FileType.VIDEO ||
       fileType === FileType.AUDIO
     ) {
-      formData.coverfile = formData.thumbfile ? formData.thumbfile : '';
+      builder.addThumbnail('coverfile', files[0]);
     }
 
-    cancellationToken.throwIfCancelled();
-    let result = await Http.post<string>(url, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-      headers: {
-        Referer: url,
-        Origin: 'https://www.weasyl.com',
-      },
-    });
+    let result = await builder.send<string>(url);
+    const { body } = result;
 
     if (result.body.includes('manage_thumbnail')) {
-      result = await Http.post<string>(`${this.BASE_URL}/manage/thumbnail`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: {
-          x1: '0',
-          x2: '0',
-          y1: '0',
-          y2: '0',
-          thumbfile: '',
-          submitid: HtmlParserUtil.getInputValue(result.body, 'submitid'),
-        },
-        headers: {
-          Referer: url,
-          Origin: 'https://www.weasyl.com',
-          // Host: 'www.weasyl.com',
-        },
-      });
-    }
+      const html = parse(result.body);
+      const submitId = html.querySelector('input[name="submitid"]');
+      if (!submitId) {
+        throw new Error('Failed to find submitid');
+      }
+      const thumbnailBuilder = new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .withHeader('Referer', url)
+        .withHeader('Origin', 'https://www.weasyl.com')
+        .setField('x1', '0')
+        .setField('x2', '0')
+        .setField('y1', '0')
+        .setField('y2', '0')
+        .setField('thumbfile', '')
+        .setField('submitid', submitId.getAttribute('value') || '');
 
-    const { body } = result;
+      result = await thumbnailBuilder.send<string>(
+        `${this.BASE_URL}/manage/thumbnail`,
+      );
+    }
 
     if (
       body.includes(
@@ -306,37 +301,27 @@ export default class Weasyl
     postData: PostData<WeasylMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
     const url = `${this.BASE_URL}/submit/journal`;
     const submissionPage = await Http.get<string>(url, {
       partition: this.accountId,
     });
     PostResponse.validateBody(this, submissionPage);
+
     const { description, title, rating, tags } = postData.options;
-    const formData = {
-      title,
-      rating: this.convertRating(rating),
-      content: this.modifyDescription(description),
-      tags: tags.join(' '),
-    };
 
-    cancellationToken.throwIfCancelled();
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-      headers: {
-        Referer: url,
-        Origin: 'https://www.weasyl.com',
-        Host: 'www.weasyl.com',
-      },
-    });
-
-    PostResponse.validateBody(this, result);
+    const result = await new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .withHeader('Referer', url)
+      .withHeader('Origin', 'https://www.weasyl.com')
+      .withHeader('Host', 'www.weasyl.com')
+      .setField('title', title)
+      .setField('rating', this.convertRating(rating))
+      .setField('content', this.modifyDescription(description))
+      .setField('tags', tags.join(' '))
+      .send<string>(`${this.BASE_URL}/submit`);
 
     return PostResponse.fromWebsite(this).withAdditionalInfo({
-      body: result.body,
-      statusCode: result.statusCode,
+      body: result,
     });
   }
 
