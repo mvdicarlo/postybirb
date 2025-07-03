@@ -14,5 +14,5 @@ export function getVerticalScrollbarOffset() {
   if (!element) {
     return 0;
   }
-  return element?.scrollHeight > element?.clientHeight ? 16 : 0;
+  return element?.scrollHeight > element?.clientHeight ? 10 : 0;
 }
