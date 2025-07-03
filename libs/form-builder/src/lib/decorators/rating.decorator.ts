@@ -5,7 +5,7 @@ import { createFieldDecorator } from '../utils/assign-metadata';
 
 export type RatingOption = {
   label: string;
-  value: SubmissionRating | undefined;
+  value: SubmissionRating | string | undefined;
 };
 
 type ExtraOptions = {
