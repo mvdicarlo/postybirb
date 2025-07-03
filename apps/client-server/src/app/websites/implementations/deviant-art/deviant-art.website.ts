@@ -37,7 +37,7 @@ interface DeviantArtFolder {
 
 @WebsiteMetadata({
   name: 'deviant-art',
-  displayName: 'deviant-art',
+  displayName: 'DeviantArt',
 })
 @UserLoginFlow('https://www.deviantart.com/users/login')
 @SupportsUsernameShortcut({
