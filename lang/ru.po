@@ -672,11 +672,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Drop files here or click to add more"
-msgstr "Перетащите файлы сюда или нажмите чтобы добавить больше"
+msgstr "Перетащите файлы сюда или нажмите чтобы добавить еще"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Drop files here or click to browse"
-msgstr "Перетащите файлы сюда или нажмите чтобы просмотреть"
+msgstr "Перетащите файлы сюда или нажмите чтобы выбрать"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Duplicate"
@@ -2030,11 +2030,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Supports either a set of images, a single video, or a single GIF."
-msgstr ""
+msgstr "Поддерживается только пост из нескольких изображений, одного видео или одного GIF"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Supports images, videos, audio, and text files up to 100MB"
-msgstr ""
+msgstr "Поддерживает изображения, видео, аудио и текстовые файлы до 100мб"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/theme-picker.tsx
 msgid "Switch to dark mode"
