@@ -159,4 +159,35 @@ export interface ValidationMessages {
   'validation.file.bluesky.invalid-reply-url': object;
 
   'validation.file.bluesky.rating-matches-default': object;
+
+  'validation.file.e621.tags.network-error': object;
+
+  'validation.file.e621.tags.recommended': {
+    generalTags: number;
+  };
+
+  'validation.file.e621.tags.missing': {
+    tag: string;
+  };
+
+  'validation.file.e621.tags.missing-create': {
+    tag: string;
+  };
+
+  'validation.file.e621.tags.invalid': {
+    tag: string;
+  };
+
+  'validation.file.e621.tags.low-use': {
+    tag: string;
+    postCount: number;
+  };
+
+  'validation.file.e621.user-feedback.network-error': object;
+
+  'validation.file.e621.user-feedback.recent': {
+    negativeOrNeutral: string;
+    feedback: string;
+    username: string;
+  };
 }
