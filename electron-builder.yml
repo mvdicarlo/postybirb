@@ -16,6 +16,18 @@ directories:
 compression: maximum
 removePackageScripts: true
 
+# Specify which files should be unpacked from asar
+asarUnpack:
+  - "node_modules/sharp/**/*"
+  - "node_modules/better-sqlite3/**/*"
+  - "node_modules/sqlite3/**/*" 
+  - "node_modules/@img/**/*"
+  - "node_modules/bufferutil/**/*"
+  - "node_modules/utf-8-validate/**/*"
+  - "**/*.node"
+  - "**/*.dylib"
+  - "**/*.so"
+
 mac:
   category: public.app-category.productivity
   entitlements: packaging-resources/entitlements.mac.plist
@@ -24,6 +36,8 @@ mac:
   type: distribution
   icon: icons/icon.icns
   gatekeeperAssess: false
+  # This ensures all binaries including native modules are signed
+  signIgnore: []
   target:
     - target: dmg
       arch:
