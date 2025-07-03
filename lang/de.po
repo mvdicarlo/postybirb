@@ -9,12 +9,40 @@ msgstr ""
 msgid "{0, plural, one {website} other {websites}}"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx:50
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx:57
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+msgid "{0} tags copied to clipboard"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+msgid "{0} tags imported from clipboard"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "2FA enabled, password required. It won't be stored."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
+msgid "Account"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "Account data updated"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
+msgid "Account Name"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
+msgid "Account Options"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Accounts"
 msgstr "Konten"
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:83
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Action"
 msgstr "Aktion"
 
@@ -145,7 +173,32 @@ msgstr ""
 msgid "Alt Text"
 msgstr ""
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
+#. Bluesky login form
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "An <0>app</0> password - you can get one of these in<1><2>Settings</2></1>"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "An error occurred during upload"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
+msgid "An unexpected error occurred"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "API Key"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
+msgid "API Key is required"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
+msgid "App"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "App Folder"
 msgstr "App-Ordner"
 
@@ -303,9 +356,9 @@ msgctxt "template.picker-modal-header"
 msgid "Choose Templates"
 msgstr "Vorlagen auswählen"
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx:25
-msgid "Choose websites"
-msgstr "Websites auswählen"
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Choose when to post this submission"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
@@ -315,7 +368,103 @@ msgstr "Websites auswählen"
 msgid "Clear"
 msgstr "Leeren"
 
-#: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx:10
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
+msgid "Clear Account"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Clear all"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
+msgid "Clear All ({0})"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
+msgid "Clear Filtered ({0})"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Clear search"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
+msgid "Click to select folder"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
+msgid "Client Mode"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
+msgid "Close"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "Cloud Password"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "Code"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "Code invalid, ensure it matches the code sent from telegram"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgid "Code sent"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Common Schedules"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Compact"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
+msgid "Confirm Cancellation"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
+msgid "Confirm Unschedule"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
+msgid "Connect to another PostyBirb instance as a remote client"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
+msgid "Connection Information"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Contains content"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Content warning"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Conversion"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx
+msgid "Converted:"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Converter details copied to clipboard"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
+#: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Copied"
 msgstr "Kopiert"
 
@@ -455,7 +604,12 @@ msgstr ""
 msgid "Create Message Submission"
 msgstr ""
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx:54
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Create New"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Create new submission"
 msgstr "Neue Einreichung erstellen"
 
@@ -475,9 +629,10 @@ msgstr "Neue Schlagwortgruppe erstellen"
 msgid "Create Submission Template"
 msgstr "Einreichungsvorlage erstellen"
 
-#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx:85
-msgid "CRON Format"
-msgstr "CRON-Format"
+#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
+msgctxt "telegram.app-id-help"
+msgid "Create telegram app to retrieve api_id and api_hash <0/>"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Creative Commons license"
@@ -553,7 +708,25 @@ msgstr ""
 msgid "Delete"
 msgstr "Löschen"
 
-#: apps/postybirb-ui/src/external-translations.ts:5
+#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
+msgid "Delete failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
+#: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
+msgid "Delete item"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Delete Submission"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
+msgid "Delete this file?"
+msgstr ""
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
+#: libs/translations/src/lib/field-translations.ts
 msgid "Description"
 msgstr "Beschreibung"
 

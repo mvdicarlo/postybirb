@@ -54,6 +54,7 @@ export class AccountService
    */
   async onModuleInit() {
     await this.populateNullAccount();
+    await this.deleteUnregisteredAccounts();
     await this.initWebsiteRegistry();
     this.initWebsiteLoginRefreshTimers();
 
@@ -62,6 +63,30 @@ export class AccountService
     Object.keys(this.loginRefreshTimers).forEach((interval) =>
       this.executeOnLoginForInterval(interval),
     );
+  }
+
+  private async deleteUnregisteredAccounts() {
+    const accounts = await this.repository.find({
+      where: ne(this.repository.schemaEntity.id, NULL_ACCOUNT_ID),
+    });
+    const unregisteredAccounts = accounts.filter(
+      (account) => !this.websiteRegistry.canCreate(account.website),
+    );
+    for (const account of unregisteredAccounts) {
+      try {
+        this.logger
+          .withMetadata(account)
+          .warn(
+            `Deleting unregistered account: ${account.id} (${account.name})`,
+          );
+        await this.repository.deleteById([account.id]);
+      } catch (err) {
+        this.logger
+          .withError(err)
+          .withMetadata(account)
+          .error(`Failed to delete unregistered account: ${account.id}`);
+      }
+    }
   }
 
   /**
