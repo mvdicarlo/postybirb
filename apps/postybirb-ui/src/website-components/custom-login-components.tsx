@@ -1,6 +1,7 @@
 import { CustomLoginComponentProvider } from '../models/custom-login-component-provider';
 import BlueskyLoginView from './bluesky/bluesky-login-view';
 import DiscordLoginView from './discord/discord-login-view';
+import E621LoginView from './e621/e621-login-view';
 import InkbunnyLoginView from './inkbunny/inkbunny-login-view';
 import TelegramLoginView from './telegram/telegram-login-view';
 
@@ -13,6 +14,7 @@ const CustomLoginComponents: Record<
   Telegram: TelegramLoginView,
   Bluesky: BlueskyLoginView,
   Inkbunny: InkbunnyLoginView,
+  e621: E621LoginView,
 });
 
 export function getCustomLoginComponent(

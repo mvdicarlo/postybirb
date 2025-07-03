@@ -71,12 +71,13 @@ export default class E621
     login: async (data) => {
       // This check is only run at account creation stage because v3 did this. Maybe its worth moving to the onLogin?
       try {
-        await Http.get(
+        const response = await Http.get(
           `https://e621.net/posts.json?login=${encodeURIComponent(data.username)}&api_key=${
             data.key
           }&limit=1`,
           { partition: '' },
         );
+        if (response.statusCode !== 200) throw new Error('Login failed');
       } catch (e) {
         this.logger.withError(e).error('onAuthRoute.login failed');
         return { result: false };
