@@ -1,5 +1,15 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-06-27 19:05+0000\nLast-Translator: guth <guthfaust@gmail.com>\nLanguage-Team: Spanish <https://hosted.weblate.org/projects/postybirb/postybirb/es/>\nLanguage: es\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.13-dev\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -74,9 +84,9 @@ msgstr ""
 msgid "Add folder watcher"
 msgstr "Añadir observador de carpeta"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:62
-msgid "All files are marked ignored."
-msgstr "Todos los archivos están marcados como ignorados."
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-source-urls.tsx
+msgid "Add source URLs for this file"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-source-urls.tsx
 msgid "Add URL"
@@ -148,9 +158,10 @@ msgstr ""
 msgid "Alt Text"
 msgstr "Texto alternativo"
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer.tsx:103
-msgid "App Folder"
-msgstr "Carpeta de aplicación"
+#. Bluesky login form
+#: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
+msgid "An <0>app</0> password - you can get one of these in<1><2>Settings</2></1>"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "An error occurred during upload"
@@ -248,6 +259,10 @@ msgstr "Importadores automáticos (al cambiar de carpeta)"
 #. Bluesky login form
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Be sure that the username is in the format handle.bsky.social. Or if you are using custom domain, make sure to include full username, e.g. domain.ext, handle.domain.ext"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Block guests"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -410,9 +425,9 @@ msgstr ""
 msgid "Content warning"
 msgstr "Advertencia de contenido"
 
-#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx:109
-msgid "Converted:"
-msgstr "Convertido:"
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Conversion"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/form/fields/tag-field.tsx
 msgid "Converted:"
@@ -565,14 +580,9 @@ msgstr ""
 msgid "Days"
 msgstr "Días"
 
-#: apps/postybirb-ui/src/components/form/fields/radio-field.tsx:27
-#: apps/postybirb-ui/src/components/form/website-option-form/website-option-group-section.tsx:44
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:61
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:63
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx:154
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-edit-form.tsx:90
-msgid "Default"
-msgstr "Por defecto"
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "December"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-navigation-tree.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -621,13 +631,13 @@ msgstr ""
 msgid "Description"
 msgstr "Descripción"
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:23
-msgid "Description is greater than {maxLength} characters long"
-msgstr "La descripción sobrepasa los {maxLength} caracteres de largo"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+msgid "Description length is greater then maximum ({currentLength} / {maxLength})"
+msgstr ""
 
-#: apps/postybirb-ui/src/components/translations/validation-translation.tsx:29
-msgid "Description is less than {minLength} characters long"
-msgstr "La descripción es menor que {minLength} caracteres de largo"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+msgid "Description length is lower then minimum ({currentLength} / {minLength})"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/description-settings.tsx
 msgid "Description Settings"
@@ -790,10 +800,10 @@ msgstr ""
 msgid "Failed to duplicate"
 msgstr "No se pudo duplicar"
 
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx:152
-#: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx:186
-msgid "Failed to queue submission"
-msgstr "Error al poner en cola la publicación"
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Failed to paste from clipboard"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
@@ -910,6 +920,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Friday"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Friends only"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
@@ -1040,9 +1054,9 @@ msgstr "String CRON inválido"
 msgid "Invalid file type"
 msgstr "Tipo de archivo no válido"
 
-#: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx:129
-msgid "Is a forum"
-msgstr "Es un foro"
+#: apps/postybirb-ui/src/components/translations/validation-translation.tsx
+msgid "Invalid post URL to reply to."
+msgstr ""
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Is a forum"
@@ -1076,9 +1090,18 @@ msgstr ""
 msgid "Logged In"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Login"
 msgstr "Conectarse"
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login successful"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Make sure that the default rating matches Bluesky Label Rating."
@@ -1374,6 +1397,7 @@ msgstr "Sobrescribir solo las opciones superpuestas del sitio web. Esto mantendr
 msgid "Page not found"
 msgstr "Página no encontrada"
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Password"
 msgstr ""
@@ -1813,6 +1837,11 @@ msgstr "Nivel del Server"
 msgid "Server level perks"
 msgstr "Beneficios por nivel del servidor"
 
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
+msgid "Set"
+msgstr ""
+
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
 msgid "Settings"
@@ -1895,9 +1924,9 @@ msgstr "Español"
 msgid "Species"
 msgstr "Especies"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:15
-msgid "Spoiler"
-msgstr "Spoiler"
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "Specific day"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Spoiler"
@@ -2017,6 +2046,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Successfully connected to the remote host"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Successfully logged into Inkbunny"
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
@@ -2360,14 +2393,15 @@ msgstr ""
 msgid "Use custom description"
 msgstr "Utilizar una descripción personalizada"
 
-#: apps/postybirb-ui/src/components/translations/field-translations.ts:16
-msgid "Use title"
-msgstr "Usar título"
+#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
+msgid "Use this template for a new submission"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Use title"
 msgstr "Usar título"
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Username"
 msgstr ""
@@ -2453,6 +2487,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "You can select multiple items"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "You must first enable API access in your <0>account settings</0> under \"API (External Scripting)\"."
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx

@@ -1,5 +1,15 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2025-06-27 19:05+0000\nLast-Translator: Anonymous <noreply@weblate.org>\nLanguage-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/postybirb/postybirb/pt_BR/>\nLanguage: pt_BR\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n > 1;\nX-Generator: Weblate 5.13-dev\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -249,6 +259,10 @@ msgstr ""
 #. Bluesky login form
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Be sure that the username is in the format handle.bsky.social. Or if you are using custom domain, make sure to include full username, e.g. domain.ext, handle.domain.ext"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Block guests"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -908,6 +922,10 @@ msgstr ""
 msgid "Friday"
 msgstr ""
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Friends only"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Generate from primary"
 msgstr ""
@@ -1072,8 +1090,17 @@ msgstr ""
 msgid "Logged In"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Login"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login successful"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -1370,6 +1397,7 @@ msgstr ""
 msgid "Page not found"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Password"
 msgstr ""
@@ -2020,6 +2048,10 @@ msgstr ""
 msgid "Successfully connected to the remote host"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Successfully logged into Inkbunny"
+msgstr ""
+
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Successfully saved Furtastic login information"
 msgstr ""
@@ -2369,6 +2401,7 @@ msgstr ""
 msgid "Use title"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Username"
 msgstr ""
@@ -2454,6 +2487,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "You can select multiple items"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "You must first enable API access in your <0>account settings</0> under \"API (External Scripting)\"."
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx

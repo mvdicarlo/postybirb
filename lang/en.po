@@ -263,6 +263,10 @@ msgstr ""
 msgid "Be sure that the username is in the format handle.bsky.social. Or if you are using custom domain, make sure to include full username, e.g. domain.ext, handle.domain.ext"
 msgstr ""
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Block guests"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Bluesky automatically converts GIFs to videos."
 msgstr ""
@@ -920,6 +924,10 @@ msgstr ""
 msgid "Friday"
 msgstr ""
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Friends only"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Generate from primary"
 msgstr ""
@@ -1084,8 +1092,17 @@ msgstr ""
 msgid "Logged In"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Login"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login successful"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -1382,6 +1399,7 @@ msgstr ""
 msgid "Page not found"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Password"
 msgstr ""
@@ -2032,6 +2050,10 @@ msgstr ""
 msgid "Successfully connected to the remote host"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Successfully logged into Inkbunny"
+msgstr ""
+
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Successfully saved Furtastic login information"
 msgstr ""
@@ -2381,6 +2403,7 @@ msgstr ""
 msgid "Use title"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Username"
 msgstr ""
@@ -2466,6 +2489,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "You can select multiple items"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "You must first enable API access in your <0>account settings</0> under \"API (External Scripting)\"."
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx

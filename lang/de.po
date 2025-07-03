@@ -1,5 +1,15 @@
 msgid ""
-msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: 2024-01-07 14:44+0300\nPO-Revision-Date: 2025-06-27 19:06+0000\nLast-Translator: Ettore Atalan <atalanttore@googlemail.com>\nLanguage-Team: German <https://hosted.weblate.org/projects/postybirb/postybirb/de/>\nLanguage: de\nMIME-Version: 1.0\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: 8bit\nPlural-Forms: nplurals=2; plural=n != 1;\nX-Generator: Weblate 5.13-dev\n"
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language: \n"
+"Language-Team: \n"
+"Content-Type: \n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -46,38 +56,13 @@ msgstr "Konten"
 msgid "Action"
 msgstr "Aktion"
 
-#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "2FA enabled, password required. It won't be stored."
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
-msgid "Account"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "Account data updated"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
-msgid "Account Name"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
-msgid "Account Options"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/postybirb-layout.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
-msgid "Accounts"
-msgstr "Konten"
-
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
-msgid "Action"
-msgstr "Aktion"
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Actions"
 msgstr "Aktionen"
+
+#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
+msgid "Activate"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Active"
@@ -202,30 +187,6 @@ msgstr ""
 msgid "App Folder"
 msgstr "App-Ordner"
 
-#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
-msgid "An error occurred during upload"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
-msgid "An unexpected error occurred"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "API Key"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
-msgid "API Key is required"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
-msgid "App"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
-msgid "App Folder"
-msgstr "App-Ordner"
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "App Server Port"
 msgstr ""
@@ -241,6 +202,10 @@ msgstr "Anwenden"
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/apply-submission-template-action.tsx
 msgid "Apply Template"
 msgstr "Vorlage anwenden"
+
+#: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
+msgid "Apply template to uploaded files (optional)"
+msgstr ""
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Apply to Submissions"
@@ -296,6 +261,10 @@ msgstr ""
 msgid "Be sure that the username is in the format handle.bsky.social. Or if you are using custom domain, make sure to include full username, e.g. domain.ext, handle.domain.ext"
 msgstr ""
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Block guests"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Bluesky automatically converts GIFs to videos."
 msgstr ""
@@ -326,6 +295,10 @@ msgstr ""
 msgid "Cancel"
 msgstr "Abbrechen"
 
+#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
+msgid "Cancel post"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Category"
 msgstr ""
@@ -346,6 +319,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/form/user-specified-website-options-modal/user-specified-website-options-modal.tsx
 msgid "Choose Fields"
 msgstr "Felder auswählen"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
+msgid "Choose how this PostyBirb instance should operate"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-picker/submission-picker-modal.tsx
 msgid "Choose Submissions"
@@ -468,101 +445,13 @@ msgstr ""
 msgid "Copied"
 msgstr "Kopiert"
 
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
-msgid "Clear All ({0})"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
-msgid "Clear Filtered ({0})"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
-msgid "Clear search"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
-msgid "Click to select folder"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Client Mode"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
-msgid "Close"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "Cloud Password"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "Code"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "Code invalid, ensure it matches the code sent from telegram"
-msgstr ""
-
-#: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
-msgid "Code sent"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
-msgid "Common Schedules"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
-msgid "Compact"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
-msgid "Confirm Cancellation"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
-msgid "Confirm Unschedule"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Connect to another PostyBirb instance as a remote client"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Connection Information"
-msgstr ""
-
-#: libs/translations/src/lib/field-translations.ts
-msgid "Contains content"
-msgstr ""
-
-#: libs/translations/src/lib/field-translations.ts
-msgid "Content warning"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
-msgid "Conversion"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/form/fields/tag-field.tsx
-msgid "Converted:"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
-msgid "Converter details copied to clipboard"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
-#: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
-msgid "Copied"
-msgstr "Kopiert"
-
 #: apps/postybirb-ui/src/components/form/fields/field-copy-button.tsx
 msgid "Copy"
 msgstr "Kopieren"
+
+#: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
+msgid "Copy all tags"
+msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Copy converter details"
@@ -613,10 +502,6 @@ msgstr ""
 msgid "Create new submission"
 msgstr "Neue Einreichung erstellen"
 
-#: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
-msgid "Create new submission"
-msgstr "Neue Einreichung erstellen"
-
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Create new tag converter"
 msgstr "Neuen Schlagwortkonverter erstellen"
@@ -634,6 +519,10 @@ msgctxt "telegram.app-id-help"
 msgid "Create telegram app to retrieve api_id and api_hash <0/>"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
+msgid "Created"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Creative Commons license"
 msgstr ""
@@ -646,6 +535,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx
 msgid "Crop"
 msgstr "Zuschneiden"
+
+#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-dimensions.tsx
+msgid "Custom Dimensions by Website"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Daily at 9 AM"
@@ -662,6 +555,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Date"
 msgstr "Datum"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+msgid "Date and Time Settings"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Date cannot be in the past"
@@ -682,6 +579,10 @@ msgstr ""
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Days"
 msgstr "Tage"
+
+#: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
+msgid "December"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-navigation-tree.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -716,19 +617,6 @@ msgstr ""
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 msgid "Delete item"
 msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
-msgid "Delete Submission"
-msgstr ""
-
-#: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
-msgid "Delete this file?"
-msgstr ""
-
-#: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
-#: libs/translations/src/lib/field-translations.ts
-msgid "Description"
-msgstr "Beschreibung"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Delete Submission"
@@ -1034,6 +922,10 @@ msgstr ""
 msgid "Friday"
 msgstr ""
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Friends only"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Generate from primary"
 msgstr ""
@@ -1198,8 +1090,17 @@ msgstr ""
 msgid "Logged In"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Login"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login failed"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Login successful"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
@@ -1496,6 +1397,7 @@ msgstr ""
 msgid "Page not found"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Password"
 msgstr ""
@@ -2146,6 +2048,10 @@ msgstr ""
 msgid "Successfully connected to the remote host"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "Successfully logged into Inkbunny"
+msgstr ""
+
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Successfully saved Furtastic login information"
 msgstr ""
@@ -2495,6 +2401,7 @@ msgstr ""
 msgid "Use title"
 msgstr ""
 
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Username"
 msgstr ""
@@ -2580,6 +2487,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "You can select multiple items"
+msgstr ""
+
+#: apps/postybirb-ui/src/website-components/inkbunny/inkbunny-login-view.tsx
+msgid "You must first enable API access in your <0>account settings</0> under \"API (External Scripting)\"."
 msgstr ""
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
