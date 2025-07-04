@@ -1727,16 +1727,16 @@ msgstr "Искать уведомления..."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Search tag converters..."
-msgstr ""
+msgstr "Искать конвертеры тэгов..."
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Search websites..."
-msgstr "Искать сайты"
+msgstr "Искать сайты..."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-navigation-tree.tsx
 msgid "Sections"
-msgstr ""
+msgstr "Секции"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Select a post to view details"
@@ -1752,7 +1752,7 @@ msgstr "Выбрать папку"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx
 msgid "Select language"
-msgstr ""
+msgstr "Выбрать язык"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Select specific day of month or every day"
@@ -1800,7 +1800,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "September"
-msgstr ""
+msgstr "Сентябрь"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Server Level"
@@ -2027,7 +2027,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Sunday"
-msgstr ""
+msgstr "Воскресенье"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Supports either a set of images, a single video, or a single GIF."
@@ -2217,7 +2217,7 @@ msgstr "Набросок (Маленькая картинка)"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Thursday"
-msgstr ""
+msgstr "Среда"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Title"
@@ -2251,11 +2251,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Tuesday"
-msgstr ""
+msgstr "Вторник"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-metadata-manager.tsx
 msgid "Type"
-msgstr ""
+msgstr "Тип"
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/postybirb-editor.tsx
 msgid "Type ${shortcutTrigger} to insert username shortcuts"
@@ -2280,7 +2280,7 @@ msgstr "Неизвестно"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Unknown choice"
-msgstr ""
+msgstr "Неизвестный выбор"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Unknown submission"
@@ -2356,7 +2356,7 @@ msgstr "Загрузка..."
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx
 msgid "Use custom description"
@@ -2368,15 +2368,15 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Use title"
-msgstr ""
+msgstr "Использовать название"
 
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Username"
-msgstr ""
+msgstr "Имя"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Username (email address)"
-msgstr ""
+msgstr "Имя (email)"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Username is required"
@@ -2388,12 +2388,12 @@ msgstr "Видео"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Visibility"
-msgstr ""
+msgstr "Видимость"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Warning"
-msgstr ""
+msgstr "Предупреждение"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Warning: This date is in the past and may not behave as expected."
@@ -2409,7 +2409,7 @@ msgstr "Вебхук обязателен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Website"
-msgstr ""
+msgstr "Сайт"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Website Conversions"
@@ -2426,7 +2426,7 @@ msgstr "Сайты"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Wednesday"
-msgstr ""
+msgstr "Среда"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Weekdays at 9 AM"
