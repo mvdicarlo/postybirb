@@ -1,16 +1,5 @@
 msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-07-04 17:38+0000\n"
-"Last-Translator: Leaftail <minec118@outlook.com>\n"
-"Language-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\n"
-"Language: ru\n"
-"Content-Type: \n"
-"Content-Transfer-Encoding: \n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.13-dev\n"
+msgstr "Project-Id-Version: \nReport-Msgid-Bugs-To: \nPOT-Creation-Date: \nPO-Revision-Date: 2025-07-05 18:01+0000\nLast-Translator: Leaftail <minec118@outlook.com>\nLanguage-Team: Russian <https://hosted.weblate.org/projects/postybirb/postybirb/ru/>\nLanguage: ru\nContent-Type: \nContent-Transfer-Encoding: \nPlural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\nX-Generator: Weblate 5.13-dev\n"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
@@ -109,7 +98,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "All"
-msgstr ""
+msgstr "Все"
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "All Bebsites"
@@ -121,7 +110,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "All Websites"
-msgstr ""
+msgstr "Все сайты"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Allow comments"
@@ -141,11 +130,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Allow other PostyBirb instances to connect to this one"
-msgstr ""
+msgstr "Разрешить другим запущенным приложениям PostyBirb подключаться к этому"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Allow other users to edit tags"
-msgstr ""
+msgstr "Разрешить пользователям редактировать теги"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/description-settings.tsx
 msgid "Allow PostyBirb to insert an Ad into the description"
@@ -153,7 +142,7 @@ msgstr "Вставлять рекламу PostyBirb в конце описани
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Allow reblogging"
-msgstr ""
+msgstr "Разрешить реблог"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-metadata-manager.tsx
 msgid "Alt Text"
@@ -170,7 +159,7 @@ msgstr "Во время загрузки произошла ошибка"
 
 #: apps/postybirb-ui/src/components/error-boundary/notification-error-boundary.tsx
 msgid "An unexpected error occurred"
-msgstr ""
+msgstr "Произошла неизвестная ошибка"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "API Key"
@@ -214,7 +203,7 @@ msgstr "Применить к постам"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "April"
-msgstr ""
+msgstr "Апрель"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Are you sure you want to cancel this submission? The app is not responsible for any partial post clean-up."
@@ -247,7 +236,7 @@ msgstr "Аудио"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "August"
-msgstr ""
+msgstr "Август"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Authenticate"
@@ -268,7 +257,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "Brazil"
-msgstr ""
+msgstr "Бразильский"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/app-settings.tsx
 msgid "Browse"
@@ -294,11 +283,11 @@ msgstr "Отмена"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Cancel post"
-msgstr ""
+msgstr "Отменить пост"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Category"
-msgstr ""
+msgstr "Категория"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/language-picker.tsx
@@ -372,7 +361,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Close"
-msgstr ""
+msgstr "Закрыть"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Cloud Password"
@@ -579,7 +568,7 @@ msgstr "Дни"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "December"
-msgstr ""
+msgstr "Декабрь"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-navigation-tree.tsx
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
@@ -650,7 +639,7 @@ msgstr "Уведомления на рабочем столе"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-dimensions.tsx
 msgid "Dimensions"
-msgstr ""
+msgstr "Размеры"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Disable comments"
@@ -666,7 +655,7 @@ msgstr "Не публиковать в"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 msgid "Done"
-msgstr ""
+msgstr "Готово"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Drag or use arrow keys to change order."
@@ -758,7 +747,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Error"
-msgstr ""
+msgstr "Ошибка"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Error while authenticating Telegram"
@@ -766,20 +755,20 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Every day"
-msgstr ""
+msgstr "Каждый день"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Every month"
-msgstr ""
+msgstr "Каждый месяц"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Example: \"0 9 * * MON\" runs every Monday at 9:00 AM"
-msgstr ""
+msgstr "Пример: \"0 9 * * MON\" запускается каждый понедельник в 9 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "Failed"
-msgstr ""
+msgstr "Не удалось"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Failed to authenticate Telegram."
@@ -851,7 +840,7 @@ msgstr "Избранное (Featured)"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "February"
-msgstr ""
+msgstr "Февраль"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "File"
@@ -863,7 +852,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "File saved"
-msgstr ""
+msgstr "Файл сохранен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "File submissions"
@@ -887,7 +876,7 @@ msgstr "Файл будет изменен для поддержки требо�
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 msgid "Files"
-msgstr ""
+msgstr "Файлы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Files have been uploaded successfully"
@@ -899,7 +888,7 @@ msgstr "Файлы для загрузки ({0})"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Fix validation issues"
-msgstr ""
+msgstr "Исправьте ошибки валидации"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 #: libs/translations/src/lib/field-translations.ts
@@ -917,7 +906,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Friday"
-msgstr ""
+msgstr "Пятница"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Generate from primary"
@@ -925,7 +914,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "German"
-msgstr ""
+msgstr "Немецкий"
 
 #: apps/postybirb-ui/src/pages/not-found/not-found.tsx
 msgid "Go back"
@@ -952,11 +941,11 @@ msgstr "Высота"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Hide"
-msgstr ""
+msgstr "Спрятать"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 msgid "Hide All"
-msgstr ""
+msgstr "Спрятать все"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
@@ -981,7 +970,7 @@ msgstr "Главная"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Host Mode"
-msgstr ""
+msgstr "Режим хоста"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Host URL"
@@ -1015,7 +1004,7 @@ msgstr "Изображение"
 
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 msgid "In Queue"
-msgstr ""
+msgstr "В очереди"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
@@ -1061,11 +1050,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "July"
-msgstr ""
+msgstr "Июль"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "June"
-msgstr ""
+msgstr "Июнь"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "LAN IP copied to clipboard"
@@ -1081,7 +1070,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Logged In"
-msgstr ""
+msgstr "Вход выполнен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Login"
@@ -1097,19 +1086,19 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "March"
-msgstr ""
+msgstr "Март"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Mark All as Read"
-msgstr ""
+msgstr "Пометить все как прочитанные"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Mark as Read"
-msgstr ""
+msgstr "Пометить как прочитанное"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Mark as Unread"
-msgstr ""
+msgstr "Пометить как непрочитанное"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Mature content"
@@ -1117,7 +1106,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "May"
-msgstr ""
+msgstr "Май"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Merge"
@@ -1125,7 +1114,7 @@ msgstr "Объединить"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Message"
-msgstr ""
+msgstr "Сообщение"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Message submissions"
@@ -1141,15 +1130,15 @@ msgstr "Посты с текстом"
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 msgid "Messages"
-msgstr ""
+msgstr "Сообщения"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Minute (0-59)"
-msgstr ""
+msgstr "Минута (0-59)"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Minute of the hour"
-msgstr ""
+msgstr "Минута часа"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Minutes"
@@ -1157,19 +1146,19 @@ msgstr "Минуты"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Monday"
-msgstr ""
+msgstr "Понедельник"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Month"
-msgstr ""
+msgstr "Месяц"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Monthly (1st of month)"
-msgstr ""
+msgstr "Ежемесячно (1 числа)"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "more"
-msgstr ""
+msgstr "еще"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Name"
@@ -1183,7 +1172,7 @@ msgstr "Навигация"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "New"
-msgstr ""
+msgstr "Новое"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Next run:"
@@ -1219,11 +1208,11 @@ msgstr "Уведомлений не найдено"
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "No Recent Posts"
-msgstr ""
+msgstr "Нет недавних постов"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "No results found"
-msgstr ""
+msgstr "Результатов не найдено"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "No scheduling"
@@ -1243,7 +1232,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "No tag converters created yet"
-msgstr ""
+msgstr "Нет созданных конвертаторов тэгов"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "No tag converters match your search"
@@ -1251,7 +1240,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "No tag groups created yet"
-msgstr ""
+msgstr "Нет групп тэгов"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "No tag groups match your search or filters"
@@ -1259,7 +1248,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "No templates found"
-msgstr ""
+msgstr "Нет шаблонов"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "No thumbnail"
@@ -1271,11 +1260,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "No website posts available"
-msgstr ""
+msgstr "Нет постов на этот сайт"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 msgid "No websites"
-msgstr ""
+msgstr "Нет сайтов"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "No websites available or visible"
@@ -1283,7 +1272,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "No websites found"
-msgstr ""
+msgstr "Сайты не найдены"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 msgid "No websites match your search"
@@ -1309,7 +1298,7 @@ msgstr "Нет входа"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Not Logged In"
-msgstr ""
+msgstr "Вход не выполнен"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Note: If you need to connect from outside your local network you will need to set up port forwarding on your router and use the public IP of the host computer."
@@ -1327,7 +1316,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "November"
-msgstr ""
+msgstr "Ноябрь"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "October"
@@ -1339,7 +1328,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Once"
-msgstr ""
+msgstr "Один раз"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Only set scheduled date"
@@ -1359,7 +1348,7 @@ msgstr "Открывать PostyBirb при запуске компьютера"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "options"
-msgstr ""
+msgstr "опции"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "Options"
@@ -1383,11 +1372,11 @@ msgstr "Страница не найдена"
 
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Password"
-msgstr ""
+msgstr "Пароль"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Password is invalid"
-msgstr ""
+msgstr "Неверный пароль"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Password provided by the host to connect to their instance"
@@ -1399,44 +1388,44 @@ msgstr ""
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Paste"
-msgstr ""
+msgstr "Вставить"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "Paste from clipboard"
-msgstr ""
+msgstr "Вставить из буфера обмена"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Paste tag from clipboard"
-msgstr ""
+msgstr "Вставить тэг из буфера обмена"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 msgid "Paste tags from clipboard"
-msgstr ""
+msgstr "Вставить тэги из буфера обмена"
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Pause"
-msgstr ""
+msgstr "Пауза"
 
 #: apps/postybirb-ui/src/components/dashboard/queue-control/queue-control.tsx
 msgid "Pause Submissions"
-msgstr ""
+msgstr "Поставить посты на паузу"
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Paused"
-msgstr ""
+msgstr "На паузе"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Phone Number (International Format)"
-msgstr ""
+msgstr "Номер телефона (международный формат)"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgctxt "telegram.phone-number-help"
 msgid "Phone number must be in international format <0/>"
-msgstr ""
+msgstr "Номер телефона должен быть в международном формате <0/>"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-source-urls.tsx
 msgid "Please enter a valid URL"
-msgstr ""
+msgstr "Пожалуйста введите валидный URL"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
@@ -1467,37 +1456,37 @@ msgstr "Опубликовать выбранные"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Posting"
-msgstr ""
+msgstr "Выкладывание..."
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-metadata-manager.tsx
 msgid "Posting Options"
-msgstr ""
+msgstr "Опции выкладывания"
 
 #. Main file data
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Primary File"
-msgstr ""
+msgstr "Основной файл"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Queue"
-msgstr ""
+msgstr "Очередь"
 
 #: apps/postybirb-ui/src/components/dashboard/queue-control/queue-control.tsx
 msgid "Queue Control"
-msgstr ""
+msgstr "Контроль очереди"
 
 #: apps/postybirb-ui/src/components/dashboard/queue-control/queue-control.tsx
 msgid "Queue Paused"
-msgstr ""
+msgstr "Очередь на паузе"
 
 #: apps/postybirb-ui/src/components/dashboard/queue-control/queue-control.tsx
 msgid "Queue Resumed"
-msgstr ""
+msgstr "Очередь снята с паузы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Queued"
-msgstr ""
+msgstr "В очереди"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Quick selection of common scheduling patterns"
@@ -1509,53 +1498,53 @@ msgstr "Рейтинг"
 
 #: apps/postybirb-ui/src/pages/home/home-page.tsx
 msgid "Recent"
-msgstr ""
+msgstr "Недавние"
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "Recent Posts"
-msgstr ""
+msgstr "Недавние посты"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Recurring"
-msgstr ""
+msgstr "Регулярные"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Recurring Schedule"
-msgstr ""
+msgstr "Регулярная отложка"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Recurring Schedule Settings"
-msgstr ""
+msgstr "Настройки регулярной отложки"
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Reload page"
-msgstr ""
+msgstr "Обновить страницу"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
 msgid "Remote"
-msgstr ""
+msgstr "Дистанционный доступ"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Remote Access Password"
-msgstr ""
+msgstr "Пароль дистанционного доступа"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Remote Access Settings"
-msgstr ""
+msgstr "Настройки дистанционного доступа"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Remote Mode"
-msgstr ""
+msgstr "Режим дистационного доступа"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Remove"
-msgstr ""
+msgstr "Убрать"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-source-urls.tsx
 msgid "Remove URL"
-msgstr ""
+msgstr "Убрать URL"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgctxt "import.override-description"
@@ -1564,7 +1553,7 @@ msgstr "Заменить описание"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Replace file"
-msgstr ""
+msgstr "Заменить файл"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "Replace the current description with the selected template's description"
@@ -1581,15 +1570,15 @@ msgstr "Заменить заголовок"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Reply to post URL"
-msgstr ""
+msgstr "Ответ на пост (URL)"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Request critique"
-msgstr ""
+msgstr "Запросить критику"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Required"
-msgstr ""
+msgstr "Обязательно"
 
 #: apps/postybirb-ui/src/website-components/telegram/telegram-login-view.tsx
 msgid "Required if 2FA is enabled."
@@ -1609,11 +1598,11 @@ msgstr "Сбросить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Restore"
-msgstr ""
+msgstr "Восстановить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Restore failed"
-msgstr ""
+msgstr "Не удалось восстановить"
 
 #: apps/postybirb-ui/src/components/dashboard/queue-control/queue-control.tsx
 msgid "Resume Submissions"
@@ -1621,11 +1610,11 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs every day at 12:00 AM"
-msgstr ""
+msgstr "Запускается каждый день в 12:00 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs every day at 9:00 AM"
-msgstr ""
+msgstr "Каждый день"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs every Monday at 12:00 AM"
