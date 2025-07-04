@@ -2476,4 +2476,4 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "Your recent submission history will appear here"
-msgstr "Недавние посты будут появляться здесь"
+msgstr "Недавние посты появяться здесь"
