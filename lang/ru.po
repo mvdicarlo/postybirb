@@ -1610,27 +1610,27 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs every day at 12:00 AM"
-msgstr "Запускается каждый день в 12:00 утра"
+msgstr "Каждый день в 12:00 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs every day at 9:00 AM"
-msgstr "Каждый день"
+msgstr "Каждый день в 9:00 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs every Monday at 12:00 AM"
-msgstr ""
+msgstr "Каждый понедельник в 12:00 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs Monday through Friday at 9:00 AM"
-msgstr ""
+msgstr "Понедельник-пятница в 12:00 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs on the 1st day of every month at 12:00 AM"
-msgstr ""
+msgstr "Каждый 1 день месяца в 12:00 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Runs Saturday and Sunday at 12:00 PM"
-msgstr ""
+msgstr "Суббота-воскресенье в 12:00 утра"
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "Russian"
@@ -1638,7 +1638,7 @@ msgstr "Русский"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Saturday"
-msgstr ""
+msgstr "Суббота"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
@@ -1665,7 +1665,7 @@ msgstr "Сохранить изменения загрузки папки"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Save to file"
-msgstr ""
+msgstr "Сохранить в файл"
 
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
@@ -1684,30 +1684,31 @@ msgstr "Отложить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Schedule Date and Time"
-msgstr ""
+msgstr "Дата и время отложки"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Schedule for a specific date and time"
-msgstr ""
+msgstr "Отложить на конкретные дату и время"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Schedule Settings"
-msgstr ""
+msgstr "Настройки отложки"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
+#, fuzzy
 msgid "Schedule to repeat regularly"
-msgstr ""
+msgstr "Регулярная отложка"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 msgid "Scheduled"
-msgstr ""
+msgstr "Отложено"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Scheduled for:"
-msgstr ""
+msgstr "Отложено на:"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/submission-view-actions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
@@ -1731,7 +1732,7 @@ msgstr ""
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/account-drawer.tsx
 msgid "Search websites..."
-msgstr ""
+msgstr "Искать сайты"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-navigation-tree.tsx
 msgid "Sections"
@@ -1743,7 +1744,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "Select All"
-msgstr ""
+msgstr "Выбрать все"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Select folder"
