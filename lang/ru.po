@@ -2217,7 +2217,7 @@ msgstr "Набросок (Маленькая картинка)"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Thursday"
-msgstr "Среда"
+msgstr "Четверг"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Title"
@@ -2380,7 +2380,7 @@ msgstr "Имя (email)"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Username is required"
-msgstr ""
+msgstr "Имя пользователя обязательно"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Video"
@@ -2451,7 +2451,7 @@ msgstr "Ширина"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Yes"
-msgstr ""
+msgstr "Да"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "You can select multiple items"
@@ -2476,4 +2476,4 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "Your recent submission history will appear here"
-msgstr ""
+msgstr "Недавние посты будут появляться здесь"
