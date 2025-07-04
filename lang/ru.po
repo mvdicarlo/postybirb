@@ -2397,11 +2397,11 @@ msgstr "Предупреждение"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Warning: This date is in the past and may not behave as expected."
-msgstr ""
+msgstr "Внимание: дата находится в прошлом и может не работать как ожидается"
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "We encountered an unexpected error. Please try refreshing the page."
-msgstr ""
+msgstr "Мы столкнулись с неожиданной ошибкой. Попробуйте перезагрузить страницу"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Webhook is required"
@@ -2413,11 +2413,11 @@ msgstr "Сайт"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Website Conversions"
-msgstr ""
+msgstr "Конвертации сайта"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-visibility-picker.tsx
 msgid "Website Visibility"
-msgstr ""
+msgstr "Видимость сайта"
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 #: apps/postybirb-ui/src/components/form/website-select/website-select.tsx
@@ -2430,19 +2430,19 @@ msgstr "Среда"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Weekdays at 9 AM"
-msgstr ""
+msgstr "Рабочие дни в 9 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Weekend at noon"
-msgstr ""
+msgstr "На выходные в полдень"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Weekly on Monday"
-msgstr ""
+msgstr "Еженедельно по понедельникам"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Who can reply"
-msgstr ""
+msgstr "Кто может отвечать"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-dimensions.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-dimensions.tsx
@@ -2455,12 +2455,12 @@ msgstr "Да"
 
 #: apps/postybirb-ui/src/components/submission-templates/template-picker-modal/template-picker-modal.tsx
 msgid "You can select multiple items"
-msgstr ""
+msgstr "Вы можете выбрать несколько"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgctxt "furtastic.api-key-help"
 msgid "You must first get an API Key from your account settings [Manage API Access] <0/>"
-msgstr ""
+msgstr "Сначала вам нужно получить API ключ из настроек аккаунта [Manage API Access] <0/>"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Your browser does not support the audio tag."
@@ -2472,8 +2472,8 @@ msgstr "Ваш браузер не поддерживает тег видео."
 
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Your handle - for example yourname.bsky.social or username.ext"
-msgstr ""
+msgstr "Ваш псевдоним - например yourname.bsky.social или username.ext"
 
 #: apps/postybirb-ui/src/components/dashboard/recent-posts/recent-posts.tsx
 msgid "Your recent submission history will appear here"
-msgstr "Недавние посты появяться здесь"
+msgstr "Недавние посты появятся здесь"
