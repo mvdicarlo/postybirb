@@ -1,4 +1,5 @@
 import { Http, PostOptions } from '@postybirb/http';
+import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
 import { CancellableToken } from '../../post/models/cancellable-token';
 import { PostingFile } from '../../post/models/posting-file';
@@ -30,6 +31,8 @@ type Value = FieldValue | FieldValue[];
  * ```
  */
 export class PostBuilder {
+  private static readonly logger = Logger('PostBuilder');
+
   /**
    * The type of POST request to send (json, multipart, or urlencoded).
    * @private
@@ -47,6 +50,14 @@ export class PostBuilder {
    * @private
    */
   private readonly headers: Record<string, string> = {};
+
+  /**
+   * Set of field names that are expected to contain file data based on input.
+   * Used to enhance logging and debugging by identifying which fields
+   * are intended for file uploads.
+   * @private
+   */
+  private readonly fileFields = new Set<string>();
 
   /**
    * Creates a new PostBuilder instance.
@@ -136,6 +147,15 @@ export class PostBuilder {
     return this;
   }
 
+  getField<T>(key: string): T | undefined {
+    return this.data[key] as T | undefined;
+  }
+
+  removeField(key: string) {
+    delete this.data[key];
+    return this;
+  }
+
   /**
    * Sets a single field in the request data.
    * Handles null values by converting them to undefined.
@@ -188,6 +208,30 @@ export class PostBuilder {
   }
 
   /**
+   * Iterates over an array and executes a callback for each item.
+   *
+   * @param items - Array of items to iterate over
+   * @param callback - Function to execute for each item
+   * @returns The PostBuilder instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * builder.forEach(options.matureContent, (item, index, b) => {
+   *   b.setField(`attributes[${item}]`, 'true');
+   * });
+   * ```
+   */
+  forEach<T>(
+    items: T[] | undefined | null,
+    callback: (item: T, index: number, builder: PostBuilder) => void,
+  ) {
+    if (items) {
+      items.forEach((item, index) => callback(item, index, this));
+    }
+    return this;
+  }
+
+  /**
    * Adds a file to the request data using the specified field name.
    * The file is converted to the appropriate post format.
    *
@@ -203,6 +247,26 @@ export class PostBuilder {
    */
   addFile(key: string, file: PostingFile) {
     this.data[key] = file.toPostFormat();
+    this.fileFields.add(key);
+    return this;
+  }
+
+  /**
+   * Adds multiple files to the request data under the specified field name.
+   * Each file is converted to the appropriate post format.
+   *
+   * @param key - The field name for the files
+   * @param files - Array of PostingFile instances to add
+   * @returns The PostBuilder instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * builder.addFiles('images', [file1, file2, file3]);
+   * ```
+   */
+  addFiles(key: string, files: PostingFile[]) {
+    this.data[key] = files.map((file) => file.toPostFormat());
+    this.fileFields.add(key);
     return this;
   }
 
@@ -233,6 +297,27 @@ export class PostBuilder {
   }
 
   /**
+   * Conditionally executes a callback based on a predicate.
+   *
+   * @param predicate - Boolean condition to evaluate
+   * @param callback - Function to execute if predicate is true
+   * @returns The PostBuilder instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * builder.whenTrue(rating !== 'general', (b) => {
+   *   b.removeField('explicit');
+   * });
+   * ```
+   */
+  whenTrue(predicate: boolean, callback: (builder: PostBuilder) => void) {
+    if (predicate) {
+      callback(this);
+    }
+    return this;
+  }
+
+  /**
    * Sends the constructed POST request to the specified URL.
    * Validates the response and handles cancellation.
    *
@@ -249,17 +334,31 @@ export class PostBuilder {
    * }
    *
    * const response = await builder.send<ApiResponse>('https://api.example.com/posts');
-   * console.log(response.id);
+   * console.log(response.body.id);
    * ```
    */
   async send<ReturnValue>(url: string) {
     this.cancellationToken.throwIfCancelled();
+    const data = this.build();
+    PostBuilder.logger
+      .withMetadata({
+        website: this.website.constructor.name,
+        postType: this.postType,
+        url,
+        headers: Object.keys(this.headers),
+        data: this.sanitizeDataForLogging(data),
+      })
+      .debug(`Sending ${this.postType} request to ${url} with data:`);
     const value = await Http.post<ReturnValue>(url, {
       partition: this.website.account.id,
       type: this.postType,
-      data: this.build(),
+      data,
       headers: this.headers,
     });
+    PostBuilder.logger.debug(
+      `Received response from ${url}:`,
+      value.statusCode,
+    );
     PostResponse.validateBody(this.website, value);
     return value;
   }
@@ -312,5 +411,20 @@ export class PostBuilder {
     }
 
     return data;
+  }
+
+  private sanitizeDataForLogging(
+    data: Record<string, Value>,
+  ): Record<string, Value> {
+    const sanitizedData: Record<string, Value> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (this.fileFields.has(key)) {
+        // For file fields, we don't log the actual file content
+        sanitizedData[key] = data[key].toString();
+      } else {
+        sanitizedData[key] = value;
+      }
+    }
+    return sanitizedData;
   }
 }
