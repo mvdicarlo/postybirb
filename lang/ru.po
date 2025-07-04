@@ -482,7 +482,7 @@ msgstr "Создать текстовый пост"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Create New"
-msgstr ""
+msgstr "Создать новый"
 
 #: apps/postybirb-ui/src/components/submissions/directory-watchers-view/directory-watchers-view.tsx
 msgid "Create new submission"
@@ -507,7 +507,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Created"
-msgstr ""
+msgstr "Создано"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Creative Commons license"
@@ -515,7 +515,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "CRON Expression"
-msgstr ""
+msgstr "Выражение CRON"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/edit-image-modal.tsx
@@ -528,15 +528,15 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Daily at 9 AM"
-msgstr ""
+msgstr "Ежедневно в 9 утра"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Daily at midnight"
-msgstr ""
+msgstr "Ежедневно в полночь"
 
 #: apps/postybirb-ui/src/pages/home/home-page.tsx
 msgid "Dashboard"
-msgstr ""
+msgstr "Главная"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Date"
@@ -544,23 +544,23 @@ msgstr "Дата"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Date and Time Settings"
-msgstr ""
+msgstr "Настройки даты и времени"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Date cannot be in the past"
-msgstr ""
+msgstr "Дата не может быть в прошлом"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Day (1-31)"
-msgstr ""
+msgstr "День (1-31)"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Day of Month"
-msgstr ""
+msgstr "День месяца"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Day of Week"
-msgstr ""
+msgstr "День недели"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Days"
@@ -597,20 +597,20 @@ msgstr "Удалить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Delete failed"
-msgstr ""
+msgstr "Не удалось удалить"
 
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 msgid "Delete item"
-msgstr ""
+msgstr "Удалить предмет"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Delete Submission"
-msgstr ""
+msgstr "Удалить пост"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
 msgid "Delete this file?"
-msgstr ""
+msgstr "Удалить этот файл?"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/settings-drawer.tsx
 #: libs/translations/src/lib/field-translations.ts
@@ -631,7 +631,7 @@ msgstr "Настройки описания"
 
 #: apps/postybirb-ui/src/components/shared/postybirb-editor/custom/username-shortcut.tsx
 msgid "Deselect All"
-msgstr ""
+msgstr "Убрать выделение"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/notifications-settings.tsx
 msgid "Desktop Notifications"
@@ -643,7 +643,7 @@ msgstr "Размеры"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Disable comments"
-msgstr ""
+msgstr "Выключить комментарии"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Display resolution"
@@ -668,7 +668,7 @@ msgstr "Перетащите чтобы переопределить поряд�
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 msgid "Drag to schedule"
-msgstr "Перетяните чтобы отложить"
+msgstr "Перетащите чтобы отложить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Drop files here or click to add more"
