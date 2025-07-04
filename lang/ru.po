@@ -663,12 +663,12 @@ msgstr "Перетащите или используйте стрелки для
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-manager.tsx
 msgid "Drag to reorder"
-msgstr ""
+msgstr "Перетащите чтобы переопределить порядок"
 
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 msgid "Drag to schedule"
-msgstr ""
+msgstr "Перетяните чтобы отложить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Drop files here or click to add more"
@@ -691,11 +691,11 @@ msgstr "Редактировать"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Edit file submission"
-msgstr ""
+msgstr "Редактировать пост с изображением"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Edit image"
-msgstr ""
+msgstr "Редактировать изображение"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-actions/multi-edit-submissions-action.tsx
 msgid "Edit Many"
@@ -703,7 +703,7 @@ msgstr "Редактировать несколько"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Edit message submission"
-msgstr ""
+msgstr "Редактировать текстовый пост"
 
 #: apps/postybirb-ui/src/pages/submission/multi-edit-submission-page.tsx
 msgid "Edit Multiple"
@@ -727,7 +727,7 @@ msgstr "Введите имя шаблона"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/account-drawer/website-card.tsx
 msgid "Enter account name"
-msgstr ""
+msgstr "Введите имя аккаунта"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Enter conversion"
@@ -780,7 +780,7 @@ msgstr "Не удалось создать шаблон"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Failed to delete"
-msgstr ""
+msgstr "Не удалось удалить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Failed to duplicate"
@@ -789,7 +789,7 @@ msgstr "Не удалось дублировать"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Failed to paste from clipboard"
-msgstr ""
+msgstr "Не удалось вставить из буфера обмена"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
@@ -815,7 +815,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Failed to Unschedule"
-msgstr ""
+msgstr "Не удалось отменить отложку"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
@@ -824,7 +824,7 @@ msgstr "Не удалось обновить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-calendar/submission-calendar.tsx
 msgid "Failed to Update"
-msgstr ""
+msgstr "Не удалось обновить"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Failed to validate submission: {message}"
@@ -844,11 +844,11 @@ msgstr "Февраль"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "File"
-msgstr ""
+msgstr "Файл"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-metadata-manager.tsx
 msgid "File Name"
-msgstr ""
+msgstr "Имя файла"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "File saved"
@@ -880,7 +880,7 @@ msgstr "Файлы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Files have been uploaded successfully"
-msgstr ""
+msgstr "Файлы загружены успешно"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Files to upload ({0})"
@@ -902,7 +902,7 @@ msgstr "Позволяет вам автоматически добавлять 
 
 #: apps/postybirb-ui/src/components/error-boundary/specialized-error-boundaries.tsx
 msgid "Form Error"
-msgstr ""
+msgstr "Ошибка формы"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Friday"
@@ -910,7 +910,7 @@ msgstr "Пятница"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Generate from primary"
-msgstr ""
+msgstr "Сгенерировать из основного"
 
 #: apps/postybirb-ui/src/app/languages.tsx
 msgid "German"
@@ -922,7 +922,7 @@ msgstr "Вернуться назад"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Go to the main dashboard"
-msgstr ""
+msgstr "Вернуться на главную"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
@@ -950,11 +950,11 @@ msgstr "Спрятать все"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Hide Form"
-msgstr ""
+msgstr "Скрыть форму"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Hide LAN IP"
-msgstr ""
+msgstr "Скрыть LAN IP"
 
 #: apps/postybirb-ui/src/pages/submission/message-submission-management-page.tsx
 #: apps/postybirb-ui/src/pages/submission/file-submission-management-page.tsx
@@ -974,15 +974,15 @@ msgstr "Режим хоста"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "Host URL"
-msgstr ""
+msgstr "URL хоста"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Hour (0-23)"
-msgstr ""
+msgstr "Час (0-23)"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Hour of the day"
-msgstr ""
+msgstr "Час дня"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-multi-scheduler-modal.tsx
 msgid "Hours"
@@ -1009,7 +1009,7 @@ msgstr "В очереди"
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Info"
-msgstr ""
+msgstr "Информация"
 
 #: apps/postybirb-ui/src/components/form/fields/description-field.tsx
 msgid "Insert tags at end"
@@ -1026,7 +1026,7 @@ msgstr "Невалидный"
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Invalid CRON format"
-msgstr "Невалидный формат CRON"
+msgstr "Неверный формат CRON"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Invalid CRON string"
