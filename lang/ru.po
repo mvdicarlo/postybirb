@@ -1021,12 +1021,12 @@ msgstr "Вставить заголовок в начале"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Invalid"
-msgstr ""
+msgstr "Невалидный"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Invalid CRON format"
-msgstr ""
+msgstr "Невалидный формат CRON"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Invalid CRON string"
@@ -1038,15 +1038,15 @@ msgstr "Неверный тип файла"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Invalid post URL to reply to."
-msgstr ""
+msgstr "Невалидный URL поста для ответа"
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Is a forum"
-msgstr ""
+msgstr "Является форумом"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "January"
-msgstr ""
+msgstr "Январь"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "July"
@@ -1058,7 +1058,7 @@ msgstr "Июнь"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/settings-drawer/remote-settings.tsx
 msgid "LAN IP copied to clipboard"
-msgstr ""
+msgstr "LAN IP скопирован в буфер обмена"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 msgid "Last modified:"
@@ -1252,7 +1252,7 @@ msgstr "Нет шаблонов"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "No thumbnail"
-msgstr ""
+msgstr "Нет превью"
 
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 msgid "No unscheduled submissions"
@@ -1320,7 +1320,7 @@ msgstr "Ноябрь"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "October"
-msgstr ""
+msgstr "Октябрь"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Offer hi-res download (gold only)"
@@ -2184,7 +2184,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
 msgid "This action cannot be undone."
-msgstr ""
+msgstr "Это действие нельзя отменить"
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "This component encountered an error and couldn't render properly."
@@ -2233,11 +2233,11 @@ msgstr "Название слишком короткое"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
 msgid "Toggle sort direction"
-msgstr ""
+msgstr "Сменить направление сортировки"
 
 #: apps/postybirb-ui/src/components/dashboard/dashboard-stats/dashboard-stats.tsx
 msgid "Total Submissions"
-msgstr ""
+msgstr "Всего постов"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Translation {id} not found"
@@ -2247,7 +2247,7 @@ msgstr "Перевод {id} не найден"
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Try again"
-msgstr ""
+msgstr "Попробовать снова"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/cron-builder.tsx
 msgid "Tuesday"
@@ -2288,7 +2288,7 @@ msgstr "Неизвестный пост"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/notifications-drawer.tsx
 msgid "Unread"
-msgstr ""
+msgstr "Непрочитанные"
 
 #: apps/postybirb-ui/src/pages/submission/edit-submission-page.tsx
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
@@ -2299,7 +2299,7 @@ msgstr "Отменить отложку"
 
 #: apps/postybirb-ui/src/components/submissions/submission-schedule-view/submission-schedule-view.tsx
 msgid "Unscheduled Submissions"
-msgstr ""
+msgstr "Неотложенные посты"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Unsupported file type {fileExtension}. Please provide fallback text."
@@ -2315,7 +2315,7 @@ msgstr "Неподдерживаемый тип поста: {fileTypeString}"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card-actions.tsx
 msgid "Untitled submission"
-msgstr ""
+msgstr "Безымяный пост"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-group-drawer.tsx
 #: apps/postybirb-ui/src/app/postybirb-layout/drawers/tag-converter-drawer.tsx
@@ -2344,7 +2344,7 @@ msgstr "Загрузка завершена"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-file-actions.tsx
 msgid "Upload custom thumbnail"
-msgstr ""
+msgstr "Загрузить кастомное превью"
 
 #: apps/postybirb-ui/src/components/submissions/submission-uploader/submission-uploader.tsx
 msgid "Upload failed"
@@ -2364,7 +2364,7 @@ msgstr "Кастомное описание"
 
 #: apps/postybirb-ui/src/app/postybirb-layout/postybirb-spotlight/postybirb-spotlight.tsx
 msgid "Use this template for a new submission"
-msgstr ""
+msgstr "Использовать этот шаблон для нового поста"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Use title"
@@ -2372,7 +2372,7 @@ msgstr "Использовать название"
 
 #: apps/postybirb-ui/src/website-components/bluesky/bluesky-login-view.tsx
 msgid "Username"
-msgstr "Имя"
+msgstr "Псевдоним"
 
 #: apps/postybirb-ui/src/website-components/furtastic/furtastic-login-view.tsx
 msgid "Username (email address)"
@@ -2397,11 +2397,11 @@ msgstr "Предупреждение"
 
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 msgid "Warning: This date is in the past and may not behave as expected."
-msgstr "Внимание: дата находится в прошлом и может не работать как ожидается"
+msgstr "Внимание: дата находится в прошлом и может не работать как ожидается."
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "We encountered an unexpected error. Please try refreshing the page."
-msgstr "Мы столкнулись с неожиданной ошибкой. Попробуйте перезагрузить страницу"
+msgstr "Мы столкнулись с неожиданной ошибкой. Попробуйте перезагрузить страницу."
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Webhook is required"
