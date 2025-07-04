@@ -597,7 +597,7 @@ msgstr "Удалить"
 
 #: apps/postybirb-ui/src/components/submissions/submission-history-view/submission-history-view.tsx
 msgid "Delete failed"
-msgstr "Не удалось удалить"
+msgstr "Удаление не удалось"
 
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
 #: apps/postybirb-ui/src/components/shared/delete-action-popover/delete-action-popover.tsx
@@ -1038,7 +1038,7 @@ msgstr "Неверный тип файла"
 
 #: apps/postybirb-ui/src/components/translations/validation-translation.tsx
 msgid "Invalid post URL to reply to."
-msgstr "Невалидный URL поста для ответа"
+msgstr "Невалидный URL поста для ответа."
 
 #: apps/postybirb-ui/src/website-components/discord/discord-login-view.tsx
 msgid "Is a forum"
@@ -1456,7 +1456,7 @@ msgstr "Опубликовать выбранные"
 
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
 msgid "Posting"
-msgstr "Выкладывание..."
+msgstr "Выкладывание"
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-metadata-manager/file-metadata-manager.tsx
 msgid "Posting Options"
@@ -1697,7 +1697,7 @@ msgstr "Настройки отложки"
 #: apps/postybirb-ui/src/components/submissions/submission-scheduler/submission-scheduler.tsx
 #, fuzzy
 msgid "Schedule to repeat regularly"
-msgstr "Регулярная отложка"
+msgstr "Отложить и повторять регулярно"
 
 #: apps/postybirb-ui/src/components/submissions/submission-view/submission-view-card/submission-view-card.tsx
 #: apps/postybirb-ui/src/components/dashboard/submissions-list/submissions-list.tsx
@@ -2184,7 +2184,7 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/submissions/submission-edit-form/submission-file-manager/submission-file-card/file-card-delete-action.tsx
 msgid "This action cannot be undone."
-msgstr "Это действие нельзя отменить"
+msgstr "Это действие нельзя отменить."
 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "This component encountered an error and couldn't render properly."
