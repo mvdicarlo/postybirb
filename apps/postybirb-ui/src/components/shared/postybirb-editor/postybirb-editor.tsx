@@ -54,7 +54,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
     >
       <Tooltip
         label={
-          <Trans>Type ${shortcutTrigger} to insert username shortcuts</Trans>
+          <Trans>Type {shortcutTrigger} to insert username shortcuts</Trans>
         }
         position="top-start"
         withArrow
