@@ -11,6 +11,7 @@ export function ExternalLink(
       {...props}
       target="_blank"
       c="blue"
+      inherit // Inherit parent styles
       onClick={(event) => {
         if (window.electron?.openExternalLink) {
           event.preventDefault();

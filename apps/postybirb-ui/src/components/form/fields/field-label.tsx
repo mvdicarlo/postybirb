@@ -40,12 +40,19 @@ export function FieldLabel(
     <Input.Wrapper required={field.required} label={label}>
       {children}
       {errors.map((error) => (
-        <Input.Error key={`${propKey}-${error.id}`}>
+        <Input.Error
+          key={`${propKey}-${error.id}-${JSON.stringify(error.values)}`}
+          pb={4}
+        >
           <ValidationTranslation id={error.id} values={error.values} />
         </Input.Error>
       ))}
       {warnings.map((warning) => (
-        <Input.Error key={`${propKey}-${warning.id}`} c="orange">
+        <Input.Error
+          key={`${propKey}-${warning.id}-${JSON.stringify(warning.values)}`}
+          c="orange"
+          pb={4}
+        >
           <ValidationTranslation id={warning.id} values={warning.values} />
         </Input.Error>
       ))}
