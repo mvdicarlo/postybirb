@@ -231,8 +231,8 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.file.e621.tags.recommended': ({ generalTags }) => (
     <Trans>
-      It is recommended to add at least 10 general tags ( {generalTags} / 10 ).
-      See{' '}
+      It is recommended to add at least 10 general tags{' '}
+      <strong>( {generalTags} / 10 )</strong>. See{' '}
       <ExternalLink href="https://e621.net/help/tagging_checklist">
         tagging checklist
       </ExternalLink>
@@ -261,18 +261,27 @@ export const TranslationMessages: TranslationsMap = {
   ),
 
   'validation.file.e621.tags.missing': ({ tag }) => (
-    <Trans>Tag {tag} does not exist yet or is invalid</Trans>
+    <Trans>
+      Tag{' '}
+      <ExternalLink
+        href={`https://e621.net/wiki_pages/show_or_new?title=${tag}`}
+      >
+        {tag}
+      </ExternalLink>{' '}
+      does not exist yet or is invalid.
+    </Trans>
   ),
 
   'validation.file.e621.tags.missing-create': ({ tag }) => (
     <Trans>
-      Tag {tag} does not exist yet or is invalid. See{' '}
+      Tag{' '}
       <ExternalLink
         href={`https://e621.net/wiki_pages/show_or_new?title=${tag}`}
       >
-        this wiki page
-      </ExternalLink>
-      . If you want to create a new tag, make a post with it, then go
+        {tag}
+      </ExternalLink>{' '}
+      does not exist yet or is invalid. If you want to create a new tag, make a
+      post with it, then go{' '}
       <ExternalLink href={`https://e621.net/tags?search[name]=${tag}`}>
         here
       </ExternalLink>
@@ -282,12 +291,13 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.file.e621.tags.invalid': ({ tag }) => (
     <Trans>
-      Tag {tag} is invalid. See{' '}
+      Tag{' '}
       <ExternalLink
         href={`https://e621.net/wiki_pages/show_or_new?title=${tag}`}
       >
-        this wiki page
-      </ExternalLink>
+        {tag}
+      </ExternalLink>{' '}
+      is invalid.
     </Trans>
   ),
 

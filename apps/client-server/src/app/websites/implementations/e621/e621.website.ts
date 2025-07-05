@@ -124,14 +124,19 @@ export default class E621
     cancellableToken: CancellableToken,
     method: 'get' | 'post',
     url: string,
-    form?: unknown,
+    form?: Record<string, unknown>,
   ) {
     cancellableToken.throwIfCancelled();
 
-    return Http[method]<T>(`${this.BASE_URL}${url}`, undefined, {
-      useSessionCookies: false,
+    if (method === 'get') {
+      return Http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
+    }
+
+    return Http.post<T>(`${this.BASE_URL}${url}`, {
+      partition: '',
+      type: 'multipart',
+      data: form,
       headers: this.headers,
-      ...(form && method === 'post' ? { type: 'multipart', data: form } : {}),
     });
   }
 
