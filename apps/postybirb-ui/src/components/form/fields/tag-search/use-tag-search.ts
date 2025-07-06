@@ -1,25 +1,16 @@
 import { useDebouncedCallback } from '@mantine/hooks';
 import { useEffect, useRef, useState } from 'react';
+import { useSettings } from '../../../../stores/use-settings';
+import { TagSearchProvider } from './tag-search-provider';
+import { TagSearchProviders } from './tag-search-providers';
 
-export abstract class TagFieldSearchProvider {
-  protected abstract searchImplementation(query: string): Promise<string[]>;
+export function useTagFieldSearch(fieldProviderId: string | undefined) {
+  const { settings } = useSettings();
 
-  private cache = new Map<string, string[]>();
+  const providerId = fieldProviderId ?? settings.tagSearchProvider.id ?? '';
+  const provider: TagSearchProvider | undefined =
+    TagSearchProviders[providerId];
 
-  async search(query: string): Promise<string[]> {
-    const cached = this.cache.get(query);
-    if (cached) return cached;
-
-    const result = await this.searchImplementation(query);
-    // Don't cache network error requests
-    if (result.length !== 0) this.cache.set(query, result);
-    return result;
-  }
-
-  abstract renderSearchItem(tag: string): React.ReactNode;
-}
-
-export function useTagFieldSearch(provider: TagFieldSearchProvider) {
   const [data, setData] = useState<string[]>([]);
   const [searchValue, onSearchChange] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,7 +19,7 @@ export function useTagFieldSearch(provider: TagFieldSearchProvider) {
   // Debounced search function with 300ms delay
   const debouncedSearch = useDebouncedCallback(
     (query: string) => {
-      if (query === '') return;
+      if (query === '' || !provider) return;
 
       const currentRequestId = ++requestId.current;
 

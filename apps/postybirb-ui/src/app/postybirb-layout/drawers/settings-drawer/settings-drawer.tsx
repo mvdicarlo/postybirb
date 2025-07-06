@@ -14,6 +14,7 @@ import {
   IconDeviceDesktop,
   IconFileDescription,
   IconRouter,
+  IconTags,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import { ComponentErrorBoundary } from '../../../../components/error-boundary/specialized-error-boundaries';
@@ -27,6 +28,7 @@ import { AppSettings } from './app-settings';
 import { DescriptionSettings } from './description-settings';
 import { NotificationsSettings } from './notifications-settings';
 import { RemoteSettings } from './remote-settings';
+import { TagsSettings } from './tags-settings';
 
 export function SettingsDrawer() {
   const [visible, toggle] = useDrawerToggle('settingsDrawerVisible');
@@ -107,6 +109,14 @@ export function SettingsDrawer() {
                 >
                   <Trans>Remote</Trans>
                 </Tabs.Tab>
+
+                <Tabs.Tab
+                  value="tags"
+                  leftSection={<IconTags size={16} />}
+                  fw={activeTab === 'tags' ? 'bold' : 'normal'}
+                >
+                  <Trans>Tags</Trans>
+                </Tabs.Tab>
               </Tabs.List>
 
               <ScrollArea h="100%" offsetScrollbars>
@@ -115,6 +125,7 @@ export function SettingsDrawer() {
                   {activeTab === 'description' && <DescriptionSettings />}
                   {activeTab === 'notifications' && <NotificationsSettings />}
                   {activeTab === 'remote' && <RemoteSettings />}
+                  {activeTab === 'tags' && <TagsSettings />}
                 </Box>
               </ScrollArea>
             </Group>

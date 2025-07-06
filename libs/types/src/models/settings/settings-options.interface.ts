@@ -33,7 +33,17 @@ export interface ISettingsOptions {
    * @type {DesktopNotificationSettings}
    */
   desktopNotifications: DesktopNotificationSettings;
+
+  /**
+   * Global tag search provider id
+   */
+  tagSearchProvider: TagSearchProviderSettings;
 }
+
+export type TagSearchProviderSettings = {
+  id: string | undefined;
+  showWikiInHelpOnHover: boolean;
+};
 
 export type DesktopNotificationSettings = {
   enabled: boolean;

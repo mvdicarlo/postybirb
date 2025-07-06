@@ -21,14 +21,14 @@ import { flatten, uniq } from 'lodash';
 import { useWebsites } from '../../../hooks/account/use-websites';
 import { TagConverterStore } from '../../../stores/tag-converter-store';
 import { TagGroupStore } from '../../../stores/tag-group-store';
+import { useSettings } from '../../../stores/use-settings';
 import { useStore } from '../../../stores/use-store';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
 import { useFormFields } from '../website-option-form/use-form-fields';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
-import { e621TagSearchProvider } from './tag-field-search/e621';
-import { useTagFieldSearch } from './tag-field-search/tag-field-search';
+import { useTagFieldSearch } from './tag-search/use-tag-search';
 
 const TAG_GROUP_LABEL = 'GROUP:';
 
@@ -102,8 +102,8 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
     }
   };
 
-  const search = useTagFieldSearch(e621TagSearchProvider);
-
+  const {settings} = useSettings()
+  const search = useTagFieldSearch(field.searchProviderId);
   const totalTags: number = overrideDefault ? tagValue.length : allTags.length;
 
   return (
@@ -196,7 +196,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
               );
             }
 
-            const view = search.provider.renderSearchItem(value);
+            const view = search.provider.renderSearchItem(value, settings.tagSearchProvider);
             if (view) return view;
 
             return <Text inherit>{value}</Text>;

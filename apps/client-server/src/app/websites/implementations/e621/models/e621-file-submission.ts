@@ -18,6 +18,7 @@ export class E621FileSubmission extends BaseWebsiteOptions {
     row: 1,
     minTags: 4,
     spaceReplacer: '_',
+    searchProviderId: 'e621',
   })
   tags: TagValue = DefaultTagValue();
 

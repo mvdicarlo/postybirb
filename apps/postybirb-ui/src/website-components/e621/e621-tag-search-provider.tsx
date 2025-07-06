@@ -1,9 +1,9 @@
 import { Plural, Trans } from '@lingui/macro';
 import { DefaultMantineColor, Loader, Popover, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { E621TagCategory } from '@postybirb/types';
+import { E621TagCategory, TagSearchProviderSettings } from '@postybirb/types';
 import { useAsync } from 'react-use';
-import { TagFieldSearchProvider } from './tag-field-search';
+import { TagSearchProvider } from '../../components/form/fields/tag-search/tag-search-provider';
 
 const headers = new Headers({
   // eslint-disable-next-line lingui/no-unlocalized-strings
@@ -33,7 +33,7 @@ const colors: Record<E621TagCategory, undefined | DefaultMantineColor> = {
   [E621TagCategory.Lore]: 'green',
 };
 
-class E621TagSearchProvider extends TagFieldSearchProvider {
+class E621TagSearchProvider extends TagSearchProvider {
   private tags = new Map<string, E621AutocompleteTag>();
 
   protected async searchImplementation(query: string): Promise<string[]> {
@@ -53,11 +53,14 @@ class E621TagSearchProvider extends TagFieldSearchProvider {
     }
   }
 
-  renderSearchItem(tagName: string): React.ReactNode {
+  renderSearchItem(
+    tagName: string,
+    settings: TagSearchProviderSettings,
+  ): React.ReactNode {
     const tag = this.tags.get(tagName);
     if (!tag) return undefined;
 
-    return <E621TagSearchItem tag={tag} />;
+    return <E621TagSearchItem tag={tag} settings={settings} />;
   }
 }
 
@@ -67,11 +70,16 @@ interface E621WikiPage {
 
 const wikiPagesCache = new Map<string, E621WikiPage>();
 
-function E621TagSearchItem(props: { tag: E621AutocompleteTag }) {
+function E621TagSearchItem(props: {
+  tag: E621AutocompleteTag;
+  settings: TagSearchProviderSettings;
+}) {
   const [opened, { close, open }] = useDisclosure(false);
-  const { tag } = props;
+  const { tag, settings } = props;
 
   const wikiPage = useAsync(async () => {
+    if (!settings.showWikiInHelpOnHover) return undefined;
+
     const cache = wikiPagesCache.get(tag.name);
     if (cache) return cache;
 
@@ -106,20 +114,34 @@ function E621TagSearchItem(props: { tag: E621AutocompleteTag }) {
       </Popover.Target>
       <Popover.Dropdown style={{ pointerEvents: 'none' }}>
         <Text size="sm">
-          <Trans>Category</Trans>: {E621TagCategory[tag.category]}
-        </Text>
-        <Text size="sm">
-          <Trans>Description</Trans>:{' '}
-          {wikiPage.loading ? (
-            <Loader width={10} />
-          ) : (
-            <Text>{wikiPage.value?.body}</Text>
-          )}
-        </Text>
-        <Text size="sm">
-          <Plural value={tag.post_count} one="Post count" other="Posts count" />
+          <strong>
+            <Plural
+              value={tag.post_count}
+              one="Post count"
+              other="Posts count"
+            />
+          </strong>
           : {tag.post_count}
         </Text>
+        <Text size="sm">
+          <strong>
+            <Trans>Category</Trans>
+          </strong>
+          : {E621TagCategory[tag.category]}
+        </Text>
+        {settings.showWikiInHelpOnHover && (
+          <Text size="sm">
+            <strong>
+              <Trans>Description</Trans>
+            </strong>
+            :{' '}
+            {wikiPage.loading ? (
+              <Loader width={10} />
+            ) : (
+              <Text>{wikiPage.value?.body}</Text>
+            )}
+          </Text>
+        )}
       </Popover.Dropdown>
     </Popover>
   );
