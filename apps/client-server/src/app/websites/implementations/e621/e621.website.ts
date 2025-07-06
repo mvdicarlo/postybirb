@@ -2,6 +2,7 @@ import { Http } from '@postybirb/http';
 import {
   E621AccountData,
   E621OAuthRoutes,
+  E621TagCategory,
   ILoginState,
   ImageResizeProps,
   ISubmissionFile,
@@ -385,19 +386,6 @@ interface TagCheckingContext {
   ifYouWantToCreateNotice: boolean;
   generalTags: number;
   validator: SubmissionValidator<E621FileSubmission>;
-}
-
-// Source: https://e621.net/tags
-enum E621TagCategory {
-  General = 0,
-  Artist = 1,
-  Contributor = 2,
-  Copyright = 3,
-  Character = 4,
-  Species = 5,
-  Invalid = 6,
-  Meta = 7,
-  Lore = 8,
 }
 
 // Source: https://e621.net/tags.json?search[name]=nonexistenttag
