@@ -13,6 +13,7 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { app } from 'electron';
+import { CustomDescriptionParser } from '../../../post-parsers/models/description-node/description-node-tree';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -25,6 +26,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { E621FileSubmission } from './models/e621-file-submission';
 
@@ -35,7 +37,7 @@ import { E621FileSubmission } from './models/e621-file-submission';
 @CustomLoginFlow('e621')
 @SupportsFiles({
   acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'video/webm'],
-  acceptedFileSizes: { '*': FileSize.bytesToMB(100) },
+  acceptedFileSizes: { '*': FileSize.megabytes(100) },
   acceptsExternalSourceUrls: true,
   fileBatchSize: 1,
 })
@@ -51,7 +53,10 @@ import { E621FileSubmission } from './models/e621-file-submission';
 @DisableAds()
 export default class E621
   extends Website<E621AccountData>
-  implements FileWebsite<E621FileSubmission>, OAuthWebsite<E621OAuthRoutes>
+  implements
+    FileWebsite<E621FileSubmission>,
+    OAuthWebsite<E621OAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://e621.net/';
 
@@ -98,26 +103,14 @@ export default class E621
     return undefined;
   }
 
-  htmlToDText(text: string) {
-    return text
-      .replace(/<b>/gi, '[b]')
-      .replace(/<i>/gi, '[i]')
-      .replace(/<u>/gi, '[u]')
-      .replace(/<s>/gi, '[s]')
-      .replace(/<\/b>/gi, '[/b]')
-      .replace(/<\/i>/gi, '[/i]')
-      .replace(/<\/u>/gi, '[/u]')
-      .replace(/<\/s>/gi, '[/s]')
-      .replace(/<em>/gi, '[i]')
-      .replace(/<\/em>/gi, '[/i]')
-      .replace(/<strong>/gi, '[b]')
-      .replace(/<\/strong>/gi, '[/b]')
-      .replace(
-        /<span style="color:\s*(.*?);*">((.|\n)*?)<\/span>/gim,
-        '[color=$1]$2[/color]',
-      )
-      .replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '"$4":$2');
-  }
+  // Spec: https://e621.net/help/dtext
+  // onDescriptionParse is called for each line, idk why it can contain multiline somehow
+  onDescriptionParse: CustomDescriptionParser = (node) =>
+    node.toBBCodeString().replaceAll('\n', '');
+
+  // [url=https://example.com/]lemonynade[/url]`
+  onAfterDescriptionParse = (description: string) =>
+    description.replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
 
   private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
 
@@ -158,19 +151,7 @@ export default class E621
       'upload[rating]': this.getRating(postData.options.rating),
       'upload[description]': postData.options.description,
       'upload[parent_id]': postData.options.parentId || '',
-      'upload[source]': [
-        postData.options.source1,
-        postData.options.source2,
-        postData.options.source3,
-        postData.options.source4,
-        postData.options.source5,
-        postData.options.source6,
-        postData.options.source7,
-        postData.options.source8,
-        postData.options.source9,
-        postData.options.source10,
-        ...file.metadata.sourceUrls,
-      ]
+      'upload[source]': file.metadata.sourceUrls
         .filter((s) => !!s)
         .slice(0, 10)
         .join('%0A'),
