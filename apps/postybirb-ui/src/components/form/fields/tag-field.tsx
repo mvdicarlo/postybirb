@@ -102,7 +102,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
     }
   };
 
-  const {settings} = useSettings()
+  const { settings } = useSettings();
   const search = useTagFieldSearch(field.searchProviderId);
   const totalTags: number = overrideDefault ? tagValue.length : allTags.length;
 
@@ -148,6 +148,7 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           clearable
           required={field.required}
           value={tagValue}
+          acceptValueOnBlur={false}
           data={[...search.data, ...tagGroupsOptions]}
           searchValue={search.searchValue}
           onSearchChange={search.onSearchChange}
@@ -196,7 +197,10 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
               );
             }
 
-            const view = search.provider.renderSearchItem(value, settings.tagSearchProvider);
+            const view = search.provider.renderSearchItem(
+              value,
+              settings.tagSearchProvider,
+            );
             if (view) return view;
 
             return <Text inherit>{value}</Text>;

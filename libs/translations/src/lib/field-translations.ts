@@ -41,7 +41,6 @@ export const FieldLabelTranslations = {
   hiRes: msg`Offer hi-res download (gold only)`,
   friendsOnly: msg`Friends only`,
   blockGuests: msg`Block guests`,
-  source: msg`Source URL`,
   parentId: msg`Parent ID`,
 } satisfies Record<string, MessageDescriptor>;
 

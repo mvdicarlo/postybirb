@@ -1,9 +1,11 @@
 import { Plural, Trans } from '@lingui/macro';
-import { DefaultMantineColor, Loader, Popover, Text } from '@mantine/core';
+import { Box, DefaultMantineColor, Loader, Popover, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { E621TagCategory, TagSearchProviderSettings } from '@postybirb/types';
+import { useCallback, useRef } from 'react';
 import { useAsync } from 'react-use';
 import { TagSearchProvider } from '../../components/form/fields/tag-search/tag-search-provider';
+import { E621Dtext } from './e621-dtext-renderer';
 
 const headers = new Headers({
   // eslint-disable-next-line lingui/no-unlocalized-strings
@@ -74,8 +76,10 @@ function E621TagSearchItem(props: {
   tag: E621AutocompleteTag;
   settings: TagSearchProviderSettings;
 }) {
-  const [opened, { close, open }] = useDisclosure(false);
+  const [openedTag, tagController] = useDisclosure(false);
+  const [openedDropdown, dropdownController] = useDisclosure(false);
   const { tag, settings } = props;
+  const opened = openedDropdown || openedTag;
 
   const wikiPage = useAsync(async () => {
     if (!settings.showWikiInHelpOnHover) return undefined;
@@ -94,54 +98,60 @@ function E621TagSearchItem(props: {
     return page;
   }, [opened, tag.name]);
 
+  const textMouseLeaveTimeout = useRef<number | NodeJS.Timeout>();
+  const onTextMouseLeave = useCallback(() => {
+    clearTimeout(textMouseLeaveTimeout.current);
+    textMouseLeaveTimeout.current = setTimeout(tagController.close, 300);
+  }, [tagController]);
+
   return (
-    <Popover
-      width={600}
-      position="bottom"
-      withArrow
-      shadow="md"
-      opened={opened}
-    >
+    <Popover width={600} position="left" shadow="md" opened={opened}>
       <Popover.Target>
         <Text
           inherit
-          onMouseEnter={open}
-          onMouseLeave={close}
           c={colors[tag.category]}
+          onMouseEnter={tagController.open}
+          onMouseLeave={onTextMouseLeave}
         >
           {tag.name} ({tag.post_count})
         </Text>
       </Popover.Target>
-      <Popover.Dropdown style={{ pointerEvents: 'none' }}>
-        <Text size="sm">
-          <strong>
-            <Plural
-              value={tag.post_count}
-              one="Post count"
-              other="Posts count"
-            />
-          </strong>
-          : {tag.post_count}
-        </Text>
-        <Text size="sm">
-          <strong>
-            <Trans>Category</Trans>
-          </strong>
-          : {E621TagCategory[tag.category]}
-        </Text>
-        {settings.showWikiInHelpOnHover && (
+      <Popover.Dropdown>
+        <Box
+          onMouseEnter={dropdownController.open}
+          onMouseLeave={dropdownController.close}
+          onClick={(event) => event.stopPropagation()}
+        >
           <Text size="sm">
             <strong>
-              <Trans>Description</Trans>
+              <Plural
+                value={tag.post_count}
+                one="Post count"
+                other="Posts count"
+              />
             </strong>
-            :{' '}
-            {wikiPage.loading ? (
-              <Loader width={10} />
-            ) : (
-              <Text>{wikiPage.value?.body}</Text>
-            )}
+            : {tag.post_count}
           </Text>
-        )}
+          <Text size="sm">
+            <strong>
+              <Trans>Category</Trans>
+            </strong>
+            : {E621TagCategory[tag.category]}
+          </Text>
+          {settings.showWikiInHelpOnHover && (
+            <Text size="sm">
+              <strong>
+                <Trans>Description</Trans>
+              </strong>
+              :{' '}
+              {wikiPage.loading ? (
+                <Loader width={10} />
+              ) : (
+                <E621Dtext dtext={wikiPage.value?.body ?? ''} />
+              )}
+            </Text>
+          )}
+        </Box>
       </Popover.Dropdown>
     </Popover>
   );
