@@ -127,6 +127,35 @@ describe('BaseWebsiteOptions', () => {
     expect(mergedOptions.rating).toBe(SubmissionRating.ADULT);
   });
 
+  it('should merge defaults with disabled override default correctly', () => {
+    const defaultOptions = new DefaultWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: [...defaultDescriptionValue],
+        insertTitle: false,
+        insertTags: false,
+      },
+    });
+
+    const options = new BaseWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: [],
+        insertTitle: true,
+        insertTags: true,
+      },
+    });
+
+    const mergedOptions = options.mergeDefaults(defaultOptions);
+
+    expect(mergedOptions.description).toEqual({
+      overrideDefault: false,
+      description: defaultDescriptionValue,
+      insertTitle: true,
+      insertTags: true,
+    });
+  });
+
   it('should get form fields', () => {
     const options = new BaseWebsiteOptions();
     const formFields = options.getFormFields();
