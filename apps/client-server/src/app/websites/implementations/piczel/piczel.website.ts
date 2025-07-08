@@ -9,6 +9,7 @@ import {
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -73,7 +74,7 @@ export default class Piczel
 
     try {
       const match = res.body.match(
-        /<script type="text\/javascript">window\.__PRELOADED_STATE__ = (.*?)<\/script>/gmi,
+        /<script type="text\/javascript">window\.__PRELOADED_STATE__ = (.*?)<\/script>/gim,
       );
 
       if (!match || !match[1]) {
@@ -142,65 +143,39 @@ export default class Piczel
 
     const { auth } = preloadedData.currentUser;
     const { options } = postData;
-    const formData: {
-      nsfw: boolean;
-      description: string;
-      title: string;
-      tags: string[];
-      files: Array<{
-        name: string;
-        size: number;
-        type: string;
-        data: string;
-      }>;
-      uploadMode: string;
-      queue: boolean;
-      publish_at: string;
-      thumbnail_id: string;
-      folder_id?: string;
-    } = {
-      nsfw: options.rating !== SubmissionRating.GENERAL,
-      description: options.description || '',
-      title: options.title || 'New Submission',
-      tags: options.tags,
-      files: files.map((file) => ({
-        name: file.fileName,
-        size: file.buffer.length,
-        type: file.mimeType,
-        data: `data:${file.mimeType};base64,${file.buffer.toString('base64')}`,
-      })),
-      uploadMode: 'PUBLISH',
-      queue: false,
-      publish_at: '',
-      thumbnail_id: '0',
-    };
+    const builder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .setField('nsfw', options.rating !== SubmissionRating.GENERAL)
+      .setField('description', options.description || '')
+      .setField('title', options.title || 'New Submission')
+      .setField('tags', options.tags)
+      .setField('uploadMode', 'PUBLISH')
+      .setField('queue', false)
+      .setField('publish_at', '')
+      .setField('thumbnail_id', '0')
+      .setField(
+        'files',
+        files.map((file) => ({
+          name: file.fileName,
+          size: file.buffer.length,
+          type: file.mimeType,
+          data: `data:${file.mimeType};base64,${file.buffer.toString('base64')}`,
+        })),
+      )
+      .setConditional('folder_id', !!options.folder, options.folder)
+      .withHeaders({
+        Accept: '*/*',
+        client: auth.client,
+        expiry: auth.expiry,
+        'token-type': auth['token-type'],
+        uid: auth.uid,
+        Authorization: `${auth['token-type']} ${auth['access-token']}`,
+        'access-token': auth['access-token'],
+      });
 
-    if (options.folder) {
-      formData.folder_id = options.folder;
-    }
-
-    const headers = {
-      Accept: '*/*',
-      client: auth.client,
-      expiry: auth.expiry,
-      'token-type': auth['token-type'],
-      uid: auth.uid,
-      Authorization: `${auth['token-type']} ${auth['access-token']}`,
-      'access-token': auth['access-token'],
-    };
-
-    cancellationToken.throwIfCancelled();
-    const result = await Http.post<{ id?: string }>(
+    const result = await builder.send<{ id?: string }>(
       `${this.BASE_URL}/api/gallery`,
-      {
-        partition: this.accountId,
-        data: formData,
-        type: 'json',
-        headers,
-      },
     );
-
-    PostResponse.validateBody(this, result);
 
     if (result.body?.id) {
       return PostResponse.fromWebsite(this).withSourceUrl(

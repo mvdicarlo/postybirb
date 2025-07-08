@@ -1,4 +1,4 @@
-import { Http, PostOptions } from '@postybirb/http';
+import { FormFile, Http, PostOptions } from '@postybirb/http';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
 import { CancellableToken } from '../../post/models/cancellable-token';
@@ -89,6 +89,28 @@ export class PostBuilder {
   }
 
   /**
+   * Adds multiple headers to the request.
+   * Merges the provided headers with existing ones.
+   *
+   * @param headers - Object containing key-value pairs of headers
+   * @returns The PostBuilder instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * builder.withHeaders({
+   *   'Content-Type': 'application/json',
+   *   'Authorization': 'Bearer token'
+   * });
+   * ```
+   */
+  withHeaders(headers: Record<string, string>) {
+    Object.entries(headers).forEach(([key, value]) => {
+      this.headers[key] = value;
+    });
+    return this;
+  }
+
+  /**
    * Configures the request to use multipart/form-data encoding.
    * This is typically used when uploading files or sending binary data.
    *
@@ -153,13 +175,15 @@ export class PostBuilder {
 
   removeField(key: string) {
     delete this.data[key];
+    if (this.fileFields.has(key)) {
+      this.fileFields.delete(key);
+    }
     return this;
   }
 
   /**
    * Sets a single field in the request data.
    * Handles null values by converting them to undefined.
-   * For arrays, filters out null values and converts them to undefined.
    *
    * @param key - The field name
    * @param value - The field value (can be a single value or array)
@@ -172,11 +196,7 @@ export class PostBuilder {
    * ```
    */
   setField(key: string, value: Value) {
-    if (Array.isArray(value)) {
-      this.data[key] = value.map((v) => (v === null ? undefined : v));
-    } else {
-      this.data[key] = value === null ? undefined : value;
-    }
+    this.insert(key, value);
     return this;
   }
 
@@ -202,8 +222,7 @@ export class PostBuilder {
     truthy: Value,
     falsy?: Value,
   ) {
-    const value = predicate ? truthy : falsy;
-    this.data[key] = value;
+    this.insert(key, predicate ? truthy : falsy);
     return this;
   }
 
@@ -246,8 +265,7 @@ export class PostBuilder {
    * ```
    */
   addFile(key: string, file: PostingFile) {
-    this.data[key] = file.toPostFormat();
-    this.fileFields.add(key);
+    this.insert(key, file);
     return this;
   }
 
@@ -288,8 +306,10 @@ export class PostBuilder {
   addThumbnail(key: string, file: PostingFile) {
     if (file.thumbnail) {
       this.data[key] = file.thumbnailToPostFormat();
+      this.fileFields.add(key);
     } else if (file.fileType === FileType.IMAGE) {
       this.data[key] = file.toPostFormat();
+      this.fileFields.add(key);
     } else {
       this.data[key] = '';
     }
@@ -413,6 +433,36 @@ export class PostBuilder {
     return data;
   }
 
+  /**
+   * Converts a PostingFile or FieldValue to the appropriate format for posting.
+   * If the value is a PostingFile, it converts it to a FormFile.
+   *
+   * @param value - The value to convert
+   * @returns The converted value in the appropriate format
+   */
+  private convert(value: FieldValue | PostingFile): FieldValue | FormFile {
+    if (value instanceof PostingFile) {
+      return value.toPostFormat();
+    }
+    return value;
+  }
+
+  /**
+   * Inserts a key-value pair into the data object.
+   * If the value is a PostingFile, it converts it to the appropriate format.
+   * If the value is a FormFile, it adds the key to the fileFields set.
+   *
+   * @param key - The field name
+   * @param value - The field value (can be a PostingFile or FieldValue)
+   */
+  private insert(key: string, value: FieldValue | PostingFile): void {
+    const v = this.convert(value);
+    this.data[key] = v;
+    if (v instanceof FormFile) {
+      this.fileFields.add(key);
+    }
+  }
+
   private sanitizeDataForLogging(
     data: Record<string, Value>,
   ): Record<string, Value> {
@@ -420,7 +470,13 @@ export class PostBuilder {
     for (const [key, value] of Object.entries(data)) {
       if (this.fileFields.has(key)) {
         // For file fields, we don't log the actual file content
-        sanitizedData[key] = data[key].toString();
+        if (Array.isArray(value)) {
+          sanitizedData[key] = value.map((v) =>
+            v instanceof FormFile ? v.toString() : v,
+          );
+        } else {
+          sanitizedData[key] = value.toString();
+        }
       } else {
         sanitizedData[key] = value;
       }
