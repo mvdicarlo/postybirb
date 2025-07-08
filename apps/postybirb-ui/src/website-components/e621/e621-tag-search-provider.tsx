@@ -39,20 +39,14 @@ class E621TagSearchProvider extends TagSearchProvider {
   private tags = new Map<string, E621AutocompleteTag>();
 
   protected async searchImplementation(query: string): Promise<string[]> {
-    try {
-      if (query.length < 3) return []; // e621 does not supports query with less then 3 characters
+    if (query.length < 3) return []; // e621 does not supports query with less then 3 characters
 
-      const url = `https://e621.net/tags/autocomplete.json?expiry=7&search[name_matches]=${encodeURIComponent(query)}`;
-      const tags = await e621Get<E621AutocompleteTag[]>(url);
+    const url = `https://e621.net/tags/autocomplete.json?expiry=7&search[name_matches]=${encodeURIComponent(query)}`;
+    const tags = await e621Get<E621AutocompleteTag[]>(url);
 
-      for (const tag of tags) this.tags.set(tag.name, tag);
+    for (const tag of tags) this.tags.set(tag.name, tag);
 
-      return tags.map((e) => e.name);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(e);
-      return [];
-    }
+    return tags.map((e) => e.name);
   }
 
   renderSearchItem(
