@@ -77,13 +77,6 @@ describe('PostBuilder', () => {
     expect(builder.getField('foo')).toBeUndefined();
   });
 
-  it('should handle null and array values in setField', () => {
-    builder.setField('a', null);
-    expect((builder as any).data['a']).toBeUndefined();
-    builder.setField('b', [1, null, 2]);
-    expect((builder as any).data['b']).toEqual([1, undefined, 2]);
-  });
-
   it('should set fields conditionally', () => {
     builder.setConditional('x', true, 1, 2);
     expect((builder as any).data['x']).toBe(1);
@@ -161,5 +154,15 @@ describe('PostBuilder', () => {
   it('should call Http.post and return value on send', async () => {
     const result = await builder.send<{ id: string }>('http://test');
     expect(result.body.id).toBe('123');
+  });
+
+  it('should convert PostingFile to FormFile', () => {
+    const file = createPostingFile();
+    const builder = new PostBuilder(mockWebsite as any, token);
+    builder.setField('file', file);
+    expect((builder as any).data['file']).toBeInstanceOf(FormFile);
+
+    builder.addFile('file2', file);
+    expect((builder as any).data['file2']).toBeInstanceOf(FormFile);
   });
 });

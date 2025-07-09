@@ -369,18 +369,59 @@ export class PostBuilder {
         data: this.sanitizeDataForLogging(data),
       })
       .debug(`Sending ${this.postType} request to ${url} with data:`);
-    const value = await Http.post<ReturnValue>(url, {
-      partition: this.website.account.id,
-      type: this.postType,
-      data,
-      headers: this.headers,
-    });
-    PostBuilder.logger.debug(
-      `Received response from ${url}:`,
-      value.statusCode,
-    );
-    PostResponse.validateBody(this.website, value);
-    return value;
+
+    const maxRetries = 2;
+    let attempt = 0;
+    let lastError: unknown;
+
+    while (attempt <= maxRetries) {
+      try {
+        const value = await Http.post<ReturnValue>(url, {
+          partition: this.website.account.id,
+          type: this.postType,
+          data,
+          headers: this.headers,
+        });
+        PostBuilder.logger.debug(
+          `Received response from ${url}:`,
+          value.statusCode,
+        );
+        PostResponse.validateBody(this.website, value);
+        return value;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        const knownErrors = ['ECONNRESET', 'ERR_CONNECTION_RESET'];
+        let isKnownError = false;
+        for (const knownError of knownErrors) {
+          const isKnown =
+            error &&
+            (error.code === knownError ||
+              (typeof error.message === 'string' &&
+                error.message.includes(knownError)));
+          if (isKnown) {
+            attempt++;
+            lastError = error;
+            if (attempt > maxRetries) break;
+            PostBuilder.logger.debug(
+              `Retrying request to ${url} due to ${knownError} (attempt ${attempt})`,
+            );
+            isKnownError = true;
+            break;
+          }
+        }
+
+        // If the error is not a known retryable error, log it and throw
+        if (!isKnownError) {
+          PostBuilder.logger.error(
+            `Failed to send request to ${url} after ${attempt} attempts:`,
+            error,
+          );
+          throw error;
+        }
+        // If known error, continue loop (unless maxRetries exceeded)
+      }
+    }
+    throw lastError;
   }
 
   /**
