@@ -161,9 +161,16 @@ function AccountItem({ account, website, onLogin }: AccountItemProps) {
 
 function NewAccountItem({
   website,
-}: Pick<AccountItemProps, 'website' | 'onLogin'>) {
+  onCancel,
+  onAccountCreated,
+  autoStart = false,
+}: Pick<AccountItemProps, 'website' | 'onLogin'> & {
+  onCancel?: () => void;
+  onAccountCreated?: () => void;
+  autoStart?: boolean;
+}) {
   const { _ } = useLingui();
-  const [isAdding, setIsAdding] = useState(false);
+  const [isAdding, setIsAdding] = useState(autoStart);
   const [newAccountName, setNewAccountName] = useState('');
 
   if (!isAdding) {
@@ -192,10 +199,18 @@ function NewAccountItem({
         .then(() => {
           setNewAccountName('');
           setIsAdding(false);
+          onAccountCreated?.();
+          onCancel?.();
         });
     } else {
       setIsAdding(false);
+      onCancel?.();
     }
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    onCancel?.();
   };
 
   return (
@@ -212,7 +227,7 @@ function NewAccountItem({
               if (e.key === 'Enter') {
                 handleAddAccount();
               } else if (e.key === 'Escape') {
-                setIsAdding(false);
+                handleCancel();
               }
             }}
           />
@@ -222,11 +237,7 @@ function NewAccountItem({
             <Button size="xs" onClick={handleAddAccount}>
               <Trans>Add</Trans>
             </Button>
-            <Button
-              size="xs"
-              variant="subtle"
-              onClick={() => setIsAdding(false)}
-            >
+            <Button size="xs" variant="subtle" onClick={handleCancel}>
               <Trans>Cancel</Trans>
             </Button>
           </Group>
@@ -238,10 +249,53 @@ function NewAccountItem({
 
 export function WebsiteCard(props: WebsiteCardProps) {
   const { website, accounts, onLogin } = props;
-  const [opened, { toggle }] = useDisclosure(true);
+  const [opened, { toggle, open }] = useDisclosure(accounts.length > 0);
+  const [showAddForm, setShowAddForm] = useState(false);
   const loggedInAccounts = accounts.filter(
     (account) => account.state.isLoggedIn,
   );
+
+  // When there are no accounts, show Add Account button instead of chevron
+  if (accounts.length === 0) {
+    return (
+      <Card withBorder shadow="xs" radius="md" p="xs">
+        <Flex justify="space-between" align="center">
+          <Group gap={8}>
+            <Text fw={600} size="sm" lineClamp={1} style={{ maxWidth: 200 }}>
+              {website.displayName}
+            </Text>
+            <Badge size="xs" variant="outline">
+              0
+            </Badge>
+          </Group>
+          <Button
+            variant="subtle"
+            size="xs"
+            leftSection={<IconPlus size={14} />}
+            onClick={() => setShowAddForm(true)}
+          >
+            <Trans>Add Account</Trans>
+          </Button>
+        </Flex>
+
+        {showAddForm && (
+          <>
+            <Divider my="xs" />
+            <NewAccountItem
+              website={website}
+              onLogin={onLogin}
+              onCancel={() => setShowAddForm(false)}
+              onAccountCreated={() => {
+                setShowAddForm(false);
+                open();
+              }}
+              autoStart
+            />
+          </>
+        )}
+      </Card>
+    );
+  }
 
   return (
     <Card withBorder shadow="xs" radius="md" p="xs">
@@ -274,49 +328,41 @@ export function WebsiteCard(props: WebsiteCardProps) {
       <Collapse in={opened}>
         <Divider my="xs" />
 
-        {accounts.length > 0 ? (
-          <>
-            <Grid gutter={0} mb="xs">
-              <Grid.Col span={5}>
-                <Text size="xs" c="dimmed" fw={500} pl={5}>
-                  <Trans>Account Name</Trans>
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={4}>
-                <Text size="xs" c="dimmed" fw={500}>
-                  <Trans>Status</Trans>
-                </Text>
-              </Grid.Col>
-              <Grid.Col span={3}>
-                <Text size="xs" c="dimmed" fw={500} ta="center" pr={5}>
-                  <Trans>Actions</Trans>
-                </Text>
-              </Grid.Col>
-            </Grid>
+        <Grid gutter={0} mb="xs">
+          <Grid.Col span={5}>
+            <Text size="xs" c="dimmed" fw={500} pl={5}>
+              <Trans>Account Name</Trans>
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <Text size="xs" c="dimmed" fw={500}>
+              <Trans>Status</Trans>
+            </Text>
+          </Grid.Col>
+          <Grid.Col span={3}>
+            <Text size="xs" c="dimmed" fw={500} ta="center" pr={5}>
+              <Trans>Actions</Trans>
+            </Text>
+          </Grid.Col>
+        </Grid>
 
-            <Divider mb="xs" />
+        <Divider mb="xs" />
 
-            <Box
-              style={{
-                backgroundColor: 'var(--mantine-color-body)',
-                borderRadius: 'var(--mantine-radius-sm)',
-              }}
-            >
-              {accounts.map((account) => (
-                <AccountItem
-                  key={account.id}
-                  account={account}
-                  website={website}
-                  onLogin={onLogin}
-                />
-              ))}
-            </Box>
-          </>
-        ) : (
-          <Text size="xs" c="dimmed" ta="center" py="xs">
-            <Trans>No accounts added yet</Trans>
-          </Text>
-        )}
+        <Box
+          style={{
+            backgroundColor: 'var(--mantine-color-body)',
+            borderRadius: 'var(--mantine-radius-sm)',
+          }}
+        >
+          {accounts.map((account) => (
+            <AccountItem
+              key={account.id}
+              account={account}
+              website={website}
+              onLogin={onLogin}
+            />
+          ))}
+        </Box>
 
         <NewAccountItem website={website} onLogin={onLogin} />
       </Collapse>
