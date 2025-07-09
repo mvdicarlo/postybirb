@@ -6,22 +6,12 @@ import { IconLink } from '@tabler/icons-react';
 import { useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
-import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
-
-function createErrorHandler(action: React.ReactNode) {
-  return ({ error }: { error: HttpErrorResponse }) => {
-    notifications.show({
-      title: (
-        <span>
-          {action}: {error.statusCode} {error.error}
-        </span>
-      ),
-      message: error.message,
-      color: 'red',
-    });
-  };
-}
+import {
+  createLoginHttpErrorHander,
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../website-login-helpers';
 
 export default function TelegramLoginView(
   props: LoginComponentProps<TelegramAccountData>,
@@ -108,8 +98,8 @@ export default function TelegramLoginView(
                   },
                 )
                 .catch(
-                  createErrorHandler(
-                    <Trans>Failed to send code to begin authentication.</Trans>,
+                  createLoginHttpErrorHander(
+                    <Trans>Failed to send code to begin authentication</Trans>,
                   ),
                 )
                 .then(() => {
@@ -189,11 +179,7 @@ export default function TelegramLoginView(
                       if (!res) return;
 
                       if (res.success) {
-                        notifications.show({
-                          title: <Trans>Telegram authenticated.</Trans>,
-                          message: <Trans>Success!</Trans>,
-                          color: 'green',
-                        });
+                        notifyLoginSuccess();
                         setPassword('');
                         setIsAuthenticating(false);
                       } else {
@@ -214,17 +200,11 @@ export default function TelegramLoginView(
                           setCodeInvalid(true);
                         }
 
-                        notifications.show({
-                          title: (
-                            <Trans>Failed to authenticate Telegram.</Trans>
-                          ),
-                          message: res.message || 'unknown',
-                          color: 'red',
-                        });
+                        notifyLoginFailed(res.message);
                       }
                     })
                     .catch(
-                      createErrorHandler(
+                      createLoginHttpErrorHander(
                         <Trans>Error while authenticating Telegram</Trans>,
                       ),
                     )
