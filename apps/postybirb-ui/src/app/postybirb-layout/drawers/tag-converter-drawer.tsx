@@ -655,7 +655,6 @@ export function TagConverterDrawer() {
   return (
     <ComponentErrorBoundary>
       <Drawer
-        withOverlay={false}
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"
@@ -664,7 +663,7 @@ export function TagConverterDrawer() {
         }}
         overlayProps={{
           left: getOverlayOffset(),
-          zIndex: 0,
+          zIndex: 100,
         }}
         trapFocus
         opened={visible}
