@@ -11,6 +11,7 @@ import {
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -130,30 +131,23 @@ export default class Inkbunny
       const data = this.websiteDataStore.getData();
       const { options } = postData;
 
-      // Step 1: Upload files
-      const uploadForm: Record<string, unknown> = {
-        sid: data.sid,
-      };
+      const builder = new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .setField('sid', data.sid)
+        .forEach(files, (file, index) => {
+          builder.addFile(`uploadedfile[${index}]`, file);
+        })
+        .setConditional(
+          'uploadedthumbnail[]',
+          !!files[0].thumbnail,
+          files[0].thumbnailToPostFormat(),
+        );
 
-      files.forEach((file, index) => {
-        uploadForm[`uploadedfile[${index}]`] = file.toPostFormat();
-      });
-
-      // Add thumbnail if available
-      const thumbnailFile = files[0].thumbnailToPostFormat();
-      if (thumbnailFile) {
-        uploadForm['uploadedthumbnail[]'] = thumbnailFile;
-      }
-
-      const uploadResult = await Http.post<{
+      const uploadResult = await builder.send<{
         sid?: string;
         submission_id?: string;
         error_code?: string;
-      }>(`${this.BASE_URL}/api_upload.php`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: uploadForm,
-      });
+      }>(`${this.BASE_URL}/api_upload.php`);
 
       if (!uploadResult.body?.sid || !uploadResult.body?.submission_id) {
         const errorMessage =
@@ -165,58 +159,30 @@ export default class Inkbunny
           .withAdditionalInfo(uploadResult.body);
       }
 
-      cancellationToken.throwIfCancelled();
-
       // Step 2: Edit submission details
-      const editForm: Record<string, unknown> = {
-        sid: data.sid,
-        submission_id: uploadResult.body.submission_id,
-        title: options.title,
-        desc: options.description.replace(/\[hr\]/g, '-----'),
-        keywords: this.formatTags(options.tags).join(',').trim(),
-      };
-
-      // Handle ratings
       const ratings = this.getRating(options.rating);
-      if (ratings !== '0') {
-        for (const rating of ratings.split(',')) {
-          editForm[`tag[${rating}]`] = 'yes';
-        }
-      }
+      const editBuilder = new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .setField('sid', data.sid)
+        .setField('submission_id', uploadResult.body.submission_id)
+        .setField('title', options.title)
+        .setField('desc', options.description.replace(/\[hr\]/g, '-----'))
+        .setField('keywords', this.formatTags(options.tags).join(',').trim())
+        .setConditional('type', !!options.category, options.category)
+        .setConditional('scraps', options.scraps, 'yes')
+        .setConditional('visibility', options.notify, 'yes', 'yes_nowatch')
+        .setConditional('guest_block', options.blockGuests, 'yes')
+        .setConditional('friends_only', options.friendsOnly, 'yes')
+        .forEach(ratings.split(','), (rating) => {
+          if (rating !== '0') {
+            editBuilder.setField(`tag[${rating}]`, 'yes');
+          }
+        });
 
-      // Handle submission type
-      if (options.category) {
-        editForm.type = options.category;
-      }
-
-      // Handle visibility and notification settings
-      if (options.scraps) {
-        editForm.scraps = 'yes';
-      }
-
-      if (!options.notify) {
-        editForm.visibility = 'yes_nowatch';
-      } else {
-        editForm.visibility = 'yes';
-      }
-
-      if (options.blockGuests) {
-        editForm.guest_block = 'yes';
-      }
-
-      if (options.friendsOnly) {
-        editForm.friends_only = 'yes';
-      }
-
-      cancellationToken.throwIfCancelled();
-      const editResult = await Http.post<{
+      const editResult = await editBuilder.send<{
         error_code?: string;
         submission_id?: string;
-      }>(`${this.BASE_URL}/api_editsubmission.php`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: editForm,
-      });
+      }>(`${this.BASE_URL}/api_editsubmission.php`);
 
       if (
         !editResult.body.submission_id ||
