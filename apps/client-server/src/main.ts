@@ -15,10 +15,10 @@ import {
   PostyBirbEnvConfig,
 } from '@postybirb/utils/electron';
 import compression from 'compression';
-import sharp from 'sharp';
 import { AppModule } from './app/app.module';
 import { DatabaseEntity } from './app/drizzle/models';
 import { SSL } from './app/security-and-authentication/ssl';
+import { configureSharpEnvironment, loadSharp } from './utils/sharp-loader';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
 class CustomClassSerializer extends ClassSerializerInterceptor {
@@ -35,6 +35,9 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
 }
 
 async function bootstrap() {
+  // Configure Sharp environment before any imports
+  configureSharpEnvironment();
+
   let app: INestApplication;
   if (!IsTestEnvironment()) {
     // TLS/SSL on non-test
@@ -85,7 +88,15 @@ async function bootstrap() {
 
   PostyBirbDirectories.initializeDirectories();
   ensureRemoteConfigExists();
-  sharp.cache({ files: 0 });
+  
+  // Initialize Sharp with proper configuration
+  try {
+    const sharp = await loadSharp();
+    sharp.cache({ files: 0 });
+    Logger.log('Sharp initialized successfully');
+  } catch (error) {
+    Logger.error('Failed to initialize Sharp', error);
+  }
 
   const { port } = PostyBirbEnvConfig;
 

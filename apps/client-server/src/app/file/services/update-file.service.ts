@@ -293,7 +293,7 @@ export class UpdateFileService {
    */
   private async getImageDetails(file: MulterFileInfo, buf: Buffer) {
     if (ImageUtil.isImage(file.mimetype, false)) {
-      const sharpInstance = ImageUtil.load(buf);
+      const sharpInstance = await ImageUtil.load(buf);
 
       const { height, width } = await sharpInstance.metadata();
       return { buffer: buf, width, height, sharpInstance };

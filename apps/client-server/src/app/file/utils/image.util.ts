@@ -1,4 +1,4 @@
-import sharp from 'sharp';
+import { createSharpInstance, getSharpMetadata } from '../../../utils/sharp-loader';
 
 export class ImageUtil {
   static isImage(mimetype: string, includeGIF = false): boolean {
@@ -9,12 +9,11 @@ export class ImageUtil {
     return mimetype.startsWith('image/') && mimetype !== 'image/gif';
   }
 
-  static getMetadata(bufferOrPath: Buffer | string) {
-    const image = sharp(bufferOrPath);
-    return image.metadata();
+  static async getMetadata(bufferOrPath: Buffer | string) {
+    return getSharpMetadata(bufferOrPath);
   }
 
-  static load(bufferOrPath: Buffer | string) {
-    return sharp(bufferOrPath);
+  static async load(bufferOrPath: Buffer | string) {
+    return createSharpInstance(bufferOrPath);
   }
 }

@@ -11,7 +11,7 @@ import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
 import { parse } from 'path';
-import { Sharp } from 'sharp';
+import type { Sharp } from 'sharp';
 import { ImageUtil } from '../../../file/utils/image.util';
 import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
 
@@ -62,7 +62,7 @@ export class PostFileResizerService {
   ): Promise<IFileBuffer> {
     if (!resize) return file.file;
 
-    let sharpInstance = ImageUtil.load(file.file.buffer);
+    let sharpInstance = await ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
     if (resize.width || resize.height) {
       // Check if resizing is even worth it
@@ -116,7 +116,7 @@ export class PostFileResizerService {
 
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
-    let instance = ImageUtil.load(thumb.buffer);
+    let instance = await ImageUtil.load(thumb.buffer);
     let width: number;
     let height: number;
     const metadata = await instance.metadata();
@@ -149,7 +149,7 @@ export class PostFileResizerService {
     const metadata = await instance.metadata();
     this.logger.withMetadata({ width, height, metadata }).info('Resizing');
     if (metadata.width > width || metadata.height > height) {
-      return ImageUtil.load(
+      return await ImageUtil.load(
         await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
       );
     }

@@ -9,9 +9,9 @@ import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
-import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
+import type { Sharp } from 'sharp';
 
 import {
   FileBuffer,
@@ -221,7 +221,7 @@ export class CreateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ): Promise<SubmissionFile> {
-    const sharpInstance = ImageUtil.load(buf);
+    const sharpInstance = await ImageUtil.load(buf);
 
     const meta = await sharpInstance.metadata();
     const thumbnail = await this.createFileThumbnail(
