@@ -11,9 +11,18 @@ import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { cpus } from 'os';
 import { parse } from 'path';
-import { Sharp } from 'sharp';
+
 import { ImageUtil } from '../../../file/utils/image.util';
 import { PostingFile, ThumbnailOptions } from '../../models/posting-file';
+
+// @squoosh/lib types
+type SharpLike = {
+  metadata(): Promise<{ width?: number; height?: number; format?: string; hasAlpha?: boolean }>;
+  resize(options: { width?: number; height?: number; fit?: string } | number, height?: number): SharpLike;
+  png(options?: { quality?: number; force?: boolean }): SharpLike;
+  jpeg(options?: { quality?: number; force?: boolean }): SharpLike;
+  toBuffer(): Promise<Buffer>;
+};
 
 type ResizeRequest = {
   file: ISubmissionFile;
@@ -62,22 +71,22 @@ export class PostFileResizerService {
   ): Promise<IFileBuffer> {
     if (!resize) return file.file;
 
-    let sharpInstance = ImageUtil.load(file.file.buffer);
+    let sharpInstance: SharpLike = ImageUtil.load(file.file.buffer);
     let hasBeenModified = false;
     if (resize.width || resize.height) {
       // Check if resizing is even worth it
-      if (resize.width < file.file.width || resize.height < file.file.height) {
+      if (resize.width! < file.file.width || resize.height! < file.file.height) {
         hasBeenModified = true;
         sharpInstance = await this.resizeImage(
           sharpInstance,
-          resize.width,
-          resize.height,
+          resize.width!,
+          resize.height!,
         );
       }
     }
 
     if (resize.maxBytes && file.file.buffer.length > resize.maxBytes) {
-      if (this.isFileTooLarge(sharpInstance, resize.maxBytes)) {
+      if (await this.isFileTooLarge(sharpInstance, resize.maxBytes)) {
         hasBeenModified = true;
         sharpInstance = await this.scaleDownImage(
           sharpInstance,
@@ -95,8 +104,8 @@ export class PostFileResizerService {
         fileName: `${file.id}.${m.format}`,
         buffer: await sharpInstance.toBuffer(),
         mimeType: `image/${m.format}`,
-        height: m.height,
-        width: m.width,
+        height: m.height!,
+        width: m.width!,
       };
     }
 
@@ -116,12 +125,12 @@ export class PostFileResizerService {
 
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
-    let instance = ImageUtil.load(thumb.buffer);
-    let width: number;
-    let height: number;
+    let instance: SharpLike = ImageUtil.load(thumb.buffer);
+    let width: number = 0;
+    let height: number = 0;
     const metadata = await instance.metadata();
     // Chose the larger dimension to scale down
-    if (metadata.width >= metadata.height) {
+    if (metadata.width! >= metadata.height!) {
       width = 500;
     } else {
       height = 500;
@@ -134,34 +143,32 @@ export class PostFileResizerService {
       instance = instance.jpeg({ quality: 99 });
     }
 
-    ({ width, height } = await instance.metadata());
+    const finalMeta = await instance.metadata();
     const { name } = parse(thumb.fileName);
     return {
       buffer: await instance.toBuffer(),
       fileName: `${name}${extension}`,
       mimeType: thumb.mimeType,
-      height,
-      width,
+      height: finalMeta.height!,
+      width: finalMeta.width!,
     };
   }
 
-  private async resizeImage(instance: Sharp, width: number, height: number) {
+  private async resizeImage(instance: SharpLike, width: number, height: number): Promise<SharpLike> {
     const metadata = await instance.metadata();
     this.logger.withMetadata({ width, height, metadata }).info('Resizing');
-    if (metadata.width > width || metadata.height > height) {
-      return ImageUtil.load(
-        await instance.resize({ width, height, fit: 'inside' }).toBuffer(),
-      );
+    if (metadata.width! > width || metadata.height! > height) {
+      return instance.resize({ width, height, fit: 'inside' });
     }
     return instance;
   }
 
   private async scaleDownImage(
-    instance: Sharp,
+    instance: SharpLike,
     maxBytes: number,
     allowQualityLoss: boolean,
     mimeType: string,
-  ) {
+  ): Promise<SharpLike> {
     let s = instance;
     const metadata = await instance.metadata();
     // If PNG and no alpha channel, convert to JPEG
@@ -187,8 +194,8 @@ export class PostFileResizerService {
 
       s = await this.resizeImage(
         instance, // scale against original only
-        Math.round(metadata.width * resizePercent),
-        Math.round(metadata.height * resizePercent),
+        Math.round(metadata.width! * resizePercent),
+        Math.round(metadata.height! * resizePercent),
       );
 
       if (!(await this.isFileTooLarge(s, maxBytes))) return s;
@@ -203,7 +210,7 @@ export class PostFileResizerService {
     return s;
   }
 
-  private async isFileTooLarge(instance: Sharp, maxBytes: number) {
+  private async isFileTooLarge(instance: SharpLike, maxBytes: number) {
     return (await instance.toBuffer()).length > maxBytes;
   }
 }

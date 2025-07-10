@@ -9,7 +9,6 @@ import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
 import { html as htmlBeautify } from 'js-beautify';
 import * as mammoth from 'mammoth';
-import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
@@ -21,6 +20,15 @@ import {
 import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { MulterFileInfo } from '../models/multer-file-info';
 import { ImageUtil } from '../utils/image.util';
+
+// @squoosh/lib types
+type SharpLike = {
+  metadata(): Promise<{ width?: number; height?: number; format?: string; hasAlpha?: boolean }>;
+  resize(options: { width?: number; height?: number; fit?: string } | number, height?: number): SharpLike;
+  png(options?: { quality?: number; force?: boolean }): SharpLike;
+  jpeg(options?: { quality?: number; force?: boolean }): SharpLike;
+  toBuffer(): Promise<Buffer>;
+};
 
 /**
  * A Service that defines operations for creating a SubmissionFile.
@@ -253,14 +261,14 @@ export class CreateFileService {
    * @param {SubmissionFile} fileEntity
    * @param {File} fileEntity
    * @param {MulterFileInfo} file
-   * @param {Sharp} sharpInstance
+   * @param {SharpLike} sharpInstance
    * @return {*}  {Promise<IFileBuffer>}
    */
   public async createFileThumbnail(
     tx: PostyBirbTransaction,
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
-    sharpInstance: Sharp,
+    sharpInstance: SharpLike,
   ): Promise<IFileBuffer> {
     const {
       buffer: thumbnailBuf,
@@ -282,13 +290,13 @@ export class CreateFileService {
   /**
    * Generates a thumbnail for display at specific dimension requirements.
    *
-   * @param {Sharp} sharpInstance
+   * @param {SharpLike} sharpInstance
    * @param {number} fileHeight
    * @param {number} fileWidth
    * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer }>}
    */
   public async generateThumbnail(
-    sharpInstance: Sharp,
+    sharpInstance: SharpLike,
     fileHeight: number,
     fileWidth: number,
   ): Promise<{ width: number; height: number; buffer: Buffer }> {
