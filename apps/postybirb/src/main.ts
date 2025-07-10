@@ -7,12 +7,17 @@ import {
 } from '@postybirb/utils/electron';
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import { bootstrapClientServer } from 'apps/client-server/src/main';
+// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+import { configureSharpEnvironment } from 'apps/client-server/src/utils/sharp-loader';
 import { app, BrowserWindow, session } from 'electron';
 import contextMenu from 'electron-context-menu';
 import PostyBirb from './app/app';
 import ElectronEvents from './app/events/electron.events';
 import { environment } from './environments/environment';
 import { startMetrics } from './metrics';
+
+// Configure Sharp environment as early as possible in the main process
+configureSharpEnvironment();
 
 const isOnlyInstance = app.requestSingleInstanceLock();
 if (!isOnlyInstance) {
