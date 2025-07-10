@@ -126,8 +126,8 @@ export class PostFileResizerService {
     thumb = thumb ?? { ...file.file }; // Ensure file to process
 
     let instance: SharpLike = ImageUtil.load(thumb.buffer);
-    let width: number = 0;
-    let height: number = 0;
+    let width = 0;
+    let height = 0;
     const metadata = await instance.metadata();
     // Chose the larger dimension to scale down
     if (metadata.width! >= metadata.height!) {
