@@ -28,6 +28,15 @@ asarUnpack:
   - "**/*.dylib"
   - "**/*.so"
 
+# Include Sharp native libraries as extra resources for Linux
+extraResources:
+  - from: "node_modules/@img/sharp-libvips-linux-x64/lib/"
+    to: "sharp-libvips/"
+    filter: "**/*.so*"
+  - from: "node_modules/@img/sharp-libvips-linuxmusl-x64/lib/"
+    to: "sharp-libvips-musl/"
+    filter: "**/*.so*"
+
 mac:
   category: public.app-category.productivity
   entitlements: packaging-resources/entitlements.mac.plist
@@ -68,6 +77,8 @@ linux:
         - x64
         - arm64
 
+afterPack: "./scripts/afterPack.js"
+
 # snap: # snap causes issues when it cannot publish to the snap store
 #   summary: "PostyBirb - Multi-site posting application"
 #   description: "PostyBirb helps artists post art and other multimedia to multiple websites more quickly."
@@ -102,6 +113,7 @@ rpm:
 
 appImage:
   artifactName: "${productName}-${version}-linux-${arch}.${ext}"
+  systemIntegration: ask
     
 # Generate separate update files for different Linux formats  
 

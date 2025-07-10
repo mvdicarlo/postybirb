@@ -1,6 +1,7 @@
 import { Logger } from '@postybirb/logger';
 import { IsTestEnvironment } from '@postybirb/utils/electron';
 import { join } from 'path';
+import { existsSync, readFileSync } from 'fs';
 import type { Sharp } from 'sharp';
 
 const logger = Logger();
@@ -20,15 +21,48 @@ export function configureSharpEnvironment(): void {
 
   // In Electron production, set the library path for Sharp's native modules
   if (process.type === 'browser' && process.env.NODE_ENV === 'production') {
-    const appPath = process.resourcesPath || process.cwd();
-    const sharpLibPath = join(appPath, 'app.asar.unpacked', 'node_modules', 'sharp', 'lib');
-    
-    // Add Sharp's lib directory to the library path
+    configureLibraryPaths();
+  }
+}
+
+function configureLibraryPaths(): void {
+  const appPath = process.resourcesPath || process.cwd();
+  
+  // Check for sharp-config.json created by afterPack script
+  const configPath = join(appPath, 'sharp-config.json');
+  if (existsSync(configPath)) {
+    try {
+      const config = JSON.parse(readFileSync(configPath, 'utf8'));
+      const libPaths = config.libPaths || [];
+      
+      // Add all configured Sharp lib paths to LD_LIBRARY_PATH
+      const currentLdPath = process.env.LD_LIBRARY_PATH || '';
+      const allLibPaths = [...libPaths, currentLdPath].filter(Boolean).join(':');
+      process.env.LD_LIBRARY_PATH = allLibPaths;
+      
+      logger.info(`Configured Sharp library paths from config: ${libPaths.join(', ')}`);
+      return;
+    } catch (error) {
+      logger.warn('Failed to read sharp-config.json, falling back to default paths', error);
+    }
+  }
+  
+  // Fallback to default Sharp library paths
+  const sharpLibPaths = [
+    join(appPath, 'app.asar.unpacked', 'node_modules', '@img', 'sharp-libvips-linux-x64', 'lib'),
+    join(appPath, 'app.asar.unpacked', 'node_modules', '@img', 'sharp-libvips-linuxmusl-x64', 'lib'),
+    join(appPath, 'sharp-libvips'),
+    join(appPath, 'sharp-libvips-musl')
+  ].filter(path => existsSync(path));
+  
+  if (sharpLibPaths.length > 0) {
     const currentLdPath = process.env.LD_LIBRARY_PATH || '';
-    const newLdPath = currentLdPath ? `${sharpLibPath}:${currentLdPath}` : sharpLibPath;
+    const newLdPath = [...sharpLibPaths, currentLdPath].filter(Boolean).join(':');
     process.env.LD_LIBRARY_PATH = newLdPath;
     
-    logger.info(`Configured Sharp library path: ${sharpLibPath}`);
+    logger.info(`Configured Sharp library paths: ${sharpLibPaths.join(', ')}`);
+  } else {
+    logger.warn('No Sharp library paths found during configuration');
   }
 }
 
