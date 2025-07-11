@@ -56,11 +56,11 @@ jobs:
         with:
           cache: yarn
 
-        # Note: These flags needed to speed up ci
+        # These flags needed to speed up ci
       - name: Install dependencies
         run: yarn install --frozen-lockfile --prefer-offline
 
-        # Node: Used to calculate affected
+        # Used to calculate affected
       - name: Setup SHAs
         uses: nrwl/nx-set-shas@v4
 
