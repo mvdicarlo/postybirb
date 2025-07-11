@@ -1,13 +1,12 @@
 import { Trans } from '@lingui/macro';
 import {
   ActionIcon,
-  Divider,
   Group,
   Button as MantineButton,
   Menu,
   Modal,
   Text,
-  Tooltip,
+  Tooltip
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ScheduleType } from '@postybirb/types';
@@ -141,6 +140,73 @@ export function SubmissionViewCardActions(
           </Tooltip>
         )}
 
+        {submission.schedule.scheduleType !== ScheduleType.NONE ? (
+          submission.isScheduled ? (
+            <Tooltip label={<Trans>Unschedule</Trans>} withArrow position="top">
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                onClick={() => {
+                  submissionApi.update(submission.id, {
+                    metadata: submission.metadata,
+                    ...submission.schedule,
+                    isScheduled: false,
+                    newOrUpdatedOptions: [],
+                    deletedWebsiteOptions: [],
+                  });
+                }}
+              >
+                <IconCalendarCancel size={18} />
+              </ActionIcon>
+            </Tooltip>
+          ) : (
+            <Tooltip label={<Trans>Schedule</Trans>} withArrow position="top">
+              <ActionIcon
+                disabled={
+                  !hasOptions || hasValidationIssues || submission.isQueued()
+                }
+                variant="subtle"
+                color="teal"
+                onClick={() => {
+                  submissionApi
+                    .update(submission.id, {
+                      metadata: submission.metadata,
+                      ...submission.schedule,
+                      isScheduled: true,
+                      newOrUpdatedOptions: [],
+                      deletedWebsiteOptions: [],
+                    })
+                    .then(() => {
+                      notifications.show({
+                        color: 'green',
+                        message: <Trans>Submission scheduled</Trans>,
+                      });
+                    })
+                    .catch((err) => {
+                      notifications.show({
+                        title: <Trans>Failed to schedule submission</Trans>,
+                        message: err.message,
+                        color: 'red',
+                      });
+                    });
+                }}
+              >
+                <IconCalendar size={18} />
+              </ActionIcon>
+            </Tooltip>
+          )
+        ) : null}
+
+        <Tooltip label={<Trans>Delete</Trans>} withArrow position="top">
+          <ActionIcon
+            variant="subtle"
+            color="red"
+            onClick={() => setDeleteModalOpen(true)}
+          >
+            <IconTrash size={18} />
+          </ActionIcon>
+        </Tooltip>
+
         <Menu shadow="md" width={200} position="bottom-end">
           <Menu.Target>
             <ActionIcon variant="subtle">
@@ -169,68 +235,6 @@ export function SubmissionViewCardActions(
               }}
             >
               <Trans>Duplicate</Trans>
-            </Menu.Item>
-
-            {submission.schedule.scheduleType !== ScheduleType.NONE ? (
-              submission.isScheduled ? (
-                <Menu.Item
-                  leftSection={<IconCalendarCancel size={16} />}
-                  color="red"
-                  onClick={() => {
-                    submissionApi.update(submission.id, {
-                      metadata: submission.metadata,
-                      ...submission.schedule,
-                      isScheduled: false,
-                      newOrUpdatedOptions: [],
-                      deletedWebsiteOptions: [],
-                    });
-                  }}
-                >
-                  <Trans>Unschedule</Trans>
-                </Menu.Item>
-              ) : (
-                <Menu.Item
-                  leftSection={<IconCalendar size={16} />}
-                  disabled={
-                    !hasOptions || hasValidationIssues || submission.isQueued()
-                  }
-                  onClick={() => {
-                    submissionApi
-                      .update(submission.id, {
-                        metadata: submission.metadata,
-                        ...submission.schedule,
-                        isScheduled: true,
-                        newOrUpdatedOptions: [],
-                        deletedWebsiteOptions: [],
-                      })
-                      .then(() => {
-                        notifications.show({
-                          color: 'green',
-                          message: <Trans>Submission scheduled</Trans>,
-                        });
-                      })
-                      .catch((err) => {
-                        notifications.show({
-                          title: <Trans>Failed to schedule submission</Trans>,
-                          message: err.message,
-                          color: 'red',
-                        });
-                      });
-                  }}
-                >
-                  <Trans>Schedule</Trans>
-                </Menu.Item>
-              )
-            ) : null}
-
-            <Divider />
-
-            <Menu.Item
-              leftSection={<IconTrash size={16} />}
-              color="red"
-              onClick={() => setDeleteModalOpen(true)}
-            >
-              <Trans>Delete</Trans>
             </Menu.Item>
           </Menu.Dropdown>
         </Menu>
