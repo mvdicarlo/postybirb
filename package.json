@@ -37,9 +37,7 @@
     "update": "nx migrate latest",
     "dep-graph": "nx dep-graph",
     "help": "nx help",
-    "postinstall": "run-p --continue-on-error postinstall:*",
-    "postinstall:deps": "exitzero electron-builder install-app-deps",
-    "postinstall:apply-patches": "patch-package",
+    "postinstall": "exitzero electron-builder install-app-deps",
     "setup": "run-s setup:husky",
     "setup:husky": "husky install",
     "generate-migration": "drizzle-kit generate"
@@ -94,7 +92,6 @@
     "@tiptap/pm": "^2.7.0",
     "@types/sortablejs": "^1.15.8",
     "async-mutex": "^0.5.0",
-    "axios": "^1.8.2",
     "better-sqlite3": "^11.8.0",
     "cheerio": "^1.0.0",
     "class-transformer": "^0.5.1",
@@ -104,7 +101,6 @@
     "cronstrue": "^2.50.0",
     "cropperjs": "^1.6.2",
     "dayjs": "^1.11.13",
-    "document-register-element": "1.13.1",
     "drizzle-orm": "^0.39.2",
     "electron-context-menu": "^3.1.1",
     "electron-updater": "^6.3.9",
@@ -130,7 +126,6 @@
     "postcss": "^8.4.38",
     "postcss-import": "^14.0.2",
     "postcss-inline-svg": "^6.0.0",
-    "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-query": "^3",
@@ -165,7 +160,7 @@
     "@commitlint/config-conventional": "^19.5.0",
     "@eslint-types/import": "^2.29.1",
     "@eslint-types/typescript-eslint": "6.21.0",
-    "@kayahr/jest-electron-runner": "^29.14.0",
+    "@kayahr/jest-electron-runner": "patch:@kayahr/jest-electron-runner@npm%3A29.14.0#~/.yarn/patches/@kayahr-jest-electron-runner-npm-29.14.0-4658d116d6.patch",
     "@lingui/cli": "^4.7.0",
     "@lingui/swc-plugin": "^4.0.4",
     "@lingui/vite-plugin": "^4.7.0",
@@ -237,7 +232,6 @@
     "npm-run-all": "^4.1.5",
     "nx": "17.3.2",
     "nx-electron": "17.0.1",
-    "patch-package": "^8.0.0",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "prettier": "3",
@@ -253,7 +247,8 @@
     "webpack-node-externals": "^3.0.0"
   },
   "resolutions": {
-    "glob": "9"
+    "glob": "9",
+    "jest-snapshot@npm:^29.7.0": "patch:jest-snapshot@npm%3A29.7.0#~/.yarn/patches/jest-snapshot-npm-29.7.0-15ef0a4ad6.patch"
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c"
 }
