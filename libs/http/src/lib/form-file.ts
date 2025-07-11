@@ -32,4 +32,8 @@ export class FormFile {
   setFileName(fileName: string): void {
     this.options.filename = fileName;
   }
+
+  toString(): string {
+    return `<File name="${this.fileName}" mimeType="(${this.contentType})" size="${this.buffer.length}" />`;
+  }
 }

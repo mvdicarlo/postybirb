@@ -1,11 +1,11 @@
 import { Http, HttpResponse } from '@postybirb/http';
 import {
-    DiscordAccountData,
-    ILoginState,
-    ImageResizeProps,
-    IPostResponse,
-    PostData,
-    PostResponse,
+  DiscordAccountData,
+  ILoginState,
+  ImageResizeProps,
+  IPostResponse,
+  PostData,
+  PostResponse,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
@@ -19,8 +19,8 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import {
-    DynamicFileSizeLimits,
-    WithDynamicFileSizeLimits,
+  DynamicFileSizeLimits,
+  WithDynamicFileSizeLimits,
 } from '../../models/website-modifiers/with-dynamic-file-size-limits';
 import { Website } from '../../website';
 import { DiscordFileSubmission } from './models/discord-file-submission';
@@ -139,6 +139,7 @@ export default class Discord
     });
 
     formData.payload_json = JSON.stringify(payload);
+    cancellationToken.throwIfCancelled();
     return Http.post(webhook, {
       partition: undefined,
       type: 'multipart',
@@ -161,6 +162,7 @@ export default class Discord
       postData.options.description,
       postData.options.useTitle,
     );
+    cancellationToken.throwIfCancelled();
     return Http.post(webhook, {
       partition: undefined,
       type: 'json',

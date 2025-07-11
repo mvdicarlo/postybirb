@@ -12,6 +12,7 @@ import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -147,20 +148,23 @@ export default class KoFi
     const imageUploadIds = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
-
       // Upload the file
-      const upload = await Http.post<{ ExternalId: string }[]>(
+      const uploadBuilder = new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .addFile('file[0]', file)
+        .setField('filenames', file.fileName);
+
+      const upload = await uploadBuilder.send<{ ExternalId: string }[]>(
         `${this.BASE_URL}/api/media/gallery-item/upload?throwOnError=true`,
-        {
-          partition: this.accountId,
-          type: 'multipart',
-          data: {
-            filenames: file.fileName,
-            'file[0]': file.toPostFormat(),
-          },
-        },
       );
+
+      if (typeof upload.body !== 'string') {
+        imageUploadIds.push(upload.body[0].ExternalId);
+      } else {
+        return PostResponse.fromWebsite(this)
+          .withException(new Error('Failed to parse upload response'))
+          .withAdditionalInfo(upload.body);
+      }
 
       if (typeof upload.body !== 'string') {
         imageUploadIds.push(upload.body[0].ExternalId);
@@ -171,34 +175,29 @@ export default class KoFi
       }
     }
 
-    cancellationToken.throwIfCancelled();
-
     // Create the gallery post
-    const post = await Http.post<{ success: boolean }>(
+    const postBuilder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .setField('Album', postData.options.album || '')
+      .setField('Audience', postData.options.audience)
+      .setField('Description', postData.options.description)
+      .setField('EnableHiRes', postData.options.hiRes)
+      .setField('GalleryItemId', '')
+      .setField('ImageUploadIds', imageUploadIds)
+      .setField('PostToTwitter', false)
+      .setField('ScheduleEnabled', false)
+      .setField('Title', postData.options.title)
+      .setField('UploadAsIndividualImages', false)
+      .withHeaders({
+        Accept: 'text/html, */*',
+        Pragma: 'no-cache',
+        'Cache-Control': 'no-cache',
+        Referer: 'https://ko-fi.com/',
+        Connection: 'keep-alive',
+      });
+
+    const post = await postBuilder.send<{ success: boolean }>(
       `${this.BASE_URL}/Gallery/AddGalleryItem`,
-      {
-        partition: this.accountId,
-        type: 'json',
-        data: {
-          Album: postData.options.album || '',
-          Audience: postData.options.audience,
-          Description: postData.options.description,
-          EnableHiRes: postData.options.hiRes,
-          GalleryItemId: '',
-          ImageUploadIds: imageUploadIds,
-          PostToTwitter: false,
-          ScheduleEnabled: false,
-          Title: postData.options.title,
-          UploadAsIndividualImages: false,
-        },
-        headers: {
-          Accept: 'text/html, */*',
-          Pragma: 'no-cache',
-          'Cache-Control': 'no-cache',
-          Referer: 'https://ko-fi.com/',
-          Connection: 'keep-alive',
-        },
-      },
     );
 
     // Check for success in response
@@ -239,37 +238,34 @@ export default class KoFi
     postData: PostData<KoFiMessageSubmission>,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    const data = {
-      type: 'Article',
-      blogPostId: '0',
-      scheduledDate: undefined,
-      scheduled: undefined,
-      scheduledOffset: undefined,
-      attachmentIds: undefined,
-      blogPostTitle: postData.options.title,
-      postBody: postData.options.description,
-      featuredImage: undefined,
-      noFeaturedImage: false,
-      FeaturedImageAltText: undefined,
-      embedUrl: undefined,
-      tags: postData.options.tags.join(','),
-      postAudience: postData.options.audience,
-      submit: 'publish',
-    };
-
-    cancellationToken.throwIfCancelled();
-    const post = await Http.post<string>(`${this.BASE_URL}/Blog/AddBlogPost`, {
-      partition: this.accountId,
-      type: 'multipart',
-      data,
-      headers: {
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .setField('type', 'Article')
+      .setField('blogPostId', '0')
+      .setField('scheduledDate', undefined)
+      .setField('scheduled', undefined)
+      .setField('scheduledOffset', undefined)
+      .setField('attachmentIds', undefined)
+      .setField('blogPostTitle', postData.options.title)
+      .setField('postBody', postData.options.description)
+      .setField('featuredImage', undefined)
+      .setField('noFeaturedImage', false)
+      .setField('FeaturedImageAltText', undefined)
+      .setField('embedUrl', undefined)
+      .setField('tags', postData.options.tags.join(','))
+      .setField('postAudience', postData.options.audience)
+      .setField('submit', 'publish')
+      .withHeaders({
         Accept: 'text/html, */*',
         Pragma: 'no-cache',
         'Cache-Control': 'no-cache',
         Referer: 'https://ko-fi.com/',
         Connection: 'keep-alive',
-      },
-    });
+      });
+
+    const post = await builder.send<string>(
+      `${this.BASE_URL}/Blog/AddBlogPost`,
+    );
 
     if (typeof post.body === 'object') {
       const errBody = post.body as {

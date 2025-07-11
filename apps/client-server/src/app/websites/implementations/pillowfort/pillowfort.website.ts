@@ -11,6 +11,7 @@ import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -108,7 +109,8 @@ export default class Pillowfort
       }
 
       // Upload each image first
-      const uploadedImages = [];
+      const uploadedImages: Array<{ full_image: string; small_image: string }> =
+        [];
       for (const file of files) {
         cancellationToken.throwIfCancelled();
 
@@ -137,45 +139,40 @@ export default class Pillowfort
         uploadedImages.push(upload.body);
       }
 
-      // Prepare form data
-      const form: Record<string, unknown> = {
-        authenticity_token: authToken,
-        utf8: '✓',
-        post_to: 'current_user',
-        post_type: 'picture',
-        title: postData.options.useTitle ? postData.options.title : '',
-        content: `<p>${postData.options.description}</p>`,
-        privacy: postData.options.privacy,
-        tags: (postData.options.tags || []).join(', '),
-        commit: 'Submit',
-      };
-
-      if (postData.options.allowReblogging) {
-        form.rebloggable = 'on';
-      }
-
-      if (postData.options.allowComments) {
-        form.commentable = 'on';
-      }
-
-      // Add the uploaded images to the form
-      form['picture[][pic_url]'] = uploadedImages.map(
-        (upload) => upload.full_image,
-      );
-      form['picture[][small_image_url]'] = uploadedImages.map(
-        (upload) => upload.small_image,
-      );
-      form['picture[][b2_lg_url]'] = '';
-      form['picture[][b2_sm_url]'] = '';
-      form['picture[][row]'] = uploadedImages.map((_, i) => `${i + 1}`);
-      form['picture[][col]'] = '0';
+      const builder = new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .setField('authenticity_token', authToken)
+        .setField('utf8', '✓')
+        .setField('post_to', 'current_user')
+        .setField('post_type', 'picture')
+        .setField(
+          'title',
+          postData.options.useTitle ? postData.options.title : '',
+        )
+        .setField('content', `<p>${postData.options.description}</p>`)
+        .setField('privacy', postData.options.privacy)
+        .setField('tags', postData.options.tags.join(', '))
+        .setField('commit', 'Submit')
+        .setConditional('rebloggable', postData.options.allowReblogging, 'on')
+        .setConditional('commentable', postData.options.allowComments, 'on')
+        .setField(
+          'picture[][pic_url]',
+          uploadedImages.map((upload) => upload.full_image),
+        )
+        .setField(
+          'picture[][small_image_url]',
+          uploadedImages.map((upload) => upload.small_image),
+        )
+        .setField('picture[][b2_lg_url]', '')
+        .setField('picture[][b2_sm_url]', '')
+        .setField(
+          'picture[][row]',
+          uploadedImages.map((_, i) => `${i + 1}`),
+        )
+        .setField('picture[][col]', '0');
 
       // Submit the post
-      const post = await Http.post<string>(`${this.BASE_URL}/posts/create`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: form,
-      });
+      const post = await builder.send<string>(`${this.BASE_URL}/posts/create`);
 
       if (post.statusCode === 200) {
         return PostResponse.fromWebsite(this);
@@ -220,37 +217,30 @@ export default class Pillowfort
           .withAdditionalInfo({ authToken });
       }
 
-      // Prepare form data
-      const form: Record<string, unknown> = {
-        authenticity_token: authToken,
-        utf8: '✓',
-        post_to: 'current_user',
-        post_type: 'text',
-        title: postData.options.useTitle ? postData.options.title : '',
-        content: postData.options.description.toString(),
-        privacy: postData.options.privacy,
-        tags: (postData.options.tags || []).join(', '),
-        commit: 'Submit',
-      };
-
-      if (postData.options.allowReblogging) {
-        form.rebloggable = 'on';
-      }
-
-      if (postData.options.allowComments) {
-        form.commentable = 'on';
-      }
-
-      if (postData.options.rating !== SubmissionRating.GENERAL) {
-        form.nsfw = 'on';
-      }
+      const builder = new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .setField('authenticity_token', authToken)
+        .setField('utf8', '✓')
+        .setField('post_to', 'current_user')
+        .setField('post_type', 'text')
+        .setField(
+          'title',
+          postData.options.useTitle ? postData.options.title : '',
+        )
+        .setField('content', `<p>${postData.options.description}</p>`)
+        .setField('privacy', postData.options.privacy)
+        .setField('tags', postData.options.tags.join(', '))
+        .setField('commit', 'Submit')
+        .setConditional('rebloggable', postData.options.allowReblogging, 'on')
+        .setConditional('commentable', postData.options.allowComments, 'on')
+        .setConditional(
+          'nsfw',
+          postData.options.rating !== SubmissionRating.GENERAL,
+          'on',
+        );
 
       // Submit the post
-      const post = await Http.post<string>(`${this.BASE_URL}/posts/create`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: form,
-      });
+      const post = await builder.send<string>(`${this.BASE_URL}/posts/create`);
 
       if (post.statusCode === 200) {
         return PostResponse.fromWebsite(this);

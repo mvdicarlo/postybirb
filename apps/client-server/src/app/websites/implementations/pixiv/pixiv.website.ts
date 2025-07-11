@@ -1,16 +1,17 @@
 import { Http } from '@postybirb/http';
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    PostData,
-    PostResponse,
-    SubmissionRating
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { load } from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -90,68 +91,57 @@ export default class Pixiv
     const { options } = postData;
     const postFiles = files.map((file) => file.toPostFormat());
 
-    const form: Record<string, unknown> = {
-      title: options.title.substring(0, 32),
-      caption: options.description,
-      'tags[]': options.tags.slice(0, 10),
-      allowTagEdit: options.communityTags ? 'true' : 'false',
-      xRestrict: this.getContentRating(options.rating),
-      sexual: options.sexual ? 'true' : 'false',
-      aiType: options.aiGenerated ? 'aiGenerated' : 'notAiGenerated',
-      restrict: 'public',
-      responseAutoAccept: 'false',
-      'suggestedtags[]': '',
-      original: options.original ? 'true' : 'false',
-      'ratings[violent]': 'false',
-      'ratings[drug]': 'false',
-      'ratings[thoughts]': 'false',
-      'ratings[antisocial]': 'false',
-      'ratings[religion]': 'false',
-      'attributes[yuri]': 'false',
-      'attributes[bl]': 'false',
-      'attributes[furry]': 'false',
-      'attributes[lo]': 'false',
-      tweet: 'false',
-      allowComment: 'true',
-      'titleTranslations[en]': '',
-      'captionTranslations[en]': '',
-      'files[]': postFiles,
-    };
-
-    postFiles.forEach((_, index) => {
-      form[`imageOrder[${index}][type]`] = 'newFile';
-      form[`imageOrder[${index}][fileKey]`] = `${index}`;
-    });
-
-    const sexualType = form.xRestrict;
-    if (sexualType !== 'general') {
-      delete form.sexual;
-      if (options.matureContent) {
-        options.matureContent.forEach((c) => {
-          form[`attributes[${c}]`] = 'true';
+    const contentRating = this.getContentRating(options.rating);
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .setField('title', options.title.substring(0, 32))
+      .setField('caption', options.description)
+      .setField('tags[]', options.tags.slice(0, 10))
+      .setField('allowTagEdit', options.communityTags)
+      .setField('xRestrict', contentRating)
+      .setField('sexual', options.sexual)
+      .setConditional(
+        'aiType',
+        options.aiGenerated,
+        'aiGenerated',
+        'notAiGenerated',
+      )
+      .setField('restrict', 'public')
+      .setField('responseAutoAccept', 'false')
+      .setField('suggestedtags[]', '')
+      .setField('original', options.original)
+      .setField('ratings[violent]', 'false')
+      .setField('ratings[drug]', 'false')
+      .setField('ratings[thoughts]', 'false')
+      .setField('ratings[antisocial]', 'false')
+      .setField('ratings[religion]', 'false')
+      .setField('attributes[yuri]', 'false')
+      .setField('attributes[bl]', 'false')
+      .setField('attributes[furry]', 'false')
+      .setField('attributes[lo]', 'false')
+      .setField('tweet', 'false')
+      .setField('allowComment', 'true')
+      .setField('titleTranslations[en]', '')
+      .setField('captionTranslations[en]', '')
+      .addFiles('files[]', files)
+      .forEach(postFiles, (_, index, b) => {
+        b.setField(`imageOrder[${index}][type]`, 'newFile');
+        b.setField(`imageOrder[${index}][fileKey]`, `${index}`);
+      })
+      .forEach(options.containsContent, (content, _, b) => {
+        b.setField(`ratings[${content}]`, 'true');
+      })
+      .whenTrue(contentRating !== 'general', (b) => {
+        b.removeField('sexual');
+        b.forEach(options.matureContent, (c) => {
+          b.setField(`attributes[${c}]`, 'true');
         });
-      }
-    }
-
-    if (options.containsContent) {
-      options.containsContent.forEach((c) => {
-        form[`ratings[${c}]`] = 'true';
       });
-    }
 
-    cancellationToken.throwIfCancelled();
     try {
-      const post = await Http.post<{ error: string }>(
-        `${this.BASE_URL}/ajax/work/create/illustration`,
-        {
-          partition: this.accountId,
-          type: 'multipart',
-          data: form,
-          headers: {
-            'x-csrf-token': token,
-          },
-        },
-      );
+      const post = await builder.withHeader('x-csrf-token', token).send<{
+        error: string;
+      }>(`${this.BASE_URL}/ajax/work/create/illustration`);
 
       if (!post.body.error) {
         return PostResponse.fromWebsite(this);
