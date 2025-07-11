@@ -16,7 +16,7 @@ export function notifyLoginFailed(message?: React.ReactNode) {
     color: 'red',
     title: <Trans>Login failed</Trans>,
     message: message ?? (
-      <Trans>Check that providen credentials are valid</Trans>
+      <Trans>Check that provided credentials are valid</Trans>
     ),
   });
 }
