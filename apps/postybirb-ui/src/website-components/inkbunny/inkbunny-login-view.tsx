@@ -1,18 +1,21 @@
 import { Trans } from '@lingui/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    PasswordInput,
-    Stack,
-    TextInput,
+  Alert,
+  Box,
+  Button,
+  PasswordInput,
+  Stack,
+  TextInput,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { InkbunnyAccountData } from '@postybirb/types';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
 import { LoginComponentProps } from '../../models/login-component-props';
+import {
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../website-login-helpers';
 
 const formId = 'inkbunny-login-form';
 
@@ -56,20 +59,12 @@ export default function InkbunnyLoginView(
           },
         });
 
-        notifications.show({
-          title: <Trans>Login successful</Trans>,
-          message: <Trans>Successfully logged into Inkbunny</Trans>,
-          color: 'green',
-        });
+        notifyLoginSuccess();
       } else {
         throw new Error(authData.error_message);
       }
     } catch (error) {
-      notifications.show({
-        title: <Trans>Login failed</Trans>,
-        message: (error as Error).message,
-        color: 'red',
-      });
+      notifyLoginFailed((error as Error).message);
     } finally {
       setSubmitting(false);
       setPassword(''); // Clear password for security
