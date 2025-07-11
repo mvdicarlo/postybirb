@@ -58,7 +58,7 @@ jobs:
 
         # These flags needed to speed up ci
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --prefer-offline
+        run: yarn install --immutable --cached
 
         # Used to calculate affected
       - name: Setup SHAs
