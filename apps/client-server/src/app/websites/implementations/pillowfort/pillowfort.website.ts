@@ -155,10 +155,14 @@ export default class Pillowfort
         .setField('commit', 'Submit')
         .setConditional('rebloggable', postData.options.allowReblogging, 'on')
         .setConditional('commentable', postData.options.allowComments, 'on')
-        .forEach(uploadedImages, (upload, index, b) => {
-          b.setField(`picture[][pic_url]`, upload.full_image);
-          b.setField(`picture[][small_image_url]`, upload.small_image);
-        })
+        .setField(
+          'picture[][pic_url]',
+          uploadedImages.map((upload) => upload.full_image),
+        )
+        .setField(
+          'picture[][small_image_url]',
+          uploadedImages.map((upload) => upload.small_image),
+        )
         .setField('picture[][b2_lg_url]', '')
         .setField('picture[][b2_sm_url]', '')
         .setField(
