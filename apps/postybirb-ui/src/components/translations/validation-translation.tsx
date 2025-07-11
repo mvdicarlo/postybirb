@@ -6,6 +6,7 @@ import {
   ValidationMessages,
 } from '@postybirb/types';
 import { filesize } from 'filesize';
+import { ExternalLink } from '../external-link/external-link';
 
 type TranslationsMap = {
   [K in keyof ValidationMessages]: (
@@ -221,6 +222,88 @@ export const TranslationMessages: TranslationsMap = {
   'validation.file.bluesky.rating-matches-default': () => (
     <Trans>
       Make sure that the default rating matches Bluesky Label Rating.
+    </Trans>
+  ),
+
+  'validation.file.e621.tags.network-error': () => (
+    <Trans>Failed to validate tags. Please check them manually</Trans>
+  ),
+
+  'validation.file.e621.tags.recommended': ({ generalTags }) => (
+    <Trans>
+      It is recommended to add at least 10 general tags{' '}
+      <strong>( {generalTags} / 10 )</strong>. See{' '}
+      <ExternalLink href="https://e621.net/help/tagging_checklist">
+        tagging checklist
+      </ExternalLink>
+    </Trans>
+  ),
+
+  'validation.file.e621.user-feedback.network-error': () => (
+    <Trans>
+      Failed to get user warnings. You can check your account manually
+    </Trans>
+  ),
+
+  'validation.file.e621.user-feedback.recent': ({
+    feedback,
+    negativeOrNeutral,
+    username,
+  }) => (
+    <Trans>
+      You have recent {negativeOrNeutral} feedback: {feedback}, you can view it
+      <ExternalLink
+        href={`https://e621.net/user_feedbacks?search[user_name]=${username}`}
+      >
+        here
+      </ExternalLink>
+    </Trans>
+  ),
+
+  'validation.file.e621.tags.missing': ({ tag }) => (
+    <Trans>
+      Tag{' '}
+      <ExternalLink
+        href={`https://e621.net/wiki_pages/show_or_new?title=${tag}`}
+      >
+        {tag}
+      </ExternalLink>{' '}
+      does not exist yet or is invalid.
+    </Trans>
+  ),
+
+  'validation.file.e621.tags.missing-create': ({ tag }) => (
+    <Trans>
+      Tag{' '}
+      <ExternalLink
+        href={`https://e621.net/wiki_pages/show_or_new?title=${tag}`}
+      >
+        {tag}
+      </ExternalLink>{' '}
+      does not exist yet or is invalid. If you want to create a new tag, make a
+      post with it, then go{' '}
+      <ExternalLink href={`https://e621.net/tags?search[name]=${tag}`}>
+        here
+      </ExternalLink>
+      , press edit and select tag category
+    </Trans>
+  ),
+
+  'validation.file.e621.tags.invalid': ({ tag }) => (
+    <Trans>
+      Tag{' '}
+      <ExternalLink
+        href={`https://e621.net/wiki_pages/show_or_new?title=${tag}`}
+      >
+        {tag}
+      </ExternalLink>{' '}
+      is invalid.
+    </Trans>
+  ),
+
+  'validation.file.e621.tags.low-use': ({ tag, postCount }) => (
+    <Trans>
+      Tag {tag} has {postCount} post(s). Tag may be invalid or low use
     </Trans>
   ),
 };

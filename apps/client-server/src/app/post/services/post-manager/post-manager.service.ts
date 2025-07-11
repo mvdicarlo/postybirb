@@ -14,7 +14,6 @@ import {
   PostData,
   PostRecordResumeMode,
   PostRecordState,
-
   PostResponse,
   ScheduleType,
   SubmissionId,
@@ -679,7 +678,7 @@ export class PostManagerService {
   ) {
     let resizeParams = instance.calculateImageResize(file);
     const fileParams: ModifiedFileDimension =
-      submission.metadata[file.id]?.dimensions;
+      submission.metadata.fileMetadata[file.id].dimensions[instance.accountId];
     if (fileParams) {
       if (fileParams.width) {
         if (!resizeParams) {

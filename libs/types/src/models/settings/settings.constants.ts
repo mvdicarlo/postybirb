@@ -15,5 +15,9 @@ export class SettingsConstants {
       showOnDirectoryWatcherError: true,
       showOnDirectoryWatcherSuccess: true,
     },
+    tagSearchProvider: {
+      id: undefined,
+      showWikiInHelpOnHover: false,
+    },
   };
 }

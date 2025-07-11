@@ -41,6 +41,7 @@ export const FieldLabelTranslations = {
   hiRes: msg`Offer hi-res download (gold only)`,
   friendsOnly: msg`Friends only`,
   blockGuests: msg`Block guests`,
+  parentId: msg`Parent ID`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

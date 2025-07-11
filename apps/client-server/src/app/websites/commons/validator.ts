@@ -24,7 +24,7 @@ export class SubmissionValidator<Fields extends IWebsiteFormFields = never> {
   /**
    * Adds error to the validation result
    *
-   * @param id - Error localization message id
+   * @param id - Error localization message id. {@link ValidationMessages}
    * @param values - Values to fill in the message
    * @param field - Associates the error to a input field
    */
@@ -39,7 +39,7 @@ export class SubmissionValidator<Fields extends IWebsiteFormFields = never> {
   /**
    * Adds warning to the validation result
    *
-   * @param id - Warning localization message id
+   * @param id - Warning localization message id. {@link ValidationMessages}
    * @param values - Values to fill in the message
    * @param field - Associates the warning to a input field
    */

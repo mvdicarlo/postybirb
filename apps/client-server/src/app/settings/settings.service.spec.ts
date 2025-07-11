@@ -40,6 +40,10 @@ describe('SettingsService', () => {
         showOnPostError: true,
         showOnPostSuccess: true,
       },
+      tagSearchProvider: {
+        id: undefined,
+        showWikiInHelpOnHover: false,
+      },
       hiddenWebsites: ['test'],
       language: 'en',
       allowAd: true,
