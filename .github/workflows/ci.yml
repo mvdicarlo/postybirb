@@ -58,7 +58,7 @@ jobs:
 
         # These flags needed to speed up ci
       - name: Install dependencies
-        run: yarn install --immutable --cached
+        run: yarn install --immutable
 
         # Used to calculate affected
       - name: Setup SHAs
