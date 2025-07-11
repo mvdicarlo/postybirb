@@ -24,6 +24,10 @@ jobs:
         with:
           fetch-depth: 0
 
+        # This is needed to be run before node setup, because node setup uses yarn to get cache dir
+      - name: Enable corepack to use Yarn v4
+        run: corepack enable
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
