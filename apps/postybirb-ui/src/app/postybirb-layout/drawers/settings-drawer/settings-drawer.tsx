@@ -37,7 +37,6 @@ export function SettingsDrawer() {
   return (
     <ComponentErrorBoundary>
       <Drawer
-        withOverlay={false}
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"

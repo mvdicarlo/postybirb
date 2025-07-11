@@ -497,7 +497,6 @@ export function TagGroupDrawer() {
   return (
     <ComponentErrorBoundary>
       <Drawer
-        withOverlay={false}
         closeOnClickOutside
         ml={-marginOffset}
         size="lg"
@@ -506,7 +505,7 @@ export function TagGroupDrawer() {
         }}
         overlayProps={{
           left: getOverlayOffset(),
-          zIndex: 0,
+          zIndex: 100,
         }}
         trapFocus
         opened={visible}
