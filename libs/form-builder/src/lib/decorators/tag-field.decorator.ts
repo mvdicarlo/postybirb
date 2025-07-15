@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { createFieldDecorator } from '../utils/assign-metadata';
 
 type TagExtraFields = {
+  searchProviderId?: string;
   minTags?: number;
   maxTags?: number;
   maxTagLength?: number;

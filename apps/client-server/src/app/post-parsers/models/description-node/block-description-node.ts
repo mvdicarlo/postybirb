@@ -83,18 +83,26 @@ export class DescriptionBlockNode
 
   toBBCodeString(): string {
     let block = null;
-    if (this.type === 'paragraph') block = null;
-    if (this.type === 'heading') block = `h${this.props.level}`;
-    if (this.type === 'hr') return '[hr]';
-    if (block === null) throw new Error(`Unsupported block type: ${this.type}`);
+    let text = null;
 
     // No block type for a base paragraph
-    if (block === null) {
-      return this.content.map((child) => child.toBBCodeString()).join('\n');
+    if (this.type === 'paragraph') {
+      text = this.content.map((child) => child.toBBCodeString()).join('\n');
     }
+    if (this.type === 'hr') return '[hr]';
+    if (this.type === 'heading') block = `h${this.props.level}`;
 
-    return `[${block}]${this.content
+    if (block === null && text === null)
+      throw new Error(`Unsupported block type: ${this.type}`);
+
+    text ??= `[${block}]${this.content
       .map((child) => child.toBBCodeString())
       .join('')}[/${block}]`;
+
+    if (this.props.textColor && this.props.textColor !== 'default') {
+      text = `[color=${this.props.textColor}]${text}[/color]`;
+    }
+
+    return text;
   }
 }

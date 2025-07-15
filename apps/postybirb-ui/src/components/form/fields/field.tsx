@@ -78,13 +78,22 @@ export function Field(props: FormFieldProps): JSX.Element | null {
   }
 
   const hasErrors = validations.errors?.length;
-  return (
-    <Box
-      {...(hasErrors
-        ? { pr: 6, pb: 3, pl: 6, className: 'postybirb-field-error' }
-        : {})}
-    >
-      {formField}
-    </Box>
-  );
+  const hasWarnings = validations.warnings?.length;
+
+  if (hasErrors || hasWarnings) {
+    return (
+      <Box
+        pr={6}
+        pb={3}
+        pl={6}
+        className={
+          hasErrors ? 'postybirb-field-error' : 'postybirb-field-warning'
+        }
+      >
+        {formField}
+      </Box>
+    );
+  }
+
+  return <Box>{formField}</Box>;
 }

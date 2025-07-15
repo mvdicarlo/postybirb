@@ -60,6 +60,6 @@ jobs:
       - name: Setup SHAs
         uses: nrwl/nx-set-shas@v4
 
-      - name: Run ${{ matrix.command }}
-        run: ${{ matrix.command }}
+      - name: Run ${{ matrix.ci.name }}
+        run: ${{ matrix.ci.command }}
         timeout-minutes: 30

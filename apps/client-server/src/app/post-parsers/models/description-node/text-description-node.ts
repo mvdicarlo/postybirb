@@ -116,7 +116,7 @@ export class DescriptionTextNode
     }
 
     const text = this.text.replace(/\n/g, '[br]');
-    let segmentedText = `[${segments.join('')}][/${segments.reverse().join('')}][${text}]`;
+    let segmentedText = `[${segments.join('')}]${text}[/${segments.reverse().join('')}]`;
 
     if (this.styles.textColor && this.styles.textColor !== 'default') {
       segmentedText = `[color=${this.styles.textColor}]${segmentedText}[/color]`;

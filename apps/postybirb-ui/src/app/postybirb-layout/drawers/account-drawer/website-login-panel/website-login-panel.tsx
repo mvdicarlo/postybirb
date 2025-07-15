@@ -106,6 +106,7 @@ export function WebsiteLoginPanel(props: WebsiteLoginPanelProps) {
       style={{
         left: totalOffset,
         width: `calc(100vw - ${widthOffset}px)`,
+        height: '100vh',
       }}
     >
       <Paper

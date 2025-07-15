@@ -71,17 +71,12 @@ function AppImage() {
   );
 }
 
-const navigationTargets: (SideNavLinkProps & {
-  key: string;
-})[] = [
-  {
-    type: 'drawer',
-    key: 'accounts',
-    globalStateKey: 'accountDrawerVisible',
-    icon: <IconUser />,
-    label: <Trans>Accounts</Trans>,
-    kbd: AccountKeybinding,
-  },
+const navigationTargets: (
+  | null
+  | (SideNavLinkProps & {
+      key: string;
+    })
+)[] = [
   {
     type: 'link',
     key: 'home',
@@ -105,6 +100,23 @@ const navigationTargets: (SideNavLinkProps & {
     label: <Trans>Send Messages</Trans>,
     location: MessageSubmissionPath,
     kbd: MessageSubmissionsKeybinding,
+  },
+  null,
+  {
+    type: 'drawer',
+    key: 'notifications',
+    label: <Trans>Notifications</Trans>,
+    globalStateKey: 'notificationsDrawerVisible',
+    icon: <NotificationsIcon />,
+    kbd: 'Alt+N',
+  },
+  {
+    type: 'drawer',
+    key: 'accounts',
+    globalStateKey: 'accountDrawerVisible',
+    icon: <IconUser />,
+    label: <Trans>Accounts</Trans>,
+    kbd: AccountKeybinding,
   },
   {
     type: 'drawer',
@@ -224,10 +236,26 @@ function Layout() {
   );
 }
 
+function NotificationsIcon() {
+  const { state: notifications } = useStore(NotificationStore);
+  return (
+    <>
+      <IconBell />
+      {notifications.filter((n) => !n.isRead).length ? (
+        <Indicator
+          inline
+          color="red"
+          size={6}
+          style={{ marginBottom: '1rem' }}
+        />
+      ) : null}
+    </>
+  );
+}
+
 export function PostyBirbLayout() {
   const [sideNavToggled, { toggle: toggleSideNav }] = useDisclosure(true);
   const { colorScheme } = useMantineColorScheme();
-  const { state: notifications } = useStore(NotificationStore);
   const isDark = colorScheme === 'dark';
 
   return (
@@ -238,7 +266,11 @@ export function PostyBirbLayout() {
       }}
       className={isDark ? classes.darkAppShell : ''}
     >
-      <AppShell.Navbar id="postybirb__navbar" className={classes.navbar}>
+      <AppShell.Navbar
+        id="postybirb__navbar"
+        zIndex={1000}
+        className={classes.navbar}
+      >
         <AppShell.Section className={classes.navbarHeader}>
           <Box className={classes.logoWrapper}>
             <AppImage />
@@ -267,28 +299,12 @@ export function PostyBirbLayout() {
               kbd={SpotlightKeybinding}
               collapsed={sideNavToggled}
             />
-            <SideNavLink
-              key="notifications"
-              label={<Trans>Notifications</Trans>}
-              type="drawer"
-              globalStateKey="notificationsDrawerVisible"
-              icon={
-                <>
-                  <IconBell />
-                  {notifications.filter((n) => !n.isRead).length ? (
-                    <Indicator
-                      inline
-                      color="red"
-                      size={6}
-                      style={{ marginBottom: '1rem' }}
-                    />
-                  ) : null}
-                </>
+            {navigationTargets.map((target, i) => {
+              if (!target) {
+                // eslint-disable-next-line react/no-array-index-key
+                return <Divider size="md" mr={6} ml={6} key={i.toString()} />;
               }
-              kbd="Alt+N"
-              collapsed={sideNavToggled}
-            />
-            {navigationTargets.map((target) => {
+
               const { key, ...rest } = target;
               return (
                 <SideNavLink key={key} {...rest} collapsed={sideNavToggled} />

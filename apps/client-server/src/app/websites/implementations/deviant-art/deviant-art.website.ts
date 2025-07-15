@@ -1,17 +1,18 @@
 import { SelectOptionSingle } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-    FileType,
-    ILoginState,
-    ImageResizeProps,
-    ISubmissionFile,
-    PostData,
-    PostResponse,
-    SubmissionRating,
+  FileType,
+  ILoginState,
+  ImageResizeProps,
+  ISubmissionFile,
+  PostData,
+  PostResponse,
+  SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -37,7 +38,7 @@ interface DeviantArtFolder {
 
 @WebsiteMetadata({
   name: 'deviant-art',
-  displayName: 'deviant-art',
+  displayName: 'DeviantArt',
 })
 @UserLoginFlow('https://www.deviantart.com/users/login')
 @SupportsUsernameShortcut({
@@ -152,7 +153,15 @@ export default class DeviantArt
     cancellationToken.throwIfCancelled();
 
     // File upload step
-    const fileUpload = await Http.post<{
+    const uploadBuilder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .setField('da_minor_version', this.DA_API_VERSION)
+      .setField('csrf_token', await this.getCSRF())
+      .setField('use_defaults', 'true')
+      .setField('folder_name', 'Saved Submissions')
+      .addFile('upload_file', files[0]);
+
+    const fileUpload = await uploadBuilder.send<{
       deviationId: number;
       status: string;
       stashId: number;
@@ -160,25 +169,13 @@ export default class DeviantArt
       size: number;
       cursor: string;
       title: string;
-    }>(`${this.BASE_URL}/_puppy/dashared/deviation/submit/upload/deviation`, {
-      partition: this.accountId,
-      type: 'multipart',
-      data: {
-        upload_file: files[0].toPostFormat(),
-        use_defaults: 'true',
-        folder_name: 'Saved Submissions',
-        da_minor_version: this.DA_API_VERSION,
-        csrf_token: await this.getCSRF(),
-      },
-    });
+    }>(`${this.BASE_URL}/_puppy/dashared/deviation/submit/upload/deviation`);
 
     if (fileUpload.body.status !== 'success') {
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(fileUpload.body)
         .withException(new Error('Failed to upload file.'));
     }
-
-    cancellationToken.throwIfCancelled();
 
     // Determine if submission is mature
     const mature =
@@ -187,64 +184,53 @@ export default class DeviantArt
       postData.options.rating === SubmissionRating.MATURE ||
       postData.options.rating === SubmissionRating.EXTREME;
 
+    const folders = this.getWebsiteData().folders as SelectOptionSingle[];
+    const featured = folders.find((f) => f.label === 'Featured');
+
     // Prepare update data
-    const updateBody: Record<string, unknown> = {
-      allow_comments: !postData.options.disableComments,
-      allow_free_download: postData.options.allowFreeDownload,
-      deviationid: fileUpload.body.deviationId,
-      da_minor_version: this.DA_API_VERSION,
-      display_resolution: 0,
-      editorRaw: DeviantArtDescriptionConverter.convert(
-        postData.options.description,
-      ),
-      editor_v3: '',
-      galleryids: postData.options.folders,
-      is_ai_generated: postData.options.isAIGenerated ?? false,
-      is_scrap: postData.options.scraps,
-      license_options: {
-        creative_commons: postData.options.isCreativeCommons ?? false,
-        commercial: postData.options.isCommercialUse ?? false,
-        modify: postData.options.allowModifications || 'no',
-      },
-      location_tag: null,
-      noai: postData.options.noAI ?? true,
-      subject_tag_types: '_empty',
-      subject_tags: '_empty',
-      tags: postData.options.tags,
-      tierids: '_empty',
-      title: this.stripInvalidCharacters(postData.options.title),
-      csrf_token: await this.getCSRF(),
-    };
-
-    if (postData.options.allowFreeDownload) {
-      updateBody.pcp_price_points = 0;
-    }
-
-    if (mature) {
-      updateBody.is_mature = true;
-    }
-
-    // Set default folder if none specified
-    if (postData.options.folders.length === 0) {
-      const folders = this.getWebsiteData().folders as SelectOptionSingle[];
-      const featured = folders.find((f) => f.label === 'Featured');
-      if (featured) {
-        updateBody.galleryids = [`${featured.value}`];
-      }
-    }
+    const updateBuilder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .withData({
+        allow_comments: !postData.options.disableComments,
+        allow_free_download: postData.options.allowFreeDownload,
+        deviationid: fileUpload.body.deviationId,
+        da_minor_version: this.DA_API_VERSION,
+        display_resolution: 0,
+        editorRaw: DeviantArtDescriptionConverter.convert(
+          postData.options.description,
+        ),
+        editor_v3: '',
+        galleryids:
+          postData.options.folders.length > 0
+            ? postData.options.folders
+            : featured
+              ? [featured.value]
+              : [],
+        is_ai_generated: postData.options.isAIGenerated ?? false,
+        is_scrap: postData.options.scraps,
+        license_options: {
+          creative_commons: postData.options.isCreativeCommons ?? false,
+          commercial: postData.options.isCommercialUse ?? false,
+          modify: postData.options.allowModifications || 'no',
+        },
+        location_tag: null,
+        noai: postData.options.noAI ?? true,
+        subject_tag_types: '_empty',
+        subject_tags: '_empty',
+        tags: postData.options.tags,
+        tierids: '_empty',
+        title: this.stripInvalidCharacters(postData.options.title),
+        csrf_token: await this.getCSRF(),
+      })
+      .setConditional('pcp_price_points', postData.options.allowFreeDownload, 0)
+      .setConditional('is_mature', mature, true);
 
     // Update submission details
-    const update = await Http.post<{
+    const update = await updateBuilder.send<{
       status: string;
       url: string;
       deviationId: number;
-    }>(`${this.BASE_URL}/_napi/shared_api/deviation/update`, {
-      partition: this.accountId,
-      type: 'json',
-      data: updateBody,
-    });
-
-    cancellationToken.throwIfCancelled();
+    }>(`${this.BASE_URL}/_napi/shared_api/deviation/update`);
 
     if (update.body.status !== 'success') {
       return PostResponse.fromWebsite(this)
@@ -253,19 +239,16 @@ export default class DeviantArt
     }
 
     // Publish the submission
-    const publish = await Http.post<{
+    const publishBuilder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .setField('da_minor_version', this.DA_API_VERSION)
+      .setField('csrf_token', await this.getCSRF())
+      .setField('stashid', update.body.deviationId);
+    const publish = await publishBuilder.send<{
       status: string;
       url: string;
       deviationId: number;
-    }>(`${this.BASE_URL}/_puppy/dashared/deviation/publish`, {
-      partition: this.accountId,
-      type: 'json',
-      data: {
-        stashid: update.body.deviationId,
-        da_minor_version: this.DA_API_VERSION,
-        csrf_token: await this.getCSRF(),
-      },
-    });
+    }>(`${this.BASE_URL}/_puppy/dashared/deviation/publish`);
 
     if (publish.body.status !== 'success') {
       return PostResponse.fromWebsite(this)
@@ -292,24 +275,20 @@ export default class DeviantArt
       da_minor_version: this.DA_API_VERSION,
     };
 
-    const form: Record<string, unknown> = {
+    const builder = new PostBuilder(this, cancellationToken).asJson().withData({
       ...commonFormData,
       editorRaw: DeviantArtDescriptionConverter.convert(
         postData.options.description,
       ),
       title: this.stripInvalidCharacters(postData.options.title),
-    };
+    });
 
-    const create = await Http.post<{
+    const create = await builder.send<{
       deviation: {
         deviationId: number;
         url: string;
       };
-    }>(`${this.BASE_URL}/_napi/shared_api/journal/create`, {
-      partition: this.accountId,
-      type: 'json',
-      data: form,
-    });
+    }>(`${this.BASE_URL}/_napi/shared_api/journal/create`);
 
     if (!create.body.deviation?.deviationId) {
       return PostResponse.fromWebsite(this)
@@ -320,20 +299,19 @@ export default class DeviantArt
         .withException(new Error('Failed to create post'));
     }
 
-    const publish = await Http.post<{
-      deviation: {
-        deviationId: number;
-        url: string;
-      };
-    }>(`${this.BASE_URL}/_puppy/dashared/journal/publish`, {
-      partition: this.accountId,
-      type: 'json',
-      data: {
+    const publish = await new PostBuilder(this, cancellationToken)
+      .asJson()
+      .withData({
         ...commonFormData,
         deviationid: create.body.deviation.deviationId,
         featured: true,
-      },
-    });
+      })
+      .send<{
+        deviation: {
+          deviationId: number;
+          url: string;
+        };
+      }>(`${this.BASE_URL}/_puppy/dashared/journal/publish`);
 
     if (!publish.body.deviation?.deviationId) {
       return PostResponse.fromWebsite(this)

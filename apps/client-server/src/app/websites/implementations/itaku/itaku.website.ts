@@ -14,6 +14,7 @@ import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -181,51 +182,44 @@ export default class Itaku
     isBatch: boolean,
     cancellationToken: CancellableToken,
   ): Promise<{ id: number }> {
-    const fileData: Record<string, unknown> = {
-      title: postData.options.title,
-      description: postData.options.description,
-      sections: JSON.stringify(postData.options.folders),
-      tags: JSON.stringify(
-        postData.options.tags.map((tag) => ({ name: tag.substring(0, 59) })),
-      ),
-      maturity_rating: this.convertRating(postData.options.rating),
-      visibility: postData.options.visibility,
-    };
-
-    if (isBatch || postData.options.shareOnFeed) {
-      fileData.share_on_feed = 'true';
-    }
-
     const spoilerText =
       postData.options.contentWarning || file.metadata.spoilerText;
-    if (spoilerText) {
-      fileData.content_warning = spoilerText;
-    }
 
-    if (file.fileType === FileType.IMAGE) {
-      fileData.image = file.toPostFormat();
-    } else if (file.fileType === FileType.VIDEO) {
-      fileData.video = file.toPostFormat();
-    } else {
+    if (
+      !(file.fileType === FileType.IMAGE || file.fileType === FileType.VIDEO)
+    ) {
       throw new Error('Unsupported file type');
     }
 
-    cancellationToken.throwIfCancelled();
-    const upload = await Http.post<{ id: number }>(
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .withHeader('Authorization', `Token ${this.sessionData.token}`)
+      .setField('title', postData.options.title)
+      .setField('description', postData.options.description)
+      .setField('sections', JSON.stringify(postData.options.folders))
+      .setField(
+        'tags',
+        JSON.stringify(
+          postData.options.tags.map((tag) => ({ name: tag.substring(0, 59) })),
+        ),
+      )
+      .setField('maturity_rating', this.convertRating(postData.options.rating))
+      .setField('visibility', postData.options.visibility)
+      .setConditional(
+        'share_on_feed',
+        isBatch || postData.options.shareOnFeed,
+        postData.options.shareOnFeed,
+      )
+      .setConditional('content_warning', !!spoilerText, spoilerText)
+      .setConditional('image', file.fileType === FileType.IMAGE, file)
+      .setConditional('video', file.fileType === FileType.VIDEO, file);
+
+    const upload = await builder.send<{ id: number }>(
       `${this.BASE_URL}/api/galleries/${
         file.fileType === FileType.IMAGE ? 'images' : 'videos'
       }/`,
-      {
-        partition: this.accountId,
-        data: fileData,
-        type: 'multipart',
-        headers: {
-          Authorization: `Token ${this.sessionData.token}`,
-        },
-      },
     );
 
-    PostResponse.validateBody(this, upload);
     return upload.body;
   }
 
@@ -234,37 +228,29 @@ export default class Itaku
     cancellationToken: CancellableToken,
     uploadedFiles?: { id: number }[],
   ): Promise<PostResponse> {
-    const fileData: Record<string, unknown> = {
-      title: postData.options.title,
-      content: postData.options.description,
-      folders: postData.options.folders,
-      tags: postData.options.tags.map((tag) => ({
-        name: tag.substring(0, 59),
-      })),
-      maturity_rating: this.convertRating(postData.options.rating),
-      visibility: postData.options.visibility,
-      gallery_images: uploadedFiles?.map((file) => file.id),
-    };
+    const builder = new PostBuilder(this, cancellationToken)
+      .asJson()
+      .setField('title', postData.options.title)
+      .setField('content', postData.options.description)
+      .setField('folders', postData.options.folders)
+      .setField('tags', postData.options.tags.join(','))
+      .setField('maturity_rating', this.convertRating(postData.options.rating))
+      .setField('visibility', postData.options.visibility)
+      .setField(
+        'gallery_images',
+        uploadedFiles?.map((file) => file.id),
+      )
+      .setConditional(
+        'content_warning',
+        !!postData.options.contentWarning,
+        postData.options.contentWarning,
+      )
+      .withHeader('Authorization', `Token ${this.sessionData.token}`);
 
-    const spoilerText = postData.options.contentWarning;
-    if (spoilerText) {
-      fileData.content_warning = spoilerText;
-    }
-
-    cancellationToken.throwIfCancelled();
-    const post = await Http.post<{ id: number }>(
+    const post = await builder.send<{ id: number }>(
       `${this.BASE_URL}/api/posts/`,
-      {
-        partition: this.accountId,
-        data: fileData,
-        type: 'json',
-        headers: {
-          Authorization: `Token ${this.sessionData.token}`,
-        },
-      },
     );
 
-    PostResponse.validateBody(this, post);
     if (!post.body.id) {
       return PostResponse.fromWebsite(this)
         .withMessage('Failed to post')
