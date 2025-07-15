@@ -12,6 +12,7 @@ import { parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -136,8 +137,6 @@ export default class Furbooru
     batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
-
     try {
       return await this.attemptFilePost(postData, files, cancellationToken);
     } catch (err) {
@@ -155,29 +154,24 @@ export default class Furbooru
     const { options } = postData;
     const tags = this.tagsWithRatingTag([...options.tags], options.rating);
 
-    const file = files[0];
-    const formData = {
-      ...(await BrowserWindowUtils.getFormData(
-        this.accountId,
-        `${this.BASE_URL}/images/new`,
-        {
-          custom: 'document.body.querySelectorAll("form")[3]',
-        },
-      )),
-      _method: 'post',
-      'image[tag_input]': tags.join(', ').trim(),
-      'image[image]': file.toPostFormat(),
-      'image[description]': options.description || '',
-      'image[source_url]': file.metadata.sourceUrls[0] || '',
-    };
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .withData({
+        ...(await BrowserWindowUtils.getFormData(
+          this.accountId,
+          `${this.BASE_URL}/images/new`,
+          {
+            custom: 'document.body.querySelectorAll("form")[3]',
+          },
+        )),
+      })
+      .setField('_method', 'post')
+      .addFile('image[image]', files[0])
+      .setField('image[tag_input]', tags.join(', ').trim())
+      .setField('image[description]', options.description || '')
+      .setField('image[source_url]', files[0].metadata.sourceUrls[0] || '');
 
-    cancellationToken.throwIfCancelled();
-
-    const result = await Http.post<string>(`${this.BASE_URL}/images`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    const result = await builder.send<string>(`${this.BASE_URL}/images`);
     if (result.statusCode === 200 || result.statusCode === 302) {
       // Look for redirect or success indicators in response
       if (result.body.includes('image/')) {
