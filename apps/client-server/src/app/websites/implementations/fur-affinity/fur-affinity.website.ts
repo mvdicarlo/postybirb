@@ -14,6 +14,8 @@ import cheerio from 'cheerio';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import HtmlParserUtil from '../../../utils/html-parser.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -179,6 +181,34 @@ export default class FurAffinity
       partition: this.accountId,
     });
     PostResponse.validateBody(this, page);
+
+    const key = HtmlParserUtil.getInputValue(
+      page.body.split('action="/controls/journal/"').pop(),
+      'key',
+    );
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .setField('key', key)
+      .setField('message', postData.options.description)
+      .setField('subject', postData.options.title)
+      .setField('submit', 'Create / Update Journal')
+      .setField('id', '')
+      .setField('do', 'update')
+      .setConditional('make_featured', postData.options.feature, 'on');
+
+    const post = await builder.send<string>(
+      `${this.BASE_URL}/controls/journal/`,
+    );
+
+    if (post.body.includes('journal-title')) {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(post.body)
+        .withSourceUrl(post.responseUrl);
+    }
+
+    return PostResponse.fromWebsite(this)
+      .withException(new Error('Failed to post journal'))
+      .withAdditionalInfo(post.body);
   }
 
   private getContentType(type: FileType) {
