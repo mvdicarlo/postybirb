@@ -11,6 +11,7 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import cheerio from 'cheerio';
+import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -76,7 +77,7 @@ export default class FurAffinity
     FileWebsite<FurAffinityFileSubmission>,
     MessageWebsite<FurAffinityMessageSubmission>
 {
-  protected BASE_URL = 'https://furaffinity.net';
+  protected BASE_URL = 'https://www.furaffinity.net';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<FurAffinityAccountData> =
     {
@@ -91,11 +92,11 @@ export default class FurAffinity
       );
 
       if (res.body.includes('logout-link')) {
-        const $ = cheerio.load(res.body);
+        const $ = parse(res.body);
         await this.getFolders($);
         return this.loginState.setLogin(
           true,
-          $('.loggedin_user_avatar').attr('alt'),
+          $.querySelector('.loggedin_user_avatar').getAttribute('alt'),
         );
       }
 
@@ -106,42 +107,37 @@ export default class FurAffinity
     }
   }
 
-  private getFolders($: cheerio.CheerioAPI) {
+  private getFolders($: HTMLElement) {
     const folders: SelectOption[] = [];
     const flatFolders: SelectOption[] = [];
 
-    $('select[name=assign_folder_id]')
-      .children()
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .each((i, el: any) => {
-        const $el = $(el);
-        if (el.name === 'option') {
-          if ($el.attr('value') === '0') {
-            return;
-          }
-          const folder: SelectOption = {
-            value: $el.attr('value'),
-            label: $el.text(),
-          };
-          folders.push(folder);
-          flatFolders.push(folder);
-        } else {
-          const optgroup: SelectOption = {
-            group: $el.attr('label'),
-            items: [],
-          };
-          $el.children().each((_, opt) => {
-            const $opt = $(opt);
-            const f: SelectOption = {
-              value: $opt.attr('value'),
-              label: $opt.text(),
-            };
-            optgroup.items.push(f);
-            flatFolders.push(f);
-          });
-          folders.push(optgroup);
+    $.querySelector('select[name=assign_folder_id]').children.forEach((el) => {
+      if (el.tagName === 'option') {
+        if (el.getAttribute('value') === '0') {
+          return;
         }
-      });
+        const folder: SelectOption = {
+          value: el.getAttribute('value'),
+          label: el.textContent,
+        };
+        folders.push(folder);
+        flatFolders.push(folder);
+      } else {
+        const optgroup: SelectOption = {
+          group: el.getAttribute('label'),
+          items: [],
+        };
+        [...el.children].forEach((opt) => {
+          const f: SelectOption = {
+            value: opt.getAttribute('value'),
+            label: opt.textContent,
+          };
+          optgroup.items.push(f);
+          flatFolders.push(f);
+        });
+        folders.push(optgroup);
+      }
+    });
   }
 
   createFileModel(): FurAffinityFileSubmission {
@@ -152,13 +148,124 @@ export default class FurAffinity
     return undefined;
   }
 
-  onPostFileSubmission(
+  private processForError(body: string): string | undefined {
+    if (body.includes('redirect-message')) {
+      const $ = cheerio.load(body);
+      let msg = $('.redirect-message').first().text();
+
+      if (msg?.includes('CAPTCHA')) {
+        msg =
+          'You need at least 11+ posts on your account before you can use PostyBirb with Fur Affinity.';
+      }
+
+      return msg;
+    }
+
+    return undefined;
+  }
+
+  async onPostFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
     batchIndex: number,
     cancellationToken: CancellableToken,
   ): Promise<IPostResponse> {
-    throw new Error('Method not implemented.');
+    const part1 = await Http.get<string>(`${this.BASE_URL}/submit/`, {
+      partition: this.accountId,
+      headers: {
+        Referer: 'https://www.furaffinity.net/submit/',
+      },
+    });
+
+    PostResponse.validateBody(this, part1);
+    const err = this.processForError(part1.body);
+    if (err) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error(err))
+        .withAdditionalInfo(part1.body);
+    }
+
+    const key = parse(part1.body)
+      .querySelector('input[name="key"]')
+      ?.getAttribute('value');
+    if (!key) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error('Failed to retrieve key for file submission'))
+        .withAdditionalInfo(part1.body);
+    }
+
+    // In theory, post-manager handles the alt file
+    const part2 = await new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .setField('key', key)
+      .setField('submission_type', this.getContentType(files[0].fileType))
+      .addFile('submission', files[0])
+      .addThumbnail('thumbnail', files[0])
+      .withHeader('Referer', 'https://www.furaffinity.net/submit/')
+      .send<string>(`${this.BASE_URL}/submit/upload`);
+
+    const err2 = this.processForError(part2.body);
+    if (err2) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error(err2))
+        .withAdditionalInfo(part2.body);
+    }
+
+    const finalizeKey = parse(part2.body)
+      .querySelector('#upload_form input[name="key"]')
+      ?.getAttribute('value');
+
+    if (!finalizeKey) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error('Failed to retrieve key for file submission'))
+        .withAdditionalInfo(part2.body);
+    }
+
+    const builder = new PostBuilder(this, cancellationToken)
+      .asUrlEncoded()
+      .setField('key', finalizeKey)
+      .setField('title', postData.options.title)
+      .setField('message', postData.options.description)
+      .setField('keywords', postData.options.tags.join(' '))
+      .setField('rating', this.getRating(postData.options.rating))
+      .setField('cat', postData.options.category)
+      .setField('atype', postData.options.theme)
+      .setField('species', postData.options.species)
+      .setField('gender', postData.options.gender)
+      .setConditional(
+        'cat',
+        files[0].fileType !== FileType.IMAGE,
+        this.getContentCategory(files[0].fileType),
+      )
+      .setConditional('lock_comments', postData.options.disableComments, 'on')
+      .setConditional('scrap', postData.options.scraps, '1')
+      .setConditional(
+        'folder_ids',
+        postData.options.folders.length > 0,
+        postData.options.folders,
+      );
+
+    const postResponse = await builder.send<string>(
+      `${this.BASE_URL}/submit/finalize`,
+    );
+
+    if (!postResponse.responseUrl.includes('?upload-successful')) {
+      const err3 = this.processForError(postResponse.body);
+      if (err3) {
+        return PostResponse.fromWebsite(this)
+          .withException(new Error(err3))
+          .withAdditionalInfo(postResponse.body);
+      }
+
+      return PostResponse.fromWebsite(this)
+        .withException(new Error('Failed to post file submission'))
+        .withAdditionalInfo(postResponse.body);
+    }
+
+    return PostResponse.fromWebsite(this)
+      .withSourceUrl(postResponse.responseUrl.replace('?upload-successful', ''))
+      .withMessage('File posted successfully')
+      .withAdditionalInfo(postResponse.body);
   }
 
   async onValidateFileSubmission(
@@ -182,17 +289,26 @@ export default class FurAffinity
     });
     PostResponse.validateBody(this, page);
 
-    const key = HtmlParserUtil.getInputValue(
+    const key = parse(page.body)
+      .querySelector('#journal-form input[name="key"]')
+      ?.getAttribute('value');
+    if (!key) {
+      return PostResponse.fromWebsite(this)
+        .withException(
+          new Error('Failed to retrieve key for journal submission'),
+        )
+        .withAdditionalInfo(page.body);
+    }
+    const key2 = HtmlParserUtil.getInputValue(
       page.body.split('action="/controls/journal/"').pop(),
       'key',
     );
     const builder = new PostBuilder(this, cancellationToken)
-      .asMultipart()
+      .asUrlEncoded()
       .setField('key', key)
       .setField('message', postData.options.description)
       .setField('subject', postData.options.title)
-      .setField('submit', 'Create / Update Journal')
-      .setField('id', '')
+      .setField('id', '0')
       .setField('do', 'update')
       .setConditional('make_featured', postData.options.feature, 'on');
 

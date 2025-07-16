@@ -87,7 +87,7 @@ export class DescriptionBlockNode
 
     // No block type for a base paragraph
     if (this.type === 'paragraph') {
-      text = this.content.map((child) => child.toBBCodeString()).join('\n');
+      text = this.content.map((child) => child.toBBCodeString()).join('');
     }
     if (this.type === 'hr') return '[hr]';
     if (this.type === 'heading') block = `h${this.props.level}`;

@@ -23,13 +23,13 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
   title: string;
 
   @DescriptionField({
-    descriptionType: DescriptionType.CUSTOM,
+    descriptionType: DescriptionType.BBCODE,
   })
   description: DescriptionValue;
 
   @TagField({
     maxTagLength: 500,
-    spaceReplacer: ' ',
+    spaceReplacer: '_',
   })
   tags: TagValue;
 

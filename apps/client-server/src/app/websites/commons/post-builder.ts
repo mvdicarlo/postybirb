@@ -31,7 +31,7 @@ type Value = FieldValue | FieldValue[];
  * ```
  */
 export class PostBuilder {
-  private static readonly logger = Logger('PostBuilder');
+  private readonly logger = Logger('PostBuilder');
 
   /**
    * The type of POST request to send (json, multipart, or urlencoded).
@@ -360,7 +360,7 @@ export class PostBuilder {
   async send<ReturnValue>(url: string) {
     this.cancellationToken.throwIfCancelled();
     const data = this.build();
-    PostBuilder.logger
+    this.logger
       .withMetadata({
         website: this.website.constructor.name,
         postType: this.postType,
@@ -382,10 +382,7 @@ export class PostBuilder {
           data,
           headers: this.headers,
         });
-        PostBuilder.logger.debug(
-          `Received response from ${url}:`,
-          value.statusCode,
-        );
+        this.logger.debug(`Received response from ${url}:`, value.statusCode);
         PostResponse.validateBody(this.website, value);
         return value;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -402,7 +399,7 @@ export class PostBuilder {
             attempt++;
             lastError = error;
             if (attempt > maxRetries) break;
-            PostBuilder.logger.debug(
+            this.logger.debug(
               `Retrying request to ${url} due to ${knownError} (attempt ${attempt})`,
             );
             isKnownError = true;
@@ -412,13 +409,17 @@ export class PostBuilder {
 
         // If the error is not a known retryable error, log it and throw
         if (!isKnownError) {
-          PostBuilder.logger.error(
+          this.logger.error(
             `Failed to send request to ${url} after ${attempt} attempts:`,
             error,
           );
           throw error;
         }
         // If known error, continue loop (unless maxRetries exceeded)
+        await new Promise((resolve) => {
+          // Wait for 1 second before retrying
+          setTimeout(resolve, 1_000);
+        });
       }
     }
     throw lastError;
