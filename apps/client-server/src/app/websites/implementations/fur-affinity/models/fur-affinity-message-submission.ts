@@ -12,7 +12,7 @@ export class FurAffinityMessageSubmission extends BaseWebsiteOptions {
   title: string;
 
   @DescriptionField({
-    descriptionType: DescriptionType.CUSTOM,
+    descriptionType: DescriptionType.BBCODE,
   })
   description: DescriptionValue;
 
@@ -21,6 +21,6 @@ export class FurAffinityMessageSubmission extends BaseWebsiteOptions {
   })
   tags: TagValue;
 
-  @BooleanField({ label: 'feature', defaultValue: true })
+  @BooleanField({ col: 1, label: 'feature', defaultValue: true })
   feature: boolean;
 }

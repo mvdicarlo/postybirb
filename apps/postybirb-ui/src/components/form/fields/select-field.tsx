@@ -64,6 +64,7 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
     <FieldLabel {...props} validationState={validations}>
       {field.allowMultiple ? (
         <MultiSelect
+          searchable
           value={Array.isArray(value) ? value : []}
           onChange={(newValue) => setFieldValue(propKey, newValue)}
           clearable
@@ -72,6 +73,7 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
         />
       ) : (
         <Select
+          searchable
           value={value as string}
           onChange={(newValue) => setFieldValue(propKey, newValue)}
           clearable

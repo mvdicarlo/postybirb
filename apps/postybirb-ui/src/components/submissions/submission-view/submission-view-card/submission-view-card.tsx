@@ -313,7 +313,9 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
                 }}
               />
             </Input.Wrapper>
-            <ImplementedWebsiteSelect submission={submission} />
+            <Box py="md">
+              <ImplementedWebsiteSelect submission={submission} />
+            </Box>
             <WebsiteOptionGroupSection
               options={[defaultOption]}
               submission={submission}

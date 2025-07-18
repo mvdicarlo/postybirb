@@ -1,5 +1,10 @@
 import { Trans } from '@lingui/macro';
-import { ComboboxItemGroup, Group, MultiSelect } from '@mantine/core';
+import {
+  ComboboxItemGroup,
+  Group,
+  MantineSize,
+  MultiSelect,
+} from '@mantine/core';
 import { IAccountDto, NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import { IconCheck } from '@tabler/icons-react';
 import { useMemo, useState } from 'react';
@@ -8,11 +13,12 @@ import { SubmissionDto } from '../../../models/dtos/submission.dto';
 
 type WebsiteSelectProps = {
   submission: SubmissionDto;
+  size?: MantineSize;
   onSelect(accounts: IAccountDto[]): void;
 };
 
 export function WebsiteSelect(props: WebsiteSelectProps) {
-  const { submission, onSelect } = props;
+  const { submission, size, onSelect } = props;
   const { accounts, filteredAccounts } = useWebsites();
   const [selectedAccounts, setSelectedAccounts] = useState<IAccountDto[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -56,6 +62,7 @@ export function WebsiteSelect(props: WebsiteSelectProps) {
       clearable
       searchable
       data={options}
+      size={size}
       defaultValue={submission.options
         .filter((o) => o.accountId !== NULL_ACCOUNT_ID)
         .map((o) => o.accountId)}

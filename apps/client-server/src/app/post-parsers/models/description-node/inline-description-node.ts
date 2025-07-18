@@ -110,7 +110,7 @@ export class DescriptionInlineNode
       if (sc?.url.startsWith('http')) {
         return `[url=${sc.url}]${sc.username}[/url]`;
       }
-      return sc ? `${sc.username}` : '';
+      return sc ? `${sc.url ?? sc.username}` : '';
     }
 
     return this.content.map((child) => child.toBBCodeString()).join('');

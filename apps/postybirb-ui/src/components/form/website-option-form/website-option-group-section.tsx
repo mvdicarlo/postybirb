@@ -16,7 +16,7 @@ import {
   NULL_ACCOUNT_ID,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { IconX } from '@tabler/icons-react';
+import { IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { WebsiteOptionForm } from './website-option-form';
@@ -37,6 +37,9 @@ export function WebsiteOptionGroupSection(
     Record<EntityId, boolean>
   >({});
 
+  const hasValidationErrors = submission.validations.some(
+    (v) => v.account.id === account.id && v.errors?.length,
+  );
   const isDefaultAccount = account.id === NULL_ACCOUNT_ID;
   const accountName = isDefaultAccount ? (
     <Group>
@@ -90,10 +93,16 @@ export function WebsiteOptionGroupSection(
                   style={{ zIndex: 99 }}
                 >
                   <Group>
-                    <div>
+                    <Box c={hasValidationErrors ? 'red' : 'inherit'}>
+                      {hasValidationErrors ? (
+                        <IconExclamationCircle
+                          height="1rem"
+                          style={{ verticalAlign: 'middle' }}
+                        />
+                      ) : null}
                       {account.name} (
                       {account.state.username ?? <Trans>Not logged in</Trans>})
-                    </div>
+                    </Box>
                     <ActionIcon
                       variant="subtle"
                       color="red"

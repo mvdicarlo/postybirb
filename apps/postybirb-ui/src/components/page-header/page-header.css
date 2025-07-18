@@ -80,13 +80,12 @@
   background: transparent;
 }
 
-.postybirb__page-header__title-section {
-  padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
-  margin-bottom: var(--mantine-spacing-sm);
+.postybirb__page-header__header-top {
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-md);
   border-bottom: 1px solid var(--mantine-color-gray-3);
 }
 
-[data-mantine-color-scheme='dark'] .postybirb__page-header__title-section {
+[data-mantine-color-scheme='dark'] .postybirb__page-header__header-top {
   border-bottom-color: var(--mantine-color-dark-4);
 }
 

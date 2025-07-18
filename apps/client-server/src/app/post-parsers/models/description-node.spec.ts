@@ -54,6 +54,9 @@ describe('DescriptionNode', () => {
     expect(tree.toHtml()).toBe(
       '<div><span><b>Hello, </b></span><a target="_blank" href="https://test.postybirb.com/User">User</a></div>',
     );
+    expect(tree.toBBCode()).toBe(
+      '[b]Hello, [/b][url=https://test.postybirb.com/User]User[/url]',
+    );
   });
 
   it('should support username shortcut conversion', () => {
@@ -112,6 +115,52 @@ describe('DescriptionNode', () => {
     expect(tree.toPlainText()).toBe('Hello, <!~User>');
     expect(tree.toHtml()).toBe(
       '<div><span><b>Hello, </b></span><span><!~User></span></div>',
+    );
+    expect(tree.toBBCode()).toBe('[b]Hello, [/b]<!~User>');
+  });
+
+  it('should handle multiple paragraphs', () => {
+    const multiParagraphDescription: Description = [
+      {
+        id: 'test-multi-paragraph',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [{ type: 'text', text: 'First paragraph.', styles: {} }],
+        children: [],
+      },
+      {
+        id: 'test-multi-paragraph-2',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [{ type: 'text', text: 'Second paragraph.', styles: {} }],
+        children: [],
+      },
+    ];
+
+    const tree = new DescriptionNodeTree(
+      'test',
+      multiParagraphDescription as unknown as Array<IDescriptionBlockNode>,
+      {
+        insertAd: false,
+      },
+      {},
+      {},
+    );
+
+    expect(tree.toPlainText()).toBe('First paragraph.\r\nSecond paragraph.');
+    expect(tree.toHtml()).toBe(
+      '<div>First paragraph.</div><div>Second paragraph.</div>',
+    );
+    expect(tree.toBBCode()).toBe(
+      'First paragraph.\nSecond paragraph.',
     );
   });
 });

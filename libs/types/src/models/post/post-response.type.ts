@@ -51,6 +51,8 @@ export class PostResponse implements IPostResponse {
 
   additionalInfo?: unknown;
 
+  readonly at: string = new Date().toISOString();
+
   protected constructor(readonly instanceId: string) {}
 
   static fromWebsite(website: { id: string }) {

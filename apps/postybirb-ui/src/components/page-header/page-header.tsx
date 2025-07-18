@@ -2,6 +2,7 @@ import {
   Anchor,
   Box,
   Breadcrumbs,
+  Flex,
   Group,
   Tabs,
   Text,
@@ -44,7 +45,7 @@ export function PageHeader(props: PageHeaderProps) {
       <Box className="postybirb__page-header__title-section">
         <Group className="postybirb__page-header__title-group">
           <Box className="postybirb__page-header__icon-container">{icon}</Box>
-          <Title order={1} className="postybirb__page-header__title">
+          <Title order={2} className="postybirb__page-header__title">
             {title}
           </Title>
         </Group>
@@ -127,9 +128,14 @@ export function PageHeader(props: PageHeaderProps) {
 
   return (
     <Box className="postybirb__page-header">
-      {titleField}
-      {breadcrumb}
-      {actionField}
+      <Flex className="postybirb__page-header__header-top" align="center">
+        {titleField}
+        <Box pl="lg">
+          {breadcrumb}
+          {actionField}
+        </Box>
+      </Flex>
+
       {tabsField}
       {tabsField ? null : (
         <hr style={{ borderColor: 'var(--mantine-color-dimmed)' }} />

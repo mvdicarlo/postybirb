@@ -7,7 +7,7 @@ import {
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { load } from 'cheerio';
+import parse from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -80,9 +80,9 @@ export default class Pixiv
       },
     );
 
-    const $ = load(page.body);
+    const $ = parse(page.body);
     const accountInfo = JSON.parse(
-      $('#__NEXT_DATA__').contents().first().text(),
+      $.querySelector('#__NEXT_DATA__').textContent,
     );
     const { token } = JSON.parse(
       accountInfo.props.pageProps.serverSerializedPreloadedState,
