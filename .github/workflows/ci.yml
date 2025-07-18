@@ -19,13 +19,13 @@ jobs:
       matrix:
         ci:
           - name: Lint
-            command: "yarn nx affected -t lint --cache --cache-strategy content --cache-location .eslint"     
- 
+            command: 'yarn nx affected -t lint --cache --cache-strategy content --cache-location .eslint'
+
           - name: TypeCheck
-            command: "yarn nx affected -t typecheck"
-     
-        # xvfb-run is needed because electron still tries to get $DISPLAY env even if it does not launches the window
-        # so to run tests on electron runner we need to add this command
+            command: 'yarn nx affected -t typecheck'
+
+          # xvfb-run is needed because electron still tries to get $DISPLAY env even if it does not launches the window
+          # so to run tests on electron runner we need to add this command
           - name: Test
             command: 'xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn nx affected -t test'
 
@@ -47,16 +47,20 @@ jobs:
 
           key: ${{ runner.os }}-ci
 
+        # This is needed to be run before node setup, because node setup uses yarn to get cache dir
+      - name: Enable corepack to use Yarn v4
+        run: corepack enable
+
       - name: Install Node.js and Yarn
         uses: actions/setup-node@v4
         with:
           cache: yarn
 
-        # Note: These flags needed to speed up ci
+        # These flags needed to speed up ci
       - name: Install dependencies
-        run: yarn install --frozen-lockfile --prefer-offline
+        run: yarn install --immutable
 
-        # Node: Used to calculate affected
+        # Used to calculate affected
       - name: Setup SHAs
         uses: nrwl/nx-set-shas@v4
 

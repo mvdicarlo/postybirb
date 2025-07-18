@@ -1,0 +1,12 @@
+diff --git a/build/InlineSnapshots.js b/build/InlineSnapshots.js
+index 3481ad99885c847156afdef148d3075dcc9c68ca..44c91da106e6111f95c75b37bc41e5cadebcc145 100644
+--- a/build/InlineSnapshots.js
++++ b/build/InlineSnapshots.js
+@@ -149,6 +149,7 @@ const saveSnapshotsForFile = (snapshots, sourceFilePath, rootDir, prettier) => {
+       filename: sourceFilePath,
+       plugins,
+       presets,
++      configFile: path.join(process.cwd(),'./babel.config.js'),
+       root: rootDir
+     });
+   } catch (error) {
