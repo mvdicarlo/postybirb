@@ -7,13 +7,15 @@ import {
   Stack,
   TextInput,
 } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { DiscordAccountData } from '@postybirb/types';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
-import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
+import {
+  createLoginHttpErrorHander,
+  notifyLoginSuccess,
+} from '../website-login-helpers';
 
 const formId = 'discord-login-form';
 
@@ -67,23 +69,9 @@ export default function DiscordLoginView(
             },
           })
           .then(() => {
-            notifications.show({
-              title: 'Account data updated.',
-              message: 'Account data updated.',
-              color: 'success',
-            });
+            notifyLoginSuccess();
           })
-          .catch(({ error }: { error: HttpErrorResponse }) => {
-            notifications.show({
-              title: (
-                <span>
-                  {error.statusCode} {error.error}
-                </span>
-              ),
-              message: error.message,
-              color: 'red',
-            });
-          })
+          .catch(createLoginHttpErrorHander())
           .finally(() => {
             setSubmitting(false);
           });

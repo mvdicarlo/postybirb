@@ -1,12 +1,15 @@
 import { Trans } from '@lingui/macro';
-import { Box, Button, Stack, TextInput } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
+import { Box, Button, Stack, Text, TextInput } from '@mantine/core';
 import { BlueskyAccountData, BlueskyOAuthRoutes } from '@postybirb/types';
 import { useState } from 'react';
 import websitesApi from '../../api/websites.api';
 import { ExternalLink } from '../../components/external-link/external-link';
-import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
+import {
+  createLoginHttpErrorHander,
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../website-login-helpers';
 
 const formId = 'bluesky-login-form';
 
@@ -22,6 +25,7 @@ export default function BlueskyLoginView(
   const [username, setUsername] = useState(data?.username ?? '');
   const [password, setPassword] = useState(data?.password ?? '');
   const [isSubmitting, setSubmitting] = useState<boolean>(false);
+  const isUsingEmail = username.includes('@') && !username.startsWith('@');
 
   return (
     <form
@@ -36,31 +40,18 @@ export default function BlueskyLoginView(
           })
           .then(({ result }) => {
             if (result) {
-              notifications.show({
-                title: 'Login success.',
-                message: 'Login success.',
-                color: 'green',
-              });
+              notifyLoginSuccess();
               setPassword('');
             } else {
-              notifications.show({
-                title: 'Login failed.',
-                message: 'Check that handle and password are valid.',
-                color: 'red',
-              });
+              notifyLoginFailed(
+                <Trans>
+                  Check that handle and password are valid or try using email
+                  instead of handle.
+                </Trans>,
+              );
             }
           })
-          .catch(({ error }: { error: HttpErrorResponse }) => {
-            notifications.show({
-              title: (
-                <span>
-                  {error.statusCode} {error.error}
-                </span>
-              ),
-              message: error.message,
-              color: 'red',
-            });
-          })
+          .catch(createLoginHttpErrorHander())
           .finally(() => {
             setSubmitting(false);
           });
@@ -68,22 +59,33 @@ export default function BlueskyLoginView(
     >
       <Stack>
         <TextInput
-          label={<Trans>Username</Trans>}
+          label={<Trans>Username or email</Trans>}
           name="username"
           description={
-            <Trans>
-              Your handle - for example yourname.bsky.social or username.ext
-            </Trans>
+            <>
+              <Text inherit>
+                <Trans>
+                  Your handle - for example yourname.bsky.social or username.ext
+                </Trans>
+              </Text>
+              <strong>
+                <Trans>
+                  If handle does not work, try using email linked to your
+                  account instead
+                </Trans>
+              </strong>
+            </>
           }
           required
           minLength={1}
           defaultValue={username}
           error={
             username &&
+            !isUsingEmail &&
             !usernameRegexp.test(username) && (
               <Trans comment="Bluesky login form">
                 Be sure that the username is in the format handle.bsky.social.
-                Or if you are using custom domain, make sure to include full
+                If you are using custom domain, make sure to include full
                 username, e.g. domain.ext, handle.domain.ext
               </Trans>
             )
@@ -98,12 +100,10 @@ export default function BlueskyLoginView(
           name="password"
           description={
             <Trans comment="Bluesky login form">
-              An <strong>app</strong> password - you can get one of these in
-              <span>
-                <ExternalLink href="https://bsky.app/settings/app-passwords">
-                  Settings
-                </ExternalLink>
-              </span>
+              An <strong>app</strong> password - you can get one of these in{' '}
+              <ExternalLink href="https://bsky.app/settings/app-passwords">
+                Settings
+              </ExternalLink>
             </Trans>
           }
           required
