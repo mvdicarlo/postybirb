@@ -1,7 +1,7 @@
 import {
-    AccountId,
-    IWebsiteFormFields,
-    WebsiteOptionsDto,
+  AccountId,
+  IWebsiteFormFields,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import websiteOptionsApi from '../../../api/website-options.api';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -15,6 +15,7 @@ export function ImplementedWebsiteSelect(props: ImplementedWebsiteSelectProps) {
   const { submission } = props;
   return (
     <WebsiteSelect
+      size="md"
       submission={submission}
       onSelect={(selectedAccounts) => {
         const existingOptions = submission.options.filter((o) => !o.isDefault);

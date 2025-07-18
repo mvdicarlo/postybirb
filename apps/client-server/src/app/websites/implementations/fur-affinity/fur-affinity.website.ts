@@ -10,13 +10,13 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import cheerio from 'cheerio';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import HtmlParserUtil from '../../../utils/html-parser.util';
 import { PostBuilder } from '../../commons/post-builder';
+import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -138,6 +138,10 @@ export default class FurAffinity
         folders.push(optgroup);
       }
     });
+
+    this.setWebsiteData({
+      folders: flatFolders,
+    });
   }
 
   createFileModel(): FurAffinityFileSubmission {
@@ -150,8 +154,8 @@ export default class FurAffinity
 
   private processForError(body: string): string | undefined {
     if (body.includes('redirect-message')) {
-      const $ = cheerio.load(body);
-      let msg = $('.redirect-message').first().text();
+      const $ = parse(body);
+      let msg = $.querySelector('.redirect-message').textContent.trim();
 
       if (msg?.includes('CAPTCHA')) {
         msg =
@@ -185,13 +189,18 @@ export default class FurAffinity
         .withAdditionalInfo(part1.body);
     }
 
-    const key = parse(part1.body)
-      .querySelector('input[name="key"]')
-      ?.getAttribute('value');
+    const key =
+      parse(part1.body)
+        .querySelector('#upload_form input[name="key"]')
+        ?.getAttribute('value') ??
+      parse(part1.body)
+        .querySelector('#myform input[name="key"]')
+        ?.getAttribute('value');
     if (!key) {
       return PostResponse.fromWebsite(this)
         .withException(new Error('Failed to retrieve key for file submission'))
-        .withAdditionalInfo(part1.body);
+        .withAdditionalInfo(part1.body)
+        .atStage('part 1');
     }
 
     // In theory, post-manager handles the alt file
@@ -208,17 +217,19 @@ export default class FurAffinity
     if (err2) {
       return PostResponse.fromWebsite(this)
         .withException(new Error(err2))
-        .withAdditionalInfo(part2.body);
+        .withAdditionalInfo(part2.body)
+        .atStage('part 2');
     }
 
     const finalizeKey = parse(part2.body)
-      .querySelector('#upload_form input[name="key"]')
+      .querySelector('#myform input[name="key"]')
       ?.getAttribute('value');
 
     if (!finalizeKey) {
       return PostResponse.fromWebsite(this)
         .withException(new Error('Failed to retrieve key for file submission'))
-        .withAdditionalInfo(part2.body);
+        .withAdditionalInfo(part2.body)
+        .atStage('finalize key get');
     }
 
     const builder = new PostBuilder(this, cancellationToken)
@@ -228,20 +239,20 @@ export default class FurAffinity
       .setField('message', postData.options.description)
       .setField('keywords', postData.options.tags.join(' '))
       .setField('rating', this.getRating(postData.options.rating))
-      .setField('cat', postData.options.category)
       .setField('atype', postData.options.theme)
       .setField('species', postData.options.species)
       .setField('gender', postData.options.gender)
       .setConditional(
         'cat',
-        files[0].fileType !== FileType.IMAGE,
+        files[0].fileType === FileType.IMAGE,
+        postData.options.category,
         this.getContentCategory(files[0].fileType),
       )
       .setConditional('lock_comments', postData.options.disableComments, 'on')
       .setConditional('scrap', postData.options.scraps, '1')
       .setConditional(
         'folder_ids',
-        postData.options.folders.length > 0,
+        (postData.options.folders ?? []).length > 0,
         postData.options.folders,
       );
 
@@ -249,10 +260,11 @@ export default class FurAffinity
       `${this.BASE_URL}/submit/finalize`,
     );
 
-    if (!postResponse.responseUrl.includes('?upload-successful')) {
+    if (!postResponse?.responseUrl?.includes('?upload-successful')) {
       const err3 = this.processForError(postResponse.body);
       if (err3) {
         return PostResponse.fromWebsite(this)
+          .withMessage(err3)
           .withException(new Error(err3))
           .withAdditionalInfo(postResponse.body);
       }
@@ -272,6 +284,18 @@ export default class FurAffinity
     postData: PostData<FurAffinityFileSubmission>,
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<FurAffinityFileSubmission>();
+
+    const tags = postData.options.tags.filter((t) => t.length > 0);
+    if (tags.length < 3) {
+      validator.error(
+        'validation.tags.min-tags',
+        {
+          currentLength: tags.length,
+          minLength: 3,
+        },
+        'tags',
+      );
+    }
 
     return validator.result;
   }
@@ -368,11 +392,5 @@ export default class FurAffinity
     }
   }
 
-  async onValidateMessageSubmission(
-    postData: PostData<FurAffinityMessageSubmission>,
-  ): Promise<SimpleValidationResult> {
-    const validator = this.createValidator<FurAffinityMessageSubmission>();
-
-    return validator.result;
-  }
+  onValidateMessageSubmission = validatorPassthru;
 }

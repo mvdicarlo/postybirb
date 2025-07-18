@@ -148,7 +148,6 @@ export function TagField(props: FormFieldProps<TagFieldType>): JSX.Element {
           clearable
           required={field.required}
           value={tagValue}
-          acceptValueOnBlur={false}
           data={[...search.data, ...tagGroupsOptions]}
           searchValue={search.searchValue}
           onSearchChange={search.onSearchChange}
