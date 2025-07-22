@@ -13,3 +13,4 @@ export { default as Telegram } from './telegram/telegram.website';
 export { default as Weasyl } from './weasyl/weasyl.website';
 export { default as Inkbunny } from './inkbunny/inkbunny.website';
 export { default as E621 } from './e621/e621.website';
+export { default as Aryion } from './aryion/aryion.website';
