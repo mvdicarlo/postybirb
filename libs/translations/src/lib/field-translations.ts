@@ -44,6 +44,10 @@ export const FieldLabelTranslations = {
   friendsOnly: msg`Friends only`,
   blockGuests: msg`Block guests`,
   parentId: msg`Parent ID`,
+  requiredTag: msg`Required tag`,
+  viewPermissions: msg`View permissions`,
+  commentPermissions: msg`Comment permissions`,
+  tagPermissions: msg`Tag permissions`,
 } satisfies Record<string, MessageDescriptor>;
 
 export type FieldLabelTranslationsId = keyof typeof FieldLabelTranslations;

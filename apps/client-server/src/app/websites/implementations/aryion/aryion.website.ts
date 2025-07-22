@@ -1,14 +1,18 @@
+import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
+  FileType,
   ILoginState,
   ImageResizeProps,
-  ISubmissionFile,
   PostData,
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
+import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
+import FileSize from '../../../utils/filesize.util';
+import { PostBuilder } from '../../commons/post-builder';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -20,33 +24,120 @@ import { AryionFileSubmission } from './models/aryion-file-submission';
 
 @WebsiteMetadata({
   name: 'aryion',
-  displayName: 'aryion',
+  displayName: 'Aryion',
 })
-@UserLoginFlow('https://aryion.com')
-@SupportsFiles(['image/png', 'image/jpeg'])
-export default class Aryion extends Website<AryionAccountData> implements
-  FileWebsite<AryionFileSubmission>
+@UserLoginFlow('https://aryion.com/forum/ucp.php?mode=login')
+@SupportsFiles({
+  acceptedMimeTypes: [
+    'image/jpeg',
+    'image/jpg',
+    'image/gif',
+    'image/png',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/x-shockwave-flash',
+    'application/vnd.visio',
+    'text/plain',
+    'application/rtf',
+    'video/x-msvideo',
+    'video/mpeg',
+    'video/x-flv',
+    'video/mp4',
+    'application/pdf',
+  ],
+  acceptedFileSizes: {
+    [FileType.IMAGE]: FileSize.megabytes(20),
+    [FileType.VIDEO]: FileSize.megabytes(100),
+    [FileType.TEXT]: FileSize.megabytes(100),
+    'application/pdf': FileSize.megabytes(100),
+  },
+})
+export default class Aryion
+  extends Website<AryionAccountData>
+  implements FileWebsite<AryionFileSubmission>
 {
   protected BASE_URL = 'https://aryion.com';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<AryionAccountData> =
     {
-      folders: true
+      folders: true,
     };
 
   public async onLogin(): Promise<ILoginState> {
-    if (this.account.name === 'test') {
+    const res = await Http.get<string>(`${this.BASE_URL}/g4/treeview.php`, {
+      partition: this.accountId,
+    });
+
+    if (
+      res.body.includes('user-link') &&
+      !res.body.includes('Login to read messages')
+    ) {
+      const $ = parse(res.body);
+      const userLink = $.querySelector('.user-link');
+      const username = userLink ? userLink.text : 'Unknown User';
+      this.loginState.setLogin(true, username);
+      await this.getFolders($);
+    } else {
       this.loginState.logout();
     }
 
-    return this.loginState.setLogin(true, 'TestUser');
+    return this.loginState.getState();
+  }
+
+  private async getFolders($: HTMLElement): Promise<void> {
+    const folders: SelectOption[] = [];
+    const treeviews = $.querySelectorAll('.treeview');
+
+    treeviews.forEach((treeview) => {
+      treeview.childNodes.forEach((node) => {
+        if (node instanceof HTMLElement) {
+          const folderTree: SelectOption[] = [];
+          this.searchFolderTree(node, folderTree);
+          folders.push(...folderTree);
+        }
+      });
+    });
+
+    this.websiteDataStore.setData({
+      ...this.websiteDataStore.getData(),
+      folders,
+    });
+  }
+
+  private searchFolderTree(el: HTMLElement, parent: SelectOption[]): void {
+    el.childNodes.forEach((child) => {
+      if (child instanceof HTMLElement) {
+        if (child.tagName.toLowerCase() === 'span') {
+          // Leaf node
+          const folder = {
+            value: child.getAttribute('data-tid'),
+            label: child.text,
+          };
+          if (folder.value && folder.label) {
+            parent.push(folder);
+          }
+        } else if (child.tagName.toLowerCase() === 'ul') {
+          const folder = {
+            group: '',
+            items: [],
+          };
+          child.childNodes.forEach((subChild) => {
+            if (subChild instanceof HTMLElement) {
+              this.searchFolderTree(subChild, folder.items);
+            }
+          });
+        }
+      }
+    });
   }
 
   createFileModel(): AryionFileSubmission {
     return new AryionFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps {
     return undefined;
   }
 
@@ -57,23 +148,62 @@ export default class Aryion extends Website<AryionAccountData> implements
     cancellationToken: CancellableToken,
   ): Promise<PostResponse> {
     cancellationToken.throwIfCancelled();
-    const formData = {
-      file: files[0].toPostFormat(),
-      thumb: files[0].thumbnailToPostFormat(),
-      description: postData.options.description,
-      tags: postData.options.tags.join(', '),
-      title: postData.options.title,
-      rating: postData.options.rating,
-    };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/submit`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    const { options } = postData;
+    const file = files[0];
 
-    if (result.statusCode === 200) {
-      return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    // Filter out 'vore' and 'non-vore' tags from the tags list
+    const filteredTags = options.tags
+      .filter((tag) => !tag.toLowerCase().match(/^vore$/i))
+      .filter((tag) => !tag.toLowerCase().match(/^non-vore$/i));
+
+    const builder = new PostBuilder(this, cancellationToken)
+      .asMultipart()
+      .addFile('file', file)
+      .addFile('thumb', file)
+      .setField('desc', options.description)
+      .setField('title', options.title)
+      .setField('tags', filteredTags.join('\n'))
+      .setField('reqtag[]', options.requiredTag === '1' ? 'Non-Vore' : '')
+      .setField('view_perm', options.viewPermissions)
+      .setField('comment_perm', options.commentPermissions)
+      .setField('tag_perm', options.tagPermissions)
+      .setField('scrap', options.scraps ? 'on' : '')
+      .setField('parentid', options.folder[options.folder.length - 1])
+      .setField('action', 'new-item')
+      .setField('MAX_FILE_SIZE', '104857600');
+
+    const result = await builder.send<string>(
+      `${this.BASE_URL}/g4/itemaction.php`,
+    );
+
+    try {
+      // Split errors/warnings if they exist and handle them separately
+      const responses = result.body
+        .trim()
+        .split('\n')
+        .map((r) => r?.trim());
+
+      if (responses.length > 1 && responses[0].indexOf('Warning:') === -1) {
+        return PostResponse.fromWebsite(this)
+          .withAdditionalInfo(result.body)
+          .withException(new Error('Server returned warnings or errors'));
+      }
+
+      // Parse the JSON response
+      const jsonResponse = responses[responses.length - 1].replace(
+        /(<textarea>|<\/textarea>)/g,
+        '',
+      );
+      const json = JSON.parse(jsonResponse);
+
+      if (json.id) {
+        return PostResponse.fromWebsite(this).withSourceUrl(
+          `${this.BASE_URL}${json.url}`,
+        );
+      }
+    } catch (err) {
+      // If JSON parsing fails, return the raw response
     }
 
     return PostResponse.fromWebsite(this)
@@ -88,8 +218,26 @@ export default class Aryion extends Website<AryionAccountData> implements
     postData: PostData<AryionFileSubmission>,
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<AryionFileSubmission>();
+    const { options } = postData;
+    const { folders } = this.websiteDataStore.getData();
+
+    // Validate required folder selection
+    if (options.folder.length) {
+      const selectedFolderId = options.folder[options.folder.length - 1];
+      const folderExists = folders?.some(
+        (folder) => 'value' in folder && folder.value === selectedFolderId,
+      );
+      if (!folderExists) {
+        validator.error(
+          'validation.failed',
+          {
+            message: `Folder not found: ${options.folder.join('/')}`,
+          },
+          'folder',
+        );
+      }
+    }
 
     return validator.result;
   }
-
 }
