@@ -3,16 +3,157 @@
 /* eslint-disable no-console */
 import { Trans } from '@lingui/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    Container,
-    Stack,
-    Text,
-    Title,
+  ActionIcon,
+  Alert,
+  Box,
+  Button,
+  Code,
+  Container,
+  ScrollArea,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
 } from '@mantine/core';
-import { IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
-import { Component, ReactNode } from 'react';
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconCopy,
+  IconRefresh,
+} from '@tabler/icons-react';
+import { Component, ReactNode, useState } from 'react';
+
+/**
+ * Copyable error details component
+ */
+function CopyableErrorDetails({
+  error,
+  errorInfo,
+}: {
+  error: Error;
+  errorInfo?: { componentStack: string };
+}) {
+  const [copied, setCopied] = useState(false);
+
+  // Extract the component name from the component stack
+  const getComponentName = (componentStack?: string): string | null => {
+    if (!componentStack) return null;
+
+    // Component stack format typically looks like:
+    //     in ComponentName (at file.tsx:123)
+    //     in AnotherComponent (at file.tsx:456)
+    const lines = componentStack.trim().split('\n');
+    const firstComponentLine = lines.find((line) =>
+      line.trim().startsWith('in '),
+    );
+
+    if (firstComponentLine) {
+      const match = firstComponentLine.trim().match(/^in (\w+)/);
+      return match ? match[1] : null;
+    }
+
+    return null;
+  };
+
+  const componentName = getComponentName(errorInfo?.componentStack);
+
+  const copyErrorToClipboard = async () => {
+    const errorDetails = [
+      `Error: ${error.message}`,
+      componentName ? `Component: ${componentName}` : '',
+      '',
+      'Stack Trace:',
+      error.stack || 'No stack trace available',
+      '',
+      'Component Stack:',
+      errorInfo?.componentStack || 'No component stack available',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    try {
+      await navigator.clipboard.writeText(errorDetails);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
+  };
+
+  return (
+    <Box mt="sm">
+      <Stack gap="xs">
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Text size="xs" fw={500}>
+            <Trans>Error Details:</Trans>
+          </Text>
+          <Tooltip
+            label={
+              copied ? (
+                <Trans>Copied!</Trans>
+              ) : (
+                <Trans>Copy error details</Trans>
+              )
+            }
+          >
+            <ActionIcon
+              size="sm"
+              variant="subtle"
+              onClick={copyErrorToClipboard}
+              color={copied ? 'green' : 'gray'}
+            >
+              {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
+            </ActionIcon>
+          </Tooltip>
+        </Box>
+
+        <ScrollArea.Autosize mah={120}>
+          <Code
+            block
+            p="xs"
+            fs="xs"
+            style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+          >
+            <Text span c="red" fw={500}>
+              {error.message}
+            </Text>
+
+            {componentName && (
+              <>
+                {'\n\n'}
+                <Text span c="blue" fw={500}>
+                  Component: {componentName}
+                </Text>
+              </>
+            )}
+
+            {error.stack && (
+              <>
+                {'\n\n'}
+                <Text span c="dimmed" size="xs">
+                  {error.stack}
+                </Text>
+              </>
+            )}
+
+            {errorInfo?.componentStack && (
+              <>
+                {'\n\n'}
+                <Text span c="grape" fw={500} size="xs">
+                  Component Stack:
+                </Text>
+                {'\n'}
+                <Text span c="dimmed" size="xs">
+                  {errorInfo.componentStack}
+                </Text>
+              </>
+            )}
+          </Code>
+        </ScrollArea.Autosize>
+      </Stack>
+    </Box>
+  );
+}
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -116,13 +257,17 @@ export class ErrorBoundary extends Component<
       }
 
       // Default fallback UI based on level
-      return this.renderDefaultFallback(error, level);
+      return this.renderDefaultFallback(error, level, errorInfo);
     }
 
     return children;
   }
 
-  private renderDefaultFallback(error: Error, level: string) {
+  private renderDefaultFallback(
+    error: Error,
+    level: string,
+    errorInfo?: { componentStack: string },
+  ) {
     const isComponentLevel = level === 'component';
     const AlertComponent = isComponentLevel ? Alert : Container;
 
@@ -140,6 +285,9 @@ export class ErrorBoundary extends Component<
                 properly.
               </Trans>
             </Text>
+
+            <CopyableErrorDetails error={error} errorInfo={errorInfo} />
+
             <Button
               size="xs"
               leftSection={<IconRefresh size={14} />}

@@ -1,4 +1,3 @@
-import { MultiSelect, Select } from '@mantine/core';
 import { SelectFieldType, SelectOption } from '@postybirb/form-builder';
 import { getFileType } from '@postybirb/utils/file-type';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -41,7 +40,7 @@ function getSelectOptions(
 
 function ensureStringOption(options: SelectOption[]): void {
   options.forEach((o) => {
-    if ('group' in o) {
+    if ('items' in o) {
       ensureStringOption(o.items);
     } else if (typeof o.value !== 'string') {
       // eslint-disable-next-line no-param-reassign
@@ -62,7 +61,7 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
 
   return (
     <FieldLabel {...props} validationState={validations}>
-      {field.allowMultiple ? (
+      {/* {field.allowMultiple ? (
         <MultiSelect
           searchable
           value={Array.isArray(value) ? value : []}
@@ -80,7 +79,8 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
           required={field.required}
           data={options}
         />
-      )}
+      )} */}
+      TBD
     </FieldLabel>
   );
 }

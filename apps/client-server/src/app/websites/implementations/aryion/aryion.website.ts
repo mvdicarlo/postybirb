@@ -91,12 +91,10 @@ export default class Aryion
     const treeviews = $.querySelectorAll('.treeview');
 
     treeviews.forEach((treeview) => {
-      treeview.childNodes.forEach((node) => {
-        if (node instanceof HTMLElement) {
-          const folderTree: SelectOption[] = [];
-          this.searchFolderTree(node, folderTree);
-          folders.push(...folderTree);
-        }
+      // Process each top-level <li> element
+      const topLevelItems = treeview.querySelectorAll(':scope > li');
+      topLevelItems.forEach((li) => {
+        this.parseFolderItem(li, folders);
       });
     });
 
@@ -106,31 +104,42 @@ export default class Aryion
     });
   }
 
-  private searchFolderTree(el: HTMLElement, parent: SelectOption[]): void {
-    el.childNodes.forEach((child) => {
-      if (child instanceof HTMLElement) {
-        if (child.tagName.toLowerCase() === 'span') {
-          // Leaf node
-          const folder = {
-            value: child.getAttribute('data-tid'),
-            label: child.text,
-          };
-          if (folder.value && folder.label) {
-            parent.push(folder);
-          }
-        } else if (child.tagName.toLowerCase() === 'ul') {
-          const folder = {
-            group: '',
-            items: [],
-          };
-          child.childNodes.forEach((subChild) => {
-            if (subChild instanceof HTMLElement) {
-              this.searchFolderTree(subChild, folder.items);
-            }
-          });
-        }
-      }
-    });
+  private parseFolderItem(li: HTMLElement, parent: SelectOption[]): void {
+    // Find the span element that contains the folder info
+    const folderSpan = li.querySelector(':scope > span');
+    if (!folderSpan) return;
+
+    const dataTid = folderSpan.getAttribute('data-tid');
+    const folderName = folderSpan.text.trim();
+
+    if (!dataTid || !folderName) return;
+
+    // Check if this folder has children (look for a <ul> sibling)
+    const childrenUl = li.querySelector(':scope > ul');
+
+    if (childrenUl) {
+      // This is a parent folder with children
+      const childItems: SelectOption[] = [];
+
+      // Process each child <li> element
+      const childLis = childrenUl.querySelectorAll(':scope > li');
+      childLis.forEach((childLi) => {
+        this.parseFolderItem(childLi, childItems);
+      });
+
+      // Create a group entry for this folder
+      parent.push({
+        label: folderName,
+        items: childItems,
+        value: dataTid,
+      });
+    } else {
+      // This is a leaf folder (no children)
+      parent.push({
+        value: dataTid,
+        label: folderName,
+      });
+    }
   }
 
   createFileModel(): AryionFileSubmission {
@@ -222,21 +231,21 @@ export default class Aryion
     const { folders } = this.websiteDataStore.getData();
 
     // Validate required folder selection
-    if (options.folder.length) {
-      const selectedFolderId = options.folder[options.folder.length - 1];
-      const folderExists = folders?.some(
-        (folder) => 'value' in folder && folder.value === selectedFolderId,
-      );
-      if (!folderExists) {
-        validator.error(
-          'validation.failed',
-          {
-            message: `Folder not found: ${options.folder.join('/')}`,
-          },
-          'folder',
-        );
-      }
-    }
+    // if (options.folder?.length) {
+    //   const selectedFolderId = options.folder[options.folder.length - 1];
+    //   const folderExists = folders?.some(
+    //     (folder) => 'value' in folder && folder.value === selectedFolderId,
+    //   );
+    //   if (!folderExists) {
+    //     validator.error(
+    //       'validation.failed',
+    //       {
+    //         message: `Folder not found: ${options.folder.join('/')}`,
+    //       },
+    //       'folder',
+    //     );
+    //   }
+    // }
 
     return validator.result;
   }

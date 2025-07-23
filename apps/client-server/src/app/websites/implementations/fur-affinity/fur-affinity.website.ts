@@ -1,14 +1,14 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  IPostResponse,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  SubmissionRating,
+    FileType,
+    ILoginState,
+    ImageResizeProps,
+    IPostResponse,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
@@ -124,7 +124,7 @@ export default class FurAffinity
         flatFolders.push(folder);
       } else {
         const optgroup: SelectOption = {
-          group: el.getAttribute('label'),
+          label: el.getAttribute('label'),
           items: [],
         };
         [...el.children].forEach((opt) => {

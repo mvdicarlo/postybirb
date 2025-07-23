@@ -6,7 +6,7 @@ export const FurAffinitySpecies: SelectOption[] = [
     label: 'Unspecified / Any',
   },
   {
-    group: 'General',
+    label: 'General',
     items: [
       { value: '10001', label: 'Airborne Vehicle' },
       { value: '5001', label: 'Alien (Other)' },
@@ -42,7 +42,7 @@ export const FurAffinitySpecies: SelectOption[] = [
     ],
   },
   {
-    group: 'Fandom Creations',
+    label: 'Fandom Creations',
     items: [
       { value: '11014', label: 'Original Species' },
       { value: '11015', label: 'Fan Species / Character' },
@@ -69,7 +69,7 @@ export const FurAffinitySpecies: SelectOption[] = [
     ],
   },
   {
-    group: 'Mythological / Fantasy',
+    label: 'Mythological / Fantasy',
     items: [
       { value: '12001', label: 'Angel' },
       { value: '12002', label: 'Centaur' },
@@ -125,7 +125,7 @@ export const FurAffinitySpecies: SelectOption[] = [
     ],
   },
   {
-    group: 'Games / Media',
+    label: 'Games / Media',
     items: [
       { value: '13001', label: 'Alicorn (MLP)' },
       { value: '5002', label: 'Argonian' },
@@ -180,7 +180,7 @@ export const FurAffinitySpecies: SelectOption[] = [
     ],
   },
   {
-    group: 'Animal Kingdom',
+    label: 'Animal Kingdom',
     items: [
       { value: '14001', label: 'Aardvark' },
       { value: '14002', label: 'Aardwolf' },

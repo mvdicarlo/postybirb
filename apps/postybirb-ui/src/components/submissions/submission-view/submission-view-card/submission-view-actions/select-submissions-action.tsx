@@ -21,7 +21,7 @@ export function SelectSubmissionsAction({
         if (allSelected) {
           onSelect([]);
         } else {
-          onSelect(submissions);
+          onSelect(submissions.filter((s) => !s.isArchived));
         }
       }}
     >

@@ -2,7 +2,7 @@ import { SelectOption } from '@postybirb/form-builder';
 
 export const FurAffinityThemes: SelectOption[] = [
   {
-    group: 'General Things',
+    label: 'General Things',
     items: [
       { value: '1', label: 'All' },
       { value: '2', label: 'Abstract' },
@@ -21,7 +21,7 @@ export const FurAffinityThemes: SelectOption[] = [
     ],
   },
   {
-    group: 'Specialty',
+    label: 'Specialty',
     items: [
       { value: '101', label: 'Baby fur' },
       { value: '102', label: 'Bondage' },
@@ -48,7 +48,7 @@ export const FurAffinityThemes: SelectOption[] = [
     ],
   },
   {
-    group: 'Music',
+    label: 'Music',
     items: [
       { value: '201', label: 'Techno' },
       { value: '202', label: 'Trance' },

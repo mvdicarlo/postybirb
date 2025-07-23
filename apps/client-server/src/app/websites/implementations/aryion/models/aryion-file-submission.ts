@@ -2,12 +2,12 @@ import {
   BooleanField,
   DescriptionField,
   RadioField,
-  SelectField
+  SelectField,
 } from '@postybirb/form-builder';
 import {
   DefaultDescriptionValue,
   DescriptionType,
-  DescriptionValue
+  DescriptionValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -21,11 +21,19 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
     label: 'folder',
     options: [],
     required: true,
+    col: 2,
+    derive: [
+      {
+        key: 'folders',
+        populate: 'options',
+      },
+    ],
   })
-  folder: string[];
+  folder: string[] = [];
 
   @RadioField({
     label: 'requiredTag',
+    col: 2,
     options: [
       { value: '0', label: 'Vore' },
       { value: '1', label: 'Non-Vore' },
@@ -36,6 +44,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
 
   @RadioField({
     label: 'viewPermissions',
+    col: 2,
     options: [
       { value: 'ALL', label: 'Everyone' },
       { value: 'USER', label: 'Registered Users' },
@@ -46,6 +55,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
 
   @RadioField({
     label: 'commentPermissions',
+    col: 2,
     options: [
       { value: 'USER', label: 'Registered Users' },
       { value: 'BLACK', label: 'All But Blocked' },
@@ -58,6 +68,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
 
   @RadioField({
     label: 'tagPermissions',
+    col: 2,
     options: [
       { value: 'USER', label: 'Registered Users' },
       { value: 'BLACK', label: 'All But Blocked' },
@@ -69,6 +80,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
 
   @BooleanField({
     label: 'scraps',
+    col: 2,
   })
   scraps = false;
 }
