@@ -178,7 +178,7 @@ export default class Aryion
       .setField('comment_perm', options.commentPermissions)
       .setField('tag_perm', options.tagPermissions)
       .setField('scrap', options.scraps ? 'on' : '')
-      .setField('parentid', options.folder[options.folder.length - 1])
+      .setField('parentid', options.folder)
       .setField('action', 'new-item')
       .setField('MAX_FILE_SIZE', '104857600');
 
@@ -231,21 +231,21 @@ export default class Aryion
     const { folders } = this.websiteDataStore.getData();
 
     // Validate required folder selection
-    // if (options.folder?.length) {
-    //   const selectedFolderId = options.folder[options.folder.length - 1];
-    //   const folderExists = folders?.some(
-    //     (folder) => 'value' in folder && folder.value === selectedFolderId,
-    //   );
-    //   if (!folderExists) {
-    //     validator.error(
-    //       'validation.failed',
-    //       {
-    //         message: `Folder not found: ${options.folder.join('/')}`,
-    //       },
-    //       'folder',
-    //     );
-    //   }
-    // }
+    if (options.folder) {
+      const selectedFolderId = options.folder;
+      const folderExists = folders?.some(
+        (folder) => 'value' in folder && folder.value === selectedFolderId,
+      );
+      if (!folderExists) {
+        validator.error(
+          'validation.failed',
+          {
+            message: `Folder not found`,
+          },
+          'folder',
+        );
+      }
+    }
 
     return validator.result;
   }

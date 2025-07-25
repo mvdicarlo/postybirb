@@ -29,7 +29,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
       },
     ],
   })
-  folder: string[] = [];
+  folder = '';
 
   @RadioField({
     label: 'requiredTag',

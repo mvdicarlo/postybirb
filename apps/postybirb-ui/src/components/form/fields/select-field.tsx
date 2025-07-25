@@ -5,6 +5,7 @@ import { useValidations } from '../hooks/use-validations';
 import { useFormFields } from '../website-option-form/use-form-fields';
 import { FieldLabel } from './field-label';
 import { FormFieldProps } from './form-field.type';
+import { Select } from './select';
 
 function getSelectOptions(
   options: SelectFieldType['options'],
@@ -55,32 +56,28 @@ export function SelectField(props: FormFieldProps<SelectFieldType>) {
   const validations = useValidations(props);
 
   // Get the value from context
-  const value = values[propKey] || field.defaultValue || '';
-  const options = getSelectOptions(field.options, submission);
-  ensureStringOption(options);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const value = (values[propKey] || field.defaultValue || '') as any;
+  const selectOptions = getSelectOptions(field.options, submission);
+  ensureStringOption(selectOptions);
 
   return (
     <FieldLabel {...props} validationState={validations}>
-      {/* {field.allowMultiple ? (
-        <MultiSelect
-          searchable
-          value={Array.isArray(value) ? value : []}
-          onChange={(newValue) => setFieldValue(propKey, newValue)}
-          clearable
-          required={field.required}
-          data={options}
-        />
-      ) : (
-        <Select
-          searchable
-          value={value as string}
-          onChange={(newValue) => setFieldValue(propKey, newValue)}
-          clearable
-          required={field.required}
-          data={options}
-        />
-      )} */}
-      TBD
+      <Select
+        multiple={field.allowMultiple}
+        value={value}
+        options={selectOptions}
+        onChange={(options) => {
+          if (Array.isArray(options)) {
+            setFieldValue(
+              propKey,
+              options.map((o) => o.value),
+            );
+          } else {
+            setFieldValue(propKey, options?.value);
+          }
+        }}
+      />
     </FieldLabel>
   );
 }
