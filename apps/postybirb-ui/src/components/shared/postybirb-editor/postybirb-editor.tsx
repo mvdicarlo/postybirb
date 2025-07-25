@@ -12,13 +12,16 @@ import { Trans } from '@lingui/macro';
 import { Tooltip, useMantineColorScheme } from '@mantine/core';
 import { Description, UsernameShortcut } from '@postybirb/types';
 import { IconKeyboard } from '@tabler/icons-react';
+import { useMemo } from 'react';
 import { useStore } from '../../../stores/use-store';
 import { WebsiteStore } from '../../../stores/website.store';
+import { insertDefaultShortcut } from './custom/default-shortcut';
 import { insertHr } from './custom/hr';
 import { getUsernameShortcutsMenuItems } from './custom/username-shortcut';
 import { schema } from './schema';
 
 type PostyBirbEditorProps = {
+  isDefaultEditor: boolean;
   value: Description;
   onChange: (newValue: Description) => void;
 };
@@ -28,7 +31,7 @@ const shortcutTrigger = '`'; // Backtick character for shortcuts
 
 export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const theme = useMantineColorScheme();
-  const { value, onChange } = props;
+  const { isDefaultEditor, value, onChange } = props;
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
     initialContent: value?.length ? value : undefined,
@@ -40,6 +43,16 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
     websites
       ?.filter((w) => w.usernameShortcut)
       .map((w) => w.usernameShortcut as UsernameShortcut) || [];
+
+  const suggestions = useMemo(() => {
+    const shortcutSuggestions = [
+      isDefaultEditor ? insertDefaultShortcut(editor) : undefined,
+      insertHr(editor),
+      ...getDefaultReactSlashMenuItems(editor),
+    ];
+
+    return shortcutSuggestions.filter((sc) => sc !== undefined);
+  }, [isDefaultEditor]);
 
   return (
     <div
@@ -95,10 +108,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
           triggerCharacter="/"
           getItems={async (query) =>
             // Gets all default slash menu items and `insertAlert` item.
-            filterSuggestionItems(
-              [...getDefaultReactSlashMenuItems(editor), insertHr(editor)],
-              query,
-            )
+            filterSuggestionItems(suggestions, query)
           }
         />
         <SuggestionMenuController

@@ -4,6 +4,7 @@ import {
   defaultInlineContentSpecs,
   defaultStyleSpecs,
 } from '@blocknote/core';
+import { DefaultShortcut } from './custom/default-shortcut';
 import { HR } from './custom/hr';
 import { InlineUsernameShortcut } from './custom/username-shortcut';
 
@@ -11,6 +12,7 @@ const getModifiedBlockSpecs = () => {
   const blockSpecs = {
     ...defaultBlockSpecs,
     hr: HR,
+    default: DefaultShortcut,
   };
 
   delete (blockSpecs as Partial<typeof blockSpecs>).table;

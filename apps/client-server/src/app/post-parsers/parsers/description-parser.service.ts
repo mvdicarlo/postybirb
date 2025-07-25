@@ -8,6 +8,7 @@ import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { isWithCustomDescriptionParser } from '../../websites/models/website-modifiers/with-custom-description-parser';
 import { UnknownWebsite, Website } from '../../websites/website';
+import { DEFAULT_MARKER } from '../models/description-node/block-description-node';
 import {
   DescriptionNodeTree,
   InsertionOptions,
@@ -84,6 +85,43 @@ export class DescriptionParserService {
       },
     );
 
+    let description = this.createDescription(instance, descriptionType, tree);
+
+    // Support inserting default description by replacing the default marker.
+    if (description.includes(DEFAULT_MARKER)) {
+      const defaultMergedBlocks = this.mergeBlocks(
+        defaultOptions.description
+          .description as unknown as Array<IDescriptionBlockNode>,
+      );
+      const defaultTree = new DescriptionNodeTree(
+        instance.decoratedProps.metadata.name,
+        defaultMergedBlocks,
+        {
+          insertTitle: undefined,
+          insertTags: undefined,
+          insertAd: false,
+        },
+        this.websiteShortcuts,
+        {
+          title,
+          tags,
+        },
+      );
+
+      description = description.replace(
+        DEFAULT_MARKER,
+        this.createDescription(instance, descriptionType, defaultTree),
+      );
+    }
+
+    return description;
+  }
+
+  private createDescription(
+    instance: Website<unknown>,
+    descriptionType: DescriptionType,
+    tree: DescriptionNodeTree,
+  ): string {
     switch (descriptionType) {
       case DescriptionType.MARKDOWN:
         return tree.toMarkdown();

@@ -66,6 +66,7 @@ export function DescriptionField(props: FormFieldProps<DescriptionFieldType>) {
         {overrideDefault || option.isDefault ? (
           <div style={{ position: 'relative' }}>
             <PostyBirbEditor
+              isDefaultEditor={option.isDefault}
               value={description}
               onChange={(descriptionValue) => {
                 setFieldValue(propKey, {
