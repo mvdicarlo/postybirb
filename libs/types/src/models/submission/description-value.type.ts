@@ -80,8 +80,7 @@ type HrBlock = BlockSpec<
 >;
 
 type CustomBlockContentSchema = DefaultBlockSchema &
-  BlockSchemaFromSpecs<{ default: DefaultBlock }> &
-  BlockSchemaFromSpecs<{ default: HrBlock }>;
+  BlockSchemaFromSpecs<{ default: DefaultBlock; hr: HrBlock }>;
 
 export type Description = Block<
   CustomBlockContentSchema,

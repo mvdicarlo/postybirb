@@ -34,7 +34,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
   const { isDefaultEditor, value, onChange } = props;
   // Creates a new editor instance.
   const editor = useCreateBlockNote({
-    initialContent: value?.length ? value : undefined,
+    initialContent: value?.length ? (value as never) : undefined,
     schema,
   }) as unknown as BlockNoteEditor;
 
@@ -52,7 +52,7 @@ export function PostyBirbEditor(props: PostyBirbEditorProps) {
     ];
 
     return shortcutSuggestions.filter((sc) => sc !== undefined);
-  }, [isDefaultEditor]);
+  }, [editor, isDefaultEditor]);
 
   return (
     <div
