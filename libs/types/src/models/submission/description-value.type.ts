@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Block,
   BlockSchemaFromSpecs,
@@ -62,16 +63,25 @@ type DefaultBlock = BlockSpec<
     content: 'inline';
     propSchema: never;
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any
+>;
+
+type HrBlock = BlockSpec<
+  {
+    type: 'hr';
+    content: 'inline';
+    propSchema: never;
+  },
+  any,
+  any,
   any
 >;
 
 type CustomBlockContentSchema = DefaultBlockSchema &
-  BlockSchemaFromSpecs<{ default: DefaultBlock }>;
+  BlockSchemaFromSpecs<{ default: DefaultBlock }> &
+  BlockSchemaFromSpecs<{ default: HrBlock }>;
 
 export type Description = Block<
   CustomBlockContentSchema,
