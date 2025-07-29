@@ -1,4 +1,4 @@
-import { SelectOptionSingle } from '@postybirb/form-builder';
+import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
 import { Http } from '@postybirb/http';
 import {
   FileType,
@@ -7,11 +7,13 @@ import {
   ISubmissionFile,
   PostData,
   PostResponse,
+  SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { SelectOptionUtil } from '../../../utils/select-option.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -88,7 +90,9 @@ export default class DeviantArt
     const cookies = await Http.getWebsiteCookies(this.accountId, this.BASE_URL);
     const userInfoCookie = cookies.find((c) => c.name === 'userinfo');
     if (userInfoCookie) {
-      const userInfo = JSON.parse(decodeURIComponent(userInfoCookie.value));
+      const userInfo = JSON.parse(
+        decodeURIComponent(userInfoCookie.value).split(';')[1],
+      );
       await this.getFolders();
       if (userInfo && userInfo.username) {
         return this.loginState.setLogin(true, userInfo.username);
@@ -108,7 +112,7 @@ export default class DeviantArt
   private async getFolders() {
     try {
       const csrf = await this.getCSRF();
-      const res = await Http.get<{ results: DeviantArtFolder[] }>(
+      const { body } = await Http.get<{ results: DeviantArtFolder[] }>(
         `${
           this.BASE_URL
         }/_puppy/dashared/gallection/folders?offset=0&limit=250&type=gallery&with_all_folder=true&with_permissions=true&username=${encodeURIComponent(
@@ -116,18 +120,47 @@ export default class DeviantArt
         )}&da_minor_version=20230710&csrf_token=${csrf}`,
         { partition: this.accountId },
       );
-      const folders: SelectOptionSingle[] = [];
-      res.body.results.forEach((f: DeviantArtFolder) => {
-        const { parentId } = f;
-        let label = f.name;
-        if (parentId) {
-          const parent = folders.find((r) => r.value === parentId);
-          if (parent) {
-            label = `${parent.label} / ${label}`;
-          }
+
+      const { results } = body;
+      const folders: SelectOption[] = [];
+      const childrenByParentId: Record<string, DeviantArtFolder[]> = {};
+
+      // First pass: group folders by their parent ID
+      results.forEach((folder) => {
+        const parentKey = folder.parentId || 'null'; // Use 'null' string for root folders
+        if (!childrenByParentId[parentKey]) {
+          childrenByParentId[parentKey] = [];
         }
-        folders.push({ value: f.folderId, label });
+        childrenByParentId[parentKey].push(folder);
       });
+
+      // Recursive function to build the tree
+      const buildTree = (parentId: string | null): SelectOption[] => {
+        const parentKey = parentId || 'null';
+        const children = childrenByParentId[parentKey] || [];
+
+        return children.map((folder) => {
+          const subChildren = buildTree(folder.folderId);
+
+          if (subChildren.length > 0) {
+            // This folder has children, create a group
+            return {
+              label: folder.name,
+              value: folder.folderId,
+              items: subChildren,
+            };
+          }
+          // This is a leaf folder
+          return {
+            label: folder.name,
+            value: folder.folderId,
+          };
+        });
+      };
+
+      // Build the tree starting from root folders (parentId = null)
+      folders.push(...buildTree(null));
+
       this.setWebsiteData({
         folders,
       });
@@ -259,7 +292,27 @@ export default class DeviantArt
     return PostResponse.fromWebsite(this).withSourceUrl(publish.body.url);
   }
 
-  onValidateFileSubmission = validatorPassthru;
+  async onValidateFileSubmission(
+    postData: PostData<DeviantArtFileSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<DeviantArtFileSubmission>();
+    const { options } = postData;
+
+    // Validate required folder selection
+    const selectedFolders = options.folders ?? [];
+    const validFolders = this.websiteDataStore.getData().folders ?? [];
+    if (selectedFolders.length) {
+      const hasMissingFolders = selectedFolders.some((folder) =>
+        SelectOptionUtil.findOptionById(validFolders, folder),
+      );
+
+      if (hasMissingFolders) {
+        validator.error('validation.folder.missing-or-invalid', {}, 'folders');
+      }
+    }
+
+    return validator.result;
+  }
 
   createMessageModel(): DeviantArtMessageSubmission {
     return new DeviantArtMessageSubmission();

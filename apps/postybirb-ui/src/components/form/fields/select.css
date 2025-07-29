@@ -144,6 +144,7 @@
   max-height: 220px;
   overflow-y: auto;
   padding: var(--mantine-spacing-xs) 0;
+  overflow-x: hidden;
 }
 
 .select-option {

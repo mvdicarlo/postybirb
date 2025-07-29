@@ -12,6 +12,7 @@ import { HTMLElement, parse } from 'node-html-parser';
 import { CancellableToken } from '../../../post/models/cancellable-token';
 import { PostingFile } from '../../../post/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { SelectOptionUtil } from '../../../utils/select-option.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -228,22 +229,15 @@ export default class Aryion
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<AryionFileSubmission>();
     const { options } = postData;
-    const { folders } = this.websiteDataStore.getData();
 
     // Validate required folder selection
     if (options.folder) {
-      const selectedFolderId = options.folder;
-      const folderExists = folders?.some(
-        (folder) => 'value' in folder && folder.value === selectedFolderId,
+      const folderExists = SelectOptionUtil.findOptionById(
+        this.websiteDataStore.getData()?.folders ?? [],
+        options.folder,
       );
       if (!folderExists) {
-        validator.error(
-          'validation.failed',
-          {
-            message: `Folder not found`,
-          },
-          'folder',
-        );
+        validator.error('validation.folder.missing-or-invalid', {}, 'folder');
       }
     }
 
