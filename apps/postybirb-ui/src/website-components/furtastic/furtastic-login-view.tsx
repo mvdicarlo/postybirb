@@ -1,13 +1,16 @@
 import { Trans } from '@lingui/macro';
 import { Box, Button, Stack, TextInput } from '@mantine/core';
-import { notifications } from '@mantine/notifications';
 import { FurtasticAccountLoginData } from '@postybirb/types';
 import { IconLink, IconMail, IconPassword } from '@tabler/icons-react';
 import { useState } from 'react';
 import accountApi from '../../api/account.api';
 import { ExternalLink } from '../../components/external-link/external-link';
-import HttpErrorResponse from '../../models/http-error-response';
 import { LoginComponentProps } from '../../models/login-component-props';
+import {
+  createLoginHttpErrorHander,
+  notifyLoginFailed,
+  notifyLoginSuccess,
+} from '../website-login-helpers';
 
 const formId = 'furtastic-login-form';
 
@@ -57,11 +60,7 @@ export default function FurtasticLoginView(
         const isValid = await testApiKey(loginData);
 
         if (!isValid) {
-          notifications.show({
-            title: <Trans>Invalid</Trans>,
-            message: <Trans>Could not validate API Key</Trans>,
-            color: 'red',
-          });
+          notifyLoginFailed(<Trans>Could not validate API Key</Trans>);
           return;
         }
 
@@ -71,25 +70,9 @@ export default function FurtasticLoginView(
             data: loginData,
           })
           .then(() => {
-            notifications.show({
-              title: <Trans>Account data updated</Trans>,
-              message: (
-                <Trans>Successfully saved Furtastic login information</Trans>
-              ),
-              color: 'green',
-            });
+            notifyLoginSuccess();
           })
-          .catch(({ error }: { error: HttpErrorResponse }) => {
-            notifications.show({
-              title: (
-                <span>
-                  {error.statusCode} {error.error}
-                </span>
-              ),
-              message: error.message,
-              color: 'red',
-            });
-          })
+          .catch(createLoginHttpErrorHander())
           .finally(() => {
             setSubmitting(false);
           });
