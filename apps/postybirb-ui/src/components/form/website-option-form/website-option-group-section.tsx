@@ -19,6 +19,7 @@ import {
 import { IconExclamationCircle, IconX } from '@tabler/icons-react';
 import { useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { ComponentErrorBoundary } from '../../error-boundary';
 import { WebsiteOptionForm } from './website-option-form';
 
 type WebsiteOptionGroupSectionProps = {
@@ -138,18 +139,22 @@ export function WebsiteOptionGroupSection(
                 <Space h="xs" />
               </>
             ) : null}
-            <WebsiteOptionForm
-              key={option.id}
-              option={option}
-              submission={submission}
-              userSpecifiedModalVisible={!!userSpecifiedModalVisible[option.id]}
-              onUserSpecifiedModalClosed={() =>
-                setUserSpecifiedModalVisible({
-                  ...userSpecifiedModalVisible,
-                  [option.id]: false,
-                })
-              }
-            />
+            <ComponentErrorBoundary key={`ceb-wogs-${option.id}`}>
+              <WebsiteOptionForm
+                key={option.id}
+                option={option}
+                submission={submission}
+                userSpecifiedModalVisible={
+                  !!userSpecifiedModalVisible[option.id]
+                }
+                onUserSpecifiedModalClosed={() =>
+                  setUserSpecifiedModalVisible({
+                    ...userSpecifiedModalVisible,
+                    [option.id]: false,
+                  })
+                }
+              />
+            </ComponentErrorBoundary>
           </Box>
         ))}
       </Stack>

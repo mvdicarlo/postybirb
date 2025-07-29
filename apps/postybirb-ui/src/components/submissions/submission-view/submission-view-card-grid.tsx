@@ -4,6 +4,7 @@ import Sortable from 'sortablejs';
 import submissionApi from '../../../api/submission.api';
 import { draggableIndexesAreDefined } from '../../../helpers/sortable.helper';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
+import { ComponentErrorBoundary } from '../../error-boundary';
 import { SubmissionViewCard } from './submission-view-card/submission-view-card';
 
 type SubmissionViewCardGridProps = {
@@ -95,14 +96,16 @@ export function SubmissionViewCardGrid(props: SubmissionViewCardGridProps) {
                 className="submission-grid-col"
                 style={styles}
               >
-                <SubmissionViewCard
-                  key={submission.id}
-                  submission={submission}
-                  onSelect={onSelect}
-                  isSelected={selectedSubmissions.some(
-                    (s) => s.id === submission.id,
-                  )}
-                />
+                <ComponentErrorBoundary key={`ceb-${submission.id}`}>
+                  <SubmissionViewCard
+                    key={submission.id}
+                    submission={submission}
+                    onSelect={onSelect}
+                    isSelected={selectedSubmissions.some(
+                      (s) => s.id === submission.id,
+                    )}
+                  />
+                </ComponentErrorBoundary>
               </Grid.Col>
             )}
           </Transition>

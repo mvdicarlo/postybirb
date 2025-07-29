@@ -2,7 +2,7 @@ import { SelectOption } from '@postybirb/form-builder';
 
 export const FurAffinityCategories: SelectOption[] = [
   {
-    group: 'Visual Art',
+    label: 'Visual Art',
     items: [
       { value: '1', label: 'All' },
       { value: '2', label: 'Artwork (Digital)' },
@@ -19,7 +19,7 @@ export const FurAffinityCategories: SelectOption[] = [
     ],
   },
   {
-    group: 'Readable Art',
+    label: 'Readable Art',
     items: [
       { value: '13', label: 'Story' },
       { value: '14', label: 'Poetry' },
@@ -27,14 +27,14 @@ export const FurAffinityCategories: SelectOption[] = [
     ],
   },
   {
-    group: 'Audio Art',
+    label: 'Audio Art',
     items: [
       { value: '16', label: 'Music' },
       { value: '17', label: 'Podcasts' },
     ],
   },
   {
-    group: 'Downloadable',
+    label: 'Downloadable',
     items: [
       { value: '18', label: 'Skins' },
       { value: '19', label: 'Handhelds' },
@@ -42,7 +42,7 @@ export const FurAffinityCategories: SelectOption[] = [
     ],
   },
   {
-    group: 'Other Stuff',
+    label: 'Other Stuff',
     items: [
       { value: '21', label: 'Adoptables' },
       { value: '22', label: 'Auctions' },

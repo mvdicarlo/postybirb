@@ -306,6 +306,10 @@ export const TranslationMessages: TranslationsMap = {
       Tag {tag} has {postCount} post(s). Tag may be invalid or low use
     </Trans>
   ),
+
+  'validation.folder.missing-or-invalid': () => (
+    <Trans>Selected option is invalid or missing</Trans>
+  ),
 };
 
 export function ValidationTranslation({

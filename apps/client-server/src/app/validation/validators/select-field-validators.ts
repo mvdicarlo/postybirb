@@ -117,7 +117,7 @@ function flattenSelectOptions(options: SelectOption[]): string[] {
   const result: string[] = [];
 
   for (const option of options) {
-    if ('group' in option && Array.isArray(option.items)) {
+    if ('items' in option && Array.isArray(option.items)) {
       // This is a group of options
       for (const item of option.items) {
         if ('value' in item) {

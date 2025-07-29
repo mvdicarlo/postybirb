@@ -190,4 +190,6 @@ export interface ValidationMessages {
     feedback: string;
     username: string;
   };
+
+  'validation.folder.missing-or-invalid': object;
 }

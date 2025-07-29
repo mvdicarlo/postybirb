@@ -40,6 +40,7 @@ import websiteOptionsApi from '../../../../api/website-options.api';
 import { SubmissionDto } from '../../../../models/dtos/submission.dto';
 import { AccountStore } from '../../../../stores/account.store';
 import { useStore } from '../../../../stores/use-store';
+import { ComponentErrorBoundary } from '../../../error-boundary/specialized-error-boundaries';
 import { WebsiteOptionGroupSection } from '../../../form/website-option-form/website-option-group-section';
 import { ImplementedWebsiteSelect } from '../../../form/website-select/implemented-website-select';
 import { ValidationTranslation } from '../../../translations/validation-translation';
@@ -261,87 +262,89 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
       </Card.Section>
 
       <Card.Section px="sm" pb="sm">
-        <ScrollArea.Autosize mah={400} px={0}>
-          <Stack gap="xs">
-            {fileValidationIssues.errors?.length ? (
-              <Alert
-                variant="outline"
-                color="red"
-                icon={<IconExclamationCircle />}
-                radius="md"
-                p="xs"
-              >
-                <List withPadding listStyleType="disc" spacing="xs" size="sm">
-                  {fileValidationIssues.errors.map((error) => (
-                    <List.Item key={error.id}>
-                      <ValidationTranslation
-                        id={error.id}
-                        values={error.values}
-                      />
-                    </List.Item>
-                  ))}
-                </List>
-              </Alert>
-            ) : null}
+        <ComponentErrorBoundary>
+          <ScrollArea.Autosize mah={400} px={0}>
+            <Stack gap="xs">
+              {fileValidationIssues.errors?.length ? (
+                <Alert
+                  variant="outline"
+                  color="red"
+                  icon={<IconExclamationCircle />}
+                  radius="md"
+                  p="xs"
+                >
+                  <List withPadding listStyleType="disc" spacing="xs" size="sm">
+                    {fileValidationIssues.errors.map((error) => (
+                      <List.Item key={error.id}>
+                        <ValidationTranslation
+                          id={error.id}
+                          values={error.values}
+                        />
+                      </List.Item>
+                    ))}
+                  </List>
+                </Alert>
+              ) : null}
 
-            {fileValidationIssues.warnings?.length ? (
-              <Alert
-                variant="outline"
-                color="orange"
-                icon={<IconExclamationCircle />}
-                radius="md"
-                p="xs"
-              >
-                <List withPadding listStyleType="disc" spacing="xs" size="sm">
-                  {fileValidationIssues.warnings.map((warning) => (
-                    <List.Item key={warning.id}>
-                      <ValidationTranslation
-                        id={warning.id}
-                        values={warning.values}
-                      />
-                    </List.Item>
-                  ))}
-                </List>
-              </Alert>
-            ) : null}
+              {fileValidationIssues.warnings?.length ? (
+                <Alert
+                  variant="outline"
+                  color="orange"
+                  icon={<IconExclamationCircle />}
+                  radius="md"
+                  p="xs"
+                >
+                  <List withPadding listStyleType="disc" spacing="xs" size="sm">
+                    {fileValidationIssues.warnings.map((warning) => (
+                      <List.Item key={warning.id}>
+                        <ValidationTranslation
+                          id={warning.id}
+                          values={warning.values}
+                        />
+                      </List.Item>
+                    ))}
+                  </List>
+                </Alert>
+              ) : null}
 
-            <Input.Wrapper label={<Trans>Schedule</Trans>}>
-              <SubmissionScheduler
-                schedule={submission.schedule}
-                onChange={(schedule) => {
-                  debouncedUpdate(schedule);
-                }}
-              />
-            </Input.Wrapper>
-            <Box py="md">
-              <ImplementedWebsiteSelect submission={submission} />
-            </Box>
-            <WebsiteOptionGroupSection
-              options={[defaultOption]}
-              submission={submission}
-              account={new NullAccount() as unknown as IAccountDto}
-            />
-            {Object.entries(optionsGroupedByWebsiteId)
-              .sort((a, b) => {
-                const aAccount = a[1].account;
-                const bAccount = b[1].account;
-                return (
-                  aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
-                ).localeCompare(
-                  bAccount.websiteInfo.websiteDisplayName ?? bAccount.name,
-                );
-              })
-              .map(([accountId, group]) => (
-                <WebsiteOptionGroupSection
-                  key={accountId}
-                  options={group.options}
-                  submission={submission}
-                  account={group.account}
-                  onRemoveAccount={removeAccount}
+              <Input.Wrapper label={<Trans>Schedule</Trans>}>
+                <SubmissionScheduler
+                  schedule={submission.schedule}
+                  onChange={(schedule) => {
+                    debouncedUpdate(schedule);
+                  }}
                 />
-              ))}
-          </Stack>
-        </ScrollArea.Autosize>
+              </Input.Wrapper>
+              <Box py="md">
+                <ImplementedWebsiteSelect submission={submission} />
+              </Box>
+              <WebsiteOptionGroupSection
+                options={[defaultOption]}
+                submission={submission}
+                account={new NullAccount() as unknown as IAccountDto}
+              />
+              {Object.entries(optionsGroupedByWebsiteId)
+                .sort((a, b) => {
+                  const aAccount = a[1].account;
+                  const bAccount = b[1].account;
+                  return (
+                    aAccount.websiteInfo.websiteDisplayName ?? aAccount.name
+                  ).localeCompare(
+                    bAccount.websiteInfo.websiteDisplayName ?? bAccount.name,
+                  );
+                })
+                .map(([accountId, group]) => (
+                  <WebsiteOptionGroupSection
+                    key={accountId}
+                    options={group.options}
+                    submission={submission}
+                    account={group.account}
+                    onRemoveAccount={removeAccount}
+                  />
+                ))}
+            </Stack>
+          </ScrollArea.Autosize>
+        </ComponentErrorBoundary>
       </Card.Section>
     </Card>
   );

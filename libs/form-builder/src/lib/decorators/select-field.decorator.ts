@@ -12,8 +12,9 @@ export type SelectOptionSingle = {
 };
 
 export type SelectOptionGroup = {
-  group: string;
-  items: SelectOptionSingle[];
+  label: string;
+  value?: string;
+  items: SelectOption[];
 };
 
 export type SelectOption = SelectOptionGroup | SelectOptionSingle;
