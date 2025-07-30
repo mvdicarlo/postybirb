@@ -1,3 +1,4 @@
+/* eslint-disable lingui/no-unlocalized-strings */
 import { BlockNoteEditor, insertOrUpdateBlock } from '@blocknote/core';
 import { createReactBlockSpec } from '@blocknote/react';
 import { Trans } from '@lingui/macro';
@@ -38,7 +39,6 @@ export const insertDefaultShortcut = (editor: BlockNoteEditor) => ({
     } as never);
   },
   aliases: ['default', 'description'],
-  // eslint-disable-next-line lingui/no-unlocalized-strings
   group: 'Shortcuts',
   icon: <div>📝</div>,
 });
