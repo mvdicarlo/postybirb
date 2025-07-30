@@ -76,11 +76,9 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   );
 
   const removeAccount = (account: IAccountDto) => {
-    const optionToDelete = submission.options
-      .filter((o) => !o.isDefault)
-      .find((o) => o.accountId === account.id);
-    if (optionToDelete) {
-      websiteOptionsApi.remove([optionToDelete.id]);
+    const option = submission.options.find((o) => o.accountId === account.id);
+    if (option && !option.isDefault) {
+      websiteOptionsApi.remove([option.id]);
     }
   };
 

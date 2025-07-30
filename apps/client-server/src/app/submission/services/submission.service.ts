@@ -91,12 +91,17 @@ export class SubmissionService
         'PostQueueRecordSchema',
         'SubmissionFileSchema',
         'FileBufferSchema',
-        // 'WebsiteOptionsSchema',
       ],
       () => {
         this.emit();
       },
     );
+
+    this.repository.subscribe(['WebsiteOptionsSchema'], (_, action) => {
+      if (action === 'delete') {
+        this.emit();
+      }
+    });
   }
 
   onModuleInit() {

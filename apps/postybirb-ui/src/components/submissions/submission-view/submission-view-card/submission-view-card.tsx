@@ -87,17 +87,10 @@ function SubmissionViewCardComponent(props: SubmissionViewCardProps) {
     );
 
   const removeAccount = (account: IAccountDto) => {
-    const options = submission.options
-      .filter((o) => o.accountId !== account.id)
-      .filter((o) => !o.isDefault);
-    websiteOptionsApi.remove(submission.options.map((o) => o.id));
-    options.forEach((o) => {
-      websiteOptionsApi.create({
-        accountId: o.account.id,
-        submissionId: submission.id,
-        data: o.data,
-      });
-    });
+    const option = submission.options.find((o) => o.accountId === account.id);
+    if (option && !option.isDefault) {
+      websiteOptionsApi.remove([option.id]);
+    }
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
