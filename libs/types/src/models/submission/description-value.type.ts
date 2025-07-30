@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Block,
+  BlockSchemaFromSpecs,
+  BlockSpec,
   DefaultBlockSchema,
   DefaultInlineContentSchema,
 } from '@blocknote/core';
@@ -54,8 +57,33 @@ type CustomInlineContentSchema = DefaultInlineContentSchema & {
   };
 };
 
+type DefaultBlock = BlockSpec<
+  {
+    type: 'default';
+    content: 'inline';
+    propSchema: never;
+  },
+  any,
+  any,
+  any
+>;
+
+type HrBlock = BlockSpec<
+  {
+    type: 'hr';
+    content: 'inline';
+    propSchema: never;
+  },
+  any,
+  any,
+  any
+>;
+
+type CustomBlockContentSchema = DefaultBlockSchema &
+  BlockSchemaFromSpecs<{ default: DefaultBlock; hr: HrBlock }>;
+
 export type Description = Block<
-  DefaultBlockSchema,
+  CustomBlockContentSchema,
   CustomInlineContentSchema
 >[];
 

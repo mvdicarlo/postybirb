@@ -10,6 +10,8 @@ import {
 import { DescriptionInlineNode } from './inline-description-node';
 import { DescriptionTextNode } from './text-description-node';
 
+export const DEFAULT_MARKER = '<%PB_DEFAULT%>';
+
 export class DescriptionBlockNode
   extends DescriptionNode<IDescriptionBlockNode['type']>
   implements IDescriptionBlockNode
@@ -47,6 +49,8 @@ export class DescriptionBlockNode
   }
 
   toString(): string {
+    if (this.type === 'default') return DEFAULT_MARKER;
+    if (this.type === 'hr') return '----------';
     return this.content.map((child) => child.toString()).join('');
   }
 
@@ -55,6 +59,7 @@ export class DescriptionBlockNode
     if (this.type === 'paragraph') block = 'div';
     if (this.type === 'heading') block = `h${this.props.level}`;
     if (this.type === 'hr') return '<hr>';
+    if (this.type === 'default') return DEFAULT_MARKER;
     if (block === null) throw new Error(`Unsupported block type: ${this.type}`);
 
     const styles: string[] = [];
@@ -90,6 +95,7 @@ export class DescriptionBlockNode
       text = this.content.map((child) => child.toBBCodeString()).join('');
     }
     if (this.type === 'hr') return '[hr]';
+    if (this.type === 'default') return DEFAULT_MARKER;
     if (this.type === 'heading') block = `h${this.props.level}`;
 
     if (block === null && text === null)

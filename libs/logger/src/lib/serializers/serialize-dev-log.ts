@@ -49,7 +49,7 @@ export class SerializeDevLog {
         clearCtxString += util.inspect(err, { colors: true });
       } else {
         // Stack already includes error.type and error.message
-        clearCtxString += err.stack;
+        clearCtxString += (err as Error).stack;
       }
     }
 

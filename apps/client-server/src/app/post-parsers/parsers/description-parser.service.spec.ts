@@ -384,6 +384,57 @@ describe('DescriptionParserService', () => {
     expect(merged).toEqual(expected);
   });
 
+  it('should insert default when available', async () => {
+    const instance = {
+      decoratedProps: {
+        allowAd: true,
+        metadata: {
+          name: 'Test',
+        },
+      },
+    };
+
+    class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
+      @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
+      description: DescriptionValue;
+    }
+
+    const defaultOptions = createWebsiteOptions(testDescription);
+    const websiteOptions = createWebsiteOptions([
+      {
+        id: 'test-basic-default',
+        type: 'default',
+        props: {} as never,
+        content: [],
+        children: [],
+      },
+      {
+        id: 'test-basic-text',
+        type: 'paragraph',
+        props: {
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [{ type: 'text', text: 'Hello, Basic', styles: {} }],
+        children: [],
+      },
+    ]);
+    websiteOptions.data.description.overrideDefault = true;
+    const description = await service.parse(
+      instance as unknown as UnknownWebsite,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new PlaintextBaseWebsiteOptions(websiteOptions.data),
+      [],
+      '',
+    );
+    expect(description).toMatchInlineSnapshot(`
+      "Hello, World!
+      A link: https://postybirb.com
+      Hello, Basic"
+    `);
+  });
+
   // TODO: Add test for description type CUSTOM
   // TODO: Add test for title and tag insertion
 });
