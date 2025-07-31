@@ -25,9 +25,9 @@ export class SofurryMessageSubmission extends BaseWebsiteOptions {
 
   @RatingField({
     options: [
-      { value: SubmissionRating.GENERAL, name: 'All Ages' },
-      { value: SubmissionRating.ADULT, name: 'Adult' },
-      { value: SubmissionRating.EXTREME, name: 'Extreme' },
+      { value: SubmissionRating.GENERAL, label: 'All Ages' },
+      { value: SubmissionRating.ADULT, label: 'Adult' },
+      { value: SubmissionRating.EXTREME, label: 'Extreme' },
     ],
   })
   rating: SubmissionRating;
