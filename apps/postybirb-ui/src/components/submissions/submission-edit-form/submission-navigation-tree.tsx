@@ -1,19 +1,19 @@
 import { Trans } from '@lingui/macro';
 import {
-    Box,
-    Group,
-    Paper,
-    Stack,
-    Text,
-    Tree,
-    TreeNodeData,
-    useTree,
+  Box,
+  Group,
+  Paper,
+  Stack,
+  Text,
+  Tree,
+  TreeNodeData,
+  useTree,
 } from '@mantine/core';
 import { IAccountDto, WebsiteOptionsDto } from '@postybirb/types';
 import {
-    IconAlertTriangle,
-    IconChevronDown,
-    IconExclamationCircle,
+  IconAlertTriangle,
+  IconChevronDown,
+  IconExclamationCircle,
 } from '@tabler/icons-react';
 import { useEffect, useMemo, useState } from 'react';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
@@ -135,7 +135,12 @@ export function SubmissionNavigationTree(props: SubmissionNavigationTreeProps) {
   });
 
   return (
-    <Box pos="sticky" top={top} h="fit-content" style={{ width: '200px' }}>
+    <Box
+      pos="sticky"
+      h="fit-content"
+      style={{ width: '200px', top: `${top}px` }}
+      className="postybirb__submission-nav-tree"
+    >
       <Paper withBorder m="md" p="md" shadow="sm">
         <Stack gap="xs">
           <Text fw={700} ta="center">

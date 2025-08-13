@@ -18,6 +18,8 @@ export class PiczelFileSubmission extends BaseWebsiteOptions {
 
   @SelectField({
     label: 'folder',
+    section: 'website',
+    span: 6,
     derive: [
       {
         key: 'folders',

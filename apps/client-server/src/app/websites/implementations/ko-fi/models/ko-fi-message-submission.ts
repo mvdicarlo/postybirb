@@ -5,6 +5,8 @@ import { KoFiAccountData } from './ko-fi-account-data';
 export class KoFiMessageSubmission extends BaseWebsiteOptions {
   @SelectField<KoFiAccountData>({
     label: 'folder',
+    section: 'website',
+    span: 6,
     options: [],
     derive: [
       {
@@ -17,6 +19,8 @@ export class KoFiMessageSubmission extends BaseWebsiteOptions {
 
   @SelectField({
     label: 'audience',
+    section: 'website',
+    span: 6,
     options: [
       { value: 'public', label: 'Public' },
       { value: 'supporter', label: 'All Supporters (One-off & Monthly)' },

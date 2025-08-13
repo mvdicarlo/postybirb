@@ -21,6 +21,11 @@ export class FurAffinityMessageSubmission extends BaseWebsiteOptions {
   })
   tags: TagValue;
 
-  @BooleanField({ col: 1, label: 'feature', defaultValue: true })
+  @BooleanField({
+    section: 'website',
+    span: 6,
+    label: 'feature',
+    defaultValue: true,
+  })
   feature: boolean;
 }

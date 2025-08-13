@@ -34,9 +34,7 @@ export function SubmissionEditForm(props: SubmissionEditFormProps) {
   const isSpecialSubmissionType =
     submission.isMultiSubmission || submission.isTemplate;
 
-  const top =
-    document.querySelector('.postybirb__page-header')?.getBoundingClientRect()
-      .height ?? 200;
+  const top = 148;
 
   const optionsGroupedByWebsiteId = useMemo(
     () =>

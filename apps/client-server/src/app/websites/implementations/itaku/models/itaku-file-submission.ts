@@ -1,16 +1,16 @@
 import {
-  BooleanField,
-  DescriptionField,
-  RatingField,
-  SelectField,
-  TagField,
-  TextField,
+    BooleanField,
+    DescriptionField,
+    RatingField,
+    SelectField,
+    TagField,
+    TextField,
 } from '@postybirb/form-builder';
 import {
-  DescriptionType,
-  DescriptionValue,
-  SubmissionRating,
-  TagValue,
+    DescriptionType,
+    DescriptionValue,
+    SubmissionRating,
+    TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { ItakuAccountData } from './itaku-account-data';
@@ -51,12 +51,14 @@ export class ItakuFileSubmission extends BaseWebsiteOptions {
       { value: 'PROFILE_ONLY', label: 'Profile Only' },
       { value: 'UNLISTED', label: 'Unlisted' },
     ],
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   visibility = 'PUBLIC';
 
   @SelectField<ItakuAccountData>({
-    col: 1,
+    section: 'website',
+    span: 6,
     label: 'folder',
     derive: [
       {
@@ -71,7 +73,8 @@ export class ItakuFileSubmission extends BaseWebsiteOptions {
 
   @BooleanField({
     label: 'shareOnFeed',
-    col: 1,
+    section: 'website',
+    span: 6,
   })
   shareOnFeed = true;
 }

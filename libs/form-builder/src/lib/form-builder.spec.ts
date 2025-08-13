@@ -21,8 +21,9 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
       },
     });
   });
@@ -34,7 +35,7 @@ describe('formBuilder', () => {
     }
 
     class ExtendedType extends BooleanType {
-      @TextField({ label: 'description', col: 5 })
+      @TextField({ label: 'description', section: 'website', span: 6 })
       public field2 = 'hello';
 
       @DescriptionField({ label: 'feature', descriptionType: 'html' })
@@ -55,8 +56,9 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
       },
     });
 
@@ -66,19 +68,23 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
       },
       field2: {
         label: 'description',
         defaultValue: 'hello',
         type: 'text',
         formField: 'input',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 5,
+        section: 'website',
+        order: 999,
+        span: 6,
       },
       field3: {
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
         defaultValue: {
           description: [],
           overrideDefault: false,
@@ -86,7 +92,6 @@ describe('formBuilder', () => {
         descriptionType: 'html',
         formField: 'description',
         label: 'feature',
-        row: 9007199254740991,
         type: 'description',
       },
     });
@@ -97,19 +102,23 @@ describe('formBuilder', () => {
         defaultValue: false,
         type: 'boolean',
         formField: 'checkbox',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
       },
       field2: {
         label: 'title',
         defaultValue: 'Goodbye',
         type: 'text',
         formField: 'input',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 5,
+        section: 'website',
+        order: 999,
+        span: 6,
       },
       field3: {
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
         defaultValue: {
           description: [],
           overrideDefault: false,
@@ -117,7 +126,6 @@ describe('formBuilder', () => {
         descriptionType: 'markdown',
         formField: 'description',
         label: 'feature',
-        row: 9007199254740991,
         type: 'description',
       },
     });
@@ -135,8 +143,9 @@ describe('formBuilder', () => {
         defaultValue: 'hello',
         type: 'text',
         formField: 'input',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
       },
     });
   });
@@ -150,7 +159,6 @@ describe('formBuilder', () => {
     expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
       {
         "field": {
-          "col": 0,
           "defaultValue": {
             "overrideDefault": false,
             "tags": [],
@@ -158,12 +166,42 @@ describe('formBuilder', () => {
           "formField": "tag",
           "label": "tags",
           "minTagLength": 1,
-          "row": 9007199254740991,
+          "order": 999,
+          "section": "common",
           "spaceReplacer": "_",
+          "span": 12,
           "type": "tag",
         },
       }
     `);
+  });
+
+  it('should support section and layout properties', () => {
+    class TestType {
+      @TextField({
+        label: 'description',
+        section: 'website',
+        order: 1,
+        span: 6,
+        offset: 2,
+        responsive: { xs: 12, sm: 8 },
+      })
+      public field = 'hello';
+    }
+
+    expect(formBuilder(new TestType(), {})).toEqual({
+      field: {
+        label: 'description',
+        defaultValue: 'hello',
+        type: 'text',
+        formField: 'input',
+        section: 'website',
+        order: 1,
+        span: 6,
+        offset: 2,
+        responsive: { xs: 12, sm: 8 },
+      },
+    });
   });
 
   it('should support defaultFrom', () => {
@@ -185,8 +223,9 @@ describe('formBuilder', () => {
         defaultValue: test.testBoolean,
         type: 'boolean',
         formField: 'checkbox',
-        row: Number.MAX_SAFE_INTEGER,
-        col: 0,
+        section: 'common',
+        order: 999,
+        span: 12,
       },
     });
   });

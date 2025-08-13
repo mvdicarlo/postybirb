@@ -18,9 +18,9 @@ export class DiscordFileSubmission extends BaseWebsiteOptions {
   })
   tags: TagValue;
 
-  @BooleanField({ label: 'spoiler' })
+  @BooleanField({ label: 'spoiler', section: 'website', span: 6 })
   isSpoiler = false;
 
-  @BooleanField({ label: 'useTitle' })
+  @BooleanField({ label: 'useTitle', section: 'website', span: 6 })
   useTitle = true;
 }

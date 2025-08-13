@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Alert, Box, Flex, Stack } from '@mantine/core';
-import { FieldAggregateType } from '@postybirb/form-builder';
+import { Alert, Box } from '@mantine/core';
 import {
-  AccountId,
-  ValidationMessage,
-  ValidationResult,
-  WebsiteOptionsDto,
+    AccountId,
+    ValidationMessage,
+    ValidationResult,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { SubmissionDto } from '../../../models/dtos/submission.dto';
 import { ValidationTranslation } from '../../translations/validation-translation';
-import { Field } from '../fields/field';
+import { SectionLayout } from '../layout/section-layout';
 import { UserSpecifiedWebsiteOptionsSaveModal } from '../user-specified-website-options-modal/user-specified-website-options-modal';
 import { FormFieldsProvider, useFormFields } from './use-form-fields';
 
@@ -34,33 +33,6 @@ type SubInnerFormProps = {
   option: WebsiteOptionsDto;
   defaultOption: WebsiteOptionsDto;
 };
-
-type FieldEntry = {
-  key: string;
-  field: FieldAggregateType;
-};
-
-function shouldGrow(entries: FieldEntry[]): boolean {
-  for (const entry of entries) {
-    if (entry.field.grow) {
-      return true;
-    }
-
-    switch (entry.field.formField) {
-      case 'checkbox':
-      case 'radio':
-      case 'rating':
-        break;
-      case 'input':
-      case 'tag':
-      case 'textarea':
-      default:
-        return true;
-    }
-  }
-
-  return false;
-}
 
 function ValidationMessages(props: {
   messages: ValidationMessage[];
@@ -87,54 +59,13 @@ function SubInnerForm(props: SubInnerFormProps) {
   const { option, defaultOption, submission } = props;
   const { formFields } = useFormFields();
 
-  // split form into cols
-  const cols: Record<string, FieldEntry[]> = {};
-  Object.entries(formFields).forEach(([key, field]) => {
-    if (field.hidden) {
-      return;
-    }
-    const col = field.col ?? Number.MAX_SAFE_INTEGER;
-    if (!cols[col]) {
-      cols[col] = [];
-    }
-    cols[col].push({ key, field });
-  });
-
   return (
-    <Flex gap="xs">
-      {Object.entries(cols).map(([col, fields]) => {
-        const grow = shouldGrow(fields);
-        return (
-          <Stack
-            gap="xs"
-            key={col}
-            style={{
-              flexGrow: grow ? '1' : '0',
-              flex: grow ? '1' : undefined,
-            }}
-          >
-            {fields
-              .sort((a, b) =>
-                typeof a.field.row === 'number' &&
-                typeof b.field.row === 'number'
-                  ? a.field.row - b.field.row
-                  : 0,
-              )
-              .map((entry) => (
-                <Field
-                  submission={submission}
-                  propKey={entry.key}
-                  defaultOption={defaultOption}
-                  field={entry.field as unknown as FieldAggregateType}
-                  key={entry.key}
-                  option={option}
-                  validation={submission.validations ?? []}
-                />
-              ))}
-          </Stack>
-        );
-      })}
-    </Flex>
+    <SectionLayout
+      fields={formFields}
+      option={option}
+      defaultOption={defaultOption}
+      submission={submission}
+    />
   );
 }
 

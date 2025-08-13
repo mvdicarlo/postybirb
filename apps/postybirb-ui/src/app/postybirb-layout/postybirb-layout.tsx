@@ -262,7 +262,7 @@ export function PostyBirbLayout() {
     <AppShell
       navbar={{
         width: sideNavToggled ? 60 : 240,
-        breakpoint: 'sm',
+        breakpoint: 'xs',
       }}
       className={isDark ? classes.darkAppShell : ''}
     >
